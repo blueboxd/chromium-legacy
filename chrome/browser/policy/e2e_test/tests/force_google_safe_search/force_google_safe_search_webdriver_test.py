@@ -2,18 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import os
-
-from selenium import webdriver
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import WebDriverWait
 
-os.environ["CHROME_LOG_FILE"] = r"c:\temp\chrome_log.txt"
+import test_util
 
-driver = webdriver.Chrome(
-    "C:/ProgramData/chocolatey/lib/chromedriver/tools/chromedriver.exe",
-    service_args=["--verbose", r"--log-path=c:\temp\chromedriver.log"])
+driver = test_util.create_chrome_webdriver()
 driver.get('http://www.google.com/xhtml')
 
 # wait for page to be loaded

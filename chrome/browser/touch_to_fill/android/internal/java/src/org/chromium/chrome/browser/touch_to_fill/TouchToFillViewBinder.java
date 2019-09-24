@@ -9,6 +9,13 @@ import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.FO
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VIEW_EVENT_LISTENER;
 import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.VISIBLE;
 
+import android.text.method.PasswordTransformationMethod;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.TextView;
+
+import org.chromium.chrome.browser.touch_to_fill.data.Credential;
 import org.chromium.ui.modelutil.PropertyKey;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -17,6 +24,31 @@ import org.chromium.ui.modelutil.PropertyModel;
  * the suitable method in {@link TouchToFillView}.
  */
 class TouchToFillViewBinder {
+    /**
+     * Factory used to create a new View inside the ListView inside the TouchToFillView.
+     * @param parent The parent {@link ViewGroup} of the new item.
+     */
+    static View createCredentialView(ViewGroup parent) {
+        return LayoutInflater.from(parent.getContext())
+                .inflate(R.layout.touch_to_fill_credential_item, parent, false);
+    }
+
+    /**
+     * Called whenever a credential is bound to this view holder. Please note that this method
+     * might be called on the same list entry repeatedly, so make sure to always set a default for
+     * unused fields.
+     * @param view The view to be bound.
+     * @param credential The {@link Credential} whose data needs to be displayed.
+     */
+    static void bindCredentialView(View view, Credential credential) {
+        TextView usernameText = view.findViewById(R.id.username);
+        usernameText.setText(credential.getUsername());
+
+        TextView passwordText = view.findViewById(R.id.password);
+        passwordText.setText(credential.getPassword());
+        passwordText.setTransformationMethod(new PasswordTransformationMethod());
+    }
+
     /**
      * Called whenever a property in the given model changes. It updates the given view accordingly.
      * @param model The observed {@link PropertyModel}. Its data need to be reflected in the view.

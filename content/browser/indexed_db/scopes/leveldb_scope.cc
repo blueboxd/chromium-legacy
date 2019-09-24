@@ -144,8 +144,7 @@ LevelDBScope::LevelDBScope(
     map_values.emplace_back(std::move(range), false);
   }
   empty_ranges_ = base::flat_map<EmptyRange, bool, EmptyRangeLessThan>(
-      std::move(map_values), base::KEEP_FIRST_OF_DUPES,
-      EmptyRangeLessThan(level_db_->comparator()));
+      std::move(map_values), EmptyRangeLessThan(level_db_->comparator()));
 
 #if DCHECK_IS_ON()
   ValidateEmptyRanges();

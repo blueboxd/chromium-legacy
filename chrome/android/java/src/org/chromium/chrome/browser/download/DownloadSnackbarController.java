@@ -129,8 +129,9 @@ public class DownloadSnackbarController implements SnackbarManager.SnackbarContr
     }
 
     private boolean isShowingDownloadInfoBar() {
-        return DownloadManagerService.getDownloadManagerService()
-                .getInfoBarController(Profile.getLastUsedProfile().isOffTheRecord())
-                .isShowing();
+        DownloadInfoBarController infoBarController =
+                DownloadManagerService.getDownloadManagerService().getInfoBarController(
+                        Profile.getLastUsedProfile().isOffTheRecord());
+        return infoBarController == null ? false : infoBarController.isShowing();
     }
 }

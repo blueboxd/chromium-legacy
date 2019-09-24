@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "build/build_config.h"
 #include "chrome/browser/media/webrtc/fake_desktop_media_picker_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "content/public/browser/browser_context.h"
@@ -21,6 +22,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/mediastream/media_stream_request.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
+
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
 
 class DisplayMediaAccessHandlerTest : public ChromeRenderViewHostTestHarness {
  public:
@@ -96,6 +101,16 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGiven) {
   ProcessRequest(content::DesktopMediaID(content::DesktopMediaID::TYPE_SCREEN,
                                          content::DesktopMediaID::kFakeId),
                  &result, &devices, false /* request_audio */);
+#if defined(OS_MACOSX)
+  // Starting from macOS 10.15, screen capture requires system permissions
+  // that are disabled by default.
+  if (base::mac::IsAtLeastOS10_15()) {
+    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+              result);
+    return;
+  }
+#endif
+
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(1u, devices.size());
   EXPECT_EQ(blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
@@ -110,6 +125,15 @@ TEST_F(DisplayMediaAccessHandlerTest, PermissionGivenToRequestWithAudio) {
                                         content::DesktopMediaID::kFakeId,
                                         true /* audio_share */);
   ProcessRequest(fake_media_id, &result, &devices, true /* request_audio */);
+#if defined(OS_MACOSX)
+  // Starting from macOS 10.15, screen capture requires system permissions
+  // that are disabled by default.
+  if (base::mac::IsAtLeastOS10_15()) {
+    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+              result);
+    return;
+  }
+#endif
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(2u, devices.size());
   EXPECT_EQ(blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,
@@ -232,6 +256,16 @@ TEST_F(DisplayMediaAccessHandlerTest, MultipleRequests) {
   wait_loop[0].Run();
   EXPECT_TRUE(test_flags[0].picker_created);
   EXPECT_TRUE(test_flags[0].picker_deleted);
+#if defined(OS_MACOSX)
+  // Starting from macOS 10.15, screen capture requires system permissions
+  // that are disabled by default.
+  if (base::mac::IsAtLeastOS10_15()) {
+    EXPECT_EQ(blink::mojom::MediaStreamRequestResult::PERMISSION_DENIED,
+              result);
+    access_handler_.reset();
+    return;
+  }
+#endif
   EXPECT_EQ(blink::mojom::MediaStreamRequestResult::OK, result);
   EXPECT_EQ(1u, devices.size());
   EXPECT_EQ(blink::mojom::MediaStreamType::DISPLAY_VIDEO_CAPTURE,

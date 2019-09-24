@@ -37,6 +37,8 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Mockito.timeout;
+import static org.mockito.Mockito.verify;
 
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_GONE;
 import static org.chromium.chrome.test.util.ViewUtils.VIEW_INVISIBLE;
@@ -74,17 +76,19 @@ import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestRule;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.IntStringCallback;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.ScalableTimeout;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.history.HistoryActivity;
@@ -101,6 +105,7 @@ import org.chromium.chrome.test.ChromeBrowserTestRule;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.signin.ChromeSigninController;
 import org.chromium.components.sync.ModelType;
+import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.io.File;
@@ -119,6 +124,9 @@ import java.util.concurrent.atomic.AtomicReference;
 @RunWith(BaseJUnit4ClassRunner.class)
 public class SavePasswordsPreferencesTest {
     private static final long UI_UPDATING_TIMEOUT_MS = 3000;
+    @Mock
+    private PasswordEditingDelegate mMockPasswordEditingDelegate;
+
     @Rule
     public final ChromeBrowserTestRule mBrowserTestRule = new ChromeBrowserTestRule();
 
@@ -225,6 +233,15 @@ public class SavePasswordsPreferencesTest {
         @Override
         public void showPasswordEntryEditingView(Context context, int index) {
             mLastEntryIndex = index;
+            Bundle fragmentArgs = new Bundle();
+            fragmentArgs.putString(
+                    PasswordEntryEditor.CREDENTIAL_URL, getSavedPasswordEntry(index).getUrl());
+            fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_NAME,
+                    getSavedPasswordEntry(index).getUserName());
+            fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_PASSWORD,
+                    getSavedPasswordEntry(index).getPassword());
+            PreferencesLauncher.launchSettingsPage(
+                    context, PasswordEntryEditor.class, fragmentArgs);
         }
     }
 
@@ -255,6 +272,10 @@ public class SavePasswordsPreferencesTest {
      * delay used in production.
      */
     private final ManualCallbackDelayer mManualDelayer = new ManualCallbackDelayer();
+
+    public SavePasswordsPreferencesTest() {
+        MockitoAnnotations.initMocks(this);
+    }
 
     private void overrideProfileSyncService(
             final boolean usingPassphrase, final boolean syncingPasswords) {
@@ -723,6 +744,8 @@ public class SavePasswordsPreferencesTest {
     @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
     public void testSelectedStoredPasswordIndexIsSameAsInShowPasswordEntryEditingView()
             throws Exception {
+        PasswordEditingDelegateProvider.getInstance().setPasswordEditingDelegate(
+                mMockPasswordEditingDelegate);
         setPasswordSourceWithMultipleEntries( // Initialize preferences
                 new SavedPasswordEntry[] {new SavedPasswordEntry("https://example.com",
                                                   "example user", "example password"),
@@ -746,6 +769,8 @@ public class SavePasswordsPreferencesTest {
     @Feature({"Preferences"})
     @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
     public void testPasswordDataDisplayedInEditingActivity() throws Exception {
+        PasswordEditingDelegateProvider.getInstance().setPasswordEditingDelegate(
+                mMockPasswordEditingDelegate);
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_URL, "https://example.com");
         fragmentArgs.putString(PasswordEntryEditor.CREDENTIAL_NAME, "test user");
@@ -759,17 +784,16 @@ public class SavePasswordsPreferencesTest {
     }
 
     /**
-     * Check that the changes of password data in the password editing activity are preserved and
-     * shown in the password viewing activity and in the list of passwords after the save button
-     * was clicked.
+     * Check that the password editing method from the PasswordEditingDelegate was called when the
+     * save button in the password editing activity was clicked.
      */
-    // TODO(izuzic): Remove @Ignore when saving of changes is enabled again.
-    @Ignore("The test is ignored because saving the changes of credentials is currently disabled.")
     @Test
     @SmallTest
     @Feature({"Preferences"})
     @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
-    public void testChangeOfStoredPasswordDataIsPreserved() throws Exception {
+    public void testPasswordEditingMethodWasCalled() throws Exception {
+        PasswordEditingDelegateProvider.getInstance().setPasswordEditingDelegate(
+                mMockPasswordEditingDelegate);
         setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
 
         PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
@@ -780,6 +804,38 @@ public class SavePasswordsPreferencesTest {
         Espresso.onView(withEditMenuIdOrText()).perform(click());
 
         Espresso.onView(withId(R.id.username_edit)).perform(typeText(" new"));
+
+        Espresso.onView(withSaveMenuIdOrText()).perform(click());
+
+        verify(mMockPasswordEditingDelegate).editSavedPasswordEntry("test user new", "password");
+
+        // Verify that the delegate was destroyed when the password editing activity finished.
+        waitForEvent().destroy();
+    }
+
+    /**
+     * Check that the changes of password data are shown in the password viewing activity and in the
+     * list of passwords after the save button was clicked.
+     */
+    @Test
+    @SmallTest
+    @Feature({"Preferences"})
+    @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
+    public void testChangeOfStoredPasswordDataIsPropagated() throws Exception {
+        PasswordEditingDelegateProvider.getInstance().setPasswordEditingDelegate(
+                mMockPasswordEditingDelegate);
+        setPasswordSource(new SavedPasswordEntry("https://example.com", "test user", "password"));
+
+        PreferencesTest.startPreferences(InstrumentationRegistry.getInstrumentation(),
+                SavePasswordsPreferences.class.getName());
+
+        Espresso.onView(withText(containsString("test user"))).perform(click());
+
+        Espresso.onView(withEditMenuIdOrText()).perform(click());
+
+        // Performing a change of saved credentials.
+        mHandler.mSavedPasswords.set(
+                0, new SavedPasswordEntry("https://example.com", "test user new", "password"));
 
         Espresso.onView(withSaveMenuIdOrText()).perform(click());
 
@@ -800,6 +856,8 @@ public class SavePasswordsPreferencesTest {
     @Feature({"Preferences"})
     @Features.EnableFeatures(ChromeFeatureList.PASSWORD_EDITING_ANDROID)
     public void testStoredPasswordCanBeUnmaskedAndMaskedAgain() throws Exception {
+        PasswordEditingDelegateProvider.getInstance().setPasswordEditingDelegate(
+                mMockPasswordEditingDelegate);
         Bundle fragmentArgs = new Bundle();
         fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_NAME, "test user");
         fragmentArgs.putString(SavePasswordsPreferences.PASSWORD_LIST_URL, "https://example.com");
@@ -2136,5 +2194,10 @@ public class SavePasswordsPreferencesTest {
                         -> waitForView((ViewGroup) root,
                                 allOf(withId(R.id.search_src_text), withText("Zeu"))));
         Espresso.onView(withId(R.id.search_src_text)).check(matches(withText("Zeu")));
+    }
+
+    PasswordEditingDelegate waitForEvent() {
+        return verify(mMockPasswordEditingDelegate,
+                timeout(ScalableTimeout.scaleTimeout(CriteriaHelper.DEFAULT_MAX_TIME_TO_POLL)));
     }
 }

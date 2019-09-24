@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_request_headers.h"
 #include "net/log/net_log_event_type.h"
@@ -51,8 +52,8 @@ operator=(Notifier&& other) = default;
 
 void SafeBrowsingUrlCheckerImpl::Notifier::OnStartSlowCheck() {
   if (callback_) {
-    std::move(callback_).Run(mojo::MakeRequest(&slow_check_notifier_), false,
-                             false);
+    std::move(callback_).Run(slow_check_notifier_.BindNewPipeAndPassReceiver(),
+                             false, false);
     return;
   }
 
@@ -64,7 +65,8 @@ void SafeBrowsingUrlCheckerImpl::Notifier::OnCompleteCheck(
     bool proceed,
     bool showed_interstitial) {
   if (callback_) {
-    std::move(callback_).Run(nullptr, proceed, showed_interstitial);
+    std::move(callback_).Run(mojo::NullReceiver(), proceed,
+                             showed_interstitial);
     return;
   }
 

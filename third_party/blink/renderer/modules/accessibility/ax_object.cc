@@ -56,6 +56,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_range.h"
 #include "third_party/blink/renderer/modules/accessibility/ax_sparse_attribute_setter.h"
 #include "third_party/blink/renderer/platform/language.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
 #include "third_party/blink/renderer/platform/wtf/hash_set.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
@@ -1213,15 +1214,28 @@ bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   if (IsLineBreakingObject())
     return true;
 
-  // Allow the browser side ax tree to access aria-hidden="true", "visibility:
-  // hidden", and "visibility: collapse" nodes. This is useful for APIs that
-  // return the node referenced by aria-labeledby and aria-describedby
-  if (GetLayoutObject()) {
+  // Allow the browser side ax tree to access "visibility: [hidden|collapse]"
+  // and "display: none" nodes. This is useful for APIs that return the node
+  // referenced by aria-labeledby and aria-describedby.
+  // An element must have an id attribute or it cannot be referenced by
+  // aria-labelledby or aria-describedby.
+  if (RuntimeEnabledFeatures::AccessibilityExposeDisplayNoneEnabled()) {
+    if (Element* element = GetElement()) {
+      if (element->FastHasAttribute(kIdAttr) &&
+          IsHiddenForTextAlternativeCalculation()) {
+        return true;
+      }
+    }
+  } else if (GetLayoutObject()) {
     if (GetLayoutObject()->Style()->Visibility() != EVisibility::kVisible)
       return true;
-    if (AriaHiddenRoot())
-      return true;
   }
+
+  // Allow the browser side ax tree to access "aria-hidden" nodes.
+  // This is useful for APIs that return the node referenced by
+  // aria-labeledby and aria-describedby.
+  if (GetLayoutObject() && AriaHiddenRoot())
+    return true;
 
   return false;
 }

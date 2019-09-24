@@ -29,11 +29,13 @@ import org.chromium.ui.modelutil.PropertyModel;
 
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Handles collecting and pushing state information to the UrlBar model.
  */
-class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
+class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate, UrlBar.UrlTextChangeListener {
     private final PropertyModel mModel;
 
     private Callback<Boolean> mOnFocusChangeCallback;
@@ -43,12 +45,15 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
     private @ScrollType int mScrollType = UrlBar.ScrollType.NO_SCROLL;
     private @SelectionState int mSelectionState = UrlBarCoordinator.SelectionState.SELECT_ALL;
 
+    private final List<UrlTextChangeListener> mUrlTextChangeListeners = new ArrayList<>();
+
     public UrlBarMediator(PropertyModel model) {
         mModel = model;
 
         mModel.set(UrlBarProperties.FOCUS_CHANGE_CALLBACK, this::onUrlFocusChange);
         mModel.set(UrlBarProperties.SHOW_CURSOR, false);
         mModel.set(UrlBarProperties.TEXT_CONTEXT_MENU_DELEGATE, this);
+        mModel.set(UrlBarProperties.URL_TEXT_CHANGE_LISTENER, this);
         setUseDarkTextColors(true);
     }
 
@@ -59,9 +64,9 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
         mModel.set(UrlBarProperties.DELEGATE, delegate);
     }
 
-    /** Set the listener to be notified when the url text chagnes. */
-    public void setUrlTextChangeListener(UrlTextChangeListener listener) {
-        mModel.set(UrlBarProperties.URL_TEXT_CHANGE_LISTENER, listener);
+    /** @see UrlBarMediator#setDelegate(UrlBarDelegate) */
+    public void addUrlTextChangeListener(UrlTextChangeListener listener) {
+        mUrlTextChangeListeners.add(listener);
     }
 
     /**
@@ -333,5 +338,13 @@ class UrlBarMediator implements UrlBar.UrlBarTextContextMenuDelegate {
         if (pathIndex <= 0) return url;
 
         return url.substring(0, pathIndex);
+    }
+
+    @Override
+    public void onTextChanged(String textWithoutAutocomplete, String textWithAutocomplete) {
+        for (int i = 0; i < mUrlTextChangeListeners.size(); i++) {
+            mUrlTextChangeListeners.get(i).onTextChanged(
+                    textWithoutAutocomplete, textWithAutocomplete);
+        }
     }
 }

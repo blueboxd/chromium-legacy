@@ -326,7 +326,7 @@ IDBTransaction* TransactionForDatabase(
   StringOrStringSequence scope;
   scope.SetString(object_store_name);
   IDBTransactionOptions options;
-  options.setRelaxedDurability(true);
+  options.setDurability("relaxed");
   IDBTransaction* idb_transaction = idb_database->transaction(
       script_state, scope, mode, &options, exception_state);
   if (exception_state.HadException())

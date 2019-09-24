@@ -8,8 +8,11 @@
 #include <string>
 
 #include "base/callback_forward.h"
+#include "base/files/file_path.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "chrome/browser/ui/views/status_icons/concat_menu_model.h"
 #include "dbus/bus.h"
 #include "dbus/exported_object.h"
@@ -29,10 +32,10 @@ class DbusProperties;
 // A status icon following the StatusNotifierItem specification.
 // https://www.freedesktop.org/wiki/Specifications/StatusNotifierItem/StatusNotifierItem/
 class StatusIconLinuxDbus : public views::StatusIconLinux,
-                            public ui::SimpleMenuModel::Delegate {
+                            public ui::SimpleMenuModel::Delegate,
+                            public base::RefCounted<StatusIconLinuxDbus> {
  public:
   StatusIconLinuxDbus();
-  ~StatusIconLinuxDbus() override;
 
   // StatusIcon:
   void SetIcon(const gfx::ImageSkia& image) override;
@@ -44,6 +47,10 @@ class StatusIconLinuxDbus : public views::StatusIconLinux,
   void ExecuteCommand(int command_id, int event_flags) override;
 
  private:
+  friend class base::RefCounted<StatusIconLinuxDbus>;
+
+  ~StatusIconLinuxDbus() override;
+
   // Step 0: send the request to verify that the StatusNotifierWatcher service
   // is owned.
   void CheckStatusNotifierWatcherHasOwner();
@@ -85,6 +92,12 @@ class StatusIconLinuxDbus : public views::StatusIconLinux,
 
   void UpdateMenuImpl(ui::MenuModel* model, bool send_signal);
 
+  void SetIconImpl(const gfx::ImageSkia& image, bool send_signals);
+
+  void OnIconFileWritten(const base::FilePath& icon_file);
+
+  void CleanupIconFile();
+
   scoped_refptr<dbus::Bus> bus_;
 
   int service_id_ = 0;
@@ -110,6 +123,11 @@ class StatusIconLinuxDbus : public views::StatusIconLinux,
   // Used when the server doesn't support DBus menus and requests for us to use
   // our own menu.
   std::unique_ptr<views::MenuRunner> menu_runner_;
+
+  const bool should_write_icon_to_file_;
+  const scoped_refptr<base::SequencedTaskRunner> icon_task_runner_;
+  size_t icon_file_id_ = 0;
+  base::FilePath icon_file_;
 
   base::WeakPtrFactory<StatusIconLinuxDbus> weak_factory_{this};
 

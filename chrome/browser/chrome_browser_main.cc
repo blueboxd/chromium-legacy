@@ -227,6 +227,7 @@
 
 #if defined(OS_LINUX)
 #include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/content/app/crashpad.h"
 #endif
 
 #if defined(OS_MACOSX)
@@ -1089,7 +1090,9 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)
   // Set the product channel for crash reports.
-  breakpad::SetChannelCrashKey(chrome::GetChannelName());
+  if (!crash_reporter::IsCrashpadEnabled()) {
+    breakpad::SetChannelCrashKey(chrome::GetChannelName());
+  }
 #endif  // defined(OS_LINUX) || defined(OS_OPENBSD)
 
 #if defined(OS_MACOSX)

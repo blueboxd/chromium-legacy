@@ -18,7 +18,7 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
+#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -89,9 +89,7 @@ class PreviewsUITabHelperUnitTest : public ChromeRenderViewHostTestHarness {
     previews_user_data->SetCommittedPreviewsType(previews_type);
   }
 
-  void SimulateWillProcessResponse() {
-    SimulateCommit();
-  }
+  void SimulateWillProcessResponse() { SimulateCommit(); }
 
   void SimulateCommit() {
     test_handle_->set_has_committed(true);
@@ -326,8 +324,7 @@ TEST_F(PreviewsUITabHelperUnitTest, TestReloadWithoutPreviewsLitePageRedirect) {
   base::RunLoop().RunUntilIdle();
 
   GURL original_url("https://porgs.com");
-  GURL previews_url =
-      PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(original_url);
+  GURL previews_url = previews::GetLitePageRedirectURLForURL(original_url);
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(previews_url);
 

@@ -22,7 +22,6 @@
 #include "chrome/browser/predictors/predictors_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/history/core/browser/history_database.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_utils.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/web_contents.h"
@@ -223,8 +222,7 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
       config_(config),
       initialization_state_(NOT_INITIALIZED),
       tables_(PredictorDatabaseFactory::GetForProfile(profile)
-                  ->resource_prefetch_tables()),
-      history_service_observer_(this) {
+                  ->resource_prefetch_tables()) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

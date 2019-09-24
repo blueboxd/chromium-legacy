@@ -17,6 +17,7 @@
 #include "extensions/browser/extension_registry_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
 
@@ -42,7 +43,7 @@ class ExtensionApps : public apps::mojom::Publisher,
   ExtensionApps();
   ~ExtensionApps() override;
 
-  void Initialize(const apps::mojom::AppServicePtr& app_service,
+  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service,
                   Profile* profile,
                   apps::mojom::AppType type);
   void Shutdown();

@@ -38,17 +38,18 @@ class TabCloseButton : public views::ImageButton,
   void SetIconColors(SkColor foreground_color, SkColor background_color);
 
   // views::ImageButton:
+  const char* GetClassName() const override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
-  void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnMouseReleased(const ui::MouseEvent& event) override;
+  void OnMouseMoved(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
-  const char* GetClassName() const override;
-  void Layout() override;
-  gfx::Size CalculatePreferredSize() const override;
   std::unique_ptr<views::InkDropMask> CreateInkDropMask() const override;
 
  protected:
+  // views::ImageButton:
+  gfx::Size CalculatePreferredSize() const override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
 
  private:

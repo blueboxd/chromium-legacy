@@ -421,13 +421,19 @@ IDBTransaction* IDBDatabase::transaction(
           ->GetTaskRunner(TaskType::kDatabaseAccess),
       transaction_id);
 
-  bool relaxed_durability = false;
-  if (RuntimeEnabledFeatures::IDBRelaxedDurabilityEnabled() && options)
-    relaxed_durability = options->relaxedDurability();
+  mojom::IDBTransactionDurability durability =
+      mojom::IDBTransactionDurability::Default;
+  if (RuntimeEnabledFeatures::IDBRelaxedDurabilityEnabled() && options) {
+    if (options->durability() == "relaxed") {
+      durability = mojom::IDBTransactionDurability::Relaxed;
+    } else if (options->durability() == "strict") {
+      durability = mojom::IDBTransactionDurability::Strict;
+    }
+  }
 
   backend_->CreateTransaction(transaction_backend->CreateReceiver(),
                               transaction_id, object_store_ids, mode,
-                              relaxed_durability);
+                              durability);
 
   return IDBTransaction::CreateNonVersionChange(
       script_state, std::move(transaction_backend), transaction_id, scope, mode,

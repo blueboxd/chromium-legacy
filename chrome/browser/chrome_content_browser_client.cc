@@ -100,7 +100,6 @@
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/previews/previews_content_util.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -463,6 +462,11 @@
 #include "chrome/browser/browser_switcher/browser_switcher_navigation_throttle.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "components/crash/content/app/crash_switches.h"
+#include "components/crash/content/app/crashpad.h"
+#endif
+
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
 #if !defined(OS_ANDROID)
 #include "base/debug/leak_annotations.h"
@@ -813,6 +817,12 @@ breakpad::CrashHandlerHostLinux* CreateCrashHandlerHost(
 }
 
 int GetCrashSignalFD(const base::CommandLine& command_line) {
+  if (crash_reporter::IsCrashpadEnabled()) {
+    int fd;
+    pid_t pid;
+    return crash_reporter::GetHandlerSocket(&fd, &pid) ? fd : -1;
+  }
+
   // Extensions have the same process type as renderers.
   if (command_line.HasSwitch(extensions::switches::kExtensionProcess)) {
     static breakpad::CrashHandlerHostLinux* crash_handler = nullptr;
@@ -2029,7 +2039,21 @@ void ChromeContentBrowserClient::AppendExtraCommandLineSwitches(
 #if defined(OS_ANDROID)
   bool enable_crash_reporter = true;
 #else
-  bool enable_crash_reporter = breakpad::IsCrashReporterEnabled();
+  bool enable_crash_reporter = false;
+  if (crash_reporter::IsCrashpadEnabled()) {
+    command_line->AppendSwitch(crash_reporter::kEnableCrashpad);
+    enable_crash_reporter = true;
+
+    int fd;
+    pid_t pid;
+    if (crash_reporter::GetHandlerSocket(&fd, &pid)) {
+      command_line->AppendSwitchASCII(
+          crash_reporter::switches::kCrashpadHandlerPid,
+          base::NumberToString(pid));
+    }
+  } else {
+    enable_crash_reporter = breakpad::IsCrashReporterEnabled();
+  }
 #endif
   if (enable_crash_reporter) {
     std::string switch_value;
@@ -2990,12 +3014,9 @@ bool ChromeContentBrowserClient::CanCreateWindow(
                                      frame_name, disposition, features,
                                      user_gesture, opener_suppressed);
   NavigateParams nav_params = blocked_params.CreateNavigateParams(web_contents);
-  if (MaybeBlockPopup(web_contents, opener_top_level_frame_url, &nav_params,
-                      nullptr /*=open_url_params*/,
-                      blocked_params.features())) {
-    return false;
-  }
-  return true;
+  return !MaybeBlockPopup(web_contents, &opener_top_level_frame_url,
+                          &nav_params, nullptr /*=open_url_params*/,
+                          blocked_params.features());
 }
 
 content::SpeechRecognitionManagerDelegate*
@@ -3446,8 +3467,8 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
 
   // Handler to rewrite Preview's Server Lite Page, to show the original URL to
   // the user.
-  handler->AddHandlerPair(&HandlePreviewsLitePageURLRewrite,
-                          &HandlePreviewsLitePageURLRewriteReverse);
+  handler->AddHandlerPair(&previews::HandlePreviewsLitePageURLRewrite,
+                          &previews::HandlePreviewsLitePageURLRewriteReverse);
 }
 
 base::FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
@@ -4881,7 +4902,7 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   // |network_loader_factory| and have interceptors create one themselves.
   // https://crbug.com/931786
   if (base::FeatureList::IsEnabled(
-          previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
+          previews::features::kLitePageServerPreviews)) {
     interceptors.push_back(
         std::make_unique<previews::PreviewsLitePageURLLoaderInterceptor>(
             network_loader_factory,

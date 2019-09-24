@@ -81,6 +81,8 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // The extra padding added to status area tray buttons on the shelf.
   int status_area_hit_region_padding() const;
 
+  bool is_in_app() const { return !is_app_list_visible_; }
+
   int app_icon_group_margin() const { return app_icon_group_margin_; }
   SkColor shelf_control_permanent_highlight_background() const {
     return shelf_control_permanent_highlight_background_;

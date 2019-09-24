@@ -582,7 +582,7 @@ TEST(ParseHEVCCodecIdTest, InvalidHEVCCodecIds) {
 }
 #endif
 
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 TEST(ParseDolbyVisionCodecIdTest, InvalidDolbyVisionCodecIds) {
   VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
   uint8_t level_id = 0;

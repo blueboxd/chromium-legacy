@@ -9,7 +9,6 @@
 #include "base/trace_event/trace_event.h"
 #include "components/safe_browsing/common/safebrowsing_constants.h"
 #include "components/safe_browsing/common/utils.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/url_request/redirect_info.h"
 #include "services/network/public/cpp/resource_request.h"
 
@@ -113,7 +112,7 @@ void RendererURLLoaderThrottle::OnCompleteCheck(bool proceed,
 }
 
 void RendererURLLoaderThrottle::OnCheckUrlResult(
-    mojom::UrlCheckNotifierRequest slow_check_notifier,
+    mojo::PendingReceiver<mojom::UrlCheckNotifier> slow_check_notifier,
     bool proceed,
     bool showed_interstitial) {
   // When this is the callback of safe_browsing_->CreateCheckerAndCheck(), it is
@@ -122,7 +121,7 @@ void RendererURLLoaderThrottle::OnCheckUrlResult(
   if (blocked_ || !url_checker_)
     return;
 
-  if (!slow_check_notifier.is_pending()) {
+  if (!slow_check_notifier.is_valid()) {
     OnCompleteCheckInternal(false /* slow_check */, proceed,
                             showed_interstitial);
     return;
@@ -137,11 +136,11 @@ void RendererURLLoaderThrottle::OnCheckUrlResult(
   if (pending_slow_checks_ == 1)
     delegate_->PauseReadingBodyFromNet();
 
-  if (!notifier_bindings_) {
-    notifier_bindings_ =
-        std::make_unique<mojo::BindingSet<mojom::UrlCheckNotifier>>();
+  if (!notifier_receivers_) {
+    notifier_receivers_ =
+        std::make_unique<mojo::ReceiverSet<mojom::UrlCheckNotifier>>();
   }
-  notifier_bindings_->AddBinding(this, std::move(slow_check_notifier));
+  notifier_receivers_->Add(this, std::move(slow_check_notifier));
 }
 
 void RendererURLLoaderThrottle::OnCompleteCheckInternal(
@@ -178,7 +177,7 @@ void RendererURLLoaderThrottle::OnCompleteCheckInternal(
     blocked_ = true;
 
     url_checker_.reset();
-    notifier_bindings_.reset();
+    notifier_receivers_.reset();
     pending_checks_ = 0;
     pending_slow_checks_ = 0;
     delegate_->CancelWithError(GetNetErrorCodeForSafeBrowsing(),
@@ -191,7 +190,7 @@ void RendererURLLoaderThrottle::OnMojoDisconnect() {
 
   // If a service-side disconnect happens, treat all URLs as if they are safe.
   url_checker_.reset();
-  notifier_bindings_.reset();
+  notifier_receivers_.reset();
 
   pending_checks_ = 0;
 

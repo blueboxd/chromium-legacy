@@ -174,6 +174,7 @@ AesDecryptor::AesDecryptor(
       session_closed_cb_(session_closed_cb),
       session_keys_change_cb_(session_keys_change_cb),
       session_expiration_update_cb_(session_expiration_update_cb) {
+  DVLOG(1) << __func__;
   // AesDecryptor doesn't keep any persistent data, so no need to do anything
   // with |security_origin|.
   DCHECK(session_message_cb_);
@@ -182,6 +183,7 @@ AesDecryptor::AesDecryptor(
 }
 
 AesDecryptor::~AesDecryptor() {
+  DVLOG(1) << __func__;
   key_map_.clear();
 }
 

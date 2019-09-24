@@ -17,6 +17,8 @@ import static org.chromium.base.ApplicationState.HAS_RUNNING_ACTIVITIES;
 import static org.chromium.base.ApplicationState.HAS_STOPPED_ACTIVITIES;
 import static org.chromium.chrome.browser.preferences.ChromePreferenceManager.UI_THEME_SETTING_KEY;
 
+import android.os.Build;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -27,8 +29,10 @@ import org.mockito.stubbing.VoidAnswer1;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.DisableIf;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.themes.ThemePreferences;
+import org.chromium.chrome.browser.util.FeatureUtilities;
 
 /**
  * Unit tests for {@link GlobalNightModeStateController}.
@@ -101,6 +105,18 @@ public class GlobalNightModeStateControllerTest {
     }
 
     @Test
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.P)
+    public void testUpdateNightMode_PowerSaveMode_DefaultsToLight() {
+        FeatureUtilities.setNightModeDefaultToLightForTesting(true);
+
+        // Enable power save mode and verify night mode is not enabled.
+        setIsPowerSaveMode(true);
+        assertFalse(mGlobalNightModeStateController.isInNightMode());
+
+        FeatureUtilities.setNightModeDefaultToLightForTesting(null);
+    }
+
+    @Test
     public void testUpdateNightMode_SystemNightMode() {
         // Enable system night mode and verify night mode is enabled.
         setSystemNightMode(true);
@@ -109,6 +125,18 @@ public class GlobalNightModeStateControllerTest {
         // Disable system night mode and verify night mode is disabled.
         setSystemNightMode(false);
         assertFalse(mGlobalNightModeStateController.isInNightMode());
+    }
+
+    @Test
+    @DisableIf.Build(sdk_is_greater_than = Build.VERSION_CODES.P)
+    public void testUpdateNightMode_SystemNightMode_DefaultsToLight() {
+        FeatureUtilities.setNightModeDefaultToLightForTesting(true);
+
+        // Enable system night mode and verify night mode is not enabled.
+        setSystemNightMode(true);
+        assertFalse(mGlobalNightModeStateController.isInNightMode());
+
+        FeatureUtilities.setNightModeDefaultToLightForTesting(null);
     }
 
     @Test

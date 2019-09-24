@@ -10,9 +10,12 @@
 #include "components/ui_devtools/ui_element.h"
 
 namespace ui_devtools {
-namespace {
 
-using namespace ui_devtools::protocol;
+namespace CSS = protocol::CSS;
+using protocol::Array;
+using protocol::Response;
+
+namespace {
 
 const char kHeight[] = "height";
 const char kWidth[] = "width";
@@ -44,8 +47,8 @@ std::unique_ptr<CSS::SourceRange> BuildDefaultSelectorSourceRange() {
       .build();
 }
 
-std::unique_ptr<protocol::Array<int>> BuildDefaultMatchingSelectors() {
-  auto matching_selectors = std::make_unique<protocol::Array<int>>();
+std::unique_ptr<Array<int>> BuildDefaultMatchingSelectors() {
+  auto matching_selectors = std::make_unique<Array<int>>();
 
   // Add index 0 to matching delectors array, so frontend uses the class mame
   // from the selectors array as the header for the properties section
@@ -64,7 +67,7 @@ std::unique_ptr<CSS::CSSProperty> BuildCSSProperty(const std::string& name,
 
 std::unique_ptr<Array<CSS::CSSProperty>> BuildCSSProperties(
     const std::vector<UIElement::UIProperty>& properties_vector) {
-  auto css_properties = std::make_unique<Array<protocol::CSS::CSSProperty>>();
+  auto css_properties = std::make_unique<Array<CSS::CSSProperty>>();
   for (const auto& property : properties_vector) {
     css_properties->emplace_back(
         BuildCSSProperty(property.name_, property.value_));
@@ -75,36 +78,31 @@ std::unique_ptr<Array<CSS::CSSProperty>> BuildCSSProperties(
 std::unique_ptr<CSS::CSSStyle> BuildCSSStyle(
     std::string stylesheet_uid,
     const std::vector<UIElement::UIProperty>& properties) {
-  return protocol::CSS::CSSStyle::create()
+  return CSS::CSSStyle::create()
       .setRange(BuildDefaultPropertySourceRange())
       .setCssProperties(BuildCSSProperties(properties))
-      .setShorthandEntries(
-          std::make_unique<Array<protocol::CSS::ShorthandEntry>>())
+      .setShorthandEntries(std::make_unique<Array<CSS::ShorthandEntry>>())
       .setStyleSheetId(stylesheet_uid)
       .build();
 }
 
-std::unique_ptr<protocol::Array<protocol::CSS::Value>> BuildSelectors(
-    const std::string& name) {
-  auto selectors = std::make_unique<protocol::Array<protocol::CSS::Value>>();
-  selectors->emplace_back(protocol::CSS::Value::create()
+std::unique_ptr<Array<CSS::Value>> BuildSelectors(const std::string& name) {
+  auto selectors = std::make_unique<Array<CSS::Value>>();
+  selectors->emplace_back(CSS::Value::create()
                               .setText(name)
                               .setRange(BuildDefaultSelectorSourceRange())
                               .build());
   return selectors;
 }
 
-std::unique_ptr<protocol::CSS::SelectorList> BuildSelectorList(
-    const std::string& name) {
-  return protocol::CSS::SelectorList::create()
-      .setSelectors(BuildSelectors(name))
-      .build();
+std::unique_ptr<CSS::SelectorList> BuildSelectorList(const std::string& name) {
+  return CSS::SelectorList::create().setSelectors(BuildSelectors(name)).build();
 }
 
-std::unique_ptr<protocol::CSS::CSSRule> BuildCSSRule(
+std::unique_ptr<CSS::CSSRule> BuildCSSRule(
     std::string stylesheet_uid,
     const UIElement::ClassProperties& class_properties) {
-  return protocol::CSS::CSSRule::create()
+  return CSS::CSSRule::create()
       .setStyleSheetId(stylesheet_uid)
       .setSelectorList(BuildSelectorList(class_properties.class_name_))
       .setStyle(BuildCSSStyle(stylesheet_uid, class_properties.properties_))
@@ -164,8 +162,9 @@ Response ParseProperties(const std::string& style_text,
   for (size_t i = 0; i < tokens.size() - 1; i += 2) {
     const std::string& property = tokens.at(i);
     int value;
-    if (!base::StringToInt(tokens.at(i + 1), &value))
+    if (!base::StringToInt(tokens.at(i + 1), &value)) {
       return Response::Error("Unable to parse value for property=" + property);
+    }
 
     if (property == kHeight)
       bounds->set_height(std::max(0, value));
@@ -183,12 +182,12 @@ Response ParseProperties(const std::string& style_text,
   return Response::OK();
 }
 
-std::unique_ptr<protocol::CSS::CSSStyleSheetHeader>
-BuildObjectForStyleSheetInfo(std::string stylesheet_uid,
-                             std::string url_path,
-                             int line) {
-  std::unique_ptr<protocol::CSS::CSSStyleSheetHeader> result =
-      protocol::CSS::CSSStyleSheetHeader::create()
+std::unique_ptr<CSS::CSSStyleSheetHeader> BuildObjectForStyleSheetInfo(
+    std::string stylesheet_uid,
+    std::string url_path,
+    int line) {
+  std::unique_ptr<CSS::CSSStyleSheetHeader> result =
+      CSS::CSSStyleSheetHeader::create()
           .setStyleSheetId(stylesheet_uid)
           .setSourceURL(kChromiumCodeSearchSrcURL + url_path +
                         "?l=" + base::NumberToString(line))
@@ -220,8 +219,7 @@ Response CSSAgent::disable() {
 
 Response CSSAgent::getMatchedStylesForNode(
     int node_id,
-    protocol::Maybe<protocol::Array<protocol::CSS::RuleMatch>>*
-        matched_css_rules) {
+    protocol::Maybe<Array<CSS::RuleMatch>>* matched_css_rules) {
   UIElement* ui_element = dom_agent_->GetElementFromNodeId(node_id);
   if (!ui_element)
     return NodeNotFoundError(node_id);
@@ -248,8 +246,8 @@ Response CSSAgent::getStyleSheetText(const protocol::String& style_sheet_id,
     return Response::Error("Stylesheet id not found");
 
   if (GetSourceCode(sources[stylesheet_id].path_, result))
-    return protocol::Response::OK();
-  return protocol::Response::Error("Could not read source file");
+    return Response::OK();
+  return Response::Error("Could not read source file");
 }
 
 Response CSSAgent::setStyleTexts(
@@ -331,15 +329,15 @@ bool CSSAgent::SetPropertiesForUIElement(UIElement* ui_element,
   return false;
 }
 
-std::unique_ptr<protocol::Array<protocol::CSS::RuleMatch>>
-CSSAgent::BuildMatchedStyles(UIElement* ui_element) {
-  auto result = std::make_unique<protocol::Array<protocol::CSS::RuleMatch>>();
+std::unique_ptr<Array<CSS::RuleMatch>> CSSAgent::BuildMatchedStyles(
+    UIElement* ui_element) {
+  auto result = std::make_unique<Array<CSS::RuleMatch>>();
   std::vector<UIElement::ClassProperties> properties_vector =
       GetClassPropertiesWithBounds(ui_element);
 
   for (size_t i = 0; i < properties_vector.size(); i++) {
     result->emplace_back(
-        protocol::CSS::RuleMatch::create()
+        CSS::RuleMatch::create()
             .setRule(BuildCSSRule(BuildStylesheetUId(ui_element->node_id(), i),
                                   properties_vector[i]))
             .setMatchingSelectors(BuildDefaultMatchingSelectors())

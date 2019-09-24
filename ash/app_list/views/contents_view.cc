@@ -620,8 +620,10 @@ void ContentsView::Layout() {
   gfx::Rect search_box_bounds = GetSearchBoxBounds(current_state);
 
   // Update app list pages.
-  for (AppListPage* page : app_list_pages_)
+  for (AppListPage* page : app_list_pages_) {
     page->UpdatePageBoundsForState(current_state, rect, search_box_bounds);
+    page->UpdateOpacityForState(current_state);
+  }
 
   UpdateExpandArrowOpacity(current_state, false);
 
@@ -737,8 +739,17 @@ void ContentsView::UpdateYPositionAndOpacity() {
                                    search_box_bounds);
   }
 
-  if (current_state == ash::AppListState::kStateApps) {
-    GetAppsContainerView()->UpdateYPositionAndOpacity(progress,
+  if (app_list_features::IsScalableAppListEnabled() ||
+      current_state == ash::AppListState::kStateApps) {
+    // Layout the apps container at the position where it would be with apps
+    // page active with the current app list height - use apps state app list
+    // progress to aciheve that.
+    const float apps_container_progress =
+        app_list_view_->is_in_drag()
+            ? app_list_view_->GetAppListTransitionProgress(
+                  AppListView::kProgressFlagNone)
+            : progress;
+    GetAppsContainerView()->UpdateYPositionAndOpacity(apps_container_progress,
                                                       restore_opacity);
   }
 }
@@ -896,16 +907,18 @@ void ContentsView::RemoveSearchBoxUpdateObserver(
 bool ContentsView::ShouldLayoutPage(AppListPage* page,
                                     ash::AppListState current_state,
                                     ash::AppListState target_state) const {
-  if (page == horizontal_page_container_) {
-    return (current_state == ash::AppListState::kStateSearchResults &&
-            target_state == ash::AppListState::kStateApps);
-  }
-
-  if (page == search_results_page_view_) {
+  if ((page == horizontal_page_container_ &&
+       app_list_features::IsScalableAppListEnabled()) ||
+      page == search_results_page_view_) {
     return ((current_state == ash::AppListState::kStateSearchResults &&
              target_state == ash::AppListState::kStateApps) ||
             (current_state == ash::AppListState::kStateApps &&
              target_state == ash::AppListState::kStateSearchResults));
+  }
+
+  if (page == horizontal_page_container_) {
+    return (current_state == ash::AppListState::kStateSearchResults &&
+            target_state == ash::AppListState::kStateApps);
   }
 
   if (page == assistant_page_view_) {

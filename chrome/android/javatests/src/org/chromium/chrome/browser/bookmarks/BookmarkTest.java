@@ -161,7 +161,7 @@ public class BookmarkTest {
         }
     }
 
-    private boolean isItemPresentInBookmarkList(final String expectedTitle) {
+    protected boolean isItemPresentInBookmarkList(final String expectedTitle) {
         return TestThreadUtils.runOnUiThreadBlockingNoException(new Callable<Boolean>() {
             @Override
             public Boolean call() throws Exception {
@@ -531,7 +531,7 @@ public class BookmarkTest {
                 () -> mBookmarkModel.addFolder(mBookmarkModel.getDefaultFolder(), 0, title));
     }
 
-    private void removeBookmark(final BookmarkId bookmarkId) {
+    protected void removeBookmark(final BookmarkId bookmarkId) {
         TestThreadUtils.runOnUiThreadBlocking(() -> mBookmarkModel.deleteBookmark(bookmarkId));
     }
 

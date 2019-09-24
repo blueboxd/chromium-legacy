@@ -60,6 +60,10 @@ WebFrameWidgetBase::~WebFrameWidgetBase() = default;
 void WebFrameWidgetBase::BindLocalRoot(WebLocalFrame& local_root) {
   local_root_ = To<WebLocalFrameImpl>(local_root);
   local_root_->SetFrameWidget(this);
+  request_animation_after_delay_timer_.reset(
+      new TaskRunnerTimer<WebFrameWidgetBase>(
+          local_root.GetTaskRunner(TaskType::kInternalDefault), this,
+          &WebFrameWidgetBase::RequestAnimationAfterDelayTimerFired));
 }
 
 void WebFrameWidgetBase::Close() {
@@ -67,6 +71,7 @@ void WebFrameWidgetBase::Close() {
   local_root_->SetFrameWidget(nullptr);
   local_root_ = nullptr;
   client_ = nullptr;
+  request_animation_after_delay_timer_.reset();
 }
 
 WebLocalFrame* WebFrameWidgetBase::LocalRoot() const {
@@ -431,6 +436,23 @@ LocalFrame* WebFrameWidgetBase::FocusedLocalFrameInWidget() const {
 
 WebLocalFrame* WebFrameWidgetBase::FocusedWebLocalFrameInWidget() const {
   return WebLocalFrameImpl::FromFrame(FocusedLocalFrameInWidget());
+}
+
+void WebFrameWidgetBase::RequestAnimationAfterDelay(
+    const base::TimeDelta& delay) {
+  DCHECK(request_animation_after_delay_timer_.get());
+  if (request_animation_after_delay_timer_->IsActive() &&
+      request_animation_after_delay_timer_->NextFireInterval() > delay) {
+    request_animation_after_delay_timer_->Stop();
+  }
+  if (!request_animation_after_delay_timer_->IsActive()) {
+    request_animation_after_delay_timer_->StartOneShot(delay, FROM_HERE);
+  }
+}
+
+void WebFrameWidgetBase::RequestAnimationAfterDelayTimerFired(TimerBase*) {
+  if (client_)
+    client_->ScheduleAnimation();
 }
 
 base::WeakPtr<AnimationWorkletMutatorDispatcherImpl>

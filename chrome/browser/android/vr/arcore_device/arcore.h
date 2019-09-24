@@ -55,12 +55,12 @@ class ArCore {
       const mojom::XRRayPtr& ray,
       std::vector<mojom::XRHitResultPtr>* hit_results) = 0;
 
-  virtual base::Optional<int32_t> CreateAnchor(
+  virtual base::Optional<uint32_t> CreateAnchor(
       const mojom::VRPosePtr& pose) = 0;
-  virtual base::Optional<int32_t> CreateAnchor(const mojom::VRPosePtr& pose,
-                                               int32_t plane_id) = 0;
+  virtual base::Optional<uint32_t> CreateAnchor(const mojom::VRPosePtr& pose,
+                                                uint32_t plane_id) = 0;
 
-  virtual void DetachAnchor(int32_t anchor_id) = 0;
+  virtual void DetachAnchor(uint32_t anchor_id) = 0;
 
   virtual void Pause() = 0;
   virtual void Resume() = 0;

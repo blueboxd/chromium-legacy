@@ -91,7 +91,8 @@ void SVGImageChromeClient::RestoreAnimationIfNeeded() {
   image_->RestoreAnimation();
 }
 
-void SVGImageChromeClient::ScheduleAnimation(const LocalFrameView*) {
+void SVGImageChromeClient::ScheduleAnimation(const LocalFrameView*,
+                                             base::TimeDelta fire_time) {
   // Because a single SVGImage can be shared by multiple pages, we can't key
   // our svg image layout on the page's real animation frame. Therefore, we
   // run this fake animation timer to trigger layout in SVGImages. The name,
@@ -103,11 +104,11 @@ void SVGImageChromeClient::ScheduleAnimation(const LocalFrameView*) {
   // animations, but prefer a fixed, jittery, frame-delay if there're any
   // animations. Checking for pending/active animations could be more
   // stringent.
-  base::TimeDelta fire_time;
   if (image_->MaybeAnimated()) {
     if (IsSuspended())
       return;
-    fire_time = kAnimationFrameDelay;
+    if (fire_time.is_zero())
+      fire_time = kAnimationFrameDelay;
   }
   animation_timer_->StartOneShot(fire_time, FROM_HERE);
 }

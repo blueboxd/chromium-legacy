@@ -42,6 +42,19 @@
         pref="{{prefs.autofill.credit_card_enabled}}">
     </settings-toggle-button>
     <template is="dom-if"
+        if="[[isUserFIDOVerifiable_(
+            prefs.autofill.credit_card_enabled.value)]]">
+      <settings-toggle-button
+          class="settings-box first"
+          id="autofillCreditCardFIDOAuthToggle"
+          aria-label="$i18n{creditCards}" no-extension-indicator
+          label="$i18n{enableCreditCardFIDOAuthLabel}"
+          sub-label="$i18n{enableCreditCardFIDOAuthSublabel}"
+          pref="{{prefs.autofill.credit_card_fido_auth_enabled}}"
+          on-click="setFIDOAuthenticationEnabledState_">
+      </settings-toggle-button>
+    </template>
+    <template is="dom-if"
         if="[[prefs.autofill.credit_card_enabled.extensionId]]">
       <div class="settings-box continuation">
         <extension-controlled-indicator class="start"

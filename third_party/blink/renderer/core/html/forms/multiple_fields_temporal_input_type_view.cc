@@ -333,6 +333,7 @@ void MultipleFieldsTemporalInputTypeView::Trace(Visitor* visitor) {
 void MultipleFieldsTemporalInputTypeView::Blur() {
   if (DateTimeEditElement* edit = GetDateTimeEditElement())
     edit->BlurByOwner();
+  ClosePopupView();
 }
 
 scoped_refptr<ComputedStyle>

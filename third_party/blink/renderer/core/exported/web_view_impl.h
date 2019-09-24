@@ -167,6 +167,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   WebFloatSize VisualViewportSize() const override;
   void ResizeVisualViewport(const WebSize&) override;
   void Resize(const WebSize&) override;
+  WebSize GetSize() override;
   void ResetScrollAndScaleState() override;
   void SetIgnoreViewportTagScaleLimits(bool) override;
   WebSize ContentsPreferredMinimumSize() override;

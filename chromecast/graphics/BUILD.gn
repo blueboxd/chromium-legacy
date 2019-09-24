@@ -53,6 +53,8 @@ cast_source_set("graphics") {
       "cast_touch_event_gate.h",
       "cast_window_manager_aura.cc",
       "cast_window_manager_aura.h",
+      "cast_window_tree_host_aura.cc",
+      "cast_window_tree_host_aura.h",
       "gestures/cast_system_gesture_dispatcher.cc",
       "gestures/cast_system_gesture_dispatcher.h",
       "gestures/cast_system_gesture_event_handler.cc",

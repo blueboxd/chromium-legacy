@@ -21,9 +21,9 @@ class XRAnchor : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  XRAnchor(int32_t id, XRSession* session);
+  XRAnchor(uint32_t id, XRSession* session);
 
-  XRAnchor(int32_t id,
+  XRAnchor(uint32_t id,
            XRSession* session,
            const device::mojom::blink::XRAnchorDataPtr& anchor_data,
            double timestamp);
@@ -54,7 +54,7 @@ class XRAnchor : public ScriptWrappable {
                double timestamp);
   };
 
-  const int32_t id_;
+  const uint32_t id_;
 
   Member<XRSession> session_;
 

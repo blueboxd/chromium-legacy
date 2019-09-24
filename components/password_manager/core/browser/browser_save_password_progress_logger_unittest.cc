@@ -14,6 +14,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using Logger = autofill::SavePasswordProgressLogger;
+
 namespace password_manager {
 
 namespace {
@@ -92,11 +94,10 @@ TEST_F(BrowserSavePasswordProgressLoggerTest, LogFormSignatures) {
   // Add a server prediction for the text field.
   form_structure.field(1)->set_server_type(autofill::EMAIL_ADDRESS);
 
-  logger.LogFormStructure(
-      autofill::SavePasswordProgressLogger::STRING_FORM_VOTES, form_structure);
+  logger.LogFormStructure(Logger::STRING_PASSWORD_FORM_VOTE, form_structure);
   SCOPED_TRACE(testing::Message() << "Log string = ["
                                   << logger.accumulated_log() << "]");
-  EXPECT_TRUE(logger.LogsContainSubstring("Form votes: {"));
+  EXPECT_TRUE(logger.LogsContainSubstring("PasswordForm vote: {"));
   EXPECT_TRUE(logger.LogsContainSubstring("Signature of form"));
   EXPECT_TRUE(logger.LogsContainSubstring("Origin: http://myform.com"));
   EXPECT_TRUE(logger.LogsContainSubstring("Form fields:"));
@@ -113,8 +114,7 @@ TEST_F(BrowserSavePasswordProgressLoggerTest, LogFormSignatures) {
 TEST_F(BrowserSavePasswordProgressLoggerTest, LogFormData) {
   MockLogManager log_manager;
   TestLogger logger(&log_manager);
-  logger.LogFormData(
-      autofill::SavePasswordProgressLogger::STRING_FORM_PARSING_INPUT, form_);
+  logger.LogFormData(Logger::STRING_FORM_PARSING_INPUT, form_);
   SCOPED_TRACE(testing::Message()
                << "Log string = [" << logger.accumulated_log() << "]");
   EXPECT_TRUE(logger.LogsContainSubstring("Origin: http://myform.com"));

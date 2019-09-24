@@ -5904,6 +5904,11 @@ Unknown properties are collapsed to zero. -->
   <int value="1" label="Completed"/>
 </enum>
 
+<enum name="BooleanCompositorCSSPaint">
+  <int value="0" label="A CSS Paint is fall back on the main thread"/>
+  <int value="1" label="A CSS Paint is painted on the compositor thread"/>
+</enum>
+
 <enum name="BooleanConfirmed">
   <int value="0" label="Not Confirmed"/>
   <int value="1" label="Confirmed"/>
@@ -20653,6 +20658,7 @@ Called by update_net_error_codes.py.-->
   <int value="1381" label="AUTOTESTPRIVATE_GETARCSTARTTIME"/>
   <int value="1382" label="AUTOTESTPRIVATE_SETOVERVIEWMODESTATE"/>
   <int value="1383" label="AUTOTESTPRIVATE_TAKESCREENSHOTFORDISPLAY"/>
+  <int value="1384" label="AUTOFILLPRIVATE_SETCREDITCARDFIDOAUTHENABLEDSTATE"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -32667,6 +32673,19 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   </int>
 </enum>
 
+<enum name="IppAttribute">
+  <int value="0" label="confirmation-sheet-print"/>
+  <int value="1" label="finishings"/>
+  <int value="2" label="ipp-attribute-fidelity"/>
+  <int value="3" label="job-name"/>
+  <int value="4" label="job-priority"/>
+  <int value="5" label="job-sheets"/>
+  <int value="6" label="multiple-document-handling"/>
+  <int value="7" label="orientation-requested"/>
+  <int value="8" label="output-bin"/>
+  <int value="9" label="print-quality"/>
+</enum>
+
 <enum name="IPPermissionStatus">
   <int value="0" label="Unknown"/>
   <int value="1" label="Not requested"/>
@@ -34816,6 +34835,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-2020721975" label="smart-virtual-keyboard"/>
   <int value="-2020024440" label="scroll-end-effect"/>
   <int value="-2017953534" label="enable-hosted-app-shim-creation"/>
+  <int value="-2015293660" label="AccessibilityExposeDisplayNone:disabled"/>
   <int value="-2013551096" label="ViewsSimplifiedFullscreenUI:disabled"/>
   <int value="-2013124655" label="EnableEphemeralFlashPermission:disabled"/>
   <int value="-2012990889" label="SpannableInlineAutocomplete:enabled"/>
@@ -34938,6 +34958,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
       label="enable-zero-suggest-most-visited-without-serp"/>
   <int value="-1886713568"
       label="AutofillGetPaymentsIdentityFromSync:disabled"/>
+  <int value="-1885074774" label="ShelfScrollable:enabled"/>
   <int value="-1883170077" label="EnableHtmlBaseUsernameDetector:disabled"/>
   <int value="-1882330924" label="NTPArticleSuggestions:enabled"/>
   <int value="-1881250251" label="InterestFeedContentSuggestions:disabled"/>
@@ -35087,7 +35108,6 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1684773837" label="TabEngagementReportingAndroid:disabled"/>
   <int value="-1684123448" label="disable-best-effort-tasks"/>
   <int value="-1682843294" label="DataReductionProxyDecidesTransform:enabled"/>
-  <int value="-1681832882" label="shelf-scrollable"/>
   <int value="-1679624666" label="NtpRealbox:enabled"/>
   <int value="-1677715989" label="UnifiedConsent:disabled"/>
   <int value="-1676256979"
@@ -35547,6 +35567,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1118921985" label="ForceEnableSystemAec:enabled"/>
   <int value="-1114080030" label="ResourceLoadingHints:enabled"/>
   <int value="-1112782121" label="AndroidSigninPromos:disabled"/>
+  <int value="-1109826787" label="AccessibilityExposeDisplayNone:enabled"/>
   <int value="-1107762575" label="enable-data-reduction-proxy-config-client"/>
   <int value="-1107103335" label="FsNosymfollow:enabled"/>
   <int value="-1105637876" label="FilteringScrollPrediction:enabled"/>
@@ -35583,6 +35604,7 @@ from previous Chrome versions.
   <int value="-1074257709" label="ScalableAppList:enabled"/>
   <int value="-1074107607" label="data-reduction-proxy-experiment"/>
   <int value="-1073479583" label="ShowArcFilesApp:disabled"/>
+  <int value="-1069628248" label="OmniboxZeroSuggestionsOnSERP:enabled"/>
   <int value="-1069453905" label="CCTModuleUseIntentExtras:disabled"/>
   <int value="-1067635248" label="SpeculativeResourcePrefetching:disabled"/>
   <int value="-1064733740" label="ui-show-composited-layer-borders"/>
@@ -35801,6 +35823,7 @@ from previous Chrome versions.
   <int value="-787969387" label="HTTPSServerPreviewsUsingURLLoader:enabled"/>
   <int value="-787876637" label="HomeLauncherGestures:enabled"/>
   <int value="-787426248" label="ChromeHomeSurvey:disabled"/>
+  <int value="-787238455" label="OmniboxZeroSuggestionsOnSERP:disabled"/>
   <int value="-780798969" label="disable-single-click-autofill"/>
   <int value="-778126349" label="DownloadsLocationChange:enabled"/>
   <int value="-777126951" label="FontSrcLocalMatching:enabled"/>
@@ -36541,6 +36564,7 @@ from previous Chrome versions.
   <int value="223591010" label="CastMediaRouteProvider:enabled"/>
   <int value="223662457" label="BackgroundLoadingForDownloads:enabled"/>
   <int value="229476202" label="CryptAuthV2Enrollment:enabled"/>
+  <int value="229877058" label="ShelfScrollable:disabled"/>
   <int value="233721248" label="DownloadRename:disabled"/>
   <int value="237570976" label="CommandLineOnNonRooted:disabled"/>
   <int value="237964589"

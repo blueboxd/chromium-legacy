@@ -193,6 +193,7 @@ ModelTypeSet SyncUserSettingsImpl::GetPreferredDataTypes() const {
   if (prefs_->IsLocalSyncEnabled()) {
     types.Remove(APP_LIST);
     types.Remove(SECURITY_EVENTS);
+    types.Remove(SEND_TAB_TO_SELF);
     types.Remove(USER_CONSENTS);
     types.Remove(USER_EVENTS);
   }

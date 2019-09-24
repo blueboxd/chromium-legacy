@@ -42,7 +42,7 @@ void CalculateWindowStylesFromInitParams(
   if (params.show_state == ui::SHOW_STATE_MINIMIZED)
     *style |= WS_MINIMIZE;
   if (!params.accept_events)
-    *ex_style |= WS_EX_TRANSPARENT | WS_EX_LAYERED;
+    *ex_style |= WS_EX_TRANSPARENT;
   DCHECK_NE(Widget::InitParams::ACTIVATABLE_DEFAULT, params.activatable);
   if (params.activatable == Widget::InitParams::ACTIVATABLE_NO)
     *ex_style |= WS_EX_NOACTIVATE;

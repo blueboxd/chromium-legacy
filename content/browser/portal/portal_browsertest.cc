@@ -609,13 +609,6 @@ IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, DispatchInputEvent) {
 // Tests that input events performed over on OOPIF inside a portal are targeted
 // to the portal's parent.
 IN_PROC_BROWSER_TEST_P(PortalHitTestBrowserTest, NoInputToOOPIFInPortal) {
-  if (features::IsVizHitTestingSurfaceLayerEnabled()) {
-    // TODO(1002228): Enable this test for the VizHitTestSurfaceLayer case once
-    // this issue is fixed.
-    LOG(WARNING) << "Skipping test due to crbug.com/1002228";
-    return;
-  }
-
   EXPECT_TRUE(NavigateToURL(
       shell(), embedded_test_server()->GetURL("portal.test", "/title1.html")));
   WebContentsImpl* web_contents_impl =

@@ -7,6 +7,9 @@
 #include <stddef.h>
 
 #include <memory>
+#include <string>
+#include <utility>
+#include <vector>
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
@@ -332,11 +335,8 @@ WebContents* TabWebContentsDelegateAndroid::OpenURLFromTab(
   nav_params.source_contents = source;
   nav_params.window_action = NavigateParams::SHOW_WINDOW;
   nav_params.user_gesture = params.user_gesture;
-  if ((params.disposition == WindowOpenDisposition::NEW_POPUP ||
-       params.disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
-       params.disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
-       params.disposition == WindowOpenDisposition::NEW_WINDOW) &&
-      MaybeBlockPopup(source, base::Optional<GURL>(), &nav_params, &params,
+  if (ConsiderForPopupBlocking(params.disposition) &&
+      MaybeBlockPopup(source, nullptr, &nav_params, &params,
                       blink::mojom::WindowFeatures())) {
     return nullptr;
   }

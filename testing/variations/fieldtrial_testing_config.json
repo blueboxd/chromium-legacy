@@ -5389,6 +5389,24 @@
             ]
         }
     ],
+    "ScrollResamplingRollout": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "predictor": "linear_resampling"
+                    },
+                    "enable_features": [
+                        "ResamplingScrollEvents"
+                    ]
+                }
+            ]
+        }
+    ],
     "SearchEnginePromo": [
         {
             "platforms": [

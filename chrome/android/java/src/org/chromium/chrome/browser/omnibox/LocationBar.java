@@ -199,12 +199,12 @@ public interface LocationBar extends UrlBarDelegate {
     void setUnfocusedWidth(int unfocusedWidth);
 
     /**
-     * Update the information required to display the search engine logo in the omnibox.
-     *
-     * @param shouldShowSearchEngineLogo True if we should show the search engine logo in the
-     *         omnibox.
-     * @param isSearchEngineGoogle True if the default search engine is Google.
-     * @param searchEngineUrl The url for the search engine, used to fetch the favicon.
+     * Called when the default search engine changes.
+     * @param shouldShowSearchEngineLogo True if the search engine should be shown. Prefer to call
+     *                                   {@link SearchEngineLogoUtils#shouldShowSearchEngineLogo}.
+     * @param isSearchEngineGoogle True if the current search engine is Google.
+     * @param searchEngineUrl The url for the current search engine's logo, usually just a base url
+     *                        that we use to fetch the favicon.
      */
     void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl);

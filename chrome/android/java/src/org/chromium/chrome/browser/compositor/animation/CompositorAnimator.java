@@ -10,12 +10,6 @@ import android.animation.Animator;
 import android.animation.TimeInterpolator;
 import android.animation.ValueAnimator;
 import android.provider.Settings;
-import android.support.v4.view.animation.FastOutLinearInInterpolator;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
-import android.view.animation.AccelerateInterpolator;
-import android.view.animation.DecelerateInterpolator;
-import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.NonNull;
@@ -25,6 +19,7 @@ import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
 import org.chromium.base.Supplier;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -110,19 +105,6 @@ public class CompositorAnimator extends Animator {
      */
     private boolean mDidUpdateToCompletion;
 
-    /** Reference to one of each standard interpolator to avoid allocations. */
-    public static final AccelerateInterpolator ACCELERATE_INTERPOLATOR =
-            new AccelerateInterpolator();
-    public static final DecelerateInterpolator DECELERATE_INTERPOLATOR =
-            new DecelerateInterpolator();
-    public static final FastOutSlowInInterpolator FAST_OUT_SLOW_IN_INTERPOLATOR =
-            new FastOutSlowInInterpolator();
-    public static final LinearOutSlowInInterpolator LINEAR_OUT_SLOW_IN_INTERPOLATOR =
-            new LinearOutSlowInInterpolator();
-    public static final FastOutLinearInInterpolator FAST_OUT_LINEAR_IN_INTERPOLATOR =
-            new FastOutLinearInInterpolator();
-    public static final LinearInterpolator LINEAR_INTERPOLATOR = new LinearInterpolator();
-
     /**
      * A utility for creating a basic animator.
      * @param handler The {@link CompositorAnimationHandler} responsible for running the animation.
@@ -201,7 +183,7 @@ public class CompositorAnimator extends Animator {
             final T target, final FloatProperty<T> property, float startValue, float endValue,
             long durationMs) {
         return ofFloatProperty(handler, target, property, startValue, endValue, durationMs,
-                DECELERATE_INTERPOLATOR);
+                Interpolators.DECELERATE_INTERPOLATOR);
     }
 
     /**
@@ -218,7 +200,7 @@ public class CompositorAnimator extends Animator {
             final T target, final FloatProperty<T> property, Supplier<Float> startValue,
             Supplier<Float> endValue, long durationMs) {
         return ofFloatProperty(handler, target, property, startValue, endValue, durationMs,
-                DECELERATE_INTERPOLATOR);
+                Interpolators.DECELERATE_INTERPOLATOR);
     }
 
     /** An interface for listening for frames of an animation. */
@@ -239,7 +221,7 @@ public class CompositorAnimator extends Animator {
 
         // The default interpolator is decelerate; this mimics the existing ChromeAnimation
         // behavior.
-        mTimeInterpolator = DECELERATE_INTERPOLATOR;
+        mTimeInterpolator = Interpolators.DECELERATE_INTERPOLATOR;
 
         // By default, animate for 0 to 1.
         setValues(0, 1);

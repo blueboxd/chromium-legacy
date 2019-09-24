@@ -566,10 +566,6 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
   // Helper methods.
   bool WasQuicRecentlyBroken(const QuicSessionKey& session_key) const;
 
-  bool CryptoConfigCacheIsEmpty(
-      const quic::QuicServerId& server_id,
-      const NetworkIsolationKey& network_isolation_key);
-
   // Starts an asynchronous job for cert verification if
   // |params_.race_cert_verification| is enabled and if there are cached certs
   // for the given |server_id|.
@@ -629,6 +625,10 @@ class NET_EXPORT_PRIVATE QuicStreamFactory
       const NetworkIsolationKey& network_isolation_key,
       int cert_verify_flags,
       const NetLogWithSource& net_log);
+
+  bool CryptoConfigCacheIsEmptyForTesting(
+      const quic::QuicServerId& server_id,
+      const NetworkIsolationKey& network_isolation_key);
 
   // Whether QUIC is known to work on current network. This is true when QUIC is
   // expected to work in general, rather than whether QUIC was broken / recently

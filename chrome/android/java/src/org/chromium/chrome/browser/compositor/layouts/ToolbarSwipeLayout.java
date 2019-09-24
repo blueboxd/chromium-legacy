@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.util.MathUtils;
 import org.chromium.ui.base.LocalizationUtils;
 import org.chromium.ui.resources.ResourceManager;
@@ -281,7 +282,7 @@ public class ToolbarSwipeLayout extends Layout {
             float progress = mOffset / getWidth();
             float direction = Math.signum(progress);
             float smoothedProgress =
-                    CompositorAnimator.DECELERATE_INTERPOLATOR.getInterpolation(Math.abs(progress));
+                    Interpolators.DECELERATE_INTERPOLATOR.getInterpolation(Math.abs(progress));
 
             float maxSlide = getWidth() / 5.f;
             rightX = direction * smoothedProgress * maxSlide;

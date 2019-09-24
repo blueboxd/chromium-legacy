@@ -265,7 +265,8 @@ abstract class BookmarkRow extends SelectableItemView<BookmarkId>
     @Override
     public void onSearchStateSet() {}
 
-    boolean isItemSelected() {
+    @VisibleForTesting
+    public boolean isItemSelected() {
         return mDelegate.getSelectionDelegate().isItemSelected(mBookmarkId);
     }
 

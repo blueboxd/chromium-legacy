@@ -28,6 +28,7 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     gpu::SurfaceHandle surface_handle)
     : BrowserCompositorOutputSurface(std::move(context)),
       surface_handle_(surface_handle) {
+  capabilities_.only_invalidates_damage_rect = false;
   if (capabilities_.uses_default_gl_framebuffer) {
     capabilities_.flipped_output_surface =
         context_provider()->ContextCapabilities().flips_vertically;

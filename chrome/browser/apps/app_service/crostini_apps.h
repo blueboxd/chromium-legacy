@@ -17,6 +17,7 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class PrefChangeRegistrar;
 class Profile;
@@ -33,11 +34,12 @@ class CrostiniApps : public KeyedService,
   CrostiniApps();
   ~CrostiniApps() override;
 
-  void Initialize(const apps::mojom::AppServicePtr& app_service,
+  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service,
                   Profile* profile);
 
-  void ReInitializeForTesting(const apps::mojom::AppServicePtr& app_service,
-                              Profile* profile);
+  void ReInitializeForTesting(
+      const mojo::Remote<apps::mojom::AppService>& app_service,
+      Profile* profile);
 
  private:
   enum class PublishAppIDType {

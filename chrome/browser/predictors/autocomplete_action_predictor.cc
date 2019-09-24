@@ -25,7 +25,6 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/in_memory_database.h"
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/autocomplete_result.h"
@@ -74,8 +73,7 @@ AutocompleteActionPredictor::AutocompleteActionPredictor(Profile* profile)
     : profile_(profile),
       main_profile_predictor_(NULL),
       incognito_predictor_(NULL),
-      initialized_(false),
-      history_service_observer_(this) {
+      initialized_(false) {
   if (profile_->IsOffTheRecord()) {
     main_profile_predictor_ = AutocompleteActionPredictorFactory::GetForProfile(
         profile_->GetOriginalProfile());

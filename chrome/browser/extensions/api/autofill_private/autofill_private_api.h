@@ -208,6 +208,27 @@ class AutofillPrivateLogServerCardLinkClickedFunction
   DISALLOW_COPY_AND_ASSIGN(AutofillPrivateLogServerCardLinkClickedFunction);
 };
 
+class AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction
+    : public ExtensionFunction {
+ public:
+  AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction();
+  DECLARE_EXTENSION_FUNCTION(
+      "autofillPrivate.setCreditCardFIDOAuthEnabledState",
+      AUTOFILLPRIVATE_SETCREDITCARDFIDOAUTHENABLEDSTATE)
+
+ protected:
+  ~AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(
+      AutofillPrivateSetCreditCardFIDOAuthEnabledStateFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_AUTOFILL_PRIVATE_AUTOFILL_PRIVATE_API_H_

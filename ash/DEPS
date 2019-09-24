@@ -66,6 +66,7 @@ include_rules = [
   # TODO(https://crbug.com/644355): Eliminate this.
   "+chromeos/dbus/shill",
   "+chromeos/dbus/system_clock",
+  "+chromeos/dbus/usb",
   # TODO(https://crbug.com/644355): Eliminate this.
   "+chromeos/network",
   "+chromeos/services/assistant/public" ,

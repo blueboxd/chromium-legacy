@@ -80,6 +80,7 @@ class CONTENT_EXPORT NavigationControllerImpl : public NavigationController {
   void GoToIndex(int index) override;
   void GoToOffset(int offset) override;
   bool RemoveEntryAtIndex(int index) override;
+  void PruneForwardEntries() override;
   const SessionStorageNamespaceMap& GetSessionStorageNamespaceMap() override;
   SessionStorageNamespace* GetDefaultSessionStorageNamespace() override;
   bool NeedsReload() override;

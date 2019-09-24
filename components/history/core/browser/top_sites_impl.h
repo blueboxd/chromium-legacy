@@ -125,7 +125,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   // Takes |urls|, produces it's copy in |out| after removing blacklisted URLs.
   // Also ensures we respect the maximum number TopSites URLs.
-  void ApplyBlacklist(const MostVisitedURLList& urls, MostVisitedURLList* out);
+  MostVisitedURLList ApplyBlacklist(const MostVisitedURLList& urls);
 
   // Returns an MD5 hash of the URL. Hashing is required for blacklisted URLs.
   static std::string GetURLHash(const GURL& url);
@@ -133,7 +133,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // Updates URLs in |cache_| and the db (in the background). The URLs in
   // |new_top_sites| replace those in |cache_|. All mutations to cache_ *must*
   // go through this. Should be called from the UI thread.
-  void SetTopSites(const MostVisitedURLList& new_top_sites,
+  void SetTopSites(MostVisitedURLList new_top_sites,
                    const CallLocation location);
 
   // Returns the number of most visited results to request from history. This
@@ -153,7 +153,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
 
   // Callback from TopSites with the list of top sites. Should be called from
   // the UI thread.
-  void OnGotMostVisitedURLs(const scoped_refptr<MostVisitedThreadSafe>& sites);
+  void OnGotMostVisitedURLs(MostVisitedURLList sites);
 
   // Called when history service returns a list of top URLs.
   void OnTopSitesAvailableFromHistory(MostVisitedURLList data);
@@ -188,7 +188,7 @@ class TopSitesImpl : public TopSites, public HistoryServiceObserver {
   // The pending requests for the top sites list. Can only be non-empty at
   // startup. After we read the top sites from the DB, we'll always have a
   // cached list and be able to run callbacks immediately.
-  PendingCallbacks pending_callbacks_;
+  PendingCallbacks pending_callbacks_ GUARDED_BY(lock_);
 
   // URL List of prepopulated page.
   const PrepopulatedPageList prepopulated_pages_;

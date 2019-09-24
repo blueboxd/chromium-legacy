@@ -32,9 +32,7 @@ class VIEWS_EXPORT ScrollBarViews : public ScrollBar, public ButtonListener {
 
  protected:
   // View overrides:
-  void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
-  gfx::Size CalculatePreferredSize() const override;
 
   // ScrollBar overrides:
   int GetThickness() const override;
@@ -47,8 +45,6 @@ class VIEWS_EXPORT ScrollBarViews : public ScrollBar, public ButtonListener {
   gfx::Rect GetTrackBounds() const override;
 
  private:
-  static int GetHorizontalScrollBarHeight(const ui::NativeTheme* theme);
-
   // The scroll bar buttons (Up/Down, Left/Right).
   Button* prev_button_;
   Button* next_button_;

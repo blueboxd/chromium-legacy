@@ -67,7 +67,7 @@ var tests = [
 
     // Clicking on the plugin should close the bookmarks menu.
     chrome.test.assertFalse(dropdown.dropdownOpen);
-    MockInteractions.tap(dropdown.$.button);
+    dropdown.$.button.click();
     chrome.test.assertTrue(dropdown.dropdownOpen);
     // Generate pointer event manually, as MockInteractions doesn't include
     // this.
@@ -75,7 +75,7 @@ var tests = [
     chrome.test.assertFalse(dropdown.dropdownOpen,
         "Clicking plugin closes dropdown");
 
-    MockInteractions.tap(dropdown.$.button);
+    dropdown.$.button.click();
     chrome.test.assertTrue(dropdown.dropdownOpen);
     MockInteractions.pressAndReleaseKeyOn(document, ESC_KEY);
     chrome.test.assertFalse(dropdown.dropdownOpen,

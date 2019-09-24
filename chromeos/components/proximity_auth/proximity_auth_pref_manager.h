@@ -57,6 +57,11 @@ class ProximityAuthPrefManager {
   virtual void SetIsChromeOSLoginEnabled(bool is_enabled) = 0;
   virtual bool IsChromeOSLoginEnabled() const = 0;
 
+  // Setter and getter for whether the "Signin with Smart Lock is disabled"
+  // message on the login screen has been shown.
+  virtual void SetHasShownLoginDisabledMessage(bool has_shown) = 0;
+  virtual bool HasShownLoginDisabledMessage() const = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthPrefManager);
 };

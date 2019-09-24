@@ -80,6 +80,7 @@ void AndroidSystemProducer::NewDataSourceAdded(
   new_registration.set_name(data_source->name());
   new_registration.set_will_notify_on_start(true);
   new_registration.set_will_notify_on_stop(true);
+  new_registration.set_handles_incremental_state_clear(true);
   service_->RegisterDataSource(new_registration);
 }
 

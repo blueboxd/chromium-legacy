@@ -123,14 +123,8 @@ void AuthenticationService::Shutdown() {
 }
 
 void AuthenticationService::OnApplicationWillEnterForeground() {
-  // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
-  NSLog(@"%s %d", __FUNCTION__, __LINE__);
-
   if (identity_manager_observer_.IsObservingSources())
     return;
-
-  // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
-  NSLog(@"%s %d", __FUNCTION__, __LINE__);
 
   identity_manager_observer_.Add(identity_manager_);
 
@@ -171,14 +165,8 @@ void AuthenticationService::OnApplicationWillEnterForeground() {
 }
 
 void AuthenticationService::OnApplicationDidEnterBackground() {
-  // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
-  NSLog(@"%s %d:", __FUNCTION__, __LINE__);
-
   if (!identity_manager_observer_.IsObservingSources())
     return;
-
-  // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
-  NSLog(@"%s %d:", __FUNCTION__, __LINE__);
 
   // Stop observing |identity_manager_| when in the background. Note that
   // this allows checking whether the app is in background without having a
@@ -199,9 +187,6 @@ bool AuthenticationService::ShouldPromptForSignIn() const {
 }
 
 void AuthenticationService::ComputeHaveAccountsChanged(bool should_prompt) {
-  // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
-  NSLog(@"%s %d", __FUNCTION__, __LINE__);
-
   // Load accounts from preference before synchronizing the accounts with
   // the system, otherwiser we would never detect any changes to the list
   // of accounts.
@@ -220,29 +205,9 @@ void AuthenticationService::ComputeHaveAccountsChanged(bool should_prompt) {
   std::sort(new_accounts.begin(), new_accounts.end());
 
   have_accounts_changed_ = old_accounts != new_accounts;
-
-  // Temporary log the lists of accounts used to compute
-  // |have_accounts_changed_|.
-  NSMutableArray* old_accounts_array =
-      [NSMutableArray arrayWithCapacity:old_accounts.size()];
-  for (const std::string& old_account : old_accounts)
-    [old_accounts_array addObject:base::SysUTF8ToNSString(old_account)];
-  NSMutableArray* new_accounts_array =
-      [NSMutableArray arrayWithCapacity:new_accounts.size()];
-  for (const std::string& new_account : new_accounts)
-    [new_accounts_array addObject:base::SysUTF8ToNSString(new_account)];
-
-  // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
-  NSLog(@"%s %d: have_accounts_changed = %s"
-         " [ old accounts = %@ ], [ new account = %@ ]",
-        __FUNCTION__, __LINE__, have_accounts_changed_ ? "true" : "false",
-        old_accounts_array, new_accounts_array);
 }
 
 bool AuthenticationService::HaveAccountsChanged() const {
-  // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
-  NSLog(@"%s %d: have_accounts_changed = %s", __FUNCTION__, __LINE__,
-        have_accounts_changed_ ? "true" : "false");
   return have_accounts_changed_;
 }
 
@@ -282,17 +247,6 @@ void AuthenticationService::StoreAccountsInPrefs() {
   std::vector<base::Value> accounts_pref_value;
   for (const CoreAccountInfo& account_info : accounts)
     accounts_pref_value.emplace_back(account_info.account_id.id);
-
-  // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
-  NSMutableArray* accounts_pref_value_array =
-      [NSMutableArray arrayWithCapacity:accounts_pref_value.size()];
-  for (const base::Value& account : accounts_pref_value) {
-    [accounts_pref_value_array
-        addObject:base::SysUTF8ToNSString(account.GetString())];
-  }
-  NSLog(@"%s %d: accounts = %@", __FUNCTION__, __LINE__,
-        accounts_pref_value_array);
-
   pref_service_->Set(prefs::kSigninLastAccounts,
                      base::Value(std::move(accounts_pref_value)));
 }

@@ -4,14 +4,12 @@
 
 from selenium import webdriver
 
+import test_util
+
 testSite = "http://www.popuptest.com/popuptest1.html"
 options = webdriver.ChromeOptions()
 options.add_experimental_option('excludeSwitches', ['disable-popup-blocking'])
-exe_path = "C:/ProgramData/chocolatey/lib/chromedriver/tools/chromedriver.exe"
-driver = webdriver.Chrome(
-    exe_path,
-    chrome_options=options,
-    service_args=["--verbose", r"--log-path=c:\temp\chromedriver.log"])
+driver = test_util.create_chrome_webdriver(chrome_options=options)
 driver.implicitly_wait(5)
 driver.get(testSite)
 handles = driver.window_handles

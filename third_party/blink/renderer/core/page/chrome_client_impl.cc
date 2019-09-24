@@ -429,7 +429,8 @@ void ChromeClientImpl::InvalidateRect(const IntRect& update_rect) {
     web_view_->InvalidateRect(update_rect);
 }
 
-void ChromeClientImpl::ScheduleAnimation(const LocalFrameView* frame_view) {
+void ChromeClientImpl::ScheduleAnimation(const LocalFrameView* frame_view,
+                                         base::TimeDelta delay) {
   LocalFrame& frame = frame_view->GetFrame();
   WebLocalFrameImpl* web_frame = WebLocalFrameImpl::FromFrame(frame);
   DCHECK(web_frame);
@@ -440,9 +441,13 @@ void ChromeClientImpl::ScheduleAnimation(const LocalFrameView* frame_view) {
   // WebFrameWidget needs to be initialized before initializing the core frame?
   WebFrameWidgetBase* widget = web_frame->LocalRootFrameWidget();
   if (widget) {
-    // LocalRootFrameWidget() is a WebWidget, its client is the embedder.
-    WebWidgetClient* web_widget_client = widget->Client();
-    web_widget_client->ScheduleAnimation();
+    if (delay.is_zero()) {
+      // LocalRootFrameWidget() is a WebWidget, its client is the embedder.
+      WebWidgetClient* web_widget_client = widget->Client();
+      web_widget_client->ScheduleAnimation();
+    } else {
+      widget->RequestAnimationAfterDelay(delay);
+    }
   }
 }
 

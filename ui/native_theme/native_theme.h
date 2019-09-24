@@ -466,6 +466,9 @@ class NATIVE_THEME_EXPORT NativeTheme {
 
   virtual const std::map<SystemThemeColor, SkColor>& GetSystemColors() const;
 
+  base::Optional<SkColor> GetSystemColorFromMap(
+      SystemThemeColor theme_color) const;
+
   bool HasDifferentSystemColors(
       const std::map<SystemThemeColor, SkColor>& colors) const;
 

@@ -121,8 +121,6 @@ class HttpStreamFactory::JobController
                         const ProxyInfo& used_proxy_info,
                         HttpAuthController* auth_controller) override;
 
-  bool OnInitConnection(const ProxyInfo& proxy_info) override;
-
   // Invoked when the |job| finishes pre-connecting sockets.
   void OnPreconnectsComplete(Job* job) override;
 

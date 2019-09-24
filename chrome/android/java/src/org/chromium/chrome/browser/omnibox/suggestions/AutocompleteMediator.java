@@ -553,7 +553,8 @@ class AutocompleteMediator
         if (!isUrlSuggestion) refineText = TextUtils.concat(refineText, " ").toString();
 
         mDelegate.setOmniboxEditingText(refineText);
-        onTextChangedForAutocomplete();
+        onTextChanged(mUrlBarEditingTextProvider.getTextWithoutAutocomplete(),
+                mUrlBarEditingTextProvider.getTextWithAutocomplete());
         if (isUrlSuggestion) {
             RecordUserAction.record("MobileOmniboxRefineSuggestion.Url");
         } else {
@@ -713,7 +714,7 @@ class AutocompleteMediator
      * Notifies the autocomplete system that the text has changed that drives autocomplete and the
      * autocomplete suggestions should be updated.
      */
-    public void onTextChangedForAutocomplete() {
+    public void onTextChanged(String textWithoutAutocomplete, String textWithAutocomplete) {
         // crbug.com/764749
         Log.w(TAG, "onTextChangedForAutocomplete");
 
@@ -729,7 +730,7 @@ class AutocompleteMediator
         }
 
         stopAutocomplete(false);
-        if (TextUtils.isEmpty(mUrlBarEditingTextProvider.getTextWithoutAutocomplete())) {
+        if (TextUtils.isEmpty(textWithoutAutocomplete)) {
             // crbug.com/764749
             Log.w(TAG, "onTextChangedForAutocomplete: url is empty");
             hideSuggestions();
@@ -737,8 +738,6 @@ class AutocompleteMediator
         } else {
             assert mRequestSuggestions == null : "Multiple omnibox requests in flight.";
             mRequestSuggestions = () -> {
-                String textWithoutAutocomplete =
-                        mUrlBarEditingTextProvider.getTextWithoutAutocomplete();
                 boolean preventAutocomplete = !mUrlBarEditingTextProvider.shouldAutocomplete();
                 mRequestSuggestions = null;
 

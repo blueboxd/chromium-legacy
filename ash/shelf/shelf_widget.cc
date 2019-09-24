@@ -29,6 +29,7 @@
 #include "ash/shell.h"
 #include "ash/system/status_area_layout_manager.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/command_line.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "ui/compositor/layer.h"
@@ -202,8 +203,12 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
   const ShelfBackgroundType background_type =
       shelf_widget_->GetBackgroundType();
 
-  if (!opaque_background_.visible())
-    opaque_background_.SetVisible(true);
+  bool show_opaque_background =
+      !Shell::Get()->tablet_mode_controller()->InTabletMode() ||
+      ShelfConfig::Get()->is_in_app() ||
+      !chromeos::switches::ShouldShowShelfHotseat();
+  if (show_opaque_background != opaque_background_.visible())
+    opaque_background_.SetVisible(show_opaque_background);
 
   // Extend the opaque layer a little bit to handle "overshoot" gestures
   // gracefully (the user drags the shelf further than it can actually go).

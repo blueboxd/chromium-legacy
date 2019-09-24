@@ -25,7 +25,6 @@ import android.os.Build;
 import android.os.SystemClock;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.support.v4.view.ViewCompat;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.support.v7.graphics.drawable.DrawableWrapper;
 import android.util.AttributeSet;
 import android.util.Property;
@@ -38,8 +37,6 @@ import android.view.ViewDebug;
 import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.ViewTreeObserver;
-import android.view.animation.Interpolator;
-import android.view.animation.LinearInterpolator;
 import android.widget.FrameLayout;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -72,6 +69,7 @@ import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
 import org.chromium.chrome.browser.toolbar.TabSwitcherDrawable;
 import org.chromium.chrome.browser.toolbar.top.TopToolbarCoordinator.UrlExpansionObserver;
 import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.util.MathUtils;
@@ -125,9 +123,6 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
             })
 
     static final int LOCATION_BAR_TRANSPARENT_BACKGROUND_ALPHA = 51;
-
-    private static final Interpolator NTP_SEARCH_BOX_EXPANSION_INTERPOLATOR =
-            new FastOutSlowInInterpolator();
 
     private TabCountProvider mTabCountProvider;
 
@@ -1168,8 +1163,9 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // Linearly interpolate between the bounds of the search box on the NTP and the omnibox
         // background bounds. |shrinkage| is the scaling factor for the offset -- if it's 1, we are
         // shrinking the omnibox down to the size of the search box.
-        float shrinkage =
-                1f - NTP_SEARCH_BOX_EXPANSION_INTERPOLATOR.getInterpolation(mUrlExpansionPercent);
+        float shrinkage = 1f
+                - Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR.getInterpolation(
+                        mUrlExpansionPercent);
 
         int leftBoundDifference = mNtpSearchBoxBounds.left - mLocationBarBackgroundBounds.left;
         int rightBoundDifference = mNtpSearchBoxBounds.right - mLocationBarBackgroundBounds.right;
@@ -1685,7 +1681,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
                 ObjectAnimator.ofFloat(this, mTabSwitcherModePercentProperty, 1.f);
         enterAnimation.setDuration(
                 TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS);
-        enterAnimation.setInterpolator(new LinearInterpolator());
+        enterAnimation.setInterpolator(Interpolators.LINEAR_INTERPOLATOR);
 
         return enterAnimation;
     }
@@ -1696,7 +1692,7 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         exitAnimation.setDuration(animateNormalToolbar
                         ? TopToolbarCoordinator.TAB_SWITCHER_MODE_NORMAL_ANIMATION_DURATION_MS
                         : TAB_SWITCHER_MODE_EXIT_FADE_ANIMATION_DURATION_MS);
-        exitAnimation.setInterpolator(new LinearInterpolator());
+        exitAnimation.setInterpolator(Interpolators.LINEAR_INTERPOLATOR);
         exitAnimation.addListener(new CancelAwareAnimatorListener() {
             @Override
             public void onEnd(Animator animation) {

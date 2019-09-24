@@ -25,9 +25,9 @@ GroupCount,Address,SizeWithoutPadding,Padding,NumAliases,PSS,Section,Name
 ,0x2cd84e0,16,16,1,32.0,R,.Lswitch.table.45
 ,0x2cd84f0,8,0,1,8.0,R,kSystemClassPrefixes
 ,0x0,0,33984171,1,33984171.0,o,Overhead: ELF file
-,0x266e600,5,0,2,2.5,r,string literal
-,0x266e600,5,0,2,2.5,r,string literal
-,0x266e605,16,0,1,16.0,r,string literal
+,0x266e600,5,0,2,2.5,r,"""Str1"""
+,0x266e600,5,0,2,2.5,r,"""Str1"""
+,0x266e605,16,0,1,16.0,r,"""String literal2"""
 ,0x266e630,16,27,1,43.0,r,** merge strings
 ,0x284d600,3425,1961920,1,1965345.0,r,** merge constants
 ,0x284e364,0,3,1,3.0,r,** symbol gap 0

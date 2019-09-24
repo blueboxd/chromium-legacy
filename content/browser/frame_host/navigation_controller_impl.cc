@@ -102,18 +102,6 @@ void NotifyPrunedEntries(NavigationControllerImpl* nav_controller,
   nav_controller->delegate()->NotifyNavigationListPruned(details);
 }
 
-// Ensure the given NavigationEntry has a valid state, so that WebKit does not
-// get confused if we navigate back to it.
-//
-// An empty state is treated as a new navigation by WebKit, which would mean
-// losing the navigation entries and generating a new navigation entry after
-// this one. We don't want that. To avoid this we create a valid state which
-// WebKit will not treat as a new navigation.
-void SetPageStateIfEmpty(NavigationEntryImpl* entry) {
-  if (!entry->GetPageState().IsValid())
-    entry->SetPageState(PageState::CreateFromURL(entry->GetURL()));
-}
-
 // Configure all the NavigationEntries in entries for restore. This resets
 // the transition type to reload and makes sure the content state isn't empty.
 void ConfigureEntriesForRestore(
@@ -124,8 +112,6 @@ void ConfigureEntriesForRestore(
     // the typed count.
     (*entries)[i]->SetTransitionType(ui::PAGE_TRANSITION_RELOAD);
     (*entries)[i]->set_restore_type(type);
-    // NOTE(darin): This code is only needed for backwards compat.
-    SetPageStateIfEmpty((*entries)[i].get());
   }
 }
 
@@ -899,6 +885,17 @@ bool NavigationControllerImpl::RemoveEntryAtIndex(int index) {
 
   RemoveEntryAtIndexInternal(index);
   return true;
+}
+
+void NavigationControllerImpl::PruneForwardEntries() {
+  DiscardNonCommittedEntries();
+  int remove_start_index = last_committed_entry_index_ + 1;
+  int num_removed = int(entries_.size()) - remove_start_index;
+  if (num_removed <= 0)
+    return;
+  entries_.erase(entries_.begin() + remove_start_index, entries_.end());
+  NotifyPrunedEntries(this, remove_start_index /* start index */,
+                      num_removed /* count */);
 }
 
 void NavigationControllerImpl::UpdateVirtualURLToURL(
@@ -2445,10 +2442,8 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
 
   DiscardNonCommittedEntries();
 
-  int current_size = static_cast<int>(entries_.size());
-
   // When replacing, don't prune the forward history.
-  if (replace && current_size > 0) {
+  if (replace && entries_.size() > 0) {
     CopyReplacedNavigationEntryDataIfPreviouslyEmpty(
         entries_[last_committed_entry_index_].get(), entry.get());
     entries_[last_committed_entry_index_] = std::move(entry);
@@ -2458,20 +2453,7 @@ void NavigationControllerImpl::InsertOrReplaceEntry(
   // We shouldn't see replace == true when there's no committed entries.
   DCHECK(!replace);
 
-  if (current_size > 0) {
-    // Prune any entries which are in front of the current entry.
-    int num_pruned = 0;
-    while (last_committed_entry_index_ < (current_size - 1)) {
-      num_pruned++;
-      entries_.pop_back();
-      current_size--;
-    }
-    if (num_pruned > 0) {  // Only notify if we did prune something.
-      NotifyPrunedEntries(this,
-                          last_committed_entry_index_ + 1 /* start index */,
-                          num_pruned /* count */);
-    }
-  }
+  PruneForwardEntries();
 
   PruneOldestSkippableEntryIfFull();
 
@@ -2617,10 +2599,7 @@ void NavigationControllerImpl::NavigateToExistingPendingEntry(
             sandboxed_source_frame_tree_node_id, same_document_loads) &&
         DoesSandboxNavigationStayWithinSubtree(
             sandboxed_source_frame_tree_node_id, different_document_loads);
-    UMA_HISTOGRAM_BOOLEAN(
-        "Navigation.SandboxFrameBackForwardStaysWithinSubtree",
-        navigates_inside_tree);
-    // Also count the navigations as web use counters so we can determine
+    // Count the navigations as web use counters so we can determine
     // the number of pages that trigger this.
     FrameTreeNode* sandbox_source_frame_tree_node =
         FrameTreeNode::GloballyFindByID(sandboxed_source_frame_tree_node_id);
@@ -3381,6 +3360,9 @@ void NavigationControllerImpl::FinishRestore(int selected_index,
 }
 
 void NavigationControllerImpl::DiscardNonCommittedEntries() {
+  // Avoid sending a notification if there is nothing to discard.
+  if (!pending_entry_ && transient_entry_index_ == -1)
+    return;
   DiscardPendingEntry(false);
   DiscardTransientEntry();
   if (delegate_)

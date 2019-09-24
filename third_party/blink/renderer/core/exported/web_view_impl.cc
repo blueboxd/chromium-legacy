@@ -1457,6 +1457,10 @@ void WebViewImpl::Resize(const WebSize& new_size) {
                             GetBrowserControls().ShrinkViewport());
 }
 
+WebSize WebViewImpl::GetSize() {
+  return size_;
+}
+
 void WebViewImpl::DidEnterFullscreen() {
   fullscreen_controller_->DidEnterFullscreen();
 }

@@ -4910,7 +4910,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="NavigationPredictorAnchorElementMetrics">
-  <owner>ryansturm@chromium.com</owner>
+  <owner>ryansturm@chromium.org</owner>
   <summary>
     Metrics that describe an anchor element's data. This event is emitted at
     most 10 times per page load, once for each of the top n URLs on a page, and
@@ -4961,6 +4961,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="NavigationPredictorPageLinkClick">
+  <owner>ryansturm@chromium.org</owner>
   <summary>
     Sent on an in-page link click. An integer from 0-10 (1-indexed),
     corresponding to the index of that anchor element in the list of top ten
@@ -4971,7 +4972,7 @@ be describing additional metrics about the same event.
 </event>
 
 <event name="NavigationPredictorPageLinkMetrics" singular="True">
-  <owner>ryansturm@chromium.com</owner>
+  <owner>ryansturm@chromium.org</owner>
   <summary>
     Metrics that describe aggregate information about the links within a page.
     Some anchor elements present on a page may not be represented in these

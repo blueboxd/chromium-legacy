@@ -580,7 +580,7 @@ void ArCoreGl::CreateAnchor(mojom::VRPosePtr anchor_pose,
                             CreateAnchorCallback callback) {
   DVLOG(2) << __func__;
 
-  base::Optional<int32_t> maybe_anchor_id = arcore_->CreateAnchor(anchor_pose);
+  base::Optional<uint32_t> maybe_anchor_id = arcore_->CreateAnchor(anchor_pose);
 
   if (maybe_anchor_id) {
     std::move(callback).Run(device::mojom::CreateAnchorResult::SUCCESS,
@@ -591,11 +591,11 @@ void ArCoreGl::CreateAnchor(mojom::VRPosePtr anchor_pose,
 }
 
 void ArCoreGl::CreatePlaneAnchor(mojom::VRPosePtr anchor_pose,
-                                 int32_t plane_id,
+                                 uint32_t plane_id,
                                  CreatePlaneAnchorCallback callback) {
   DVLOG(2) << __func__;
 
-  base::Optional<int32_t> maybe_anchor_id =
+  base::Optional<uint32_t> maybe_anchor_id =
       arcore_->CreateAnchor(anchor_pose, plane_id);
 
   if (maybe_anchor_id) {
@@ -606,7 +606,7 @@ void ArCoreGl::CreatePlaneAnchor(mojom::VRPosePtr anchor_pose,
   }
 }
 
-void ArCoreGl::DetachAnchor(int32_t anchor_id) {
+void ArCoreGl::DetachAnchor(uint32_t anchor_id) {
   DVLOG(2) << __func__;
 
   arcore_->DetachAnchor(anchor_id);

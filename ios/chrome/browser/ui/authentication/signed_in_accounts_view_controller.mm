@@ -199,20 +199,17 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
 
 + (BOOL)shouldBePresentedForBrowserState:
     (ios::ChromeBrowserState*)browserState {
-  // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
-  NSLog(@"%s %d:", __FUNCTION__, __LINE__);
-
   if (!browserState || browserState->IsOffTheRecord()) {
     return NO;
   }
-
-  // TODO(crbug.com/1006717): Remove these logs once bug 1006717 is fixed.
-  NSLog(@"%s %d:", __FUNCTION__, __LINE__);
-
-  AuthenticationService* authService =
-      AuthenticationServiceFactory::GetForBrowserState(browserState);
-  return !gSignedInAccountsViewControllerIsShown &&
-         authService->IsAuthenticated() && authService->HaveAccountsChanged();
+  // Temporary fix for regression for http://crbug.com/1006744: Disable showing
+  // the signed-in account modal dialog.
+  //
+  // AuthenticationService* authService =
+  //    AuthenticationServiceFactory::GetForBrowserState(browserState);
+  // return !gSignedInAccountsViewControllerIsShown &&
+  //       authService->IsAuthenticated() && authService->HaveAccountsChanged();
+  return NO;
 }
 
 #pragma mark Initialization

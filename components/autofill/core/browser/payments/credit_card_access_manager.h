@@ -91,8 +91,11 @@ class CreditCardAccessManager : public CreditCardCVCAuthenticator::Requester,
   // If |opt_in| = true, opts the user into using FIDO authentication for card
   // unmasking. Otherwise, opts the user out. If |creation_options| is set,
   // WebAuthn registration prompt will be invoked to create a new credential.
-  void FIDOAuthOptChange(bool opt_in,
-                         base::Value creation_options = base::Value());
+  void FIDOAuthOptChange(bool opt_in);
+
+  // Makes a call to FIDOAuthOptChange() with |opt_in|.
+  // TODO(crbug/949269): Add a rate limiter to counter spam clicking.
+  void OnSettingsPageFIDOAuthToggled(bool opt_in);
 
   CreditCardCVCAuthenticator* GetOrCreateCVCAuthenticator();
 

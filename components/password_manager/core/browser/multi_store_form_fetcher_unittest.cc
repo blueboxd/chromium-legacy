@@ -194,7 +194,7 @@ TEST_F(MultiStoreFormFetcherTest, Empty) {
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 }
 
 // Check that results from both stores are merged.
@@ -244,8 +244,7 @@ TEST_F(MultiStoreFormFetcherTest, MergeFromBothStores) {
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
               UnorderedElementsAre(Pointee(federated1), Pointee(federated2),
                                    Pointee(federated3)));
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(),
-              UnorderedElementsAre(Pointee(blacklisted)));
+  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
   EXPECT_THAT(form_fetcher_->GetPreferredMatch(), Pointee(non_federated3));
 }
 

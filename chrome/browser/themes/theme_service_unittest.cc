@@ -6,6 +6,7 @@
 
 #include "base/files/file_util.h"
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/extensions/extension_service_test_base.h"
 #include "chrome/browser/extensions/unpacked_installer.h"
 #include "chrome/browser/themes/custom_theme_supplier.h"
+#include "chrome/browser/themes/increased_contrast_theme_supplier.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/themes/theme_service_factory.h"
 #include "chrome/common/buildflags.h"
@@ -31,6 +33,8 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/extension.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 
 #if BUILDFLAG(ENABLE_SUPERVISED_USERS)
 #include "chrome/browser/supervised_user/supervised_user_service.h"
@@ -110,6 +114,22 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
 
   const CustomThemeSupplier* get_theme_supplier(ThemeService* theme_service) {
     return theme_service->get_theme_supplier();
+  }
+
+  void set_theme_supplier(ThemeService* theme_service,
+                          scoped_refptr<CustomThemeSupplier> theme_supplier) {
+    theme_service->theme_supplier_ = theme_supplier;
+  }
+
+  SkColor GetOmniboxColor(ThemeService* theme_service,
+                          int id,
+                          bool incognito) const {
+    bool has_custom_color;
+    base::Optional<SkColor> color =
+        theme_service->GetOmniboxColor(id, incognito, &has_custom_color);
+    EXPECT_FALSE(has_custom_color);
+    EXPECT_TRUE(color);
+    return color.value_or(gfx::kPlaceholderColor);
   }
 
   void WaitForThemeInstall() {
@@ -515,6 +535,85 @@ TEST_F(ThemeServiceTest, UseDefaultTheme_DisableExtensionTest) {
   // Resetting to default theme should disable previous theme.
   theme_service->UseDefaultTheme();
   EXPECT_FALSE(service_->IsExtensionEnabled(extension1_id));
+}
+
+TEST_F(ThemeServiceTest, OmniboxContrast) {
+  using TP = ThemeProperties;
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile_.get());
+  for (bool dark : {false, true}) {
+    for (bool high_contrast : {false, true}) {
+      set_theme_supplier(
+          theme_service,
+          high_contrast
+              ? base::MakeRefCounted<IncreasedContrastThemeSupplier>(dark)
+              : nullptr);
+      constexpr int contrasting_ids[][2] = {
+          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_BACKGROUND},
+          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_TEXT, TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          {TP::COLOR_OMNIBOX_TEXT_DIMMED, TP::COLOR_OMNIBOX_BACKGROUND},
+          {TP::COLOR_OMNIBOX_SELECTED_KEYWORD, TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED, TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
+          {TP::COLOR_OMNIBOX_RESULTS_ICON, TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_RESULTS_ICON,
+           TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          {TP::COLOR_OMNIBOX_RESULTS_ICON_SELECTED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
+          {TP::COLOR_OMNIBOX_RESULTS_URL, TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED},
+          {TP::COLOR_OMNIBOX_BUBBLE_OUTLINE, TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE,
+           TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
+           TP::COLOR_OMNIBOX_BACKGROUND},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
+           TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
+           TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
+           TP::COLOR_OMNIBOX_BACKGROUND},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
+           TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
+           TP::COLOR_OMNIBOX_RESULTS_BG},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
+           TP::COLOR_OMNIBOX_BACKGROUND},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
+           TP::COLOR_OMNIBOX_RESULTS_BG},
+          // TODO(thomasanderson): Because colors are computed relative to
+          // non-hovered backgrounds, some colors over hovered backgrounds do
+          // not have sufficient contrast in all configurations.  Computing the
+          // non-contrasty colors here relative to hovered backgrounds should
+          // fix this and not reduce contrast of non-hovered backgrounds.
+          // {TP::COLOR_OMNIBOX_TEXT_DIMMED,
+          //  TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+          // {TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED,
+          //  TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          // {TP::COLOR_OMNIBOX_RESULTS_URL,
+          //  TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          // {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
+          //  TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+      };
+      auto check_sufficient_contrast = [&](int id1, int id2) {
+        const float contrast = color_utils::GetContrastRatio(
+            GetOmniboxColor(theme_service, id1, dark),
+            GetOmniboxColor(theme_service, id2, dark));
+        EXPECT_GE(contrast, color_utils::kMinimumReadableContrastRatio);
+      };
+      for (const int* ids : contrasting_ids)
+        check_sufficient_contrast(ids[0], ids[1]);
+      if (high_contrast)
+        check_sufficient_contrast(TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED,
+                                  TP::COLOR_OMNIBOX_RESULTS_BG);
+    }
+  }
 }
 
 }  // namespace theme_service_internal

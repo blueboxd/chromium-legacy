@@ -10,6 +10,7 @@ crbug.com/591099 external/wpt/css/CSS2/abspos/hypothetical-box-dynamic.html [ Fa
 crbug.com/591099 external/wpt/css/CSS2/floats/float-nowrap-3.html [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/floats/floats-line-wrap-shifted-001.html [ Failure ]
 crbug.com/591099 external/wpt/css/CSS2/floats/overhanging-float-paint-order.html [ Failure ]
+crbug.com/591099 external/wpt/css/CSS2/floats/zero-width-floats-positioning.tentative.html [ Failure ]
 
 ### external/wpt/css/CSS2/floats-clear/
 crbug.com/591099 external/wpt/css/CSS2/floats-clear/no-clearance-adjoining-opposite-float.html [ Failure ]

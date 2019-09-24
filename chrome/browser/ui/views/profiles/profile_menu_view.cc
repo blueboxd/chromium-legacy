@@ -28,6 +28,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/passwords/manage_passwords_view_utils.h"
 #include "chrome/browser/ui/sync/sync_promo_ui.h"
@@ -171,15 +172,18 @@ void ProfileMenuView::BuildMenu() {
   }
 
   Profile* profile = browser()->profile();
-  if (profile->IsGuestSession()) {
-    BuildGuestIdentity();
-  } else {
-    DCHECK(profile->IsRegularProfile());
+  if (profile->IsRegularProfile()) {
     BuildIdentity();
     BuildSyncInfo();
     BuildAccountFeatureButtons();
     BuildAutofillButtons();
     BuildProfileFeatureButtons();
+  } else if (profile->IsIncognitoProfile()) {
+    BuildIncognitoIdentity();
+    BuildAutofillButtons();
+  } else {
+    DCHECK(profile->IsGuestSession());
+    BuildGuestIdentity();
   }
 
   BuildProfileHeading();
@@ -423,6 +427,19 @@ void ProfileMenuView::BuildIdentity() {
 void ProfileMenuView::BuildGuestIdentity() {
   SetIdentityInfo(gfx::Image(ImageForMenu(kUserAccountAvatarIcon)),
                   l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));
+}
+
+void ProfileMenuView::BuildIncognitoIdentity() {
+  int incognito_window_count =
+      BrowserList::GetIncognitoSessionsActiveForProfile(browser()->profile());
+
+  SetIdentityInfo(
+      gfx::Image(ImageForMenu(kIncognitoProfileIcon)),
+      l10n_util::GetStringUTF16(IDS_INCOGNITO_PROFILE_MENU_TITLE),
+      incognito_window_count > 1
+          ? l10n_util::GetPluralStringFUTF16(IDS_INCOGNITO_WINDOW_COUNT_MESSAGE,
+                                             incognito_window_count)
+          : base::string16());
 }
 
 void ProfileMenuView::BuildAutofillButtons() {

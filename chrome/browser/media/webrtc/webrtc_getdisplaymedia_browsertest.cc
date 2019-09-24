@@ -13,6 +13,10 @@
 #include "content/public/test/browser_test_utils.h"
 #include "media/base/media_switches.h"
 
+#if defined(OS_MACOSX)
+#include "base/mac/mac_util.h"
+#endif
+
 namespace {
 
 static const char kMainHtmlPage[] = "/webrtc/webrtc_getdisplaymedia_test.html";
@@ -39,7 +43,14 @@ class WebRtcGetDisplayMediaBrowserTest : public WebRtcTestBase {
         tab->GetMainFrame(),
         base::StringPrintf("runGetDisplayMedia(%s);", constraints.c_str()),
         &result));
+#if defined(OS_MACOSX)
+    // Starting from macOS 10.15, screen capture requires system permissions
+    // that are disabled by default.
+    EXPECT_EQ(result, base::mac::IsAtMostOS10_14() ? "getdisplaymedia-success"
+                                                   : "getdisplaymedia-failure");
+#else
     EXPECT_EQ(result, "getdisplaymedia-success");
+#endif
   }
 };
 

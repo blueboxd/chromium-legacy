@@ -199,6 +199,9 @@ public class PasswordEntryViewer
             if (mCopyButtonPressed) copyPassword();
         }
         PasswordManagerHandlerProvider.getInstance().addObserver(this);
+        PasswordManagerHandlerProvider.getInstance()
+                .getPasswordManagerHandler()
+                .updatePasswordLists();
     }
 
     @Override
@@ -434,13 +437,13 @@ public class PasswordEntryViewer
     @Override
     public void passwordListAvailable(int count) {
         if (mException) return;
-        TextView passwordsLinkTextView = mView.findViewById(R.id.passwords_link);
+        TextView passwordTextView = mView.findViewById(R.id.password_entry_viewer_password);
         SavedPasswordEntry SavedPasswordEntry = PasswordManagerHandlerProvider.getInstance()
                                                         .getPasswordManagerHandler()
                                                         .getSavedPasswordEntry(mID);
         setRowText(R.id.url_row, SavedPasswordEntry.getUrl());
         setRowText(R.id.username_row, SavedPasswordEntry.getUserName());
-        passwordsLinkTextView.setText(SavedPasswordEntry.getPassword());
+        passwordTextView.setText(SavedPasswordEntry.getPassword());
     }
 
     @Override

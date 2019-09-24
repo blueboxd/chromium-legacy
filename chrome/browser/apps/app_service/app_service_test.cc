@@ -30,6 +30,15 @@ void AppServiceTest::SetUp(Profile* profile) {
   WaitForAppService();
 }
 
+const std::string AppServiceTest::GetAppName(const std::string& app_id) {
+  std::string name;
+  if (!app_service_proxy_)
+    return name;
+  app_service_proxy_->AppRegistryCache().ForOneApp(
+      app_id, [&name](const apps::AppUpdate& update) { name = update.Name(); });
+  return name;
+}
+
 void AppServiceTest::WaitForAppService() {
   base::RunLoop().RunUntilIdle();
 }

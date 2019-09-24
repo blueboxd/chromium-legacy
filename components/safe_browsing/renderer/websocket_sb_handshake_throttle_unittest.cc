@@ -145,7 +145,7 @@ TEST_F(WebSocketSBHandshakeThrottleTest, Safe) {
       GURL(kTestUrl), base::BindOnce(&FakeCallback::OnCompletion,
                                      base::Unretained(&fake_callback_)));
   safe_browsing_.RunUntilCalled();
-  std::move(safe_browsing_.callback_).Run(nullptr, true, false);
+  std::move(safe_browsing_.callback_).Run(mojo::NullReceiver(), true, false);
   fake_callback_.RunUntilCalled();
   EXPECT_EQ(FakeCallback::RESULT_SUCCESS, fake_callback_.result_);
 }
@@ -155,7 +155,7 @@ TEST_F(WebSocketSBHandshakeThrottleTest, Unsafe) {
       GURL(kTestUrl), base::BindOnce(&FakeCallback::OnCompletion,
                                      base::Unretained(&fake_callback_)));
   safe_browsing_.RunUntilCalled();
-  std::move(safe_browsing_.callback_).Run(nullptr, false, false);
+  std::move(safe_browsing_.callback_).Run(mojo::NullReceiver(), false, false);
   fake_callback_.RunUntilCalled();
   EXPECT_EQ(FakeCallback::RESULT_ERROR, fake_callback_.result_);
   EXPECT_EQ(
@@ -170,9 +170,9 @@ TEST_F(WebSocketSBHandshakeThrottleTest, SlowCheckNotifier) {
                                      base::Unretained(&fake_callback_)));
   safe_browsing_.RunUntilCalled();
 
-  mojom::UrlCheckNotifierPtr slow_check_notifier;
+  mojo::Remote<mojom::UrlCheckNotifier> slow_check_notifier;
   std::move(safe_browsing_.callback_)
-      .Run(mojo::MakeRequest(&slow_check_notifier), false, false);
+      .Run(slow_check_notifier.BindNewPipeAndPassReceiver(), false, false);
   fake_callback_.RunUntilIdle();
   EXPECT_EQ(FakeCallback::RESULT_NOT_CALLED, fake_callback_.result_);
 

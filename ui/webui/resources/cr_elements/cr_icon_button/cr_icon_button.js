@@ -44,6 +44,14 @@ Polymer({
     ironIcon: {
       type: String,
       observer: 'onIronIconChanged_',
+      reflectToAttribute: true,
+    },
+
+    /** @private */
+    rippleShowing_: {
+      type: Boolean,
+      value: false,
+      reflectToAttribute: true,
     },
   },
 
@@ -56,6 +64,7 @@ Polymer({
   listeners: {
     blur: 'hideRipple_',
     click: 'onClick_',
+    down: 'showRipple_',
     focus: 'showRipple_',
     keydown: 'onKeyDown_',
     keyup: 'onKeyUp_',
@@ -67,6 +76,7 @@ Polymer({
   hideRipple_: function() {
     if (this.hasRipple()) {
       this.getRipple().clear();
+      this.rippleShowing_ = false;
     }
   },
 
@@ -74,6 +84,7 @@ Polymer({
   showRipple_: function() {
     if (!this.noink && !this.disabled) {
       this.getRipple().showAndHoldDown();
+      this.rippleShowing_ = true;
     }
   },
 

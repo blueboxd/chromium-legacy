@@ -4100,6 +4100,7 @@ if (enable_java_templates) {
   #       any apk that depends on this library.
   #   ignore_aidl: Whether to ignore .aidl files found with the .aar.
   #   ignore_assets: Whether to ignore assets found in the .aar.
+  #   ignore_manifest: Whether to ignore creating manifest.
   #   ignore_native_libraries: Whether to ignore .so files found in the .aar.
   #       See also extract_native_libraries.
   #   ignore_proguard_configs: Whether to ignore proguard configs.
@@ -4129,6 +4130,8 @@ if (enable_java_templates) {
     _unpack_target_name = "${target_name}__unpack_aar"
     _ignore_aidl = defined(invoker.ignore_aidl) && invoker.ignore_aidl
     _ignore_assets = defined(invoker.ignore_assets) && invoker.ignore_assets
+    _ignore_manifest =
+        defined(invoker.ignore_manifest) && invoker.ignore_manifest
     _ignore_native_libraries = defined(invoker.ignore_native_libraries) &&
                                invoker.ignore_native_libraries
     _ignore_proguard_configs = defined(invoker.ignore_proguard_configs) &&
@@ -4193,10 +4196,10 @@ if (enable_java_templates) {
       inputs = [
         invoker.aar_path,
       ]
-      outputs = [
-        "${_output_path}/AndroidManifest.xml",
-      ]
-
+      outputs = []
+      if (!_ignore_manifest) {
+        outputs += [ "${_output_path}/AndroidManifest.xml" ]
+      }
       if (!_strip_resources && _scanned_files.has_r_text_file) {
         # Certain packages, in particular Play Services have no R.txt even
         # though its presence is mandated by AAR spec. Such packages cause
@@ -4231,7 +4234,8 @@ if (enable_java_templates) {
         (_scanned_files.resources != [] || _scanned_files.has_r_text_file)
 
     # Create the android_resources target for resources.
-    if (_has_unignored_resources || !_scanned_files.is_manifest_empty) {
+    if (_has_unignored_resources ||
+        (!_scanned_files.is_manifest_empty && !_ignore_manifest)) {
       _res_target_name = "${target_name}__res"
       android_resources(_res_target_name) {
         forward_variables_from(invoker,
@@ -4246,7 +4250,9 @@ if (enable_java_templates) {
         }
         deps += [ ":$_unpack_target_name" ]
         android_manifest_dep = ":$_unpack_target_name"
-        android_manifest = "${_output_path}/AndroidManifest.xml"
+        if (!_ignore_manifest) {
+          android_manifest = "${_output_path}/AndroidManifest.xml"
+        }
         resource_dirs = []
         generated_resource_dirs = []
         if (!_strip_resources && _scanned_files.resources != []) {

@@ -715,7 +715,7 @@ bool ParseHEVCCodecId(const std::string& codec_id,
 }
 #endif
 
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 bool IsDolbyVisionAVCCodecId(const std::string& codec_id) {
   return base::StartsWith(codec_id, "dva1.", base::CompareCase::SENSITIVE) ||
          base::StartsWith(codec_id, "dvav.", base::CompareCase::SENSITIVE);
@@ -854,7 +854,7 @@ VideoCodec StringToVideoCodec(const std::string& codec_id) {
   if (ParseHEVCCodecId(codec_id, &profile, &level))
     return kCodecHEVC;
 #endif
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
   if (ParseDolbyVisionCodecId(codec_id, &profile, &level))
     return kCodecDolbyVision;
 #endif

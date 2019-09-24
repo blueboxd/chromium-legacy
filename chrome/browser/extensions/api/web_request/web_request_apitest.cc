@@ -526,25 +526,31 @@ class ExtensionWebRequestApiAuthRequiredTest
   }
 };
 
-// TODO(https://crbug.com/1003598): Flake on multiple platforms.
+// Note: this is flaky on multiple platforms (crbug.com/1003598). Temporarily
+// enabled to find flakiness cause.
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
-                       DISABLED_WebRequestAuthRequired) {
+                       WebRequestAuthRequired) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Pass "debug" as a custom arg to debug test flakiness.
   ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "webrequest", "test_auth_required.html", nullptr, GetFlags()))
+      "webrequest", "test_auth_required.html", "debug", GetFlags()))
       << message_;
 }
 
-// TODO(https://crbug.com/1003598): Flake on multiple platforms.
+// Note: this is flaky on multiple platforms (crbug.com/1003598). Temporarily
+// enabled to find flakiness cause.
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
-                       DISABLED_WebRequestAuthRequiredAsync) {
+                       WebRequestAuthRequiredAsync) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());
+
+  // Pass "debug" as a custom arg to debug test flakiness.
   ASSERT_TRUE(RunExtensionSubtestWithArgAndFlags(
-      "webrequest", "test_auth_required_async.html", nullptr, GetFlags()))
+      "webrequest", "test_auth_required_async.html", "debug", GetFlags()))
       << message_;
 }
 

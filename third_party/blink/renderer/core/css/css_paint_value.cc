@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/css/css_paint_value.h"
 
+#include "base/metrics/histogram_macros.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_paint_image_generator.h"
 #include "third_party/blink/renderer/core/css/css_syntax_definition.h"
@@ -24,7 +25,10 @@ CSSPaintValue::CSSPaintValue(CSSCustomIdentValue* name)
     : CSSImageGeneratorValue(kPaintClass),
       name_(name),
       paint_image_generator_observer_(MakeGarbageCollected<Observer>(this)),
-      paint_off_thread_(true) {}
+      off_thread_paint_state_(
+          RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()
+              ? OffThreadPaintState::kUnknown
+              : OffThreadPaintState::kMainThread) {}
 
 CSSPaintValue::CSSPaintValue(
     CSSCustomIdentValue* name,
@@ -91,35 +95,39 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
 
   // For Off-Thread PaintWorklet, we just collect the necessary inputs together
   // and defer the actual JavaScript call until much later (during cc Raster).
-  if (RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled()) {
-    if (paint_off_thread_) {
-      // It is not necessary for a LayoutObject to always have RareData which
-      // contains the ElementId. If this |layout_object| doesn't have an
-      // ElementId, then create one for it.
-      layout_object.GetMutableForPainting().EnsureId();
+  if (off_thread_paint_state_ != OffThreadPaintState::kMainThread) {
+    // It is not necessary for a LayoutObject to always have RareData which
+    // contains the ElementId. If this |layout_object| doesn't have an
+    // ElementId, then create one for it.
+    layout_object.GetMutableForPainting().EnsureId();
 
-      Vector<CSSPropertyID> native_properties =
-          generator_->NativeInvalidationProperties();
-      Vector<AtomicString> custom_properties =
-          generator_->CustomInvalidationProperties();
-      float zoom = layout_object.StyleRef().EffectiveZoom();
-      CompositorPaintWorkletInput::PropertyKeys input_property_keys;
-      auto style_data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
-          document, layout_object.UniqueId(), style, native_properties,
-          custom_properties, input_property_keys);
-      paint_off_thread_ = style_data.has_value();
-      if (paint_off_thread_) {
-        Vector<std::unique_ptr<CrossThreadStyleValue>>
-            cross_thread_input_arguments;
-        BuildInputArgumentValues(cross_thread_input_arguments);
-        scoped_refptr<PaintWorkletInput> input =
-            base::MakeRefCounted<PaintWorkletInput>(
-                GetName(), target_size, zoom, device_scale_factor,
-                generator_->WorkletId(), std::move(style_data.value()),
-                std::move(cross_thread_input_arguments),
-                std::move(input_property_keys));
-        return PaintWorkletDeferredImage::Create(std::move(input), target_size);
-      }
+    Vector<CSSPropertyID> native_properties =
+        generator_->NativeInvalidationProperties();
+    Vector<AtomicString> custom_properties =
+        generator_->CustomInvalidationProperties();
+    float zoom = layout_object.StyleRef().EffectiveZoom();
+    CompositorPaintWorkletInput::PropertyKeys input_property_keys;
+    auto style_data = PaintWorkletStylePropertyMap::BuildCrossThreadData(
+        document, layout_object.UniqueId(), style, native_properties,
+        custom_properties, input_property_keys);
+    if (off_thread_paint_state_ == OffThreadPaintState::kUnknown) {
+      UMA_HISTOGRAM_BOOLEAN("Blink.CSSPaintValue.PaintOffThread",
+                            style_data.has_value());
+    }
+    off_thread_paint_state_ = style_data.has_value()
+                                  ? OffThreadPaintState::kOffThread
+                                  : OffThreadPaintState::kMainThread;
+    if (off_thread_paint_state_ == OffThreadPaintState::kOffThread) {
+      Vector<std::unique_ptr<CrossThreadStyleValue>>
+          cross_thread_input_arguments;
+      BuildInputArgumentValues(cross_thread_input_arguments);
+      scoped_refptr<PaintWorkletInput> input =
+          base::MakeRefCounted<PaintWorkletInput>(
+              GetName(), target_size, zoom, device_scale_factor,
+              generator_->WorkletId(), std::move(style_data.value()),
+              std::move(cross_thread_input_arguments),
+              std::move(input_property_keys));
+      return PaintWorkletDeferredImage::Create(std::move(input), target_size);
     }
   }
 

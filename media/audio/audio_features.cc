@@ -23,6 +23,13 @@ const base::Feature kAudioServiceOutOfProcessKillAtHang{
 const base::Feature kDumpOnAudioServiceHang{"DumpOnAudioServiceHang",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_ANDROID)
+// Enables loading and using AAudio instead of OpenSLES on compatible devices,
+// for audio output streams.
+const base::Feature kUseAAudioDriver{"UseAAudioDriver",
+                                     base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
+
 #if defined(OS_CHROMEOS)
 const base::Feature kCrOSSystemAEC{"CrOSSystemAEC",
                                    base::FEATURE_ENABLED_BY_DEFAULT};

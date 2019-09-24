@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 class Profile;
 
@@ -23,7 +24,7 @@ class BuiltInChromeOsApps : public apps::mojom::Publisher {
   BuiltInChromeOsApps();
   ~BuiltInChromeOsApps() override;
 
-  void Initialize(const apps::mojom::AppServicePtr& app_service,
+  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service,
                   Profile* profile);
 
   static bool SetHideSettingsAppForTesting(bool hide);

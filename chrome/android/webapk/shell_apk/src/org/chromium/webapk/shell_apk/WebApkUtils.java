@@ -148,19 +148,6 @@ public class WebApkUtils {
     }
 
     /**
-     * Android uses padding_left under API level 17 and uses padding_start after that.
-     * If we set the padding in resource file, android will create duplicated resource xml
-     * with the padding to be different.
-     */
-    public static void setPaddingInPixel(View view, int start, int top, int end, int bottom) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-            view.setPaddingRelative(start, top, end, bottom);
-        } else {
-            view.setPadding(start, top, end, bottom);
-        }
-    }
-
-    /**
      * Imitates Chrome's @style/AlertDialogContent. We set the style via Java instead of via
      * specifying the style in the XML to avoid having layout files in both layout-v17/ and in
      * layout/.
@@ -173,11 +160,11 @@ public class WebApkUtils {
                 TypedValue.COMPLEX_UNIT_PX, res.getDimension(R.dimen.headline_size_medium));
         int dialogContentPadding = res.getDimensionPixelSize(R.dimen.dialog_content_padding);
         int titleBottomPadding = res.getDimensionPixelSize(R.dimen.title_bottom_padding);
-        setPaddingInPixel(titleView, dialogContentPadding, dialogContentPadding,
+        titleView.setPaddingRelative(dialogContentPadding, dialogContentPadding,
                 dialogContentPadding, titleBottomPadding);
 
         int dialogContentTopPadding = res.getDimensionPixelSize(R.dimen.dialog_content_top_padding);
-        setPaddingInPixel(contentView, dialogContentPadding, dialogContentTopPadding,
+        contentView.setPaddingRelative(dialogContentPadding, dialogContentTopPadding,
                 dialogContentPadding, dialogContentPadding);
     }
 

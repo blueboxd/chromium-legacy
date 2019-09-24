@@ -138,7 +138,7 @@ MEDIA_EXPORT bool ParseHEVCCodecId(const std::string& codec_id,
                                    uint8_t* level_idc);
 #endif
 
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 MEDIA_EXPORT bool ParseDolbyVisionCodecId(const std::string& codec_id,
                                           VideoCodecProfile* profile,
                                           uint8_t* level_id);

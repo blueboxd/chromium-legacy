@@ -4,7 +4,7 @@
 
 // clang-format off
 // #import 'chrome://resources/cr_elements/cr_toggle/cr_toggle.m.js';
-// #import {keyEventOn, tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {keyEventOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // #import {eventToPromise} from 'chrome://test/test_util.m.js';
 // clang-format on
 
@@ -89,7 +89,7 @@ suite('cr-toggle', function() {
     }
     toggle.dispatchEvent(
         new PointerEvent('pointerup', {pointerId: 1, clientX: xEnd}));
-    MockInteractions.tap(toggle);
+    toggle.click();
   }
 
   // Test that the control is toggled when the |checked| attribute is

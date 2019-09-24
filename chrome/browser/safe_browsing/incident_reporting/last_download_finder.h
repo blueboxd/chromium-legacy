@@ -16,6 +16,7 @@
 #include "base/scoped_observer.h"
 #include "chrome/browser/safe_browsing/incident_reporting/download_metadata_manager.h"
 #include "components/history/core/browser/download_row.h"
+#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/history_service_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
@@ -25,10 +26,6 @@ class Profile;
 namespace content {
 class NotificationDetails;
 class NotificationSource;
-}
-
-namespace history {
-class HistoryService;
 }
 
 namespace safe_browsing {
@@ -149,7 +146,7 @@ class LastDownloadFinder : public content::NotificationObserver,
 
   // HistoryServiceObserver
   ScopedObserver<history::HistoryService, history::HistoryServiceObserver>
-      history_service_observer_;
+      history_service_observer_{this};
 
   // A factory for asynchronous operations on profiles' HistoryService.
   base::WeakPtrFactory<LastDownloadFinder> weak_ptr_factory_{this};

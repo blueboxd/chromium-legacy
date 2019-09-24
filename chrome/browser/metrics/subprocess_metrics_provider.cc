@@ -20,7 +20,6 @@
 #include "content/public/browser/child_process_data.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_process_host.h"
 
 namespace {
 
@@ -30,8 +29,7 @@ SubprocessMetricsProvider* g_subprocess_metrics_provider_for_testing;
 
 }  // namespace
 
-SubprocessMetricsProvider::SubprocessMetricsProvider()
-    : scoped_observer_(this) {
+SubprocessMetricsProvider::SubprocessMetricsProvider() {
   base::StatisticsRecorder::RegisterHistogramProvider(
       weak_ptr_factory_.GetWeakPtr());
   content::BrowserChildProcessObserver::Add(this);

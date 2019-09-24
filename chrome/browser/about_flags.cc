@@ -148,6 +148,7 @@
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/forcedark/forcedark_switches.h"
 #include "third_party/leveldatabase/leveldb_features.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/accessibility_switches.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/ui_base_switches.h"
@@ -1286,6 +1287,12 @@ const FeatureEntry::Choice kNotificationSchedulerChoices[] = {
 };
 
 #if defined(OS_ANDROID)
+const FeatureEntry::FeatureParam kAndroidNightModeDefaultToLightConstant[] = {
+    {"default_light_theme", "true"}};
+const FeatureEntry::FeatureVariation kAndroidNightModeFeatureVariations[] = {
+    {"(default to light theme)", kAndroidNightModeDefaultToLightConstant,
+     base::size(kAndroidNightModeDefaultToLightConstant), nullptr}};
+
 const FeatureEntry::FeatureParam
     kOmniboxSearchEngineLogoRoundedEdgesVariationConstant[] = {
         {"rounded_edges", "true"}};
@@ -1711,7 +1718,7 @@ const FeatureEntry kFeatureEntries[] = {
      SINGLE_VALUE_TYPE(chromeos::switches::kShelfHoverPreviews)},
     {"shelf-scrollable", flag_descriptions::kShelfScrollableName,
      flag_descriptions::kShelfScrollableDescription, kOsCrOS,
-     SINGLE_VALUE_TYPE(chromeos::switches::kShelfScrollable)},
+     FEATURE_VALUE_TYPE(chromeos::features::kShelfScrollable)},
     {"show-bluetooth-debug-log-toggle",
      flag_descriptions::kShowBluetoothDebugLogToggleName,
      flag_descriptions::kShowBluetoothDebugLogToggleDescription, kOsCrOS,
@@ -2072,11 +2079,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableLitePageServerPreviewsName,
      flag_descriptions::kEnableLitePageServerPreviewsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(previews::features::kLitePageServerPreviews)},
-    {"enable-url-loader-lite-page-server-previews",
-     flag_descriptions::kEnableURLLoaderLitePageServerPreviewsName,
-     flag_descriptions::kEnableURLLoaderLitePageServerPreviewsName, kOsAndroid,
-     FEATURE_VALUE_TYPE(
-         previews::features::kHTTPSServerPreviewsUsingURLLoader)},
 #endif  // OS_ANDROID
 #if defined(OS_CHROMEOS) || defined(OS_LINUX)
     {"enable-save-data", flag_descriptions::kEnableSaveDataName,
@@ -2422,7 +2424,9 @@ const FeatureEntry kFeatureEntries[] = {
 #if BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
     {"enable-android-night-mode", flag_descriptions::kAndroidNightModeName,
      flag_descriptions::kAndroidNightModeDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(chrome::android::kAndroidNightMode)},
+     FEATURE_WITH_PARAMS_VALUE_TYPE(chrome::android::kAndroidNightMode,
+                                    kAndroidNightModeFeatureVariations,
+                                    "AndroidNightMode")},
 #endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 #endif  // OS_ANDROID
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
@@ -2929,6 +2933,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxZeroSuggestionsOnNTPRealboxName,
      flag_descriptions::kOmniboxZeroSuggestionsOnNTPRealboxDescription,
      kOsDesktop, FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnNTPRealbox)},
+
+    {"omnibox-zero-suggestions-on-serp",
+     flag_descriptions::kOmniboxZeroSuggestionsOnSERPName,
+     flag_descriptions::kOmniboxZeroSuggestionsOnSERPDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(omnibox::kZeroSuggestionsOnSERP)},
 
     {"omnibox-material-design-weather-icons",
      flag_descriptions::kOmniboxMaterialDesignWeatherIconsName,
@@ -3459,6 +3468,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kEnableAccessibilityImageDescriptionsDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(features::kExperimentalAccessibilityLabels)},
+
+    {"enable-accessibility-expose-display-none",
+     flag_descriptions::kAccessibilityExposeDisplayNoneName,
+     flag_descriptions::kAccessibilityExposeDisplayNoneDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kEnableAccessibilityExposeDisplayNone)},
 
     {"enable-accessibility-object-model",
      flag_descriptions::kEnableAccessibilityObjectModelName,

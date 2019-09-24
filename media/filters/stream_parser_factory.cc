@@ -169,7 +169,7 @@ static const CodecInfo kHEVCHEV1CodecInfo = {
 static const CodecInfo kHEVCHVC1CodecInfo = {
     "hvc1.*", CodecInfo::VIDEO, nullptr, CodecInfo::HISTOGRAM_HEVC};
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 static const CodecInfo kDolbyVisionAVCCodecInfo1 = {
     "dva1.*", CodecInfo::VIDEO, nullptr, CodecInfo::HISTOGRAM_DOLBYVISION};
 static const CodecInfo kDolbyVisionAVCCodecInfo2 = {
@@ -180,14 +180,14 @@ static const CodecInfo kDolbyVisionHEVCCodecInfo1 = {
 static const CodecInfo kDolbyVisionHEVCCodecInfo2 = {
     "dvhe.*", CodecInfo::VIDEO, nullptr, CodecInfo::HISTOGRAM_DOLBYVISION};
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
-#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 static const CodecInfo kMPEG4AACCodecInfo = {"mp4a.40.*", CodecInfo::AUDIO,
                                              &ValidateMP4ACodecID,
                                              CodecInfo::HISTOGRAM_MPEG4AAC};
 static const CodecInfo kMPEG2AACLCCodecInfo = {
     "mp4a.67", CodecInfo::AUDIO, nullptr, CodecInfo::HISTOGRAM_MPEG2AAC};
 
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
 // The 'ac-3' and 'ec-3' are mime codec ids for AC3 and EAC3 according to
 // http://www.mp4ra.org/codecs.html
 // The object types for AC3 and EAC3 in MP4 container are 0xa5 and 0xa6, so
@@ -206,9 +206,9 @@ static const CodecInfo kEAC3CodecInfo2 = {"mp4a.a6", CodecInfo::AUDIO, nullptr,
                                           CodecInfo::HISTOGRAM_EAC3};
 static const CodecInfo kEAC3CodecInfo3 = {"mp4a.A6", CodecInfo::AUDIO, nullptr,
                                           CodecInfo::HISTOGRAM_EAC3};
-#endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
 
-#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
 static const CodecInfo kMpegHAudioCodecInfo1 = {
     "mhm1.*", CodecInfo::AUDIO, nullptr, CodecInfo::HISTOGRAM_MPEG_H_AUDIO};
 static const CodecInfo kMpegHAudioCodecInfo2 = {
@@ -241,7 +241,7 @@ static const CodecInfo* const kVideoMP4Codecs[] = {&kMPEG4FLACCodecInfo,
                                                    &kHEVCHEV1CodecInfo,
                                                    &kHEVCHVC1CodecInfo,
 #endif
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
                                                    &kDolbyVisionAVCCodecInfo1,
                                                    &kDolbyVisionAVCCodecInfo2,
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
@@ -251,7 +251,7 @@ static const CodecInfo* const kVideoMP4Codecs[] = {&kMPEG4FLACCodecInfo,
 #endif
                                                    &kMPEG4AACCodecInfo,
                                                    &kMPEG2AACLCCodecInfo,
-#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
                                                    &kMpegHAudioCodecInfo1,
                                                    &kMpegHAudioCodecInfo2,
 #endif
@@ -266,18 +266,18 @@ static const CodecInfo* const kAudioMP4Codecs[] = {&kMPEG4FLACCodecInfo,
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
                                                    &kMPEG4AACCodecInfo,
                                                    &kMPEG2AACLCCodecInfo,
-#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
                                                    &kMpegHAudioCodecInfo1,
                                                    &kMpegHAudioCodecInfo2,
 #endif
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
                                                    &kAC3CodecInfo1,
                                                    &kAC3CodecInfo2,
                                                    &kAC3CodecInfo3,
                                                    &kEAC3CodecInfo1,
                                                    &kEAC3CodecInfo2,
                                                    &kEAC3CodecInfo3,
-#endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
                                                    nullptr};
 
@@ -312,7 +312,7 @@ static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs,
         has_sbr = true;
         break;
       }
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
     } else if (base::MatchPattern(codec_id, kAC3CodecInfo1.pattern) ||
                base::MatchPattern(codec_id, kAC3CodecInfo2.pattern) ||
                base::MatchPattern(codec_id, kAC3CodecInfo3.pattern)) {
@@ -321,7 +321,7 @@ static StreamParser* BuildMP4Parser(const std::vector<std::string>& codecs,
                base::MatchPattern(codec_id, kEAC3CodecInfo2.pattern) ||
                base::MatchPattern(codec_id, kEAC3CodecInfo3.pattern)) {
       audio_object_types.insert(mp4::kEAC3);
-#endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
     }
   }

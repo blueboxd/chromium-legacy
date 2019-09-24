@@ -4389,8 +4389,8 @@ NSString* const kBrowserViewControllerSnackbarCategory =
                    targetDeviceName:[command targetDeviceName]];
 }
 
-- (void)showActivityOverlay:(BOOL)shown {
-  if (!shown) {
+- (void)showActivityOverlay:(BOOL)show {
+  if (!show) {
     [self.activityOverlayCoordinator stop];
     self.activityOverlayCoordinator = nil;
   } else if (!self.activityOverlayCoordinator) {

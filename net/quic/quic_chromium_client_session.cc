@@ -984,7 +984,7 @@ void QuicChromiumClientSession::UpdateStreamPriority(
       if (!VersionHasStreamType(connection()->transport_version())) {
         WritePriority(update.id, update.parent_stream_id, update.weight,
                       update.exclusive);
-      } else {
+      } else if (FLAGS_quic_allow_http3_priority) {
         quic::PriorityFrame frame;
         frame.weight = update.weight;
         frame.exclusive = update.exclusive;
@@ -3118,7 +3118,7 @@ bool QuicChromiumClientSession::HandlePromised(
           promised_id, priority, &parent_stream_id, &weight, &exclusive);
       if (!VersionHasStreamType(connection()->transport_version())) {
         WritePriority(promised_id, parent_stream_id, weight, exclusive);
-      } else {
+      } else if (FLAGS_quic_allow_http3_priority) {
         quic::PriorityFrame frame;
         frame.weight = weight;
         frame.exclusive = exclusive;

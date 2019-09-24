@@ -15,6 +15,7 @@
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/proto/realtimeapi.pb.h"
 #include "content/public/common/resource_type.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 
@@ -97,7 +98,7 @@ class SafeBrowsingUrlCheckerImpl : public mojom::SafeBrowsingUrlChecker,
    private:
     // Used in the mojo interface case.
     CheckUrlCallback callback_;
-    mojom::UrlCheckNotifierPtr slow_check_notifier_;
+    mojo::Remote<mojom::UrlCheckNotifier> slow_check_notifier_;
 
     // Used in the native call case.
     NativeCheckUrlCallback native_callback_;

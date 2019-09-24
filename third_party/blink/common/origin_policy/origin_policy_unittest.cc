@@ -232,7 +232,7 @@ TEST(OriginPolicy, FirstPartySetMissingScheme) {
   ASSERT_EQ(0U, policy->GetFirstPartySet().size());
 }
 
-// Since we use json_parser, and it has the `KEEP_LAST_OF_DUPES` behaviour when
+// Since we use json_parser, and it keeps the last of duplicated elements when
 // parsing, the last "first-party-set" is the "true" one.
 // TODO(andypaicu): figure out if this is fine, or if it needs to change
 TEST(OriginPolicy, FirstPartySetMultipleLists) {

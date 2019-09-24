@@ -6,6 +6,7 @@
 
 #include <windows.h>
 
+#include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
@@ -25,45 +26,42 @@ Color LayoutThemeWin::SystemColor(CSSValueID css_value_id,
     return LayoutThemeDefault::SystemColor(css_value_id, color_scheme);
   }
 
-  int system_index;
-
+  blink::WebThemeEngine::SystemThemeColor theme_color;
   switch (css_value_id) {
     case CSSValueID::kButtonface:
-      system_index = COLOR_BTNFACE;
+      theme_color = blink::WebThemeEngine::SystemThemeColor::kButtonFace;
       break;
     case CSSValueID::kButtontext:
-      system_index = COLOR_BTNTEXT;
+      theme_color = blink::WebThemeEngine::SystemThemeColor::kButtonText;
       break;
     case CSSValueID::kGraytext:
-      system_index = COLOR_GRAYTEXT;
+      theme_color = blink::WebThemeEngine::SystemThemeColor::kGrayText;
       break;
     case CSSValueID::kHighlight:
-      system_index = COLOR_HIGHLIGHT;
+      theme_color = blink::WebThemeEngine::SystemThemeColor::kHighlight;
       break;
     case CSSValueID::kHighlighttext:
-      system_index = COLOR_HIGHLIGHTTEXT;
+      theme_color = blink::WebThemeEngine::SystemThemeColor::kHighlightText;
       break;
     case CSSValueID::kLinktext:
     case CSSValueID::kVisitedtext:
-      system_index = COLOR_HOTLIGHT;
+      theme_color = blink::WebThemeEngine::SystemThemeColor::kHotlight;
       break;
     case CSSValueID::kWindow:
-      system_index = COLOR_WINDOW;
+      theme_color = blink::WebThemeEngine::SystemThemeColor::kWindow;
       break;
     case CSSValueID::kWindowtext:
-      system_index = COLOR_WINDOWTEXT;
+      theme_color = blink::WebThemeEngine::SystemThemeColor::kWindowText;
       break;
     default:
       return LayoutThemeDefault::SystemColor(css_value_id, color_scheme);
   }
 
-  return SystemColorBySystemIndex(system_index);
-}
-
-Color LayoutThemeWin::SystemColorBySystemIndex(int system_index) {
-  DWORD system_color = ::GetSysColor(system_index);
-  return Color(GetRValue(system_color), GetGValue(system_color),
-               GetBValue(system_color));
+  const base::Optional<SkColor> system_color =
+      Platform::Current()->ThemeEngine()->GetSystemColor(theme_color);
+  if (system_color == base::nullopt)
+    return LayoutThemeDefault::SystemColor(css_value_id, color_scheme);
+  return Color(system_color.value());
 }
 
 }  // namespace blink

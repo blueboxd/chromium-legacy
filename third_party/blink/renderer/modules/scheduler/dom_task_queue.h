@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/memory/scoped_refptr.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/execution_context/context_lifecycle_observer.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
@@ -58,7 +59,10 @@ class MODULES_EXPORT DOMTaskQueue : public ScriptWrappable,
   // For delayed tasks, the delay is adjusted before reposting it.
   void take(DOMTask*);
 
-  base::SingleThreadTaskRunner* GetTaskRunner() { return task_runner_.get(); }
+  const scoped_refptr<base::SingleThreadTaskRunner>& GetTaskRunner() {
+    return task_runner_;
+  }
+
   DOMScheduler* GetScheduler() { return scheduler_.Get(); }
 
   void ContextDestroyed(ExecutionContext*) override;
@@ -70,8 +74,10 @@ class MODULES_EXPORT DOMTaskQueue : public ScriptWrappable,
   void ScheduleTask(DOMTask*, base::TimeDelta delay);
 
   const WebSchedulingPriority priority_;
+  // This is destroyed when the Context is destroyed, and we rely on this
+  // happening before the underlying FrameScheduler is destroyed.
   std::unique_ptr<WebSchedulingTaskQueue> web_scheduling_task_queue_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   Member<DOMScheduler> scheduler_;
 };
 

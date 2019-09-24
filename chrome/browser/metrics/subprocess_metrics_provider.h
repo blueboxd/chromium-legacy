@@ -8,8 +8,8 @@
 #include <memory>
 #include <set>
 
-#include "base/gtest_prod_util.h"
 #include "base/containers/id_map.h"
+#include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/scoped_observer.h"
@@ -18,6 +18,7 @@
 #include "content/public/browser/browser_child_process_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
 
 namespace base {
@@ -105,8 +106,8 @@ class SubprocessMetricsProvider
   AllocatorByIdMap allocators_by_id_;
 
   // Track all observed render processes to un-observe them on exit.
-  ScopedObserver<content::RenderProcessHost, SubprocessMetricsProvider>
-      scoped_observer_;
+  ScopedObserver<content::RenderProcessHost, content::RenderProcessHostObserver>
+      scoped_observer_{this};
 
   base::WeakPtrFactory<SubprocessMetricsProvider> weak_ptr_factory_{this};
 

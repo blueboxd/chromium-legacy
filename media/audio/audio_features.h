@@ -14,6 +14,10 @@ namespace features {
 MEDIA_EXPORT extern const base::Feature kAudioServiceOutOfProcessKillAtHang;
 MEDIA_EXPORT extern const base::Feature kDumpOnAudioServiceHang;
 
+#if defined(OS_ANDROID)
+MEDIA_EXPORT extern const base::Feature kUseAAudioDriver;
+#endif
+
 #if defined(OS_CHROMEOS)
 MEDIA_EXPORT extern const base::Feature kCrOSSystemAEC;
 MEDIA_EXPORT extern const base::Feature kCrOSSystemAECDeactivatedGroups;

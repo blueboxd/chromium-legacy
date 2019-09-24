@@ -973,7 +973,7 @@ struct ParamTraits<base::flat_map<Key, Mapped, Compare>> {
         return false;
     }
 
-    *r = param_type(std::move(vect), base::KEEP_FIRST_OF_DUPES);
+    *r = param_type(std::move(vect));
     return true;
   }
   static void Log(const param_type& p, std::string* l) {

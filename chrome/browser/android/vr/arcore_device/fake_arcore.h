@@ -40,11 +40,11 @@ class FakeArCore : public ArCore {
   mojom::XRPlaneDetectionDataPtr GetDetectedPlanesData() override;
   mojom::XRAnchorsDataPtr GetAnchorsData() override;
 
-  base::Optional<int32_t> CreateAnchor(
+  base::Optional<uint32_t> CreateAnchor(
       const device::mojom::VRPosePtr& pose) override;
-  base::Optional<int32_t> CreateAnchor(const device::mojom::VRPosePtr& pose,
-                                       int32_t plane_id) override;
-  void DetachAnchor(int32_t anchor_id) override;
+  base::Optional<uint32_t> CreateAnchor(const device::mojom::VRPosePtr& pose,
+                                        uint32_t plane_id) override;
+  void DetachAnchor(uint32_t anchor_id) override;
 
   void SetCameraAspect(float aspect) { camera_aspect_ = aspect; }
 
@@ -63,8 +63,8 @@ class FakeArCore : public ArCore {
     gfx::Quaternion orientation;
   };
 
-  int32_t next_id_ = 100;
-  std::unordered_map<int32_t, FakeAnchorData> anchors_;
+  uint32_t next_id_ = 100;
+  std::unordered_map<uint32_t, FakeAnchorData> anchors_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeArCore);
 };

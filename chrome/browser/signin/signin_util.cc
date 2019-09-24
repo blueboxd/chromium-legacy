@@ -39,16 +39,13 @@
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/browser_window.h"
+#define CAN_DELETE_PROFILE
 #endif
 
 namespace signin_util {
 namespace {
 
 constexpr char kSignoutSettingKey[] = "signout_setting";
-
-#if defined(OS_WIN) || defined(OS_LINUX) || defined(OS_MACOSX)
-#define CAN_DELETE_PROFILE
-#endif
 
 #if defined(CAN_DELETE_PROFILE)
 // Manager that presents the profile will be deleted dialog on the first active
@@ -67,12 +64,12 @@ class DeleteProfileDialogManager : public BrowserListObserver {
                              Delegate* delegate)
       : profile_(profile),
         primary_account_email_(primary_account_email),
-        delegate_(delegate),
-        browser_observer_(this) {}
-  ~DeleteProfileDialogManager() override {}
+        delegate_(delegate) {}
+
+  ~DeleteProfileDialogManager() override { BrowserList::RemoveObserver(this); }
 
   void PresentDialogOnAllBrowserWindows() {
-    browser_observer_.Add(BrowserList::GetInstance());
+    BrowserList::AddObserver(this);
     Browser* active_browser = chrome::FindLastActiveWithProfile(profile_);
     if (active_browser)
       OnBrowserSetLastActive(active_browser);
@@ -104,7 +101,6 @@ class DeleteProfileDialogManager : public BrowserListObserver {
   Profile* profile_;
   std::string primary_account_email_;
   Delegate* delegate_;
-  ScopedObserver<BrowserList, DeleteProfileDialogManager> browser_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DeleteProfileDialogManager);
 };

@@ -8,8 +8,11 @@
 #include <memory>
 
 #include "base/logging.h"
+#include "base/test/metrics/histogram_tester.h"
+#include "base/test/scoped_feature_list.h"
 #include "printing/backend/cups_ipp_util.h"
 #include "printing/backend/cups_printer.h"
+#include "printing/printing_features_chromeos.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -84,6 +87,11 @@ class PrintBackendCupsIppUtilTest : public ::testing::Test {
 ipp_attribute_t* MakeInteger(ipp_t* ipp, int value) {
   return ippAddInteger(ipp, IPP_TAG_PRINTER, IPP_TAG_INTEGER, "TEST_DATA",
                        value);
+}
+
+ipp_attribute_t* MakeIntCollection(ipp_t* ipp, const std::vector<int>& values) {
+  return ippAddIntegers(ipp, IPP_TAG_PRINTER, IPP_TAG_INTEGER, "TEST_DATA",
+                        values.size(), values.data());
 }
 
 ipp_attribute_t* MakeRange(ipp_t* ipp, int lower_bound, int upper_bound) {
@@ -236,6 +244,38 @@ TEST_F(PrintBackendCupsIppUtilTest, PinTooShort) {
   CapsAndDefaultsFromPrinter(*printer_, &caps);
 
   EXPECT_FALSE(caps.pin_supported);
+}
+
+TEST_F(PrintBackendCupsIppUtilTest, AdvancedCaps) {
+  base::HistogramTester histograms;
+  base::test::ScopedFeatureList features;
+  features.InitAndEnableFeature(printing::kAdvancedPpdAttributes);
+
+  printer_->SetSupportedOptions(
+      "job-creation-attributes",
+      MakeStringCollection(
+          ipp_, {"copies", "ipp-attribute-fidelity", "finishings", "job-name",
+                 "output-bin", "print-quality"}));
+  printer_->SetSupportedOptions("finishings",
+                                MakeIntCollection(ipp_, {3, 7, 10}));
+  printer_->SetSupportedOptions(
+      "output-bin", MakeStringCollection(ipp_, {"face-down", "face-up"}));
+  printer_->SetSupportedOptions("print-quality",
+                                MakeIntCollection(ipp_, {3, 4, 5}));
+
+  PrinterSemanticCapsAndDefaults caps;
+  CapsAndDefaultsFromPrinter(*printer_, &caps);
+
+  EXPECT_EQ(6u, caps.advanced_capabilities.size());
+  EXPECT_EQ("ipp-attribute-fidelity", caps.advanced_capabilities[0].name);
+  EXPECT_EQ("finishings/7", caps.advanced_capabilities[1].name);
+  EXPECT_EQ("finishings/10", caps.advanced_capabilities[2].name);
+  EXPECT_EQ("job-name", caps.advanced_capabilities[3].name);
+  EXPECT_EQ("output-bin", caps.advanced_capabilities[4].name);
+  EXPECT_EQ(2u, caps.advanced_capabilities[4].values.size());
+  EXPECT_EQ("print-quality", caps.advanced_capabilities[5].name);
+  EXPECT_EQ(3u, caps.advanced_capabilities[5].values.size());
+  histograms.ExpectUniqueSample("Printing.CUPS.IppAttributesCount", 5, 1);
 }
 
 }  // namespace printing

@@ -51,10 +51,10 @@ class SigninProfileAttributesUpdater
   SigninErrorController* signin_error_controller_;
   ProfileAttributesStorage* profile_attributes_storage_;
   const base::FilePath profile_path_;
-  ScopedObserver<signin::IdentityManager, SigninProfileAttributesUpdater>
-      identity_manager_observer_;
-  ScopedObserver<SigninErrorController, SigninProfileAttributesUpdater>
-      signin_error_controller_observer_;
+  ScopedObserver<signin::IdentityManager, signin::IdentityManager::Observer>
+      identity_manager_observer_{this};
+  ScopedObserver<SigninErrorController, SigninErrorController::Observer>
+      signin_error_controller_observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SigninProfileAttributesUpdater);
 };

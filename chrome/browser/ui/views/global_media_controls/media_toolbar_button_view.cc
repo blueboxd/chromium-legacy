@@ -68,14 +68,18 @@ void MediaToolbarButtonView::Hide() {
 
 void MediaToolbarButtonView::Enable() {
   SetEnabled(true);
-  UpdateIcon();
   InformIPHOfButtonEnabled();
+#if defined(OS_MACOSX)
+  UpdateIcon();
+#endif  // defined(OS_MACOSX)
 }
 
 void MediaToolbarButtonView::Disable() {
   SetEnabled(false);
-  UpdateIcon();
   InformIPHOfButtonDisabledorHidden();
+#if defined(OS_MACOSX)
+  UpdateIcon();
+#endif  // defined(OS_MACOSX)
 }
 
 SkColor MediaToolbarButtonView::GetInkDropBaseColor() const {
@@ -85,6 +89,9 @@ SkColor MediaToolbarButtonView::GetInkDropBaseColor() const {
 }
 
 void MediaToolbarButtonView::UpdateIcon() {
+  if (!GetWidget())
+    return;
+
   const gfx::VectorIcon& icon = ::vector_icons::kQueueMusicIcon;
 
   const SkColor normal_color =

@@ -17,6 +17,7 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/crash/content/app/crashpad.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/aura/env.h"
 #include "ui/aura/window.h"
@@ -37,8 +38,14 @@
 namespace {
 
 void InitCrashReporterIfEnabled(bool enabled) {
+#if defined(OS_WIN)
   if (enabled)
     breakpad::InitCrashReporter(std::string());
+#elif defined(OS_LINUX)
+  if (!crash_reporter::IsCrashpadEnabled() && enabled) {
+    breakpad::InitCrashReporter(std::string());
+  }
+#endif
 }
 
 }  // namespace

@@ -310,6 +310,8 @@ class WebView {
   // settings.
   virtual void Resize(const WebSize&) = 0;
 
+  virtual WebSize GetSize() = 0;
+
   // Auto-Resize -----------------------------------------------------------
 
   // In auto-resize mode, the view is automatically adjusted to fit the html

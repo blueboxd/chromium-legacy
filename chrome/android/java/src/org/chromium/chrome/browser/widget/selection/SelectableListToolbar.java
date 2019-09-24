@@ -32,6 +32,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import androidx.annotation.CallSuper;
+import androidx.annotation.IntDef;
 import androidx.annotation.StringRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -51,6 +52,8 @@ import org.chromium.chrome.browser.widget.selection.SelectionDelegate.SelectionO
 import org.chromium.ui.KeyboardVisibilityDelegate;
 import org.chromium.ui.UiUtils;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.List;
 
 /**
@@ -77,6 +80,14 @@ public class SelectableListToolbar<E>
          * Called when a search is ended.
          */
         void onEndSearch();
+    }
+
+    @IntDef({ViewType.NORMAL_VIEW, ViewType.SELECTION_VIEW, ViewType.SEARCH_VIEW})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ViewType {
+        int NORMAL_VIEW = 0;
+        int SELECTION_VIEW = 1;
+        int SEARCH_VIEW = 2;
     }
 
     /** No navigation button is displayed. **/
@@ -132,6 +143,9 @@ public class SelectableListToolbar<E>
     private int mShowInfoStringId;
     private int mHideInfoStringId;
     private int mExtraMenuItemId;
+
+    // current view type that SelectableListToolbar is showing
+    private int mViewType;
 
     /**
      * Constructor for inflating from XML.
@@ -527,6 +541,10 @@ public class SelectableListToolbar<E>
     }
 
     protected void showNormalView() {
+        // hide overflow menu explicitly: crbug.com/999269
+        hideOverflowMenu();
+
+        mViewType = ViewType.NORMAL_VIEW;
         getMenu().setGroupVisible(mNormalGroupResId, true);
         getMenu().setGroupVisible(mSelectedGroupResId, false);
         if (mHasSearchView) {
@@ -546,6 +564,8 @@ public class SelectableListToolbar<E>
     }
 
     protected void showSelectionView(List<E> selectedItems, boolean wasSelectionEnabled) {
+        mViewType = ViewType.SELECTION_VIEW;
+
         getMenu().setGroupVisible(mNormalGroupResId, false);
         getMenu().setGroupVisible(mSelectedGroupResId, true);
         getMenu().setGroupEnabled(mSelectedGroupResId, !selectedItems.isEmpty());
@@ -563,6 +583,8 @@ public class SelectableListToolbar<E>
     }
 
     private void showSearchViewInternal() {
+        mViewType = ViewType.SEARCH_VIEW;
+
         getMenu().setGroupVisible(mNormalGroupResId, false);
         getMenu().setGroupVisible(mSelectedGroupResId, false);
         mNumberRollView.setVisibility(View.GONE);
@@ -756,5 +778,10 @@ public class SelectableListToolbar<E>
             if ((child instanceof Button)) continue;
             child.setFocusableInTouchMode(true);
         }
+    }
+
+    @VisibleForTesting
+    public @ViewType int getCurrentViewType() {
+        return mViewType;
     }
 }

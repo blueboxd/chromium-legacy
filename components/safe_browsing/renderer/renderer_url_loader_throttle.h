@@ -9,8 +9,9 @@
 
 #include "base/memory/weak_ptr.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
 #include "url/gurl.h"
@@ -48,9 +49,10 @@ class RendererURLLoaderThrottle : public blink::URLLoaderThrottle,
   // mojom::UrlCheckNotifier implementation.
   void OnCompleteCheck(bool proceed, bool showed_interstitial) override;
 
-  void OnCheckUrlResult(mojom::UrlCheckNotifierRequest slow_check_notifier,
-                        bool proceed,
-                        bool showed_interstitial);
+  void OnCheckUrlResult(
+      mojo::PendingReceiver<mojom::UrlCheckNotifier> slow_check_notifier,
+      bool proceed,
+      bool showed_interstitial);
 
   // Called by the two methods above.
   // |slow_check| indicates whether it reports the result of a slow check.
@@ -85,7 +87,8 @@ class RendererURLLoaderThrottle : public blink::URLLoaderThrottle,
   // been involved.
   bool user_action_involved_ = false;
 
-  std::unique_ptr<mojo::BindingSet<mojom::UrlCheckNotifier>> notifier_bindings_;
+  std::unique_ptr<mojo::ReceiverSet<mojom::UrlCheckNotifier>>
+      notifier_receivers_;
 
   GURL original_url_;
 

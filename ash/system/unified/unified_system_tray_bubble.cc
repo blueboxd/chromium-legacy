@@ -253,6 +253,14 @@ int UnifiedSystemTrayBubble::CalculateMaxHeight() const {
   return free_space_height_above_anchor - kUnifiedMenuPadding * 2;
 }
 
+bool UnifiedSystemTrayBubble::FocusOut(bool reverse) {
+  return tray_->FocusMessageCenter(reverse);
+}
+
+void UnifiedSystemTrayBubble::FocusEntered(bool reverse) {
+  unified_view_->FocusEntered(reverse);
+}
+
 void UnifiedSystemTrayBubble::OnDisplayConfigurationChanged() {
   UpdateBubbleBounds();
 }

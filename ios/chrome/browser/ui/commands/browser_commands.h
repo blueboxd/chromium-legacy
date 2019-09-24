@@ -112,9 +112,9 @@ class GURL;
 // Sends the tab to another of the user's devices using the data in |command|.
 - (void)sendTabToSelf:(SendTabToSelfCommand*)command;
 
-// Show/Hide the activity indicator overlay that appears over the view to
+// Shows/Hides the activity indicator overlay that appears over the view to
 // prevent interaction with the web page.
-- (void)showActivityOverlay:(BOOL)shown;
+- (void)showActivityOverlay:(BOOL)show;
 
 @end
 

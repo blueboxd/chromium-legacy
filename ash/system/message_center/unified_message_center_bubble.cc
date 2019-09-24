@@ -14,6 +14,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
 #include "ash/system/unified/unified_system_tray_view.h"
+#include "ui/views/focus/focus_search.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -29,12 +30,13 @@ UnifiedMessageCenterBubble::UnifiedMessageCenterBubble(UnifiedSystemTray* tray)
   init_params.max_width = kTrayMenuWidth;
   init_params.corner_radius = kUnifiedTrayCornerRadius;
   init_params.has_shadow = false;
+  init_params.close_on_deactivate = false;
 
   bubble_view_ = new TrayBubbleView(init_params);
 
   message_center_view_ =
       bubble_view_->AddChildView(std::make_unique<UnifiedMessageCenterView>(
-          nullptr /* parent */, tray->model()));
+          nullptr /* parent */, tray->model(), this));
 
   message_center_view_->AddObserver(this);
 
@@ -81,6 +83,14 @@ void UnifiedMessageCenterBubble::UpdatePosition() {
 
   bubble_widget_->SetBounds(resting_bounds);
   bubble_view_->ChangeAnchorRect(resting_bounds);
+}
+
+void UnifiedMessageCenterBubble::FocusEntered(bool reverse) {
+  message_center_view_->FocusEntered(reverse);
+}
+
+bool UnifiedMessageCenterBubble::FocusOut(bool reverse) {
+  return tray_->FocusQuickSettings(reverse);
 }
 
 TrayBackgroundView* UnifiedMessageCenterBubble::GetTray() const {

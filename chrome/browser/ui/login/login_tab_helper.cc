@@ -159,8 +159,17 @@ LoginTabHelper::WillProcessMainFrameUnauthorizedResponse(
     content::NavigationHandle* navigation_handle) {
   // If the user has just cancelled the auth prompt for this navigation, then
   // the page is being refreshed to retrieve the 401 body from the server, so
-  // allow the refresh to proceed.
-  if (web_contents()->GetController().GetVisibleEntry()->GetUniqueID() ==
+  // allow the refresh to proceed. The entry to compare against is the pending
+  // entry, because while refreshing after cancelling the prompt, the page that
+  // showed the prompt will be the pending entry until the refresh
+  // commits. Comparing against GetVisibleEntry() would also work, but it's less
+  // specific and not guaranteed to exist in all cases (e.g., in the case of
+  // navigating a window just opened via window.open()).
+  //
+  // TODO(https://crbug.com/1006955): if this line is crashing, the assumption
+  // that GetPendingEntry() must be non-null is incorrect, in which case a null
+  // check should be added here.
+  if (web_contents()->GetController().GetPendingEntry()->GetUniqueID() ==
       navigation_entry_id_with_cancelled_prompt_) {
     // Note the navigation handle ID so that when this refresh navigation
     // finishes, DidFinishNavigation declines to show another login prompt. We

@@ -157,7 +157,8 @@ OSSettingsUI::OSSettingsUI(content::WebUI* web_ui)
   html_source->AddResourcePath("app-management/image_info.mojom-lite.js",
                                IDR_APP_MANAGEMENT_IMAGE_INFO_MOJO_LITE_JS);
 
-  ::settings::AddLocalizedStrings(html_source, profile);
+  ::settings::AddLocalizedStrings(html_source, profile,
+                                  web_ui->GetWebContents());
 
   auto plural_string_handler = std::make_unique<PluralStringHandler>();
   plural_string_handler->AddLocalizedString("profileLabel",

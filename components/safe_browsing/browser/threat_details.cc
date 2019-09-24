@@ -8,7 +8,6 @@
 
 #include <stddef.h>
 #include <stdint.h>
-#include <string_view>
 #include <unordered_set>
 #include <utility>
 #include <vector>
@@ -18,6 +17,7 @@
 #include "base/lazy_instance.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
+#include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "components/history/core/browser/history_service.h"
@@ -312,7 +312,7 @@ void TrimElements(const std::set<int> target_ids,
 }
 
 void DisableBackForwardCache(content::RenderFrameHost* rfh,
-                             std::string_view reason) {
+                             base::StringPiece reason) {
   content::WebContents::FromRenderFrameHost(rfh)
       ->GetController()
       .GetBackForwardCache()

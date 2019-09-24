@@ -30,16 +30,28 @@ class MEDIA_GPU_EXPORT SharedImageVideoProvider {
 
   // Description of the underlying properties of the shared image.
   struct ImageSpec {
-    ImageSpec(const gfx::Size& size);
+    ImageSpec();
+    ImageSpec(const gfx::Size& size, uint64_t generation_id);
     ImageSpec(const ImageSpec&);
     ~ImageSpec();
 
     // Size of the underlying texture.
     gfx::Size size;
 
+    // This is a hack to allow us to discard pooled images if the TextureOwner
+    // changes.  We don't want to keep a ref to the TextureOwner here, so we
+    // just use a generation counter.  Note that this is temporary anyway; we
+    // only need it for legacy mailbox support to construct a per-video-frame
+    // texture with the TextureOwner's service id (unowned texture hack).  Once
+    // legacy mailboxes aren't needed, SharedImageVideo::BeginAccess can just
+    // ask the CodecImage for whatever TextureOwner it is using currently, which
+    // is set by the client via CodecImage::Initialize.
+    uint64_t generation_id = 0;
+
     // TODO: Include other properties, if they matter, like texture format.
 
-    bool operator==(const ImageSpec&);
+    bool operator==(const ImageSpec&) const;
+    bool operator!=(const ImageSpec&) const;
   };
 
   using ReleaseCB = base::OnceCallback<void(const gpu::SyncToken&)>;
@@ -57,7 +69,8 @@ class MEDIA_GPU_EXPORT SharedImageVideoProvider {
     // considered to be unused.
     ReleaseCB release_cb;
 
-    // CodecImage that one can use for MaybeRenderEarly.
+    // CodecImage that one can use for MaybeRenderEarly, and to attach a codec
+    // output buffer.
     scoped_refptr<CodecImageHolder> codec_image_holder;
 
     // Is the underlying context Vulkan?  If so, then one must provide YCbCrInfo

@@ -28,8 +28,6 @@ namespace ui_devtools {
 
 namespace {
 
-using namespace ui_devtools::protocol;
-
 void DrawRulerText(const base::string16& utf16_text,
                    const gfx::Point& p,
                    gfx::Canvas* canvas,
@@ -385,7 +383,7 @@ void OverlayAgentViews::SetPinnedNodeId(int node_id) {
 }
 
 protocol::Response OverlayAgentViews::setInspectMode(
-    const String& in_mode,
+    const protocol::String& in_mode,
     protocol::Maybe<protocol::Overlay::HighlightConfig> in_highlightConfig) {
   pinned_id_ = 0;
   if (in_mode.compare("searchForNode") == 0) {
@@ -405,7 +403,7 @@ protocol::Response OverlayAgentViews::highlightNode(
 protocol::Response OverlayAgentViews::hideHighlight() {
   if (layer_for_highlighting_ && layer_for_highlighting_->visible())
     layer_for_highlighting_->SetVisible(false);
-  return Response::OK();
+  return protocol::Response::OK();
 }
 
 void OverlayAgentViews::ShowDistancesInHighlightOverlay(int pinned_id,
@@ -467,13 +465,14 @@ void OverlayAgentViews::ShowDistancesInHighlightOverlay(int pinned_id,
   }
 }
 
-Response OverlayAgentViews::HighlightNode(int node_id, bool show_size) {
+protocol::Response OverlayAgentViews::HighlightNode(int node_id,
+                                                    bool show_size) {
   UIElement* element = dom_agent()->GetElementFromNodeId(node_id);
   if (!element)
-    return Response::Error("No node found with that id");
+    return protocol::Response::Error("No node found with that id");
 
   if (element->type() == UIElementType::ROOT)
-    return Response::Error("Cannot highlight root node.");
+    return protocol::Response::Error("Cannot highlight root node.");
 
   if (!layer_for_highlighting_) {
     layer_for_highlighting_.reset(new ui::Layer(ui::LayerType::LAYER_TEXTURED));
@@ -486,7 +485,7 @@ Response OverlayAgentViews::HighlightNode(int node_id, bool show_size) {
   show_size_on_canvas_ = show_size;
   layer_for_highlighting_->SetVisible(
       UpdateHighlight(element->GetNodeWindowAndScreenBounds()));
-  return Response::OK();
+  return protocol::Response::OK();
 }
 
 void OverlayAgentViews::OnMouseEvent(ui::MouseEvent* event) {

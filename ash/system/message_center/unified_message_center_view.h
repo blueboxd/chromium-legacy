@@ -26,6 +26,7 @@ class ScrollView;
 namespace ash {
 
 class MessageCenterScrollBar;
+class UnifiedMessageCenterBubble;
 class UnifiedSystemTrayModel;
 class UnifiedSystemTrayView;
 
@@ -92,7 +93,8 @@ class ASH_EXPORT UnifiedMessageCenterView
       public gfx::AnimationDelegate {
  public:
   UnifiedMessageCenterView(UnifiedSystemTrayView* parent,
-                           UnifiedSystemTrayModel* model);
+                           UnifiedSystemTrayModel* model,
+                           UnifiedMessageCenterBubble* bubble);
   ~UnifiedMessageCenterView() override;
 
   // Sets the maximum height that the view can take.
@@ -118,6 +120,11 @@ class ASH_EXPORT UnifiedMessageCenterView
 
   // Count number of notifications that are above visible area.
   int GetStackedNotificationCount() const;
+
+  // Set the first child view to be focused when focus is acquired.
+  // This is the first visible child unless reverse is true, in which case
+  // it is the last visible child.
+  void FocusEntered(bool reverse);
 
   // views::View:
   void AddedToWidget() override;
@@ -148,6 +155,7 @@ class ASH_EXPORT UnifiedMessageCenterView
 
  private:
   friend class UnifiedMessageCenterViewTest;
+  friend class UnifiedMessageCenterBubbleTest;
 
   // Starts the animation to hide the notification stacking bar.
   void StartHideStackingBarAnimation();
@@ -169,8 +177,15 @@ class ASH_EXPORT UnifiedMessageCenterView
   // TopCornerBorder.
   void NotifyRectBelowScroll();
 
+  // Get first and last focusable child views. These functions are used to
+  // figure out if we need to focus out or to set the correct focused view
+  // when focus is acquired from another widget.
+  View* GetFirstFocusableChild();
+  View* GetLastFocusableChild();
+
   UnifiedSystemTrayView* const parent_;
   UnifiedSystemTrayModel* const model_;
+  UnifiedMessageCenterBubble* const message_center_bubble_;
   StackingNotificationCounterView* const stacking_counter_;
   MessageCenterScrollBar* const scroll_bar_;
   views::ScrollView* const scroller_;
@@ -188,6 +203,8 @@ class ASH_EXPORT UnifiedMessageCenterView
   UnifiedMessageCenterAnimationState animation_state_ =
       UnifiedMessageCenterAnimationState::IDLE;
   const std::unique_ptr<gfx::LinearAnimation> animation_;
+
+  const std::unique_ptr<views::FocusSearch> focus_search_;
 
   views::FocusManager* focus_manager_ = nullptr;
 

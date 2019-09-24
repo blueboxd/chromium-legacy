@@ -43,7 +43,9 @@ class DummyEvent : public ui::Event {
 class TestUnifiedMessageCenterView : public UnifiedMessageCenterView {
  public:
   explicit TestUnifiedMessageCenterView(UnifiedSystemTrayModel* model)
-      : UnifiedMessageCenterView(nullptr, model) {}
+      : UnifiedMessageCenterView(nullptr /*parent*/,
+                                 model,
+                                 nullptr /*bubble*/) {}
 
   ~TestUnifiedMessageCenterView() override = default;
 

@@ -422,10 +422,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   void HidePopup();
 
-  // TODO(https://crbug.com/831123): Rename to FillPasswordForm when browser
-  // form parsing is launched.
-  void FillUsingRendererIDs(const PasswordFormFillData& form_data);
-
   // Returns pair(username_element, password_element) based on renderer ids from
   // |username_field| and |password_field| from |form_data|.
   std::pair<blink::WebInputElement, blink::WebInputElement>

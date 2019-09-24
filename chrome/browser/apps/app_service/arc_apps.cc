@@ -27,6 +27,7 @@
 #include "content/public/browser/system_connector.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/size.h"
@@ -119,7 +120,7 @@ ArcApps::ArcApps(Profile* profile, apps::AppServiceProxy* proxy)
   if (!proxy) {
     proxy = apps::AppServiceProxyFactory::GetForProfile(profile);
   }
-  apps::mojom::AppServicePtr& app_service = proxy->AppService();
+  mojo::Remote<apps::mojom::AppService>& app_service = proxy->AppService();
   if (!app_service.is_bound()) {
     return;
   }

@@ -13,6 +13,7 @@
 #include "base/test/task_environment.h"
 #include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
+#include "mojo/public/cpp/bindings/binding_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace apps {

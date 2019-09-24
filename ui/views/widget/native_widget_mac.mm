@@ -90,22 +90,6 @@ CGWindowLevel CGWindowLevelForZOrderLevel(ui::ZOrderLevel level,
   }
 }
 
-ui::ZOrderLevel ZOrderLevelForCGWindowLevel(CGWindowLevel level) {
-  switch (level) {
-    case kCGNormalWindowLevel:
-      return ui::ZOrderLevel::kNormal;
-    case kCGFloatingWindowLevel:
-    case kCGPopUpMenuWindowLevel:
-    default:
-      return ui::ZOrderLevel::kFloatingWindow;
-    case kCGStatusWindowLevel:
-    case kCGDraggingWindowLevel:
-      return ui::ZOrderLevel::kFloatingUIElement;
-    case kCGScreenSaverWindowLevel - 1:
-      return ui::ZOrderLevel::kSecuritySurface;
-  }
-}
-
 }  // namespace
 
 // Implements zoom following focus for macOS accessibility zoom.
@@ -541,20 +525,14 @@ bool NativeWidgetMac::IsActive() const {
 }
 
 void NativeWidgetMac::SetZOrderLevel(ui::ZOrderLevel order) {
-  NSWindow* window = GetNativeWindow().GetNativeNSWindow();
-  [window setLevel:CGWindowLevelForZOrderLevel(order, type_)];
-
-  // Windows that have a higher window level than NSNormalWindowLevel default to
-  // NSWindowCollectionBehaviorTransient. Set the value explicitly here to match
-  // normal windows.
-  NSWindowCollectionBehavior behavior =
-      [window collectionBehavior] | NSWindowCollectionBehaviorManaged;
-  [window setCollectionBehavior:behavior];
+  if (!GetNSWindowMojo())
+    return;
+  z_order_level_ = order;
+  GetNSWindowMojo()->SetWindowLevel(CGWindowLevelForZOrderLevel(order, type_));
 }
 
 ui::ZOrderLevel NativeWidgetMac::GetZOrderLevel() const {
-  return ZOrderLevelForCGWindowLevel(
-      [GetNativeWindow().GetNativeNSWindow() level]);
+  return z_order_level_;
 }
 
 void NativeWidgetMac::SetVisibleOnAllWorkspaces(bool always_visible) {

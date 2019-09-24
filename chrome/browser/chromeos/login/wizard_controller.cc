@@ -148,6 +148,7 @@
 #include "components/arc/arc_util.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "components/crash/content/app/breakpad_linux.h"
+#include "components/crash/content/app/crashpad.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -1117,6 +1118,11 @@ void WizardController::OnResetScreenExit() {
 void WizardController::OnChangedMetricsReportingState(bool enabled) {
   StatsReportingController::Get()->SetEnabled(
       ProfileManager::GetActiveUserProfile(), enabled);
+  if (crash_reporter::IsCrashpadEnabled()) {
+    crash_reporter::SetUploadConsent(enabled);
+    return;
+  }
+
   if (!enabled)
     return;
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)

@@ -15,6 +15,7 @@ import logging
 import os
 import posixpath
 import re
+import string
 import subprocess
 import sys
 import tempfile
@@ -34,6 +35,7 @@ import ninja_parser
 import nm
 import obj_analyzer
 import path_util
+import string_extract
 
 sys.path.insert(1, os.path.join(path_util.SRC_ROOT, 'tools', 'grit'))
 from grit.format import data_pack
@@ -159,6 +161,10 @@ def _NormalizeNames(raw_symbols):
     elif symbol.IsDex():
       symbol.full_name, symbol.template_name, symbol.name = (
           function_signature.ParseJava(full_name))
+    elif symbol.IsStringLiteral():
+      symbol.full_name = full_name
+      symbol.template_name = full_name
+      symbol.name = full_name
     elif symbol.IsNative():
       # Remove [clone] suffix, and set flag accordingly.
       # Search from left-to-right, as multiple [clone]s can exist.
@@ -844,6 +850,24 @@ def _DeduceObjectPathForSwitchTables(raw_symbols, object_paths_by_name):
         num_deduced, num_arbitrations, num_unassigned)
 
 
+def _NameStringLiterals(raw_symbols, elf_path, tool_prefix):
+  # Assign ASCII-readable string literals names like "string contents".
+  STRING_LENGTH_CUTOFF = 30
+
+  for sym, name in string_extract.ReadStringLiterals(raw_symbols, elf_path,
+                                                     tool_prefix):
+    # Newlines and tabs are used as delimiters in file_format.py
+    # At this point, names still have a terminating null byte.
+    name = name.translate(None, '\t\n').strip('\00')
+    is_printable = all(c in string.printable for c in name)
+    if not is_printable:
+      sym.full_name = models.STRING_LITERAL_NAME
+    elif len(name) > STRING_LENGTH_CUTOFF:
+      sym.full_name = '"{}[...]"'.format(name[:STRING_LENGTH_CUTOFF])
+    else:
+      sym.full_name = '"{}"'.format(name)
+
+
 def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
                   outdir_context=None, linker_name=None):
   """Adds ELF section sizes and symbols."""
@@ -955,6 +979,9 @@ def _ParseElfInfo(map_path, elf_path, tool_prefix, track_string_literals,
             raw_symbols[idx:idx + 1] = literal_syms
 
   linker_map_parser.DeduceObjectPathsFromThinMap(raw_symbols, linker_map_extras)
+
+  if elf_path:
+    _NameStringLiterals(raw_symbols, elf_path, tool_prefix)
 
   # If we have an ELF file, use its sizes as the source of truth, since some
   # sections can differ from the .map.
@@ -1521,7 +1548,7 @@ def CreateSizeInfo(
 
   # Do not call _NormalizeNames() during archive since that method tends to need
   # tweaks over time. Calling it only when loading .size files allows for more
-  # flexability.
+  # flexibility.
   if normalize_names:
     _NormalizeNames(raw_symbols)
 

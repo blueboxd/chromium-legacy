@@ -594,7 +594,7 @@ TEST_F(MP4StreamParserTest, DemuxingAC3) {
   audio_object_types.insert(kAC3);
   parser_.reset(new MP4StreamParser(audio_object_types, false, false));
 
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
   bool expect_success = true;
 #else
   bool expect_success = false;
@@ -618,7 +618,7 @@ TEST_F(MP4StreamParserTest, DemuxingEAC3) {
   audio_object_types.insert(kEAC3);
   parser_.reset(new MP4StreamParser(audio_object_types, false, false));
 
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
   bool expect_success = true;
 #else
   bool expect_success = false;

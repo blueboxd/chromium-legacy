@@ -94,7 +94,7 @@ class AppRegistrar {
   bool IsLocallyInstalled(const GURL& start_url) const;
 
   void AddObserver(AppRegistrarObserver* observer);
-  void RemoveObserver(const AppRegistrarObserver* observer);
+  void RemoveObserver(AppRegistrarObserver* observer);
 
   void NotifyWebAppInstalled(const AppId& app_id);
 

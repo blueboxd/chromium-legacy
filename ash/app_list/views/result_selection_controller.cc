@@ -37,8 +37,10 @@ bool ResultLocationDetails::operator!=(
 }
 
 ResultSelectionController::ResultSelectionController(
-    const ResultSelectionModel* result_container_views)
-    : result_selection_model_(result_container_views) {}
+    const ResultSelectionModel* result_container_views,
+    const base::RepeatingClosure& selection_change_callback)
+    : result_selection_model_(result_container_views),
+      selection_change_callback_(selection_change_callback) {}
 
 ResultSelectionController::~ResultSelectionController() = default;
 
@@ -99,6 +101,8 @@ void ResultSelectionController::ResetSelection(const ui::KeyEvent* key_event) {
 
   if (selected_result_)
     selected_result_->SetSelected(true, is_shift_tab);
+
+  selection_change_callback_.Run();
 }
 
 void ResultSelectionController::ClearSelection() {
@@ -230,6 +234,7 @@ void ResultSelectionController::SetSelection(
   selected_location_details_ =
       std::make_unique<ResultLocationDetails>(location);
   selected_result_->SetSelected(true, reverse_tab_order);
+  selection_change_callback_.Run();
 }
 
 SearchResultBaseView* ResultSelectionController::GetResultAtLocation(

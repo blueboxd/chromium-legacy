@@ -36,3 +36,14 @@ enum EffectiveConnectionType {
   // 4G connection.
   EFFECTIVE_CONNECTION_TYPE_4G = 5;
 }
+
+// Context in which the items are requested.
+enum RequestContext {
+  reserved 1;
+  // Context not specified.
+  CONTEXT_UNSPECIFIED = 0;
+  // Requesting items on page navigation.
+  CONTEXT_PAGE_NAVIGATION = 2;
+  // Requesting items as part of a batch update.
+  CONTEXT_BATCH_UPDATE = 3;
+}

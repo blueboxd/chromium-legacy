@@ -15,9 +15,6 @@ class LayoutThemeWin final : public LayoutThemeDefault {
 
   Color SystemColor(CSSValueID css_value_id,
                     WebColorScheme color_scheme) const override;
-
- private:
-  static Color SystemColorBySystemIndex(int system_index);
 };
 
 }  // namespace blink

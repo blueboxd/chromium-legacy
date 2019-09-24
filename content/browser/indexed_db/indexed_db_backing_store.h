@@ -137,7 +137,7 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   class CONTENT_EXPORT Transaction {
    public:
     explicit Transaction(IndexedDBBackingStore* backing_store,
-                         bool relaxed_durability);
+                         blink::mojom::IDBTransactionDurability durability);
     virtual ~Transaction();
 
     virtual void Begin(std::vector<ScopeLock> locks);
@@ -300,10 +300,9 @@ class CONTENT_EXPORT IndexedDBBackingStore {
     // has been bumped, and journal cleaning should be deferred.
     bool committing_;
 
-    // This flag is passed to LevelDBScopes as |sync_on_commit|.
-    // If |relaxed_durability| is false, the commit flushes to disk.
-    // If true, it avoids the flush for performance at the cost of durability.
-    bool relaxed_durability_;
+    // This flag is passed to LevelDBScopes as |sync_on_commit|, converted
+    // via ShouldSyncOnCommit.
+    blink::mojom::IDBTransactionDurability durability_;
 
     base::WeakPtrFactory<Transaction> ptr_factory_{this};
 
@@ -584,11 +583,14 @@ class CONTENT_EXPORT IndexedDBBackingStore {
   bool is_incognito() const { return backing_store_mode_ == Mode::kInMemory; }
 
   virtual std::unique_ptr<Transaction> CreateTransaction(
-      bool relaxed_durability);
+      blink::mojom::IDBTransactionDurability durability);
 
   base::WeakPtr<IndexedDBBackingStore> AsWeakPtr() {
     return weak_factory_.GetWeakPtr();
   }
+
+  static bool ShouldSyncOnCommit(
+      blink::mojom::IDBTransactionDurability durability);
 
  protected:
   friend class IndexedDBOriginState;

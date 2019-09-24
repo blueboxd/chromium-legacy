@@ -3466,6 +3466,8 @@ bool LayerTreeHostImpl::InitializeFrameSink(
   has_valid_layer_tree_frame_sink_ = true;
 
   auto* context_provider = layer_tree_frame_sink_->context_provider();
+  frame_trackers_.StartSequence(FrameSequenceTrackerType::kUniversal);
+
   if (context_provider) {
     max_texture_size_ =
         context_provider->ContextCapabilities().max_texture_size;

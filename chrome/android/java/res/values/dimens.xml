@@ -291,6 +291,19 @@
     <dimen name="location_bar_incognito_badge_end_padding_with_status_icon">2dp</dimen>
     <dimen name="location_bar_incognito_badge_end_padding_without_status_icon">8dp</dimen>
 
+    <!--
+         Specialty spacing for when the search engine icon is shown. The various
+         states are listed below.
+         unfocused:
+         | padding(8dp) | icon(24dp) | padding(4dp)| url bar | padding(8dp) |
+         focused:
+         | padding(8dp) | icon(24dp) | padding(16dp)| url bar | padding(8dp) |
+    -->
+    <dimen name="sei_location_bar_lateral_padding">8dp</dimen>
+    <dimen name="location_bar_status_icon_width">24dp</dimen>
+    <dimen name="sei_location_bar_icon_end_padding">4dp</dimen>
+    <dimen name="sei_location_bar_icon_end_padding_focused">16dp</dimen>
+
     <dimen name="tablet_toolbar_start_padding">4dp</dimen>
     <dimen name="tablet_toolbar_end_padding">6dp</dimen>
     <dimen name="toolbar_optional_button_animation_translation">10dp</dimen>
@@ -373,6 +386,11 @@
     <dimen name="duet_ntp_logo_top_margin">-16dp</dimen>
     <dimen name="ntp_search_box_height">48dp</dimen>
     <dimen name="ntp_search_box_transition_length">16dp</dimen>
+    <dimen name="sei_search_box_lateral_padding">12dp</dimen>
+    <!-- The ntp_voice_search_button_width is 48dp and its icon is 24dp. Setting
+         8dp start padding will result in 8dp padding between the icon and the
+         end of the fakebox ((48 - 24 - 8) / 2). -->
+    <dimen name="sei_ntp_voice_button_start_padding">8dp</dimen>
     <dimen name="experimental_explore_sites_radius">8dp</dimen>
     <dimen name="experimental_explore_sites_padding">8dp</dimen>
     <dimen name="experimental_explore_sites_margin">16dp</dimen>

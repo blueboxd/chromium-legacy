@@ -14,6 +14,7 @@
 #include "chrome/services/app_service/public/cpp/icon_coalescer.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/apps/app_service/built_in_chromeos_apps.h"
@@ -46,7 +47,7 @@ class AppServiceProxy : public KeyedService,
   void ReInitializeForTesting(Profile* profile,
                               service_manager::Connector* connector);
 
-  apps::mojom::AppServicePtr& AppService();
+  mojo::Remote<apps::mojom::AppService>& AppService();
   apps::AppRegistryCache& AppRegistryCache();
 
   // apps::IconLoader overrides.
@@ -151,7 +152,7 @@ class AppServiceProxy : public KeyedService,
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
   void Clone(apps::mojom::SubscriberRequest request) override;
 
-  apps::mojom::AppServicePtr app_service_;
+  mojo::Remote<apps::mojom::AppService> app_service_;
   apps::AppRegistryCache cache_;
 
   mojo::BindingSet<apps::mojom::Subscriber> bindings_;

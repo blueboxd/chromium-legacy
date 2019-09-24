@@ -884,3 +884,43 @@ INSTANTIATE_TEST_SUITE_P(
         size_t(0),
         base::size(
             ProfileMenuClickTest_GuestProfile::kOrderedActionableItems)));
+
+class ProfileMenuClickTest_IncognitoProfile : public ProfileMenuClickTest {
+ public:
+  // List of actionable items in the correct order as they appear in the menu.
+  // If a new button is added to the menu, it should also be added to this list.
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[4] =
+      {ProfileMenuView::ActionableItem::kPasswordsButton,
+       ProfileMenuView::ActionableItem::kCreditCardsButton,
+       ProfileMenuView::ActionableItem::kAddressesButton,
+       // The first button is added again to finish the cycle and test that
+       // there are no other buttons at the end.
+       ProfileMenuView::ActionableItem::kPasswordsButton};
+
+  ProfileMenuClickTest_IncognitoProfile() = default;
+
+  ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
+      size_t index) override {
+    return kOrderedActionableItems[index];
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest_IncognitoProfile);
+};
+
+// static
+constexpr ProfileMenuView::ActionableItem
+    ProfileMenuClickTest_IncognitoProfile::kOrderedActionableItems[];
+
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_IncognitoProfile, SetupAndRunTest) {
+  SetTargetBrowser(CreateIncognitoBrowser(browser()->profile()));
+
+  RunTest();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ProfileMenuClickTest_IncognitoProfile,
+    ::testing::Range(
+        size_t(0),
+        base::size(
+            ProfileMenuClickTest_IncognitoProfile::kOrderedActionableItems)));

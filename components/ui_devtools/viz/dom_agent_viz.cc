@@ -72,8 +72,6 @@ namespace ui_devtools {
 // hierarchy is a tree again can be ambiguous and may not follow the tree
 // structure. Current approach of handling these states needs revisiting.
 
-using namespace ui_devtools::protocol;
-
 DOMAgentViz::DOMAgentViz(viz::FrameSinkManagerImpl* frame_sink_manager)
     : frame_sink_manager_(frame_sink_manager),
       surface_manager_(frame_sink_manager->surface_manager()) {}
@@ -242,10 +240,10 @@ SurfaceElement* DOMAgentViz::GetRootSurfaceElement() {
   return it->second.get();
 }
 
-std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForFrameSink(
+std::unique_ptr<protocol::DOM::Node> DOMAgentViz::BuildTreeForFrameSink(
     UIElement* parent_element,
     const viz::FrameSinkId& parent_id) {
-  auto children = std::make_unique<Array<DOM::Node>>();
+  auto children = std::make_unique<protocol::Array<protocol::DOM::Node>>();
 
   // Once the FrameSinkElement is created it calls this function to build its
   // subtree. We iterate through |parent_element|'s children and
@@ -267,10 +265,10 @@ std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForFrameSink(
                    std::move(children), parent_element->node_id());
 }
 
-std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForSurface(
+std::unique_ptr<protocol::DOM::Node> DOMAgentViz::BuildTreeForSurface(
     UIElement* parent_element,
     const viz::SurfaceId& parent_id) {
-  auto children = std::make_unique<Array<DOM::Node>>();
+  auto children = std::make_unique<protocol::Array<protocol::DOM::Node>>();
 
   // Once the SurfaceElement is created it calls this function to build its
   // subtree. We iterate through |parent_element|'s children and
@@ -347,7 +345,7 @@ std::vector<UIElement*> DOMAgentViz::CreateChildrenForRoot() {
   return children;
 }
 
-std::unique_ptr<DOM::Node> DOMAgentViz::BuildTreeForUIElement(
+std::unique_ptr<protocol::DOM::Node> DOMAgentViz::BuildTreeForUIElement(
     UIElement* ui_element) {
   if (ui_element->type() == UIElementType::FRAMESINK) {
     return BuildTreeForFrameSink(ui_element,

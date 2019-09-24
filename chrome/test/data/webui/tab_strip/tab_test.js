@@ -14,6 +14,7 @@ suite('Tab', function() {
 
   const tab = {
     id: 1001,
+    status: 'complete',
     title: 'My title',
   };
 
@@ -63,6 +64,13 @@ suite('Tab', function() {
     assertFalse(tabElement.hasAttribute('pinned'));
   });
 
+  test('toggles a [loading] attribute when loading', () => {
+    tabElement.tab = Object.assign({}, tab, {status: 'loading'});
+    assertTrue(tabElement.hasAttribute('loading'));
+    tabElement.tab = Object.assign({}, tab, {status: 'complete'});
+    assertFalse(tabElement.hasAttribute('loading'));
+  });
+
   test('clicking on the element activates the tab', () => {
     tabElement.click();
     return testTabsApiProxy.whenCalled('activateTab', tabId => {
@@ -103,6 +111,15 @@ suite('Tab', function() {
         faviconElement.style.backgroundImage,
         getFaviconForPageURL(expectedPageUrl, false));
   });
+
+  test(
+      'removes the favicon if the tab is loading and there is no favicon URL',
+      () => {
+        delete tab.favIconUrl;
+        tabElement.tab = Object.assign({}, tab, {status: 'loading'});
+        const faviconElement = tabElement.shadowRoot.querySelector('#favicon');
+        assertEquals(faviconElement.style.backgroundImage, 'none');
+      });
 
   test('hides the thumbnail if there is no source yet', () => {
     const thumbnailImage = tabElement.shadowRoot.querySelector('#thumbnailImg');

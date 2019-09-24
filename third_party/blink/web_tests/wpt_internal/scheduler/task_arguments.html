@@ -9,10 +9,9 @@
 'use strict';
 
 async_test(t => {
-  scheduler.postTask(t.step_func((arg1, arg2) => {
+  scheduler.postTask(t.step_func_done((arg1, arg2) => {
     assert_equals(arg1, 'foo');
     assert_equals(arg2, 10);
-    t.done();
   }), { priority: 'default' }, 'foo', 10);
 }, 'Test scheduler.postTask correctly passes arguments');
 

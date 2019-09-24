@@ -586,14 +586,16 @@ std::unique_ptr<SkiaOutputSurfaceImplOnGpu> SkiaOutputSurfaceImplOnGpu::Create(
     SkiaOutputSurfaceDependency* deps,
     const RendererSettings& renderer_settings,
     const gpu::SequenceId sequence_id,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-    const BufferPresentedCallback& buffer_presented_callback,
-    const ContextLostCallback& context_lost_callback) {
+    DidSwapBufferCompleteCallback did_swap_buffer_complete_callback,
+    BufferPresentedCallback buffer_presented_callback,
+    ContextLostCallback context_lost_callback,
+    GpuVSyncCallback gpu_vsync_callback) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::Create");
   auto impl_on_gpu = std::make_unique<SkiaOutputSurfaceImplOnGpu>(
       util::PassKey<SkiaOutputSurfaceImplOnGpu>(), deps, renderer_settings,
-      sequence_id, did_swap_buffer_complete_callback, buffer_presented_callback,
-      context_lost_callback);
+      sequence_id, std::move(did_swap_buffer_complete_callback),
+      std::move(buffer_presented_callback), std::move(context_lost_callback),
+      std::move(gpu_vsync_callback));
   if (!impl_on_gpu->Initialize())
     impl_on_gpu = nullptr;
   return impl_on_gpu;
@@ -604,9 +606,10 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
     SkiaOutputSurfaceDependency* deps,
     const RendererSettings& renderer_settings,
     const gpu::SequenceId sequence_id,
-    const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-    const BufferPresentedCallback& buffer_presented_callback,
-    const ContextLostCallback& context_lost_callback)
+    DidSwapBufferCompleteCallback did_swap_buffer_complete_callback,
+    BufferPresentedCallback buffer_presented_callback,
+    ContextLostCallback context_lost_callback,
+    GpuVSyncCallback gpu_vsync_callback)
     : dependency_(std::move(deps)),
       feature_info_(dependency_->GetSharedContextState()->feature_info()),
       sync_point_client_state_(
@@ -616,9 +619,11 @@ SkiaOutputSurfaceImplOnGpu::SkiaOutputSurfaceImplOnGpu(
       vulkan_context_provider_(dependency_->GetVulkanContextProvider()),
       renderer_settings_(renderer_settings),
       sequence_id_(sequence_id),
-      did_swap_buffer_complete_callback_(did_swap_buffer_complete_callback),
-      buffer_presented_callback_(buffer_presented_callback),
-      context_lost_callback_(context_lost_callback),
+      did_swap_buffer_complete_callback_(
+          std::move(did_swap_buffer_complete_callback)),
+      buffer_presented_callback_(std::move(buffer_presented_callback)),
+      context_lost_callback_(std::move(context_lost_callback)),
+      gpu_vsync_callback_(std::move(gpu_vsync_callback)),
       gpu_preferences_(dependency_->GetGpuPreferences()) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 }
@@ -1199,6 +1204,10 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleDCLayers(
   output_device_->ScheduleDCLayers(std::move(dc_layers));
 }
 
+void SkiaOutputSurfaceImplOnGpu::SetGpuVSyncEnabled(bool enabled) {
+  output_device_->SetGpuVSyncEnabled(enabled);
+}
+
 void SkiaOutputSurfaceImplOnGpu::SetCapabilitiesForTesting(
     const OutputSurface::Capabilities& capabilities) {
   MakeCurrent(false /* need_fbo0 */);
@@ -1390,7 +1399,7 @@ const gpu::GpuPreferences& SkiaOutputSurfaceImplOnGpu::GetGpuPreferences()
 }
 
 GpuVSyncCallback SkiaOutputSurfaceImplOnGpu::GetGpuVSyncCallback() {
-  return base::DoNothing::Repeatedly<base::TimeTicks, base::TimeDelta>();
+  return gpu_vsync_callback_;
 }
 
 void SkiaOutputSurfaceImplOnGpu::DidSwapBuffersComplete(

@@ -194,6 +194,8 @@ class MODULES_EXPORT AXObjectCacheImpl
   void HandleRoleChangeIfNotEditableWithCleanLayout(Node*);
   void HandleAriaExpandedChangeWithCleanLayout(Node*);
   void HandleAriaSelectedChangedWithCleanLayout(Node*);
+  void HandleNodeLostFocusWithCleanLayout(Node*);
+  void HandleNodeGainedFocusWithCleanLayout(Node*);
 
   bool InlineTextBoxAccessibilityEnabled();
 
@@ -321,6 +323,12 @@ class MODULES_EXPORT AXObjectCacheImpl
 
   // ContextLifecycleObserver overrides.
   void ContextDestroyed(ExecutionContext*) override;
+
+  // Get the currently focused Node element.
+  Node* FocusedElement();
+
+  // GetOrCreate the focusable AXObject for a specific Node.
+  AXObject* GetOrCreateFocusedObjectFromNode(Node*);
 
   AXObject* FocusedImageMapUIElement(HTMLAreaElement*);
 

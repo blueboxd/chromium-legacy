@@ -123,8 +123,8 @@ var tests = [
    */
   function testToolbarKeyboardNavigation() {
     var mockWindow = new MockWindow(1920, 1080);
-    var toolbar =
-        Polymer.Base.create('viewer-pdf-toolbar', {loadProgress: 100});
+    var toolbar = document.createElement('viewer-pdf-toolbar');
+    toolbar.loadProgress = 100;
     document.body.appendChild(toolbar);
     var zoomToolbar = document.createElement('viewer-zoom-toolbar');
     document.body.appendChild(zoomToolbar);
@@ -218,8 +218,8 @@ var tests = [
    */
   function testToolbarTouchInteraction() {
     var mockWindow = new MockWindow(1920, 1080);
-    var toolbar =
-        Polymer.Base.create('viewer-pdf-toolbar', {loadProgress: 100});
+    var toolbar = document.createElement('viewer-pdf-toolbar');
+    toolbar.loadProgress = 100;
     document.body.appendChild(toolbar);
     var zoomToolbar = document.createElement('viewer-zoom-toolbar');
     document.body.appendChild(zoomToolbar);

@@ -99,14 +99,14 @@
         overflow: auto;
       }
     </style>
-    <dialog id="dialog" on-cancel="onDialogCancel_" on-tap="onDialogTap_"
+    <dialog id="dialog" on-cancel="onDialogCancel_" on-click="onDialogTap_"
         on-close="onDialogClose_">
-      <div id="container" on-tap="onContainerTap_">
+      <div id="container" on-click="onContainerTap_">
         <div class="drawer-header">
           <!-- Hidden from a11y because this icon is decorative. Clicking closes
               the dialog, but screen reader users can do this by pressing ESC,
               so aria-hidden is OK here. -->
-          <iron-icon id="iconButton" icon="[[iconName]]" on-tap="onIconTap_"
+          <iron-icon id="iconButton" icon="[[iconName]]" on-click="onIconTap_"
               title="[[iconTitle]]" hidden="[[!iconName]]" aria-hidden="true">
           </iron-icon>
           <div id="heading" tabindex="-1">[[heading]]</div>

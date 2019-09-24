@@ -239,14 +239,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
     public void maybeUpdateNavigationHistory() {
         WebContents webContents = mTab.getWebContents();
         if (mClearAllForwardHistoryRequired && webContents != null) {
-            NavigationController navigationController =
-                    webContents.getNavigationController();
-            int lastCommittedEntryIndex = getLastCommittedEntryIndex();
-            while (navigationController.canGoForward()) {
-                boolean ret = navigationController.removeEntryAtIndex(
-                        lastCommittedEntryIndex + 1);
-                assert ret;
-            }
+            webContents.getNavigationController().pruneForwardEntries();
         } else if (mShouldClearRedirectHistoryForTabClobbering
                 && webContents != null) {
             // http://crbug/479056: Even if we clobber the current tab, we want to remove

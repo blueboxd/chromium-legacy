@@ -136,8 +136,7 @@ String16Set String16SetFromString16(const base::string16& cleaned_uni_string,
   for (auto& word : words)
     word = base::i18n::ToLower(word).substr(0, kMaxSignificantChars);
   return String16Set(std::make_move_iterator(words.begin()),
-                     std::make_move_iterator(words.end()),
-                     base::KEEP_FIRST_OF_DUPES);
+                     std::make_move_iterator(words.end()));
 }
 
 String16Vector String16VectorFromString16(
@@ -173,7 +172,7 @@ String16Vector String16VectorFromString16(
 }
 
 Char16Set Char16SetFromString16(const base::string16& term) {
-  return Char16Set(term.begin(), term.end(), base::KEEP_FIRST_OF_DUPES);
+  return Char16Set(term.begin(), term.end());
 }
 
 // HistoryInfoMapValue ---------------------------------------------------------

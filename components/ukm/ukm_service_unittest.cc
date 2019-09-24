@@ -258,8 +258,8 @@ TEST_F(UkmServiceTest, SourceSerialization) {
   const Source& proto_source = proto_report.sources(0);
 
   EXPECT_EQ(id, proto_source.id());
-  EXPECT_EQ(GURL("https://google.com/final").spec(), proto_source.url());
-  EXPECT_TRUE(proto_source.has_initial_url());
+  EXPECT_EQ(GURL("https://google.com/final").spec(),
+            proto_source.urls(1).url());
 }
 
 TEST_F(UkmServiceTest, AddEntryWithEmptyMetrics) {
@@ -414,7 +414,7 @@ TEST_F(UkmServiceTest, GetNewSourceID) {
   EXPECT_NE(id2, id3);
 }
 
-TEST_F(UkmServiceTest, RecordInitialUrl) {
+TEST_F(UkmServiceTest, RecordRedirectedUrl) {
   ClearPrefs();
   UkmService service(&prefs_, &client_,
                      true /* restrict_to_whitelisted_entries */);
@@ -439,10 +439,10 @@ TEST_F(UkmServiceTest, RecordInitialUrl) {
   const Source& proto_source = proto_report.sources(0);
 
   EXPECT_EQ(id, proto_source.id());
-  EXPECT_EQ(GURL("https://google.com/final").spec(), proto_source.url());
-  EXPECT_TRUE(proto_source.has_initial_url());
   EXPECT_EQ(GURL("https://google.com/initial").spec(),
-            proto_source.initial_url());
+            proto_source.urls(0).url());
+  EXPECT_EQ(GURL("https://google.com/final").spec(),
+            proto_source.urls(1).url());
 }
 
 TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
@@ -481,7 +481,7 @@ TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
     // The whitelisted source should always be recorded.
     const Source& proto_source1 = proto_report.sources(0);
     EXPECT_EQ(id1, proto_source1.id());
-    EXPECT_EQ(kURL.spec(), proto_source1.url());
+    EXPECT_EQ(kURL.spec(), proto_source1.urls(0).url());
 
     // The non-whitelisted source should only be recorded if we aren't
     // restricted to whitelisted source ids.
@@ -491,7 +491,7 @@ TEST_F(UkmServiceTest, RestrictToWhitelistedSourceIds) {
       ASSERT_EQ(2, proto_report.sources_size());
       const Source& proto_source2 = proto_report.sources(1);
       EXPECT_EQ(id2, proto_source2.id());
-      EXPECT_EQ(kURL.spec(), proto_source2.url());
+      EXPECT_EQ(kURL.spec(), proto_source2.urls(0).url());
     }
   }
 }
@@ -637,7 +637,7 @@ TEST_F(UkmServiceTest, SourceURLLength) {
   auto proto_report = GetPersistedReport();
   ASSERT_EQ(1, proto_report.sources_size());
   const Source& proto_source = proto_report.sources(0);
-  EXPECT_EQ("URLTooLong", proto_source.url());
+  EXPECT_EQ("URLTooLong", proto_source.urls(0).url());
 }
 
 TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
@@ -719,9 +719,9 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
 
       ASSERT_EQ(3, proto_report.sources_size());
       EXPECT_EQ(ids[0], proto_report.sources(0).id());
-      EXPECT_EQ(kURL.spec(), proto_report.sources(0).url());
+      EXPECT_EQ(kURL.spec(), proto_report.sources(0).urls(0).url());
       EXPECT_EQ(ids[2], proto_report.sources(1).id());
-      EXPECT_EQ(kURL.spec(), proto_report.sources(1).url());
+      EXPECT_EQ(kURL.spec(), proto_report.sources(1).urls(0).url());
     }
     // Since MaxKeptSources is 3, only Sources 5, 4, 3 should be retained.
     // Log entries under 0, 1, 3 and 4. Log them in reverse order - which
@@ -763,9 +763,9 @@ TEST_F(UkmServiceTest, UnreferencedNonWhitelistedSources) {
       // sources 3 and 4 got new entries are thus included in this report.
       ASSERT_EQ(2, proto_report.sources_size());
       EXPECT_EQ(ids[3], proto_report.sources(0).id());
-      EXPECT_EQ(kURL.spec(), proto_report.sources(0).url());
+      EXPECT_EQ(kURL.spec(), proto_report.sources(0).urls(0).url());
       EXPECT_EQ(ids[4], proto_report.sources(1).id());
-      EXPECT_EQ(kURL.spec(), proto_report.sources(1).url());
+      EXPECT_EQ(kURL.spec(), proto_report.sources(1).urls(0).url());
     }
   }
 }
@@ -821,14 +821,14 @@ TEST_F(UkmServiceTest, NonWhitelistedUrls) {
       EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
       ASSERT_EQ(2, proto_report.sources_size());
       EXPECT_EQ(whitelist_id, proto_report.sources(0).id());
-      EXPECT_EQ(kURL, proto_report.sources(0).url());
+      EXPECT_EQ(kURL, proto_report.sources(0).urls(0).url());
       EXPECT_EQ(nonwhitelist_id, proto_report.sources(1).id());
-      EXPECT_EQ(test.url, proto_report.sources(1).url());
+      EXPECT_EQ(test.url, proto_report.sources(1).urls(0).url());
     } else {
       EXPECT_EQ(1, proto_report.source_counts().unmatched_sources());
       ASSERT_EQ(1, proto_report.sources_size());
       EXPECT_EQ(whitelist_id, proto_report.sources(0).id());
-      EXPECT_EQ(kURL, proto_report.sources(0).url());
+      EXPECT_EQ(kURL, proto_report.sources(0).urls(0).url());
     }
 
     // Do a log rotation again, with the same test URL associated to a new
@@ -848,14 +848,14 @@ TEST_F(UkmServiceTest, NonWhitelistedUrls) {
       EXPECT_EQ(0, proto_report.source_counts().unmatched_sources());
       ASSERT_EQ(2, proto_report.sources_size());
       EXPECT_EQ(whitelist_id, proto_report.sources(0).id());
-      EXPECT_EQ(kURL, proto_report.sources(0).url());
+      EXPECT_EQ(kURL, proto_report.sources(0).urls(0).url());
       EXPECT_EQ(nonwhitelist_id2, proto_report.sources(1).id());
-      EXPECT_EQ(test.url, proto_report.sources(1).url());
+      EXPECT_EQ(test.url, proto_report.sources(1).urls(0).url());
     } else {
       EXPECT_EQ(1, proto_report.source_counts().unmatched_sources());
       ASSERT_EQ(1, proto_report.sources_size());
       EXPECT_EQ(whitelist_id, proto_report.sources(0).id());
-      EXPECT_EQ(kURL, proto_report.sources(0).url());
+      EXPECT_EQ(kURL, proto_report.sources(0).urls(0).url());
     }
   }
 }
@@ -911,7 +911,7 @@ TEST_F(UkmServiceTest, SupportedSchemes) {
   for (const auto& test : test_cases) {
     bool found = false;
     for (int i = 0; i < proto_report.sources_size(); ++i) {
-      if (proto_report.sources(i).url() == test.url) {
+      if (proto_report.sources(i).urls(0).url() == test.url) {
         found = true;
         break;
       }
@@ -968,7 +968,7 @@ TEST_F(UkmServiceTest, SupportedSchemesNoExtensions) {
   for (const auto& test : test_cases) {
     bool found = false;
     for (int i = 0; i < proto_report.sources_size(); ++i) {
-      if (proto_report.sources(i).url() == test.url) {
+      if (proto_report.sources(i).urls(0).url() == test.url) {
         found = true;
         break;
       }
@@ -996,7 +996,7 @@ TEST_F(UkmServiceTest, SanitizeUrlAuthParams) {
   auto proto_report = GetPersistedReport();
   ASSERT_EQ(1, proto_report.sources_size());
   const Source& proto_source = proto_report.sources(0);
-  EXPECT_EQ("https://example.com/", proto_source.url());
+  EXPECT_EQ("https://example.com/", proto_source.urls(0).url());
 }
 
 TEST_F(UkmServiceTest, SanitizeChromeUrlParams) {
@@ -1038,7 +1038,7 @@ TEST_F(UkmServiceTest, SanitizeChromeUrlParams) {
     auto proto_report = GetPersistedReport();
     ASSERT_EQ(1, proto_report.sources_size());
     const Source& proto_source = proto_report.sources(0);
-    EXPECT_EQ(test.expected_url, proto_source.url());
+    EXPECT_EQ(test.expected_url, proto_source.urls(0).url());
   }
 }
 

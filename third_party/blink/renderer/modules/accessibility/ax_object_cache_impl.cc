@@ -88,6 +88,7 @@
 #include "third_party/blink/renderer/modules/accessibility/ax_virtual_object.h"
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_elements_helper.h"
 #include "third_party/blink/renderer/modules/permissions/permission_utils.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -168,6 +169,45 @@ void AXObjectCacheImpl::DisposePopup(Document* document) {
   documents_.erase(document);
 }
 
+Node* AXObjectCacheImpl::FocusedElement() {
+  Node* focused_node = document_->FocusedElement();
+  if (!focused_node)
+    focused_node = document_;
+
+  // If it's an image map, get the focused link within the image map.
+  if (IsA<HTMLAreaElement>(focused_node))
+    return focused_node;
+
+  // See if there's a page popup, for example a calendar picker.
+  Element* adjusted_focused_element = document_->AdjustedFocusedElement();
+  if (auto* input = ToHTMLInputElementOrNull(adjusted_focused_element)) {
+    if (AXObject* ax_popup = input->PopupRootAXObject()) {
+      if (Element* focused_element_in_popup =
+              ax_popup->GetDocument()->FocusedElement())
+        focused_node = focused_element_in_popup;
+    }
+  }
+
+  return focused_node;
+}
+
+AXObject* AXObjectCacheImpl::GetOrCreateFocusedObjectFromNode(Node* node) {
+  // If it's an image map, get the focused link within the image map.
+  if (auto* area = DynamicTo<HTMLAreaElement>(node))
+    return FocusedImageMapUIElement(area);
+
+  AXObject* obj = GetOrCreate(node);
+  if (!obj)
+    return nullptr;
+
+  // the HTML element, for example, is focusable but has an AX object that is
+  // ignored
+  if (!obj->AccessibilityIsIncludedInTree())
+    obj = obj->ParentObjectIncludedInTree();
+
+  return obj;
+}
+
 AXObject* AXObjectCacheImpl::FocusedImageMapUIElement(
     HTMLAreaElement* area_element) {
   // Find the corresponding accessibility object for the HTMLAreaElement. This
@@ -198,34 +238,7 @@ AXObject* AXObjectCacheImpl::FocusedImageMapUIElement(
 }
 
 AXObject* AXObjectCacheImpl::FocusedObject() {
-  Node* focused_node = document_->FocusedElement();
-  if (!focused_node)
-    focused_node = document_;
-
-  // If it's an image map, get the focused link within the image map.
-  if (auto* area = DynamicTo<HTMLAreaElement>(focused_node))
-    return FocusedImageMapUIElement(area);
-
-  // See if there's a page popup, for example a calendar picker.
-  Element* adjusted_focused_element = document_->AdjustedFocusedElement();
-  if (auto* input = ToHTMLInputElementOrNull(adjusted_focused_element)) {
-    if (AXObject* ax_popup = input->PopupRootAXObject()) {
-      if (Element* focused_element_in_popup =
-              ax_popup->GetDocument()->FocusedElement())
-        focused_node = focused_element_in_popup;
-    }
-  }
-
-  AXObject* obj = GetOrCreate(focused_node);
-  if (!obj)
-    return nullptr;
-
-  // the HTML element, for example, is focusable but has an AX object that is
-  // ignored
-  if (!obj->AccessibilityIsIncludedInTree())
-    obj = obj->ParentObjectUnignored();
-
-  return obj;
+  return GetOrCreateFocusedObjectFromNode(this->FocusedElement());
 }
 
 AXObject* AXObjectCacheImpl::Get(LayoutObject* layout_object) {
@@ -1175,6 +1188,30 @@ void AXObjectCacheImpl::HandleAriaSelectedChangedWithCleanLayout(Node* node) {
     PostNotification(listbox, ax::mojom::Event::kSelectedChildrenChanged);
 }
 
+void AXObjectCacheImpl::HandleNodeLostFocusWithCleanLayout(Node* node) {
+  DCHECK(node);
+  DCHECK(!node->GetDocument().NeedsLayoutTreeUpdateForNode(*node));
+  AXObject* obj = Get(node);
+  if (!obj)
+    return;
+
+  PostNotification(obj, ax::mojom::Event::kBlur);
+}
+
+void AXObjectCacheImpl::HandleNodeGainedFocusWithCleanLayout(Node* node) {
+  DCHECK(node);
+  DCHECK(!node->GetDocument().NeedsLayoutTreeUpdateForNode(*node));
+  // Something about the call chain for this method seems to leave distribution
+  // in a dirty state - update it before we call GetOrCreate so that we don't
+  // crash.
+  node->UpdateDistributionForFlatTreeTraversal();
+  AXObject* obj = GetOrCreateFocusedObjectFromNode(node);
+  if (!obj)
+    return;
+
+  PostNotification(obj, ax::mojom::Event::kFocus);
+}
+
 // This might be the new target of a relation. Handle all possible cases.
 void AXObjectCacheImpl::MaybeNewRelationTarget(Node* node, AXObject* obj) {
   // Track reverse relations
@@ -1219,12 +1256,8 @@ void AXObjectCacheImpl::HandleRoleChangeWithCleanLayout(Node* node) {
 
   DCHECK(!node->GetDocument().NeedsLayoutTreeUpdateForNode(*node));
 
-  AXObject* obj = Get(node);
-  if (!obj && IsHTMLSelectElement(node))
-    obj = GetOrCreate(node);
-
   // Invalidate the current object and make the parent reconsider its children.
-  if (obj) {
+  if (AXObject* obj = GetOrCreate(node)) {
     // Save parent for later use.
     AXObject* parent = obj->ParentObject();
 
@@ -1590,13 +1623,23 @@ void AXObjectCacheImpl::HandleFocusedUIElementChanged(
   if (!page)
     return;
 
-  AXObject* focused_object = this->FocusedObject();
-  if (!focused_object)
-    return;
+  if (RuntimeEnabledFeatures::AccessibilityExposeDisplayNoneEnabled()) {
+    if (old_focused_element) {
+      DeferTreeUpdate(&AXObjectCacheImpl::HandleNodeLostFocusWithCleanLayout,
+                      old_focused_element);
+    }
 
-  AXObject* old_focused_object = Get(old_focused_element);
-  PostNotification(old_focused_object, ax::mojom::Event::kBlur);
-  PostNotification(focused_object, ax::mojom::Event::kFocus);
+    DeferTreeUpdate(&AXObjectCacheImpl::HandleNodeGainedFocusWithCleanLayout,
+                    this->FocusedElement());
+  } else {
+    AXObject* focused_object = this->FocusedObject();
+    if (!focused_object)
+      return;
+
+    AXObject* old_focused_object = Get(old_focused_element);
+    PostNotification(old_focused_object, ax::mojom::Event::kBlur);
+    PostNotification(focused_object, ax::mojom::Event::kFocus);
+  }
 }
 
 void AXObjectCacheImpl::HandleInitialFocus() {

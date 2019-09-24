@@ -29,6 +29,20 @@ public class LensUtils {
     private static final String MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE = "8.19";
 
     /**
+     * See function for details.
+     */
+    private static boolean sFakePassableLensVersionForTesting;
+
+    /*
+     * If true, short-circuit the version name intent check to always return a high enough version.
+     * Used by test cases.
+     * @param shouldFake Whether to fake the version check.
+     */
+    public static void setFakePassableLensVersionForTesting(boolean shouldFake) {
+        sFakePassableLensVersionForTesting = shouldFake;
+    }
+
+    /**
      * Resolve the activity to verify that lens is ready to accept an intent and also
      * retrieve the version name.
      *
@@ -36,20 +50,28 @@ public class LensUtils {
      * @return The version name string of the AGSA app or an empty string if not available.
      */
     public static String getLensActivityVersionNameIfAvailable(Context context) {
-        try {
-            PackageManager pm = context.getPackageManager();
-            // No data transmission occurring so safe to assume incognito is false.
-            Intent lensIntent = getShareWithGoogleLensIntent(Uri.EMPTY, /* isIncognito= */ false);
-            ComponentName lensActivity = lensIntent.resolveActivity(pm);
-            if (lensActivity == null) return "";
-            PackageInfo packageInfo = pm.getPackageInfo(lensActivity.getPackageName(), 0);
-            if (packageInfo == null) {
+        // Use this syntax to avoid NPE if unset.
+        if (Boolean.TRUE.equals(sFakePassableLensVersionForTesting)) {
+            // Returns the minimum version which will meet the bar and allow future AGSA version
+            // checks to succeed.
+            return MIN_AGSA_VERSION_NAME_FOR_LENS_POSTCAPTURE;
+        } else {
+            try {
+                PackageManager pm = context.getPackageManager();
+                // No data transmission occurring so safe to assume incognito is false.
+                Intent lensIntent =
+                        getShareWithGoogleLensIntent(Uri.EMPTY, /* isIncognito= */ false);
+                ComponentName lensActivity = lensIntent.resolveActivity(pm);
+                if (lensActivity == null) return "";
+                PackageInfo packageInfo = pm.getPackageInfo(lensActivity.getPackageName(), 0);
+                if (packageInfo == null) {
+                    return "";
+                } else {
+                    return packageInfo.versionName;
+                }
+            } catch (PackageManager.NameNotFoundException e) {
                 return "";
-            } else {
-                return packageInfo.versionName;
             }
-        } catch (PackageManager.NameNotFoundException e) {
-            return "";
         }
     }
 
@@ -134,6 +156,7 @@ public class LensUtils {
             ContextUtils.getApplicationContext().grantUriPermission(
                     IntentHandler.PACKAGE_GSA, imageUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
+
         Intent intent = new Intent(Intent.ACTION_VIEW).setData(lensUri);
         intent.setPackage(IntentHandler.PACKAGE_GSA);
         intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);

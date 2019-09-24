@@ -9,15 +9,16 @@
 goog.provide('CommandHandler');
 
 goog.require('ChromeVoxState');
+goog.require('Color');
 goog.require('CustomAutomationEvent');
 goog.require('LogStore');
 goog.require('Output');
+goog.require('PhoneticData');
 goog.require('TreeDumper');
 goog.require('cvox.ChromeVoxBackground');
 goog.require('cvox.ChromeVoxKbHandler');
 goog.require('cvox.ChromeVoxPrefs');
 goog.require('cvox.CommandStore');
-goog.require('Color');
 
 goog.scope(function() {
 var AutomationEvent = chrome.automation.AutomationEvent;
@@ -895,6 +896,65 @@ CommandHandler.onCommand = function(command) {
           .withString(richTextDescription)
           .withQueueMode(cvox.QueueMode.CATEGORY_FLUSH)
           .go();
+      return false;
+    case 'readPhoneticPronunciation':
+      // Get node info.
+      var node = ChromeVoxState.instance.currentRange.start.node;
+      var index = ChromeVoxState.instance.currentRange.start.index;
+      var text = node.name;
+      // If there is no text to speak, inform the user and return early.
+      if (!text) {
+        new Output()
+            .withString(Msgs.getMsg('empty_name'))
+            .withQueueMode(cvox.QueueMode.CATEGORY_FLUSH)
+            .go();
+        return false;
+      }
+
+      // Get word start and end indices.
+      var wordStarts, wordEnds;
+      if (node.role == RoleType.INLINE_TEXT_BOX) {
+        wordStarts = node.wordStarts;
+        wordEnds = node.wordEnds;
+      } else {
+        wordStarts = node.nonInlineTextWordStarts;
+        wordEnds = node.nonInlineTextWordEnds;
+      }
+      // Find the word we want to speak phonetically. If index === -1, then the
+      // index represents an entire node. If that is the case, we want to find
+      // the first word in the node's name. We do this by setting index to 0.
+      if (index === -1)
+        index = 0;
+      var word = '';
+      for (var z = 0; z < wordStarts.length; ++z) {
+        if (wordStarts[z] <= index && wordEnds[z] >= index) {
+          word = text.substring(wordStarts[z], wordEnds[z]);
+          break;
+        }
+      }
+
+      // Get unicode-aware array of characters.
+      var characterArray = [...word];
+      // We currently only load phonetic data for the browser UI language.
+      var language = chrome.i18n.getUILanguage();
+      for (var i = 0; i < characterArray.length; ++i) {
+        var character = characterArray[i];
+        var phoneticText =
+            PhoneticData.getPhoneticDisambiguation(language, character);
+        // Speak the character followed by its phonetic disambiguation, if it
+        // was found.
+        new Output()
+            .withString(character)
+            .withQueueMode(
+                i === 0 ? cvox.QueueMode.CATEGORY_FLUSH : cvox.QueueMode.QUEUE)
+            .go();
+        if (phoneticText) {
+          new Output()
+              .withString(phoneticText)
+              .withQueueMode(cvox.QueueMode.QUEUE)
+              .go();
+        }
+      }
       return false;
     default:
       return true;

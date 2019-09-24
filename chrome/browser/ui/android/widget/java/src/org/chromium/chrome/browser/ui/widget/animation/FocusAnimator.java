@@ -9,7 +9,6 @@ import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
 import android.animation.ValueAnimator;
 import android.animation.ValueAnimator.AnimatorUpdateListener;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
 import android.view.ViewGroup;
@@ -139,7 +138,7 @@ public class FocusAnimator {
         // Set up and kick off the animation.
         AnimatorSet animator = new AnimatorSet();
         animator.setDuration(ANIMATION_LENGTH_MS);
-        animator.setInterpolator(new LinearOutSlowInInterpolator());
+        animator.setInterpolator(Interpolators.LINEAR_OUT_SLOW_IN_INTERPOLATOR);
         animator.playTogether(animators);
         animator.addListener(new AnimatorListenerAdapter() {
             @Override

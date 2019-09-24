@@ -74,7 +74,7 @@ BuiltInChromeOsApps::BuiltInChromeOsApps()
 BuiltInChromeOsApps::~BuiltInChromeOsApps() = default;
 
 void BuiltInChromeOsApps::Initialize(
-    const apps::mojom::AppServicePtr& app_service,
+    const mojo::Remote<apps::mojom::AppService>& app_service,
     Profile* profile) {
   apps::mojom::PublisherPtr publisher;
   binding_.Bind(mojo::MakeRequest(&publisher));

@@ -58,11 +58,6 @@ const base::Feature kLitePageServerPreviews{"LitePageServerPreviews",
 const base::Feature kSlowPageTriggering{"PreviewsSlowPageTriggering",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Allows HTTPS previews to be served via a URLLoader when network service is
-// enabled.
-const base::Feature kHTTPSServerPreviewsUsingURLLoader{
-    "HTTPSServerPreviewsUsingURLLoader", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables the use of a pref to only trigger Offline Previews when there is a
 // high chance that there is one to serve.
 const base::Feature kOfflinePreviewsFalsePositivePrevention{

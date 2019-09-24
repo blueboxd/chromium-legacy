@@ -1661,8 +1661,6 @@ AutotestPrivateSetAssistantEnabledFunction::Run() {
   if (!err_msg.empty())
     return RespondNow(Error(err_msg));
 
-  // |NOT_READY| means service not running;
-  // |STOPPED| means service running;
   auto new_state = params->enabled ? ash::mojom::AssistantState::READY
                                    : ash::mojom::AssistantState::NOT_READY;
   if (ash::AssistantState::Get()->assistant_state() == new_state)

@@ -13,7 +13,7 @@
 
 namespace blink {
 
-XRPlane::XRPlane(int32_t id,
+XRPlane::XRPlane(uint32_t id,
                  XRSession* session,
                  const device::mojom::blink::XRPlaneDataPtr& plane_data,
                  double timestamp)
@@ -26,7 +26,7 @@ XRPlane::XRPlane(int32_t id,
                   plane_data->polygon),
               timestamp) {}
 
-XRPlane::XRPlane(int32_t id,
+XRPlane::XRPlane(uint32_t id,
                  XRSession* session,
                  const base::Optional<Orientation>& orientation,
                  const TransformationMatrix& pose_matrix,
@@ -41,7 +41,7 @@ XRPlane::XRPlane(int32_t id,
   DVLOG(3) << __func__;
 }
 
-int32_t XRPlane::id() const {
+uint32_t XRPlane::id() const {
   return id_;
 }
 

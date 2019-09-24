@@ -383,9 +383,9 @@ class ExistingUserController
   bool password_changed_ = false;
 
   // Set in OnLoginSuccess. Before that use LoginPerformer::auth_mode().
-  // Initialized with AUTH_MODE_EXTENSION as more restricted mode.
+  // Initialized with |kExternal| as more restricted mode.
   LoginPerformer::AuthorizationMode auth_mode_ =
-      LoginPerformer::AUTH_MODE_EXTENSION;
+      LoginPerformer::AuthorizationMode::kExternal;
 
   // Indicates use of local (not GAIA) authentication.
   bool auth_flow_offline_ = false;

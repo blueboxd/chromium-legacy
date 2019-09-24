@@ -168,7 +168,6 @@ DIFF_COUNT_DELTA = [0, 0, 1, -1]
 
 STRING_LITERAL_NAME = 'string literal'
 
-
 class BaseSizeInfo(object):
   """Base class for SizeInfo and DeltaSizeInfo.
 
@@ -359,7 +358,10 @@ class BaseSymbol(object):
         self.name.endswith(']') and not self.name.endswith('[]'))
 
   def IsStringLiteral(self):
-    return self.full_name == STRING_LITERAL_NAME
+    # String literals have names like "string" or "very_long_str[...]", while
+    # non-ASCII strings are named STRING_LITERAL_NAME.
+    return self.full_name.startswith(
+        '"') or self.full_name == STRING_LITERAL_NAME
 
   # Used for diffs to know whether or not it is accurate to consider two symbols
   # with the same name as being the same.

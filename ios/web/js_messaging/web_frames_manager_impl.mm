@@ -53,7 +53,7 @@ void WebFramesManagerImpl::OnWebViewUpdated(
     RemoveAllWebFrames();
     // TODO(crbug.com/956516): ScriptMessageHandlers should all be removed
     // manually using |removeScriptMessageHandlerForName|, however this is not
-    // possible because of the cases where the webviewconfiguration is purged,
+    // possible because of the cases where the WKWebViewConfiguration is purged,
     // in these cases the message router is deleted and it will not have
     // message handlers for the web view.
     [message_router removeAllScriptMessageHandlersForWebView:old_web_view];

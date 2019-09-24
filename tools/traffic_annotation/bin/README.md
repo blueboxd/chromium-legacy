@@ -10,7 +10,7 @@ in this folder, otherwise run:
 ```bash
 git new-branch roll_traffic_annotation_tools
 python tools/clang/scripts/build.py --bootstrap \
-    --without-android --extra-tools traffic_annotation_extractor
+    --without-android --without-fuchsia --extra-tools traffic_annotation_extractor
 cp third_party/llvm-build/Release+Asserts/bin/traffic_annotation_extractor \
     tools/traffic_annotation/bin/linux64/
 

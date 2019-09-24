@@ -11,12 +11,11 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "content/public/browser/notification_service.h"
-#include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 
 NotificationSystemObserver::NotificationSystemObserver(
     NotificationUIManager* ui_manager)
-    : ui_manager_(ui_manager), extension_registry_observer_(this) {
+    : ui_manager_(ui_manager) {
   DCHECK(ui_manager_);
   registrar_.Add(this, chrome::NOTIFICATION_APP_TERMINATING,
                  content::NotificationService::AllSources());

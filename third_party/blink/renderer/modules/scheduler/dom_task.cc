@@ -67,7 +67,7 @@ void DOMTask::cancel(ScriptState* script_state) {
     return;
   CancelPendingTask();
   SetTaskStatus(Status::kCanceled);
-  ResolveOrRejectPromiseIfNeeded(script_state);
+  LazilyResolveOrRejectPromiseIfReady(script_state);
 }
 
 ScriptPromise DOMTask::result(ScriptState* script_state) {
@@ -75,7 +75,7 @@ ScriptPromise DOMTask::result(ScriptState* script_state) {
     result_promise_ = MakeGarbageCollected<TaskResultPromise>(
         ExecutionContext::From(script_state), this,
         TaskResultPromise::kFinished);
-    ResolveOrRejectPromiseIfNeeded(script_state);
+    LazilyResolveOrRejectPromiseIfReady(script_state);
   }
   return result_promise_->Promise(script_state->World());
 }
@@ -132,7 +132,7 @@ void DOMTask::Invoke() {
   InvokeInternal(script_state);
   SetTaskStatus(Status::kCompleted);
   task_queue_->GetScheduler()->OnTaskCompleted(task_queue_, this);
-  ResolveOrRejectPromiseIfNeeded(script_state);
+  LazilyResolveOrRejectPromiseIfReady(script_state);
   callback_.Release();
 }
 
@@ -151,9 +151,7 @@ void DOMTask::InvokeInternal(ScriptState* script_state) {
   result_value_.Set(script_state->GetIsolate(), result.V8Value());
 }
 
-void DOMTask::ResolveOrRejectPromiseIfNeeded(ScriptState* script_state) {
-  // Lazily resolove or reject the Promise - we don't do anything unless the
-  // result property has been accessed.
+void DOMTask::LazilyResolveOrRejectPromiseIfReady(ScriptState* script_state) {
   if (!result_promise_)
     return;
 

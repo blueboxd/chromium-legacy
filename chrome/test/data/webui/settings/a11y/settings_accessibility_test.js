@@ -28,6 +28,17 @@ SettingsAccessibilityTest.axeOptions = {
   }
 };
 
+// TODO(crbug.com/1002627): This block prevents generation of a
+// link-in-text-block browser-test. This can be removed once the bug is
+// addressed, and usage should be replaced with
+// SettingsAccessibilityTest.axeOptions
+SettingsAccessibilityTest.axeOptionsExcludeLinkInTextBlock =
+    Object.assign({}, SettingsAccessibilityTest.axeOptions, {
+      'rules': Object.assign({}, SettingsAccessibilityTest.axeOptions.rules, {
+        'link-in-text-block': {enabled: false},
+      })
+    });
+
 // Default accessibility audit options. Specify in test definition to use.
 SettingsAccessibilityTest.violationFilter = {
   // Polymer components use aria-active-attribute.

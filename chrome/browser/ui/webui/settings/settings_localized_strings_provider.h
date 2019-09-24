@@ -9,6 +9,7 @@ class Profile;
 
 namespace content {
 class WebUIDataSource;
+class WebContents;
 }
 
 namespace settings {
@@ -17,7 +18,8 @@ namespace settings {
 // causes |html_source| to expose a strings.js file from its source which
 // contains a mapping from string's name to its translated value.
 void AddLocalizedStrings(content::WebUIDataSource* html_source,
-                         Profile* profile);
+                         Profile* profile,
+                         content::WebContents* web_contents);
 
 }  // namespace settings
 

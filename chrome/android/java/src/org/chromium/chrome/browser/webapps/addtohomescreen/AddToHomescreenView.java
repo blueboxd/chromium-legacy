@@ -112,7 +112,7 @@ public class AddToHomescreenView implements View.OnClickListener {
         // title is the title of the page.
         mProgressBarView = view.findViewById(R.id.spinny);
         mIconView = (ImageView) view.findViewById(R.id.icon);
-        mShortcutTitleInput = (EditText) view.findViewById(R.id.text);
+        mShortcutTitleInput = view.findViewById(R.id.text);
         mAppLayout = (LinearLayout) view.findViewById(R.id.app_info);
 
         mAppNameView = (TextView) mAppLayout.findViewById(R.id.name);

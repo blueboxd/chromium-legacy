@@ -130,7 +130,7 @@ static bool HasDolbyVisionSupport() {
 }
 
 static bool HasEac3Support() {
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
   return true;
 #else
   return false;

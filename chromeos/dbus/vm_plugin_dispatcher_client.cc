@@ -16,9 +16,9 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/vm_plugin_dispatcher/dbus-constants.h"
 
-namespace chromeos {
+namespace dispatcher = vm_tools::plugin_dispatcher;
 
-using namespace vm_tools::plugin_dispatcher;
+namespace chromeos {
 
 class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
  public:
@@ -34,29 +34,34 @@ class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
     observer_list_.RemoveObserver(observer);
   }
 
-  void StartVm(const StartVmRequest& request,
-               DBusMethodCallback<StartVmResponse> callback) override {
-    CallMethod(kStartVmMethod, request, std::move(callback));
+  void StartVm(
+      const dispatcher::StartVmRequest& request,
+      DBusMethodCallback<dispatcher::StartVmResponse> callback) override {
+    CallMethod(dispatcher::kStartVmMethod, request, std::move(callback));
   }
 
-  void ListVms(const ListVmRequest& request,
-               DBusMethodCallback<ListVmResponse> callback) override {
-    CallMethod(kListVmsMethod, request, std::move(callback));
+  void ListVms(
+      const dispatcher::ListVmRequest& request,
+      DBusMethodCallback<dispatcher::ListVmResponse> callback) override {
+    CallMethod(dispatcher::kListVmsMethod, request, std::move(callback));
   }
 
-  void StopVm(const StopVmRequest& request,
-              DBusMethodCallback<StopVmResponse> callback) override {
-    CallMethod(kStopVmMethod, request, std::move(callback));
+  void StopVm(
+      const dispatcher::StopVmRequest& request,
+      DBusMethodCallback<dispatcher::StopVmResponse> callback) override {
+    CallMethod(dispatcher::kStopVmMethod, request, std::move(callback));
   }
 
-  void SuspendVm(const SuspendVmRequest& request,
-                 DBusMethodCallback<SuspendVmResponse> callback) override {
-    CallMethod(kSuspendVmMethod, request, std::move(callback));
+  void SuspendVm(
+      const dispatcher::SuspendVmRequest& request,
+      DBusMethodCallback<dispatcher::SuspendVmResponse> callback) override {
+    CallMethod(dispatcher::kSuspendVmMethod, request, std::move(callback));
   }
 
-  void ShowVm(const ShowVmRequest& request,
-              DBusMethodCallback<ShowVmResponse> callback) override {
-    CallMethod(kShowVmMethod, request, std::move(callback));
+  void ShowVm(
+      const dispatcher::ShowVmRequest& request,
+      DBusMethodCallback<dispatcher::ShowVmResponse> callback) override {
+    CallMethod(dispatcher::kShowVmMethod, request, std::move(callback));
   }
 
   void WaitForServiceToBeAvailable(
@@ -68,17 +73,17 @@ class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
 
  protected:
   void Init(dbus::Bus* bus) override {
-    vm_plugin_dispatcher_proxy_ =
-        bus->GetObjectProxy(kVmPluginDispatcherServiceName,
-                            dbus::ObjectPath(kVmPluginDispatcherServicePath));
+    vm_plugin_dispatcher_proxy_ = bus->GetObjectProxy(
+        dispatcher::kVmPluginDispatcherServiceName,
+        dbus::ObjectPath(dispatcher::kVmPluginDispatcherServicePath));
     if (!vm_plugin_dispatcher_proxy_) {
       LOG(ERROR) << "Unable to get dbus proxy for "
-                 << kVmPluginDispatcherServiceName;
+                 << dispatcher::kVmPluginDispatcherServiceName;
     }
 
     vm_plugin_dispatcher_proxy_->ConnectToSignal(
-        vm_tools::plugin_dispatcher::kVmPluginDispatcherInterface,
-        vm_tools::plugin_dispatcher::kVmStateChangedSignal,
+        dispatcher::kVmPluginDispatcherInterface,
+        dispatcher::kVmStateChangedSignal,
         base::BindRepeating(
             &VmPluginDispatcherClientImpl::OnVmStateChangedSignal,
             weak_ptr_factory_.GetWeakPtr()),
@@ -91,7 +96,8 @@ class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
   void CallMethod(const std::string& method_name,
                   const RequestProto& request,
                   DBusMethodCallback<ResponseProto> callback) {
-    dbus::MethodCall method_call(kVmPluginDispatcherInterface, method_name);
+    dbus::MethodCall method_call(dispatcher::kVmPluginDispatcherInterface,
+                                 method_name);
     dbus::MessageWriter writer(&method_call);
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
@@ -126,12 +132,10 @@ class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
   }
 
   void OnVmStateChangedSignal(dbus::Signal* signal) {
-    DCHECK_EQ(signal->GetInterface(),
-              vm_tools::plugin_dispatcher::kVmPluginDispatcherInterface);
-    DCHECK_EQ(signal->GetMember(),
-              vm_tools::plugin_dispatcher::kVmStateChangedSignal);
+    DCHECK_EQ(signal->GetInterface(), dispatcher::kVmPluginDispatcherInterface);
+    DCHECK_EQ(signal->GetMember(), dispatcher::kVmStateChangedSignal);
 
-    vm_tools::plugin_dispatcher::VmStateChangedSignal vm_state_changed_signal;
+    dispatcher::VmStateChangedSignal vm_state_changed_signal;
     dbus::MessageReader reader(signal);
     if (!reader.PopArrayOfBytesAsProto(&vm_state_changed_signal)) {
       LOG(ERROR) << "Failed to parse proto from DBus Signal";
@@ -146,8 +150,7 @@ class VmPluginDispatcherClientImpl : public VmPluginDispatcherClient {
   void OnSignalConnected(const std::string& interface_name,
                          const std::string& signal_name,
                          bool is_connected) {
-    DCHECK_EQ(interface_name,
-              vm_tools::plugin_dispatcher::kVmPluginDispatcherInterface);
+    DCHECK_EQ(interface_name, dispatcher::kVmPluginDispatcherInterface);
     if (!is_connected)
       LOG(ERROR) << "Failed to connect to signal: " << signal_name;
   }

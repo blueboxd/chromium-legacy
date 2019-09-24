@@ -28,7 +28,7 @@ void AppRegistrar::AddObserver(AppRegistrarObserver* observer) {
   observers_.AddObserver(observer);
 }
 
-void AppRegistrar::RemoveObserver(const AppRegistrarObserver* observer) {
+void AppRegistrar::RemoveObserver(AppRegistrarObserver* observer) {
   observers_.RemoveObserver(observer);
 }
 

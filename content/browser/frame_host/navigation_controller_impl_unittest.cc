@@ -1071,7 +1071,7 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(2, delegate->navigation_state_change_count());
+  EXPECT_EQ(1, delegate->navigation_state_change_count());
 
   // Certain rare cases can make a direct DidCommitProvisionalLoad call without
   // going to the browser. Renderer reload of an about:blank is such a case.
@@ -1082,7 +1082,7 @@ TEST_F(NavigationControllerTest, LoadURL_IgnorePreemptsPending) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_FALSE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(3, delegate->navigation_state_change_count());
+  EXPECT_EQ(2, delegate->navigation_state_change_count());
 
   contents()->SetDelegate(nullptr);
 }
@@ -1109,7 +1109,7 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(2, delegate->navigation_state_change_count());
+  EXPECT_EQ(1, delegate->navigation_state_change_count());
 
   // It may abort before committing, if it's a download or due to a stop or
   // a new navigation from the user.
@@ -1121,7 +1121,7 @@ TEST_F(NavigationControllerTest, LoadURL_AbortDoesntCancelPending) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(-1, controller.GetLastCommittedEntryIndex());
-  EXPECT_EQ(2, delegate->navigation_state_change_count());
+  EXPECT_EQ(1, delegate->navigation_state_change_count());
   NavigationEntry* pending_entry = controller.GetPendingEntry();
 
   // Ensure that a reload keeps the same pending entry.
@@ -1162,9 +1162,9 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   EXPECT_EQ(-1, controller.GetPendingEntryIndex());
   EXPECT_TRUE(controller.GetPendingEntry());
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
-  // The delegate should have been notified at least twice: once for the loading
-  // state change, and once for the url change.
-  EXPECT_EQ(3, delegate->navigation_state_change_count());
+  // The delegate should have been notified twice: once for the loading state
+  // change, and once for the url change.
+  EXPECT_EQ(2, delegate->navigation_state_change_count());
 
   // The visible entry should be the last committed URL, not the pending one.
   EXPECT_EQ(kExistingURL, controller.GetVisibleEntry()->GetURL());
@@ -1188,7 +1188,7 @@ TEST_F(NavigationControllerTest, LoadURL_RedirectAbortDoesntShowPendingURL) {
   EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
   // The delegate should have been notified twice: once for the loading state
   // change, and once for the url change.
-  EXPECT_EQ(5, delegate->navigation_state_change_count());
+  EXPECT_EQ(4, delegate->navigation_state_change_count());
 
   // The visible entry should be the last committed URL, not the pending one,
   // so that no spoof is possible.
@@ -2449,7 +2449,6 @@ TEST_F(NavigationControllerTest, RestoreNavigate) {
           std::string(), browser_context(),
           nullptr /* blob_url_loader_factory */);
   entry->SetTitle(base::ASCIIToUTF16("Title"));
-  entry->SetPageState(PageState::CreateFromEncodedData("state"));
   const base::Time timestamp = base::Time::Now();
   entry->SetTimestamp(timestamp);
   entries.push_back(std::move(entry));
@@ -2518,7 +2517,6 @@ TEST_F(NavigationControllerTest, RestoreNavigateAfterFailure) {
           std::string(), browser_context(),
           nullptr /* blob_url_loader_factory */);
   new_entry->SetTitle(base::ASCIIToUTF16("Title"));
-  new_entry->SetPageState(PageState::CreateFromEncodedData("state"));
   entries.push_back(std::move(new_entry));
   std::unique_ptr<WebContents> our_contents =
       WebContents::Create(WebContents::CreateParams(browser_context()));
@@ -4838,6 +4836,108 @@ TEST_F(NavigationControllerTest, NoURLRewriteForSubframes) {
 
   // Clean up the handler.
   BrowserURLHandlerImpl::GetInstance()->SetFixupHandlerForTesting(nullptr);
+}
+
+// Tests that calling RemoveForwareEntries() clears all forward entries
+// including non-committed entries.
+TEST_F(NavigationControllerTest, PruneForwardEntries) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url_0("http://foo/0");
+  const GURL url_1("http://foo/1");
+  const GURL url_2("http://foo/2");
+  const GURL url_3("http://foo/3");
+  const GURL url_transient("http://foo/transient");
+
+  NavigateAndCommit(url_0);
+  NavigateAndCommit(url_1);
+  NavigateAndCommit(url_2);
+  NavigateAndCommit(url_3);
+
+  // Set a WebContentsDelegate to listen for state changes.
+  std::unique_ptr<TestWebContentsDelegate> delegate(
+      new TestWebContentsDelegate());
+  EXPECT_FALSE(contents()->GetDelegate());
+  contents()->SetDelegate(delegate.get());
+
+  controller.GoBack();
+
+  // Ensure that non-committed entries are removed even if there are no forward
+  // entries.
+  EXPECT_EQ(4, controller.GetEntryCount());
+  EXPECT_EQ(2, controller.GetPendingEntryIndex());
+  EXPECT_EQ(2, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
+  int state_change_count = delegate->navigation_state_change_count();
+  controller.PruneForwardEntries();
+  EXPECT_EQ(4, controller.GetEntryCount());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(3, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(3, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(0U, navigation_list_pruned_counter_);
+  EXPECT_EQ(state_change_count + 1, delegate->navigation_state_change_count());
+
+  controller.GoBack();
+  contents()->CommitPendingNavigation();
+  controller.GoBack();
+  contents()->CommitPendingNavigation();
+  controller.GoBack();
+  contents()->CommitPendingNavigation();
+  controller.GoForward();
+
+  EXPECT_EQ(1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  // Insert a transient entry before the pending one.
+  std::unique_ptr<NavigationEntry> transient_entry(new NavigationEntryImpl);
+  transient_entry->SetURL(url_transient);
+  controller.SetTransientEntry(std::move(transient_entry));
+
+  state_change_count = delegate->navigation_state_change_count();
+  controller.PruneForwardEntries();
+
+  EXPECT_EQ(1, controller.GetEntryCount());
+  EXPECT_FALSE(controller.CanGoForward());
+  EXPECT_FALSE(controller.CanGoBack());
+  EXPECT_EQ(0, controller.GetLastCommittedEntryIndex());
+  EXPECT_EQ(0, controller.GetCurrentEntryIndex());
+  EXPECT_EQ(-1, controller.GetPendingEntryIndex());
+  EXPECT_EQ(nullptr, controller.GetPendingEntry());
+  EXPECT_EQ(nullptr, controller.GetTransientEntry());
+  EXPECT_EQ(url_0, controller.GetVisibleEntry()->GetURL());
+  EXPECT_EQ(1U, navigation_list_pruned_counter_);
+  EXPECT_EQ(1, last_navigation_entry_pruned_details_.index);
+  EXPECT_EQ(3, last_navigation_entry_pruned_details_.count);
+  EXPECT_EQ(state_change_count + 1, delegate->navigation_state_change_count());
+}
+
+// Make sure that cloning a WebContentsImpl and clearing forward entries
+// before the first commit doesn't clear all entries.
+TEST_F(NavigationControllerTest, PruneForwardEntriesAfterClone) {
+  NavigationControllerImpl& controller = controller_impl();
+  const GURL url1("http://foo1");
+  const GURL url2("http://foo2");
+
+  NavigateAndCommit(url1);
+  NavigateAndCommit(url2);
+
+  std::unique_ptr<WebContents> clone(controller.GetWebContents()->Clone());
+  clone->GetController().LoadIfNecessary();
+
+  // Set a WebContentsDelegate to listen for state changes after the clone call
+  // to only count state changes from the PruneForwardEntries call.
+  std::unique_ptr<TestWebContentsDelegate> delegate(
+      new TestWebContentsDelegate());
+  EXPECT_FALSE(clone->GetDelegate());
+  clone->SetDelegate(delegate.get());
+
+  EXPECT_EQ(1, clone->GetController().GetPendingEntryIndex());
+
+  clone->GetController().PruneForwardEntries();
+
+  ASSERT_EQ(2, clone->GetController().GetEntryCount());
+  EXPECT_EQ(-1, clone->GetController().GetPendingEntryIndex());
+  EXPECT_EQ(url2, clone->GetController().GetVisibleEntry()->GetURL());
+  EXPECT_EQ(0U, navigation_list_pruned_counter_);
+  EXPECT_EQ(1, delegate->navigation_state_change_count());
 }
 
 }  // namespace content

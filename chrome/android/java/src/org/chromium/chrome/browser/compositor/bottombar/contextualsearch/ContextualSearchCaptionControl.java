@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelAnimation;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelTextViewInflater;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.ui.resources.dynamics.DynamicResourceLoader;
 
 /**
@@ -276,7 +277,7 @@ public class ContextualSearchCaptionControl extends OverlayPanelTextViewInflater
                 OverlayPanelAnimation.BASE_ANIMATION_DURATION_MS, null);
         mTransitionAnimator.addUpdateListener(
                 animator -> mAnimationPercentage = animator.getAnimatedValue());
-        mTransitionAnimator.setInterpolator(CompositorAnimator.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        mTransitionAnimator.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
 
         mTransitionAnimator.start();
     }

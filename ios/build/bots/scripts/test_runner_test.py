@@ -11,6 +11,7 @@ import logging
 import mock
 import os
 import subprocess
+import tempfile
 import unittest
 
 import test_runner
@@ -131,6 +132,7 @@ class SimulatorTestRunnerTest(TestCase):
     self.mock(os.path, 'exists', lambda _: True)
     self.mock(test_runner.TestRunner, 'set_sigterm_handler',
       lambda self, handler: 0)
+    self.mock(os, 'listdir', lambda _: [])
 
   def test_app_not_found(self):
     """Ensures AppNotFoundError is raised."""
@@ -202,6 +204,7 @@ class SimulatorTestRunnerTest(TestCase):
         'xcode-version',
         'xcode-build',
         'out-dir',
+        xctest=True,
     )
     with self.assertRaises(test_runner.AppLaunchError):
       tr.launch()
@@ -229,6 +232,7 @@ class SimulatorTestRunnerTest(TestCase):
       'xcode-version',
       'xcode-build',
       'out-dir',
+      xctest=True,
     )
     self.mock(test_runner, 'shard_xctest', shard_xctest)
     self.mock(test_runner.SimulatorTestRunner, 'run_tests', run_tests)
@@ -254,6 +258,7 @@ class SimulatorTestRunnerTest(TestCase):
         'xcode-version',
         'xcode-build',
         'out-dir',
+        xctest=True,
       )
       tr.xctest_path = 'fake.xctest'
       cmd = ['echo', 'System alert view is present, so skipping all tests!']
@@ -532,6 +537,8 @@ class DeviceTestRunnerTest(TestCase):
               lambda _: 'fake-bundle-id')
     self.mock(os.path, 'abspath', lambda path: '/abs/path/to/%s' % path)
     self.mock(os.path, 'exists', lambda _: True)
+    self.mock(os, 'listdir', lambda _: [])
+    self.mock(tempfile, 'mkstemp', lambda: '/tmp/tmp_file')
 
     self.tr = test_runner.DeviceTestRunner(
         'fake-app',

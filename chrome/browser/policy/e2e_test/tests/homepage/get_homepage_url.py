@@ -2,12 +2,11 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from selenium import webdriver
-import os
 from pywinauto.application import Application
 
-driver = webdriver.Chrome(
-    "C:/ProgramData/chocolatey/lib/chromedriver/tools/chromedriver.exe")
+import test_util
+
+driver = test_util.create_chrome_webdriver()
 
 try:
   app = Application(backend="uia")

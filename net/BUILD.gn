@@ -2787,6 +2787,8 @@ static_library("test_support") {
     "ssl/test_ssl_config_service.h",
     "ssl/test_ssl_private_key.cc",
     "ssl/test_ssl_private_key.h",
+    "test/cert_builder.cc",
+    "test/cert_builder.h",
     "test/cert_test_util.cc",
     "test/cert_test_util.h",
     "test/cert_test_util_nss.cc",

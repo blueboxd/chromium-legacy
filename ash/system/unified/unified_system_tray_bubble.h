@@ -84,6 +84,12 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // collapsed / expanded.
   int GetCurrentTrayHeight() const;
 
+  // Relinquish focus and transfer it to the message center widget.
+  bool FocusOut(bool reverse);
+
+  // Inform UnifiedSystemTrayView of focus being acquired.
+  void FocusEntered(bool reverse);
+
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
   TrayBubbleView* GetBubbleView() const override;

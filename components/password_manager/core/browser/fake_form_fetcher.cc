@@ -44,9 +44,8 @@ std::vector<const PasswordForm*> FakeFormFetcher::GetFederatedMatches() const {
   return federated_;
 }
 
-std::vector<const PasswordForm*> FakeFormFetcher::GetBlacklistedMatches()
-    const {
-  return blacklisted_;
+bool FakeFormFetcher::IsBlacklisted() const {
+  return is_blacklisted_;
 }
 
 const std::vector<const PasswordForm*>& FakeFormFetcher::GetAllRelevantMatches()
@@ -72,9 +71,8 @@ void FakeFormFetcher::SetNonFederated(
       &best_matches_, &preferred_match_);
 }
 
-void FakeFormFetcher::SetBlacklisted(
-    const std::vector<const PasswordForm*>& blacklisted) {
-  blacklisted_ = blacklisted;
+void FakeFormFetcher::SetBlacklisted(bool is_blacklisted) {
+  is_blacklisted_ = is_blacklisted;
 }
 
 void FakeFormFetcher::NotifyFetchCompleted() {

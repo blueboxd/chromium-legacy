@@ -18,6 +18,7 @@ using TP = ThemeProperties;
 namespace {
 
 int GetThemePropertyId(OmniboxPart part, OmniboxPartState state) {
+  const bool selected = state == OmniboxPartState::SELECTED;
   switch (part) {
     case OmniboxPart::LOCATION_BAR_BACKGROUND:
       return state == OmniboxPartState::HOVERED
@@ -39,16 +40,21 @@ int GetThemePropertyId(OmniboxPart part, OmniboxPartState state) {
       }
     case OmniboxPart::LOCATION_BAR_CLEAR_ALL:
     case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
-    case OmniboxPart::RESULTS_TEXT_DEFAULT:
       return TP::COLOR_OMNIBOX_TEXT;
+    case OmniboxPart::RESULTS_TEXT_DEFAULT:
+      return selected ? TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED
+                      : TP::COLOR_OMNIBOX_TEXT;
     case OmniboxPart::LOCATION_BAR_TEXT_DIMMED:
       return TP::COLOR_OMNIBOX_TEXT_DIMMED;
     case OmniboxPart::RESULTS_TEXT_DIMMED:
-      return TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED;
+      return selected ? TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED
+                      : TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED;
     case OmniboxPart::RESULTS_ICON:
-      return TP::COLOR_OMNIBOX_RESULTS_ICON;
+      return selected ? TP::COLOR_OMNIBOX_RESULTS_ICON_SELECTED
+                      : TP::COLOR_OMNIBOX_RESULTS_ICON;
     case OmniboxPart::RESULTS_TEXT_URL:
-      return TP::COLOR_OMNIBOX_RESULTS_URL;
+      return selected ? TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED
+                      : TP::COLOR_OMNIBOX_RESULTS_URL;
     case OmniboxPart::LOCATION_BAR_BUBBLE_OUTLINE:
       return OmniboxFieldTrial::IsExperimentalKeywordModeEnabled()
                  ? TP::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE

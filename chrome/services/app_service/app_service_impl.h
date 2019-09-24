@@ -9,8 +9,9 @@
 
 #include "base/macros.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace apps {
 
@@ -24,7 +25,7 @@ class AppServiceImpl : public apps::mojom::AppService {
   AppServiceImpl();
   ~AppServiceImpl() override;
 
-  void BindRequest(apps::mojom::AppServiceRequest request);
+  void BindReceiver(mojo::PendingReceiver<apps::mojom::AppService> receiver);
 
   // apps::mojom::AppService overrides.
   void RegisterPublisher(apps::mojom::PublisherPtr publisher,
@@ -61,7 +62,7 @@ class AppServiceImpl : public apps::mojom::AppService {
 
   // Must come after the publisher and subscriber maps to ensure it is
   // destroyed first, closing the connection to avoid dangling callbacks.
-  mojo::BindingSet<apps::mojom::AppService> bindings_;
+  mojo::ReceiverSet<apps::mojom::AppService> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceImpl);
 };

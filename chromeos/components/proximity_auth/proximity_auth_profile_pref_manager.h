@@ -65,6 +65,8 @@ class ProximityAuthProfilePrefManager
   bool IsChromeOSLoginAllowed() const override;
   void SetIsChromeOSLoginEnabled(bool is_enabled) override;
   bool IsChromeOSLoginEnabled() const override;
+  void SetHasShownLoginDisabledMessage(bool has_shown) override;
+  bool HasShownLoginDisabledMessage() const override;
 
   // chromeos::multidevice_setup::MultiDeviceSetupClient::Observer:
   void OnFeatureStatesChanged(

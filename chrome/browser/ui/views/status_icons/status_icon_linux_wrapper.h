@@ -8,9 +8,12 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "chrome/browser/status_icons/desktop_notification_balloon.h"
 #include "chrome/browser/status_icons/status_icon.h"
 #include "ui/views/linux_ui/status_icon_linux.h"
+
+class StatusIconLinuxDbus;
 
 // Wrapper class for StatusIconLinux that implements the standard StatusIcon
 // interface. Also handles callbacks from StatusIconLinux.
@@ -59,6 +62,15 @@ class StatusIconLinuxWrapper : public StatusIcon,
 
   // A status icon wrapper should only be created by calling
   // CreateWrappedStatusIcon().
+  StatusIconLinuxWrapper(views::StatusIconLinux* status_icon,
+                         StatusIconType status_icon_type,
+                         const gfx::ImageSkia& image,
+                         const base::string16& tool_tip);
+#if defined(USE_DBUS)
+  StatusIconLinuxWrapper(scoped_refptr<StatusIconLinuxDbus> status_icon,
+                         const gfx::ImageSkia& image,
+                         const base::string16& tool_tip);
+#endif
   StatusIconLinuxWrapper(std::unique_ptr<views::StatusIconLinux> status_icon,
                          StatusIconType status_icon_type,
                          const gfx::ImageSkia& image,
@@ -67,7 +79,14 @@ class StatusIconLinuxWrapper : public StatusIcon,
   // Notification balloon.
   DesktopNotificationBalloon notification_;
 
-  std::unique_ptr<views::StatusIconLinux> status_icon_;
+  // The status icon may be ref-counted (via |status_icon_dbus_|) or owned by
+  // |this| (via |status_icon_linux_|).  Either way, |status_icon_| points to
+  // the underlying object.
+#if defined(USE_DBUS)
+  scoped_refptr<StatusIconLinuxDbus> status_icon_dbus_;
+#endif
+  std::unique_ptr<views::StatusIconLinux> status_icon_linux_;
+  views::StatusIconLinux* status_icon_;
   StatusIconType status_icon_type_;
 
   gfx::ImageSkia image_;

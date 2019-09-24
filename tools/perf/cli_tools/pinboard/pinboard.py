@@ -169,9 +169,12 @@ def AggregateAndUploadResults(state):
   cached_results = CachedFilePath(DATASET_PKL_FILE)
   dfs = []
 
+  keep_revisions = set(item['revision'] for item in state)
   if os.path.exists(cached_results):
     # To speed things up, we take the cache computed from previous results.
     df = pd.read_pickle(cached_results)
+    # Drop possible old data from revisions no longer in recent state.
+    df = df[df['revision'].isin(keep_revisions)]
     dfs.append(df)
     known_revisions = set(df['revision'])
   else:
@@ -329,8 +332,8 @@ def LoadJsonFile(filename):
     return json.load(f)
 
 
-def Yesterday():
-  return pd.Timestamp.now(TZ) - pd.DateOffset(days=1)
+def TimeAgo(**kwargs):
+  return pd.Timestamp.now(TZ) - pd.DateOffset(**kwargs)
 
 
 def SetUpLogging(level):
@@ -350,6 +353,12 @@ def SetUpLogging(level):
   logger.addHandler(h2)
 
 
+def SelectRecentRevisions(state):
+  """Filter out old revisions from state to keep only recent (6 months) data."""
+  from_date = str(TimeAgo(months=6).date())
+  return [item for item in state if item['timestamp'] > from_date]
+
+
 def Main():
   SetUpLogging(level=logging.INFO)
   actions = ('start', 'collect', 'upload')
@@ -360,7 +369,7 @@ def Main():
             "results, 'upload' aggregated data, or 'auto' to do all in "
             "sequence."))
   parser.add_argument(
-      '--date', type=lambda s: pd.Timestamp(s, tz=TZ), default=Yesterday(),
+      '--date', type=lambda s: pd.Timestamp(s, tz=TZ), default=TimeAgo(days=1),
       help=('Run jobs for the last commit landed on the given date (assuming '
             'MTV time). Defaults to the last commit landed yesterday.'))
   args = parser.parse_args()
@@ -372,10 +381,11 @@ def Main():
   try:
     if 'start' in args.actions:
       StartPinpointJobs(state, args.date)
+    recent_state = SelectRecentRevisions(state)
     if 'collect' in args.actions:
-      CollectPinpointResults(state)
+      CollectPinpointResults(recent_state)
   finally:
     UpdateJobsState(state)
 
   if 'upload' in args.actions:
-    AggregateAndUploadResults(state)
+    AggregateAndUploadResults(recent_state)

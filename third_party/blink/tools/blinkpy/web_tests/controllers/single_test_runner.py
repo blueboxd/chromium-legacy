@@ -512,11 +512,11 @@ class SingleTestRunner(object):
         test_result = None
         putAllMismatchBeforeMatch = sorted
         reference_test_names = []
+        if self._port.lookup_virtual_test_base(self._test_name):
+            args = self._port.lookup_virtual_reference_args(self._test_name)
+        else:
+            args = self._port.lookup_physical_reference_args(self._test_name)
         for expectation, reference_filename in putAllMismatchBeforeMatch(self._reference_files):
-            if self._port.lookup_virtual_test_base(self._test_name):
-                args = self._port.lookup_virtual_reference_args(self._test_name)
-            else:
-                args = self._port.lookup_physical_reference_args(self._test_name)
             reference_test_name = self._port.relative_test_filename(reference_filename)
             reference_test_names.append(reference_test_name)
             driver_input = DriverInput(reference_test_name, self._timeout_ms,

@@ -53,6 +53,9 @@ extern const char kAcceleratedVideoDecodeDescription[];
 extern const char kAcceleratedVideoEncodeName[];
 extern const char kAcceleratedVideoEncodeDescription[];
 
+extern const char kAccessibilityExposeDisplayNoneName[];
+extern const char kAccessibilityExposeDisplayNoneDescription[];
+
 extern const char kAccessibilityInternalsPageImprovementsName[];
 extern const char kAccessibilityInternalsPageImprovementsDescription[];
 
@@ -421,9 +424,6 @@ extern const char kEnableImplicitRootScrollerDescription[];
 
 extern const char kEnableLitePageServerPreviewsName[];
 extern const char kEnableLitePageServerPreviewsDescription[];
-
-extern const char kEnableURLLoaderLitePageServerPreviewsName[];
-extern const char kEnableURLLoaderLitePageServerPreviewsDescription[];
 
 extern const char kBuiltInModuleAllName[];
 extern const char kBuiltInModuleAllDescription[];
@@ -890,6 +890,9 @@ extern const char kOmniboxZeroSuggestionsOnNTPDescription[];
 
 extern const char kOmniboxZeroSuggestionsOnNTPRealboxName[];
 extern const char kOmniboxZeroSuggestionsOnNTPRealboxDescription[];
+
+extern const char kOmniboxZeroSuggestionsOnSERPName[];
+extern const char kOmniboxZeroSuggestionsOnSERPDescription[];
 
 extern const char kOnTheFlyMhtmlHashComputationName[];
 extern const char kOnTheFlyMhtmlHashComputationDescription[];

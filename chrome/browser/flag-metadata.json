@@ -807,6 +807,11 @@
     "expiry_milestone": 89
   },
   {
+    "name": "enable-accessibility-expose-display-none",
+    "owners": [ "adettenb@microsoft.com", "//third_party/blink/renderer/modules/accessibility/OWNERS", "//ui/accessibility/OWNERS" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "enable-accessibility-image-descriptions",
     "owners": [ "//ui/accessibility/OWNERS" ],
     "expiry_milestone": 77
@@ -1822,11 +1827,6 @@
     "expiry_milestone": 82
   },
   {
-    "name": "enable-url-loader-lite-page-server-previews",
-    "owners": [ "//components/data_reduction_proxy/OWNERS" ],
-    "expiry_milestone": 79
-  },
-  {
     "name": "enable-usbguard",
     "owners": [ "allenwebb", "mnissler", "jorgelo" ],
     "expiry_milestone": 80
@@ -2731,6 +2731,11 @@
   {
     "name": "omnibox-zero-suggestions-on-ntp-realbox",
     "owners": [ "dbeam", "mahmadi" ],
+    "expiry_milestone": 85
+  },
+  {
+    "name": "omnibox-zero-suggestions-on-serp",
+    "owners": [ "tommycli", "pnoland" ],
     "expiry_milestone": 85
   },
   {

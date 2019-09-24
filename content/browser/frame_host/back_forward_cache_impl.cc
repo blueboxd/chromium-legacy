@@ -360,7 +360,7 @@ void BackForwardCacheImpl::PostTaskToDestroyEvictedFrames() {
 }
 
 void BackForwardCacheImpl::DisableForRenderFrameHost(GlobalFrameRoutingId id,
-                                                     std::string_view reason) {
+                                                     base::StringPiece reason) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   auto* rfh = RenderFrameHostImpl::FromID(id);
   if (rfh)

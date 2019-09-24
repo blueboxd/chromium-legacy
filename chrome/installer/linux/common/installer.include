@@ -140,6 +140,13 @@ stage_install_common() {
   STRIPPEDFILE="${BUILDDIR}/${PROGNAME}.stripped"
   install -m 755 "${STRIPPEDFILE}" "${STAGEDIR}/${INSTALLDIR}/${PROGNAME}"
 
+  # crashpad
+  buildfile="${BUILDDIR}/crashpad_handler"
+  strippedfile="${buildfile}.stripped"
+  debugfile="${buildfile}.debug"
+  "${BUILDDIR}/installer/common/eu-strip" -o "${strippedfile}" -f "${debugfile}" "${buildfile}"
+  install -m 755 "${strippedfile}" "${STAGEDIR}/${INSTALLDIR}/crashpad_handler"
+
   # resources
   install -m 644 "${BUILDDIR}/resources.pak" "${STAGEDIR}/${INSTALLDIR}/"
   # TODO(mmoss): This has broken a couple times on adding new .pak files. Maybe

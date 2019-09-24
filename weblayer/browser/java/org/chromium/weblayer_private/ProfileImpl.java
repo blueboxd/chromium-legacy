@@ -33,10 +33,8 @@ public final class ProfileImpl extends IProfile.Stub {
     }
 
     @Override
-    public IBrowserController createBrowserController(
-            IObjectWrapper clientContext, IObjectWrapper implContext) {
-        return new BrowserControllerImpl(ObjectWrapper.unwrap(clientContext, Context.class),
-                ObjectWrapper.unwrap(implContext, Context.class), this);
+    public IBrowserController createBrowserController(IObjectWrapper context) {
+        return new BrowserControllerImpl(ObjectWrapper.unwrap(context, Context.class), this);
     }
 
     long getNativeProfile() {

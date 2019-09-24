@@ -50,6 +50,7 @@ class ChooserOnlyTemporalInputTypeView final
   void CloseDateTimeChooser();
 
   // InputTypeView functions:
+  void Blur() final;
   void CreateShadowSubtree() override;
   void ClosePopupView() override;
   void ValueAttributeChanged() override;

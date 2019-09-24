@@ -5,6 +5,7 @@
 #include "ui/accessibility/ax_node_position.h"
 
 #include "base/strings/string_util.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
 
@@ -92,32 +93,24 @@ AXNodePosition::AXPositionInstance AXNodePosition::AsUnignoredTextPosition(
   if (!IsLeafTextPosition())
     return AsLeafTextPosition()->AsUnignoredTextPosition(adjustment_behavior);
 
-  if (!GetAnchor()->IsIgnored())
-    return Clone();
+  AXPositionInstance unignored_position =
+      CreateUnignoredPositionFromLeafTextPosition(adjustment_behavior);
 
-  // Find the next/previous node that is not ignored.
-  AXNode* unignored_node = GetAnchor();
-  while (unignored_node) {
-    switch (adjustment_behavior) {
-      case AdjustmentBehavior::kMoveRight:
-        unignored_node = unignored_node->GetNextUnignoredInTreeOrder();
-        break;
-      case AdjustmentBehavior::kMoveLeft:
-        unignored_node = unignored_node->GetPreviousUnignoredInTreeOrder();
-    }
-    if (unignored_node && unignored_node->IsText()) {
-      switch (adjustment_behavior) {
-        case AdjustmentBehavior::kMoveRight:
-          return CreateTextPosition(tree_id(), unignored_node->id(), 0,
-                                    ax::mojom::TextAffinity::kDownstream);
-        case AdjustmentBehavior::kMoveLeft:
-          return CreateTextPosition(tree_id(), unignored_node->id(), 0,
-                                    ax::mojom::TextAffinity::kDownstream)
-              ->CreatePositionAtEndOfAnchor();
-      }
+  // If creating an unignored position using |adjustment_behavior| returns a
+  // null position, the position may be at the start or end of a document.
+  // For this case attempt to adjust using the opposite AdjustmentBehavior.
+  if (features::IsAccessibilityExposeDisplayNoneEnabled()) {
+    if (unignored_position->IsNullPosition()) {
+      const AdjustmentBehavior opposite_adjustment =
+          (adjustment_behavior == AdjustmentBehavior::kMoveRight)
+              ? AdjustmentBehavior::kMoveLeft
+              : AdjustmentBehavior::kMoveRight;
+      unignored_position =
+          CreateUnignoredPositionFromLeafTextPosition(opposite_adjustment);
     }
   }
-  return CreateNullPosition();
+
+  return unignored_position;
 }
 
 int AXNodePosition::MaxTextOffset() const {
@@ -370,6 +363,39 @@ AXNode* AXNodePosition::GetParent(AXNode* child,
 
   *parent_id = parent->id();
   return parent;
+}
+
+AXNodePosition::AXPositionInstance
+AXNodePosition::CreateUnignoredPositionFromLeafTextPosition(
+    AdjustmentBehavior adjustment_behavior) const {
+  DCHECK(IsLeafTextPosition());
+
+  AXNode* unignored_node = GetAnchor();
+  if (!unignored_node->IsIgnored())
+    return Clone();
+
+  // Find the next/previous node that is not ignored.
+  while (unignored_node) {
+    switch (adjustment_behavior) {
+      case AdjustmentBehavior::kMoveRight:
+        unignored_node = unignored_node->GetNextUnignoredInTreeOrder();
+        break;
+      case AdjustmentBehavior::kMoveLeft:
+        unignored_node = unignored_node->GetPreviousUnignoredInTreeOrder();
+    }
+    if (unignored_node && unignored_node->IsText()) {
+      switch (adjustment_behavior) {
+        case AdjustmentBehavior::kMoveRight:
+          return CreateTextPosition(tree_id(), unignored_node->id(), 0,
+                                    ax::mojom::TextAffinity::kDownstream);
+        case AdjustmentBehavior::kMoveLeft:
+          return CreateTextPosition(tree_id(), unignored_node->id(), 0,
+                                    ax::mojom::TextAffinity::kDownstream)
+              ->CreatePositionAtEndOfAnchor();
+      }
+    }
+  }
+  return CreateNullPosition();
 }
 
 }  // namespace ui

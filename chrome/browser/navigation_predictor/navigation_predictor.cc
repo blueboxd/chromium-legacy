@@ -14,6 +14,8 @@
 #include "base/optional.h"
 #include "base/rand_util.h"
 #include "base/system/sys_info.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor_keyed_service_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
 #include "chrome/browser/prerender/prerender_handle.h"
@@ -189,10 +191,10 @@ NavigationPredictor::NavigationPredictor(
           blink::features::kNavigationPredictor,
           "viewport_width_scale",
           0)),
-      sum_link_scales_(
-          ratio_area_scale_ + is_in_iframe_scale_ + is_same_host_scale_ +
-          contains_image_scale_ + is_url_incremented_scale_ +
-          area_rank_scale_ + ratio_distance_root_top_scale_),
+      sum_link_scales_(ratio_area_scale_ + is_in_iframe_scale_ +
+                       is_same_host_scale_ + contains_image_scale_ +
+                       is_url_incremented_scale_ + area_rank_scale_ +
+                       ratio_distance_root_top_scale_),
       sum_page_scales_(link_total_scale_ + iframe_link_total_scale_ +
                        increment_link_total_scale_ +
                        same_origin_link_total_scale_ + image_link_total_scale_ +
@@ -219,12 +221,17 @@ NavigationPredictor::NavigationPredictor(
       normalize_navigation_scores_(base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor,
           "normalize_scores",
-          true)) {
+          true)),
+      render_frame_host_(render_frame_host) {
   DCHECK(browser_context_);
   DETACH_FROM_SEQUENCE(sequence_checker_);
   DCHECK_LE(0, preconnect_origin_score_threshold_);
+  DCHECK(render_frame_host_);
 
   if (!IsMainFrame(render_frame_host))
+    return;
+
+  if (browser_context_->IsOffTheRecord())
     return;
 
   ukm_recorder_ = ukm::UkmRecorder::Get();
@@ -476,8 +483,9 @@ void NavigationPredictor::MaybeSendMetricsToUkm() const {
     anchor_element_builder.SetIsURLIncrementedByOne(
         navigation_score->is_url_incremented_by_one);
     anchor_element_builder.SetContainsImage(navigation_score->contains_image);
-    anchor_element_builder.SetSameOrigin(navigation_score->url.GetOrigin() ==
-                                         document_origin_.GetURL());
+    anchor_element_builder.SetSameOrigin(
+        url::Origin::Create(navigation_score->url) ==
+        url::Origin::Create(document_url_));
 
     // Convert the ratio area and ratio distance from [0,1] to [0,100].
     int percent_ratio_area =
@@ -837,8 +845,8 @@ void NavigationPredictor::ReportAnchorElementMetricsOnLoad(
   std::sort(navigation_scores.begin(), navigation_scores.end(),
             [](const auto& a, const auto& b) { return a->score > b->score; });
 
-  document_origin_ = url::Origin::Create(metrics[0]->source_url);
-  MaybeTakeActionOnLoad(document_origin_, navigation_scores);
+  document_url_ = metrics[0]->source_url;
+  MaybeTakeActionOnLoad(document_url_, navigation_scores);
 
   // Store navigation scores in |navigation_scores_map_| for fast look up upon
   // clicks.
@@ -938,8 +946,23 @@ double NavigationPredictor::GetPageMetricsScore() const {
   }
 }
 
+void NavigationPredictor::NotifyPredictionUpdated(
+    const std::vector<std::unique_ptr<NavigationScore>>&
+        sorted_navigation_scores) {
+  NavigationPredictorKeyedService* service =
+      NavigationPredictorKeyedServiceFactory::GetForProfile(
+          Profile::FromBrowserContext(browser_context_));
+  DCHECK(service);
+  std::vector<GURL> top_urls;
+  top_urls.reserve(sorted_navigation_scores.size());
+  for (const auto& nav_score : sorted_navigation_scores) {
+    top_urls.push_back(nav_score->url);
+  }
+  service->OnPredictionUpdated(render_frame_host_, document_url_, top_urls);
+}
+
 void NavigationPredictor::MaybeTakeActionOnLoad(
-    const url::Origin& document_origin,
+    const GURL& document_url,
     const std::vector<std::unique_ptr<NavigationScore>>&
         sorted_navigation_scores) {
   DCHECK(!browser_context_->IsOffTheRecord());
@@ -952,10 +975,12 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
   DCHECK(!preconnect_origin_.has_value());
   DCHECK(!prefetch_url_.has_value());
 
+  NotifyPredictionUpdated(sorted_navigation_scores);
+
   // Try prefetch first.
-  prefetch_url_ = GetUrlToPrefetch(document_origin, sorted_navigation_scores);
+  prefetch_url_ = GetUrlToPrefetch(document_url, sorted_navigation_scores);
   if (prefetch_url_.has_value()) {
-    DCHECK_EQ(document_origin.host(), prefetch_url_->host());
+    DCHECK_EQ(document_url.host(), prefetch_url_->host());
     MaybePreconnectNow(Action::kPrefetch);
     MaybePrefetch();
     return;
@@ -963,9 +988,9 @@ void NavigationPredictor::MaybeTakeActionOnLoad(
 
   // Compute preconnect origin only if there is no valid prefetch URL.
   preconnect_origin_ =
-      GetOriginToPreconnect(document_origin, sorted_navigation_scores);
+      GetOriginToPreconnect(document_url, sorted_navigation_scores);
   if (preconnect_origin_.has_value()) {
-    DCHECK_EQ(document_origin.host(), preconnect_origin_->host());
+    DCHECK_EQ(document_url.host(), preconnect_origin_->host());
     MaybePreconnectNow(Action::kPreconnect);
     return;
   }
@@ -1006,7 +1031,7 @@ void NavigationPredictor::Prefetch(
 }
 
 base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
-    const url::Origin& document_origin,
+    const GURL& document_url,
     const std::vector<std::unique_ptr<NavigationScore>>&
         sorted_navigation_scores) const {
   // Currently, prefetch is disabled on low-end devices since prefetch may
@@ -1033,7 +1058,8 @@ base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
   // Only the same origin URLs are eligible for prefetching. If the URL with
   // the highest score is from a different origin, then we skip prefetching
   // since same origin URLs are not likely to be clicked.
-  if (url::Origin::Create(url_to_prefetch) != document_origin) {
+  if (url::Origin::Create(url_to_prefetch) !=
+      url::Origin::Create(document_url)) {
     return base::nullopt;
   }
 
@@ -1046,7 +1072,7 @@ base::Optional<GURL> NavigationPredictor::GetUrlToPrefetch(
 }
 
 base::Optional<url::Origin> NavigationPredictor::GetOriginToPreconnect(
-    const url::Origin& document_origin,
+    const GURL& document_url,
     const std::vector<std::unique_ptr<NavigationScore>>&
         sorted_navigation_scores) const {
   // On search engine results page, next navigation is likely to be a different
@@ -1058,7 +1084,7 @@ base::Optional<url::Origin> NavigationPredictor::GetOriginToPreconnect(
   if (base::GetFieldTrialParamByFeatureAsBool(
           blink::features::kNavigationPredictor, "preconnect_skip_link_scores",
           true)) {
-    return document_origin;
+    return url::Origin::Create(document_url);
   }
 
   // Compute preconnect score for each origins: Multiple anchor elements on
@@ -1117,8 +1143,9 @@ base::Optional<url::Origin> NavigationPredictor::GetOriginToPreconnect(
 
   // Connect to the origin with highest score provided the origin is same
   // as the document origin.
-  if (sorted_preconnect_scores[0].origin != document_origin)
+  if (sorted_preconnect_scores[0].origin != url::Origin::Create(document_url)) {
     return base::nullopt;
+  }
 
   // If the prediction score of the highest scoring origin is less than the
   // threshold, then return.

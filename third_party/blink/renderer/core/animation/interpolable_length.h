@@ -10,19 +10,19 @@
 #include "third_party/blink/renderer/core/animation/pairwise_interpolation_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/platform/geometry/length.h"
+#include "third_party/blink/renderer/platform/heap/persistent.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace blink {
 
 class CSSToLengthConversionData;
+class CSSMathExpressionNode;
 
 class CORE_EXPORT InterpolableLength final : public InterpolableValue {
  public:
   ~InterpolableLength() final {}
-  InterpolableLength(const CSSLengthArray& length_array)
-      : length_array_(length_array) {}
-  InterpolableLength(CSSLengthArray&& length_array)
-      : length_array_(std::move(length_array)) {}
+  InterpolableLength(CSSLengthArray&& length_array);
+  explicit InterpolableLength(const CSSMathExpressionNode& expression);
 
   static std::unique_ptr<InterpolableLength> CreatePixels(double pixels);
   static std::unique_ptr<InterpolableLength> CreatePercent(double pixels);
@@ -45,10 +45,8 @@ class CORE_EXPORT InterpolableLength final : public InterpolableValue {
   // expressions.
   const CSSPrimitiveValue* CreateCSSValue(ValueRange range) const;
 
-  bool HasPercentage() const {
-    return length_array_.type_flags.test(
-        CSSPrimitiveValue::kUnitTypePercentage);
-  }
+  void SetHasPercentage();
+  bool HasPercentage() const;
   void SubtractFromOneHundredPercent();
 
   // InterpolableValue:
@@ -57,17 +55,11 @@ class CORE_EXPORT InterpolableLength final : public InterpolableValue {
     NOTREACHED();
     return false;
   }
-  std::unique_ptr<InterpolableValue> Clone() const final {
-    return std::make_unique<InterpolableLength>(length_array_);
-  }
+  std::unique_ptr<InterpolableValue> Clone() const final;
   std::unique_ptr<InterpolableValue> CloneAndZero() const final {
     return std::make_unique<InterpolableLength>(CSSLengthArray());
   }
-  void Scale(double scale) final {
-    for (double& value : length_array_.values) {
-      value *= scale;
-    }
-  }
+  void Scale(double scale) final;
   void ScaleAndAdd(double scale, const InterpolableValue& other) final;
   void AssertCanInterpolateWith(const InterpolableValue& other) const final;
 
@@ -77,7 +69,17 @@ class CORE_EXPORT InterpolableLength final : public InterpolableValue {
                    const double progress,
                    InterpolableValue& result) const final;
 
+  bool IsLengthArray() const { return type_ == Type::kLengthArray; }
+  bool IsExpression() const { return type_ == Type::kExpression; }
+
+  void SetLengthArray(CSSLengthArray&& length_array);
+  void SetExpression(const CSSMathExpressionNode& expression);
+  const CSSMathExpressionNode& AsExpression() const;
+
+  enum class Type { kLengthArray, kExpression };
+  Type type_;
   CSSLengthArray length_array_;
+  Persistent<const CSSMathExpressionNode> expression_;
 };
 
 template <>

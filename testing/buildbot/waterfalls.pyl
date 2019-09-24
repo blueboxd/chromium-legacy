@@ -2574,8 +2574,7 @@
         'os_type': 'android',
         'skip_merge_script': True,
         'mixins': [
-          'gpu_pool',
-          'pie',
+          'pie_fleet',
           'walleye',
         ],
         'test_suites': {
@@ -2601,8 +2600,7 @@
         'browser_config': 'android-chromium',
         'skip_merge_script': True,
         'mixins': [
-          'gpu_pool',
-          'pie',
+          'pie_fleet',
           'walleye',
         ],
         'test_suites': {

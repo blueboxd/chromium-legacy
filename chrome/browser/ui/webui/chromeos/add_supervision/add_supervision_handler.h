@@ -9,7 +9,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace content {
 class WebUI;
@@ -39,7 +40,8 @@ class AddSupervisionHandler
 
   // |delegate| is owned by the caller and its lifetime must outlive |this|.
   AddSupervisionHandler(
-      add_supervision::mojom::AddSupervisionHandlerRequest request,
+      mojo::PendingReceiver<add_supervision::mojom::AddSupervisionHandler>
+          receiver,
       content::WebUI* web_ui,
       signin::IdentityManager* identity_manager,
       Delegate* delegate);
@@ -64,7 +66,7 @@ class AddSupervisionHandler
   signin::IdentityManager* identity_manager_;
   std::unique_ptr<signin::AccessTokenFetcher> oauth2_access_token_fetcher_;
 
-  mojo::Binding<add_supervision::mojom::AddSupervisionHandler> binding_;
+  mojo::Receiver<add_supervision::mojom::AddSupervisionHandler> receiver_;
 
   Delegate* delegate_;
 

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 
 # Watchlist Rules
-# Refer: https://dev.chromium.org/developers/contributing-code/watchlists
+# Refer: https://chromium.googlesource.com/chromium/src/+/master/docs/infra/watchlists.md
 
 # IMPORTANT: The regular expression filepath is tested against each path using
 # re.search, so it is not usually necessary to add .*.
@@ -779,6 +779,7 @@
     'chromeos_net': {
       'filepath': 'ash/system/network/|'\
                   'chromeos/network/|'\
+                  'chromeos/services/network_config/|'\
                   'chrome/browser/chromeos/net/|'\
                   'chrome/browser/extensions/api/networking_private/|'\
                   'chrome/browser/resources/settings/internet_page/|'\
@@ -2331,7 +2332,7 @@
     'freetype_update': ['drott+watch@chromium.org',
                         'thestig@chromium.org'],
     'fsp': ['mtomasz+watch@chromium.org'],
-    'fuchsia': ['sergeyu@chromium.org', 'wez@chromium.org'],
+    'fuchsia': ['fuchsia-reviews@chromium.org'],
     'fuzzing': ['fuzzing@chromium.org'],
     'gamepad': ['mattreynolds+watch@chromium.org'],
     'gcm': ['peter@chromium.org'],

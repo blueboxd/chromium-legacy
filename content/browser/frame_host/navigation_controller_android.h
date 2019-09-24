@@ -119,6 +119,8 @@ class CONTENT_EXPORT NavigationControllerAndroid {
   jboolean RemoveEntryAtIndex(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj,
                               jint index);
+  void PruneForwardEntries(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj);
   base::android::ScopedJavaLocalRef<jstring> GetEntryExtraData(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,

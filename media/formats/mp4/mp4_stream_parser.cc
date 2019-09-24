@@ -329,10 +329,10 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
                                 : entry.format;
 
       if (audio_format != FOURCC_OPUS && audio_format != FOURCC_FLAC &&
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
           audio_format != FOURCC_AC3 && audio_format != FOURCC_EAC3 &&
 #endif
-#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
           audio_format != FOURCC_MHM1 && audio_format != FOURCC_MHA1 &&
 #endif
           audio_format != FOURCC_MP4A) {
@@ -370,7 +370,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
         sample_per_second = entry.samplerate;
         extra_data = entry.dfla.stream_info;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
       } else if (audio_format == FOURCC_MHM1 || audio_format == FOURCC_MHA1) {
         codec = kCodecMpegHAudio;
         channel_layout = CHANNEL_LAYOUT_BITSTREAM;
@@ -379,7 +379,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 #endif
       } else {
         uint8_t audio_type = entry.esds.object_type;
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
         if (audio_type == kForbidden) {
           if (audio_format == FOURCC_AC3)
             audio_type = kAC3;
@@ -406,7 +406,7 @@ bool MP4StreamParser::ParseMoov(BoxReader* reader) {
 #if defined(OS_ANDROID)
           extra_data = aac.codec_specific_data();
 #endif
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
         } else if (audio_type == kAC3) {
           codec = kCodecAC3;
           channel_layout = GuessChannelLayout(entry.channelcount);

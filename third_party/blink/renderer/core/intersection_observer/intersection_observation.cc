@@ -16,6 +16,11 @@ namespace blink {
 
 namespace {
 
+Document& TrackingDocument(const IntersectionObservation* observation) {
+  if (observation->Observer()->RootIsImplicit())
+    return observation->Target()->GetDocument();
+  return (observation->Observer()->root()->GetDocument());
+}
 
 }  // namespace
 
@@ -97,8 +102,10 @@ bool IntersectionObservation::ShouldCompute(unsigned flags) {
   DOMHighResTimeStamp timestamp = observer_->GetTimeStamp();
   if (timestamp == -1)
     return false;
-  if (!(flags & kIgnoreDelay) &&
-      timestamp - last_run_time_ < observer_->GetEffectiveDelay()) {
+  base::TimeDelta delay = base::TimeDelta::FromMilliseconds(
+      observer_->GetEffectiveDelay() - (timestamp - last_run_time_));
+  if (!(flags & kIgnoreDelay) && delay > base::TimeDelta()) {
+    TrackingDocument(this).View()->ScheduleAnimation(delay);
     return false;
   }
   if (target_->isConnected() && Observer()->trackVisibility()) {

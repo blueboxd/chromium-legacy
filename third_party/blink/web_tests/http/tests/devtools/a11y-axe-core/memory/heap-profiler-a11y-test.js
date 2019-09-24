@@ -37,6 +37,7 @@
 
   await UI.viewManager.showView('heap_profiler');
   const widget = await UI.viewManager.view('heap_profiler').widget();
+  //TODO(crbug.com/1004940): expected.txt file has 'aria-allowed-role' exceptions
   await AxeCoreTestRunner.runValidation(widget.element);
   TestRunner.completeTest();
 })();

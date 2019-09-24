@@ -21,7 +21,8 @@ using cast_util::StringToEnum;
 
 namespace cast_util {
 
-using namespace cast_channel;
+using cast_channel::CastMessageType;
+using cast_channel::GetAppAvailabilityResult;
 
 template <>
 const EnumTable<CastMessageType> EnumTable<CastMessageType>::instance(
@@ -45,30 +46,31 @@ const EnumTable<CastMessageType> EnumTable<CastMessageType>::instance(
     CastMessageType::kMaxValue);
 
 template <>
-const EnumTable<V2MessageType> EnumTable<V2MessageType>::instance(
-    {
-        {V2MessageType::kEditTracksInfo, "EDIT_TRACKS_INFO"},
-        {V2MessageType::kGetStatus, "GET_STATUS"},
-        {V2MessageType::kLoad, "LOAD"},
-        {V2MessageType::kMediaGetStatus, "MEDIA_GET_STATUS"},
-        {V2MessageType::kMediaSetVolume, "MEDIA_SET_VOLUME"},
-        {V2MessageType::kPause, "PAUSE"},
-        {V2MessageType::kPlay, "PLAY"},
-        {V2MessageType::kPrecache, "PRECACHE"},
-        {V2MessageType::kQueueInsert, "QUEUE_INSERT"},
-        {V2MessageType::kQueueLoad, "QUEUE_LOAD"},
-        {V2MessageType::kQueueRemove, "QUEUE_REMOVE"},
-        {V2MessageType::kQueueReorder, "QUEUE_REORDER"},
-        {V2MessageType::kQueueUpdate, "QUEUE_UPDATE"},
-        {V2MessageType::kQueueNext, "QUEUE_NEXT"},
-        {V2MessageType::kQueuePrev, "QUEUE_PREV"},
-        {V2MessageType::kSeek, "SEEK"},
-        {V2MessageType::kSetVolume, "SET_VOLUME"},
-        {V2MessageType::kStop, "STOP"},
-        {V2MessageType::kStopMedia, "STOP_MEDIA"},
-        {V2MessageType::kOther},
-    },
-    V2MessageType::kMaxValue);
+const EnumTable<cast_channel::V2MessageType>
+    EnumTable<cast_channel::V2MessageType>::instance(
+        {
+            {cast_channel::V2MessageType::kEditTracksInfo, "EDIT_TRACKS_INFO"},
+            {cast_channel::V2MessageType::kGetStatus, "GET_STATUS"},
+            {cast_channel::V2MessageType::kLoad, "LOAD"},
+            {cast_channel::V2MessageType::kMediaGetStatus, "MEDIA_GET_STATUS"},
+            {cast_channel::V2MessageType::kMediaSetVolume, "MEDIA_SET_VOLUME"},
+            {cast_channel::V2MessageType::kPause, "PAUSE"},
+            {cast_channel::V2MessageType::kPlay, "PLAY"},
+            {cast_channel::V2MessageType::kPrecache, "PRECACHE"},
+            {cast_channel::V2MessageType::kQueueInsert, "QUEUE_INSERT"},
+            {cast_channel::V2MessageType::kQueueLoad, "QUEUE_LOAD"},
+            {cast_channel::V2MessageType::kQueueRemove, "QUEUE_REMOVE"},
+            {cast_channel::V2MessageType::kQueueReorder, "QUEUE_REORDER"},
+            {cast_channel::V2MessageType::kQueueUpdate, "QUEUE_UPDATE"},
+            {cast_channel::V2MessageType::kQueueNext, "QUEUE_NEXT"},
+            {cast_channel::V2MessageType::kQueuePrev, "QUEUE_PREV"},
+            {cast_channel::V2MessageType::kSeek, "SEEK"},
+            {cast_channel::V2MessageType::kSetVolume, "SET_VOLUME"},
+            {cast_channel::V2MessageType::kStop, "STOP"},
+            {cast_channel::V2MessageType::kStopMedia, "STOP_MEDIA"},
+            {cast_channel::V2MessageType::kOther},
+        },
+        cast_channel::V2MessageType::kMaxValue);
 
 template <>
 const EnumTable<GetAppAvailabilityResult>

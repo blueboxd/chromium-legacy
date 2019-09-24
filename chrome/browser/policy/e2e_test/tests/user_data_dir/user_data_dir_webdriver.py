@@ -2,9 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from selenium import webdriver
 import os
+
 from absl import app, flags
+from selenium import webdriver
+
+import test_util
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string('user_data_dir', None, 'Need specify user data dir to test')
@@ -25,12 +28,8 @@ def main(argv):
   options = webdriver.ChromeOptions()
   # Add option for connecting chromedriver with Chrome
   options.add_experimental_option("debuggerAddress", "localhost:9222")
-  os.environ["CHROME_LOG_FILE"] = r"c:\temp\chrome_log.txt"
 
-  driver = webdriver.Chrome(
-      "C:/ProgramData/chocolatey/lib/chromedriver/tools/chromedriver.exe",
-      chrome_options=options,
-      service_args=["--verbose", r"--log-path=c:\temp\chromedriver.log"])
+  driver = test_util.create_chrome_webdriver(chrome_options=options)
 
   try:
     # Verify User Data Dir in chrome://policy page

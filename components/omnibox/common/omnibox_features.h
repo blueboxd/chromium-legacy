@@ -56,6 +56,7 @@ extern const base::Feature kOmniboxPreserveDefaultMatchAgainstAsyncUpdate;
 extern const base::Feature kOnFocusSuggestions;
 extern const base::Feature kZeroSuggestionsOnNTP;
 extern const base::Feature kZeroSuggestionsOnNTPRealbox;
+extern const base::Feature kZeroSuggestionsOnSERP;
 
 }  // namespace omnibox
 

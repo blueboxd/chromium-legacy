@@ -175,13 +175,22 @@ function restartBrowser() {
   chrome.send('restartBrowser');
 }
 
+/**
+ * Cause a text string to be announced by screen readers
+ * @param {string} text The text that should be announced.
+*/
+function announceStatus(text) {
+  $('screen-reader-status-message').innerHTML = '';
+  setTimeout(function() {
+    $('screen-reader-status-message').innerHTML = text;
+  }, 100);
+}
+
 /** Reset all flags to their default values and refresh the UI. */
 function resetAllFlags() {
   chrome.send('resetAllFlags');
   FlagSearch.getInstance().clearSearch();
-  $('reset-all-success-message').setAttribute("aria-disabled", "false");
-  // Updating the message in order for it to get announced by screen readers.
-  $('reset-all-success-message').innerHTML += "!";
+  announceStatus(loadTimeData.getString("reset-acknowledged"));
   showRestartToast(true);
   requestExperimentalFeaturesData();
 }
@@ -192,6 +201,10 @@ function resetAllFlags() {
  */
 function showRestartToast(show) {
   $('needs-restart').classList.toggle('show', show);
+  var restartButton = $('experiment-restart-button');
+  if (restartButton) {
+    restartButton.setAttribute("tabindex", show ? '9' : '-1');
+  }
   if (show) {
     $('needs-restart').setAttribute("role", "alert");
   }
@@ -536,9 +549,9 @@ FlagSearch.prototype = {
     var queryString = seletedTabId + ' .experiment:not(.hidden)';
     const total = document.querySelectorAll(queryString).length;
     if (total) {
-      $('search-success-message').innerHTML = (total == 1) ?
+      announceStatus((total == 1) ?
           loadTimeData.getStringF("searchResultsSingular", searchTerm) :
-          loadTimeData.getStringF("searchResultsPlural", total, searchTerm);
+          loadTimeData.getStringF("searchResultsPlural", total, searchTerm));
     }
   },
 

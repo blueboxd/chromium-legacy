@@ -97,6 +97,10 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // bubble is shown.
   void SetTrayBubbleHeight(int height);
 
+  bool FocusMessageCenter(bool reverse);
+
+  bool FocusQuickSettings(bool reverse);
+
   // TrayBackgroundView:
   bool PerformAction(const ui::Event& event) override;
   void ShowBubble(bool show_by_click) override;

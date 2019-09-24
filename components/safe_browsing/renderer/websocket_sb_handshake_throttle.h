@@ -14,7 +14,8 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "components/safe_browsing/common/safe_browsing.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/websocket_handshake_throttle.h"
 #include "url/gurl.h"
@@ -46,9 +47,10 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle,
   // mojom::UrlCheckNotifier implementation.
   void OnCompleteCheck(bool proceed, bool showed_interstitial) override;
 
-  void OnCheckResult(mojom::UrlCheckNotifierRequest slow_check_notifier,
-                     bool proceed,
-                     bool showed_interstitial);
+  void OnCheckResult(
+      mojo::PendingReceiver<mojom::UrlCheckNotifier> slow_check_notifier,
+      bool proceed,
+      bool showed_interstitial);
   void OnMojoDisconnect();
 
   const int render_frame_id_;
@@ -56,7 +58,7 @@ class WebSocketSBHandshakeThrottle : public blink::WebSocketHandshakeThrottle,
   blink::WebSocketHandshakeThrottle::OnCompletion completion_callback_;
   mojo::Remote<mojom::SafeBrowsingUrlChecker> url_checker_;
   mojom::SafeBrowsing* safe_browsing_;
-  std::unique_ptr<mojo::Binding<mojom::UrlCheckNotifier>> notifier_binding_;
+  std::unique_ptr<mojo::Receiver<mojom::UrlCheckNotifier>> notifier_receiver_;
   base::TimeTicks start_time_;
   Result result_;
 

@@ -39,6 +39,9 @@ public class ContextualSearchPanel extends OverlayPanel {
     /** The number of times to allow scrolling.  After this limit we'll close. */
     private static final int SCROLL_COUNT_LIMIT = 3;
 
+    /** Restricts the maximized panel height to the given fraction of a tab. */
+    private static final float MAXIMIZED_HEIGHT_FRACTION = 0.95f;
+
     /** Used for logging state changes. */
     private final ContextualSearchPanelMetrics mPanelMetrics;
 
@@ -389,6 +392,16 @@ public class ContextualSearchPanel extends OverlayPanel {
     @Override
     protected float getPeekedHeight() {
         return getBarHeight() + getBarBannerControl().getHeightPeekingPx() * mPxToDp;
+    }
+
+    @Override
+    protected float getMaximizedHeight() {
+        // Max height does not cover the entire content screen.
+        if (ChromeFeatureList.isEnabled(ChromeFeatureList.OVERLAY_NEW_LAYOUT)) {
+            return getTabHeight() * MAXIMIZED_HEIGHT_FRACTION;
+        } else {
+            return super.getMaximizedHeight();
+        }
     }
 
     // ============================================================================================

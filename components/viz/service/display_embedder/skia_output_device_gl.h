@@ -64,6 +64,7 @@ class SkiaOutputDeviceGL final : public SkiaOutputDevice {
                      BufferPresentedCallback feedback,
                      std::vector<ui::LatencyInfo> latency_info) override;
   void SetDrawRectangle(const gfx::Rect& draw_rectangle) override;
+  void SetGpuVSyncEnabled(bool enabled) override;
   void SetEnableDCLayers(bool enable) override;
   void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers) override;
   void EnsureBackbuffer() override;

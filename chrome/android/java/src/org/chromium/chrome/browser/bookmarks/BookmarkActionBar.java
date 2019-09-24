@@ -15,7 +15,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkItem;
-import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
 import org.chromium.chrome.browser.preferences.PrefServiceBridge;
 import org.chromium.chrome.browser.tabmodel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
@@ -37,13 +36,6 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
                    DragReorderableListAdapter.DragListener {
     private BookmarkItem mCurrentFolder;
     private BookmarkDelegate mDelegate;
-
-    private BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
-        @Override
-        public void bookmarkModelChanged() {
-            onSelectionStateChange(mDelegate.getSelectionDelegate().getSelectedItemsAsList());
-        }
-    };
 
     public BookmarkActionBar(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -163,7 +155,6 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
         mDelegate = delegate;
         mDelegate.addUIObserver(this);
         if (!delegate.isDialogUi()) getMenu().removeItem(R.id.close_menu_id);
-        delegate.getModel().addObserver(mBookmarkModelObserver);
 
         getMenu().setGroupEnabled(R.id.selection_mode_menu_group, true);
     }
@@ -175,7 +166,6 @@ public class BookmarkActionBar extends SelectableListToolbar<BookmarkId>
         if (mDelegate == null) return;
 
         mDelegate.removeUIObserver(this);
-        mDelegate.getModel().removeObserver(mBookmarkModelObserver);
     }
 
     @Override

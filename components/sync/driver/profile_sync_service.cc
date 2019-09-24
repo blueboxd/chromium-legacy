@@ -1282,6 +1282,11 @@ void ProfileSyncService::ConfigureDataTypeManager(ConfigureReason reason) {
       }
     }
 
+    if (base::FeatureList::IsEnabled(
+            switches::kSyncDeviceInfoInTransportMode)) {
+      allowed_types.Put(DEVICE_INFO);
+    }
+
     types = Intersection(types, allowed_types);
     configure_context.sync_mode = SyncMode::kTransportOnly;
   }

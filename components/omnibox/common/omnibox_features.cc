@@ -297,6 +297,10 @@ const base::Feature kZeroSuggestionsOnNTP{"OmniboxZeroSuggestionsOnNTP",
 const base::Feature kZeroSuggestionsOnNTPRealbox{
     "OmniboxZeroSuggestionsOnNTPRealbox", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Allow on-focus query refinements to be shown on the default SERP.
+const base::Feature kZeroSuggestionsOnSERP{"OmniboxZeroSuggestionsOnSERP",
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
+
 // Feature to provide non personalized head search suggestion from a compact
 // on device model.
 const base::Feature kOnDeviceHeadProvider{"OmniboxOnDeviceHeadProvider",

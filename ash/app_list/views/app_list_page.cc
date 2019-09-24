@@ -34,6 +34,8 @@ base::Optional<int> AppListPage::GetSearchBoxTop(
   return base::nullopt;
 }
 
+void AppListPage::UpdateOpacityForState(ash::AppListState state) {}
+
 void AppListPage::UpdatePageBoundsForState(ash::AppListState state,
                                            const gfx::Rect& contents_bounds,
                                            const gfx::Rect& search_box_bounds) {

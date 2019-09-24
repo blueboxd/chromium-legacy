@@ -1023,6 +1023,7 @@ void EncodePageState(const ExplodedPageState& exploded, std::string* encoded) {
   obj.version = kCurrentVersion;
   WriteMojoPageState(exploded, &obj);
   *encoded = obj.GetAsString();
+  DCHECK(!encoded->empty());
 }
 
 void LegacyEncodePageStateForTesting(const ExplodedPageState& exploded,

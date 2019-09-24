@@ -71,8 +71,11 @@ void BackgroundFetchRegistration::Initialize(
   registration_ = registration;
   registration_service_.Bind(std::move(registration_service));
 
-  auto task_runner =
-      GetExecutionContext()->GetTaskRunner(TaskType::kBackgroundFetch);
+  ExecutionContext* context = GetExecutionContext();
+  if (!context || context->IsContextDestroyed())
+    return;
+
+  auto task_runner = context->GetTaskRunner(TaskType::kBackgroundFetch);
   registration_service_->AddRegistrationObserver(
       observer_receiver_.BindNewPipeAndPassRemote(task_runner));
 }

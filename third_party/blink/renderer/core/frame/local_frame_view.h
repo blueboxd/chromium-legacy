@@ -474,7 +474,7 @@ class CORE_EXPORT LocalFrameView final
     return resizer_areas_.get();
   }
 
-  void ScheduleAnimation();
+  void ScheduleAnimation(base::TimeDelta = base::TimeDelta());
 
   // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
   // passed around the LocalFrameView layout methods can be true while this

@@ -15,6 +15,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/views/chrome_web_dialog_view.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/confirm_signout_dialog.h"
@@ -24,7 +25,7 @@
 #include "components/google/core/common/google_util.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
@@ -160,14 +161,15 @@ void AddSupervisionUI::SetUpForTest(signin::IdentityManager* identity_manager) {
 }
 
 void AddSupervisionUI::BindAddSupervisionHandler(
-    add_supervision::mojom::AddSupervisionHandlerRequest request) {
+    mojo::PendingReceiver<add_supervision::mojom::AddSupervisionHandler>
+        receiver) {
   signin::IdentityManager* identity_manager =
       test_identity_manager_
           ? test_identity_manager_
           : IdentityManagerFactory::GetForProfile(Profile::FromWebUI(web_ui()));
 
   mojo_api_handler_ = std::make_unique<AddSupervisionHandler>(
-      std::move(request), web_ui(), identity_manager, this);
+      std::move(receiver), web_ui(), identity_manager, this);
 }
 
 void AddSupervisionUI::SetUpResources() {

@@ -72,11 +72,17 @@ class MODULES_EXPORT DOMTask : public ScriptWrappable,
   // otherwise it's queued after |delay|.
   void Schedule(base::TimeDelta delay);
 
-  // Callback for running the DOMTask.
+  // Entry point for running this DOMTask's |callback_|.
   void Invoke();
+  // Internal step of Invoke that handles invoking the callback, including
+  // catching any errors and retrieving the result.
   void InvokeInternal(ScriptState*);
 
-  void ResolveOrRejectPromiseIfNeeded(ScriptState*);
+  // Resolve |result_promise_| if both (a) the task has finished running (with
+  // or without an error) or has been canceled, and (b) task.result has been
+  // accessed and returned to userland. If invoked when either of these
+  // conditions are not met, this is a no-op.
+  void LazilyResolveOrRejectPromiseIfReady(ScriptState*);
 
   static bool IsValidStatusChange(Status from, Status to);
   static AtomicString TaskStatusToString(Status);
@@ -94,6 +100,9 @@ class MODULES_EXPORT DOMTask : public ScriptWrappable,
 
   using TaskResultPromise =
       ScriptPromiseProperty<Member<DOMTask>, ScriptValue, ScriptValue>;
+  // Lazily initialized when the task.result property is accessed to avoid the
+  // overhead of unnecessarily creating promises for every task if they aren't
+  // going to be used.
   Member<TaskResultPromise> result_promise_;
 
   TraceWrapperV8Reference<v8::Value> result_value_;

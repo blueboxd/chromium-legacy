@@ -300,6 +300,15 @@ void AssistantUiController::OnProactiveSuggestionsCloseButtonPressed() {
 
 void AssistantUiController::OnProactiveSuggestionsViewHoverChanged(
     bool is_hovering) {
+  if (!proactive_suggestions_view_ ||
+      !proactive_suggestions_view_->GetWidget() ||
+      proactive_suggestions_view_->GetWidget()->IsClosed()) {
+    // Hover changed events may occur during the proactive suggestions widget's
+    // close sequence. When this occurs, we quit early as the proactive
+    // suggestions view is being destroyed.
+    return;
+  }
+
   if (!is_hovering) {
     // When the user is no longer hovering over the proactive suggestions view
     // we need to reset the timer so that it will auto-close appropriately.

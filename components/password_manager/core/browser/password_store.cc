@@ -65,7 +65,6 @@ void FilterLogins(
 
 }  // namespace
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 PasswordStore::CheckReuseRequest::CheckReuseRequest(
     PasswordReuseDetectorConsumer* consumer)
@@ -397,7 +396,6 @@ PasswordStore::CreateSyncControllerDelegate() {
           base::Unretained(this)));
 }
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void PasswordStore::CheckReuse(const base::string16& input,
                                const std::string& domain,
@@ -537,7 +535,7 @@ bool PasswordStore::InitOnBackgroundSequence(
     syncable_service_.reset(new PasswordSyncableService(this));
     syncable_service_->InjectStartSyncFlare(flare);
   }
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   reuse_detector_ = new PasswordReuseDetector;
 
@@ -593,7 +591,7 @@ void PasswordStore::NotifyLoginsChanged(
       syncable_service_->ActOnPasswordStoreChanges(changes);
     if (sync_bridge_)
       sync_bridge_->ActOnPasswordStoreChanges(changes);
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
     if (reuse_detector_)
       reuse_detector_->OnLoginsChanged(changes);
@@ -601,7 +599,6 @@ void PasswordStore::NotifyLoginsChanged(
   }
 }
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 void PasswordStore::CheckReuseImpl(std::unique_ptr<CheckReuseRequest> request,
                                    const base::string16& input,
@@ -1060,7 +1057,7 @@ void PasswordStore::DestroyOnBackgroundSequence() {
   DCHECK(background_task_runner_->RunsTasksInCurrentSequence());
   syncable_service_.reset();
   sync_bridge_.reset();
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   delete reuse_detector_;
   reuse_detector_ = nullptr;

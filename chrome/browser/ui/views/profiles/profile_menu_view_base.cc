@@ -158,17 +158,30 @@ void ProfileMenuViewBase::ShowBubble(
   base::RecordAction(base::UserMetricsAction("ProfileMenu_Opened"));
 
   ProfileMenuViewBase* bubble;
-  if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
-    DCHECK(browser->profile()->IsIncognitoProfile());
-    bubble = new IncognitoMenuView(anchor_button, browser);
-  } else {
-    DCHECK_EQ(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, view_mode);
+
+  if (base::FeatureList::IsEnabled(features::kProfileMenuRevamp)) {
 #if !defined(OS_CHROMEOS)
+    // On Desktop, all modes(regular, guest, incognito) are handled within
+    // ProfileMenuView.
     bubble = new ProfileMenuView(anchor_button, browser, access_point);
 #else
-    NOTREACHED();
-    return;
+    // On ChromeOS, only the incognito menu is implemented.
+    DCHECK(browser->profile()->IsIncognitoProfile());
+    bubble = new IncognitoMenuView(anchor_button, browser);
 #endif
+  } else {
+    if (view_mode == profiles::BUBBLE_VIEW_MODE_INCOGNITO) {
+      DCHECK(browser->profile()->IsIncognitoProfile());
+      bubble = new IncognitoMenuView(anchor_button, browser);
+    } else {
+      DCHECK_EQ(profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER, view_mode);
+#if !defined(OS_CHROMEOS)
+      bubble = new ProfileMenuView(anchor_button, browser, access_point);
+#else
+      NOTREACHED();
+      return;
+#endif
+    }
   }
 
   views::BubbleDialogDelegateView::CreateBubble(bubble)->Show();

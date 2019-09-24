@@ -101,8 +101,16 @@ class ASH_EXPORT UnifiedSystemTrayController
   // Close the bubble. Called from a detailed view controller.
   void CloseBubble();
 
+  // Inform UnifiedSystemTrayBubble that UnifiedSystemTrayView is requesting to
+  // relinquish focus.
+  bool FocusOut(bool reverse);
+
   // Ensure the main view is expanded. Called from the slider bubble controller.
   void EnsureExpanded();
+
+  // Collapse the tray without animating. Used to open the tray in a collapsed
+  // state if there is insufficient vertical space.
+  void ResetToCollapsed();
 
   // gfx::AnimationDelegate:
   void AnimationEnded(const gfx::Animation* animation) override;

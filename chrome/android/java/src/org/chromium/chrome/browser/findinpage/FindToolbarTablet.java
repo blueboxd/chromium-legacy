@@ -12,11 +12,11 @@ import android.content.res.Resources;
 import android.graphics.Rect;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.animation.DecelerateInterpolator;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
 /**
  * A tablet specific version of the {@link FindToolbar}.
@@ -58,7 +58,7 @@ public class FindToolbarTablet extends FindToolbar {
 
         mAnimationEnter = ObjectAnimator.ofFloat(this, View.TRANSLATION_X, translateWidth, 0);
         mAnimationEnter.setDuration(ENTER_EXIT_ANIMATION_DURATION_MS);
-        mAnimationEnter.setInterpolator(new DecelerateInterpolator());
+        mAnimationEnter.setInterpolator(Interpolators.DECELERATE_INTERPOLATOR);
         mAnimationEnter.addListener(new CancelAwareAnimatorListener() {
             @Override
             public void onStart(Animator animation) {
@@ -75,7 +75,7 @@ public class FindToolbarTablet extends FindToolbar {
 
         mAnimationLeave = ObjectAnimator.ofFloat(this, View.TRANSLATION_X, 0, translateWidth);
         mAnimationLeave.setDuration(ENTER_EXIT_ANIMATION_DURATION_MS);
-        mAnimationLeave.setInterpolator(new DecelerateInterpolator());
+        mAnimationLeave.setInterpolator(Interpolators.DECELERATE_INTERPOLATOR);
         mAnimationLeave.addListener(new CancelAwareAnimatorListener() {
             @Override
             public void onStart(Animator animator) {
@@ -146,7 +146,7 @@ public class FindToolbarTablet extends FindToolbar {
 
         mCurrentAnimation = ObjectAnimator.ofFloat(this, View.TRANSLATION_Y, translationY);
         mCurrentAnimation.setDuration(MAKE_ROOM_ANIMATION_DURATION_MS);
-        mCurrentAnimation.setInterpolator(new DecelerateInterpolator());
+        mCurrentAnimation.setInterpolator(Interpolators.DECELERATE_INTERPOLATOR);
         mCurrentAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationStart(Animator animation) {

@@ -14,11 +14,11 @@ import android.support.design.widget.TabLayout;
 import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
-import android.view.animation.DecelerateInterpolator;
 
 import androidx.annotation.NonNull;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
 /**
  * TabLayout shown in the TranslateCompactInfoBar.
@@ -216,7 +216,7 @@ public class TranslateTabLayout extends TabLayout {
                 getLayoutDirection() == LAYOUT_DIRECTION_RTL ? 0 : maxScrollDistance);
         mScrollToEndAnimator.setStartDelay(START_POSITION_WAIT_DURATION_MS);
         mScrollToEndAnimator.setDuration(SCROLL_DURATION_MS);
-        mScrollToEndAnimator.setInterpolator(new DecelerateInterpolator());
+        mScrollToEndAnimator.setInterpolator(Interpolators.DECELERATE_INTERPOLATOR);
         mScrollToEndAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {

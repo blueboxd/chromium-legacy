@@ -72,6 +72,8 @@ target(link_target_type, "child") {
     "thread_safe_sender.h",
     "webthemeengine_impl_android.cc",
     "webthemeengine_impl_android.h",
+    "webthemeengine_impl_conversions.cc",
+    "webthemeengine_impl_conversions.h",
     "webthemeengine_impl_default.cc",
     "webthemeengine_impl_default.h",
     "webthemeengine_impl_mac.h",

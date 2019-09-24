@@ -166,9 +166,10 @@ ExtensionApps::ExtensionApps()
 
 ExtensionApps::~ExtensionApps() = default;
 
-void ExtensionApps::Initialize(const apps::mojom::AppServicePtr& app_service,
-                               Profile* profile,
-                               apps::mojom::AppType type) {
+void ExtensionApps::Initialize(
+    const mojo::Remote<apps::mojom::AppService>& app_service,
+    Profile* profile,
+    apps::mojom::AppType type) {
   app_type_ = type;
   apps::mojom::PublisherPtr publisher;
   binding_.Bind(mojo::MakeRequest(&publisher));

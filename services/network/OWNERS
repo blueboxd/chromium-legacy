@@ -1,3 +1,7 @@
+# If you're adding a new feature or modifying non-trivial amount of code
+# in Network Service, please consider sharing the design idea/doc with
+# network-service-dev@chromium.org beforehand.
+
 cduvall@chromium.org
 ericorth@chromium.org
 falken@chromium.org

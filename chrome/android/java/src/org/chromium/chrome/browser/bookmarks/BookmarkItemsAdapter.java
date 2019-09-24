@@ -146,7 +146,8 @@ class BookmarkItemsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder>
     /**
      * @return The position of the given bookmark in adapter. Will return -1 if not found.
      */
-    private int getPositionForBookmark(BookmarkId bookmark) {
+    @Override
+    public int getPositionForBookmark(BookmarkId bookmark) {
         assert bookmark != null;
         int position = -1;
         for (int i = 0; i < getItemCount(); i++) {

@@ -5,6 +5,7 @@
 #include "ash/system/unified/unified_system_tray.h"
 
 #include "ash/accessibility/accessibility_controller_impl.h"
+#include "ash/focus_cycler.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/session/session_controller_impl.h"
 #include "ash/shelf/shelf.h"
@@ -209,6 +210,31 @@ void UnifiedSystemTray::ShowAudioDetailedViewBubble() {
 
 void UnifiedSystemTray::SetTrayBubbleHeight(int height) {
   ui_delegate_->SetTrayBubbleHeight(height);
+}
+
+bool UnifiedSystemTray::FocusMessageCenter(bool reverse) {
+  if (!IsMessageCenterBubbleShown())
+    return false;
+
+  views::Widget* message_center_widget =
+      message_center_bubble_->GetBubbleWidget();
+  message_center_widget->widget_delegate()->SetCanActivate(true);
+
+  Shell::Get()->focus_cycler()->FocusWidget(message_center_widget);
+  message_center_bubble_->FocusEntered(reverse);
+
+  return true;
+}
+
+bool UnifiedSystemTray::FocusQuickSettings(bool reverse) {
+  if (!IsBubbleShown())
+    return false;
+
+  views::Widget* quick_settings_widget = bubble_->GetBubbleWidget();
+  Shell::Get()->focus_cycler()->FocusWidget(quick_settings_widget);
+  bubble_->FocusEntered(reverse);
+
+  return true;
 }
 
 gfx::Rect UnifiedSystemTray::GetBubbleBoundsInScreen() const {

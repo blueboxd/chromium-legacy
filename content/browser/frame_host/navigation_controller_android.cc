@@ -425,6 +425,12 @@ jboolean NavigationControllerAndroid::RemoveEntryAtIndex(
   return navigation_controller_->RemoveEntryAtIndex(index);
 }
 
+void NavigationControllerAndroid::PruneForwardEntries(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return navigation_controller_->PruneForwardEntries();
+}
+
 ScopedJavaLocalRef<jstring> NavigationControllerAndroid::GetEntryExtraData(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj,

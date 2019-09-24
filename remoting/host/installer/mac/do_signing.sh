@@ -8,11 +8,8 @@
 # installer and then packages it into a .dmg.  It requires that Packages be
 # installed (for 'packagesbuild').
 # Packages: http://s.sudre.free.fr/Software/Packages/about.html
-#
-# usage: do_signing.sh output_dir input_dir [codesign_keychain codesign_id
-#            [productsign_id]]
-#
-# The final disk image (dmg) is placed in |output_dir|.
+# Optionally, it will submit the .dmg to Apple for notarization.
+# Run with "-h" to see usage information.
 
 set -e -u
 
@@ -40,14 +37,12 @@ setup() {
   REMOTE_ASSISTANCE_HOST_BUNDLE_NAME=$(read_property\
     "REMOTE_ASSISTANCE_HOST_BUNDLE_NAME")
 
-  # Binaries to sign.
+  # Binaries/bundles to sign.
   ME2ME_HOST="PrivilegedHelperTools/${HOST_BUNDLE_NAME}"
   ME2ME_EXE_DIR="${ME2ME_HOST}/Contents/MacOS/"
   ME2ME_LAUNCHD_SERVICE="${ME2ME_EXE_DIR}/host_service"
-  ME2ME_NM_HOST="${ME2ME_EXE_DIR}/${NATIVE_MESSAGING_HOST_BUNDLE_NAME}/"`
-                `"Contents/MacOS/native_messaging_host"
-  IT2ME_NM_HOST="${ME2ME_EXE_DIR}/${REMOTE_ASSISTANCE_HOST_BUNDLE_NAME}/"`
-                `"Contents/MacOS/remote_assistance_host"
+  ME2ME_NM_HOST="${ME2ME_EXE_DIR}/${NATIVE_MESSAGING_HOST_BUNDLE_NAME}/"
+  IT2ME_NM_HOST="${ME2ME_EXE_DIR}/${REMOTE_ASSISTANCE_HOST_BUNDLE_NAME}/"
   UNINSTALLER="Applications/${HOST_UNINSTALLER_NAME}.app"
 
   # The Chromoting Host installer is a meta-package that consists of 3
@@ -204,6 +199,19 @@ build_dmg() {
   fi
 }
 
+notarize() {
+  local input_dir="${1}"
+  local dmg="${2}"
+  local user="${3}"
+
+  echo "Notarizing and stapling .dmg..."
+  "${input_dir}/notarize_thing.py" \
+      --user "${user}" \
+      --password @env:NOTARIZATION_PASSWORD \
+      --bundle-id "${HOST_BUNDLE_NAME}" \
+      "${dmg}"
+}
+
 cleanup() {
   if [[ "${#g_cleanup_dirs[@]}" > 0 ]]; then
     rm -rf "${g_cleanup_dirs[@]}"
@@ -212,7 +220,8 @@ cleanup() {
 
 usage() {
   echo "Usage: ${ME} -o output_dir -i input_dir "\
-      "[-c codesign_id] [-p productsign_id] [-k keychain]" >&2
+       "[-c codesign_id] [-p productsign_id] [-k keychain] "\
+       "[-n notarization_user]" >&2
   echo >&2
   echo "  Sign the binaries using the specified <codesign_id>, build" >&2
   echo "  the installer, and then sign the installer using the given" >&2
@@ -221,6 +230,9 @@ usage() {
   echo "  installer is built without signing any binaries." >&2
   echo "  If <keychain> is specified, it must contain all the signing ids." >&2
   echo "  If not specified, then the default keychains will be used." >&2
+  echo "  If <notarization_user> is specified, the final DMG will be" >&2
+  echo "  notarized by Apple and stapled, using the given user and the" >&2
+  echo "  password from \$NOTARIZATION_PASSWORD variable." >&2
 }
 
 main() {
@@ -230,9 +242,10 @@ main() {
   local codesign_id=""
   local productsign_id=""
   local keychain=""
+  local notarization_user=""
 
   local OPTNAME OPTIND OPTARG
-  while getopts ":o:i:c:p:k:h" OPTNAME; do
+  while getopts ":o:i:c:p:k:n:h" OPTNAME; do
     case ${OPTNAME} in
       o )
         output_dir="$(shell_safe_path "${OPTARG}")"
@@ -248,6 +261,9 @@ main() {
         ;;
       k )
         keychain="$(shell_safe_path "${OPTARG}")"
+        ;;
+      n )
+        notarization_user="${OPTARG}"
         ;;
       h )
         usage
@@ -298,7 +314,13 @@ main() {
   fi
   build_dmg "${input_dir}" "${output_dir}"
   if [[ "${do_sign_binaries}" == 1 ]]; then
-      sign "${output_dir}/${DMG_FILE_NAME}" "${keychain}" "${codesign_id}"
+    sign "${output_dir}/${DMG_FILE_NAME}" "${keychain}" "${codesign_id}"
+  fi
+
+  if [[ -n "${notarization_user}" ]]; then
+    notarize "${input_dir}" \
+             "${output_dir}/${DMG_FILE_NAME}" \
+             "${notarization_user}"
   fi
 
   cleanup

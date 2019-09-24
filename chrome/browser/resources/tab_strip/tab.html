@@ -38,11 +38,45 @@
     padding-inline-start: 12px;
   }
 
-  #favicon {
+  #faviconContainer {
     flex-shrink: 0;
     height: 16px;
     margin-inline-end: 8px;
+    position: relative;
     width: 16px;
+  }
+
+  #loading,
+  #favicon {
+    height: 100%;
+    position: absolute;
+    width: 100%;
+  }
+
+  #loading {
+    -webkit-mask-image: url(chrome://resources/images/throbber_small.svg);
+    background-color: var(--tabstrip-primary-text-color);
+    display: none;
+  }
+
+  #favicon {
+    background-size: contain;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    transition: border-radius 250ms;
+  }
+
+  :host([loading]) #loading,
+  :host([loading]) #favicon {
+    display: block;
+  }
+
+  :host([loading]) #favicon {
+    border-radius: 50%;
+    height: calc(100% - 6px);
+    overflow: hidden;
+    width: calc(100% - 6px);
   }
 
   #titleText {
@@ -135,7 +169,10 @@
 
 <div id="dragImage">
   <header id="title">
-    <span id="favicon"></span>
+    <div id="faviconContainer">
+      <div id="loading"></div>
+      <div id="favicon"></div>
+    </div>
     <h2 id="titleText"></h2>
     <button id="close">
       <span id="closeIcon"></span>

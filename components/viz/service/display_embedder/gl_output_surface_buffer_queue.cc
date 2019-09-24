@@ -26,6 +26,7 @@ GLOutputSurfaceBufferQueue::GLOutputSurfaceBufferQueue(
     : GLOutputSurface(context_provider, surface_handle),
       current_texture_(0u),
       fbo_(0u) {
+  capabilities_.only_invalidates_damage_rect = false;
   capabilities_.uses_default_gl_framebuffer = false;
   capabilities_.flipped_output_surface = true;
   // Set |max_frames_pending| to 2 for buffer_queue, which aligns scheduling

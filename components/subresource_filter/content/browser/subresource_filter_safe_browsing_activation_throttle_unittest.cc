@@ -132,7 +132,7 @@ const ActivationListTestData kActivationListTestData[] = {
      ActivationList::BETTER_ADS,
      safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
      safe_browsing::ThreatPatternType::NONE,
-     {{{SBType::BETTER_ADS, SBLevel::ENFORCE}}, base::KEEP_FIRST_OF_DUPES}},
+     {{SBType::BETTER_ADS, SBLevel::ENFORCE}}},
 };
 
 }  //  namespace
@@ -972,7 +972,7 @@ TEST_F(SubresourceFilterSafeBrowsingActivationThrottleTest,
     safe_browsing::ThreatMetadata metadata;
     metadata.threat_pattern_type = safe_browsing::ThreatPatternType::NONE;
     metadata.subresource_filter_match = safe_browsing::SubresourceFilterMatch(
-        {{{SBType::ABUSIVE, SBLevel::ENFORCE}}, base::KEEP_FIRST_OF_DUPES});
+        {{SBType::ABUSIVE, SBLevel::ENFORCE}});
     ConfigureForMatch(url, safe_browsing::SB_THREAT_TYPE_SUBRESOURCE_FILTER,
                       metadata);
 

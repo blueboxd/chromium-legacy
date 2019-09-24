@@ -271,9 +271,9 @@ public class UrlBarTest extends DummyUiActivityTestCase {
         final CallbackHelper autocompleteHelper = new CallbackHelper();
         final AtomicReference<String> requestedAutocompleteText = new AtomicReference<String>();
         final AtomicBoolean didPreventInlineAutocomplete = new AtomicBoolean();
-        mUrlBar.setUrlTextChangeListener(() -> {
+        mUrlBar.setUrlTextChangeListener((textWithoutAutocomplete, textWithAutocomplete) -> {
             autocompleteHelper.notifyCalled();
-            requestedAutocompleteText.set(mUrlBar.getTextWithoutAutocomplete());
+            requestedAutocompleteText.set(textWithoutAutocomplete);
             didPreventInlineAutocomplete.set(!mUrlBar.shouldAutocomplete());
             mUrlBar.setUrlTextChangeListener(null);
         });
@@ -378,7 +378,7 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     public void testSendCursorPosition() throws InterruptedException, TimeoutException {
         final CallbackHelper autocompleteHelper = new CallbackHelper();
         final AtomicInteger cursorPositionUsed = new AtomicInteger();
-        mUrlBar.setUrlTextChangeListener(() -> {
+        mUrlBar.setUrlTextChangeListener((textWithoutAutocomplete, textWithAutocomplete) -> {
             int cursorPosition = mUrlBar.getSelectionEnd() == mUrlBar.getSelectionStart()
                     ? mUrlBar.getSelectionStart()
                     : -1;
@@ -456,7 +456,7 @@ public class UrlBarTest extends DummyUiActivityTestCase {
 
         final CallbackHelper autocompleteHelper = new CallbackHelper();
         final AtomicBoolean didPreventInlineAutocomplete = new AtomicBoolean();
-        mUrlBar.setUrlTextChangeListener(() -> {
+        mUrlBar.setUrlTextChangeListener((textWithoutAutocomplete, textWithAutocomplete) -> {
             if (!TextUtils.equals(textToBeEntered, mUrlBar.getTextWithoutAutocomplete())) return;
             didPreventInlineAutocomplete.set(!mUrlBar.shouldAutocomplete());
             autocompleteHelper.notifyCalled();
@@ -489,7 +489,7 @@ public class UrlBarTest extends DummyUiActivityTestCase {
 
         final CallbackHelper autocompleteHelper = new CallbackHelper();
         final AtomicBoolean didPreventInlineAutocomplete = new AtomicBoolean();
-        mUrlBar.setUrlTextChangeListener(() -> {
+        mUrlBar.setUrlTextChangeListener((textWithoutAutocomplete, textWithAutocomplete) -> {
             if (!TextUtils.equals("test", mUrlBar.getTextWithoutAutocomplete())) return;
             didPreventInlineAutocomplete.set(!mUrlBar.shouldAutocomplete());
             autocompleteHelper.notifyCalled();
@@ -555,7 +555,8 @@ public class UrlBarTest extends DummyUiActivityTestCase {
     public void testBatchModeChangesTriggerCorrectSuggestions() throws InterruptedException {
         final AtomicReference<String> requestedAutocompleteText = new AtomicReference<String>();
         mUrlBar.setUrlTextChangeListener(
-                () -> { requestedAutocompleteText.set(mUrlBar.getTextWithoutAutocomplete()); });
+                (textWithoutAutocomplete, textWithAutocomplete)
+                        -> requestedAutocompleteText.set(mUrlBar.getTextWithoutAutocomplete()));
 
         toggleFocusAndIgnoreImeOperations(mUrlBar, true);
 

@@ -1694,6 +1694,52 @@ IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest,
   EXPECT_EQ(expected_title, auth_supplied_title_watcher.WaitAndGetTitle());
 }
 
+// Tests that when HTTP Auth committed interstitials are enabled, showing a
+// login prompt in a new window opened from window.open() does not
+// crash. Regression test for https://crbug.com/1005096.
+IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, PromptWithNoVisibleEntry) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  content::WebContents* contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  ui_test_utils::NavigateToURL(browser(), GURL("about:blank"));
+
+  // Open a new window via JavaScript and navigate it to a page that delivers an
+  // auth prompt.
+  GURL test_page = embedded_test_server()->GetURL(kAuthBasicPage);
+  ASSERT_NE(false, content::EvalJs(contents, "w = window.open();"));
+  content::WebContents* opened_contents =
+      browser()->tab_strip_model()->GetWebContentsAt(1);
+  NavigationController* opened_controller = &opened_contents->GetController();
+  ASSERT_FALSE(opened_controller->GetVisibleEntry());
+  LoginPromptBrowserTestObserver observer;
+  observer.Register(content::Source<NavigationController>(opened_controller));
+  WindowedAuthNeededObserver auth_needed_waiter(opened_controller);
+  ASSERT_NE(false, content::EvalJs(contents, "w.location.href = '" +
+                                                 test_page.spec() + "';"));
+
+  // Test that the login prompt displays above an empty page.
+  EXPECT_EQ(
+      "<head></head><body></body>",
+      content::EvalJs(opened_contents, "document.documentElement.innerHTML"));
+
+  auth_needed_waiter.Wait();
+  ASSERT_EQ(1u, observer.handlers().size());
+
+  // Test that credentials are handled correctly.
+  WindowedAuthSuppliedObserver auth_supplied_waiter(opened_controller);
+  LoginHandler* handler = *observer.handlers().begin();
+  SetAuthFor(handler);
+  auth_supplied_waiter.Wait();
+
+  base::string16 expected_title = ExpectedTitleFromAuth(
+      base::ASCIIToUTF16("basicuser"), base::ASCIIToUTF16("secret"));
+  content::TitleWatcher auth_supplied_title_watcher(opened_contents,
+                                                    expected_title);
+  EXPECT_EQ(expected_title, auth_supplied_title_watcher.WaitAndGetTitle());
+}
+
 // Tests that FTP auth challenges appear over a blank committed interstitial.
 IN_PROC_BROWSER_TEST_F(LoginPromptBrowserTest, FtpAuth) {
   net::SpawnedTestServer ftp_server(

@@ -163,13 +163,13 @@ Index | Running Total | Section@Address | ...
              flags={}  name=Overhead: ELF file
 14)  34774457 (92.7%) r@0x266e600  pss=2.5 (size=5)  padding=0  num_aliases=2
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
-             flags={}  name=string literal
+             flags={}  name="Str1"
 15)  34774460 (92.7%) r@0x266e600  pss=2.5 (size=5)  padding=0  num_aliases=2
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={gen}  name=string literal
+             flags={gen}  name="Str1"
 16)  34774476 (92.7%) r@0x266e605  pss=16  padding=0  num_aliases=1
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={gen}  name=string literal
+             flags={gen}  name="String literal2"
 17)  34774519 (92.7%) r@0x266e630  pss=43  padding=27  num_aliases=1
              source_path= 	object_path=
              flags={}  name=** merge strings
@@ -344,13 +344,13 @@ Index | Running Total | Section@Address | ...
              flags={}  name=Overhead: ELF file
 14)  34774457 (92.7%) r@0x266e600  pss=2.5 (size=5)  padding=0  num_aliases=2
              source_path=base/page_allocator.cc 	object_path=base/base/page_allocator.o
-             flags={}  name=string literal
+             flags={}  name="Str1"
 15)  34774460 (92.7%) r@0x266e600  pss=2.5 (size=5)  padding=0  num_aliases=2
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={gen}  name=string literal
+             flags={gen}  name="Str1"
 16)  34774476 (92.7%) r@0x266e605  pss=16  padding=0  num_aliases=1
              source_path=third_party/icu/ucnv_ext.c 	object_path=third_party/icu/icuuc/ucnv_ext.o
-             flags={gen}  name=string literal
+             flags={gen}  name="String literal2"
 17)  34774519 (92.7%) r@0x266e630  pss=43  padding=27  num_aliases=1
              source_path= 	object_path=
              flags={}  name=** merge strings

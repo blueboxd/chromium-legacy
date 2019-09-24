@@ -28,37 +28,13 @@ class CastGestureHandler;
 class CastSystemGestureEventHandler;
 class CastSystemGestureDispatcher;
 class SideSwipeDetector;
-
-// An aura::WindowTreeHost that correctly converts input events.
-class CastWindowTreeHost : public aura::WindowTreeHostPlatform {
- public:
-  CastWindowTreeHost(bool enable_input,
-                     ui::PlatformWindowInitProperties properties,
-                     bool use_external_frame_control = false);
-  ~CastWindowTreeHost() override;
-
-  // aura::WindowTreeHostPlatform implementation:
-  void DispatchEvent(ui::Event* event) override;
-
-  // aura::WindowTreeHost implementation
-  gfx::Rect GetTransformedRootWindowBoundsInPixels(
-      const gfx::Size& size_in_pixels) const override;
-
- private:
-  const bool enable_input_;
-
-  DISALLOW_COPY_AND_ASSIGN(CastWindowTreeHost);
-};
+class CastWindowTreeHostAura;
 
 class CastWindowManagerAura : public CastWindowManager,
                               public aura::client::WindowParentingClient {
  public:
   explicit CastWindowManagerAura(bool enable_input);
   ~CastWindowManagerAura() override;
-
-  aura::client::CaptureClient* capture_client() const {
-    return capture_client_.get();
-  }
 
   void Setup();
   void OnWindowOrderChanged(std::vector<WindowId> window_order);
@@ -72,27 +48,26 @@ class CastWindowManagerAura : public CastWindowManager,
   void InjectEvent(ui::Event* event) override;
   void AddObserver(Observer* observer) override;
   void RemoveObserver(Observer* observer) override;
-
-  // aura::client::WindowParentingClient implementation:
-  aura::Window* GetDefaultParent(aura::Window* window,
-                                 const gfx::Rect& bounds) override;
-
   void AddGestureHandler(CastGestureHandler* handler) override;
-
   void RemoveGestureHandler(CastGestureHandler* handler) override;
-
-  CastWindowTreeHost* window_tree_host() const;
-
-  CastGestureHandler* GetGestureHandler() const;
-
   void SetTouchInputDisabled(bool disabled) override;
   void AddTouchActivityObserver(CastTouchActivityObserver* observer) override;
   void RemoveTouchActivityObserver(
       CastTouchActivityObserver* observer) override;
 
+  // aura::client::WindowParentingClient implementation:
+  aura::Window* GetDefaultParent(aura::Window* window,
+                                 const gfx::Rect& bounds) override;
+
+  CastWindowTreeHostAura* window_tree_host() const;
+  CastGestureHandler* GetGestureHandler() const;
+  aura::client::CaptureClient* capture_client() const {
+    return capture_client_.get();
+  }
+
  private:
   const bool enable_input_;
-  std::unique_ptr<CastWindowTreeHost> window_tree_host_;
+  std::unique_ptr<CastWindowTreeHostAura> window_tree_host_;
   std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
   std::unique_ptr<CastFocusClientAura> focus_client_;
   std::unique_ptr<aura::client::ScreenPositionClient> screen_position_client_;

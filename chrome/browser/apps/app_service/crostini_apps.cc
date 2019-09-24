@@ -33,8 +33,9 @@ CrostiniApps::~CrostiniApps() {
   }
 }
 
-void CrostiniApps::Initialize(const apps::mojom::AppServicePtr& app_service,
-                              Profile* profile) {
+void CrostiniApps::Initialize(
+    const mojo::Remote<apps::mojom::AppService>& app_service,
+    Profile* profile) {
   profile_ = nullptr;
   registry_ = nullptr;
   crostini_enabled_ = false;
@@ -65,7 +66,7 @@ void CrostiniApps::Initialize(const apps::mojom::AppServicePtr& app_service,
 }
 
 void CrostiniApps::ReInitializeForTesting(
-    const apps::mojom::AppServicePtr& app_service,
+    const mojo::Remote<apps::mojom::AppService>& app_service,
     Profile* profile) {
   // Some test code creates a profile (and therefore profile-linked services
   // like the App Service) before it creates the fake user that lets

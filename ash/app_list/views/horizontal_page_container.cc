@@ -11,6 +11,7 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/app_list/views/search_result_page_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
+#include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/pagination/pagination_controller.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
@@ -18,6 +19,17 @@
 #include "ui/views/controls/label.h"
 
 namespace app_list {
+
+namespace {
+
+// The amount by which the apps container UI should be offset downwards when
+// shown on non apps page UI.
+constexpr int kNonAppsStateVerticalOffset = 24;
+
+// The opacity the apps container UI should have when shown on non apps page UI.
+constexpr float kNonAppsStateOpacity = 0.1;
+
+}  // namespace
 
 HorizontalPageContainer::HorizontalPageContainer(ContentsView* contents_view,
                                                  AppListModel* model)
@@ -88,9 +100,23 @@ void HorizontalPageContainer::OnAnimationStarted(ash::AppListState from_state,
   const gfx::Rect to_rect =
       GetPageBoundsForState(to_state, contents_bounds, gfx::Rect());
   if (from_rect != to_rect) {
-    SetBoundsRect(from_rect);
-    auto settings = contents_view()->CreateTransitionAnimationSettings(layer());
+    DCHECK_EQ(from_rect.size(), to_rect.size());
+    DCHECK_EQ(from_rect.x(), to_rect.x());
+
     SetBoundsRect(to_rect);
+
+    gfx::Transform initial_transform;
+    initial_transform.Translate(0, from_rect.y() - to_rect.y());
+    layer()->SetTransform(initial_transform);
+
+    auto settings = contents_view()->CreateTransitionAnimationSettings(layer());
+    layer()->SetTransform(gfx::Transform());
+  }
+
+  // Set the page opacity.
+  if (app_list_features::IsScalableAppListEnabled()) {
+    auto settings = contents_view()->CreateTransitionAnimationSettings(layer());
+    UpdateOpacityForState(to_state);
   }
 
   for (size_t i = 0; i < horizontal_pages_.size(); ++i) {
@@ -115,7 +141,19 @@ gfx::Rect HorizontalPageContainer::GetPageBoundsForState(
     const gfx::Rect& search_box_bounds) const {
   if (state == ash::AppListState::kStateApps)
     return contents_bounds;
-  return GetBelowContentsOffscreenBounds(contents_bounds.size());
+  if (!app_list_features::IsScalableAppListEnabled())
+    return GetBelowContentsOffscreenBounds(contents_bounds.size());
+
+  gfx::Rect bounds = contents_bounds;
+  bounds.Offset(0, kNonAppsStateVerticalOffset);
+  return bounds;
+}
+
+void HorizontalPageContainer::UpdateOpacityForState(ash::AppListState state) {
+  if (!app_list_features::IsScalableAppListEnabled())
+    return;
+  layer()->SetOpacity(
+      state == ash::AppListState::kStateApps ? 1.0f : kNonAppsStateOpacity);
 }
 
 views::View* HorizontalPageContainer::GetFirstFocusableView() {

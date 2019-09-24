@@ -8,6 +8,7 @@ import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -76,6 +77,7 @@ public class BookmarkManager
     // TODO(crbug.com/160194): Clean up after bookmark reordering launches.
     private ItemsAdapter mAdapter;
     private BookmarkDragStateDelegate mDragStateDelegate;
+    private AdapterDataObserver mAdapterDataObserver;
 
     /**
      * An adapter responsible for managing bookmark items.
@@ -85,11 +87,14 @@ public class BookmarkManager
         void notifyDataSetChanged();
         void onBookmarkDelegateInitialized(BookmarkDelegate bookmarkDelegate);
         void search(String query);
+        void registerAdapterDataObserver(AdapterDataObserver observer);
+        void unregisterAdapterDataObserver(AdapterDataObserver observer);
 
         void moveUpOne(BookmarkId bookmarkId);
         void moveDownOne(BookmarkId bookmarkId);
 
         void highlightBookmark(BookmarkId bookmarkId);
+        int getPositionForBookmark(BookmarkId bookmarkId);
     }
 
     private final BookmarkModelObserver mBookmarkModelObserver = new BookmarkModelObserver() {
@@ -112,7 +117,6 @@ public class BookmarkManager
                     openFolder(parent.getId());
                 }
             }
-            mSelectionDelegate.clearSelection();
 
             // This is necessary as long as we rely on RecyclerView.ItemDecorations to apply padding
             // at the bottom of the bookmarks list to avoid the bottom navigation menu. This ensures
@@ -122,19 +126,12 @@ public class BookmarkManager
         }
 
         @Override
-        public void bookmarkNodeMoved(BookmarkItem oldParent, int oldIndex, BookmarkItem newParent,
-                int newIndex) {
-            mSelectionDelegate.clearSelection();
-        }
-
-        @Override
         public void bookmarkModelChanged() {
             // If the folder no longer exists in folder mode, we need to fall back. Relying on the
             // default behavior by setting the folder mode again.
             if (getCurrentState() == BookmarkUIState.STATE_FOLDER) {
                 setState(mStateStack.peek());
             }
-            mSelectionDelegate.clearSelection();
         }
     };
 
@@ -203,7 +200,10 @@ public class BookmarkManager
         mSelectionDelegate = new SelectionDelegate<BookmarkId>() {
             @Override
             public boolean toggleSelectionForItem(BookmarkId bookmark) {
-                if (!mBookmarkModel.getBookmarkById(bookmark).isEditable()) return false;
+                if (mBookmarkModel.getBookmarkById(bookmark) != null
+                        && !mBookmarkModel.getBookmarkById(bookmark).isEditable()) {
+                    return false;
+                }
                 return super.toggleSelectionForItem(bookmark);
             }
         };
@@ -227,6 +227,18 @@ public class BookmarkManager
         } else {
             mAdapter = new BookmarkItemsAdapter(activity);
         }
+        mAdapterDataObserver = new AdapterDataObserver() {
+            @Override
+            public void onItemRangeRemoved(int positionStart, int itemCount) {
+                syncAdapterAndSelectionDelegate();
+            }
+
+            @Override
+            public void onChanged() {
+                syncAdapterAndSelectionDelegate();
+            }
+        };
+        mAdapter.registerAdapterDataObserver(mAdapterDataObserver);
         mRecyclerView = mSelectableListLayout.initializeRecyclerView(
                 (RecyclerView.Adapter<RecyclerView.ViewHolder>) mAdapter);
 
@@ -296,6 +308,7 @@ public class BookmarkManager
      * Destroys and cleans up itself. This must be called after done using this class.
      */
     public void onDestroyed() {
+        mAdapter.unregisterAdapterDataObserver(mAdapterDataObserver);
         mIsDestroyed = true;
         RecordUserAction.record("MobileBookmarkManagerClose");
         mSelectableListLayout.onDestroyed();
@@ -446,10 +459,22 @@ public class BookmarkManager
             }
         }
 
-        mSelectionDelegate.clearSelection();
-
         for (BookmarkUIObserver observer : mUIObservers) {
             notifyStateChange(observer);
+        }
+    }
+
+    // TODO(lazzzis): This method can be moved to adapter after bookmark reordering launches.
+    /**
+     * Some bookmarks may be moved to another folder or removed in another devices. However, it may
+     * still be stored by {@link #mSelectionDelegate}, which causes incorrect selection counting.
+     */
+    private void syncAdapterAndSelectionDelegate() {
+        for (BookmarkId node : mSelectionDelegate.getSelectedItemsAsList()) {
+            if (mSelectionDelegate.isItemSelected(node)
+                    && mAdapter.getPositionForBookmark(node) == -1) {
+                mSelectionDelegate.toggleSelectionForItem(node);
+            }
         }
     }
 

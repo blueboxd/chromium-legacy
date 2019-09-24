@@ -845,6 +845,10 @@ jumbo_split_static_library("browser") {
     "native_window_notification_source.h",
     "navigation_predictor/navigation_predictor.cc",
     "navigation_predictor/navigation_predictor.h",
+    "navigation_predictor/navigation_predictor_keyed_service.cc",
+    "navigation_predictor/navigation_predictor_keyed_service.h",
+    "navigation_predictor/navigation_predictor_keyed_service_factory.cc",
+    "navigation_predictor/navigation_predictor_keyed_service_factory.h",
     "net/chrome_cookie_notification_details.h",
     "net/chrome_mojo_proxy_resolver_factory.cc",
     "net/chrome_mojo_proxy_resolver_factory.h",
@@ -1376,8 +1380,6 @@ jumbo_split_static_library("browser") {
     "previews/previews_lite_page_decider.h",
     "previews/previews_lite_page_infobar_delegate.cc",
     "previews/previews_lite_page_infobar_delegate.h",
-    "previews/previews_lite_page_navigation_throttle.cc",
-    "previews/previews_lite_page_navigation_throttle.h",
     "previews/previews_lite_page_predictor.cc",
     "previews/previews_lite_page_predictor.h",
     "previews/previews_lite_page_redirect_url_loader.cc",
@@ -2891,6 +2893,7 @@ jumbo_split_static_library("browser") {
       ":explore_sites_proto",
       ":usage_stats_proto",
       "//chrome/android:jni_headers",
+      "//chrome/android/modules/extra_icu/provider:native",
       "//chrome/browser/android/thin_webview/internal",
       "//chrome/browser/android/webapk:proto",
       "//chrome/services/media_gallery_util/public/cpp",
@@ -3986,8 +3989,6 @@ jumbo_split_static_library("browser") {
   if (is_win || is_mac) {
     # Sources (generally "desktop OS importers") used only on Mac & Windows.
     sources += [
-      "crash_upload_list/crash_upload_list_crashpad.cc",
-      "crash_upload_list/crash_upload_list_crashpad.h",
       "recovery/recovery_install_global_error.cc",
       "recovery/recovery_install_global_error.h",
       "recovery/recovery_install_global_error_factory.cc",
@@ -4134,6 +4135,8 @@ jumbo_split_static_library("browser") {
 
   if (is_win || is_mac || is_linux) {
     sources += [
+      "crash_upload_list/crash_upload_list_crashpad.cc",
+      "crash_upload_list/crash_upload_list_crashpad.h",
       "payments/chrome_payment_request_delegate.cc",
       "payments/chrome_payment_request_delegate.h",
       "payments/payment_request_display_manager_factory.cc",

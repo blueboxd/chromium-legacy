@@ -9,4 +9,4 @@ crbug.com/700522 [ win ] GpuProcess_one_extra_workaround [ RetryOnFailure ]
 
 # The tests are flaky on Nexus9.
 crbug.com/1003481 [ android nvidia ] GpuProcess_disabling_workarounds_works [ RetryOnFailure ]
-crbug.com/1003481 [ android nvidia ] GpuProcess_one_extra_workaround [ RetryOnFailure ]
+crbug.com/1003481 [ android nvidia ] GpuProcess_one_extra_workaround [ Failure ]

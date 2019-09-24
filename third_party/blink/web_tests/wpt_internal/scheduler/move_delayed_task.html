@@ -19,13 +19,11 @@ async_test(t => {
     scheduler.getTaskQueue('immediate').take(taskToMove);
   }), { priority: 'immediate', delay: 10 });
 
-  taskToMove = scheduler.postTask(t.step_func(() => {
+  taskToMove = scheduler.postTask(t.step_func_done(() => {
     assert_equals(++taskCount, 2);
 
     let elapsed = performance.now() - now;
     assert_greater_than_equal(elapsed, 20);
-
-    t.done();
   }), { priority: 'low', delay: 20 });
 
 }, 'Tests delay when moving a delayed task');

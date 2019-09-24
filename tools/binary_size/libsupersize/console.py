@@ -126,26 +126,8 @@ class _Session(object):
     elf_path = self._ElfPathForSymbol(
         size_info, tool_prefix, elf_path)
 
-    address, offset, _ = string_extract.LookupElfRodataInfo(
-        elf_path, tool_prefix)
-    adjust = offset - address
-    ret = []
-    with open(elf_path, 'rb') as f:
-      for symbol in thing:
-        if symbol.section != 'r' or (
-            not all_rodata and not symbol.IsStringLiteral()):
-          continue
-        f.seek(symbol.address + adjust)
-        data = f.read(symbol.size_without_padding)
-        # As of Oct 2017, there are ~90 symbols name .L.str(.##). These appear
-        # in the linker map file explicitly, and there doesn't seem to be a
-        # pattern as to which variables lose their kConstant name (the more
-        # common case), or which string literals don't get moved to
-        # ** merge strings (less common).
-        if symbol.IsStringLiteral() or (
-            all_rodata and data and data[-1] == '\0'):
-          ret.append((symbol, data))
-    return ret
+    return string_extract.ReadStringLiterals(
+        thing, elf_path, tool_prefix, all_rodata=all_rodata)
 
   def _DiffFunc(self, before=None, after=None, sort=True):
     """Diffs two SizeInfo objects. Returns a DeltaSizeInfo.

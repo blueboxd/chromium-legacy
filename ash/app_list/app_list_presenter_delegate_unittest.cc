@@ -1562,7 +1562,6 @@ TEST_P(AppListPresenterDelegateTest, DragUpdateWhileAppListClosing) {
 
   base::RunLoop().RunUntilIdle();
   GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
-  LOG(ERROR) << "AHA";
   EXPECT_FALSE(GetAppListView()->is_in_drag());
 
   // Show the app list and verify the app list returns to peeking position.
@@ -1958,6 +1957,33 @@ class AppListPresenterDelegateScalableAppListTest
            config.grid_fadeout_zone_height();
   }
 
+  // Calculates expected apps grid position on the search results page based on
+  // the display height and the search box in-screen bounds.
+  int ExpectedAppsGridTopForSearchResults(const app_list::AppListConfig& config,
+                                          int display_height,
+                                          const gfx::Rect& search_box_bounds) {
+    const int top =
+        ExpectedAppsGridTop(config, display_height, search_box_bounds);
+    // In the search results page, the apps grid is shown 24 dip below where
+    // they'd be shown in the apps page. The |top| was calculated relative to
+    // search box bounds in the search results page, so it has to be further
+    // offset by the difference between search box bottom bounds in the apps and
+    // search results page.
+    const int search_box_diff =
+        contents_view()
+            ->GetSearchBoxBounds(ash::AppListState::kStateApps)
+            .bottom() -
+        contents_view()
+            ->GetSearchBoxBounds(ash::AppListState::kStateSearchResults)
+            .bottom();
+    return top + search_box_diff +
+           24 /*apps grid offset in fullscreen search state*/;
+  }
+
+  app_list::ContentsView* contents_view() {
+    return GetAppListView()->app_list_main_view()->contents_view();
+  }
+
   app_list::AppsGridView* apps_grid_view() {
     return GetAppListView()
         ->app_list_main_view()
@@ -2026,6 +2052,7 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
             search_box_bounds.y());
   EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
   // In apps state, search results page should be hidden behind the search
   // box.
   EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
@@ -2044,6 +2071,7 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
   EXPECT_EQ(fullscreen_search_box_padding, search_box_bounds.y());
   EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
   EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
 
   // Move half way between peeking and closed state - the search box padding
@@ -2067,6 +2095,7 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
             search_box_bounds.y());
   EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
   EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
 
   // Move to the closed state height, and verify the search box padding matches
@@ -2083,6 +2112,7 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
             search_box_bounds.y());
   EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
   EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
 }
 
@@ -2136,8 +2166,15 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  // Apps grid should be off screen.
-  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  if (ScalableAppListEnabled()) {
+    EXPECT_EQ(
+        ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+        apps_grid_view()->GetBoundsInScreen().y());
+  } else {
+    // Apps grid should be off screen.
+    EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  }
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
 
   // Move to the fullscreen position, and verify the search box padding is
   // equal to the expected fullscreen value.
@@ -2154,8 +2191,15 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  // Apps grid should be off screen.
-  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  if (ScalableAppListEnabled()) {
+    EXPECT_EQ(
+        ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+        apps_grid_view()->GetBoundsInScreen().y());
+  } else {
+    // Apps grid should be off screen.
+    EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  }
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
 
   // Move half way between peeking and closed state - the search box padding
   // should be half distance between closed and peeking padding.
@@ -2178,8 +2222,15 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  // Apps grid should be off screen.
-  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  if (ScalableAppListEnabled()) {
+    EXPECT_EQ(
+        ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+        apps_grid_view()->GetBoundsInScreen().y());
+  } else {
+    // Apps grid should be off screen.
+    EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  }
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
 
   // Move to the closed state height, and verify the search box padding matches
   // the state.
@@ -2197,8 +2248,15 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  // Apps grid should be off screen.
-  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  if (ScalableAppListEnabled()) {
+    EXPECT_EQ(
+        ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+        apps_grid_view()->GetBoundsInScreen().y());
+  } else {
+    // Apps grid should be off screen.
+    EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  }
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
 }
 
 // Tests changing the active app list page while drag is in progress.
@@ -2245,9 +2303,18 @@ TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageDuringDrag) {
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  // Apps grid should be off screen.
-  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  if (ScalableAppListEnabled()) {
+    EXPECT_EQ(
+        ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+        apps_grid_view()->GetBoundsInScreen().y());
+  } else {
+    // Apps grid should be off screen.
+    EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  }
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
 
+  const gfx::Rect apps_grid_bounds_in_results_page =
+      apps_grid_view()->GetBoundsInScreen();
   const gfx::Rect app_list_bounds = GetAppListView()->GetBoundsInScreen();
 
   // Press ESC key - this should move the UI back to the app list.
@@ -2271,6 +2338,13 @@ TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageDuringDrag) {
   EXPECT_EQ(expected_search_box_top, search_box_bounds.y());
   EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
+  if (ScalableAppListEnabled()) {
+    EXPECT_EQ(apps_grid_bounds_in_results_page.y() - 24,
+              apps_grid_view()->GetBoundsInScreen().y());
+  }
+  EXPECT_EQ(apps_grid_bounds_in_results_page.size(),
+            apps_grid_view()->GetBoundsInScreen().size());
   EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
 
   // Enter text in the search box to transition back to search results page.
@@ -2289,8 +2363,15 @@ TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageDuringDrag) {
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  // Apps grid should be off screen.
-  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  if (ScalableAppListEnabled()) {
+    EXPECT_EQ(
+        ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+        apps_grid_view()->GetBoundsInScreen().y());
+  } else {
+    // Apps grid should be off screen.
+    EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  }
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
 }
 
 // Tests changing the active app list page in fullscreen state.
@@ -2315,6 +2396,7 @@ TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageInFullscreen) {
             search_box_bounds.y());
   EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
   EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
 
   const gfx::Rect app_list_bounds = GetAppListView()->GetBoundsInScreen();
@@ -2334,8 +2416,17 @@ TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageInFullscreen) {
             search_result_page()->GetBoundsInScreen().y());
   EXPECT_EQ(search_results_height,
             search_result_page()->GetBoundsInScreen().height());
-  // Apps grid should be off screen.
-  EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  if (ScalableAppListEnabled()) {
+    EXPECT_EQ(
+        ExpectedAppsGridTopForSearchResults(config, 900, search_box_bounds),
+        apps_grid_view()->GetBoundsInScreen().y());
+  } else {
+    // Apps grid should be off screen.
+    EXPECT_GT(apps_grid_view()->GetBoundsInScreen().y(), 900);
+  }
+  EXPECT_EQ(ScalableAppListEnabled(), apps_grid_view()->GetVisible());
+  const gfx::Rect apps_grid_bounds_in_results_page =
+      apps_grid_view()->GetBoundsInScreen();
 
   // Press ESC key - this should move the UI back to the app list.
   generator->PressKey(ui::KeyboardCode::VKEY_ESCAPE, 0);
@@ -2349,6 +2440,13 @@ TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageInFullscreen) {
             search_box_bounds.y());
   EXPECT_EQ(ExpectedAppsGridTop(config, 900, search_box_bounds),
             apps_grid_view()->GetBoundsInScreen().y());
+  EXPECT_TRUE(apps_grid_view()->GetVisible());
+  if (ScalableAppListEnabled()) {
+    EXPECT_EQ(apps_grid_bounds_in_results_page.y() - 24,
+              apps_grid_view()->GetBoundsInScreen().y());
+  }
+  EXPECT_EQ(apps_grid_bounds_in_results_page.size(),
+            apps_grid_view()->GetBoundsInScreen().size());
   EXPECT_EQ(search_box_bounds, search_result_page()->GetBoundsInScreen());
 }
 

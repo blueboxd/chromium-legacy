@@ -24,7 +24,7 @@
                      float minDepth, float maxDepth);
     void setScissorRect(unsigned long x, unsigned long y,
                         unsigned long width, unsigned long height);
-    void setIndexBuffer(GPUBuffer buffer, unsigned long long offset);
+    void setIndexBuffer(GPUBuffer buffer, optional unsigned long long offset = 0);
     [RaisesException] void setVertexBuffers(unsigned long startSlot,
                                             sequence<GPUBuffer> buffers,
                                             sequence<unsigned long long> offsets);

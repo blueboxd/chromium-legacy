@@ -1990,7 +1990,6 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_PopUpButtonSetSize', function() {
       var button = document.getElementById('button');
       var expanded = false;
       button.addEventListener('click', function(e) {
-        console.error('Heelooo');
         if (expanded)
           button.setAttribute('aria-expanded', false);
         else
@@ -2016,5 +2015,49 @@ TEST_F('ChromeVoxBackgroundTest', 'DISABLED_PopUpButtonSetSize', function() {
       .expectSpeech('Expanded')
       .expectSpeech('Press Search+Space to activate.')
       .replay();
+  });
+});
+
+TEST_F('ChromeVoxBackgroundTest', 'ReadPhoneticPronunciationTest', function() {
+  var mockFeedback = this.createMockFeedback();
+  this.runWithLoadedTree(function() {/*!
+   <button>This is a button</button>
+   <input type="text"></input>
+  */}, function(root) {
+    root.find({role: RoleType.BUTTON}).focus();
+    mockFeedback.call(doCmd('readPhoneticPronunciation'))
+      .expectSpeech('T')
+      .expectSpeech('tango')
+      .expectSpeech('h')
+      .expectSpeech('hotel')
+      .expectSpeech('i')
+      .expectSpeech('india')
+      .expectSpeech('s')
+      .expectSpeech('sierra')
+      .call(doCmd('nextWord'))
+      .call(doCmd('readPhoneticPronunciation'))
+      .expectSpeech('i')
+      .expectSpeech('india')
+      .expectSpeech('s')
+      .expectSpeech('sierra')
+      .call(doCmd('nextWord'))
+      .call(doCmd('nextWord'))
+      .call(doCmd('readPhoneticPronunciation'))
+      .expectSpeech('b')
+      .expectSpeech('bravo')
+      .expectSpeech('u')
+      .expectSpeech('uniform')
+      .expectSpeech('t')
+      .expectSpeech('tango')
+      .expectSpeech('t')
+      .expectSpeech('tango')
+      .expectSpeech('o')
+      .expectSpeech('oscar')
+      .expectSpeech('n')
+      .expectSpeech('november')
+      .call(doCmd('nextEditText'))
+      .call(doCmd('readPhoneticPronunciation'))
+      .expectSpeech('No available text for this item');
+    mockFeedback.replay();
   });
 });

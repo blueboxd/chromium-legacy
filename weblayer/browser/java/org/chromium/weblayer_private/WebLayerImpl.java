@@ -4,10 +4,7 @@
 
 package org.chromium.weblayer_private;
 
-import android.app.Application;
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.res.Resources;
 import android.os.IBinder;
 import android.util.AndroidRuntimeException;
 
@@ -35,8 +32,8 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/weblayer-command-line";
 
     @UsedByReflection("WebLayer")
-    public static IBinder create(Application application, Context implContext) {
-        return new WebLayerImpl(application, implContext);
+    public static IBinder create(Context context) {
+        return new WebLayerImpl(context);
     }
 
     @Override
@@ -44,18 +41,12 @@ public final class WebLayerImpl extends IWebLayer.Stub {
         return new ProfileImpl(path);
     }
 
-    private WebLayerImpl(Application application, Context implContext) {
-        ContextUtils.initApplicationContext(new ContextWrapper(application) {
-            @Override
-            public Resources getResources() {
-                // Always use resources from the implementation APK.
-                return implContext.getResources();
-            }
-        });
+    private WebLayerImpl(Context context) {
+        ContextUtils.initApplicationContext(context);
         ResourceBundle.setNoAvailableLocalePaks();
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
 
-        ChildProcessCreationParams.set(application.getPackageName(), false /* isExternalService */,
+        ChildProcessCreationParams.set(context.getPackageName(), false /* isExternalService */,
                 LibraryProcessType.PROCESS_WEBLAYER_CHILD, true /* bindToCaller */,
                 false /* ignoreVisibilityForImportance */,
                 "org.chromium.weblayer.ChildProcessService$Privileged",

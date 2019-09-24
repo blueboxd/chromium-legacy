@@ -65,6 +65,16 @@ const base::Feature kSendOnFocusPing {
 };
 #endif
 
+const base::Feature kSendPasswordReusePing {
+  "SafeBrowsingSendPasswordReusePing",
+#if BUILDFLAG(FULL_SAFE_BROWSING)
+      base::FEATURE_ENABLED_BY_DEFAULT
+};
+#else
+      base::FEATURE_DISABLED_BY_DEFAULT
+};
+#endif
+
 const base::Feature kSendSampledPingsForAllowlistDomains{
     "SafeBrowsingSendSampledPingsForAllowlistDomain",
     base::FEATURE_DISABLED_BY_DEFAULT};
@@ -108,6 +118,7 @@ constexpr struct {
     {&kRealTimeUrlLookupEnabled, true},
     {&kRealTimeUrlLookupFetchAllowlist, true},
     {&kSendOnFocusPing, true},
+    {&kSendPasswordReusePing, true},
     {&kSendSampledPingsForAllowlistDomains, false},
     {&kSuspiciousSiteTriggerQuotaFeature, true},
     {&kThreatDomDetailsTagAndAttributeFeature, false},

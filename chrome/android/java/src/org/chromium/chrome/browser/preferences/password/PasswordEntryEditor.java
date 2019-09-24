@@ -134,7 +134,10 @@ public class PasswordEntryEditor extends Fragment {
             mPasswordLabel.setError(getContext().getString(
                     R.string.pref_edit_dialog_field_required_validation_message));
         } else {
-            // TODO(crbug.com/377410): Save the changes if everything was ok.
+            PasswordEditingDelegateProvider.getInstance()
+                    .getPasswordEditingDelegate()
+                    .editSavedPasswordEntry(
+                            mUsernameText.getText().toString(), mPasswordText.getText().toString());
             getActivity().finish();
         }
     }
@@ -143,5 +146,11 @@ public class PasswordEntryEditor extends Fragment {
     public void onSaveInstanceState(Bundle savedInstanceState) {
         super.onSaveInstanceState(savedInstanceState);
         savedInstanceState.putBoolean(VIEW_BUTTON_PRESSED, mViewButtonPressed);
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        PasswordEditingDelegateProvider.getInstance().getPasswordEditingDelegate().destroy();
     }
 }

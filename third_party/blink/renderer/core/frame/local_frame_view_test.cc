@@ -42,7 +42,8 @@ class AnimationMockChromeClient : public RenderingTestChromeClient {
     MockSetToolTip(&frame, tooltip_text, dir);
   }
 
-  void ScheduleAnimation(const LocalFrameView*) override {
+  void ScheduleAnimation(const LocalFrameView*,
+                         base::TimeDelta = base::TimeDelta()) override {
     has_scheduled_animation_ = true;
   }
   bool has_scheduled_animation_;

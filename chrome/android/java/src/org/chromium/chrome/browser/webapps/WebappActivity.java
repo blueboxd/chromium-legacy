@@ -408,9 +408,6 @@ public class WebappActivity extends SingleTabActivity {
      * If immersive mode is not supported, this method no-ops.
      */
     private void enterImmersiveMode() {
-        // Immersive mode is only supported in API 19+.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) return;
-
         if (mSetImmersiveRunnable == null) {
             final View decor = getWindow().getDecorView();
 

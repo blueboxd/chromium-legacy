@@ -16,6 +16,7 @@
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/platform/graphics/paint/paint_image.h"
 #include "third_party/blink/renderer/platform/heap/member.h"
+#include "third_party/blink/renderer/platform/timer.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
 
 namespace cc {
@@ -142,6 +143,8 @@ class CORE_EXPORT WebFrameWidgetBase
   // focused frame has a different local root.
   LocalFrame* FocusedLocalFrameInWidget() const;
 
+  void RequestAnimationAfterDelay(const base::TimeDelta&);
+
   virtual void Trace(blink::Visitor*);
 
  protected:
@@ -186,6 +189,7 @@ class CORE_EXPORT WebFrameWidgetBase
 
  private:
   void CancelDrag();
+  void RequestAnimationAfterDelayTimerFired(TimerBase*);
 
   WebWidgetClient* client_;
 
@@ -210,6 +214,9 @@ class CORE_EXPORT WebFrameWidgetBase
   // PaintWorkletPaintDispatcher on the compositor thread.
   base::WeakPtr<PaintWorkletPaintDispatcher> paint_dispatcher_;
   scoped_refptr<base::SingleThreadTaskRunner> paint_task_runner_;
+
+  std::unique_ptr<TaskRunnerTimer<WebFrameWidgetBase>>
+      request_animation_after_delay_timer_;
 
   friend class WebViewImpl;
 };

@@ -4,8 +4,6 @@
 
 package org.chromium.chrome.features.start_surface;
 
-import static org.chromium.chrome.browser.compositor.animation.CompositorAnimator.FAST_OUT_SLOW_IN_INTERPOLATOR;
-
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.animation.AnimatorSet;
@@ -37,6 +35,7 @@ import org.chromium.chrome.browser.compositor.scene_layer.TabListSceneLayer;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tasks.tab_management.TabSwitcher;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.resources.ResourceManager;
 
@@ -280,25 +279,25 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         animationList.add(CompositorAnimator.ofFloatProperty(
                 handler, sourceLayoutTab, LayoutTab.SCALE, () -> 1f, () -> {
                     return target.get().width() / (getWidth() * mDpToPx);
-                }, ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
+                }, ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
         animationList.add(CompositorAnimator.ofFloatProperty(
                 handler, sourceLayoutTab, LayoutTab.X, () -> 0f, () -> {
                     return target.get().left / mDpToPx;
-                }, ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
+                }, ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
         animationList.add(CompositorAnimator.ofFloatProperty(
                 handler, sourceLayoutTab, LayoutTab.Y, () -> 0f, () -> {
                     return target.get().top / mDpToPx;
-                }, ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
+                }, ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
         // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
         // down, making the "create group" visible for a while.
         animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT, sourceLayoutTab.getUnclampedOriginalContentHeight(),
-                getWidth(), ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
+                getWidth(), ZOOMING_DURATION, Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
 
         CompositorAnimator backgroundAlpha =
                 CompositorAnimator.ofFloat(handler, 0f, 1f, BACKGROUND_FADING_DURATION_MS,
                         animator -> mBackgroundAlpha = animator.getAnimatedValue());
-        backgroundAlpha.setInterpolator(CompositorAnimator.FAST_OUT_LINEAR_IN_INTERPOLATOR);
+        backgroundAlpha.setInterpolator(Interpolators.FAST_OUT_LINEAR_IN_INTERPOLATOR);
         animationList.add(backgroundAlpha);
 
         mTabToSwitcherAnimation = new AnimatorSet();
@@ -334,22 +333,24 @@ public class StartSurfaceLayout extends Layout implements StartSurface.OverviewM
         // Zoom in the source tab
         animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
                 LayoutTab.SCALE, source.width() / (getWidth() * mDpToPx), 1, ZOOMING_DURATION,
-                FAST_OUT_SLOW_IN_INTERPOLATOR));
+                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
         animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.X,
-                source.left / mDpToPx, 0f, ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
+                source.left / mDpToPx, 0f, ZOOMING_DURATION,
+                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
         animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab, LayoutTab.Y,
-                source.top / mDpToPx, 0f, ZOOMING_DURATION, FAST_OUT_SLOW_IN_INTERPOLATOR));
+                source.top / mDpToPx, 0f, ZOOMING_DURATION,
+                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
         // TODO(crbug.com/964406): when shrinking to the bottom row, bottom of the tab goes up and
         // down, making the "create group" visible for a while.
         animationList.add(CompositorAnimator.ofFloatProperty(handler, sourceLayoutTab,
                 LayoutTab.MAX_CONTENT_HEIGHT, getWidth(),
                 sourceLayoutTab.getUnclampedOriginalContentHeight(), ZOOMING_DURATION,
-                FAST_OUT_SLOW_IN_INTERPOLATOR));
+                Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR));
 
         CompositorAnimator backgroundAlpha =
                 CompositorAnimator.ofFloat(handler, 1f, 0f, BACKGROUND_FADING_DURATION_MS,
                         animator -> mBackgroundAlpha = animator.getAnimatedValue());
-        backgroundAlpha.setInterpolator(CompositorAnimator.FAST_OUT_LINEAR_IN_INTERPOLATOR);
+        backgroundAlpha.setInterpolator(Interpolators.FAST_OUT_LINEAR_IN_INTERPOLATOR);
         animationList.add(backgroundAlpha);
 
         mTabToSwitcherAnimation = new AnimatorSet();

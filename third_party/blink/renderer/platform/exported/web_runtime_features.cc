@@ -88,6 +88,10 @@ void WebRuntimeFeatures::EnableAccelerated2dCanvas(bool enable) {
   RuntimeEnabledFeatures::SetAccelerated2dCanvasEnabled(enable);
 }
 
+void WebRuntimeFeatures::EnableAccessibilityExposeDisplayNone(bool enable) {
+  RuntimeEnabledFeatures::SetAccessibilityExposeDisplayNoneEnabled(enable);
+}
+
 void WebRuntimeFeatures::EnableAccessibilityObjectModel(bool enable) {
   RuntimeEnabledFeatures::SetAccessibilityObjectModelEnabled(enable);
 }

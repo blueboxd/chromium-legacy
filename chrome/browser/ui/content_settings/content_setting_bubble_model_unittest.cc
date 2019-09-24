@@ -1245,7 +1245,7 @@ TEST_F(ContentSettingBubbleModelTest, PopupBubbleModelListItems) {
   for (size_t i = 1; i <= kItemCount; i++) {
     NavigateParams navigate_params =
         params.CreateNavigateParams(web_contents());
-    EXPECT_TRUE(MaybeBlockPopup(web_contents(), url, &navigate_params,
+    EXPECT_TRUE(MaybeBlockPopup(web_contents(), &url, &navigate_params,
                                 nullptr /*=open_url_params*/,
                                 params.features()));
     EXPECT_EQ(i, list_items.size());

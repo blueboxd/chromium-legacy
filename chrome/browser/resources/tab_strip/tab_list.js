@@ -369,6 +369,15 @@ class TabListElement extends CustomElement {
 
     const tabElement = this.findTabElement_(tabId);
     if (tabElement) {
+      // While a tab may go in and out of a loading state, the Extensions API
+      // only dispatches |onUpdated| events up until the first time a tab
+      // reaches a non-loading state. Therefore, the UI should ignore any
+      // updates to a |status| of a tab unless the API specifically has
+      // dispatched an event indicating the status has changed.
+      if (!changeInfo.status) {
+        tab.status = tabElement.tab.status;
+      }
+
       tabElement.tab = tab;
 
       if (changeInfo.pinned !== undefined) {

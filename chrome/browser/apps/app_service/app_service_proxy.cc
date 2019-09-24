@@ -104,8 +104,8 @@ void AppServiceProxy::Initialize(Profile* profile,
       return;
     }
   }
-  connector->BindInterface(apps::mojom::kServiceName,
-                           mojo::MakeRequest(&app_service_));
+  connector->Connect(apps::mojom::kServiceName,
+                     app_service_.BindNewPipeAndPassReceiver());
 
   if (app_service_.is_bound()) {
     // The AppServiceProxy is a subscriber: something that wants to be able
@@ -134,7 +134,7 @@ void AppServiceProxy::Initialize(Profile* profile,
   }
 }
 
-apps::mojom::AppServicePtr& AppServiceProxy::AppService() {
+mojo::Remote<apps::mojom::AppService>& AppServiceProxy::AppService() {
   return app_service_;
 }
 

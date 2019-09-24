@@ -818,6 +818,9 @@
     <ph name="COUNT">$1<ex>10</ex></ph> errors.
   </message>
 
+  <message name="IDS_FILE_BROWSER_CANCEL_ACTIVITY_LABEL" desc="Text spoken by ChromeVox/screen reader describing what will be cancelled.">
+    Cancel <ph name="ACTIVITY_DESCRIPTION">$1<ex>Copying file.txt</ex></ph>.
+  </message>
   <message name="IDS_FILE_BROWSER_CANCEL_LABEL" desc="Cancel label.">
     Cancel
   </message>
@@ -850,6 +853,9 @@
   </message>
   <message name="IDS_FILE_BROWSER_FEEDBACK_EXPAND_LABEL" desc="Text spoken by Chromevox when expanding multiple feedback panels.">
     Expand files feedback panels
+  </message>
+  <message name="IDS_FILE_BROWSER_FILES_FEEDBACK_WINDOW" desc="text spoken by Chromevox when tabbing to the feedback panel window.">
+    Files feedback window
   </message>
   <message name="IDS_FILE_BROWSER_SEARCH_A11Y_NO_RESULT" desc="Text spoken by ChromeVox/screen reader when a search has no result">
     There are no results for <ph name="SEARCH_TERM">$1<ex>ABC</ex></ph>.

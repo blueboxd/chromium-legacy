@@ -98,9 +98,12 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
   Member<Observer> paint_image_generator_observer_;
   Member<CSSStyleValueVector> parsed_input_arguments_;
   Vector<scoped_refptr<CSSVariableData>> argument_variable_data_;
+  enum class OffThreadPaintState { kUnknown, kOffThread, kMainThread };
+  // Indicates whether this paint worklet is composited or not. kUnknown
+  // indicates that it has not been decided yet.
   // TODO(crbug.com/987974): Make this variable reset when there is a style
   // change.
-  bool paint_off_thread_;
+  OffThreadPaintState off_thread_paint_state_;
 };
 
 template <>

@@ -74,11 +74,14 @@ def GetSharedLibraryDependenciesLinux(binary):
   return result
 
 
-def GetSharedLibraryDependenciesAndroid(binary):
-  """Return absolute paths to all shared library dependencies of the binary.
+def _GetSharedLibraryDependenciesAndroidOrChromeOS(binary):
+  """GetSharedLibraryDependencies* suitable for Android or ChromeOS.
 
-  This implementation assumes that we're running on a Linux system, but
-  compiled for Android."""
+  Both assume that the host is Linux-based, but the binary being symbolized is
+  being run on a device with potentially different architectures. Unlike ldd,
+  readelf plays nice with mixed host/device architectures (e.g. x86-64 host,
+  arm64 device), so use that.
+  """
   readelf = subprocess.check_output(['readelf', '-d', binary])
   lib_re = re.compile('Shared library: \[(.+)\]$')
   result = []
@@ -90,6 +93,14 @@ def GetSharedLibraryDependenciesAndroid(binary):
       if os.access(lib, os.X_OK):
         result.append(lib)
   return result
+
+
+def GetSharedLibraryDependenciesAndroid(binary):
+  """Return absolute paths to all shared library dependencies of the binary.
+
+  This implementation assumes that we're running on a Linux system, but
+  compiled for Android."""
+  return _GetSharedLibraryDependenciesAndroidOrChromeOS(binary)
 
 
 def GetDeveloperDirMac():
@@ -192,6 +203,14 @@ def GetSharedLibraryDependenciesMac(binary, exe_path):
   return deps
 
 
+def GetSharedLibraryDependenciesChromeOS(binary):
+  """Return absolute paths to all shared library dependencies of the binary.
+
+  This implementation assumes that we're running on a Linux system, but
+  compiled for ChromeOS."""
+  return _GetSharedLibraryDependenciesAndroidOrChromeOS(binary)
+
+
 def GetSharedLibraryDependencies(options, binary, exe_path):
   """Return absolute paths to all shared library dependencies of the binary."""
   deps = []
@@ -201,6 +220,8 @@ def GetSharedLibraryDependencies(options, binary, exe_path):
     deps = GetSharedLibraryDependenciesAndroid(binary)
   elif options.platform == 'darwin':
     deps = GetSharedLibraryDependenciesMac(binary, exe_path)
+  elif options.platform == 'chromeos':
+    deps = GetSharedLibraryDependenciesChromeOS(binary)
   else:
     print "Platform not supported."
     sys.exit(1)
@@ -224,7 +245,8 @@ def GetTransitiveDependencies(options):
     deps = set(GetSharedLibraryDependencies(options, binary, exe_path))
     deps.add(binary)
     return list(deps)
-  elif options.platform == 'darwin' or options.platform == 'android':
+  elif (options.platform == 'darwin' or options.platform == 'android' or
+        options.platform == 'chromeos'):
     binaries = set([binary])
     queue = [binary]
     while queue:

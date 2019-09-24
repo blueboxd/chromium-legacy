@@ -186,7 +186,7 @@ bool SBThreatTypeSetIsValidForCheckBrowseUrl(const SBThreatTypeSet& set);
 //                             SB_THREAT_TYPE_URL_MALWARE})
 inline SBThreatTypeSet CreateSBThreatTypeSet(
     std::initializer_list<SBThreatType> set) {
-  return SBThreatTypeSet(set, base::KEEP_FIRST_OF_DUPES);
+  return SBThreatTypeSet(set);
 }
 
 // The information required to uniquely identify each list the client is

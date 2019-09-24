@@ -134,6 +134,11 @@ class LoadInstagramDesktopStory2018(_LoadingStory):
   TAGS = [story_tags.YEAR_2018]
   SUPPORTED_PLATFORMS = platforms.DESKTOP_ONLY
 
+class LoadInstagramMobileStory2019(_LoadingStory):
+  NAME = 'load:social:instagram:2019'
+  URL = 'https://www.instagram.com/selenagomez/'
+  TAGS = [story_tags.YEAR_2019]
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
 
 class LoadPinterestStory(_LoadingStory):
   NAME = 'load:social:pinterest'
@@ -312,6 +317,14 @@ class LoadFacebookPhotosMobileStory(_LoadingStory):
       'https://m.facebook.com/rihanna/photos/a.207477806675.138795.10092511675/10153911739606676/?type=3&source=54&ref=page_internal')
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2016]
+
+class LoadFacebookPhotosMobileStory2019(_LoadingStory):
+  """Load a page of rihanna's facebook with a photo."""
+  NAME = 'load:media:facebook_photos:2019'
+  URL = (
+      'https://m.facebook.com/rihanna/photos/a.207477806675/10156574885461676/?type=3&source=54&ref=page_internal')
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.EMERGING_MARKET, story_tags.YEAR_2019]
 
 
 class LoadFacebookPhotosDesktopStory2018(_LoadingStory):

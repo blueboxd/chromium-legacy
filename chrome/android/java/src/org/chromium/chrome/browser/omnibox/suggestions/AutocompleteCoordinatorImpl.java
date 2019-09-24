@@ -254,8 +254,8 @@ public class AutocompleteCoordinatorImpl implements AutocompleteCoordinator {
     }
 
     @Override
-    public void onTextChangedForAutocomplete() {
-        mMediator.onTextChangedForAutocomplete();
+    public void onTextChanged(String textWithoutAutocomplete, String textWithAutocomplete) {
+        mMediator.onTextChanged(textWithoutAutocomplete, textWithAutocomplete);
     }
 
     @Override

@@ -8,7 +8,7 @@
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
+#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "components/previews/core/previews_features.h"
 #include "content/public/browser/web_contents.h"
@@ -143,8 +143,7 @@ TEST_P(PreviewsLitePagePredictorUnitTest, AllConditionsMet_Preview) {
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(
-          PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
-              GURL(kTestUrl)));
+          previews::GetLitePageRedirectURLForURL(GURL(kTestUrl)));
 
   EXPECT_TRUE(predictor()->ShouldActOnPage(nullptr));
   histogram_tester.ExpectUniqueSample(
@@ -193,8 +192,7 @@ TEST_P(PreviewsLitePagePredictorUnitTest, ECTNotSlowOnPreview) {
 
   content::WebContentsTester::For(web_contents())
       ->NavigateAndCommit(
-          PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
-              GURL(kTestUrl)));
+          previews::GetLitePageRedirectURLForURL(GURL(kTestUrl)));
 
   EXPECT_TRUE(predictor()->ShouldActOnPage(nullptr));
 }

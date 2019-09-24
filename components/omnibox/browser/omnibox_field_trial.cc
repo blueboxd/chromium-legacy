@@ -226,35 +226,27 @@ base::TimeDelta OmniboxFieldTrial::StopTimerFieldTrialDuration() {
 // static
 std::vector<std::string> OmniboxFieldTrial::GetZeroSuggestVariants(
     OmniboxEventProto::PageClassification page_classification) {
-  std::function<std::vector<std::string>(const std::string&)> split =
-      [](const std::string& value) {
-        return base::SplitString(value, ",", base::TRIM_WHITESPACE,
-                                 base::SPLIT_WANT_ALL);
-      };
-
-  // Note: These checks are necessary because it is not possible to enable
-  // multiple features using Finch Forcing groups (omnibox::kOnFocusSuggestions
-  // as well as another feature). Therefore, in order to specify the
-  // ZeroSuggestVariant parameter in those groups we allow it to be associated
-  // with the feature that is being force enabled.
-  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTP)) {
-    auto result = internal::GetValueForRuleInContextByFeature(
-        omnibox::kZeroSuggestionsOnNTP, kZeroSuggestVariantRule,
-        page_classification);
-    if (!result.empty())
-      return split(result);
-  }
-  if (base::FeatureList::IsEnabled(omnibox::kZeroSuggestionsOnNTPRealbox)) {
-    auto result = internal::GetValueForRuleInContextByFeature(
-        omnibox::kZeroSuggestionsOnNTPRealbox, kZeroSuggestVariantRule,
-        page_classification);
-    if (!result.empty())
-      return split(result);
+  // We check all these features for ZeroSuggestVariant because it's not
+  // possible to enable multiple features using Finch Forcing groups
+  // (omnibox::kOnFocusSuggestions as well as another feature). Therefore, in
+  // order to specify the ZeroSuggestVariant parameter in those groups we allow
+  // it to be associated with the feature that is being force enabled.
+  const base::Feature* features_to_check[] = {
+      &omnibox::kZeroSuggestionsOnNTP,
+      &omnibox::kZeroSuggestionsOnNTPRealbox,
+      &omnibox::kZeroSuggestionsOnSERP,
+      &omnibox::kOnFocusSuggestions,
+  };
+  for (const base::Feature* feature : features_to_check) {
+    auto parameter_value = internal::GetValueForRuleInContextByFeature(
+        *feature, kZeroSuggestVariantRule, page_classification);
+    if (!parameter_value.empty()) {
+      return base::SplitString(parameter_value, ",", base::TRIM_WHITESPACE,
+                               base::SPLIT_WANT_NONEMPTY);
+    }
   }
 
-  return split(internal::GetValueForRuleInContextByFeature(
-      omnibox::kOnFocusSuggestions, kZeroSuggestVariantRule,
-      page_classification));
+  return {};
 }
 
 bool OmniboxFieldTrial::ShortcutsScoringMaxRelevance(

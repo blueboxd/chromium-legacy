@@ -49,7 +49,7 @@ public class InstallHostBrowserDialog {
 
         TextView name = (TextView) view.findViewById(R.id.browser_name);
         name.setText(hostBrowserApplicationName);
-        WebApkUtils.setPaddingInPixel(name,
+        name.setPaddingRelative(
                 context.getResources().getDimensionPixelSize(R.dimen.list_column_padding), 0, 0, 0);
 
         OnDismissListenerCanceler onDismissCanceler = new OnDismissListenerCanceler();

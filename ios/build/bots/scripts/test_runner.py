@@ -9,6 +9,7 @@ import signal
 import sys
 
 import collections
+import distutils.version
 import glob
 import json
 import logging
@@ -145,6 +146,33 @@ class ShardingDisabledError(TestRunnerError):
   def __init__(self):
     super(ShardingDisabledError, self).__init__(
       'Sharding has not been implemented!')
+
+
+def get_device_ios_version(udid):
+  """Gets device iOS version.
+
+  Args:
+    udid: (str) iOS device UDID.
+
+  Returns:
+    Device UDID.
+  """
+  return subprocess.check_output(['ideviceinfo',
+                                  '--udid', udid,
+                                  '-k', 'ProductVersion']).strip()
+
+
+def is_iOS13_or_higher_device(udid):
+  """Checks whether device with udid has iOS 13.0+.
+
+  Args:
+    udid: (str) iOS device UDID.
+
+  Returns:
+    True for iOS 13.0+ devices otherwise false.
+  """
+  return (distutils.version.LooseVersion(get_device_ios_version(udid)) >=
+          distutils.version.LooseVersion('13.0'))
 
 
 def terminate_process(proc):
@@ -334,6 +362,24 @@ def get_current_xcode_info():
   }
 
 
+def get_xctest_from_app(app):
+  """Gets xctest path for an app.
+
+  Args:
+    app: (str) A path to an app.
+
+  Returns:
+    The xctest path.
+  """
+  plugins_dir = os.path.join(app, 'PlugIns')
+  if not os.path.exists(plugins_dir):
+    return None
+  for plugin in os.listdir(plugins_dir):
+    if plugin.endswith('.xctest'):
+      return os.path.join(plugins_dir, plugin)
+  return None
+
+
 def get_test_names(app_path):
   """Gets list of tests from test app.
 
@@ -456,6 +502,9 @@ class TestRunner(object):
     self.test_args = test_args or []
     self.test_cases = test_cases or []
     self.xctest_path = ''
+    # TODO(crbug.com/1006881): Separate "running style" from "parser style"
+    #  for XCtests and Gtests.
+    self.xctest = xctest
 
     self.test_results = {}
     self.test_results['version'] = 3
@@ -464,7 +513,7 @@ class TestRunner(object):
     # This will be overwritten when the tests complete successfully.
     self.test_results['interrupted'] = True
 
-    if xctest:
+    if self.xctest:
       plugins_dir = os.path.join(self.app_path, 'PlugIns')
       if not os.path.exists(plugins_dir):
         raise PlugInsNotFoundError(plugins_dir)
@@ -583,7 +632,7 @@ class TestRunner(object):
       GTestResult instance.
     """
     result = gtest_utils.GTestResult(cmd)
-    if self.xctest_path:
+    if self.xctest:
       parser = xctest_utils.XCTestLogParser()
     else:
       parser = gtest_utils.GTestLogParser()
@@ -627,7 +676,7 @@ class TestRunner(object):
 
       returncode = proc.returncode
 
-    if self.xctest_path and parser.SystemAlertPresent():
+    if self.xctest and parser.SystemAlertPresent():
       raise SystemAlertPresentError()
 
     LOGGER.debug('Processing test results.')
@@ -670,7 +719,7 @@ class TestRunner(object):
 
       try:
         # XCTests cannot currently be resumed at the next test case.
-        while not self.xctest_path and result.crashed and result.crashed_test:
+        while not self.xctest and result.crashed and result.crashed_test:
           # If the app crashes during a specific test case, then resume at the
           # next test case. This is achieved by filtering out every test case
           # which has already run.
@@ -1517,7 +1566,14 @@ class DeviceTestRunner(TestRunner):
     self.udid = subprocess.check_output(['idevice_id', '--list']).rstrip()
     if len(self.udid.splitlines()) != 1:
       raise DeviceDetectionError(self.udid)
-    if xctest:
+
+    is_iOS13 = is_iOS13_or_higher_device(self.udid)
+
+    # GTest-based unittests are invoked via XCTest on iOS 13+ devices
+    # but produce GTest-style log output that is parsed with a GTestLogParser.
+    if xctest or is_iOS13:
+      if is_iOS13:
+        self.xctest_path = get_xctest_from_app(self.app_path)
       self.xctestrun_file = tempfile.mkstemp()[1]
       self.xctestrun_data = {
         'TestTargetName': {
@@ -1629,6 +1685,12 @@ class DeviceTestRunner(TestRunner):
         self.xctestrun_data['TestTargetName'].update(
           {'OnlyTestIdentifiers': test_filter})
 
+  def get_command_line_args_xctest_unittests(self, filtered_tests):
+    command_line_args = ['--enable-run-ios-unittests-with-xctest']
+    if filtered_tests:
+      command_line_args.append('--gtest_filter=%s' % filtered_tests)
+    return command_line_args
+
   def get_launch_command(self, test_filter=None, invert=False):
     """Returns the command that can be used to launch the test app.
 
@@ -1641,13 +1703,24 @@ class DeviceTestRunner(TestRunner):
       A list of strings forming the command to launch the test.
     """
     if self.xctest_path:
-      self.set_xctest_filters(test_filter, invert)
       if self.env_vars:
         self.xctestrun_data['TestTargetName'].update(
           {'EnvironmentVariables': self.env_vars})
-      if self.test_args:
+
+      command_line_args = self.test_args
+
+      if self.xctest:
+        self.set_xctest_filters(test_filter, invert)
+      else:
+        filtered_tests = []
+        if test_filter:
+          filtered_tests = get_gtest_filter(test_filter, invert=invert)
+        command_line_args.append(
+            self.get_command_line_args_xctest_unittests(filtered_tests))
+
+      if command_line_args:
         self.xctestrun_data['TestTargetName'].update(
-          {'CommandLineArguments': self.test_args})
+            {'CommandLineArguments': command_line_args})
       plistlib.writePlist(self.xctestrun_data, self.xctestrun_file)
       return [
         'xcodebuild',

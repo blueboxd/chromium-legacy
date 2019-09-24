@@ -16,8 +16,6 @@ import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.support.v4.view.MarginLayoutParamsCompat;
-import android.support.v4.view.animation.FastOutLinearInInterpolator;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.text.InputFilter;
 import android.text.Spanned;
@@ -51,6 +49,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
 import org.chromium.chrome.browser.ui.widget.FadingEdgeScrollView;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 import java.util.ArrayList;
@@ -310,7 +309,7 @@ public class EditorDialog
 
         mDialogInOutAnimator = animatorSet;
         mDialogInOutAnimator.setDuration(DIALOG_EXIT_ANIMATION_MS);
-        mDialogInOutAnimator.setInterpolator(new FastOutLinearInInterpolator());
+        mDialogInOutAnimator.setInterpolator(Interpolators.FAST_OUT_LINEAR_IN_INTERPOLATOR);
         mDialogInOutAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {
@@ -562,7 +561,7 @@ public class EditorDialog
 
         mDialogInOutAnimator = animatorSet;
         mDialogInOutAnimator.setDuration(DIALOG_ENTER_ANIMATION_MS);
-        mDialogInOutAnimator.setInterpolator(new LinearOutSlowInInterpolator());
+        mDialogInOutAnimator.setInterpolator(Interpolators.LINEAR_OUT_SLOW_IN_INTERPOLATOR);
         mDialogInOutAnimator.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationEnd(Animator animation) {

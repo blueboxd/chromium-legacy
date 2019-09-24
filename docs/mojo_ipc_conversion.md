@@ -217,13 +217,13 @@ decide how to proceed:
         - If the message is sent from a renderer to the browser:
             - If an existing interface is bound by `RenderFrameHostImpl` and
               acquired either via `RenderFrame::GetRemoteInterfaces` or
-              `RenderFrame::GetDocumentInterfaceBroker` and the interface seems
+              `RenderFrame::GetBrowserInterfaceBroker` and the interface seems
               to be a good fit for this message, add the equivalent Mojo message
               to that interface.
-            - If no such interface exists, consider adding one and exposing it
-              via a new getter method on `DocumentInterfaceBroker`. See the
+            - If no such interface exists, consider adding one and registering it
+              with `RenderFrameHostImpl`'s `BrowserInterfaceBroker`. See the
               [simple example](/docs/mojo_and_services.md#Example_Defining-a-New-Frame-Interface)
-              earlier in this document.
+              in the "Intro to Mojo & Services" document.
         - If the message is sent from the browser to a renderer, consider
           adding a Mojo equivalent to the `content.mojom.Frame` interface
           defined

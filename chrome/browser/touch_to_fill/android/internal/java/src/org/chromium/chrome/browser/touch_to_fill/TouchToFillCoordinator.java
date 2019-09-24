@@ -4,11 +4,15 @@
 
 package org.chromium.chrome.browser.touch_to_fill;
 
+import static org.chromium.chrome.browser.touch_to_fill.TouchToFillProperties.CREDENTIAL_LIST;
+
 import android.content.Context;
 
 import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.touch_to_fill.data.Credential;
+import org.chromium.chrome.browser.touch_to_fill.helper.ListViewAdapter;
+import org.chromium.chrome.browser.touch_to_fill.helper.SimpleListViewMcp;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheetController;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
@@ -44,5 +48,9 @@ public class TouchToFillCoordinator implements TouchToFillComponent {
     @VisibleForTesting
     static void setUpModelChangeProcessors(PropertyModel model, TouchToFillView view) {
         PropertyModelChangeProcessor.create(model, view, TouchToFillViewBinder::bind);
+        view.setCredentialListAdapter(
+                new ListViewAdapter<>(new SimpleListViewMcp<>(model.get(CREDENTIAL_LIST),
+                                              TouchToFillViewBinder::bindCredentialView),
+                        TouchToFillViewBinder::createCredentialView));
     }
 }

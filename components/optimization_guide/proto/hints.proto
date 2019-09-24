@@ -96,16 +96,6 @@ message Duration {
   optional int32 nanos = 2;
 }
 
-// Context in which the hints are requested.
-enum RequestContext {
-  reserved 1;
-  // Context not specified.
-  CONTEXT_UNSPECIFIED = 0;
-  // Requesting hints on page navigation.
-  CONTEXT_PAGE_NAVIGATION = 2;
-  // Requesting hints as part of a batch update.
-  CONTEXT_BATCH_UPDATE = 3;
-}
 
 enum OptimizationType {
   TYPE_UNSPECIFIED = 0;

@@ -414,6 +414,10 @@ class NavigationController {
   // Otherwise this call discards any transient or pending entries.
   virtual bool RemoveEntryAtIndex(int index) = 0;
 
+  // Discards any transient or pending entries, then discards all entries after
+  // the current entry index.
+  virtual void PruneForwardEntries() = 0;
+
   // Random --------------------------------------------------------------------
 
   // Session storage depends on dom_storage that depends on blink::WebString.

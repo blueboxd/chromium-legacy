@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.os.SystemClock;
+import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.util.Pair;
 
@@ -361,6 +362,7 @@ public class BookmarkBridge {
      * @return A BookmarkItem instance for the given BookmarkId.
      *         <code>null</code> if it doesn't exist.
      */
+    @Nullable
     public BookmarkItem getBookmarkById(BookmarkId id) {
         assert mIsNativeBookmarkModelLoaded;
         return BookmarkBridgeJni.get().getBookmarkByID(
@@ -754,7 +756,8 @@ public class BookmarkBridge {
     /**
      * Notifies the observer that bookmark model has been loaded.
      */
-    protected void notifyBookmarkModelLoaded() {
+    @VisibleForTesting
+    public void notifyBookmarkModelLoaded() {
         // Call isBookmarkModelLoaded() to do the check since it could be overridden by the child
         // class to add the addition logic.
         if (isBookmarkModelLoaded()) {

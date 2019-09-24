@@ -57,10 +57,12 @@ class ProximityAuthLocalStatePrefManager : public ProximityAuthPrefManager {
   void SetPromotionShownCount(int count) override;
   int GetPromotionShownCount() const override;
   void SetIsChromeOSLoginEnabled(bool is_enabled) override;
+  void SetHasShownLoginDisabledMessage(bool has_shown) override;
+  bool HasShownLoginDisabledMessage() const override;
 
   const base::DictionaryValue* GetActiveUserPrefsDictionary() const;
 
-  // Contains local state perferences that outlive the lifetime of this object
+  // Contains local state preferences that outlive the lifetime of this object
   // and across process restarts. Not owned and must outlive this instance.
   PrefService* local_state_;
 

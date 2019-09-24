@@ -550,10 +550,9 @@ IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
   EXPECT_TRUE(RunNetworkingSubtest("getVisibleNetworksWifi")) << message_;
 }
 
-// TODO(crbug.com/928778): Flaky on CrOS.
-IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest,
-                       DISABLED_EnabledNetworkTypes) {
-  EXPECT_TRUE(RunNetworkingSubtest("enabledNetworkTypes")) << message_;
+IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, EnabledNetworkTypes) {
+  EXPECT_TRUE(RunNetworkingSubtest("enabledNetworkTypesDisable")) << message_;
+  EXPECT_TRUE(RunNetworkingSubtest("enabledNetworkTypesEnable")) << message_;
 }
 
 IN_PROC_BROWSER_TEST_F(NetworkingPrivateChromeOSApiTest, GetDeviceStates) {

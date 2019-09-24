@@ -23,6 +23,10 @@
 
 namespace viz {
 
+OutputSurface::Capabilities::Capabilities() = default;
+OutputSurface::Capabilities::Capabilities(const Capabilities& capabilities) =
+    default;
+
 OutputSurface::OutputSurface() = default;
 
 OutputSurface::OutputSurface(scoped_refptr<ContextProvider> context_provider)

@@ -391,8 +391,7 @@ InputMethodUtil::InputMethodUtil(InputMethodDelegate* delegate)
                              map_entry.resource_id);
   }
 
-  english_to_resource_id_ =
-      EnglishToIDMap(std::move(map_storage), base::KEEP_FIRST_OF_DUPES);
+  english_to_resource_id_ = EnglishToIDMap(std::move(map_storage));
   DCHECK(english_to_resource_id_.size() == kEnglishToResourceIdArraySize)
       << "Duplicate string is found";
 }

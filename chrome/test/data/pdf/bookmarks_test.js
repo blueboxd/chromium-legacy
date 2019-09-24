@@ -60,7 +60,7 @@ var tests = [
     var rootBookmarks =
         bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
     chrome.test.assertEq(3, rootBookmarks.length, "three root bookmarks");
-    MockInteractions.tap(rootBookmarks[0].$.expand);
+    rootBookmarks[0].$.expand.click();
 
     Polymer.dom.flush();
 
@@ -96,7 +96,7 @@ var tests = [
       lastXChange = undefined;
       lastYChange = undefined;
       lastUriNavigation = undefined;
-      MockInteractions.tap(tapTarget);
+      tapTarget.click();
       chrome.test.assertEq(expectedEvent.page, lastPageChange);
       chrome.test.assertEq(expectedEvent.x, lastXChange);
       chrome.test.assertEq(expectedEvent.y, lastYChange);

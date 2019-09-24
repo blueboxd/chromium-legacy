@@ -271,7 +271,11 @@ bool MixedRealityRenderLoop::StartRuntime() {
   // the device of the correct values before it sends the initial info to the
   // renderer. The frame must be submitted because WMR requires frames to be
   // submitted in the order they're created.
-  GetNextFrameData();
+  UpdateWMRDataForNextFrame();
+  UpdateDisplayInfo();
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(on_display_info_changed_, current_display_info_.Clone()));
   return SubmitCompositedFrame();
 }
 

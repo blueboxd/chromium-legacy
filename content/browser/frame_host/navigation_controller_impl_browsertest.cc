@@ -9735,20 +9735,14 @@ class SandboxedNavigationControllerBrowserTest
     // *main(simple2, sandbox#test(simple2))]
   }
 
-  static constexpr const char* kWithinSubtreeHistogram =
-      "Navigation.SandboxFrameBackForwardStaysWithinSubtree";
-
  private:
   base::test::ScopedFeatureList feature_list_;
 };
 
-// Tests navigations which occur from a sandboxed frame are tracked
-// accordingly in histograms.
+// Tests navigations which occur from a sandboxed frame are prevented.
 IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
                        TopLevelNavigationFromSandboxSource) {
-  base::HistogramTester histogram;
   SetupNavigation();
-  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
 
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
                             ->GetFrameTree()
@@ -9762,29 +9756,21 @@ IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
   // Navigate sandbox frame back same-document.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 1);
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 0);
   EXPECT_EQ(3, controller.GetCurrentEntryIndex());
 
   // Navigate innermost frame back cross-document.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 0);
   EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
   // Navigate sibling frame back cross-document. It should fail.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 1);
   EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
   // Try it again and it should fail.
   EXPECT_TRUE(ExecJs(root->child_at(1), back_script));
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 2);
   EXPECT_EQ(2, controller.GetCurrentEntryIndex());
 
   // Do it browser initiated. Make sure histograms don't change.
@@ -9792,8 +9778,6 @@ IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
   controller.GoBack();
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 2);
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 2);
 
   // Go forward to reset state, then a mouse back button navigation.
   // Using the mouse back button should be allowed because it is a
@@ -9814,67 +9798,6 @@ IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
       root->child_at(1)->current_frame_host()->GetRenderWidgetHost());
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
   EXPECT_EQ(1, controller.GetCurrentEntryIndex());
-}
-
-// Tests navigations that occur inside a doubly nested sandbox
-// that affect the parent sandbox are considered outside of tree navigation.
-IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
-                       DoublyNestedSandboxConsideredOutsideOfTree) {
-  base::HistogramTester histogram;
-  SetupNavigation();
-  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
-
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-
-  std::string back_script = "history.back();";
-
-  // Test that a navigation in the innermost frame affecting its parent
-  // in the same sandbox is considered outside the subtree.
-  EXPECT_TRUE(ExecJs(root->child_at(1)->child_at(0), back_script));
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, true, 0);
-  histogram.ExpectBucketCount(kWithinSubtreeHistogram, false, 1);
-}
-
-// Tests navigations that influence a sandboxed frame that originate
-// from outside the sandboxed frame are not tracked in histograms.
-IN_PROC_BROWSER_TEST_F(SandboxedNavigationControllerBrowserTest,
-                       TopLevelNavigationFromNonSandboxSource) {
-  base::HistogramTester histogram;
-  SetupNavigation();
-  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
-
-  NavigationControllerImpl& controller = static_cast<NavigationControllerImpl&>(
-      shell()->web_contents()->GetController());
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
-
-  std::string back_script = "history.back();";
-  std::string forward_script = "history.forward();";
-
-  // Browser initiated back. Make sure histograms don't change.
-  ASSERT_TRUE(controller.CanGoBack());
-  controller.GoBack();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
-
-  // Browser initiated forward. Make sure histograms don't change.
-  ASSERT_TRUE(controller.CanGoForward());
-  controller.GoForward();
-  EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
-
-  // Navigate sandbox frame back same-document originated from
-  // the main frame though.
-  EXPECT_TRUE(ExecJs(root, back_script));
-  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
-
-  // Navigate sandbox frame forward same-document originated from
-  // the main frame though.
-  EXPECT_TRUE(ExecJs(root, forward_script));
-  histogram.ExpectTotalCount(kWithinSubtreeHistogram, 0);
 }
 
 class SandboxedNavigationControllerPopupBrowserTest

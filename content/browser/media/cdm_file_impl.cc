@@ -522,6 +522,8 @@ void CdmFileImpl::Write(const std::vector<uint8_t>& data,
 
   // FileStreamWriter only works on existing files. |temp_file_name_| should not
   // exist, so create an empty one if necessary.
+  // We can not use AsyncFileUtil::CreateOrOpen() as it does not work with the
+  // incognito filesystem (http://crbug.com/958294).
   auto url = CreateFileSystemURL(temp_file_name_);
   auto* file_util = file_system_context_->GetAsyncFileUtil(
       storage::kFileSystemTypePluginPrivate);
@@ -529,17 +531,17 @@ void CdmFileImpl::Write(const std::vector<uint8_t>& data,
       std::make_unique<storage::FileSystemOperationContext>(
           file_system_context_.get());
   operation_context->set_allowed_bytes_growth(storage::QuotaManager::kNoLimit);
-  file_util->EnsureFileExists(
-      std::move(operation_context), url,
-      base::Bind(&CdmFileImpl::OnEnsureFileExists, weak_factory_.GetWeakPtr(),
-                 std::move(buffer), bytes_to_write));
+  file_util->EnsureFileExists(std::move(operation_context), url,
+                              base::Bind(&CdmFileImpl::OnEnsureTempFileExists,
+                                         weak_factory_.GetWeakPtr(),
+                                         std::move(buffer), bytes_to_write));
 }
 
-void CdmFileImpl::OnEnsureFileExists(scoped_refptr<net::IOBuffer> buffer,
-                                     int bytes_to_write,
-                                     base::File::Error result,
-                                     bool created) {
-  DVLOG(3) << __func__ << " file: " << file_name_
+void CdmFileImpl::OnEnsureTempFileExists(scoped_refptr<net::IOBuffer> buffer,
+                                         int bytes_to_write,
+                                         base::File::Error result,
+                                         bool created) {
+  DVLOG(3) << __func__ << " file: " << temp_file_name_
            << ", result: " << base::File::ErrorToString(result);
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(file_locked_);
@@ -549,6 +551,44 @@ void CdmFileImpl::OnEnsureFileExists(scoped_refptr<net::IOBuffer> buffer,
   if (result != base::File::FILE_OK) {
     // Unable to create the file.
     DLOG(WARNING) << "Failed to create temporary file, result: "
+                  << base::File::ErrorToString(result);
+    std::move(write_callback_).Run(Status::kFailure);
+    return;
+  }
+
+  // If the temp file has just been created, we know it is empty and can simply
+  // proceed with writing to it. However, if the file exists, truncate it in
+  // case it is longer than the number of bytes we want to write.
+  if (created) {
+    OnTempFileIsEmpty(std::move(buffer), bytes_to_write, result);
+    return;
+  }
+
+  auto url = CreateFileSystemURL(temp_file_name_);
+  auto* file_util = file_system_context_->GetAsyncFileUtil(
+      storage::kFileSystemTypePluginPrivate);
+  auto operation_context =
+      std::make_unique<storage::FileSystemOperationContext>(
+          file_system_context_.get());
+  operation_context->set_allowed_bytes_growth(storage::QuotaManager::kNoLimit);
+  file_util->Truncate(
+      std::move(operation_context), url, 0,
+      base::Bind(&CdmFileImpl::OnTempFileIsEmpty, weak_factory_.GetWeakPtr(),
+                 std::move(buffer), bytes_to_write));
+}
+
+void CdmFileImpl::OnTempFileIsEmpty(scoped_refptr<net::IOBuffer> buffer,
+                                    int bytes_to_write,
+                                    base::File::Error result) {
+  DVLOG(3) << __func__ << " file: " << temp_file_name_
+           << ", result: " << base::File::ErrorToString(result);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(file_locked_);
+  DCHECK(write_callback_);
+  DCHECK(!file_writer_);
+
+  if (result != base::File::FILE_OK) {
+    DLOG(WARNING) << "Failed to truncate temporary file, result: "
                   << base::File::ErrorToString(result);
     std::move(write_callback_).Run(Status::kFailure);
     return;

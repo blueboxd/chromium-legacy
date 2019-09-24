@@ -121,6 +121,9 @@ XrResult xrCreateInstance(const XrInstanceCreateInfo* create_info,
                           XrInstance* instance) {
   DLOG(INFO) << __FUNCTION__;
 
+  RETURN_IF(create_info->applicationInfo.apiVersion != XR_CURRENT_API_VERSION,
+            XR_ERROR_API_VERSION_UNSUPPORTED, "apiVersion unsupported");
+
   RETURN_IF(create_info->type != XR_TYPE_INSTANCE_CREATE_INFO,
             XR_ERROR_VALIDATION_FAILURE, "XrInstanceCreateInfo type invalid");
 

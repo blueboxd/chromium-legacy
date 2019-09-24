@@ -26,9 +26,10 @@
 #endif  // defined(USE_AURA)
 
 namespace ui_devtools {
-namespace {
 
-using namespace ui_devtools::protocol;
+namespace DOM = protocol::DOM;
+
+namespace {
 
 class TestView : public views::View {
  public:
@@ -44,7 +45,7 @@ class TestView : public views::View {
 
 std::string GetAttributeValue(const std::string& attribute, DOM::Node* node) {
   EXPECT_TRUE(node->hasAttributes());
-  Array<std::string>* attributes = node->getAttributes(nullptr);
+  protocol::Array<std::string>* attributes = node->getAttributes(nullptr);
   for (size_t i = 0; i < attributes->size() - 1; i += 2) {
     if ((*attributes)[i] == attribute)
       return (*attributes)[i + 1];
@@ -56,7 +57,7 @@ DOM::Node* FindNodeWithID(int id, DOM::Node* root) {
   if (id == root->getNodeId()) {
     return root;
   }
-  Array<DOM::Node>* children = root->getChildren(nullptr);
+  protocol::Array<DOM::Node>* children = root->getChildren(nullptr);
   for (size_t i = 0; i < children->size(); i++) {
     if (DOM::Node* node = FindNodeWithID(id, (*children)[i].get()))
       return node;
@@ -116,8 +117,8 @@ class DOMAgentTest : public views::ViewsTestBase {
 
   void SetUp() override {
     fake_frontend_channel_ = std::make_unique<FakeFrontendChannel>();
-    uber_dispatcher_ =
-        std::make_unique<UberDispatcher>(fake_frontend_channel_.get());
+    uber_dispatcher_ = std::make_unique<protocol::UberDispatcher>(
+        fake_frontend_channel_.get());
     dom_agent_ = DOMAgentViews::Create();
     dom_agent_->Init(uber_dispatcher_.get());
     css_agent_ = std::make_unique<CSSAgent>(dom_agent_.get());
@@ -197,7 +198,7 @@ class DOMAgentTest : public views::ViewsTestBase {
       return false;
     }
 
-    Array<DOM::Node>* children = root->getChildren(nullptr);
+    protocol::Array<DOM::Node>* children = root->getChildren(nullptr);
     size_t child_index = 0;
     views::Widget* widget = views::Widget::GetWidgetForNativeView(window);
     if (widget &&
@@ -221,7 +222,7 @@ class DOMAgentTest : public views::ViewsTestBase {
       return false;
     }
 
-    Array<DOM::Node>* children = root->getChildren(nullptr);
+    protocol::Array<DOM::Node>* children = root->getChildren(nullptr);
     views::View* root_view = widget->GetRootView();
     return root_view
                ? ElementTreeMatchesDOMTree(root_view, (*children)[0].get())
@@ -235,7 +236,7 @@ class DOMAgentTest : public views::ViewsTestBase {
       return false;
     }
 
-    Array<DOM::Node>* children = root->getChildren(nullptr);
+    protocol::Array<DOM::Node>* children = root->getChildren(nullptr);
     std::vector<views::View*> child_views = view->GetChildrenInZOrder();
     const size_t child_count = child_views.size();
     if (child_count != children->size())
@@ -257,7 +258,7 @@ class DOMAgentTest : public views::ViewsTestBase {
   std::unique_ptr<aura::Window> top_window;
 #endif
  private:
-  std::unique_ptr<UberDispatcher> uber_dispatcher_;
+  std::unique_ptr<protocol::UberDispatcher> uber_dispatcher_;
   std::unique_ptr<FakeFrontendChannel> fake_frontend_channel_;
   std::unique_ptr<DOMAgentViews> dom_agent_;
   std::unique_ptr<CSSAgent> css_agent_;

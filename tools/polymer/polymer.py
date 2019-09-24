@@ -304,7 +304,7 @@ def _process_dom_module(js_file, html_file):
   IIFE_CLOSING = '})();'
 
   # Remove this line.
-  CR_DEFINE_START_REGEX = 'cr.define\('
+  CR_DEFINE_START_REGEX = r'cr.define\('
   # Ignore all lines after this comment, including the line it appears on.
   CR_DEFINE_END_REGEX = r'\s*// #cr_define_end'
 

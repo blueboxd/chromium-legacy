@@ -274,6 +274,7 @@ crbug.com/angleproject/3742 [ opengl win passthrough ] conformance2/rendering/cl
 
 # Passthrough command decoder / Linux / OpenGL / NVIDIA
 crbug.com/766918 [ opengl linux passthrough nvidia ] conformance2/textures/image_bitmap_from_video/* [ RetryOnFailure ]
+crbug.com/965648 [ opengl linux passthrough nvidia ] deqp/functional/gles3/shaderstruct.html [ RetryOnFailure ]
 
 
 ####################

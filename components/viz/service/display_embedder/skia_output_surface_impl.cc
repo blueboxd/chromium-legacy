@@ -218,6 +218,16 @@ void SkiaOutputSurfaceImpl::SetUpdateVSyncParametersCallback(
   update_vsync_parameters_callback_ = std::move(callback);
 }
 
+void SkiaOutputSurfaceImpl::SetGpuVSyncEnabled(bool enabled) {
+  auto task = base::BindOnce(&SkiaOutputSurfaceImplOnGpu::SetGpuVSyncEnabled,
+                             base::Unretained(impl_on_gpu_.get()), enabled);
+  task_sequence_->ScheduleOrRetainTask(std::move(task), {});
+}
+
+void SkiaOutputSurfaceImpl::SetGpuVSyncCallback(GpuVSyncCallback callback) {
+  gpu_vsync_callback_ = std::move(callback);
+}
+
 void SkiaOutputSurfaceImpl::SetDisplayTransformHint(
     gfx::OverlayTransform transform) {
   if (capabilities_.supports_pre_transform)
@@ -604,22 +614,25 @@ void SkiaOutputSurfaceImpl::InitializeOnGpuThread(base::WaitableEvent* event,
         base::BindOnce(&base::WaitableEvent::Signal, base::Unretained(event)));
   }
 
-  auto did_swap_buffer_complete_callback = base::BindRepeating(
-      &SkiaOutputSurfaceImpl::DidSwapBuffersComplete, weak_ptr_);
-  did_swap_buffer_complete_callback =
-      CreateSafeCallback(dependency_.get(), did_swap_buffer_complete_callback);
-  auto buffer_presented_callback =
-      base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_);
-  buffer_presented_callback =
-      CreateSafeCallback(dependency_.get(), buffer_presented_callback);
-  auto context_lost_callback =
-      base::BindRepeating(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_);
-  context_lost_callback =
-      CreateSafeCallback(dependency_.get(), context_lost_callback);
+  auto did_swap_buffer_complete_callback = CreateSafeCallback(
+      dependency_.get(),
+      base::BindRepeating(&SkiaOutputSurfaceImpl::DidSwapBuffersComplete,
+                          weak_ptr_));
+  auto buffer_presented_callback = CreateSafeCallback(
+      dependency_.get(),
+      base::BindRepeating(&SkiaOutputSurfaceImpl::BufferPresented, weak_ptr_));
+  auto context_lost_callback = CreateSafeCallback(
+      dependency_.get(),
+      base::BindRepeating(&SkiaOutputSurfaceImpl::ContextLost, weak_ptr_));
+  auto gpu_vsync_callback = CreateSafeCallback(
+      dependency_.get(),
+      base::BindRepeating(&SkiaOutputSurfaceImpl::OnGpuVSync, weak_ptr_));
+
   impl_on_gpu_ = SkiaOutputSurfaceImplOnGpu::Create(
       dependency_.get(), renderer_settings_, task_sequence_->GetSequenceId(),
-      did_swap_buffer_complete_callback, buffer_presented_callback,
-      context_lost_callback);
+      std::move(did_swap_buffer_complete_callback),
+      std::move(buffer_presented_callback), std::move(context_lost_callback),
+      std::move(gpu_vsync_callback));
   if (!impl_on_gpu_) {
     *result = false;
   } else {
@@ -683,6 +696,13 @@ void SkiaOutputSurfaceImpl::BufferPresented(
                                 ? BeginFrameArgs::DefaultInterval()
                                 : feedback.interval);
   }
+}
+
+void SkiaOutputSurfaceImpl::OnGpuVSync(base::TimeTicks timebase,
+                                       base::TimeDelta interval) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (gpu_vsync_callback_)
+    gpu_vsync_callback_.Run(timebase, interval);
 }
 
 void SkiaOutputSurfaceImpl::ScheduleGpuTaskForTesting(

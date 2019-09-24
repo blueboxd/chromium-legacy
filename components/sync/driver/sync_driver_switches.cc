@@ -77,4 +77,7 @@ const base::Feature kUpdateBookmarkGUIDWithNodeReplacement{
 const base::Feature kMergeBookmarksUsingGUIDs{
     "MergeBookmarksUsingGUIDs", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kSyncDeviceInfoInTransportMode{
+    "SyncDeviceInfoInTransportMode", base::FEATURE_DISABLED_BY_DEFAULT};
+
 }  // namespace switches

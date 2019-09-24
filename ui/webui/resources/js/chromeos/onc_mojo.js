@@ -758,6 +758,11 @@ class OncMojo {
       }
     }
 
+    // Only populate static ip config properties for IPv4.
+    if (desiredType != 'IPv4') {
+      return undefined;
+    }
+
     if (!ipConfig) {
       ipConfig = /** @type {!mojom.IPConfigProperties} */ ({routingPrefix: 0});
     }

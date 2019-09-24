@@ -107,7 +107,7 @@ source_set("formats") {
     ]
   }
 
-  if (proprietary_codecs && enable_dolby_vision_demuxing) {
+  if (proprietary_codecs && enable_platform_dolby_vision) {
     sources += [
       "mp4/dolby_vision.cc",
       "mp4/dolby_vision.h",
@@ -255,7 +255,7 @@ source_set("unit_tests") {
       ]
     }
 
-    if (enable_dolby_vision_demuxing) {
+    if (enable_platform_dolby_vision) {
       sources += [ "mp4/dolby_vision_unittest.cc" ]
     }
 

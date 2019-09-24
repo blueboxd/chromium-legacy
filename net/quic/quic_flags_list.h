@@ -391,7 +391,4 @@ QUIC_FLAG(bool,
           false)
 
 // If true, support HTTP/3 priority in v99.
-// TODO(renjietang): flip back to false since draft 23
-// (https://tools.ietf.org/html/draft-ietf-quic-http-23#appendix-B.1)
-// no longer support HTTP/3 priority.
-QUIC_FLAG(bool, FLAGS_quic_allow_http3_priority, true)
+QUIC_FLAG(bool, FLAGS_quic_allow_http3_priority, false)

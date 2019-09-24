@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "components/metrics/call_stack_profile_params.h"
 #include "components/metrics/child_call_stack_profile_collector.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "third_party/metrics_proto/sampled_profile.pb.h"
 
 namespace metrics {
@@ -84,7 +85,8 @@ class CallStackProfileBuilder : public base::ProfileBuilder {
   // Sets the CallStackProfileCollector interface from |browser_interface|.
   // This function must be called within child processes.
   static void SetParentProfileCollectorForChildProcess(
-      metrics::mojom::CallStackProfileCollectorPtr browser_interface);
+      mojo::PendingRemote<metrics::mojom::CallStackProfileCollector>
+          browser_interface);
 
  protected:
   // Test seam.

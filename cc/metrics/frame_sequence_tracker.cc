@@ -78,9 +78,7 @@ FrameSequenceTrackerCollection::FrameSequenceTrackerCollection(
     CompositorFrameReportingController* compositor_frame_reporting_controller)
     : is_single_threaded_(is_single_threaded),
       compositor_frame_reporting_controller_(
-          compositor_frame_reporting_controller) {
-  StartSequence(FrameSequenceTrackerType::kUniversal);
-}
+          compositor_frame_reporting_controller) {}
 
 FrameSequenceTrackerCollection::~FrameSequenceTrackerCollection() {
   frame_trackers_.clear();
@@ -119,7 +117,6 @@ void FrameSequenceTrackerCollection::StopSequence(
 void FrameSequenceTrackerCollection::ClearAll() {
   frame_trackers_.clear();
   removal_trackers_.clear();
-  StartSequence(FrameSequenceTrackerType::kUniversal);
 }
 
 void FrameSequenceTrackerCollection::NotifyBeginImplFrame(

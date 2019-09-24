@@ -43,7 +43,7 @@ var ignoreUnexpected = false;
 
 // This is a debugging aid to print all received events as well as the
 // information whether they were expected.
-var logAllRequests = false;
+var debug = false;
 
 // Runs the |tests| using the |tab| as a default tab.
 function runTestsForTab(tests, tab) {
@@ -60,7 +60,14 @@ function runTestsForTab(tests, tab) {
 // Creates an "about:blank" tab and runs |tests| with this tab as default.
 function runTests(tests) {
   chrome.test.getConfig(function(config) {
+    if (config.customArg == 'debug')
+      debug = true;
+
     var waitForAboutBlank = function(_, info, tab) {
+      if (debug) {
+        console.log("tabs.OnUpdated received in waitForAboutBlank: " +
+          JSON.stringify(info) + " " + JSON.stringify(tab));
+      }
       if (info.status == "complete" && tab.url == "about:blank") {
         chrome.tabs.onUpdated.removeListener(waitForAboutBlank);
         runTestsForTab(tests, tab);
@@ -119,6 +126,10 @@ function getServerDomain(navigationType, opt_host, opt_scheme) {
 function navigateAndWait(url, callback) {
   var done = chrome.test.listenForever(chrome.tabs.onUpdated,
       function (_, info, tab) {
+    if (debug) {
+      console.log("tabs.OnUpdated received in navigateAndWait: " +
+        JSON.stringify(info) + " " + JSON.stringify(tab));
+    }
     if (tab.id == tabId && info.status == "complete") {
       if (callback) callback(tab);
       done();
@@ -372,8 +383,9 @@ function captureEvent(name, details, callback) {
   var retval;
   var retval_function;
   if (matchingExpectedEvent) {
-    if (logAllRequests) {
-      console.log("Expected: " + name + ": " + JSON.stringify(details));
+    if (debug) {
+      console.log("Expected event received: " + name + ": " +
+        JSON.stringify(details));
     }
     capturedEventData.push(
         {label: matchingExpectedEvent.label, event: name, details: details});
@@ -387,8 +399,9 @@ function captureEvent(name, details, callback) {
     retval = matchingExpectedEvent.retval;
     retval_function = matchingExpectedEvent.retval_function;
   } else {
-    if (logAllRequests) {
-      console.log('NOT Expected: ' + name + ': ' + JSON.stringify(details));
+    if (debug) {
+      console.log('NOT Expected event received: ' + name + ': ' +
+        JSON.stringify(details));
     }
     capturedUnexpectedData.push({event: name, details: details});
   }

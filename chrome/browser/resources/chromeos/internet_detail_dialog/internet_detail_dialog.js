@@ -330,6 +330,32 @@ Polymer({
 
   /**
    * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
+   * @return {boolean}
+   * @private
+   */
+  showForget_: function(managedProperties) {
+    const mojom = chromeos.networkConfig.mojom;
+    if (!managedProperties ||
+        managedProperties.type != mojom.NetworkType.kWiFi) {
+      return false;
+    }
+    return managedProperties.source != mojom.OncSource.kNone &&
+        !this.isPolicySource(managedProperties.source);
+  },
+
+  /** @private */
+  onForgetTap_: function() {
+    this.networkConfig_.forgetNetwork(this.guid).then(response => {
+      if (!response.success) {
+        console.error('Forget network failed for: ' + this.guid);
+      }
+      // A forgotten network no longer has a valid GUID, close the dialog.
+      this.close_();
+    });
+  },
+
+  /**
+   * @param {!chromeos.networkConfig.mojom.ManagedProperties} managedProperties
    * @return {string}
    * @private
    */
@@ -530,7 +556,6 @@ Polymer({
     } else if (type == chromeos.networkConfig.mojom.NetworkType.kWiFi) {
       fields.push('restrictedConnectivity');
     }
-    fields.push('macAddress');
     return fields;
   },
 });

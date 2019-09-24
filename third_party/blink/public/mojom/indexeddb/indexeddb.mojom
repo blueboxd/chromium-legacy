@@ -58,6 +58,20 @@ enum IDBKeyType {
   Min,
 };
 
+// Durability guarantees during a transaction.  This maps to whether or not
+// the writes to disk are explicitly flushed or not.
+enum IDBTransactionDurability {
+  // Unspecified by caller, and so is implementation defined.
+  // May map to either Strict or Relaxed.
+  Default,
+
+  // Always flush to disk after a write.
+  Strict,
+
+  // Do not flush to disk.  This is much faster.
+  Relaxed,
+};
+
 union IDBKeyData {
   array<IDBKey> key_array;
   array<uint8> binary;
@@ -343,7 +357,7 @@ interface IDBDatabase {
                     int64 transaction_id,
                     array<int64> object_store_ids,
                     IDBTransactionMode mode,
-                    bool relaxed_durability);
+                    IDBTransactionDurability durability);
   Close();
   VersionChangeIgnored();
   AddObserver(int64 transaction_id,

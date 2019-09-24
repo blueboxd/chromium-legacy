@@ -306,7 +306,8 @@ EasyUnlockService::GetScreenlockStateHandler() {
   if (!screenlock_state_handler_) {
     screenlock_state_handler_.reset(new EasyUnlockScreenlockStateHandler(
         GetAccountId(), GetHardlockState(),
-        proximity_auth::ScreenlockBridge::Get()));
+        proximity_auth::ScreenlockBridge::Get(),
+        GetProximityAuthPrefManager()));
   }
   return screenlock_state_handler_.get();
 }

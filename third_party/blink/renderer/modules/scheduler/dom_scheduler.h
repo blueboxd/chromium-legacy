@@ -53,7 +53,7 @@ class MODULES_EXPORT DOMScheduler : public ScriptWrappable,
                     SchedulerPostTaskOptions*,
                     const HeapVector<ScriptValue>& args);
 
-  // Callbacks invoked by DOMTaskQueues when they run scheduled tasks.
+  // Callbacks invoked by DOMTasks when they run.
   void OnTaskStarted(DOMTaskQueue*, DOMTask*);
   void OnTaskCompleted(DOMTaskQueue*, DOMTask*);
 

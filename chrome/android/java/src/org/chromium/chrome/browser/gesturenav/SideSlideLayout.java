@@ -14,11 +14,11 @@ import android.view.animation.Animation;
 import android.view.animation.Animation.AnimationListener;
 import android.view.animation.AnimationSet;
 import android.view.animation.DecelerateInterpolator;
-import android.view.animation.LinearInterpolator;
 import android.view.animation.ScaleAnimation;
 import android.view.animation.Transformation;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
 /**
  * The SideSlideLayout can be used whenever the user navigates the contents
@@ -64,7 +64,6 @@ public class SideSlideLayout extends ViewGroup {
     private static final int NAVIGATION_REVERSAL_MS = 3 * 1000;
 
     private final DecelerateInterpolator mDecelerateInterpolator;
-    private final LinearInterpolator mLinearInterpolator;
     private final float mTotalDragDistance;
     private final int mMediumAnimationDuration;
     private final int mCircleWidth;
@@ -141,7 +140,6 @@ public class SideSlideLayout extends ViewGroup {
 
         setWillNotDraw(false);
         mDecelerateInterpolator = new DecelerateInterpolator(DECELERATE_INTERPOLATION_FACTOR);
-        mLinearInterpolator = new LinearInterpolator();
 
         mCircleWidth = (int) getResources().getDimensionPixelSize(R.dimen.navigation_bubble_size);
 
@@ -199,7 +197,7 @@ public class SideSlideLayout extends ViewGroup {
             mAnimationViewWidth = mArrowViewWidth;
             ScaleAnimation scalingDown =
                     new ScaleAnimation(1, 0, 1, 0, mArrowViewWidth / 2, mArrowView.getHeight() / 2);
-            scalingDown.setInterpolator(mLinearInterpolator);
+            scalingDown.setInterpolator(Interpolators.LINEAR_INTERPOLATOR);
             scalingDown.setDuration(SCALE_DOWN_DURATION_MS);
             Animation fadingOut = new AlphaAnimation(1, 0);
             fadingOut.setInterpolator(mDecelerateInterpolator);

@@ -801,8 +801,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DISABLED_CDMCrashDuringDecode) {
                        kEmeSessionClosedAndError);
 }
 
-// Flaky: crbug.com/997953
-IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, DISABLED_FileIOTest) {
+IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, FileIOTest) {
   TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem, kUnitTestSuccess);
 }
 
@@ -964,8 +963,7 @@ IN_PROC_BROWSER_TEST_P(ECKEncryptedMediaTest, CdmProxy) {
 // save anything to disk. Instead we are only running the tests that actually
 // have the CDM do file access.
 
-// TODO(crbug.com/999421) Disabled due to flake on all platforms
-IN_PROC_BROWSER_TEST_F(ECKIncognitoEncryptedMediaTest, DISABLED_FileIO) {
+IN_PROC_BROWSER_TEST_F(ECKIncognitoEncryptedMediaTest, FileIO) {
   // Try the FileIO test using the default CDM API while running in incognito.
   TestNonPlaybackCases(kExternalClearKeyFileIOTestKeySystem, kUnitTestSuccess);
 }

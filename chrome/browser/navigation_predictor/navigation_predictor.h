@@ -150,7 +150,7 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // action to take, or decide not to do anything. Example actions including
   // preresolve, preload, prerendering, etc.
   void MaybeTakeActionOnLoad(
-      const url::Origin& document_origin,
+      const GURL& document_url,
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores);
 
@@ -162,12 +162,12 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   virtual void Prefetch(prerender::PrerenderManager* prerender_manager);
 
   base::Optional<GURL> GetUrlToPrefetch(
-      const url::Origin& document_origin,
+      const GURL& document_url,
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores) const;
 
   base::Optional<url::Origin> GetOriginToPreconnect(
-      const url::Origin& document_origin,
+      const GURL& document_url,
       const std::vector<std::unique_ptr<NavigationScore>>&
           sorted_navigation_scores) const;
 
@@ -207,6 +207,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // Returns the minimum of the bucket that |value| belongs in, used for
   // |ratio_area|.
   int GetLinearBucketForRatioArea(int value) const;
+
+  // Notifies the keyed service of the updated predicted navigation.
+  void NotifyPredictionUpdated(
+      const std::vector<std::unique_ptr<NavigationScore>>&
+          sorted_navigation_scores);
 
   // Used to get keyed services.
   content::BrowserContext* const browser_context_;
@@ -309,8 +314,11 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   // UKM recorder
   ukm::UkmRecorder* ukm_recorder_ = nullptr;
 
-  // The origin of the current page.
-  url::Origin document_origin_;
+  // The URL of the current page.
+  GURL document_url_;
+
+  // Render frame host of the current page.
+  const content::RenderFrameHost* render_frame_host_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

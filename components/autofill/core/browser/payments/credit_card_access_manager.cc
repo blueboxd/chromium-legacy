@@ -32,7 +32,7 @@ namespace autofill {
 
 namespace {
 // Timeout to wait for unmask details from Google Payments in milliseconds.
-constexpr int64_t kUnmaskDetailsResponseTimeout = 1000;
+constexpr int64_t kUnmaskDetailsResponseTimeoutMs = 1000;
 // Time to wait between multiple calls to GetUnmaskDetails().
 constexpr int64_t kDelayForGetUnmaskDetails = 3 * 60 * 1000;  // 3 min
 
@@ -40,7 +40,7 @@ constexpr int64_t kDelayForGetUnmaskDetails = 3 * 60 * 1000;  // 3 min
 bool WaitForEvent(base::WaitableEvent* event) {
   event->declare_only_used_while_idle();
   return event->TimedWait(
-      base::TimeDelta::FromMilliseconds(kUnmaskDetailsResponseTimeout));
+      base::TimeDelta::FromMilliseconds(kUnmaskDetailsResponseTimeoutMs));
 }
 
 // Used with PostTaskWithDelay() to signal event after a timeout.
@@ -271,18 +271,25 @@ void CreditCardAccessManager::FetchCreditCard(
   }
 }
 
-void CreditCardAccessManager::FIDOAuthOptChange(bool opt_in,
-                                                base::Value creation_options) {
+void CreditCardAccessManager::FIDOAuthOptChange(bool opt_in) {
 #if defined(OS_IOS)
   return;
 #else
   if (opt_in) {
-    GetOrCreateFIDOAuthenticator()->Register(
-        /*card_authorization_token=*/std::string(),
-        std::move(creation_options));
+    GetOrCreateFIDOAuthenticator()->ShowWebauthnOfferDialog(
+        /*card_authorization_token=*/std::string());
   } else {
     GetOrCreateFIDOAuthenticator()->OptOut();
   }
+#endif
+}
+
+void CreditCardAccessManager::OnSettingsPageFIDOAuthToggled(bool opt_in) {
+#if defined(OS_IOS)
+  return;
+#else
+  // TODO(crbug/949269): Add a rate limiter to counter spam clicking.
+  FIDOAuthOptChange(opt_in);
 #endif
 }
 

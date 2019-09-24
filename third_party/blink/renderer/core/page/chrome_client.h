@@ -126,7 +126,8 @@ class CORE_EXPORT ChromeClient : public GarbageCollected<ChromeClient> {
   virtual IntRect ViewportToScreen(const IntRect&,
                                    const LocalFrameView*) const = 0;
 
-  virtual void ScheduleAnimation(const LocalFrameView*) = 0;
+  virtual void ScheduleAnimation(const LocalFrameView*,
+                                 base::TimeDelta = base::TimeDelta()) = 0;
 
   // The specified rectangle is adjusted for the minimum window size and the
   // screen, then setWindowRect with the adjusted rectangle is called.

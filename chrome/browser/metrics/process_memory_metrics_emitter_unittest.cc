@@ -179,8 +179,7 @@ MetricMap GetExpectedBrowserMetrics() {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
             {"PrivateSwapFootprint", 50},
 #endif
-      },
-      base::KEEP_FIRST_OF_DUPES);
+      });
 }
 
 void PopulateRendererMetrics(GlobalMemoryDumpPtr& global_dump,
@@ -375,8 +374,7 @@ MetricMap GetExpectedRendererMetrics() {
             {"NumberOfDocuments", 1}, {"NumberOfFrames", 2},
             {"NumberOfLayoutObjects", 5}, {"NumberOfNodes", 3},
             {"PartitionAlloc.Partitions.ArrayBuffer", 10},
-      },
-      base::KEEP_FIRST_OF_DUPES);
+      });
 }
 
 void AddPageMetrics(MetricMap& expected_metrics) {
@@ -431,8 +429,7 @@ MetricMap GetExpectedGpuMetrics() {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
             {"PrivateSwapFootprint", 50},
 #endif
-      },
-      base::KEEP_FIRST_OF_DUPES);
+      });
 }
 
 void PopulateAudioServiceMetrics(GlobalMemoryDumpPtr& global_dump,
@@ -471,8 +468,7 @@ MetricMap GetExpectedAudioServiceMetrics() {
 #if defined(OS_LINUX) || defined(OS_ANDROID)
             {"PrivateSwapFootprint", 50},
 #endif
-      },
-      base::KEEP_FIRST_OF_DUPES);
+      });
 }
 
 void PopulateMetrics(GlobalMemoryDumpPtr& global_dump,

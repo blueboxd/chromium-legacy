@@ -162,7 +162,7 @@ void SendTabToSelfSubMenuModel::BuildDeviceItem(const std::string& device_name,
                                                 int index) {
   ValidDeviceItem item(device_name, cache_guid);
   int command_id =
-      (menu_type_ == kTab) ? kShareTabCommandId : kShareLinkCommandId + index;
+      ((menu_type_ == kTab) ? kShareTabCommandId : kShareLinkCommandId) + index;
   InsertItemAt(index, command_id, base::UTF8ToUTF16(device_name));
   valid_device_items_.push_back(item);
 }

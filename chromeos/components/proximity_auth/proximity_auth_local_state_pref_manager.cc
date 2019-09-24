@@ -30,6 +30,13 @@ void ProximityAuthLocalStatePrefManager::RegisterPrefs(
     PrefRegistrySimple* registry) {
   // Prefs for all users are stored in a dictionary under this pref name.
   registry->RegisterDictionaryPref(prefs::kEasyUnlockLocalStateUserPrefs);
+
+  // Most Smart Lock prefs are stored in regular user prefs, and then copied out
+  // to local state for reference. This particular pref, in contrast, needs its
+  // source of truth to be in the local state, because it needs to be written
+  // to from the login screen.
+  registry->RegisterDictionaryPref(
+      prefs::kProximityAuthHasShownLoginDisabledMessage);
 }
 
 void ProximityAuthLocalStatePrefManager::SetIsEasyUnlockEnabled(
@@ -122,6 +129,43 @@ bool ProximityAuthLocalStatePrefManager::IsChromeOSLoginEnabled() const {
     PA_LOG(ERROR) << "Failed to get is_chrome_login_enabled.";
     return false;
   }
+  return pref_value;
+}
+
+void ProximityAuthLocalStatePrefManager::SetHasShownLoginDisabledMessage(
+    bool has_shown) {
+  DictionaryPrefUpdate update(local_state_,
+                              prefs::kEasyUnlockLocalStateUserPrefs);
+
+  base::DictionaryValue* current_user_prefs;
+  update.Get()->GetDictionaryWithoutPathExpansion(active_user_.GetUserEmail(),
+                                                  &current_user_prefs);
+  if (current_user_prefs) {
+    current_user_prefs->SetKey(
+        prefs::kProximityAuthHasShownLoginDisabledMessage,
+        base::Value(has_shown));
+    return;
+  }
+
+  // Create an otherwise empty dictionary in order to ensure |has_shown| is
+  // persisted for |active_user_|.
+  std::unique_ptr<base::DictionaryValue> new_current_user_prefs =
+      std::make_unique<base::DictionaryValue>();
+  new_current_user_prefs->SetKey(
+      prefs::kProximityAuthHasShownLoginDisabledMessage,
+      base::Value(has_shown));
+  update->SetWithoutPathExpansion(active_user_.GetUserEmail(),
+                                  std::move(new_current_user_prefs));
+}
+
+bool ProximityAuthLocalStatePrefManager::HasShownLoginDisabledMessage() const {
+  const base::DictionaryValue* user_prefs = GetActiveUserPrefsDictionary();
+  if (!user_prefs)
+    return false;
+
+  bool pref_value = false;
+  user_prefs->GetBooleanWithoutPathExpansion(
+      prefs::kProximityAuthHasShownLoginDisabledMessage, &pref_value);
   return pref_value;
 }
 

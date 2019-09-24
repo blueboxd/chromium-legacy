@@ -11,7 +11,6 @@ import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.graphics.drawable.RippleDrawable;
 import android.os.Build;
-import android.support.v4.view.ViewCompat;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.AttributeSet;
@@ -39,6 +38,7 @@ import org.chromium.chrome.browser.native_page.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.NewTabPage.OnSearchBoxScrollListener;
 import org.chromium.chrome.browser.ntp.NewTabPageView.NewTabPageManager;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
+import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
@@ -61,8 +61,11 @@ import org.chromium.ui.base.DeviceFormFactor;
  */
 public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer, VrModeObserver {
     private static final String TAG = "NewTabPageLayout";
+    // Used to signify the cached resource value is unset.
+    private static final int UNSET_RESOURCE_FLAG = -1;
 
     private final int mTileGridLayoutBleed;
+    private int mSearchBoxEndPadding = UNSET_RESOURCE_FLAG;
 
     private View mMiddleSpacer; // Spacer between toolbar and Most Likely.
 
@@ -180,6 +183,13 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             ViewStub exploreStub = findViewById(R.id.explore_sites_stub);
             exploreStub.setLayoutResource(R.layout.experimental_explore_sites_section);
             mExploreSectionView = exploreStub.inflate();
+        }
+
+        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+            int lateral_padding =
+                    getResources().getDimensionPixelOffset(R.dimen.sei_search_box_lateral_padding);
+            mSearchBoxView.setPaddingRelative(lateral_padding, mSearchBoxView.getPaddingTop(),
+                    lateral_padding, mSearchBoxView.getPaddingBottom());
         }
     }
 
@@ -310,6 +320,14 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         TraceEvent.begin(TAG + ".initializeVoiceSearchButton()");
         mVoiceSearchButton = findViewById(R.id.voice_search_button);
         mVoiceSearchButton.setOnClickListener(v -> mManager.focusSearchBox(true, null));
+        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+            // View is 48dp, image is 24dp. Increasing the padding from 4dp -> 8dp will split the
+            // remaining 16dp evenly between start/end resulting in a paddingEnd of 8dp.
+            int paddingStart = getResources().getDimensionPixelSize(
+                    R.dimen.sei_ntp_voice_button_start_padding);
+            mVoiceSearchButton.setPaddingRelative(paddingStart, mVoiceSearchButton.getPaddingTop(),
+                    getPaddingEnd(), mVoiceSearchButton.getPaddingBottom());
+        }
 
         TraceEvent.end(TAG + ".initializeVoiceSearchButton()");
     }
@@ -714,12 +732,14 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      * enabled.
      */
     void updateVoiceSearchButtonVisibility() {
+        if (mSearchBoxEndPadding == UNSET_RESOURCE_FLAG) {
+            mSearchBoxEndPadding = SearchEngineLogoUtils.shouldShowSearchEngineLogo()
+                    ? getResources().getDimensionPixelSize(R.dimen.sei_search_box_lateral_padding)
+                    : getResources().getDimensionPixelSize(R.dimen.location_bar_lateral_padding);
+        }
         mVoiceSearchButton.setVisibility(mManager.isVoiceSearchEnabled() ? VISIBLE : GONE);
-        ViewCompat.setPaddingRelative(mSearchBoxView, ViewCompat.getPaddingStart(mSearchBoxView),
-                mSearchBoxView.getPaddingTop(),
-                mManager.isVoiceSearchEnabled() ? 0
-                                                : getResources().getDimensionPixelSize(
-                                                        R.dimen.location_bar_lateral_padding),
+        mSearchBoxView.setPadding(mSearchBoxView.getPaddingStart(), mSearchBoxView.getPaddingTop(),
+                mManager.isVoiceSearchEnabled() ? 0 : mSearchBoxEndPadding,
                 mSearchBoxView.getPaddingBottom());
     }
 

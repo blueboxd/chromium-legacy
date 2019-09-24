@@ -35,6 +35,7 @@ extern const base::Feature kSyncUSSNigori;
 extern const base::Feature kSyncWifiConfigurations;
 extern const base::Feature kUpdateBookmarkGUIDWithNodeReplacement;
 extern const base::Feature kMergeBookmarksUsingGUIDs;
+extern const base::Feature kSyncDeviceInfoInTransportMode;
 
 }  // namespace switches
 

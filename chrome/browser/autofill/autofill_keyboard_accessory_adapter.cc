@@ -174,6 +174,10 @@ void AutofillKeyboardAccessoryAdapter::ViewDestroyed() {
     controller_->ViewDestroyed();
 
   view_.reset();
+
+  // The controller has now deleted itself.
+  controller_ = nullptr;
+  delete this;  // Remove dangling weak reference.
 }
 
 void AutofillKeyboardAccessoryAdapter::SetSelectionAtPoint(

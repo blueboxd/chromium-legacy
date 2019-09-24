@@ -23,8 +23,6 @@
 
 namespace dom_distiller {
 
-using namespace blink;
-
 namespace {
 
 const char* const kBlacklist[] = {"www.reddit.com", "tools.usps.com"};
@@ -78,7 +76,7 @@ bool IsBlacklisted(const GURL& url) {
 }
 
 void DumpDistillability(content::RenderFrame* render_frame,
-                        const WebDistillabilityFeatures& features,
+                        const blink::WebDistillabilityFeatures& features,
                         const std::vector<double>& derived,
                         double score,
                         bool distillable,
@@ -125,7 +123,7 @@ void DumpDistillability(content::RenderFrame* render_frame,
                                     msg);
 }
 
-bool IsDistillablePageAdaboost(WebDocument& doc,
+bool IsDistillablePageAdaboost(blink::WebDocument& doc,
                                const DistillablePageDetector* detector,
                                const DistillablePageDetector* long_page,
                                bool is_last,
@@ -136,7 +134,7 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
   if (!parsed_url.is_valid()) {
     return false;
   }
-  WebDistillabilityFeatures features = doc.DistillabilityFeatures();
+  blink::WebDistillabilityFeatures features = doc.DistillabilityFeatures();
   is_mobile_friendly = features.is_mobile_friendly;
   std::vector<double> derived = CalculateDerivedFeatures(
       features.open_graph, parsed_url, features.element_count,
@@ -209,7 +207,7 @@ bool IsDistillablePageAdaboost(WebDocument& doc,
   return distillable && long_article;
 }
 
-bool IsDistillablePage(WebDocument& doc,
+bool IsDistillablePage(blink::WebDocument& doc,
                        bool is_last,
                        bool& is_mobile_friendly,
                        content::RenderFrame* render_frame,
@@ -237,9 +235,10 @@ DistillabilityAgent::DistillabilityAgent(content::RenderFrame* render_frame,
                                          bool dump_info)
     : RenderFrameObserver(render_frame), dump_info_(dump_info) {}
 
-void DistillabilityAgent::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
-  if (layout_type != WebMeaningfulLayout::kFinishedParsing &&
-      layout_type != WebMeaningfulLayout::kFinishedLoading) {
+void DistillabilityAgent::DidMeaningfulLayout(
+    blink::WebMeaningfulLayout layout_type) {
+  if (layout_type != blink::WebMeaningfulLayout::kFinishedParsing &&
+      layout_type != blink::WebMeaningfulLayout::kFinishedLoading) {
     return;
   }
 
@@ -247,13 +246,13 @@ void DistillabilityAgent::DidMeaningfulLayout(WebMeaningfulLayout layout_type) {
   if (!render_frame()->IsMainFrame())
     return;
   DCHECK(render_frame()->GetWebFrame());
-  WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
+  blink::WebDocument doc = render_frame()->GetWebFrame()->GetDocument();
   if (doc.IsNull() || doc.Body().IsNull())
     return;
   if (!url_utils::IsUrlDistillable(doc.Url()))
     return;
 
-  bool is_loaded = layout_type == WebMeaningfulLayout::kFinishedLoading;
+  bool is_loaded = layout_type == blink::WebMeaningfulLayout::kFinishedLoading;
   if (!NeedToUpdate(is_loaded))
     return;
 

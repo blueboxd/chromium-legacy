@@ -275,7 +275,7 @@ PASSING:
           'url': '{{' + _TEXT_FILENAME + '}}',
       },
       {
-          'name': '>>> Supersize HTML Diff <<<',
+          'name': '>>> SuperSize HTML Diff <<<',
           'url': _HTML_REPORT_BASE_URL + '{{' + _NDJSON_FILENAME + '}}',
       },
   ]
@@ -295,7 +295,7 @@ PASSING:
 
   binary_size_extras = [
       {
-          'text': 'Supersize HTML Diff',
+          'text': 'SuperSize HTML Diff',
           'url': _HTML_REPORT_BASE_URL + '{{' + _NDJSON_FILENAME + '}}',
       },
       {

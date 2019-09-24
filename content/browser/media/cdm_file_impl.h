@@ -63,10 +63,13 @@ class CdmFileImpl final : public media::mojom::CdmFile {
   // written to the file, |bytes_to_write| is the length. Uses |file_writer_|,
   // which is cleared when no longer needed. |write_callback_| will always be
   // called with the result.
-  void OnEnsureFileExists(scoped_refptr<net::IOBuffer> buffer,
-                          int bytes_to_write,
-                          base::File::Error result,
-                          bool created);
+  void OnEnsureTempFileExists(scoped_refptr<net::IOBuffer> buffer,
+                              int bytes_to_write,
+                              base::File::Error result,
+                              bool created);
+  void OnTempFileIsEmpty(scoped_refptr<net::IOBuffer> buffer,
+                         int bytes_to_write,
+                         base::File::Error result);
   void WriteDone(bool success);
   void OnFileRenamed(base::File::Error move_result);
 

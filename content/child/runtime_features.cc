@@ -23,6 +23,7 @@
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
+#include "ui/accessibility/accessibility_features.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/gfx/switches.h"
@@ -434,6 +435,10 @@ void SetIndividualRuntimeFeatures(
     WebRuntimeFeatures::EnableDisplayCutoutAPI(true);
   }
 #endif
+
+  WebRuntimeFeatures::EnableAccessibilityExposeDisplayNone(
+      base::FeatureList::IsEnabled(
+          features::kEnableAccessibilityExposeDisplayNone));
 
   if (command_line.HasSwitch(switches::kEnableAccessibilityObjectModel))
     WebRuntimeFeatures::EnableAccessibilityObjectModel(true);

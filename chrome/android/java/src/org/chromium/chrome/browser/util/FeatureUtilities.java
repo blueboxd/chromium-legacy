@@ -76,6 +76,7 @@ public class FeatureUtilities {
     private static Boolean sIsAdaptiveToolbarEnabled;
     private static Boolean sIsLabeledBottomToolbarEnabled;
     private static Boolean sIsNightModeAvailable;
+    private static Boolean sNightModeDefaultToLight;
     private static Boolean sIsNightModeForCustomTabsAvailable;
     private static Boolean sShouldPrioritizeBootstrapTasks;
     private static Boolean sIsGridTabSwitcherEnabled;
@@ -174,6 +175,7 @@ public class FeatureUtilities {
         cacheAdaptiveToolbarEnabled();
         cacheLabeledBottomToolbarEnabled();
         cacheNightModeAvailable();
+        cacheNightModeDefaultToLight();
         cacheNightModeForCustomTabsAvailable();
         cacheDownloadAutoResumptionEnabledInNative();
         cachePrioritizeBootstrapTasks();
@@ -416,6 +418,50 @@ public class FeatureUtilities {
     @VisibleForTesting
     public static void setNightModeAvailableForTesting(@Nullable Boolean available) {
         sIsNightModeAvailable = available;
+    }
+
+    /**
+     * Cache whether or not to default to the light theme when the night mode feature is enabled.
+     */
+    public static void cacheNightModeDefaultToLight() {
+        // Do not cache on Q (where defaulting to light theme does not apply) or if night mode is
+        // not enabled.
+        if (BuildInfo.isAtLeastQ()
+                || !ChromeFeatureList.isEnabled(ChromeFeatureList.ANDROID_NIGHT_MODE)) {
+            return;
+        }
+
+        String lightModeDefaultParam = "default_light_theme";
+        boolean lightModeAsDefault = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
+                ChromeFeatureList.ANDROID_NIGHT_MODE, lightModeDefaultParam, false);
+
+        ChromePreferenceManager.getInstance().writeBoolean(
+                ChromePreferenceManager.NIGHT_MODE_DEFAULT_TO_LIGHT, lightModeAsDefault);
+    }
+
+    /**
+     * @return Whether or not to default to the light theme when the night mode feature is enabled.
+     */
+    public static boolean isNightModeDefaultToLight() {
+        if (BuildInfo.isAtLeastQ()) sNightModeDefaultToLight = false;
+
+        if (sNightModeDefaultToLight == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            sNightModeDefaultToLight = prefManager.readBoolean(
+                    ChromePreferenceManager.NIGHT_MODE_DEFAULT_TO_LIGHT, false);
+        }
+
+        return sNightModeDefaultToLight;
+    }
+
+    /**
+     * Toggles whether the night mode experiment is enabled for testing. Should be reset back to
+     * null after the test has finished.
+     */
+    @VisibleForTesting
+    public static void setNightModeDefaultToLightForTesting(@Nullable Boolean available) {
+        sNightModeDefaultToLight = available;
     }
 
     /**

@@ -87,6 +87,9 @@ COMPONENT_EXPORT(UI_BASE_FEATURES) bool IsOzoneDrmMojo();
 COMPONENT_EXPORT(UI_BASE_FEATURES)
 extern const base::Feature kHandwritingGesture;
 #endif
+
+COMPONENT_EXPORT(UI_BASE_FEATURES)
+extern const base::Feature kWebUIA11yEnhancements;
 }  // namespace features
 
 #endif  // UI_BASE_UI_BASE_FEATURES_H_

@@ -395,7 +395,7 @@ void InitFilterTypeMap(FilterTypeMap* filter_types_ptr) {
   AppendFilter(kFinalUrlKey, DownloadQuery::FILTER_URL, &v);
   AppendFilter(kFinalUrlRegexKey, DownloadQuery::FILTER_URL_REGEX, &v);
 
-  *filter_types_ptr = FilterTypeMap(std::move(v), base::KEEP_FIRST_OF_DUPES);
+  *filter_types_ptr = FilterTypeMap(std::move(v));
 }
 
 using SortTypeMap = base::flat_map<std::string, DownloadQuery::SortType>;
@@ -422,7 +422,7 @@ void InitSortTypeMap(SortTypeMap* sorter_types_ptr) {
   AppendFilter(kUrlKey, DownloadQuery::SORT_ORIGINAL_URL, &v);
   AppendFilter(kFinalUrlKey, DownloadQuery::SORT_URL, &v);
 
-  *sorter_types_ptr = SortTypeMap(std::move(v), base::KEEP_FIRST_OF_DUPES);
+  *sorter_types_ptr = SortTypeMap(std::move(v));
 }
 
 bool IsNotTemporaryDownloadFilter(const DownloadItem& download_item) {

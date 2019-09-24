@@ -16,9 +16,9 @@
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "third_party/cros_system_api/dbus/vm_concierge/dbus-constants.h"
 
-namespace chromeos {
+namespace concierge = vm_tools::concierge;
 
-using namespace vm_tools::concierge;
+namespace chromeos {
 
 class ConciergeClientImpl : public ConciergeClient {
  public:
@@ -66,27 +66,25 @@ class ConciergeClientImpl : public ConciergeClient {
     return is_disk_import_progress_signal_connected_;
   }
 
-  void CreateDiskImage(
-      const vm_tools::concierge::CreateDiskImageRequest& request,
-      DBusMethodCallback<vm_tools::concierge::CreateDiskImageResponse> callback)
-      override {
-    CallMethod(kCreateDiskImageMethod, request, std::move(callback));
+  void CreateDiskImage(const concierge::CreateDiskImageRequest& request,
+                       DBusMethodCallback<concierge::CreateDiskImageResponse>
+                           callback) override {
+    CallMethod(concierge::kCreateDiskImageMethod, request, std::move(callback));
   }
 
-  void DestroyDiskImage(
-      const vm_tools::concierge::DestroyDiskImageRequest& request,
-      DBusMethodCallback<vm_tools::concierge::DestroyDiskImageResponse>
-          callback) override {
-    CallMethod(kDestroyDiskImageMethod, request, std::move(callback));
+  void DestroyDiskImage(const concierge::DestroyDiskImageRequest& request,
+                        DBusMethodCallback<concierge::DestroyDiskImageResponse>
+                            callback) override {
+    CallMethod(concierge::kDestroyDiskImageMethod, request,
+               std::move(callback));
   }
 
-  void ImportDiskImage(
-      base::ScopedFD fd,
-      const vm_tools::concierge::ImportDiskImageRequest& request,
-      DBusMethodCallback<vm_tools::concierge::ImportDiskImageResponse> callback)
-      override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kImportDiskImageMethod);
+  void ImportDiskImage(base::ScopedFD fd,
+                       const concierge::ImportDiskImageRequest& request,
+                       DBusMethodCallback<concierge::ImportDiskImageResponse>
+                           callback) override {
+    dbus::MethodCall method_call(concierge::kVmConciergeInterface,
+                                 concierge::kImportDiskImageMethod);
     dbus::MessageWriter writer(&method_call);
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
@@ -101,65 +99,64 @@ class ConciergeClientImpl : public ConciergeClient {
     concierge_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::ImportDiskImageResponse>,
+                           concierge::ImportDiskImageResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
   void CancelDiskImageOperation(
-      const vm_tools::concierge::CancelDiskImageRequest& request,
-      DBusMethodCallback<vm_tools::concierge::CancelDiskImageResponse> callback)
+      const concierge::CancelDiskImageRequest& request,
+      DBusMethodCallback<concierge::CancelDiskImageResponse> callback)
       override {
-    CallMethod(kCancelDiskImageMethod, request, std::move(callback));
+    CallMethod(concierge::kCancelDiskImageMethod, request, std::move(callback));
   }
 
-  void DiskImageStatus(
-      const vm_tools::concierge::DiskImageStatusRequest& request,
-      DBusMethodCallback<vm_tools::concierge::DiskImageStatusResponse> callback)
-      override {
-    CallMethod(kDiskImageStatusMethod, request, std::move(callback));
+  void DiskImageStatus(const concierge::DiskImageStatusRequest& request,
+                       DBusMethodCallback<concierge::DiskImageStatusResponse>
+                           callback) override {
+    CallMethod(concierge::kDiskImageStatusMethod, request, std::move(callback));
   }
 
-  void ListVmDisks(const vm_tools::concierge::ListVmDisksRequest& request,
-                   DBusMethodCallback<vm_tools::concierge::ListVmDisksResponse>
-                       callback) override {
-    CallMethod(kListVmDisksMethod, request, std::move(callback));
+  void ListVmDisks(
+      const concierge::ListVmDisksRequest& request,
+      DBusMethodCallback<concierge::ListVmDisksResponse> callback) override {
+    CallMethod(concierge::kListVmDisksMethod, request, std::move(callback));
   }
 
-  void StartTerminaVm(const vm_tools::concierge::StartVmRequest& request,
-                      DBusMethodCallback<vm_tools::concierge::StartVmResponse>
-                          callback) override {
+  void StartTerminaVm(
+      const concierge::StartVmRequest& request,
+      DBusMethodCallback<concierge::StartVmResponse> callback) override {
     // TODO(nverne): revert to TIMEOUT_USE_DEFAULT when StartVm no longer
     // requires unnecessary long running crypto calculations.
     constexpr int kStartVmTimeoutMs = 160 * 1000;
-    CallMethod(kStartVmMethod, request, std::move(callback), kStartVmTimeoutMs);
+    CallMethod(concierge::kStartVmMethod, request, std::move(callback),
+               kStartVmTimeoutMs);
   }
 
-  void StopVm(const vm_tools::concierge::StopVmRequest& request,
-              DBusMethodCallback<vm_tools::concierge::StopVmResponse> callback)
-      override {
-    CallMethod(kStopVmMethod, request, std::move(callback));
+  void StopVm(const concierge::StopVmRequest& request,
+              DBusMethodCallback<concierge::StopVmResponse> callback) override {
+    CallMethod(concierge::kStopVmMethod, request, std::move(callback));
   }
 
-  void GetVmInfo(const vm_tools::concierge::GetVmInfoRequest& request,
-                 DBusMethodCallback<vm_tools::concierge::GetVmInfoResponse>
-                     callback) override {
-    CallMethod(kGetVmInfoMethod, request, std::move(callback));
+  void GetVmInfo(
+      const concierge::GetVmInfoRequest& request,
+      DBusMethodCallback<concierge::GetVmInfoResponse> callback) override {
+    CallMethod(concierge::kGetVmInfoMethod, request, std::move(callback));
   }
 
   void GetVmEnterpriseReportingInfo(
-      const vm_tools::concierge::GetVmEnterpriseReportingInfoRequest& request,
-      DBusMethodCallback<
-          vm_tools::concierge::GetVmEnterpriseReportingInfoResponse> callback)
-      override {
-    CallMethod(kGetVmEnterpriseReportingInfoMethod, request,
+      const concierge::GetVmEnterpriseReportingInfoRequest& request,
+      DBusMethodCallback<concierge::GetVmEnterpriseReportingInfoResponse>
+          callback) override {
+    CallMethod(concierge::kGetVmEnterpriseReportingInfoMethod, request,
                std::move(callback));
   }
 
   void SetVmCpuRestriction(
-      const vm_tools::concierge::SetVmCpuRestrictionRequest& request,
-      DBusMethodCallback<vm_tools::concierge::SetVmCpuRestrictionResponse>
-          callback) override {
-    CallMethod(kSetVmCpuRestrictionMethod, request, std::move(callback));
+      const concierge::SetVmCpuRestrictionRequest& request,
+      DBusMethodCallback<concierge::SetVmCpuRestrictionResponse> callback)
+      override {
+    CallMethod(concierge::kSetVmCpuRestrictionMethod, request,
+               std::move(callback));
   }
 
   void WaitForServiceToBeAvailable(
@@ -169,19 +166,19 @@ class ConciergeClientImpl : public ConciergeClient {
   }
 
   void GetContainerSshKeys(
-      const vm_tools::concierge::ContainerSshKeysRequest& request,
-      DBusMethodCallback<vm_tools::concierge::ContainerSshKeysResponse>
-          callback) override {
-    CallMethod(kGetContainerSshKeysMethod, request, std::move(callback));
+      const concierge::ContainerSshKeysRequest& request,
+      DBusMethodCallback<concierge::ContainerSshKeysResponse> callback)
+      override {
+    CallMethod(concierge::kGetContainerSshKeysMethod, request,
+               std::move(callback));
   }
 
-  void AttachUsbDevice(
-      base::ScopedFD fd,
-      const vm_tools::concierge::AttachUsbDeviceRequest& request,
-      DBusMethodCallback<vm_tools::concierge::AttachUsbDeviceResponse> callback)
-      override {
-    dbus::MethodCall method_call(vm_tools::concierge::kVmConciergeInterface,
-                                 vm_tools::concierge::kAttachUsbDeviceMethod);
+  void AttachUsbDevice(base::ScopedFD fd,
+                       const concierge::AttachUsbDeviceRequest& request,
+                       DBusMethodCallback<concierge::AttachUsbDeviceResponse>
+                           callback) override {
+    dbus::MethodCall method_call(concierge::kVmConciergeInterface,
+                                 concierge::kAttachUsbDeviceMethod);
     dbus::MessageWriter writer(&method_call);
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
@@ -196,64 +193,59 @@ class ConciergeClientImpl : public ConciergeClient {
     concierge_proxy_->CallMethod(
         &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
         base::BindOnce(&ConciergeClientImpl::OnDBusProtoResponse<
-                           vm_tools::concierge::AttachUsbDeviceResponse>,
+                           concierge::AttachUsbDeviceResponse>,
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
-  void DetachUsbDevice(
-      const vm_tools::concierge::DetachUsbDeviceRequest& request,
-      DBusMethodCallback<vm_tools::concierge::DetachUsbDeviceResponse> callback)
-      override {
-    CallMethod(kDetachUsbDeviceMethod, request, std::move(callback));
+  void DetachUsbDevice(const concierge::DetachUsbDeviceRequest& request,
+                       DBusMethodCallback<concierge::DetachUsbDeviceResponse>
+                           callback) override {
+    CallMethod(concierge::kDetachUsbDeviceMethod, request, std::move(callback));
   }
 
   void ListUsbDevices(
-      const vm_tools::concierge::ListUsbDeviceRequest& request,
-      DBusMethodCallback<vm_tools::concierge::ListUsbDeviceResponse> callback)
-      override {
-    CallMethod(kListUsbDeviceMethod, request, std::move(callback));
+      const concierge::ListUsbDeviceRequest& request,
+      DBusMethodCallback<concierge::ListUsbDeviceResponse> callback) override {
+    CallMethod(concierge::kListUsbDeviceMethod, request, std::move(callback));
   }
 
-  void StartArcVm(const vm_tools::concierge::StartArcVmRequest& request,
-                  DBusMethodCallback<vm_tools::concierge::StartVmResponse>
-                      callback) override {
-    CallMethod(kStartArcVmMethod, request, std::move(callback));
+  void StartArcVm(
+      const concierge::StartArcVmRequest& request,
+      DBusMethodCallback<concierge::StartVmResponse> callback) override {
+    CallMethod(concierge::kStartArcVmMethod, request, std::move(callback));
   }
 
  protected:
   void Init(dbus::Bus* bus) override {
     concierge_proxy_ = bus->GetObjectProxy(
-        vm_tools::concierge::kVmConciergeServiceName,
-        dbus::ObjectPath(vm_tools::concierge::kVmConciergeServicePath));
+        concierge::kVmConciergeServiceName,
+        dbus::ObjectPath(concierge::kVmConciergeServicePath));
     if (!concierge_proxy_) {
       LOG(ERROR) << "Unable to get dbus proxy for "
-                 << vm_tools::concierge::kVmConciergeServiceName;
+                 << concierge::kVmConciergeServiceName;
     }
     concierge_proxy_->ConnectToSignal(
-        vm_tools::concierge::kVmConciergeInterface,
-        vm_tools::concierge::kVmStartedSignal,
+        concierge::kVmConciergeInterface, concierge::kVmStartedSignal,
         base::BindRepeating(&ConciergeClientImpl::OnVmStartedSignal,
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&ConciergeClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     concierge_proxy_->ConnectToSignal(
-        vm_tools::concierge::kVmConciergeInterface,
-        vm_tools::concierge::kVmStoppedSignal,
+        concierge::kVmConciergeInterface, concierge::kVmStoppedSignal,
         base::BindRepeating(&ConciergeClientImpl::OnVmStoppedSignal,
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&ConciergeClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     concierge_proxy_->ConnectToSignal(
-        vm_tools::concierge::kVmConciergeInterface,
-        vm_tools::concierge::kContainerStartupFailedSignal,
+        concierge::kVmConciergeInterface,
+        concierge::kContainerStartupFailedSignal,
         base::BindRepeating(
             &ConciergeClientImpl::OnContainerStartupFailedSignal,
             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&ConciergeClientImpl::OnSignalConnected,
                        weak_ptr_factory_.GetWeakPtr()));
     concierge_proxy_->ConnectToSignal(
-        vm_tools::concierge::kVmConciergeInterface,
-        vm_tools::concierge::kDiskImageProgressSignal,
+        concierge::kVmConciergeInterface, concierge::kDiskImageProgressSignal,
         base::BindRepeating(&ConciergeClientImpl::OnDiskImageProgress,
                             weak_ptr_factory_.GetWeakPtr()),
         base::BindOnce(&ConciergeClientImpl::OnSignalConnected,
@@ -266,7 +258,7 @@ class ConciergeClientImpl : public ConciergeClient {
                   const RequestProto& request,
                   DBusMethodCallback<ResponseProto> callback,
                   int timeout_ms = dbus::ObjectProxy::TIMEOUT_USE_DEFAULT) {
-    dbus::MethodCall method_call(kVmConciergeInterface, method_name);
+    dbus::MethodCall method_call(concierge::kVmConciergeInterface, method_name);
     dbus::MessageWriter writer(&method_call);
 
     if (!writer.AppendProtoAsArrayOfBytes(request)) {
@@ -300,11 +292,10 @@ class ConciergeClientImpl : public ConciergeClient {
   }
 
   void OnVmStartedSignal(dbus::Signal* signal) {
-    DCHECK_EQ(signal->GetInterface(),
-              vm_tools::concierge::kVmConciergeInterface);
-    DCHECK_EQ(signal->GetMember(), vm_tools::concierge::kVmStartedSignal);
+    DCHECK_EQ(signal->GetInterface(), concierge::kVmConciergeInterface);
+    DCHECK_EQ(signal->GetMember(), concierge::kVmStartedSignal);
 
-    vm_tools::concierge::VmStartedSignal vm_started_signal;
+    concierge::VmStartedSignal vm_started_signal;
     dbus::MessageReader reader(signal);
     if (!reader.PopArrayOfBytesAsProto(&vm_started_signal)) {
       LOG(ERROR) << "Failed to parse proto from DBus Signal";
@@ -316,11 +307,10 @@ class ConciergeClientImpl : public ConciergeClient {
   }
 
   void OnVmStoppedSignal(dbus::Signal* signal) {
-    DCHECK_EQ(signal->GetInterface(),
-              vm_tools::concierge::kVmConciergeInterface);
-    DCHECK_EQ(signal->GetMember(), vm_tools::concierge::kVmStoppedSignal);
+    DCHECK_EQ(signal->GetInterface(), concierge::kVmConciergeInterface);
+    DCHECK_EQ(signal->GetMember(), concierge::kVmStoppedSignal);
 
-    vm_tools::concierge::VmStoppedSignal vm_stopped_signal;
+    concierge::VmStoppedSignal vm_stopped_signal;
     dbus::MessageReader reader(signal);
     if (!reader.PopArrayOfBytesAsProto(&vm_stopped_signal)) {
       LOG(ERROR) << "Failed to parse proto from DBus Signal";
@@ -332,12 +322,10 @@ class ConciergeClientImpl : public ConciergeClient {
   }
 
   void OnContainerStartupFailedSignal(dbus::Signal* signal) {
-    DCHECK_EQ(signal->GetInterface(),
-              vm_tools::concierge::kVmConciergeInterface);
-    DCHECK_EQ(signal->GetMember(),
-              vm_tools::concierge::kContainerStartupFailedSignal);
+    DCHECK_EQ(signal->GetInterface(), concierge::kVmConciergeInterface);
+    DCHECK_EQ(signal->GetMember(), concierge::kContainerStartupFailedSignal);
 
-    vm_tools::concierge::ContainerStartedSignal container_startup_failed_signal;
+    concierge::ContainerStartedSignal container_startup_failed_signal;
     dbus::MessageReader reader(signal);
     if (!reader.PopArrayOfBytesAsProto(&container_startup_failed_signal)) {
       LOG(ERROR) << "Failed to parse proto from DBus Signal";
@@ -350,13 +338,10 @@ class ConciergeClientImpl : public ConciergeClient {
   }
 
   void OnDiskImageProgress(dbus::Signal* signal) {
-    DCHECK_EQ(signal->GetInterface(),
-              vm_tools::concierge::kVmConciergeInterface);
-    DCHECK_EQ(signal->GetMember(),
-              vm_tools::concierge::kDiskImageProgressSignal);
+    DCHECK_EQ(signal->GetInterface(), concierge::kVmConciergeInterface);
+    DCHECK_EQ(signal->GetMember(), concierge::kDiskImageProgressSignal);
 
-    vm_tools::concierge::DiskImageStatusResponse
-        disk_image_status_response_signal;
+    concierge::DiskImageStatusResponse disk_image_status_response_signal;
     dbus::MessageReader reader(signal);
     if (!reader.PopArrayOfBytesAsProto(&disk_image_status_response_signal)) {
       LOG(ERROR) << "Failed to parse proto from DBus Signal";
@@ -371,18 +356,17 @@ class ConciergeClientImpl : public ConciergeClient {
   void OnSignalConnected(const std::string& interface_name,
                          const std::string& signal_name,
                          bool is_connected) {
-    DCHECK_EQ(interface_name, vm_tools::concierge::kVmConciergeInterface);
+    DCHECK_EQ(interface_name, concierge::kVmConciergeInterface);
     if (!is_connected)
       LOG(ERROR) << "Failed to connect to signal: " << signal_name;
 
-    if (signal_name == vm_tools::concierge::kVmStartedSignal) {
+    if (signal_name == concierge::kVmStartedSignal) {
       is_vm_started_signal_connected_ = is_connected;
-    } else if (signal_name == vm_tools::concierge::kVmStoppedSignal) {
+    } else if (signal_name == concierge::kVmStoppedSignal) {
       is_vm_stopped_signal_connected_ = is_connected;
-    } else if (signal_name ==
-               vm_tools::concierge::kContainerStartupFailedSignal) {
+    } else if (signal_name == concierge::kContainerStartupFailedSignal) {
       is_container_startup_failed_signal_connected_ = is_connected;
-    } else if (signal_name == vm_tools::concierge::kDiskImageProgressSignal) {
+    } else if (signal_name == concierge::kDiskImageProgressSignal) {
       is_disk_import_progress_signal_connected_ = is_connected;
     } else {
       NOTREACHED();

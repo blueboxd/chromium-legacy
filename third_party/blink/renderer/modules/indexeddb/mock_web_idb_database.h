@@ -29,7 +29,7 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     int64_t id,
                     const Vector<int64_t>& scope,
                     mojom::IDBTransactionMode,
-                    bool relaxed_durability));
+                    mojom::IDBTransactionDurability));
   MOCK_METHOD0(Close, void());
   MOCK_METHOD0(VersionChangeIgnored, void());
   MOCK_METHOD1(Abort, void(int64_t transaction_id));

@@ -173,6 +173,12 @@ public interface NavigationController {
     public boolean removeEntryAtIndex(int index);
 
     /**
+     * Discards any transient or pending entries, then discards all entries after the current entry
+     * index.
+     */
+    void pruneForwardEntries();
+
+    /**
      * Gets extra data on the {@link NavigationEntry} at {@code index}.
      * @param index The index of the navigation entry.
      * @param key The data key.

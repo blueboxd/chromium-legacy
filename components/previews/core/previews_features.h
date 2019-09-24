@@ -17,7 +17,6 @@ extern const base::Feature kStalePreviewsTimestamp;
 extern const base::Feature kResourceLoadingHints;
 extern const base::Feature kLitePageServerPreviews;
 extern const base::Feature kSlowPageTriggering;
-extern const base::Feature kHTTPSServerPreviewsUsingURLLoader;
 extern const base::Feature kOfflinePreviewsFalsePositivePrevention;
 extern const base::Feature kCoinFlipHoldback;
 extern const base::Feature kExcludedMediaSuffixes;

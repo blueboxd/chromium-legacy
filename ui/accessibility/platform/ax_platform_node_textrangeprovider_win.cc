@@ -177,8 +177,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ExpandToEnclosingUnit(
     case TextUnit_Page: {
       // If the document doesn't support pagination, default to document units
       // per UIA spec
-      AXPositionInstance common_ancestor = start_->LowestCommonAncestor(*end_);
-      if (common_ancestor->GetAnchor()->tree()->HasPaginationSupport()) {
+      const AXNode* common_anchor = start_->LowestCommonAnchor(*end_);
+      if (common_anchor->tree()->HasPaginationSupport()) {
         start_ = start_->CreatePreviousPageStartPosition(
             ui::AXBoundaryBehavior::StopIfAlreadyAtBoundary);
         end_ = start_->CreateNextPageEndPosition(
@@ -765,13 +765,10 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetChildren(
 
   std::vector<gfx::NativeViewAccessible> descendants;
 
-  AXPositionInstance common_ancestor =
-      start_->LowestCommonAncestor(*end_.get());
-
-  AXPlatformNodeDelegate* delegate =
-      GetDelegate(common_ancestor.get())
-          ->GetFromNodeID(common_ancestor->anchor_id())
-          ->GetDelegate();
+  const AXNode* common_anchor = start_->LowestCommonAnchor(*end_);
+  const AXTreeID tree_id = common_anchor->tree()->GetAXTreeID();
+  const AXNode::AXID node_id = common_anchor->id();
+  AXPlatformNodeDelegate* delegate = GetDelegate(tree_id, node_id);
   DCHECK(delegate);
   while (ui::IsIgnored(delegate->GetData())) {
     auto* node = static_cast<AXPlatformNodeWin*>(

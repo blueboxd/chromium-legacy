@@ -6,6 +6,8 @@
 
 #include <algorithm>
 #include <memory>
+#include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -178,8 +180,7 @@ base::FunctionAddressRange CallThroughV8(
 
 // Checks that unwinding from C++ through JavaScript and back into C++ succeeds.
 // NB: unwinding is only supported for 64 bit Windows and OS X.
-#if (defined(OS_WIN) && defined(ARCH_CPU_64_BITS)) || \
-    (defined(OS_MACOSX) && !defined(OS_IOS))
+#if (defined(OS_WIN) && defined(ARCH_CPU_64_BITS)) || defined(OS_MACOSX)
 #define MAYBE_UnwindThroughV8Frames UnwindThroughV8Frames
 #else
 #define MAYBE_UnwindThroughV8Frames DISABLED_UnwindThroughV8Frames

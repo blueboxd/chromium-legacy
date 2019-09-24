@@ -201,8 +201,8 @@ public class ChooseHostBrowserDialog {
             Resources res = mContext.getResources();
             ImageView icon = (ImageView) convertView.findViewById(R.id.browser_icon);
             TextView name = (TextView) convertView.findViewById(R.id.browser_name);
-            WebApkUtils.setPaddingInPixel(
-                    name, res.getDimensionPixelSize(R.dimen.list_column_padding), 0, 0, 0);
+            name.setPaddingRelative(
+                    res.getDimensionPixelSize(R.dimen.list_column_padding), 0, 0, 0);
 
             BrowserItem item = mBrowsers.get(position);
             name.setEnabled(item.supportsWebApks());

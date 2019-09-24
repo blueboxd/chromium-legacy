@@ -763,6 +763,7 @@ if (!is_android) {
       # Tests.
       sources += [
         "webxr_vr_consent_dialog_browser_test.cc",
+        "webxr_vr_frame_loop_browser_test.cc",
         "webxr_vr_frame_pose_browser_test.cc",
         "webxr_vr_indicators_browser_test.cc",
         "webxr_vr_input_browser_test.cc",

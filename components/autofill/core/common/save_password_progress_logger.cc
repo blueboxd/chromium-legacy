@@ -275,16 +275,8 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "provisionally_saved_forms_[form_frame]";
     case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVE_FORM_METHOD:
       return "PasswordManager::ProvisionallySaveForm";
-    case SavePasswordProgressLogger::STRING_IS_SAVING_ENABLED:
-      return "IsSavingAndFillingEnabled";
     case SavePasswordProgressLogger::STRING_EMPTY_PASSWORD:
       return "Empty password";
-    case SavePasswordProgressLogger::STRING_EXACT_MATCH:
-      return "Form manager found, exact match";
-    case SavePasswordProgressLogger::STRING_MATCH_WITHOUT_ACTION:
-      return "Form manager found, match except for action";
-    case SavePasswordProgressLogger::STRING_ORIGINS_MATCH:
-      return "Form manager found, only origins match";
     case SavePasswordProgressLogger::STRING_MATCHING_NOT_COMPLETE:
       return "No form manager has completed matching";
     case SavePasswordProgressLogger::STRING_FORM_BLACKLISTED:
@@ -295,8 +287,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Credential is used for syncing passwords";
     case STRING_BLOCK_PASSWORD_SAME_ORIGIN_INSECURE_SCHEME:
       return "Blocked password due to same origin but insecure scheme";
-    case SavePasswordProgressLogger::STRING_PROVISIONALLY_SAVED_FORM:
-      return "provisionally_saved_form";
     case SavePasswordProgressLogger::STRING_ON_PASSWORD_FORMS_RENDERED_METHOD:
       return "PasswordManager::OnPasswordFormsRendered";
     case SavePasswordProgressLogger::STRING_ON_SAME_DOCUMENT_NAVIGATION:
@@ -323,8 +313,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Show password prompt";
     case SavePasswordProgressLogger::STRING_PASSWORDMANAGER_AUTOFILL:
       return "PasswordManager::Autofill";
-    case SavePasswordProgressLogger::STRING_PASSWORDMANAGER_AUTOFILLHTTPAUTH:
-      return "PasswordManager::AutofillHttpAuth";
     case SavePasswordProgressLogger::
         STRING_PASSWORDMANAGER_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS:
       return "PasswordManager::ShowInitialPasswordAccountSuggestions";
@@ -338,10 +326,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
     case SavePasswordProgressLogger::
         STRING_PROVISIONALLY_SAVED_FORM_IS_NOT_HTML:
       return "Provisionally saved form is not HTML";
-    case SavePasswordProgressLogger::STRING_ON_FETCH_COMPLETED_METHOD:
-      return "PasswordFormManager::OnFetchCompleted";
-    case SavePasswordProgressLogger::STRING_BEST_SCORE:
-      return "best_score";
     case SavePasswordProgressLogger::STRING_ON_GET_STORE_RESULTS_METHOD:
       return "FormFetcherImpl::OnGetPasswordStoreResults";
     case SavePasswordProgressLogger::STRING_NUMBER_RESULTS:
@@ -352,8 +336,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "PasswordStore is not available";
     case SavePasswordProgressLogger::STRING_CREATE_LOGIN_MANAGERS_METHOD:
       return "PasswordManager::CreatePendingLoginManagers";
-    case SavePasswordProgressLogger::STRING_NEW_NUMBER_LOGIN_MANAGERS:
-      return "Number of pending login managers (after)";
     case SavePasswordProgressLogger::
         STRING_PASSWORD_MANAGEMENT_ENABLED_FOR_CURRENT_PAGE:
       return "IsPasswordManagementEnabledForCurrentPage";
@@ -361,12 +343,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "ShowLoginPrompt";
     case SavePasswordProgressLogger::STRING_NEW_UI_STATE:
       return "The new state of the UI";
-    case SavePasswordProgressLogger::STRING_FORM_NOT_AUTOFILLED:
-      return "The observed form will not be autofilled";
-    case SavePasswordProgressLogger::STRING_CHANGE_PASSWORD_FORM:
-      return "Not saving password for a change password form";
-    case SavePasswordProgressLogger::STRING_PROCESS_FRAME_METHOD:
-      return "PasswordFormManager::ProcessFrame";
     case SavePasswordProgressLogger::STRING_FORM_SIGNATURE:
       return "Signature of form";
     case SavePasswordProgressLogger::STRING_FORM_FETCHER_STATE:
@@ -405,10 +381,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Form name";
     case SavePasswordProgressLogger::STRING_FIELDS:
       return "Form fields";
-    case SavePasswordProgressLogger::STRING_SERVER_PREDICTIONS:
-      return "Server predictions";
-    case SavePasswordProgressLogger::STRING_FORM_VOTES:
-      return "Form votes";
     case SavePasswordProgressLogger::STRING_FIRSTUSE_FORM_VOTE:
       return "FirstUse vote";
     case SavePasswordProgressLogger::STRING_PASSWORD_FORM_VOTE:
@@ -419,26 +391,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Generation disabled: saving disabled";
     case SavePasswordProgressLogger::STRING_GENERATION_DISABLED_NO_SYNC:
       return "Generation disabled: no sync";
-    case STRING_GENERATION_RENDERER_INVALID_PASSWORD_FORM:
-      return "Generation invalid PasswordForm";
-    case STRING_GENERATION_RENDERER_POSSIBLE_ACCOUNT_CREATION_FORMS:
-      return "Generation possible account creation forms";
-    case STRING_GENERATION_RENDERER_NO_PASSWORD_MANAGER_ACCESS:
-      return "Generation: no PasswordManager access";
-    case STRING_GENERATION_RENDERER_FORM_ALREADY_FOUND:
-      return "Generation: account creation form already found";
-    case STRING_GENERATION_RENDERER_NO_POSSIBLE_CREATION_FORMS:
-      return "Generation: no possible account creation forms";
-    case STRING_GENERATION_RENDERER_NOT_BLACKLISTED:
-      return "Generation: no non-blacklisted confirmation";
-    case STRING_GENERATION_RENDERER_AUTOCOMPLETE_ATTRIBUTE:
-      return "Generation: autocomplete attributes found";
-    case STRING_GENERATION_RENDERER_NO_SERVER_SIGNAL:
-      return "Generation: no server signal";
-    case STRING_GENERATION_RENDERER_ELIGIBLE_FORM_FOUND:
-      return "Generation: eligible form found";
-    case STRING_GENERATION_RENDERER_NO_FIELD_FOUND:
-      return "Generation: fields for generation are not found";
     case STRING_GENERATION_RENDERER_AUTOMATIC_GENERATION_AVAILABLE:
       return "Generation: automatic generation is available";
     case STRING_GENERATION_RENDERER_SHOW_MANUAL_GENERATION_POPUP:
@@ -465,8 +417,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
              "exists whose username matches the prefilled value";
     case STRING_FAILED_TO_FILL_FOUND_NO_PASSWORD_FOR_USERNAME:
       return "Failed to fill: No credential matching found";
-    case SavePasswordProgressLogger::STRING_HTTPAUTH_OBSERVER_PRESENT:
-      return "Instances of HttpAuthObserver are present";
     case SavePasswordProgressLogger::
         STRING_HTTPAUTH_ON_ASK_USER_OR_SAVE_PASSWORD:
       return "HttpAuthManager::AskUserOrSavePassword";
@@ -484,8 +434,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
       return "Leak detection failed: signed out";
     case STRING_LEAK_DETECTION_TOKEN_REQUEST_ERROR:
       return "Leak detection failed: can't get a token";
-    case STRING_LEAK_DETECTION_ENCRYPTION_ERROR:
-      return "Leak detection failed: encryption";
     case STRING_LEAK_DETECTION_INVALID_SERVER_RESPONSE_ERROR:
       return "Leak detection failed: invalid server response";
     case SavePasswordProgressLogger::
@@ -506,9 +454,6 @@ std::string SavePasswordProgressLogger::GetStringFromID(
     case SavePasswordProgressLogger::
         STRING_PASSWORD_REQUIREMENTS_VOTE_FOR_PASSWORD_LENGTH:
       return "Uploading password requirements vote for password length";
-    case SavePasswordProgressLogger::
-        STRING_PASSWORD_REQUIREMENTS_VOTE_NO_PASSWORD_ATTRIBUTES:
-      return "No password requirements attributed set";
     case STRING_SAVE_PASSWORD_HASH:
       return "Password hash is saved";
     case STRING_DID_NAVIGATE_MAIN_FRAME:

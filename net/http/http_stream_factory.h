@@ -129,20 +129,6 @@ class NET_EXPORT HttpStreamFactory {
 
   url::SchemeHostPort RewriteHost(const url::SchemeHostPort& server);
 
-  // |PreconnectingProxyServer| holds information of a connection to a single
-  // proxy server.
-  struct PreconnectingProxyServer {
-    PreconnectingProxyServer(ProxyServer proxy_server,
-                             PrivacyMode privacy_mode);
-
-    // Needed to be an element of std::set.
-    bool operator<(const PreconnectingProxyServer& other) const;
-    bool operator==(const PreconnectingProxyServer& other) const;
-
-    const ProxyServer proxy_server;
-    const PrivacyMode privacy_mode;
-  };
-
   // Values must not be changed or reused.  Keep in sync with identically named
   // enum in histograms.xml.
   enum AlternativeServiceType {
@@ -179,21 +165,6 @@ class NET_EXPORT HttpStreamFactory {
   // from |job_controller_set_|.
   void OnJobControllerComplete(JobController* controller);
 
-  // Returns true if a connection to the proxy server contained in |proxy_info|
-  // that has privacy mode |privacy_mode| can be skipped by a job controlled by
-  // |controller|.
-  bool OnInitConnection(const JobController& controller,
-                        const ProxyInfo& proxy_info,
-                        PrivacyMode privacy_mode);
-
-  // Notifies |this| that a stream to the proxy server contained in |proxy_info|
-  // with privacy mode |privacy_mode| is ready.
-  void OnStreamReady(const ProxyInfo& proxy_info, PrivacyMode privacy_mode);
-
-  // Returns true if |proxy_info| contains a proxy server that supports request
-  // priorities.
-  bool ProxyServerSupportsPriorities(const ProxyInfo& proxy_info) const;
-
   HttpNetworkSession* const session_;
 
   // All Requests/Preconnects are assigned with a JobController to manage
@@ -205,10 +176,6 @@ class NET_EXPORT HttpStreamFactory {
 
   // Factory used by job controllers for creating jobs.
   std::unique_ptr<JobFactory> job_factory_;
-
-  // Set of proxy servers that support request priorities to which subsequent
-  // preconnects should be skipped.
-  std::set<PreconnectingProxyServer> preconnecting_proxy_servers_;
 
   DISALLOW_COPY_AND_ASSIGN(HttpStreamFactory);
 };

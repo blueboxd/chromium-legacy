@@ -241,7 +241,7 @@ TEST_P(FormFetcherImplTest, Empty) {
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 }
 
 // Check that non-federated PasswordStore results are handled correctly.
@@ -257,7 +257,7 @@ TEST_P(FormFetcherImplTest, NonFederated) {
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(non_federated)));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 }
 
 // Check that federated PasswordStore results are handled correctly.
@@ -276,7 +276,7 @@ TEST_P(FormFetcherImplTest, Federated) {
   EXPECT_THAT(
       form_fetcher_->GetFederatedMatches(),
       UnorderedElementsAre(Pointee(federated), Pointee(android_federated)));
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 }
 
 // Check that blacklisted PasswordStore results are handled correctly.
@@ -295,8 +295,7 @@ TEST_P(FormFetcherImplTest, Blacklited) {
   EXPECT_EQ(FormFetcher::State::NOT_WAITING, form_fetcher_->GetState());
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(),
-              UnorderedElementsAre(Pointee(blacklisted)));
+  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
 }
 
 // Check that mixed PasswordStore results are handled correctly.
@@ -335,8 +334,7 @@ TEST_P(FormFetcherImplTest, Mixed) {
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
               UnorderedElementsAre(Pointee(federated1), Pointee(federated2),
                                    Pointee(federated3)));
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(),
-              UnorderedElementsAre(Pointee(blacklisted)));
+  EXPECT_TRUE(form_fetcher_->IsBlacklisted());
 }
 
 // Check that PasswordStore results are filtered correctly.
@@ -470,7 +468,7 @@ TEST_P(FormFetcherImplTest, DoNotTryToMigrateHTTPPasswordsOnHTTPSites) {
   form_fetcher_->OnGetPasswordStoreResults(MakeResults(empty_forms));
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(), IsEmpty());
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 
   Fetch();
   EXPECT_CALL(consumer_, OnFetchCompleted);
@@ -478,7 +476,7 @@ TEST_P(FormFetcherImplTest, DoNotTryToMigrateHTTPPasswordsOnHTTPSites) {
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(http_form)));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 
   Fetch();
   EXPECT_CALL(consumer_, OnFetchCompleted);
@@ -488,7 +486,7 @@ TEST_P(FormFetcherImplTest, DoNotTryToMigrateHTTPPasswordsOnHTTPSites) {
               UnorderedElementsAre(Pointee(http_form)));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
               UnorderedElementsAre(Pointee(federated_form)));
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 }
 
 // Test that ensures HTTP passwords are only migrated on HTTPS sites when no
@@ -542,7 +540,7 @@ TEST_P(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(https_form)));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 
   // No migration should happen when results are present.
   Fetch();
@@ -553,7 +551,7 @@ TEST_P(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
   EXPECT_THAT(form_fetcher_->GetNonFederatedMatches(),
               UnorderedElementsAre(Pointee(https_form)));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(), IsEmpty());
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 
   const PasswordForm federated_form = CreateFederated();
   Fetch();
@@ -564,7 +562,7 @@ TEST_P(FormFetcherImplTest, TryToMigrateHTTPPasswordsOnHTTPSSites) {
               UnorderedElementsAre(Pointee(https_form)));
   EXPECT_THAT(form_fetcher_->GetFederatedMatches(),
               UnorderedElementsAre(Pointee(federated_form)));
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 }
 
 // When the FormFetcher delegates to the HttpPasswordMigrator, its state should
@@ -658,7 +656,7 @@ TEST_P(FormFetcherImplTest, Clone_NonEmptyResults) {
   EXPECT_THAT(
       form_fetcher_->GetFederatedMatches(),
       UnorderedElementsAre(Pointee(federated), Pointee(android_federated)));
-  EXPECT_THAT(form_fetcher_->GetBlacklistedMatches(), IsEmpty());
+  EXPECT_FALSE(form_fetcher_->IsBlacklisted());
 
   ASSERT_TRUE(::testing::Mock::VerifyAndClearExpectations(mock_store_.get()));
 

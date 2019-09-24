@@ -45,6 +45,7 @@ class XRRenderStateInit;
 class XRRigidTransform;
 class XRSpace;
 class XRViewData;
+class XRWebGLLayer;
 class XRWorldInformation;
 class XRWorldTrackingState;
 class XRWorldTrackingStateInit;
@@ -243,6 +244,8 @@ class XRSession final
   void UpdateCanvasDimensions(Element*);
   void ApplyPendingRenderState();
 
+  void MaybeRequestFrame();
+
   void OnInputStateChangeInternal(
       int16_t frame_id,
       base::span<const device::mojom::blink::XRInputSourceStatePtr>
@@ -264,7 +267,7 @@ class XRSession final
 
   void OnCreateAnchorResult(ScriptPromiseResolver* resolver,
                             device::mojom::CreateAnchorResult result,
-                            int32_t id);
+                            uint32_t id);
 
   void EnsureEnvironmentErrorHandler();
   void OnEnvironmentProviderError();
@@ -288,11 +291,12 @@ class XRSession final
   XRSessionFeatureSet enabled_features_;
 
   bool is_tracked_anchors_null_ = true;
-  HeapHashMap<int32_t, Member<XRAnchor>> anchor_ids_to_anchors_;
+  HeapHashMap<uint32_t, Member<XRAnchor>> anchor_ids_to_anchors_;
 
   WTF::Vector<XRViewData> views_;
 
   Member<XRInputSourceArray> input_sources_;
+  Member<XRWebGLLayer> prev_base_layer_;
   Member<ResizeObserver> resize_observer_;
   Member<XRCanvasInputProvider> canvas_input_provider_;
   bool environment_error_handler_subscribed_ = false;

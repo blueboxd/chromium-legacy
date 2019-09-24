@@ -2,20 +2,16 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from selenium import webdriver
 from pywinauto.application import Application
-import os
+from selenium import webdriver
+
+import test_util
 
 # Set up ChromeDriver
 options = webdriver.ChromeOptions()
 options.add_argument("--force-renderer-accessibility")
 
-os.environ["CHROME_LOG_FILE"] = r"c:\temp\chrome_log.txt"
-
-driver = webdriver.Chrome(
-    "C:/ProgramData/chocolatey/lib/chromedriver/tools/chromedriver.exe",
-    chrome_options=options,
-    service_args=["--verbose", r"--log-path=c:\temp\chromedriver.log"])
+driver = test_util.create_chrome_webdriver(chrome_options=options)
 
 try:
   app = Application(backend="uia")

@@ -28,8 +28,9 @@ AppServiceImpl::AppServiceImpl() = default;
 
 AppServiceImpl::~AppServiceImpl() = default;
 
-void AppServiceImpl::BindRequest(apps::mojom::AppServiceRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void AppServiceImpl::BindReceiver(
+    mojo::PendingReceiver<apps::mojom::AppService> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void AppServiceImpl::RegisterPublisher(apps::mojom::PublisherPtr publisher,

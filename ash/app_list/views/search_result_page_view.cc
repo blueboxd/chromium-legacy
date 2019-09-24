@@ -21,6 +21,7 @@
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/view_shadow.h"
+#include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "ui/chromeos/search_box/search_box_constants.h"
 #include "ui/compositor/layer.h"
@@ -170,7 +171,7 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
   // set transparent so that the rounded corner is not overwritten.
   SetBackground(std::make_unique<SearchResultPageBackground>(
       AppListConfig::instance().card_background_color()));
-  views::ScrollView* const scroller = new views::ScrollView;
+  auto scroller = std::make_unique<views::ScrollView>();
   // Leaves a placeholder area for the search box and the separator below it.
   scroller->SetBorder(views::CreateEmptyBorder(gfx::Insets(
       kSearchBoxHeight + kSearchBoxBottomSpacing + kSeparatorThickness, 0, 0,
@@ -181,14 +182,16 @@ SearchResultPageView::SearchResultPageView(AppListViewDelegate* view_delegate)
   // contents' size. Using zeroes doesn't prevent it from scrolling and sizing
   // correctly.
   scroller->ClipHeightTo(0, 0);
-  scroller->SetVerticalScrollBar(new ZeroWidthVerticalScrollBar);
+  scroller->SetVerticalScrollBar(new ZeroWidthVerticalScrollBar());
   scroller->SetBackgroundColor(SK_ColorTRANSPARENT);
-  AddChildView(scroller);
+  AddChildView(std::move(scroller));
 
   SetLayoutManager(std::make_unique<views::FillLayout>());
 
-  result_selection_controller_ =
-      std::make_unique<ResultSelectionController>(&result_container_views_);
+  result_selection_controller_ = std::make_unique<ResultSelectionController>(
+      &result_container_views_,
+      base::BindRepeating(&SearchResultPageView::SelectedResultChanged,
+                          base::Unretained(this)));
 }
 
 SearchResultPageView::~SearchResultPageView() = default;
@@ -305,6 +308,26 @@ void SearchResultPageView::ReorderSearchResultContainers() {
   }
 
   Layout();
+}
+
+void SearchResultPageView::SelectedResultChanged() {
+  if (!result_selection_controller_->selected_location_details() ||
+      !result_selection_controller_->selected_result()) {
+    return;
+  }
+
+  const ResultLocationDetails* selection_details =
+      result_selection_controller_->selected_location_details();
+  views::View* selected_row = nullptr;
+  // For horizontal containers ensure that the whole container fits in the
+  // scroll view, to account for vertical padding within the container.
+  if (selection_details->container_is_horizontal) {
+    selected_row = result_container_views_[selection_details->container_index];
+  } else {
+    selected_row = result_selection_controller_->selected_result();
+  }
+
+  selected_row->ScrollViewToVisible();
 }
 
 void SearchResultPageView::OnSearchResultContainerResultsChanging() {

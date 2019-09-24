@@ -635,7 +635,7 @@ void ExistingUserController::PerformLogin(
         base::UTF8ToUTF16(new_user_context.GetKey()->GetSecret()));
     new_user_context.SetSyncPasswordData(password_manager::PasswordHashData(
         user_context.GetAccountId().GetUserEmail(), password,
-        auth_mode == LoginPerformer::AUTH_MODE_EXTENSION));
+        auth_mode == LoginPerformer::AuthorizationMode::kExternal));
   }
 
   if (new_user_context.IsUsingPin()) {
@@ -946,7 +946,8 @@ void ExistingUserController::OnAuthSuccess(const UserContext& user_context) {
   //  /ServiceLogin              T            T
   //  /ChromeOsEmbeddedSetup     F            T
   const bool has_auth_cookies =
-      login_performer_->auth_mode() == LoginPerformer::AUTH_MODE_EXTENSION &&
+      login_performer_->auth_mode() ==
+          LoginPerformer::AuthorizationMode::kExternal &&
       (user_context.GetAccessToken().empty() ||
        user_context.GetAuthFlow() == UserContext::AUTH_FLOW_GAIA_WITH_SAML);
 
@@ -1749,7 +1750,7 @@ void ExistingUserController::DoCompleteLogin(
     return;
   }
 
-  PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
+  PerformLogin(user_context, LoginPerformer::AuthorizationMode::kExternal);
 }
 
 void ExistingUserController::DoLogin(const UserContext& user_context,
@@ -1796,7 +1797,7 @@ void ExistingUserController::DoLogin(const UserContext& user_context,
   }
 
   PerformPreLoginActions(user_context);
-  PerformLogin(user_context, LoginPerformer::AUTH_MODE_INTERNAL);
+  PerformLogin(user_context, LoginPerformer::AuthorizationMode::kInternal);
 }
 
 void ExistingUserController::OnOAuth2TokensFetched(
@@ -1808,7 +1809,7 @@ void ExistingUserController::OnOAuth2TokensFetched(
     return;
   }
   UserSessionManager::GetInstance()->OnOAuth2TokensFetched(user_context);
-  PerformLogin(user_context, LoginPerformer::AUTH_MODE_EXTENSION);
+  PerformLogin(user_context, LoginPerformer::AuthorizationMode::kExternal);
 }
 
 void ExistingUserController::ClearRecordedNames() {

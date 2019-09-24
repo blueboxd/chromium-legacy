@@ -19,7 +19,6 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/previews/previews_service.h"
@@ -99,8 +98,7 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
           Profile::FromBrowserContext(web_contents->GetBrowserContext()))
           .get();
   ContentSetting setting;
-  GURL previews_url =
-      PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(url);
+  GURL previews_url = GetLitePageRedirectURLForURL(url);
   cookie_settings->GetCookieSetting(previews_url, previews_url, nullptr,
                                     &setting);
   if (!content_settings::CookieSettingsBase::IsAllowed(setting)) {
@@ -162,7 +160,7 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
   // This should always be last.
   if (previews::params::IsInLitePageRedirectControl()) {
     previews::PreviewsUserData::ServerLitePageInfo* info =
-        PreviewsLitePageNavigationThrottle::GetOrCreateServerLitePageInfo(
+        PreviewsLitePageURLLoaderInterceptor::GetOrCreateServerLitePageInfo(
             navigation_handle, decider);
     info->status = previews::ServerLitePageStatus::kControl;
     return false;
@@ -432,9 +430,7 @@ content::PreviewsState DetermineCommittedClientPreviewsState(
   // Check if a LITE_PAGE_REDIRECT preview was actually served.
   if (previews_state & content::LITE_PAGE_REDIRECT_ON) {
     if (IsLitePageRedirectPreviewURL(url)) {
-      if (navigation_handle &&
-          base::FeatureList::IsEnabled(
-              previews::features::kHTTPSServerPreviewsUsingURLLoader)) {
+      if (navigation_handle) {
         previews_data->set_server_lite_page_info(
             CreateServerLitePageInfoFromNavigationHandle(navigation_handle));
       }

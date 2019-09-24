@@ -15,11 +15,11 @@ import android.view.ViewGroup.LayoutParams;
 import android.widget.FrameLayout;
 
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.compositor.layouts.phone.stack.StackAnimation.OverviewAnimationType;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabThemeColorHelper;
 import org.chromium.chrome.browser.tabmodel.TabList;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
 /**
  * A factory that builds Android view animations for the tab stack.
@@ -87,19 +87,19 @@ public class StackViewAnimation {
         PropertyValuesHolder viewAlpha = PropertyValuesHolder.ofFloat(View.ALPHA, 0.f, 1.f);
         ObjectAnimator viewAlphaAnimator = ObjectAnimator.ofPropertyValuesHolder(view, viewAlpha);
         viewAlphaAnimator.setDuration(TAB_OPENED_VIEW_ANIMATION_DURATION);
-        viewAlphaAnimator.setInterpolator(CompositorAnimator.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        viewAlphaAnimator.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
 
         PropertyValuesHolder yTranslation =
                 PropertyValuesHolder.ofFloat(View.TRANSLATION_Y, mTranslationYStart, 0.f);
         ObjectAnimator viewYTranslationAnimator =
                 ObjectAnimator.ofPropertyValuesHolder(view, yTranslation);
         viewYTranslationAnimator.setDuration(TAB_OPENED_VIEW_ANIMATION_DURATION);
-        viewYTranslationAnimator.setInterpolator(CompositorAnimator.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        viewYTranslationAnimator.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
 
         PropertyValuesHolder bgAlpha = PropertyValuesHolder.ofFloat(View.ALPHA, 0.f, 1.f);
         ObjectAnimator bgAlphaAnimator = ObjectAnimator.ofPropertyValuesHolder(bgView, bgAlpha);
         bgAlphaAnimator.setDuration(TAB_OPENED_BG_ANIMATION_DURATION);
-        bgAlphaAnimator.setInterpolator(CompositorAnimator.FAST_OUT_SLOW_IN_INTERPOLATOR);
+        bgAlphaAnimator.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
 
         AnimatorSet set = new AnimatorSet();
         set.playTogether(viewAlphaAnimator, viewYTranslationAnimator, bgAlphaAnimator);

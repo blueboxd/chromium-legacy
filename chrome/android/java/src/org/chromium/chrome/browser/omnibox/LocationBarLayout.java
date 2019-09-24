@@ -79,7 +79,7 @@ public class LocationBarLayout extends FrameLayout
                    LocationBarVoiceRecognitionHandler.Delegate {
     protected ImageButton mDeleteButton;
     protected ImageButton mMicButton;
-    protected View mUrlBar;
+    protected UrlBar mUrlBar;
     private final boolean mIsTablet;
 
     protected UrlBarCoordinator mUrlCoordinator;
@@ -193,7 +193,7 @@ public class LocationBarLayout extends FrameLayout
         mAutocompleteCoordinator = AutocompleteCoordinatorFactory.createAutocompleteCoordinator(
                 this, this, embedder, mUrlCoordinator);
         addUrlFocusChangeListener(mAutocompleteCoordinator);
-        mUrlCoordinator.setUrlTextChangeListener(mAutocompleteCoordinator);
+        mUrlCoordinator.addUrlTextChangeListener(mAutocompleteCoordinator);
 
         mMicButton = findViewById(R.id.mic_button);
 
@@ -221,6 +221,7 @@ public class LocationBarLayout extends FrameLayout
 
         updateShouldAnimateIconChanges();
         mUrlBar.setOnKeyListener(new UrlBarKeyListener());
+        mUrlCoordinator.addUrlTextChangeListener(mStatusViewCoordinator);
 
         // mLocationBar's direction is tied to this UrlBar's text direction. Icons inside the
         // location bar, e.g. lock, refresh, X, should be reversed if UrlBar's text is RTL.
@@ -435,7 +436,7 @@ public class LocationBarLayout extends FrameLayout
                     mUrlCoordinator.setUrlBarData(UrlBarData.forNonUrlText(existingText),
                             UrlBar.ScrollType.NO_SCROLL,
                             UrlBarCoordinator.SelectionState.SELECT_END);
-                    mAutocompleteCoordinator.onTextChangedForAutocomplete();
+                    forceOnTextChanged();
                 }
             }
 
@@ -547,7 +548,7 @@ public class LocationBarLayout extends FrameLayout
             // This must be happen after requestUrlFocus(), which changes the selection.
             mUrlCoordinator.setUrlBarData(UrlBarData.forNonUrlText(pastedText),
                     UrlBar.ScrollType.NO_SCROLL, UrlBarCoordinator.SelectionState.SELECT_END);
-            mAutocompleteCoordinator.onTextChangedForAutocomplete();
+            forceOnTextChanged();
         } else {
             ToolbarManager.recordOmniboxFocusReason(ToolbarManager.OmniboxFocusReason.FAKE_BOX_TAP);
         }
@@ -910,7 +911,7 @@ public class LocationBarLayout extends FrameLayout
     private boolean setUrlBarTextEmpty() {
         boolean textChanged = mUrlCoordinator.setUrlBarData(
                 UrlBarData.EMPTY, UrlBar.ScrollType.SCROLL_TO_BEGINNING, SelectionState.SELECT_ALL);
-        mAutocompleteCoordinator.onTextChangedForAutocomplete();
+        forceOnTextChanged();
         return textChanged;
     }
 
@@ -1111,5 +1112,12 @@ public class LocationBarLayout extends FrameLayout
     @VisibleForTesting
     public StatusViewCoordinator getStatusViewCoordinatorForTesting() {
         return mStatusViewCoordinator;
+    }
+
+    private void forceOnTextChanged() {
+        String textWithoutAutocomplete = mUrlCoordinator.getTextWithoutAutocomplete();
+        String textWithAutocomplete = mUrlCoordinator.getTextWithoutAutocomplete();
+        mAutocompleteCoordinator.onTextChanged(textWithoutAutocomplete, textWithAutocomplete);
+        mStatusViewCoordinator.onTextChanged(textWithoutAutocomplete, textWithAutocomplete);
     }
 }

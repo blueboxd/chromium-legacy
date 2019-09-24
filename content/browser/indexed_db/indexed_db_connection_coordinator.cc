@@ -288,12 +288,13 @@ class IndexedDBConnectionCoordinator::OpenRequest
     std::vector<int64_t> object_store_ids;
 
     state_ = RequestState::kPendingTransactionComplete;
-    bool relaxed_durability = false;
     IndexedDBTransaction* transaction = connection_->CreateTransaction(
         pending_->transaction_id,
         std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()),
         blink::mojom::IDBTransactionMode::VersionChange,
-        db_->backing_store()->CreateTransaction(relaxed_durability).release());
+        db_->backing_store()
+            ->CreateTransaction(blink::mojom::IDBTransactionDurability::Strict)
+            .release());
 
     // Save a WeakPtr<IndexedDBTransaction> for the CreateAndBindTransaction
     // function to use later.

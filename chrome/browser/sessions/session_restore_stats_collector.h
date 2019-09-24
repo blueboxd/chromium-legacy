@@ -19,11 +19,11 @@
 #include "chrome/browser/sessions/session_restore_delegate.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_observer.h"
 
 namespace content {
 class NavigationController;
-class RenderWidgetHost;
 }
 
 // SessionRestoreStatsCollector observes SessionRestore events ands records UMA
@@ -282,8 +282,8 @@ class SessionRestoreStatsCollector
   // has deferred tabs remaining from an interrupted session restore.
   scoped_refptr<SessionRestoreStatsCollector> this_retainer_;
 
-  ScopedObserver<content::RenderWidgetHost, SessionRestoreStatsCollector>
-      observer_;
+  ScopedObserver<content::RenderWidgetHost, content::RenderWidgetHostObserver>
+      observer_{this};
 
   DISALLOW_COPY_AND_ASSIGN(SessionRestoreStatsCollector);
 };

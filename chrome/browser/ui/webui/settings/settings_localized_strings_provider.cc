@@ -33,7 +33,11 @@
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
+#include "components/autofill/content/browser/content_autofill_driver.h"
+#include "components/autofill/content/browser/content_autofill_driver_factory.h"
 #include "components/autofill/core/browser/autofill_experiments.h"
+#include "components/autofill/core/browser/autofill_manager.h"
+#include "components/autofill/core/browser/payments/credit_card_access_manager.h"
 #include "components/autofill/core/browser/payments/payments_service_url.h"
 #include "components/autofill/core/browser/payments/payments_util.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -1701,8 +1705,37 @@ void AddOnStartupStrings(content::WebUIDataSource* html_source) {
                           base::size(kLocalizedStrings));
 }
 
+bool isUserFIDOVerifiable(autofill::PersonalDataManager* personal_data,
+                          content::WebContents* web_contents) {
+  if (personal_data->GetSyncSigninState() !=
+          autofill::AutofillSyncSigninState::
+              kSignedInAndWalletSyncTransportEnabled &&
+      personal_data->GetSyncSigninState() !=
+          autofill::AutofillSyncSigninState::kSignedInAndSyncFeatureEnabled) {
+    return false;
+  }
+
+  autofill::ContentAutofillDriverFactory* autofill_driver_factory =
+      autofill::ContentAutofillDriverFactory::FromWebContents(web_contents);
+  if (!autofill_driver_factory)
+    return false;
+  autofill::ContentAutofillDriver* autofill_driver =
+      autofill_driver_factory->DriverForFrame(web_contents->GetMainFrame());
+  if (!autofill_driver)
+    return false;
+  autofill::AutofillManager* autofill_manager =
+      autofill_driver->autofill_manager();
+  if (!autofill_manager)
+    return false;
+
+  return autofill_manager->credit_card_access_manager()
+      ->GetOrCreateFIDOAuthenticator()
+      ->IsUserVerifiable();
+}
+
 void AddAutofillStrings(content::WebUIDataSource* html_source,
-                        Profile* profile) {
+                        Profile* profile,
+                        content::WebContents* web_contents) {
   static constexpr LocalizedString kLocalizedStrings[] = {
       {"autofillPageTitle", IDS_SETTINGS_AUTOFILL},
       {"passwords", IDS_SETTINGS_PASSWORDS},
@@ -1715,6 +1748,9 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
       {"enableCreditCardsLabel", IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_LABEL},
       {"enableCreditCardsSublabel",
        IDS_AUTOFILL_ENABLE_CREDIT_CARDS_TOGGLE_SUBLABEL},
+      {"enableCreditCardFIDOAuthLabel", IDS_ENABLE_CREDIT_CARD_FIDO_AUTH_LABEL},
+      {"enableCreditCardFIDOAuthSublabel",
+       IDS_ENABLE_CREDIT_CARD_FIDO_AUTH_SUBLABEL},
       {"addresses", IDS_AUTOFILL_ADDRESSES},
       {"addressesTitle", IDS_AUTOFILL_ADDRESSES_SETTINGS_TITLE},
       {"addAddressTitle", IDS_SETTINGS_AUTOFILL_ADDRESSES_ADD_TITLE},
@@ -1822,15 +1858,17 @@ void AddAutofillStrings(content::WebUIDataSource* html_source,
 #else   // !defined(OS_CHROMEOS)
   is_guest_mode = profile->IsOffTheRecord();
 #endif  // defined(OS_CHROMEOS)
+  autofill::PersonalDataManager* personal_data =
+      autofill::PersonalDataManagerFactory::GetForProfile(profile);
   html_source->AddBoolean(
       "migrationEnabled",
-      !is_guest_mode &&
-          autofill::IsCreditCardMigrationEnabled(
-              autofill::PersonalDataManagerFactory::GetForProfile(profile),
-              profile->GetPrefs(),
-              ProfileSyncServiceFactory::GetForProfile(profile),
-              /*is_test_mode=*/false,
-              /*log_manager=*/nullptr));
+      !is_guest_mode && autofill::IsCreditCardMigrationEnabled(
+                            personal_data, profile->GetPrefs(),
+                            ProfileSyncServiceFactory::GetForProfile(profile),
+                            /*is_test_mode=*/false,
+                            /*log_manager=*/nullptr));
+  html_source->AddBoolean("userIsFIDOVerifiable",
+                          isUserFIDOVerifiable(personal_data, web_contents));
 
   html_source->AddBoolean(
       "passwordsLeakDetectionEnabled",
@@ -3339,10 +3377,11 @@ void AddSecurityKeysStrings(content::WebUIDataSource* html_source) {
 }  // namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source,
-                         Profile* profile) {
+                         Profile* profile,
+                         content::WebContents* web_contents) {
   AddA11yStrings(html_source);
   AddAboutStrings(html_source);
-  AddAutofillStrings(html_source, profile);
+  AddAutofillStrings(html_source, profile, web_contents);
   AddAppearanceStrings(html_source, profile);
 
 #if defined(OS_WIN) && BUILDFLAG(GOOGLE_CHROME_BRANDING)

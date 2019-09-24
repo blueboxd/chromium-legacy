@@ -356,9 +356,11 @@ QuicTestPacketMaker::MakeRstAndRequestHeadersPacket(
     // Send SETTINGS frame(s) if they have not already been sent.
     MaybeAddHttp3SettingsFrames(&frames);
 
-    std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-
-    frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
+    if (FLAGS_quic_allow_http3_priority) {
+      std::string priority_data =
+          GenerateHttp3PriorityData(priority, stream_id);
+      frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
+    }
 
     // STREAM frames for HEADERS.
     std::vector<std::string> data = QpackEncodeHeaders(
@@ -753,9 +755,11 @@ QuicTestPacketMaker::MakeRequestHeadersAndMultipleDataFramesPacket(
     // Send SETTINGS frame(s) if they have not already been sent.
     MaybeAddHttp3SettingsFrames(&frames);
 
-    std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-    frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
-
+    if (FLAGS_quic_allow_http3_priority) {
+      std::string priority_data =
+          GenerateHttp3PriorityData(priority, stream_id);
+      frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
+    }
     // STREAM frames for HEADERS.
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
@@ -814,9 +818,11 @@ QuicTestPacketMaker::MakeRequestHeadersPacket(
     // Send SETTINGS frame(s) if they have not already been sent.
     MaybeAddHttp3SettingsFrames(&frames);
 
-    std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-    frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
-
+    if (FLAGS_quic_allow_http3_priority) {
+      std::string priority_data =
+          GenerateHttp3PriorityData(priority, stream_id);
+      frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
+    }
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
 
@@ -854,9 +860,11 @@ QuicTestPacketMaker::MakeRequestHeadersAndRstPacket(
     // Send SETTINGS frame(s) if they have not already been sent.
     MaybeAddHttp3SettingsFrames(&frames);
 
-    std::string priority_data = GenerateHttp3PriorityData(priority, stream_id);
-    frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
-
+    if (FLAGS_quic_allow_http3_priority) {
+      std::string priority_data =
+          GenerateHttp3PriorityData(priority, stream_id);
+      frames.push_back(GenerateNextStreamFrame(2, false, priority_data));
+    }
     std::vector<std::string> data = QpackEncodeHeaders(
         stream_id, std::move(headers), spdy_headers_frame_length);
 

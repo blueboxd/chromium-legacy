@@ -1208,7 +1208,7 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
       cellular->apn_list =
           GetManagedApnList(cellular_dict->FindKey(::onc::cellular::kAPNList));
       cellular->allow_roaming =
-          GetBoolean(properties, ::onc::cellular::kAllowRoaming);
+          GetBoolean(cellular_dict, ::onc::cellular::kAllowRoaming);
       cellular->esn = GetString(cellular_dict, ::onc::cellular::kESN);
       cellular->family = GetString(cellular_dict, ::onc::cellular::kFamily);
       cellular->firmware_revision =

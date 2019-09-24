@@ -6680,11 +6680,11 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "device_os": "P",
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false,
@@ -6713,11 +6713,11 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "device_os": "P",
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false
@@ -6746,11 +6746,11 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "device_os": "P",
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false,
@@ -6780,11 +6780,11 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "device_os": "P",
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false,
@@ -7060,11 +7060,11 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "device_os": "P",
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "output_links": [
@@ -7119,11 +7119,11 @@
           "containment_type": "AUTO",
           "dimension_sets": [
             {
-              "device_os": "P",
+              "device_os": "PQ3A.190801.002",
+              "device_os_flavor": "google",
               "device_os_type": "userdebug",
               "device_type": "walleye",
-              "os": "Android",
-              "pool": "Chrome-GPU"
+              "os": "Android"
             }
           ],
           "idempotent": false,

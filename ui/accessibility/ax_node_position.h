@@ -73,6 +73,9 @@ class AX_EXPORT AXNodePosition : public AXPosition<AXNodePosition, AXNode> {
                            AXTreeID child_tree_id,
                            AXTreeID* parent_tree_id,
                            int32_t* parent_id);
+
+  AXPositionInstance CreateUnignoredPositionFromLeafTextPosition(
+      AdjustmentBehavior adjustment_behavior) const;
 };
 
 }  // namespace ui

@@ -7,8 +7,8 @@
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
+#include "chrome/services/app_service/public/mojom/types.mojom.h"
 
 LauncherAppServiceAppUpdater::LauncherAppServiceAppUpdater(
     Delegate* delegate,
@@ -17,6 +17,10 @@ LauncherAppServiceAppUpdater::LauncherAppServiceAppUpdater(
   apps::AppServiceProxy* proxy = apps::AppServiceProxyFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context));
   if (proxy) {
+    proxy->AppRegistryCache().ForEachApp([this](const apps::AppUpdate& update) {
+      if (update.Readiness() == apps::mojom::Readiness::kReady)
+        this->installed_apps_.insert(update.AppId());
+    });
     Observe(&proxy->AppRegistryCache());
   }
 }

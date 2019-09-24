@@ -15,7 +15,6 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
 
@@ -125,8 +124,7 @@ SessionRestoreStatsCollector::SessionRestoreStatsCollector(
       loading_tab_count_(0u),
       deferred_tab_count_(0u),
       tick_clock_(new base::DefaultTickClock()),
-      reporting_delegate_(std::move(reporting_delegate)),
-      observer_(this) {
+      reporting_delegate_(std::move(reporting_delegate)) {
   this_retainer_ = this;
 }
 

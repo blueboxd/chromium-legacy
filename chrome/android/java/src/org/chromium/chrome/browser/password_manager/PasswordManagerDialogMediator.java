@@ -86,6 +86,7 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
             @DrawableRes int drawableId) {
         mModel.set(ILLUSTRATION, drawableId);
         mModel.set(TITLE, title);
+        mModalDialogBuilder.with(ModalDialogProperties.CONTENT_DESCRIPTION, title);
         mModel.set(DETAILS, addBoldSpanToDetails(details, boldRangeStart, boldRangeEnd));
     }
 

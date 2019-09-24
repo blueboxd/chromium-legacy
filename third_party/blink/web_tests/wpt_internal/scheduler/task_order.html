@@ -34,9 +34,8 @@ async_test(t => {
   scheduleReportTask('I1', 'immediate');
   scheduleReportTask('I2', 'immediate');
 
-  scheduler.postTask(t.step_func(() => {
+  scheduler.postTask(t.step_func_done(() => {
     assert_equals(result, 'I1 I2 H1 H2 D1 D2 L1 L2 E1 E2');
-    t.done();
   }), { priority: 'idle' });
 }, 'Test scheduler.postTask task run in priority order');
 

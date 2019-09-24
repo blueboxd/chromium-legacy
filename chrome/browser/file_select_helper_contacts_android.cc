@@ -54,7 +54,7 @@ void FileSelectHelperContactsAndroid::ProcessContactsForAndroidOnUIThread(
   std::vector<ui::SelectedFileInfo> files;
 
   if (temp_file.empty()) {
-    NotifyRenderFrameHostAndEnd(files);
+    ConvertToFileChooserFileInfoList(files);
     return;
   }
 
@@ -72,5 +72,5 @@ void FileSelectHelperContactsAndroid::ProcessContactsForAndroidOnUIThread(
     return;
   }
 
-  NotifyRenderFrameHostAndEnd(files);
+  ConvertToFileChooserFileInfoList(files);
 }

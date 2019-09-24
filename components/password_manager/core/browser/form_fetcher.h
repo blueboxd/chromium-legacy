@@ -73,10 +73,9 @@ class FormFetcher {
   virtual std::vector<const autofill::PasswordForm*> GetFederatedMatches()
       const = 0;
 
-  // Blacklisted matches obtained from the backend. Valid only if GetState()
-  // returns NOT_WAITING.
-  virtual std::vector<const autofill::PasswordForm*> GetBlacklistedMatches()
-      const = 0;
+  // Whether there are blacklisted matches in the backend. Valid only if
+  // GetState() returns NOT_WAITING.
+  virtual bool IsBlacklisted() const = 0;
 
   // Non-federated matches obtained from the backend that have the same scheme
   // of this form.

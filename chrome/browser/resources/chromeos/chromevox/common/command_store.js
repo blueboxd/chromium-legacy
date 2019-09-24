@@ -132,11 +132,8 @@ cvox.CommandStore.commandsForCategory = function(category) {
  * false.
  */
 cvox.CommandStore.CMD_WHITELIST = {
-  'toggleStickyMode': {
-    announce: false,
-    msgId: 'toggle_sticky_mode',
-    category: 'modifier_keys'
-  },
+  'toggleStickyMode':
+      {announce: false, msgId: 'toggle_sticky_mode', category: 'modifier_keys'},
   'passThroughMode': {
     announce: false,
     msgId: 'pass_through_key_description',
@@ -818,6 +815,12 @@ cvox.CommandStore.CMD_WHITELIST = {
 
   'pauseAllMedia':
       {announce: false, msgId: 'pause_all_media', category: 'information'},
+
+  'readPhoneticPronunciation': {
+    announce: true,
+    msgId: 'read_phonetic_pronunciation',
+    category: 'information'
+  },
 
   // Scrolling actions.
   'scrollBackward': {msgId: 'action_scroll_backward_description'},

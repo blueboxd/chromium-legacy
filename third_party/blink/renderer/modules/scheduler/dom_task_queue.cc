@@ -45,7 +45,6 @@ void DOMTaskQueue::Trace(Visitor* visitor) {
 
 void DOMTaskQueue::ContextDestroyed(ExecutionContext* context) {
   web_scheduling_task_queue_.reset(nullptr);
-  task_runner_.reset();
 }
 
 AtomicString DOMTaskQueue::priority() const {
@@ -55,9 +54,7 @@ AtomicString DOMTaskQueue::priority() const {
 DOMTask* DOMTaskQueue::postTask(V8Function* function,
                                 TaskQueuePostTaskOptions* options,
                                 const HeapVector<ScriptValue>& args) {
-  // |task_runner_| will be nullptr when the context is destroyed, which
-  // prevents us from scheduling tasks for detached documents.
-  if (!task_runner_)
+  if (!GetExecutionContext() || GetExecutionContext()->IsContextDestroyed())
     return nullptr;
 
   // TODO(shaseley): We need to figure out the behavior we want for delay. For

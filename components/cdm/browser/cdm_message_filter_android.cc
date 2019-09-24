@@ -49,7 +49,7 @@ const CodecInfo<media::VideoCodec> kMP4VideoCodecsToQuery[] = {
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     {media::EME_CODEC_HEVC, media::kCodecHEVC},
 #endif
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
     {media::EME_CODEC_DOLBY_VISION_AVC, media::kCodecDolbyVision},
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     {media::EME_CODEC_DOLBY_VISION_HEVC, media::kCodecDolbyVision},
@@ -68,7 +68,7 @@ const CodecInfo<media::AudioCodec> kWebMAudioCodecsToQuery[] = {
 const CodecInfo<media::AudioCodec> kMP4AudioCodecsToQuery[] = {
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
     {media::EME_CODEC_AAC, media::kCodecAAC},
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
     {media::EME_CODEC_AC3, media::kCodecAC3},
     {media::EME_CODEC_EAC3, media::kCodecEAC3},
 #endif

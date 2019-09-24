@@ -27,7 +27,7 @@ async_test(t => {
   }));
 
   // Check that canceling running, completed, or canceled tasks is a no-op.
-  let task = scheduler.postTask(t.step_func(() => {
+  let task = scheduler.postTask(t.step_func_done(() => {
     assert_equals(task.status, 'running');
     task.cancel();
     assert_equals(task.status, 'running');
@@ -39,8 +39,6 @@ async_test(t => {
     assert_equals(tasks[0].status, 'completed');
     tasks[0].cancel();
     assert_equals(tasks[0].status, 'completed');
-
-    t.done();
   }));
 
 }, 'Test canceling a task');

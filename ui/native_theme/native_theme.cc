@@ -84,6 +84,15 @@ NativeTheme::GetSystemColors() const {
   return system_colors_;
 }
 
+base::Optional<SkColor> NativeTheme::GetSystemColorFromMap(
+    SystemThemeColor theme_color) const {
+  auto color = system_colors_.find(theme_color);
+  if (color != system_colors_.end())
+    return color->second;
+
+  return base::nullopt;
+}
+
 bool NativeTheme::HasDifferentSystemColors(
     const std::map<NativeTheme::SystemThemeColor, SkColor>& colors) const {
   return system_colors_ != colors;

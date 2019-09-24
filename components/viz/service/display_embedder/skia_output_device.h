@@ -91,7 +91,8 @@ class SkiaOutputDevice {
   // Set the rectangle that will be drawn into on the surface.
   virtual void SetDrawRectangle(const gfx::Rect& draw_rectangle);
 
-  virtual void SetEnableDCLayers(bool enable);
+  virtual void SetGpuVSyncEnabled(bool enabled);
+  virtual void SetEnableDCLayers(bool enabled);
   virtual void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers);
 
   const OutputSurface::Capabilities& capabilities() const {

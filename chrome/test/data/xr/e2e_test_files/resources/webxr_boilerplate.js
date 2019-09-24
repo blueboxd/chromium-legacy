@@ -24,6 +24,7 @@ var onPoseCallback = null;
 var shouldSubmitFrame = true;
 var hasPresentedFrame = false;
 var arSessionRequestWouldTriggerPermissionPrompt = null;
+var shouldSetBaseLayer = true;
 
 var sessionTypes = Object.freeze({
   IMMERSIVE: 1,
@@ -164,7 +165,10 @@ function onSessionStarted(session) {
     onSessionStartedCallback(session);
   }
 
-  session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+  if (shouldSetBaseLayer) {
+    session.updateRenderState({ baseLayer: new XRWebGLLayer(session, gl) });
+  }
+
   session.requestReferenceSpace(referenceSpaceMap[sessionType])
       .then( (refSpace) => {
         sessionInfos[sessionType].currentRefSpace = refSpace;

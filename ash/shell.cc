@@ -163,6 +163,7 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/dbus/initialize_dbus_client.h"
 #include "chromeos/dbus/power/power_policy_controller.h"
+#include "chromeos/dbus/usb/usbguard_client.h"
 #include "chromeos/system/devicemode.h"
 #include "components/exo/file_helper.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -835,6 +836,8 @@ Shell::~Shell() {
 
   shell_delegate_.reset();
 
+  chromeos::UsbguardClient::Shutdown();
+
   // Must be shut down after detachable_base_handler_.
   chromeos::HammerdClient::Shutdown();
 
@@ -853,6 +856,8 @@ void Shell::Init(
     scoped_refptr<dbus::Bus> dbus_bus) {
   // Required by DetachableBaseHandler.
   chromeos::InitializeDBusClient<chromeos::HammerdClient>(dbus_bus.get());
+
+  chromeos::InitializeDBusClient<chromeos::UsbguardClient>(dbus_bus.get());
 
   local_state_ = local_state;
 

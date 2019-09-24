@@ -31,6 +31,8 @@ class AppServiceTest {
 
   void SetUp(Profile* profile);
 
+  const std::string GetAppName(const std::string& app_id);
+
   // Allow AppService async callbacks to run.
   void WaitForAppService();
 

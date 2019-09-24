@@ -212,10 +212,12 @@ public abstract class UrlBar extends AutocompleteEditText {
     /** Provides updates about the URL text changes. */
     public interface UrlTextChangeListener {
         /**
-         * Called when the text state has changed and the autocomplete suggestions should be
-         * refreshed.
+         * Called when the text state has changed.
+         * @param textWithoutAutocomplete The url bar text without autocompletion.
+         * @param textWithAutocomplete The url bar text with autocompletion.
          */
-        void onTextChangedForAutocomplete();
+        // TODO(crbug.com/1003080): Consider splitting these into two different callbacks.
+        void onTextChanged(String textWithoutAutocomplete, String textWithAutocomplete);
     }
 
     /** Delegate that provides the additional functionality to the textual context menus. */
@@ -953,7 +955,7 @@ public abstract class UrlBar extends AutocompleteEditText {
         // crbug.com/764749
         Log.w(TAG, "Text change observed, triggering autocomplete.");
 
-        mTextChangeListener.onTextChangedForAutocomplete();
+        mTextChangeListener.onTextChanged(getTextWithoutAutocomplete(), getTextWithAutocomplete());
     }
 
     /**

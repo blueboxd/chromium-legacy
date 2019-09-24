@@ -15,7 +15,7 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/predictors/loading_predictor.h"
 #include "chrome/browser/predictors/loading_predictor_factory.h"
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
+#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -157,7 +157,7 @@ base::Optional<GURL> PreviewsLitePagePredictor::ShouldActOnPage(
   if (previews::ExtractOriginalURLFromLitePageRedirectURL(url, &original_url))
     return GURL(original_url);
 
-  return PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(url);
+  return previews::GetLitePageRedirectURLForURL(url);
 }
 
 void PreviewsLitePagePredictor::MaybeToggleTimer(

@@ -24,6 +24,7 @@
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/animation/ink_drop_mask.h"
+#include "ui/views/layout/layout_provider.h"
 #include "ui/views/rect_based_targeting_utils.h"
 #include "ui/views/view_class_properties.h"
 
@@ -71,6 +72,10 @@ void TabCloseButton::SetIconColors(SkColor foreground_color,
       color_utils::GetColorWithMaxContrast(background_color));
 }
 
+const char* TabCloseButton::GetClassName() const {
+  return "TabCloseButton";
+}
+
 views::View* TabCloseButton::GetTooltipHandlerForPoint(
     const gfx::Point& point) {
   // Tab close button has no children, so tooltip handler should be the same
@@ -90,14 +95,14 @@ bool TabCloseButton::OnMousePressed(const ui::MouseEvent& event) {
   return !event.IsMiddleMouseButton() && handled;
 }
 
-void TabCloseButton::OnMouseMoved(const ui::MouseEvent& event) {
-  mouse_event_callback_.Run(this, event);
-  Button::OnMouseMoved(event);
-}
-
 void TabCloseButton::OnMouseReleased(const ui::MouseEvent& event) {
   mouse_event_callback_.Run(this, event);
   Button::OnMouseReleased(event);
+}
+
+void TabCloseButton::OnMouseMoved(const ui::MouseEvent& event) {
+  mouse_event_callback_.Run(this, event);
+  Button::OnMouseMoved(event);
 }
 
 void TabCloseButton::OnGestureEvent(ui::GestureEvent* event) {
@@ -105,18 +110,6 @@ void TabCloseButton::OnGestureEvent(ui::GestureEvent* event) {
   // start consuming gestures.
   ImageButton::OnGestureEvent(event);
   event->SetHandled();
-}
-
-const char* TabCloseButton::GetClassName() const {
-  return "TabCloseButton";
-}
-
-void TabCloseButton::Layout() {
-  ImageButton::Layout();
-  auto path = std::make_unique<SkPath>();
-  gfx::Point center = GetContentsBounds().CenterPoint();
-  path->addCircle(center.x(), center.y(), GetWidth() / 2);
-  SetProperty(views::kHighlightPathKey, path.release());
 }
 
 gfx::Size TabCloseButton::CalculatePreferredSize() const {
@@ -127,10 +120,23 @@ gfx::Size TabCloseButton::CalculatePreferredSize() const {
   return size;
 }
 
+void TabCloseButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ImageButton::OnBoundsChanged(previous_bounds);
+  auto path = std::make_unique<SkPath>();
+  const gfx::Rect bounds = GetContentsBounds();
+  const gfx::Point center = bounds.CenterPoint();
+  const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MAXIMUM, bounds.size());
+  path->addCircle(center.x(), center.y(), radius);
+  SetProperty(views::kHighlightPathKey, path.release());
+}
+
 std::unique_ptr<views::InkDropMask> TabCloseButton::CreateInkDropMask() const {
+  const gfx::Rect bounds = GetContentsBounds();
+  const int radius = views::LayoutProvider::Get()->GetCornerRadiusMetric(
+      views::EMPHASIS_MAXIMUM, bounds.size());
   return std::make_unique<views::CircleInkDropMask>(
-      size(), GetMirroredRect(GetContentsBounds()).CenterPoint(),
-      GetWidth() / 2);
+      size(), GetMirroredRect(bounds).CenterPoint(), radius);
 }
 
 void TabCloseButton::PaintButtonContents(gfx::Canvas* canvas) {

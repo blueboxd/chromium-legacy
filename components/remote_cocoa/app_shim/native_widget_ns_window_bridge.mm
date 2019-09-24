@@ -1181,6 +1181,17 @@ void NativeWidgetNSWindowBridge::SetOpacity(float opacity) {
   [window_ setAlphaValue:opacity];
 }
 
+void NativeWidgetNSWindowBridge::SetWindowLevel(int32_t level) {
+  [window_ setLevel:level];
+
+  // Windows that have a higher window level than NSNormalWindowLevel default to
+  // NSWindowCollectionBehaviorTransient. Set the value explicitly here to match
+  // normal windows.
+  NSWindowCollectionBehavior behavior =
+      [window_ collectionBehavior] | NSWindowCollectionBehaviorManaged;
+  [window_ setCollectionBehavior:behavior];
+}
+
 void NativeWidgetNSWindowBridge::SetContentAspectRatio(
     const gfx::SizeF& aspect_ratio) {
   [window_ setContentAspectRatio:NSMakeSize(aspect_ratio.width(),

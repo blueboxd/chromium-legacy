@@ -211,8 +211,6 @@ void HttpStreamFactory::JobController::OnStreamReady(
     const SSLConfig& used_ssl_config) {
   DCHECK(job);
 
-  factory_->OnStreamReady(job->proxy_info(), request_info_.privacy_mode);
-
   if (IsJobOrphaned(job)) {
     // We have bound a job to the associated HttpStreamRequest, |job| has been
     // orphaned.
@@ -417,12 +415,6 @@ void HttpStreamFactory::JobController::OnNeedsProxyAuth(
     BindJob(job);
   delegate_->OnNeedsProxyAuth(proxy_response, used_ssl_config, used_proxy_info,
                               auth_controller);
-}
-
-bool HttpStreamFactory::JobController::OnInitConnection(
-    const ProxyInfo& proxy_info) {
-  return factory_->OnInitConnection(*this, proxy_info,
-                                    request_info_.privacy_mode);
 }
 
 void HttpStreamFactory::JobController::OnPreconnectsComplete(Job* job) {

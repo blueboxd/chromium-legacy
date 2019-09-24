@@ -15,7 +15,6 @@ import android.support.v4.view.AccessibilityDelegateCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v4.view.ViewPropertyAnimatorListenerAdapter;
 import android.support.v4.view.accessibility.AccessibilityNodeInfoCompat;
-import android.support.v4.view.animation.FastOutSlowInInterpolator;
 import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
@@ -24,7 +23,6 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.animation.Interpolator;
 import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
@@ -35,6 +33,7 @@ import androidx.annotation.IntDef;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.ui.base.LocalizationUtils;
 
 import java.lang.annotation.Retention;
@@ -77,7 +76,6 @@ public class ChromeTextInputLayout extends LinearLayout {
     private HashSet<OnEditTextFocusChangeListener> mListeners = new HashSet<>();
 
     private CharSequence mHint;
-    private Interpolator mInterpolator;
 
     private boolean mShouldDisplayError;
     private @LabelStatus int mLabelStatus;
@@ -149,7 +147,6 @@ public class ChromeTextInputLayout extends LinearLayout {
                 new int[] {getColorAttribute(context, R.attr.colorControlActivated),
                         mLabel.getCurrentTextColor()}));
 
-        mInterpolator = new FastOutSlowInInterpolator();
         setImportantForAccessibility(IMPORTANT_FOR_ACCESSIBILITY_YES);
         ViewCompat.setAccessibilityDelegate(this, new AccessibilityDelegate());
     }
@@ -331,7 +328,7 @@ public class ChromeTextInputLayout extends LinearLayout {
                             mLabelStatus = LabelStatus.COLLAPSED;
                         }
                     })
-                    .setInterpolator(mInterpolator)
+                    .setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR)
                     .start();
         } else {
             mLabel.setTranslationY(mCollapsedLabelTranslationY);
@@ -358,7 +355,7 @@ public class ChromeTextInputLayout extends LinearLayout {
                             mLabelStatus = LabelStatus.EXPANDED;
                         }
                     })
-                    .setInterpolator(mInterpolator)
+                    .setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR)
                     .start();
         } else {
             mLabel.setScaleX(mExpandedTextScale);

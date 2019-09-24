@@ -1014,6 +1014,15 @@
           "keyCode": [65, 70]
         }
       }
+    },
+    {
+      "command": "readPhoneticPronunciation",
+      "sequence": {
+        "cvoxModifier": true,
+        "keys": {
+          "keyCode": [65, 67]
+        }
+      }
     }
   ]
 }

@@ -22,6 +22,12 @@ const char kAcceleratedVideoEncodeName[] = "Hardware-accelerated video encode";
 const char kAcceleratedVideoEncodeDescription[] =
     "Hardware-accelerated video encode where available.";
 
+const char kAccessibilityExposeDisplayNoneName[] =
+    "Expose 'display: none' nodes for accessibility";
+const char kAccessibilityExposeDisplayNoneDescription[] =
+    "Expose 'display: none' nodes that have an HTML ID to the browser process "
+    "accessibility tree.";
+
 const char kAccessibilityInternalsPageImprovementsName[] =
     "Accessibility internals page improvements";
 const char kAccessibilityInternalsPageImprovementsDescription[] =
@@ -696,13 +702,6 @@ const char kEnableLitePageServerPreviewsDescription[] =
     "This feature will cause Chrome to redirect eligible navigations "
     "to a Google-owned domain that serves a pre-rendered version of the "
     "original page. Also known as Lite Page Redirect Previews.";
-
-const char kEnableURLLoaderLitePageServerPreviewsName[] =
-    "Lite Page Server Previews using URL Loader";
-const char kEnableURLLoaderLitePageServerPreviewsDescription[] =
-    "Enable using a network service URL Loader for Lite Page Server Previews. "
-    "This requires enable-lite-page-server-previews to be enabled along with "
-    "network-service.";
 
 const char kEnablePreviewsCoinFlipName[] = "Enable Previews Coin Flip";
 const char kEnablePreviewsCoinFlipDescription[] =
@@ -1475,6 +1474,12 @@ const char kOmniboxZeroSuggestionsOnNTPRealboxName[] =
     "Zero Suggestions in real search box on New Tab Page";
 const char kOmniboxZeroSuggestionsOnNTPRealboxDescription[] =
     "Offer suggestions when the real search box on New Tab Page is focused.";
+
+const char kOmniboxZeroSuggestionsOnSERPName[] =
+    "Omnibox Zero Suggestions on SERP / On-Focus Query Refinement";
+const char kOmniboxZeroSuggestionsOnSERPDescription[] =
+    "Offer query refinement suggestions when the URL bar (omnibox) is focused "
+    "on the default search provider's search results page (SERP).";
 
 const char kOnlyNewPasswordFormParsingName[] =
     "Use only new password form parsing";

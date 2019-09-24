@@ -51,6 +51,11 @@ class PaymentsManager {
    * Logs that the server cards edit link was clicked.
    */
   logServerCardLinkClicked() {}
+
+  /**
+   * Enables FIDO authentication for card unmasking.
+   */
+  setCreditCardFIDOAuthEnabledState(enabled) {}
 }
 
 /** @typedef {chrome.autofillPrivate.CreditCardEntry} */
@@ -100,6 +105,11 @@ class PaymentsManagerImpl {
   logServerCardLinkClicked() {
     chrome.autofillPrivate.logServerCardLinkClicked();
   }
+
+  /** @override */
+  setCreditCardFIDOAuthEnabledState(enabled) {
+    chrome.autofillPrivate.setCreditCardFIDOAuthEnabledState(enabled);
+  }
 }
 
 cr.addSingletonGetter(PaymentsManagerImpl);
@@ -123,6 +133,18 @@ Polymer({
     creditCards: {
       type: Array,
       value: () => [],
+    },
+
+    /**
+     * Set to true if user can be verified through FIDO authentication.
+     * @private
+     */
+    userIsFIDOVerifiable_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('userIsFIDOVerifiable');
+      },
+      readOnly: true,
     },
 
     /**
@@ -308,6 +330,25 @@ Polymer({
    */
   saveCreditCard_: function(event) {
     this.paymentsManager_.saveCreditCard(event.detail);
+  },
+
+  /**
+   * @param {boolean} creditCardEnabled
+   * @return {boolean} Whether or not the user is verifiable through FIDO
+   *     authentication.
+   * @private
+   */
+  isUserFIDOVerifiable_: function(creditCardEnabled) {
+    return creditCardEnabled && this.userIsFIDOVerifiable_;
+  },
+
+  /**
+   * Listens for the enable-authentication event, and calls the private API.
+   * @private
+   */
+  setFIDOAuthenticationEnabledState_: function() {
+    this.paymentsManager_.setCreditCardFIDOAuthEnabledState(
+        this.$$('#autofillCreditCardFIDOAuthToggle').checked);
   },
 
   /**

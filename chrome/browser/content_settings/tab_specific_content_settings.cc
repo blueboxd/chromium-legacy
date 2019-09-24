@@ -34,7 +34,6 @@
 #include "components/content_settings/core/browser/content_settings_info.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
@@ -112,8 +111,7 @@ TabSpecificContentSettings::TabSpecificContentSettings(WebContents* tab)
       previous_protocol_handler_(ProtocolHandler::EmptyProtocolHandler()),
       pending_protocol_handler_setting_(CONTENT_SETTING_DEFAULT),
       load_plugins_link_enabled_(true),
-      microphone_camera_state_(MICROPHONE_CAMERA_NOT_ACCESSED),
-      observer_(this) {
+      microphone_camera_state_(MICROPHONE_CAMERA_NOT_ACCESSED) {
   ClearContentSettingsExceptForNavigationRelatedSettings();
   ClearNavigationRelatedContentSettings();
 

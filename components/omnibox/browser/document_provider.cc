@@ -695,9 +695,6 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
   // Ensure server's suggestions are added with monotonically decreasing scores.
   int previous_score = INT_MAX;
   for (size_t i = 0; i < num_results; i++) {
-    if (matches.size() >= provider_max_matches_) {
-      break;
-    }
     const base::DictionaryValue* result = nullptr;
     if (!results_list->GetDictionary(i, &result)) {
       return matches;
@@ -716,25 +713,31 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
     int server_score = 0;
     result->GetInteger("score", &server_score);
     int score = 0;
-    if (use_client_score && use_server_score)
-      score = std::min(client_score, server_score);
-    else
-      score = use_client_score ? client_score : server_score;
+    // Set |score| only if we haven't surpassed |provider_max_matches_| yet.
+    // Otherwise, score the remaining matches 0 to avoid displaying them except
+    // when deduped with history, shortcut, or bookmark matches.
+    if (matches.size() < provider_max_matches_) {
+      if (use_client_score && use_server_score)
+        score = std::min(client_score, server_score);
+      else
+        score = use_client_score ? client_score : server_score;
 
-    if (cap_score_per_rank) {
-      int score_cap = i < score_caps.size() ? score_caps[i] : score_caps.back();
-      score = std::min(score, score_cap);
+      if (cap_score_per_rank) {
+        int score_cap =
+            i < score_caps.size() ? score_caps[i] : score_caps.back();
+        score = std::min(score, score_cap);
+      }
+
+      if (boost_owned)
+        score = BoostOwned(score, client_->ProfileUserName(), result);
+
+      // Decrement scores if necessary to ensure suggestion order is preserved.
+      // Don't decrement client scores which don't necessarily rank suggestions
+      // the same as the server.
+      if (!use_client_score && score >= previous_score)
+        score = std::max(previous_score - 1, 0);
+      previous_score = score;
     }
-
-    if (boost_owned)
-      score = BoostOwned(score, client_->ProfileUserName(), result);
-
-    // Decrement scores if necessary to ensure suggestion order is preserved.
-    // Don't decrement client scores which don't necessarily rank suggestions
-    // the same as the server.
-    if (!use_client_score && score >= previous_score)
-      score = std::max(previous_score - 1, 0);
-    previous_score = score;
 
     AutocompleteMatch match(this, score, false,
                             AutocompleteMatchType::DOCUMENT_SUGGESTION);
@@ -776,6 +779,8 @@ ACMatches DocumentProvider::ParseDocumentSearchResults(
     match.transition = ui::PAGE_TRANSITION_GENERATED;
     match.RecordAdditionalInfo("client score", client_score);
     match.RecordAdditionalInfo("server score", server_score);
+    if (matches.size() >= provider_max_matches_)
+      match.RecordAdditionalInfo("for deduping only", "true");
     const std::string* snippet = result->FindStringPath("snippet.snippet");
     if (snippet)
       match.RecordAdditionalInfo("snippet", *snippet);

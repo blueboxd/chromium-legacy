@@ -16,7 +16,6 @@
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/keyed_service/core/service_access_type.h"
 #include "url/gurl.h"
 
@@ -39,8 +38,7 @@ constexpr base::TimeDelta
 
 SubresourceFilterContentSettingsManager::
     SubresourceFilterContentSettingsManager(Profile* profile)
-    : history_observer_(this),
-      settings_map_(HostContentSettingsMapFactory::GetForProfile(profile)),
+    : settings_map_(HostContentSettingsMapFactory::GetForProfile(profile)),
       clock_(std::make_unique<base::DefaultClock>(base::DefaultClock())),
       should_use_smart_ui_(ShouldUseSmartUI()) {
   DCHECK(profile);

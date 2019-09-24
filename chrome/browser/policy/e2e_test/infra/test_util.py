@@ -63,6 +63,6 @@ def create_chrome_webdriver(chrome_options=None, incognito=False, prefs=None):
   os.environ["CHROME_LOG_FILE"] = r"c:\temp\chrome_log.txt"
 
   return webdriver.Chrome(
-      "C:/ProgramData/chocolatey/lib/chromedriver/tools/chromedriver.exe",
+      executable_path=r"C:\temp\chromedriver.exe",
       service_args=["--verbose", r"--log-path=c:\temp\chromedriver.log"],
       chrome_options=chrome_options)

@@ -8,6 +8,8 @@
 #include "ash/public/cpp/switch_access_event_handler_delegate.h"
 #include "ash/shell.h"
 #include "ui/events/event.h"
+#include "ui/events/event_constants.h"
+#include "ui/events/event_utils.h"
 
 namespace ash {
 
@@ -101,8 +103,17 @@ void SwitchAccessEventHandler::OnKeyEvent(ui::KeyEvent* event) {
 bool SwitchAccessEventHandler::ShouldCancelEvent(
     const ui::KeyEvent& event) const {
   // Ignore virtual key events so users can type with the onscreen keyboard.
-  if (ignore_virtual_key_events_ && !event.HasNativeEvent())
-    return false;
+  if (ignore_virtual_key_events_ &&
+      event.source_device_id() == ui::ED_UNKNOWN_DEVICE) {
+    // When running Chrome OS on Linux, the source_device_id property is never
+    // populated.
+    auto* properties = event.properties();
+    bool is_linux_xevent =
+        properties &&
+        properties->find(ui::kPropertyKeyboardIBusFlag) != properties->end();
+    if (!is_linux_xevent)
+      return false;
+  }
 
   if (forward_key_events_)
     return true;

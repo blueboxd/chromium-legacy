@@ -242,9 +242,17 @@ void BrowserAccessibilityManagerWin::FireGeneratedEvent(
       if (node->IsIgnored()) {
         FireWinAccessibilityEvent(EVENT_OBJECT_HIDE, node);
         FireUiaStructureChangedEvent(StructureChangeType_ChildRemoved, node);
+        if (node->GetRole() == ax::mojom::Role::kMenu) {
+          FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPEND, node);
+          FireUiaAccessibilityEvent(UIA_MenuClosedEventId, node);
+        }
       } else {
         FireWinAccessibilityEvent(EVENT_OBJECT_SHOW, node);
         FireUiaStructureChangedEvent(StructureChangeType_ChildAdded, node);
+        if (node->GetRole() == ax::mojom::Role::kMenu) {
+          FireWinAccessibilityEvent(EVENT_SYSTEM_MENUPOPUPSTART, node);
+          FireUiaAccessibilityEvent(UIA_MenuOpenedEventId, node);
+        }
       }
       aria_properties_events_.insert(node);
       break;
@@ -411,11 +419,15 @@ void BrowserAccessibilityManagerWin::FireWinAccessibilityEvent(
     return;
   if (!ShouldFireEventForNode(node))
     return;
-  // Suppress events when |IGNORED_CHANGED| except for related SHOW / HIDE
+  // Suppress events when |IGNORED_CHANGED| except for related SHOW / HIDE.
+  // Also include MENUPOPUPSTART / MENUPOPUPEND since a change in the ignored
+  // state may show / hide a popup by exposing it to the tree or not.
   if (base::Contains(ignored_changed_nodes_, node)) {
     switch (win_event_type) {
       case EVENT_OBJECT_HIDE:
       case EVENT_OBJECT_SHOW:
+      case EVENT_SYSTEM_MENUPOPUPEND:
+      case EVENT_SYSTEM_MENUPOPUPSTART:
         break;
       default:
         return;
@@ -443,9 +455,20 @@ void BrowserAccessibilityManagerWin::FireUiaAccessibilityEvent(
     return;
   if (!ShouldFireEventForNode(node))
     return;
-  // Suppress events when |IGNORED_CHANGED|
-  if (node->IsIgnored() || base::Contains(ignored_changed_nodes_, node))
+  // Suppress events when |IGNORED_CHANGED| except for MenuClosed / MenuOpen
+  // since a change in the ignored state may show / hide a popup by exposing
+  // it to the tree or not.
+  if (base::Contains(ignored_changed_nodes_, node)) {
+    switch (uia_event) {
+      case UIA_MenuClosedEventId:
+      case UIA_MenuOpenedEventId:
+        break;
+      default:
+        return;
+    }
+  } else if (node->IsIgnored()) {
     return;
+  }
 
   ::UiaRaiseAutomationEvent(ToBrowserAccessibilityWin(node)->GetCOM(),
                             uia_event);

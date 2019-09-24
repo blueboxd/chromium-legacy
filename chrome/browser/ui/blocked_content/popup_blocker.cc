@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/blocked_content/popup_blocker.h"
 
+#include <string>
+
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -16,6 +18,7 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/safe_browsing/triggers/ad_popup_trigger.h"
 #include "content/public/browser/page_navigator.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
 
 namespace {
@@ -23,7 +26,7 @@ namespace {
 // If the popup should be blocked, returns the reason why it was blocked.
 // Otherwise returns kNotBlocked.
 PopupBlockType ShouldBlockPopup(content::WebContents* web_contents,
-                                const base::Optional<GURL>& opener_url,
+                                const GURL* opener_url,
                                 bool user_gesture,
                                 const content::OpenURLParams* open_url_params) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -38,7 +41,7 @@ PopupBlockType ShouldBlockPopup(content::WebContents* web_contents,
   // the active entry is the page to be loaded as we navigate away from the
   // unloading page.
   const GURL& url =
-      opener_url ? opener_url.value() : web_contents->GetLastCommittedURL();
+      opener_url ? *opener_url : web_contents->GetLastCommittedURL();
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
   if (url.is_valid() &&
@@ -68,41 +71,8 @@ PopupBlockType ShouldBlockPopup(content::WebContents* web_contents,
   return PopupBlockType::kNotBlocked;
 }
 
-}  // namespace
-
-bool ConsiderForPopupBlocking(WindowOpenDisposition disposition) {
-  return disposition == WindowOpenDisposition::NEW_POPUP ||
-         disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
-         disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
-         disposition == WindowOpenDisposition::NEW_WINDOW;
-}
-
-bool MaybeBlockPopup(content::WebContents* web_contents,
-                     const base::Optional<GURL>& opener_url,
-                     NavigateParams* params,
-                     const content::OpenURLParams* open_url_params,
-                     const blink::mojom::WindowFeatures& window_features) {
-  DCHECK(web_contents);
-  DCHECK(!open_url_params ||
-         open_url_params->user_gesture == params->user_gesture);
-  PopupBlockerTabHelper::LogAction(PopupBlockerTabHelper::Action::kInitiated);
-
-  PopupBlockType block_type = ShouldBlockPopup(
-      web_contents, opener_url, params->user_gesture, open_url_params);
-  auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(web_contents);
-  if (popup_blocker && block_type != PopupBlockType::kNotBlocked) {
-    popup_blocker->AddBlockedPopup(params, window_features, block_type);
-    if (safe_browsing::AdPopupTrigger::FromWebContents(web_contents)) {
-      content::RenderFrameHost* source_frame =
-          GetSourceFrameForPopup(params, open_url_params, web_contents);
-      safe_browsing::AdPopupTrigger::FromWebContents(web_contents)
-          ->PopupWasBlocked(source_frame);
-    }
-    return true;
-  }
-  return false;
-}
-
+// Tries to get the opener from either the |params| or |open_url_params|,
+// otherwise uses the focused frame from |web_contents| as a proxy.
 content::RenderFrameHost* GetSourceFrameForPopup(
     NavigateParams* params,
     const content::OpenURLParams* open_url_params,
@@ -121,4 +91,43 @@ content::RenderFrameHost* GetSourceFrameForPopup(
   // The focused frame is not always the frame initiating the popup navigation
   // and is used as a fallback in case opener information is not available.
   return web_contents->GetFocusedFrame();
+}
+
+}  // namespace
+
+bool ConsiderForPopupBlocking(WindowOpenDisposition disposition) {
+  return disposition == WindowOpenDisposition::NEW_POPUP ||
+         disposition == WindowOpenDisposition::NEW_FOREGROUND_TAB ||
+         disposition == WindowOpenDisposition::NEW_BACKGROUND_TAB ||
+         disposition == WindowOpenDisposition::NEW_WINDOW;
+}
+
+bool MaybeBlockPopup(content::WebContents* web_contents,
+                     const GURL* opener_url,
+                     NavigateParams* params,
+                     const content::OpenURLParams* open_url_params,
+                     const blink::mojom::WindowFeatures& window_features) {
+  DCHECK(web_contents);
+  DCHECK(!open_url_params ||
+         open_url_params->user_gesture == params->user_gesture);
+  PopupBlockerTabHelper::LogAction(PopupBlockerTabHelper::Action::kInitiated);
+
+  // Check |popup_blocker| first since it is cheaper than ShouldBlockPopup().
+  auto* popup_blocker = PopupBlockerTabHelper::FromWebContents(web_contents);
+  if (!popup_blocker)
+    return false;
+
+  PopupBlockType block_type = ShouldBlockPopup(
+      web_contents, opener_url, params->user_gesture, open_url_params);
+  if (block_type == PopupBlockType::kNotBlocked)
+    return false;
+
+  popup_blocker->AddBlockedPopup(params, window_features, block_type);
+  auto* trigger = safe_browsing::AdPopupTrigger::FromWebContents(web_contents);
+  if (trigger) {
+    content::RenderFrameHost* source_frame =
+        GetSourceFrameForPopup(params, open_url_params, web_contents);
+    trigger->PopupWasBlocked(source_frame);
+  }
+  return true;
 }

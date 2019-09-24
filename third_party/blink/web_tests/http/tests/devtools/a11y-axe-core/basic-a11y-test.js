@@ -14,6 +14,12 @@
       'sensors',
     ];
 
+  //TODO(crbug.com/1004940): exclude scrollable-region-focusable for performance.monitor only
+  const NO_SCROLLABLE_REGION_FOCUSABLE_RULESET = {
+    'scrollable-region-focusable': {
+      enabled: false,
+    },
+  };
 
   for (const location of locationsToTest)
     await loadViewAndTestElementViolations(location);
@@ -24,6 +30,7 @@
     TestRunner.addResult(`Tests accessibility in the ${view} view using the axe-core linter.`);
     await UI.viewManager.showView(view);
     const widget = await UI.viewManager.view(view).widget();
-    await AxeCoreTestRunner.runValidation(widget.element);
+    const ruleset = view === 'performance.monitor' ? NO_SCROLLABLE_REGION_FOCUSABLE_RULESET : {};
+    await AxeCoreTestRunner.runValidation(widget.element, ruleset);
   }
 })();

@@ -3356,9 +3356,9 @@ void LocalFrameView::RemoveResizerArea(LayoutBox& resizer_box) {
     resizer_areas_->erase(it);
 }
 
-void LocalFrameView::ScheduleAnimation() {
+void LocalFrameView::ScheduleAnimation(base::TimeDelta delay) {
   if (auto* client = GetChromeClient())
-    client->ScheduleAnimation(this);
+    client->ScheduleAnimation(this, delay);
 }
 
 bool LocalFrameView::FrameIsScrollableDidChange() {

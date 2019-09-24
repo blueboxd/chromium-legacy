@@ -1222,6 +1222,7 @@ jumbo_source_set("unit_tests") {
     "html/anchor_element_metrics_test.cc",
     "html/canvas/canvas_async_blob_creator_test.cc",
     "html/canvas/canvas_font_cache_test.cc",
+    "html/canvas/html_canvas_element_test.cc",
     "html/canvas/image_data_test.cc",
     "html/custom/custom_element_definition_test.cc",
     "html/custom/custom_element_descriptor_test.cc",

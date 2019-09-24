@@ -1022,9 +1022,12 @@ void AppsGridView::UpdateControlVisibility(ash::AppListViewState app_list_state,
     }
   }
 
-  const bool fullscreen_apps_in_drag =
-      app_list_state == ash::AppListViewState::kFullscreenAllApps || is_in_drag;
-  SetVisible(fullscreen_apps_in_drag);
+  const bool fullscreen_or_in_drag =
+      is_in_drag ||
+      app_list_state == ash::AppListViewState::kFullscreenAllApps ||
+      (app_list_features::IsScalableAppListEnabled() &&
+       app_list_state == ash::AppListViewState::kFullscreenSearch);
+  SetVisible(fullscreen_or_in_drag);
 }
 
 bool AppsGridView::OnKeyPressed(const ui::KeyEvent& event) {

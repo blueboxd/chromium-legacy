@@ -43,7 +43,8 @@ class SkiaOutputSurface;
 class VIZ_SERVICE_EXPORT OutputSurface {
  public:
   struct Capabilities {
-    Capabilities() = default;
+    Capabilities();
+    Capabilities(const Capabilities& capabilities);
 
     int max_frames_pending = 1;
     // Whether this output surface renders to the default OpenGL zero
@@ -71,6 +72,10 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // the unified display on Chrome OS. All drawing is handled by the physical
     // displays so the unified display should skip that work.
     bool skips_draw = false;
+    // Indicates whether this surface will invalidate only the damage rect.
+    // When this is false contents outside the damaged area might need to be
+    // recomposited to the surface.
+    bool only_invalidates_damage_rect = true;
   };
 
   // Constructor for skia-based compositing.

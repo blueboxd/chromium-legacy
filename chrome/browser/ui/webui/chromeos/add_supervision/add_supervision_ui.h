@@ -11,6 +11,7 @@
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/controls/label.h"
@@ -68,7 +69,8 @@ class AddSupervisionUI : public ui::MojoWebUIController,
 
  private:
   void BindAddSupervisionHandler(
-      add_supervision::mojom::AddSupervisionHandlerRequest request);
+      mojo::PendingReceiver<add_supervision::mojom::AddSupervisionHandler>
+          receiver);
   void SetUpResources();
   GURL GetAddSupervisionURL();
 

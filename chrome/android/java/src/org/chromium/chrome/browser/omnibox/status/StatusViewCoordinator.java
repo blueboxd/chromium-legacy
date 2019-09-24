@@ -11,6 +11,7 @@ import androidx.annotation.DrawableRes;
 
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.omnibox.UrlBar;
 import org.chromium.chrome.browser.page_info.PageInfoController;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.ui.modelutil.PropertyModel;
@@ -20,7 +21,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  * A component for displaying a status icon (e.g. security icon or navigation icon) and optional
  * verbose status text.
  */
-public class StatusViewCoordinator implements View.OnClickListener {
+public class StatusViewCoordinator implements View.OnClickListener, UrlBar.UrlTextChangeListener {
     private final StatusView mStatusView;
     private final StatusMediator mMediator;
     private final PropertyModel mModel;
@@ -64,7 +65,7 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     public void setToolbarDataProvider(ToolbarDataProvider toolbarDataProvider) {
         mToolbarDataProvider = toolbarDataProvider;
-        mMediator.setToolbarDataProvider(mToolbarDataProvider);
+        mMediator.setToolbarCommonPropertiesModel(mToolbarDataProvider);
         // Update status immediately after receiving the data provider to avoid initial presence
         // glitch on tablet devices. This glitch would be typically seen upon launch of app, right
         // before the landing page is presented to the user.
@@ -211,5 +212,10 @@ public class StatusViewCoordinator implements View.OnClickListener {
      */
     public int getStatusIconWidth() {
         return mStatusView.getStatusIconWidth();
+    }
+
+    @Override
+    public void onTextChanged(String textWithoutAutocomplete, String textWithAutocomplete) {
+        mMediator.onTextChanged(textWithoutAutocomplete, textWithAutocomplete);
     }
 }

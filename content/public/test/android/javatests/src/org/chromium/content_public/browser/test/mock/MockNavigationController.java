@@ -121,6 +121,9 @@ public class MockNavigationController implements NavigationController {
     }
 
     @Override
+    public void pruneForwardEntries() {}
+
+    @Override
     public String getEntryExtraData(int index, String key) {
         return null;
     }

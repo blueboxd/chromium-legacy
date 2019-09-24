@@ -128,7 +128,7 @@ class GlobalNightModeStateController implements NightModeStateProvider,
 
     private void updateNightMode() {
         boolean powerSaveModeOn = mPowerSaveModeMonitor.powerSavingIsOn();
-        final int themeSetting = mChromePreferenceManager.readInt(UI_THEME_SETTING_KEY);
+        final int themeSetting = NightModeUtils.getThemeSetting();
         final boolean newNightModeOn = themeSetting == ThemePreferences.ThemeSetting.SYSTEM_DEFAULT
                         && (powerSaveModeOn || mSystemNightModeMonitor.isSystemNightModeOn())
                 || themeSetting == ThemePreferences.ThemeSetting.DARK;

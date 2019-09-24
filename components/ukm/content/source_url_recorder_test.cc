@@ -117,7 +117,7 @@ TEST_F(SourceUrlRecorderWebContentsObserverTest, SameDocumentNavigation) {
 
   // The first navigation was a non-same-document navigation to url1. As such,
   // it shouldn't have any previous source ids.
-  EXPECT_EQ(url1, full_nav_source1.url());
+  EXPECT_EQ(url1, full_nav_source1.urls(0).url());
   EXPECT_TRUE(full_nav_source1.has_id());
   EXPECT_FALSE(full_nav_source1.is_same_document_navigation());
   EXPECT_FALSE(full_nav_source1.has_previous_source_id());
@@ -127,7 +127,7 @@ TEST_F(SourceUrlRecorderWebContentsObserverTest, SameDocumentNavigation) {
   // The second navigation was a same-document navigation to
   // same_document_url1. It should have a previous_source_id that points to
   // url1's source, but no previous_same_document_source_id.
-  EXPECT_EQ(same_document_url1, same_doc_source1.url());
+  EXPECT_EQ(same_document_url1, same_doc_source1.urls(0).url());
   EXPECT_TRUE(same_doc_source1.has_id());
   EXPECT_TRUE(same_doc_source1.is_same_document_navigation());
   EXPECT_EQ(full_nav_source1.id(), same_doc_source1.previous_source_id());
@@ -138,7 +138,7 @@ TEST_F(SourceUrlRecorderWebContentsObserverTest, SameDocumentNavigation) {
   // have a previous_source_id pointing to the source for url1, and a
   // previous_same_document_source_id pointing to the source for
   // same_document_url1.
-  EXPECT_EQ(url2, full_nav_source2.url());
+  EXPECT_EQ(url2, full_nav_source2.urls(0).url());
   EXPECT_TRUE(full_nav_source2.has_id());
   EXPECT_FALSE(full_nav_source2.is_same_document_navigation());
   EXPECT_EQ(full_nav_source1.id(), full_nav_source2.previous_source_id());
@@ -149,7 +149,7 @@ TEST_F(SourceUrlRecorderWebContentsObserverTest, SameDocumentNavigation) {
   // The fourth navigation was a same-document navigation to
   // same_document_url2. It should have a previous_source_id pointing to the
   // source for url2, and no previous_same_document_source_id.
-  EXPECT_EQ(same_document_url2, same_doc_source2.url());
+  EXPECT_EQ(same_document_url2, same_doc_source2.urls(0).url());
   EXPECT_TRUE(same_doc_source2.has_id());
   EXPECT_TRUE(same_doc_source2.is_same_document_navigation());
   EXPECT_EQ(full_nav_source2.id(), same_doc_source2.previous_source_id());

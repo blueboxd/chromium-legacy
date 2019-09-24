@@ -102,6 +102,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   // Helper methods for building the menu.
   void BuildIdentity();
   void BuildGuestIdentity();
+  void BuildIncognitoIdentity();
   void BuildAutofillButtons();
   void BuildSyncInfo();
   void BuildAccountFeatureButtons();

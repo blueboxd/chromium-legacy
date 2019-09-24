@@ -59,8 +59,10 @@ TEST_F(SignedInAccountsViewControllerTest,
 
 // Tests that the signed in accounts view should be presented when the accounts
 // have changed.
+// Temporary disabled for regression for http://crbug.com/1006744: Disable
+// showing the signed-in account modal dialog.
 TEST_F(SignedInAccountsViewControllerTest,
-       ShouldBePresentedForBrowserStateNecessary) {
+       DISABLED_ShouldBePresentedForBrowserStateNecessary) {
   auth_service_->SetHaveAccountsChanged(true);
   EXPECT_TRUE([SignedInAccountsViewController
       shouldBePresentedForBrowserState:browser_state_.get()]);

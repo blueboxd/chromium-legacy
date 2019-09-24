@@ -16,6 +16,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.night_mode.NightModeUtils;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.ui.UiUtils;
@@ -52,9 +53,9 @@ public class ThemePreferences extends PreferenceFragmentCompat {
         ChromePreferenceManager chromePreferenceManager = ChromePreferenceManager.getInstance();
         RadioButtonGroupThemePreference radioButtonGroupThemePreference =
                 (RadioButtonGroupThemePreference) findPreference(PREF_UI_THEME_PREF);
-        radioButtonGroupThemePreference.initialize(
-                chromePreferenceManager.readInt(UI_THEME_SETTING_KEY),
+        radioButtonGroupThemePreference.initialize(NightModeUtils.getThemeSetting(),
                 chromePreferenceManager.readBoolean(DARKEN_WEBSITES_ENABLED_KEY, false));
+
         radioButtonGroupThemePreference.setOnPreferenceChangeListener((preference, newValue) -> {
             if (ChromeFeatureList.isEnabled(
                         ChromeFeatureList.DARKEN_WEBSITES_CHECKBOX_IN_THEMES_SETTING)) {

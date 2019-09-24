@@ -6,6 +6,7 @@
 
 #include "base/time/time.h"
 #include "chromecast/graphics/cast_window_manager_aura.h"
+#include "chromecast/graphics/cast_window_tree_host_aura.h"
 
 namespace chromecast {
 namespace {

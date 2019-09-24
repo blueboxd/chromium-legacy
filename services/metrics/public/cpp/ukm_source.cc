@@ -102,11 +102,8 @@ void UkmSource::PopulateProto(Source* proto_source) const {
   DCHECK(!proto_source->has_initial_url());
 
   proto_source->set_id(id_);
-  proto_source->set_url(GetShortenedURL(url()));
-  if (urls().size() > 1u) {
-    DCHECK_EQ(SourceIdType::NAVIGATION_ID, GetSourceIdType(id_));
-    const GURL& initial_url = urls().front();
-    proto_source->set_initial_url(GetShortenedURL(initial_url));
+  for (const auto& url : urls()) {
+    proto_source->add_urls()->set_url(GetShortenedURL(url));
   }
 
   if (custom_tab_state_ != kCustomTabUnset)

@@ -173,12 +173,13 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
 
   // Performs the actual layout of a new formatting context. This may be called
   // multiple times from HandleNewFormattingContext.
-  std::pair<scoped_refptr<const NGLayoutResult>, NGLayoutOpportunity>
-  LayoutNewFormattingContext(NGLayoutInputNode child,
-                             const NGBreakToken* child_break_token,
-                             const NGInflowChildData&,
-                             NGBfcOffset origin_offset,
-                             bool abort_if_cleared);
+  scoped_refptr<const NGLayoutResult> LayoutNewFormattingContext(
+      NGLayoutInputNode child,
+      const NGBreakToken* child_break_token,
+      const NGInflowChildData&,
+      NGBfcOffset origin_offset,
+      bool abort_if_cleared,
+      NGBfcOffset* out_child_bfc_offset);
 
   // Handle an in-flow child.
   // Returns false if we need to abort layout, because a previously unknown BFC

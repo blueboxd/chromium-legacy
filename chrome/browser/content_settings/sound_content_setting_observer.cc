@@ -10,7 +10,6 @@
 #include "chrome/browser/content_settings/tab_specific_content_settings.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_utils.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -29,9 +28,7 @@
 
 SoundContentSettingObserver::SoundContentSettingObserver(
     content::WebContents* contents)
-    : content::WebContentsObserver(contents),
-      logged_site_muted_ukm_(false),
-      observer_(this) {
+    : content::WebContentsObserver(contents), logged_site_muted_ukm_(false) {
   Profile* profile =
       Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   host_content_settings_map_ =

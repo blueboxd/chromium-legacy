@@ -634,25 +634,13 @@ void PaintCanvasVideoRenderer::Paint(scoped_refptr<VideoFrame> video_frame,
                       -SkFloatToScalar(image.height() * 0.5f));
   }
 
-  // This is a workaround for crbug.com/524717. A texture backed image is not
-  // safe to access on another thread or GL context. So if we're drawing into a
-  // recording canvas we read the texture back into CPU memory and record that
-  // sw image into the SkPicture. The long term solution is for Skia to provide
-  // a SkPicture filter that makes a picture safe for multiple CPU raster
-  // threads. (skbug.com/4321).
-  if (canvas->imageInfo().colorType() == kUnknown_SkColorType &&
-      image.IsTextureBacked()) {
-    sk_sp<SkImage> non_texture_image =
-        image.GetSkImage()->makeNonTextureImage();
-    image = cc::PaintImageBuilder::WithProperties(image)
-                .set_image(std::move(non_texture_image), image.content_id())
-                .TakePaintImage();
-  }
-
   SkImageInfo info;
   size_t row_bytes;
   SkIPoint origin;
   void* pixels = nullptr;
+  // This if is a special handling of video for SkiaPaintcanvas backend, where
+  // the video does not need any transform and it is enough to draw the frame
+  // directly into the skia canvas
   if (!need_transform && video_frame->IsMappable() &&
       flags.getAlpha() == SK_AlphaOPAQUE &&
       flags.getBlendMode() == SkBlendMode::kSrc &&
@@ -1469,13 +1457,34 @@ PaintCanvasVideoRenderer::Cache::~Cache() {
   DCHECK(!source_mailbox.IsZero());
   DCHECK(source_texture);
   auto* gl = context_provider->ContextGL();
-  gl->DeleteTextures(1, &source_texture);
+  if (!texture_ownership_in_skia)
+    gl->DeleteTextures(1, &source_texture);
   if (!wraps_video_frame_texture) {
     gpu::SyncToken sync_token;
     gl->GenUnverifiedSyncTokenCHROMIUM(sync_token.GetData());
     auto* sii = context_provider->SharedImageInterface();
     sii->DestroySharedImage(sync_token, source_mailbox);
   }
+}
+
+bool PaintCanvasVideoRenderer::Cache::Recycle() {
+  if (!texture_ownership_in_skia)
+    return true;
+
+  auto sk_image = paint_image.GetSkImage();
+  paint_image = cc::PaintImage();
+  if (!sk_image->unique())
+    return false;
+
+  // Flush any pending GPU work using this texture.
+  sk_image->flush(context_provider->GrContext());
+
+  // We need a new texture ID because skia will destroy the previous one with
+  // the SkImage.
+  texture_ownership_in_skia = false;
+  source_texture = SynchronizeAndImportMailbox(
+      context_provider->ContextGL(), gpu::SyncToken(), source_mailbox);
+  return true;
 }
 
 bool PaintCanvasVideoRenderer::UpdateLastImage(
@@ -1515,7 +1524,8 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
                           video_frame->ColorSpace(), context_provider);
       } else {
         if (cache_ && cache_->context_provider == context_provider &&
-            cache_->coded_size == video_frame->coded_size()) {
+            cache_->coded_size == video_frame->coded_size() &&
+            cache_->Recycle()) {
           // We can reuse the shared image from the previous cache.
           cache_->frame_id = video_frame->unique_id();
         } else {
@@ -1527,6 +1537,8 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
           cache_->source_texture = SynchronizeAndImportMailbox(
               gl, sii->GenUnverifiedSyncToken(), cache_->source_mailbox);
         }
+
+        DCHECK(!cache_->texture_ownership_in_skia);
         ScopedSharedImageAccess dest_access(
             gl, cache_->source_texture, cache_->source_mailbox,
             GL_SHARED_IMAGE_ACCESS_MODE_READWRITE_CHROMIUM);
@@ -1561,9 +1573,32 @@ bool PaintCanvasVideoRenderer::UpdateLastImage(
       cache_->context_provider = context_provider;
       cache_->coded_size = video_frame->coded_size();
       cache_->visible_rect = video_frame->visible_rect();
-      paint_image_builder.set_image(
-          source_image->makeSubset(gfx::RectToSkIRect(cache_->visible_rect)),
-          cc::PaintImage::GetNextContentId());
+      sk_sp<SkImage> source_subset =
+          source_image->makeSubset(gfx::RectToSkIRect(cache_->visible_rect));
+      if (source_subset) {
+        // We use the flushPendingGrContextIO = true so we can flush any pending
+        // GPU work on the GrContext to ensure that skia exectues the work for
+        // generating the subset and it can be safely destroyed.
+        GrBackendTexture image_backend =
+            source_image->getBackendTexture(/*flushPendingGrContextIO*/ true);
+        GrBackendTexture subset_backend =
+            source_subset->getBackendTexture(/*flushPendingGrContextIO*/ true);
+#if DCHECK_IS_ON()
+        GrGLTextureInfo backend_info;
+        if (image_backend.getGLTextureInfo(&backend_info))
+          DCHECK_EQ(backend_info.fID, cache_->source_texture);
+#endif
+        if (subset_backend.isValid() &&
+            subset_backend.isSameTexture(image_backend)) {
+          cache_->texture_ownership_in_skia = true;
+          source_subset = SkImage::MakeFromAdoptedTexture(
+              cache_->context_provider->GrContext(), image_backend,
+              kTopLeft_GrSurfaceOrigin, kRGBA_8888_SkColorType,
+              kPremul_SkAlphaType, source_image->imageInfo().refColorSpace());
+        }
+      }
+      paint_image_builder.set_image(source_subset,
+                                    cc::PaintImage::GetNextContentId());
     } else {
       cache_.emplace(video_frame->unique_id());
       paint_image_builder.set_paint_image_generator(

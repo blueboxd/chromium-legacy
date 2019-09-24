@@ -334,9 +334,6 @@ class PasswordFormManagerTest : public testing::Test {
     parsed_submitted_form_.password_value =
         submitted_form_.fields[kPasswordFieldIndex].value;
 
-    blacklisted_match_ = saved_match_;
-    blacklisted_match_.blacklisted_by_user = true;
-
     EXPECT_CALL(client_, GetAutofillDownloadManager())
         .WillRepeatedly(Return(&mock_autofill_download_manager_));
     ON_CALL(client_, IsMainFrameSecure()).WillByDefault(Return(true));
@@ -357,7 +354,6 @@ class PasswordFormManagerTest : public testing::Test {
   FormData observed_form_only_password_fields_;
   PasswordForm saved_match_;
   PasswordForm psl_saved_match_;
-  PasswordForm blacklisted_match_;
   PasswordForm parsed_observed_form_;
   PasswordForm parsed_submitted_form_;
   MockPasswordManagerClient client_;
@@ -549,7 +545,7 @@ TEST_F(PasswordFormManagerTest, AutofillWithBlacklistedMatch) {
   PasswordFormFillData fill_data;
   EXPECT_CALL(driver_, FillPasswordForm(_)).WillOnce(SaveArg<0>(&fill_data));
   fetcher_->SetNonFederated({&saved_match_});
-  fetcher_->SetBlacklisted({&blacklisted_match_});
+  fetcher_->SetBlacklisted(true);
   fetcher_->NotifyFetchCompleted();
 
   task_runner_->FastForwardUntilNoTasksRemain();

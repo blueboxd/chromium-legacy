@@ -29,8 +29,7 @@ base::Optional<AppId> WebAppBrowserController::GetAppId() const {
 }
 
 bool WebAppBrowserController::CreatedForInstalledPwa() const {
-  // TODO(crbug.com/915038): Implement and use WebApp::IsShortcut().
-  return registrar().GetAppScope(app_id_).has_value();
+  return !registrar().IsShortcutApp(app_id_);
 }
 
 bool WebAppBrowserController::IsHostedApp() const {

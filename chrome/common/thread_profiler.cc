@@ -205,7 +205,7 @@ void ThreadProfiler::SetCollectorForChildProcess(
 
   DCHECK_NE(CallStackProfileParams::BROWSER_PROCESS, GetProcess());
   CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
-      metrics::mojom::CallStackProfileCollectorPtr(std::move(collector)));
+      std::move(collector));
 }
 
 // ThreadProfiler implementation synopsis:

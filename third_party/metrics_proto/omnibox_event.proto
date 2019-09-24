@@ -206,6 +206,8 @@ message OmniboxEventProto {
     // Non personalized query suggestions generated from a lightweight on device
     // head model.
     ON_DEVICE_HEAD = 17;
+    // Zero-prefix query suggestions based on device local history.
+    ZERO_SUGGEST_LOCAL_HISTORY = 18;
   }
 
   // The result set displayed on the completion popup

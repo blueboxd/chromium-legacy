@@ -242,7 +242,8 @@ void CallStackProfileBuilder::SetBrowserProcessReceiverCallback(
 
 // static
 void CallStackProfileBuilder::SetParentProfileCollectorForChildProcess(
-    metrics::mojom::CallStackProfileCollectorPtr browser_interface) {
+    mojo::PendingRemote<metrics::mojom::CallStackProfileCollector>
+        browser_interface) {
   g_child_call_stack_profile_collector.Get().SetParentProfileCollector(
       std::move(browser_interface));
 }

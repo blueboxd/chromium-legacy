@@ -702,11 +702,6 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
   DCHECK(proxy_info_.proxy_server().is_valid());
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
-  if (delegate_->OnInitConnection(proxy_info_)) {
-    // Return since the connection initialization can be skipped.
-    return OK;
-  }
-
   if (proxy_info_.is_https() || proxy_info_.is_quic()) {
     // Disable network fetches for HTTPS proxies, since the network requests
     // are probably going to need to go through the proxy too.

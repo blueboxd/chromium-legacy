@@ -21,6 +21,7 @@
 namespace {
 
 constexpr int kBindingsFailureExitCode = 129;
+constexpr int kRewriteRulesProviderDisconnectExitCode = 130;
 
 constexpr char kStubBindingsPath[] =
     FILE_PATH_LITERAL("fuchsia/runners/cast/not_implemented_api_bindings.js");
@@ -50,12 +51,22 @@ CastComponent::CastComponent(CastRunner* runner,
                    std::move(params.controller_request)),
       agent_manager_(std::move(params.agent_manager)),
       application_config_(std::move(params.app_config)),
+      rewrite_rules_provider_(std::move(params.rewrite_rules_provider)),
       touch_input_policy_(
           TouchInputPolicyFromApplicationConfig(application_config_)),
       connector_(frame()),
       api_bindings_client_(std::move(params.api_bindings_client)),
       navigation_listener_binding_(this) {
   base::AutoReset<bool> constructor_active_reset(&constructor_active_, true);
+
+  rewrite_rules_provider_.set_error_handler([this](zx_status_t status) {
+    ZX_LOG(ERROR, status) << "UrlRequestRewriteRulesProvider disconnected.";
+    DestroyComponent(kRewriteRulesProviderDisconnectExitCode,
+                     fuchsia::sys::TerminationReason::INTERNAL_ERROR);
+  });
+
+  DCHECK(params.rewrite_rules);
+  OnRewriteRulesReceived(std::move(params.rewrite_rules.value()));
 
   frame()->SetEnableInput(false);
   frame()->SetNavigationEventListener(
@@ -81,6 +92,14 @@ void CastComponent::DestroyComponent(int termination_exit_code,
   DCHECK(!constructor_active_);
 
   WebComponent::DestroyComponent(termination_exit_code, reason);
+}
+
+void CastComponent::OnRewriteRulesReceived(
+    std::vector<fuchsia::web::UrlRequestRewriteRule> rewrite_rules) {
+  frame()->SetUrlRequestRewriteRules(std::move(rewrite_rules), [this]() {
+    rewrite_rules_provider_->GetUrlRequestRewriteRules(
+        fit::bind_member(this, &CastComponent::OnRewriteRulesReceived));
+  });
 }
 
 void CastComponent::OnNavigationStateChanged(

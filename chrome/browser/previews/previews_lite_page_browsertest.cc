@@ -36,7 +36,6 @@
 #include "chrome/browser/infobars/mock_infobar_service.h"
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 #include "chrome/browser/previews/previews_lite_page_decider.h"
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
 #include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -307,7 +306,6 @@ class BasePreviewsLitePageServerBrowserTest
 
     scoped_feature_list_.InitWithFeatures(
         {previews::features::kPreviews,
-         previews::features::kHTTPSServerPreviewsUsingURLLoader,
          optimization_guide::features::kOptimizationHints,
          previews::features::kResourceLoadingHints,
          data_reduction_proxy::features::
@@ -437,9 +435,7 @@ class BasePreviewsLitePageServerBrowserTest
     const GURL virtual_url = entry->GetVirtualURL();
 
     // The loaded url should be the previews version of the virtual url.
-    EXPECT_EQ(
-        loaded_url,
-        PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(virtual_url));
+    EXPECT_EQ(loaded_url, previews::GetLitePageRedirectURLForURL(virtual_url));
 
     EXPECT_FALSE(virtual_url.DomainIs(previews_server_url().host()) &&
                  virtual_url.EffectiveIntPort() ==
@@ -1017,8 +1013,8 @@ IN_PROC_BROWSER_TEST_P(
     // server.
     base::HistogramTester histogram_tester;
     ui_test_utils::NavigateToURL(
-        browser(), PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
-                       HttpsLitePageURL(kSuccess)));
+        browser(),
+        previews::GetLitePageRedirectURLForURL(HttpsLitePageURL(kSuccess)));
     VerifyPreviewNotLoaded();
   }
 
@@ -1427,8 +1423,7 @@ IN_PROC_BROWSER_TEST_P(
   {
     base::RunLoop loop;
     history_service->QueryURL(
-        PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
-            HttpsLitePageURL(kSuccess)),
+        previews::GetLitePageRedirectURLForURL(HttpsLitePageURL(kSuccess)),
         false /* want_visits */,
         base::BindLambdaForTesting([&](history::QueryURLResult result) {
           EXPECT_FALSE(result.success);
@@ -1559,8 +1554,7 @@ IN_PROC_BROWSER_TEST_P(
           }
         ]
       )text",
-      PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
-          HttpsLitePageURL(kSuccess))
+      previews::GetLitePageRedirectURLForURL(HttpsLitePageURL(kSuccess))
           .spec()
           .c_str()));
 

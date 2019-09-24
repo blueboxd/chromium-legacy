@@ -355,7 +355,7 @@ class OpenVRGamepadBuilder : public XRStandardGamepadBuilder {
     // trigger if we get here.
     std::string capabilities = "generic-trigger";
     if (HasSecondaryButton()) {
-      capabilities += "-grip";
+      capabilities += "-squeeze";
     }
     if (HasTouchpad()) {
       capabilities += "-touchpad";

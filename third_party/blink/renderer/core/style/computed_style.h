@@ -488,7 +488,7 @@ class ComputedStyle : public ComputedStyleBase,
 
   // border-image-source
   StyleImage* BorderImageSource() const { return BorderImage().GetImage(); }
-  void SetBorderImageSource(StyleImage*);
+  CORE_EXPORT void SetBorderImageSource(StyleImage*);
 
   // border-image-width
   const BorderImageLengthBox& BorderImageWidth() const {

@@ -10,6 +10,7 @@
 #include "chromecast/graphics/cast_focus_client_aura.h"
 #include "chromecast/graphics/cast_touch_activity_observer.h"
 #include "chromecast/graphics/cast_touch_event_gate.h"
+#include "chromecast/graphics/cast_window_tree_host_aura.h"
 #include "chromecast/graphics/gestures/cast_system_gesture_event_handler.h"
 #include "chromecast/graphics/gestures/side_swipe_detector.h"
 #include "ui/aura/client/default_capture_client.h"
@@ -17,9 +18,7 @@
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/env.h"
 #include "ui/aura/layout_manager.h"
-#include "ui/aura/null_window_targeter.h"
 #include "ui/aura/window.h"
-#include "ui/aura/window_tree_host_platform.h"
 #include "ui/base/ime/init/input_method_factory.h"
 #include "ui/base/ime/input_method.h"
 #include "ui/display/display.h"
@@ -79,39 +78,6 @@ gfx::Rect GetPrimaryDisplayHostBounds() {
       // default:
       return gfx::Rect(display_origin_in_pixel, display_size_in_pixel);
   }
-}
-
-}  // namespace
-
-CastWindowTreeHost::CastWindowTreeHost(
-    bool enable_input,
-    ui::PlatformWindowInitProperties properties,
-    bool use_external_frame_control)
-    : WindowTreeHostPlatform(std::move(properties),
-                             nullptr,
-                             nullptr,
-                             use_external_frame_control),
-      enable_input_(enable_input) {
-  if (!enable_input)
-    window()->SetEventTargeter(std::make_unique<aura::NullWindowTargeter>());
-}
-
-CastWindowTreeHost::~CastWindowTreeHost() {}
-
-void CastWindowTreeHost::DispatchEvent(ui::Event* event) {
-  if (!enable_input_) {
-    return;
-  }
-
-  WindowTreeHostPlatform::DispatchEvent(event);
-}
-
-gfx::Rect CastWindowTreeHost::GetTransformedRootWindowBoundsInPixels(
-    const gfx::Size& host_size_in_pixels) const {
-  gfx::RectF new_bounds(WindowTreeHost::GetTransformedRootWindowBoundsInPixels(
-      host_size_in_pixels));
-  new_bounds.set_origin(gfx::PointF());
-  return gfx::ToEnclosingRect(new_bounds);
 }
 
 // A layout manager owned by the root window.
@@ -218,6 +184,8 @@ void CastLayoutManager::SetChildBounds(aura::Window* child,
   SetChildBoundsDirect(child, requested_bounds);
 }
 
+}  // namespace
+
 CastWindowManagerAura::CastWindowManagerAura(bool enable_input)
     : enable_input_(enable_input) {}
 
@@ -248,7 +216,7 @@ void CastWindowManagerAura::Setup() {
 
   LOG(INFO) << "Starting window manager, bounds: " << host_bounds.ToString();
   CHECK(aura::Env::GetInstance());
-  window_tree_host_ = std::make_unique<CastWindowTreeHost>(
+  window_tree_host_ = std::make_unique<CastWindowTreeHostAura>(
       enable_input_, std::move(properties));
   window_tree_host_->InitHost();
   aura::Window* tree_window = window_tree_host_->window();
@@ -296,7 +264,7 @@ void CastWindowManagerAura::OnWindowOrderChanged(
   }
 }
 
-CastWindowTreeHost* CastWindowManagerAura::window_tree_host() const {
+CastWindowTreeHostAura* CastWindowManagerAura::window_tree_host() const {
   DCHECK(window_tree_host_);
   return window_tree_host_.get();
 }

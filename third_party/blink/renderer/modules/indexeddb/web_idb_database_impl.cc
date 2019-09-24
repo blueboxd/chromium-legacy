@@ -37,9 +37,9 @@ void WebIDBDatabaseImpl::CreateTransaction(
     int64_t transaction_id,
     const Vector<int64_t>& object_store_ids,
     mojom::IDBTransactionMode mode,
-    bool relaxed_durability) {
+    mojom::IDBTransactionDurability durability) {
   database_->CreateTransaction(std::move(transaction_receiver), transaction_id,
-                               object_store_ids, mode, relaxed_durability);
+                               object_store_ids, mode, durability);
 }
 
 void WebIDBDatabaseImpl::Close() {

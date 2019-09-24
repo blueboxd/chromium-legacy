@@ -16,6 +16,7 @@
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision.mojom.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_handler_utils.h"
 #include "chrome/browser/ui/webui/chromeos/add_supervision/add_supervision_metrics_recorder.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
@@ -25,17 +26,20 @@
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/web_ui.h"
 #include "google_apis/gaia/gaia_constants.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace chromeos {
 
 AddSupervisionHandler::AddSupervisionHandler(
-    add_supervision::mojom::AddSupervisionHandlerRequest request,
+    mojo::PendingReceiver<add_supervision::mojom::AddSupervisionHandler>
+        receiver,
     content::WebUI* web_ui,
     signin::IdentityManager* identity_manager,
     Delegate* delegate)
     : web_ui_(web_ui),
       identity_manager_(identity_manager),
-      binding_(this, std::move(request)),
+      receiver_(this, std::move(receiver)),
       delegate_(delegate) {}
 
 AddSupervisionHandler::~AddSupervisionHandler() = default;

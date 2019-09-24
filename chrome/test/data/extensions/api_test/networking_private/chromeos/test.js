@@ -455,31 +455,38 @@ var availableTests = [
         }], result);
       }));
   },
-  function enabledNetworkTypes() {
-    // Note: We call getEnabledNetworkTypes twice after each enable/dsiable
-    // to ensure that Chrome has processed the command (since enable/disable
-    // are 'synchronous' even though the action of enabling/disabling is not).
-    chrome.networkingPrivate.getEnabledNetworkTypes(
-        callbackPass(function(types) {
-          assertTrue(types.indexOf('WiFi') >= 0);
-          chrome.networkingPrivate.disableNetworkType('WiFi');
-          chrome.networkingPrivate.getEnabledNetworkTypes(
-              callbackPass(function(types) {
-                chrome.networkingPrivate.getEnabledNetworkTypes(
-                    callbackPass(function(types) {
-                      assertFalse(types.indexOf('WiFi') >= 0);
-                      chrome.networkingPrivate.enableNetworkType('WiFi');
-                      chrome.networkingPrivate.getEnabledNetworkTypes(
-                          callbackPass(function(types) {
-                            chrome.networkingPrivate.getEnabledNetworkTypes(
-                                callbackPass(function(types) {
-                                  assertTrue(types.indexOf('WiFi') >= 0);
-                                }));
-                          }));
-                    }));
-              }));
-        }));
+  function enabledNetworkTypesDisable() {
+    chrome.networkingPrivate.getEnabledNetworkTypes(function(types) {
+      assertTrue(types.indexOf('WiFi') >= 0);
+      var listener = callbackPass(function() {
+        chrome.networkingPrivate.onDeviceStateListChanged.removeListener(
+          listener);
+        chrome.networkingPrivate.getEnabledNetworkTypes(
+          callbackPass(function(types2) {
+            assertFalse(types2.indexOf('WiFi') >= 0);
+          }));
+      });
+      chrome.networkingPrivate.onDeviceStateListChanged.addListener(listener);
+      chrome.networkingPrivate.disableNetworkType('WiFi');
+    });
   },
+
+  function enabledNetworkTypesEnable() {
+    chrome.networkingPrivate.getEnabledNetworkTypes(function(types) {
+      assertFalse(types.indexOf('WiFi') >= 0);
+      var listener = callbackPass(function() {
+        chrome.networkingPrivate.onDeviceStateListChanged.removeListener(
+          listener);
+        chrome.networkingPrivate.getEnabledNetworkTypes(
+          callbackPass(function(types2) {
+            assertTrue(types2.indexOf('WiFi') >= 0);
+          }));
+      });
+      chrome.networkingPrivate.onDeviceStateListChanged.addListener(listener);
+      chrome.networkingPrivate.enableNetworkType('WiFi');
+    });
+  },
+
   function getDeviceStates() {
     chrome.networkingPrivate.getDeviceStates(callbackPass(function(result) {
       assertEq([

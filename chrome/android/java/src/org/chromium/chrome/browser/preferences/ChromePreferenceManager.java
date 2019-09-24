@@ -217,6 +217,12 @@ public class ChromePreferenceManager {
     public static final String NIGHT_MODE_AVAILABLE_KEY = "night_mode_available";
 
     /**
+     * Whether or not night mode should set "light" as the default option.
+     * Default value is false.
+     */
+    public static final String NIGHT_MODE_DEFAULT_TO_LIGHT = "night_mode_default_to_light";
+
+    /**
      * Whether or not night mode is available for custom tabs.
      * Default value is false.
      */
@@ -224,7 +230,8 @@ public class ChromePreferenceManager {
 
     /**
      * The current theme setting in the user settings.
-     * Default value is System default (see {@link ThemePreference.ThemeSetting}).
+     * Default value is -1. Use NightModeUtils#getThemeSetting() to retrieve current setting or
+     * default theme.
      */
     public static final String UI_THEME_SETTING_KEY = "ui_theme_setting";
 
@@ -721,8 +728,18 @@ public class ChromePreferenceManager {
      * @return The value of the preference.
      */
     public int readInt(String key) {
+        return readInt(key, 0);
+    }
+
+    /**
+     * Reads the given int value from the named shared preference.
+     * @param key The name of the preference to return.
+     * @param defaultValue The default value to return if the preference is not set.
+     * @return The value of the preference.
+     */
+    public int readInt(String key, int defaultValue) {
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            return mSharedPreferences.getInt(key, 0);
+            return mSharedPreferences.getInt(key, defaultValue);
         }
     }
 

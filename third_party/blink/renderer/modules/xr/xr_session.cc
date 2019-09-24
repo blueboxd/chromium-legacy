@@ -253,36 +253,20 @@ void XRSession::updateRenderState(XRRenderStateInit* init,
     return;
   }
 
-  if (init->hasBaseLayer() && init->baseLayer()) {
-    // Validate that any baseLayer provided was created with this session.
-    if (init->baseLayer()->session() != this) {
-      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
-                                        kIncompatibleLayer);
-      return;
-    }
-
-    // If the baseLayer was previously null and there are outstanding rAF
-    // callbacks, kick off a new frame request to flush them out.
-    if (!render_state_->baseLayer() && !pending_frame_ &&
-        !callback_collection_->IsEmpty()) {
-      // Kick off a request for a new XR frame.
-      xr_->frameProvider()->RequestFrame(this);
-      pending_frame_ = true;
-    }
-
-    if (!immersive() && init->baseLayer()->output_canvas()) {
-      // If the output canvas was previously null and there are outstanding rAF
-      // callbacks, kick off a new frame request to flush them out.
-      if (!render_state_->output_canvas() && !pending_frame_ &&
-          !callback_collection_->IsEmpty()) {
-        // Kick off a request for a new XR frame.
-        xr_->frameProvider()->RequestFrame(this);
-        pending_frame_ = true;
-      }
-    }
+  // Validate that any baseLayer provided was created with this session.
+  if (init->hasBaseLayer() && init->baseLayer() &&
+      init->baseLayer()->session() != this) {
+    exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+                                      kIncompatibleLayer);
+    return;
   }
 
   pending_render_state_.push_back(init);
+
+  // Updating our render state may have caused us to be in a state where we
+  // should be requesting frames again. Kick off a new frame request in case
+  // there are any pending callbacks to flush them out.
+  MaybeRequestFrame();
 }
 
 void XRSession::updateWorldTrackingState(
@@ -518,11 +502,7 @@ int XRSession::requestAnimationFrame(V8XRFrameRequestCallback* callback) {
     return 0;
 
   int id = callback_collection_->RegisterCallback(callback);
-  if (!pending_frame_) {
-    // Kick off a request for a new XR frame.
-    xr_->frameProvider()->RequestFrame(this);
-    pending_frame_ = true;
-  }
+  MaybeRequestFrame();
   return id;
 }
 
@@ -615,7 +595,7 @@ void XRSession::OnHitTestResults(
 
 void XRSession::OnCreateAnchorResult(ScriptPromiseResolver* resolver,
                                      device::mojom::CreateAnchorResult result,
-                                     int32_t id) {
+                                     uint32_t id) {
   DCHECK(create_anchor_promises_.Contains(resolver));
   create_anchor_promises_.erase(resolver);
 
@@ -680,7 +660,7 @@ void XRSession::ProcessAnchorsData(
 
   is_tracked_anchors_null_ = false;
 
-  HeapHashMap<int32_t, Member<XRAnchor>> updated_anchors;
+  HeapHashMap<uint32_t, Member<XRAnchor>> updated_anchors;
 
   // First, process all planes that had their information updated (new planes
   // are also processed here).
@@ -846,17 +826,32 @@ void XRSession::UpdateVisibilityState() {
   if (visibility_state_ != state) {
     visibility_state_ = state;
 
-    // If the visibility state was changed to something other than hidden and
-    // there are rAF callbacks still waiting to resolve kickstart the rAF loop
-    // again.
-    if (visibility_state_ != XRVisibilityState::HIDDEN && !pending_frame_ &&
-        !callback_collection_->IsEmpty()) {
-      xr_->frameProvider()->RequestFrame(this);
-      pending_frame_ = true;
-    }
+    // If the visibility state was changed to something other than hidden, we
+    // may be able to restart the frame loop.
+    MaybeRequestFrame();
 
     DispatchEvent(
         *XRSessionEvent::Create(event_type_names::kVisibilitychange, this));
+  }
+}
+
+void XRSession::MaybeRequestFrame() {
+  bool will_have_base_layer = !!render_state_->baseLayer();
+  for (const auto& init : pending_render_state_) {
+    if (init->hasBaseLayer()) {
+      will_have_base_layer = !!init->baseLayer();
+    }
+  }
+
+  // We can request a frame if we're not hidden, we don't already have a pending
+  // frame, we have pending callbacks, and we will have a base layer when it
+  // resolves.
+  bool can_request_frame =
+      visibility_state_ != XRVisibilityState::HIDDEN && !pending_frame_ &&
+      !callback_collection_->IsEmpty() && will_have_base_layer;
+  if (can_request_frame) {
+    xr_->frameProvider()->RequestFrame(this);
+    pending_frame_ = true;
   }
 }
 
@@ -876,8 +871,9 @@ void XRSession::DetachOutputCanvas(HTMLCanvasElement* canvas) {
 }
 
 void XRSession::ApplyPendingRenderState() {
+  DCHECK(!prev_base_layer_);
   if (pending_render_state_.size() > 0) {
-    XRWebGLLayer* prev_base_layer = render_state_->baseLayer();
+    prev_base_layer_ = render_state_->baseLayer();
     HTMLCanvasElement* prev_ouput_canvas = render_state_->output_canvas();
     update_views_next_frame_ = true;
 
@@ -890,7 +886,7 @@ void XRSession::ApplyPendingRenderState() {
     // If this is an inline session and the base layer has changed, give it an
     // opportunity to update it's drawing buffer size.
     if (!immersive() && render_state_->baseLayer() &&
-        render_state_->baseLayer() != prev_base_layer) {
+        render_state_->baseLayer() != prev_base_layer_) {
       render_state_->baseLayer()->OnResize();
     }
 
@@ -961,6 +957,7 @@ void XRSession::OnFrame(
     return;
 
   // If there are pending render state changes, apply them now.
+  prev_base_layer_ = nullptr;
   ApplyPendingRenderState();
 
   if (pending_frame_) {
@@ -969,8 +966,17 @@ void XRSession::OnFrame(
     // Don't allow frames to be processed if there's no layers attached to the
     // session. That would allow tracking with no associated visuals.
     XRWebGLLayer* frame_base_layer = render_state_->baseLayer();
-    if (!frame_base_layer)
+    if (!frame_base_layer) {
+      // If we previously had a frame base layer, we need to still attempt to
+      // submit a frame back to the runtime, as all "GetFrameData" calls need a
+      // matching submit.
+      if (prev_base_layer_) {
+        prev_base_layer_->OnFrameStart(output_mailbox_holder);
+        prev_base_layer_->OnFrameEnd();
+        prev_base_layer_ = nullptr;
+      }
       return;
+    }
 
     // Don't allow frames to be processed if an inline session doesn't have an
     // output canvas.
@@ -1312,6 +1318,7 @@ void XRSession::Trace(blink::Visitor* visitor) {
   visitor->Trace(create_anchor_promises_);
   visitor->Trace(reference_spaces_);
   visitor->Trace(anchor_ids_to_anchors_);
+  visitor->Trace(prev_base_layer_);
   EventTargetWithInlineData::Trace(visitor);
 }
 

@@ -5,8 +5,6 @@
 package org.chromium.weblayer_private;
 
 import android.content.Context;
-import android.content.ContextWrapper;
-import android.content.res.Resources;
 import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -63,16 +61,9 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         public void onScrollChanged(int lPix, int tPix, int oldlPix, int oldtPix) {}
     }
 
-    public BrowserControllerImpl(Context clientContext, Context implContext, ProfileImpl profile) {
+    public BrowserControllerImpl(Context context, ProfileImpl profile) {
         mProfile = profile;
 
-        Context context = new ContextWrapper(clientContext) {
-            @Override
-            public Resources getResources() {
-                // Always use resources from the implementation APK.
-                return implContext.getResources();
-            }
-        };
         // Use false to disable listening to activity state.
         // TODO: this should *not* use ActivityWindowAndroid as that relies on Activity, and this
         // code should not assume it is supplied an Activity.

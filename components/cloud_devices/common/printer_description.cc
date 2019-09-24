@@ -1434,39 +1434,42 @@ class PinTraits : public NoValueValidation, public ItemsTraits<kOptionPin> {
 
 }  // namespace printer
 
-using namespace printer;
-
-template class ListCapability<ContentType, ContentTypeTraits>;
-template class ValueCapability<PwgRasterConfig, PwgRasterConfigTraits>;
-template class ListCapability<VendorCapability, VendorCapabilityTraits>;
-template class SelectionCapability<SelectVendorCapabilityOption,
-                                   SelectVendorCapabilityTraits>;
-template class SelectionCapability<Color, ColorTraits>;
-template class SelectionCapability<DuplexType, DuplexTraits>;
-template class SelectionCapability<OrientationType, OrientationTraits>;
-template class SelectionCapability<Margins, MarginsTraits>;
-template class SelectionCapability<Dpi, DpiTraits>;
-template class SelectionCapability<FitToPageType, FitToPageTraits>;
-template class SelectionCapability<Media, MediaTraits>;
-template class EmptyCapability<class CopiesTraits>;
-template class EmptyCapability<class PageRangeTraits>;
-template class BooleanCapability<class CollateTraits>;
-template class BooleanCapability<class ReverseTraits>;
+template class ListCapability<printer::ContentType, printer::ContentTypeTraits>;
+template class ValueCapability<printer::PwgRasterConfig,
+                               printer::PwgRasterConfigTraits>;
+template class ListCapability<printer::VendorCapability,
+                              printer::VendorCapabilityTraits>;
+template class SelectionCapability<printer::SelectVendorCapabilityOption,
+                                   printer::SelectVendorCapabilityTraits>;
+template class SelectionCapability<printer::Color, printer::ColorTraits>;
+template class SelectionCapability<printer::DuplexType, printer::DuplexTraits>;
+template class SelectionCapability<printer::OrientationType,
+                                   printer::OrientationTraits>;
+template class SelectionCapability<printer::Margins, printer::MarginsTraits>;
+template class SelectionCapability<printer::Dpi, printer::DpiTraits>;
+template class SelectionCapability<printer::FitToPageType,
+                                   printer::FitToPageTraits>;
+template class SelectionCapability<printer::Media, printer::MediaTraits>;
+template class EmptyCapability<printer::CopiesTraits>;
+template class EmptyCapability<printer::PageRangeTraits>;
+template class BooleanCapability<printer::CollateTraits>;
+template class BooleanCapability<printer::ReverseTraits>;
 #if defined(OS_CHROMEOS)
-template class ValueCapability<bool, class PinTraits>;
+template class ValueCapability<bool, printer::PinTraits>;
 #endif  // defined(OS_CHROMEOS)
 
-template class TicketItem<PwgRasterConfig, PwgRasterConfigTraits>;
-template class TicketItem<Color, ColorTraits>;
-template class TicketItem<DuplexType, DuplexTraits>;
-template class TicketItem<OrientationType, OrientationTraits>;
-template class TicketItem<Margins, MarginsTraits>;
-template class TicketItem<Dpi, DpiTraits>;
-template class TicketItem<FitToPageType, FitToPageTraits>;
-template class TicketItem<Media, MediaTraits>;
-template class TicketItem<int32_t, CopiesTraits>;
-template class TicketItem<PageRange, PageRangeTraits>;
-template class TicketItem<bool, CollateTraits>;
-template class TicketItem<bool, ReverseTraits>;
+template class TicketItem<printer::PwgRasterConfig,
+                          printer::PwgRasterConfigTraits>;
+template class TicketItem<printer::Color, printer::ColorTraits>;
+template class TicketItem<printer::DuplexType, printer::DuplexTraits>;
+template class TicketItem<printer::OrientationType, printer::OrientationTraits>;
+template class TicketItem<printer::Margins, printer::MarginsTraits>;
+template class TicketItem<printer::Dpi, printer::DpiTraits>;
+template class TicketItem<printer::FitToPageType, printer::FitToPageTraits>;
+template class TicketItem<printer::Media, printer::MediaTraits>;
+template class TicketItem<int32_t, printer::CopiesTraits>;
+template class TicketItem<printer::PageRange, printer::PageRangeTraits>;
+template class TicketItem<bool, printer::CollateTraits>;
+template class TicketItem<bool, printer::ReverseTraits>;
 
 }  // namespace cloud_devices

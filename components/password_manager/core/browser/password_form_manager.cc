@@ -252,7 +252,7 @@ base::span<const InteractionsStats> PasswordFormManager::GetInteractionsStats()
 }
 
 bool PasswordFormManager::IsBlacklisted() const {
-  return !form_fetcher_->GetBlacklistedMatches().empty() || newly_blacklisted_;
+  return form_fetcher_->IsBlacklisted() || newly_blacklisted_;
 }
 
 void PasswordFormManager::Save() {

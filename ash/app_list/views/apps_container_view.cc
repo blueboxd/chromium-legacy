@@ -202,10 +202,13 @@ void AppsContainerView::UpdateControlVisibility(
     bool is_in_drag) {
   if (app_list_state == ash::AppListViewState::kClosed)
     return;
+
   apps_grid_view_->UpdateControlVisibility(app_list_state, is_in_drag);
-  page_switcher_->SetVisible(app_list_state ==
-                                 ash::AppListViewState::kFullscreenAllApps ||
-                             is_in_drag);
+  page_switcher_->SetVisible(
+      is_in_drag ||
+      app_list_state == ash::AppListViewState::kFullscreenAllApps ||
+      (app_list_features::IsScalableAppListEnabled() &&
+       app_list_state == ash::AppListViewState::kFullscreenSearch));
 
   // Ignore button press during dragging to avoid app list item views' opacity
   // being set to wrong value.

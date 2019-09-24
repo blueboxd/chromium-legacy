@@ -2,10 +2,12 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-from selenium import webdriver
-import os
 import time
+
 from absl import app, flags
+from selenium import webdriver
+
+import test_util
 
 FLAGS = flags.FLAGS
 
@@ -35,12 +37,7 @@ def main(argv):
   #https://bugs.chromium.org/p/chromedriver/issues/detail?id=2930
   chrome_options.add_experimental_option("useAutomationExtension", False)
 
-  os.environ["CHROME_LOG_FILE"] = r"c:\temp\chrome_log.txt"
-
-  driver = webdriver.Chrome(
-      "C:/ProgramData/chocolatey/lib/chromedriver/tools/chromedriver.exe",
-      service_args=["--verbose", r"--log-path=c:\temp\chromedriver.log"],
-      chrome_options=chrome_options)
+  driver = test_util.create_chrome_webdriver(chrome_options=chrome_options)
   driver.implicitly_wait(FLAGS.wait)
   driver.get(FLAGS.url)
 

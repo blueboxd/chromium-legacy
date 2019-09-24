@@ -370,20 +370,10 @@ public class WebApkUma {
      * @return The available space that can be used to install WebAPK. Negative value means there is
      * less free space available than the system's minimum by the given amount.
      */
-    @SuppressWarnings("deprecation")
     public static long getAvailableSpaceAboveLowSpaceLimit() {
-        long partitionAvailableBytes;
-        long partitionTotalBytes;
         StatFs partitionStats = new StatFs(Environment.getDataDirectory().getAbsolutePath());
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            partitionAvailableBytes = partitionStats.getAvailableBytes();
-            partitionTotalBytes = partitionStats.getTotalBytes();
-        } else {
-            // these APIs were deprecated in API level 18.
-            long blockSize = partitionStats.getBlockSize();
-            partitionAvailableBytes = blockSize * (long) partitionStats.getAvailableBlocks();
-            partitionTotalBytes = blockSize * (long) partitionStats.getBlockCount();
-        }
+        long partitionAvailableBytes = partitionStats.getAvailableBytes();
+        long partitionTotalBytes = partitionStats.getTotalBytes();
         long minimumFreeBytes = getLowSpaceLimitBytes(partitionTotalBytes);
 
         long webApkExtraSpaceBytes = 0;

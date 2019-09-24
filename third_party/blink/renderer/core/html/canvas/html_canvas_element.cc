@@ -1393,6 +1393,8 @@ void HTMLCanvasElement::CreateLayer() {
         base::DoNothing());
     // Creates a placeholder layer first before Surface is created.
     surface_layer_bridge_->CreateSolidColorLayer();
+    // This may cause the canvas to be composited.
+    SetNeedsCompositingUpdate();
   }
 }
 

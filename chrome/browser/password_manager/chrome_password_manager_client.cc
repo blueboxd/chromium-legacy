@@ -201,7 +201,6 @@ ChromePasswordManagerClient::ChromePasswordManagerClient(
       password_feature_manager_(
           ProfileSyncServiceFactory::GetForProfile(profile_)),
       httpauth_manager_(this),
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
       password_reuse_detection_manager_(this),
 #endif
@@ -640,7 +639,6 @@ void ChromePasswordManagerClient::DidFinishNavigation(
   if (!navigation_handle->IsSameDocument())
     content_credential_manager_.DisconnectBinding();
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   password_reuse_detection_manager_.DidNavigateMainFrame(GetMainFrameURL());
 #endif  // defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)

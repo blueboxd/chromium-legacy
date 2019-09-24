@@ -58,8 +58,7 @@ MediaPipelineBackendManager::MediaPipelineBackendManager(
       global_volume_multipliers_({{AudioContentType::kMedia, 1.0f},
                                   {AudioContentType::kAlarm, 1.0f},
                                   {AudioContentType::kCommunication, 1.0f},
-                                  {AudioContentType::kOther, 1.0f}},
-                                 base::KEEP_FIRST_OF_DUPES),
+                                  {AudioContentType::kOther, 1.0f}}),
       backend_wrapper_using_video_decoder_(nullptr),
       buffer_delegate_(nullptr),
       weak_factory_(this) {

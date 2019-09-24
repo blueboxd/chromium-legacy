@@ -2,12 +2,13 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import time
-import test_util
 import json
+import time
+
 from absl import app, flags
-from selenium import webdriver
 from selenium.webdriver.chrome.options import Options
+
+import test_util
 
 FLAGS = flags.FLAGS
 
@@ -26,12 +27,7 @@ flags.DEFINE_string('user_data_dir', None,
 def _create_driver():
   chrome_options = Options()
   chrome_options.add_argument(r'user-data-dir=%s' % FLAGS.user_data_dir)
-  driver = webdriver.Chrome(
-      executable_path=
-      "C:/ProgramData/chocolatey/lib/chromedriver/tools/chromedriver.exe",
-      chrome_options=chrome_options,
-      service_args=["--verbose", r"--log-path=c:\temp\chromedriver.log"])
-  return driver
+  return test_util.create_chrome_webdriver(chrome_options=chrome_options)
 
 
 def _get_urls(driver):

@@ -203,7 +203,7 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   // Wrappers that allow private TopSites functions to be called from the
   // individual tests without making them all be friends.
   void SetTopSites(const MostVisitedURLList& new_top_sites) {
-    top_sites()->SetTopSites(new_top_sites,
+    top_sites()->SetTopSites(MostVisitedURLList(new_top_sites),
                              TopSitesImpl::CALL_LOCATION_FROM_OTHER_PLACES);
   }
 

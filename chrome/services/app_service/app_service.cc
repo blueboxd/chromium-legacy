@@ -17,7 +17,7 @@ AppService::~AppService() = default;
 
 void AppService::OnStart() {
   binder_registry_.AddInterface<apps::mojom::AppService>(base::BindRepeating(
-      &AppServiceImpl::BindRequest, base::Unretained(&impl_)));
+      &AppServiceImpl::BindReceiver, base::Unretained(&impl_)));
 }
 
 void AppService::OnBindInterface(const service_manager::BindSourceInfo& source,

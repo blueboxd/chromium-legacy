@@ -13,7 +13,6 @@
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_reader.h"
 #include "chrome/browser/resource_coordinator/local_site_characteristics_data_writer.h"
 #include "chrome/browser/resource_coordinator/tab_manager_features.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/history/core/browser/url_row.h"
 #include "url/gurl.h"
 
@@ -35,7 +34,7 @@ size_t CountOriginsInURLRows(const history::URLRows& rows) {
 
 LocalSiteCharacteristicsDataStore::LocalSiteCharacteristicsDataStore(
     Profile* profile)
-    : history_observer_(this), profile_(profile) {
+    : profile_(profile) {
   DCHECK(base::FeatureList::IsEnabled(features::kSiteCharacteristicsDatabase));
 
   database_ = std::make_unique<LevelDBSiteCharacteristicsDatabase>(

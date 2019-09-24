@@ -56,8 +56,8 @@ public class UrlBarCoordinator implements UrlBarEditingTextStateProvider {
     }
 
     /** @see UrlBarMediator#setDelegate(UrlBarDelegate) */
-    public void setUrlTextChangeListener(UrlTextChangeListener listener) {
-        mMediator.setUrlTextChangeListener(listener);
+    public void addUrlTextChangeListener(UrlTextChangeListener listener) {
+        mMediator.addUrlTextChangeListener(listener);
     }
 
     /** @see UrlBarMediator#setUrlBarData(UrlBarData, int, int) */

@@ -82,7 +82,7 @@ class CodecImageTest : public testing::Test {
   enum ImageKind { kOverlay, kTextureOwner };
   scoped_refptr<CodecImage> NewImage(
       ImageKind kind,
-      CodecImage::UnusedCB now_unused_cb = base::DoNothing()) {
+      CodecImage::UnusedCB unused_cb = base::DoNothing()) {
     std::unique_ptr<CodecOutputBuffer> buffer;
     wrapper_->DequeueOutputBuffer(nullptr, nullptr, &buffer);
     scoped_refptr<CodecImage> image = new CodecImage();
@@ -92,7 +92,7 @@ class CodecImageTest : public testing::Test {
         base::BindRepeating(&PromotionHintReceiver::OnPromotionHint,
                             base::Unretained(&promotion_hint_receiver_)));
 
-    image->AddUnusedCB(std::move(now_unused_cb));
+    image->AddUnusedCB(std::move(unused_cb));
     return image;
   }
 
@@ -131,6 +131,26 @@ TEST_F(CodecImageTest, UnusedCBRunsOnDestruction) {
   EXPECT_CALL(cb_1, Run(i.get()));
   EXPECT_CALL(cb_2, Run(i.get()));
   i = nullptr;
+}
+
+TEST_F(CodecImageTest, UnusedCBRunsOnNotifyUnused) {
+  base::MockCallback<CodecImage::UnusedCB> cb_1;
+  base::MockCallback<CodecImage::UnusedCB> cb_2;
+  auto i = NewImage(kTextureOwner);
+  ASSERT_TRUE(i->get_codec_output_buffer_for_testing());
+  ASSERT_TRUE(i->is_texture_owner_backed());
+  i->AddUnusedCB(cb_1.Get());
+  i->AddUnusedCB(cb_2.Get());
+  EXPECT_CALL(cb_1, Run(i.get()));
+  EXPECT_CALL(cb_2, Run(i.get()));
+
+  // Also verify that the output buffer and texture owner are released.
+  i->NotifyUnused();
+  EXPECT_FALSE(i->get_codec_output_buffer_for_testing());
+  EXPECT_FALSE(i->is_texture_owner_backed());
+
+  // Verify that an additional call doesn't crash.  It should do nothing.
+  i->NotifyUnused();
 }
 
 TEST_F(CodecImageTest, ImageStartsUnrendered) {

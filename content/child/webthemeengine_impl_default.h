@@ -28,6 +28,8 @@ class WebThemeEngineDefault : public blink::WebThemeEngine {
   bool SupportsNinePatch(Part part) const override;
   blink::WebSize NinePatchCanvasSize(Part part) const override;
   blink::WebRect NinePatchAperture(Part part) const override;
+  base::Optional<SkColor> GetSystemColor(blink::WebThemeEngine::SystemThemeColor
+                                             system_theme_color) const override;
 #if defined(OS_WIN)
   // Caches the scrollbar metrics. These are retrieved in the browser and passed
   // to the renderer in blink::mojom::RendererPreferences because the required

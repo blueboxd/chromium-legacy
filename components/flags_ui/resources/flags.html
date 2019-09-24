@@ -32,18 +32,15 @@
             autocomplete="off" spellcheck="false">
         <input type="button" class="clear-search" title="$i18n{clear-search}"
             tabindex="2">
-        <div class="screen-reader-only" id="search-success-message" role="status"></div>
       </div>
     </div>
     <div class="flex">
       <button id="experiment-reset-all" type="button" tabindex="3">
           $i18n{reset}
       </button>
-      <div class="screen-reader-only" id="reset-all-success-message" role="status" aria-disabled="true">
-        $i18n{reset-acknowledged}
-      </div>
     </div>
   </div>
+  <div class="screen-reader-only" id="screen-reader-status-message" role="status"></div>
 </div>
 <div id="body-container" style="visibility:hidden">
   <div id="flagsTemplate">
@@ -218,7 +215,7 @@
         <div class="flex restart-notice" jstcache="0">$i18n{flagsRestartNotice}</div>
         <div class="flex">
 <if expr="not is_ios">
-          <button id="experiment-restart-button" class="primary" tabindex="9">
+          <button id="experiment-restart-button" class="primary" tabindex="-1">
             $i18n{relaunch}
           </button>
 </if>

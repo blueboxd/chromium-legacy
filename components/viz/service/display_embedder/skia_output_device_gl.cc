@@ -43,6 +43,7 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
           .disable_post_sub_buffers_for_onscreen_surfaces)
     capabilities_.supports_post_sub_buffer = false;
   capabilities_.max_frames_pending = gl_surface_->GetBufferCount() - 1;
+  capabilities_.supports_gpu_vsync = gl_surface_->SupportsGpuVSync();
   capabilities_.supports_dc_layers = gl_surface_->SupportsDCLayers();
 }
 
@@ -160,6 +161,10 @@ void SkiaOutputDeviceGL::DoFinishSwapBuffers(
 
 void SkiaOutputDeviceGL::SetDrawRectangle(const gfx::Rect& draw_rectangle) {
   gl_surface_->SetDrawRectangle(draw_rectangle);
+}
+
+void SkiaOutputDeviceGL::SetGpuVSyncEnabled(bool enabled) {
+  gl_surface_->SetGpuVSyncEnabled(enabled);
 }
 
 void SkiaOutputDeviceGL::SetEnableDCLayers(bool enable) {

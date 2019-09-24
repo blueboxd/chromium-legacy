@@ -242,7 +242,7 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
   nav_params.FillNavigateParamsFromOpenURLParams(params);
   nav_params.source_contents = web_contents();
   nav_params.user_gesture = true;
-  MaybeBlockPopup(web_contents(), base::nullopt, &nav_params, &params,
+  MaybeBlockPopup(web_contents(), nullptr, &nav_params, &params,
                   blink::mojom::WindowFeatures());
 
   EXPECT_EQ(1u, PopupBlockerTabHelper::FromWebContents(web_contents())
@@ -270,7 +270,7 @@ TEST_F(SafeBrowsingTriggeredPopupBlockerTest,
   nav_params.FillNavigateParamsFromOpenURLParams(params);
   nav_params.source_contents = web_contents();
   nav_params.user_gesture = true;
-  MaybeBlockPopup(web_contents(), base::nullopt, &nav_params, &params,
+  MaybeBlockPopup(web_contents(), nullptr, &nav_params, &params,
                   blink::mojom::WindowFeatures());
 
   EXPECT_EQ(0u, PopupBlockerTabHelper::FromWebContents(web_contents())

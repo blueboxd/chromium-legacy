@@ -5,25 +5,63 @@
 package org.chromium.chrome.browser.omnibox.status;
 
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.text.TextUtils;
 import android.view.View;
 
 import androidx.annotation.ColorRes;
 import androidx.annotation.DrawableRes;
 import androidx.annotation.StringRes;
 
+import org.chromium.base.Callback;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
+import org.chromium.chrome.browser.omnibox.UrlBar;
+import org.chromium.chrome.browser.omnibox.suggestions.AutocompleteCoordinatorFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
+import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /**
  * Contains the controller logic of the Status component.
  */
 class StatusMediator {
+    @VisibleForTesting
+    class StatusMediatorDelegate {
+        /** @see {@link AutocompleteCoordinatorFactory#qualifyPartialURLQuery} */
+        boolean isUrlValid(String partialUrl) {
+            return BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                           .isFullBrowserStarted()
+                    && AutocompleteCoordinatorFactory.qualifyPartialURLQuery(partialUrl) != null;
+        }
+
+        /** @see {@link SearchEngineLogoUtils#getSearchEngineLogoFavicon} */
+        void getSearchEngineLogoFavicon(Resources res, Callback<Bitmap> callback) {
+            SearchEngineLogoUtils.getSearchEngineLogoFavicon(
+                    Profile.getLastUsedProfile().getOriginalProfile(), res, callback);
+        }
+
+        /** @see {@link SearchEngineLogoUtils#shouldShowSearchEngineLogo} */
+        boolean shouldShowSearchEngineLogo() {
+            return SearchEngineLogoUtils.shouldShowSearchEngineLogo();
+        }
+
+        /** @see {@link SearchEngineLogoUtils#shouldShowSearchLoupeEverywhere} */
+        boolean shouldShowSearchLoupeEverywhere() {
+            return SearchEngineLogoUtils.shouldShowSearchLoupeEverywhere();
+        }
+
+        /** @see {@link SearchEngineLogoUtils#doesUrlMatchDefaultSearchEngine} */
+        boolean doesUrlMatchDefaultSearchEngine(String url) {
+            return SearchEngineLogoUtils.doesUrlMatchDefaultSearchEngine(url);
+        }
+    }
+
     // The size that the icon should be displayed as.
     private static final int SEARCH_ENGINE_LOGO_ICON_TARGET_SIZE_DP = 24;
     // The size given to LargeIconBridge to increase the probability that we'll get an icon back.
@@ -53,11 +91,15 @@ class StatusMediator {
     private @StringRes int mSecurityIconDescriptionRes;
     private @DrawableRes int mNavigationIconTintRes;
 
+    private StatusMediatorDelegate mDelegate;
     private Resources mResources;
     private ToolbarCommonPropertiesModel mToolbarCommonPropertiesModel;
+    private String mUrlBarTextWithAutocomplete = "";
+    private boolean mUrlBarTextIsValidUrl;
 
     StatusMediator(PropertyModel model, Resources resources) {
         mModel = model;
+        mDelegate = new StatusMediatorDelegate();
         updateColorTheme();
 
         mResources = resources;
@@ -66,7 +108,8 @@ class StatusMediator {
     /**
      * Set the ToolbarDataProvider for this class.
      */
-    void setToolbarDataProvider(ToolbarCommonPropertiesModel toolbarCommonPropertiesModel) {
+    void setToolbarCommonPropertiesModel(
+            ToolbarCommonPropertiesModel toolbarCommonPropertiesModel) {
         mToolbarCommonPropertiesModel = toolbarCommonPropertiesModel;
     }
 
@@ -342,28 +385,30 @@ class StatusMediator {
         boolean showUnfocusedSearchResultsPage = !mUrlHasFocus
                 && mToolbarCommonPropertiesModel != null
                 && mToolbarCommonPropertiesModel.getDisplaySearchTerms() != null
-                && SearchEngineLogoUtils.doesUrlMatchDefaultSearchEngine(
+                && mDelegate.doesUrlMatchDefaultSearchEngine(
                         mToolbarCommonPropertiesModel.getCurrentUrl());
-        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo() && mIsSearchEngineStateSetup
+        if (mDelegate.shouldShowSearchEngineLogo() && mIsSearchEngineStateSetup
                 && (showFocused || showUnfocusedNewTabPage || showUnfocusedSearchResultsPage)) {
             mShouldCancelCustomFavicon = false;
-            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
-            if (mIsSearchEngineGoogle) {
+            // If the current url text is a valid url, then swap the dse icon for a globe.
+            if (mUrlBarTextIsValidUrl) {
+                mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_globe_24dp);
+            } else if (mIsSearchEngineGoogle) {
                 mModel.set(StatusProperties.STATUS_ICON_RES,
-                        SearchEngineLogoUtils.shouldShowSearchLoupeEverywhere()
-                                ? R.drawable.omnibox_search
+                        mDelegate.shouldShowSearchLoupeEverywhere()
+                                ? R.drawable.ic_search
                                 : R.drawable.ic_logo_googleg_24dp);
             } else {
                 mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_search);
-                if (!SearchEngineLogoUtils.shouldShowSearchLoupeEverywhere()) {
-                    SearchEngineLogoUtils.getSearchEngineLogoFavicon(
-                            Profile.getLastUsedProfile().getOriginalProfile(), mResources,
-                            (favicon) -> {
-                                if (favicon == null || mShouldCancelCustomFavicon) return;
-                                mModel.set(StatusProperties.STATUS_ICON, favicon);
-                            });
+                if (!mDelegate.shouldShowSearchLoupeEverywhere()) {
+                    mDelegate.getSearchEngineLogoFavicon(mResources, (favicon) -> {
+                        if (favicon == null || mShouldCancelCustomFavicon) return;
+                        mModel.set(StatusProperties.STATUS_ICON, favicon);
+                    });
                 }
             }
+            // None of the icons associated with dse should be tinted.
+            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
             return;
         } else {
             mShouldCancelCustomFavicon = true;
@@ -410,5 +455,23 @@ class StatusMediator {
         }
 
         return 0;
+    }
+
+    /** @see {@link UrlBar.UrlTextChangeListener} */
+    void onTextChanged(String urlTextWithoutAutocomplete, String urlTextWithAutocomplete) {
+        if (TextUtils.equals(mUrlBarTextWithAutocomplete, urlTextWithAutocomplete)) {
+            return;
+        }
+
+        mUrlBarTextWithAutocomplete = urlTextWithAutocomplete;
+        boolean isValid = mDelegate.isUrlValid(mUrlBarTextWithAutocomplete);
+        if (isValid != mUrlBarTextIsValidUrl) {
+            mUrlBarTextIsValidUrl = isValid;
+            updateLocationBarIcon();
+        }
+    }
+
+    void setDelegateForTesting(StatusMediatorDelegate delegate) {
+        mDelegate = delegate;
     }
 }

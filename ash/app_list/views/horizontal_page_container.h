@@ -46,6 +46,7 @@ class APP_LIST_EXPORT HorizontalPageContainer
       ash::AppListState state,
       const gfx::Rect& contents_bounds,
       const gfx::Rect& search_box_bounds) const override;
+  void UpdateOpacityForState(ash::AppListState state) override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
   bool ShouldShowSearchBox() const override;

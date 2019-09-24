@@ -70,6 +70,8 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
                bool use_stencil) override;
   void SetUpdateVSyncParametersCallback(
       UpdateVSyncParametersCallback callback) override;
+  void SetGpuVSyncEnabled(bool enabled) override;
+  void SetGpuVSyncCallback(GpuVSyncCallback callback) override;
   void SetDisplayTransformHint(gfx::OverlayTransform transform) override;
   gfx::OverlayTransform GetDisplayTransform() override;
   void SwapBuffers(OutputSurfaceFrame frame) override;
@@ -149,6 +151,10 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   void DidSwapBuffersComplete(gpu::SwapBuffersCompleteParams params,
                               const gfx::Size& pixel_size);
   void BufferPresented(const gfx::PresentationFeedback& feedback);
+
+  // Provided as a callback for the GPU thread.
+  void OnGpuVSync(base::TimeTicks timebase, base::TimeDelta interval);
+
   void ScheduleGpuTask(base::OnceClosure callback,
                        std::vector<gpu::SyncToken> sync_tokens);
   GrBackendFormat GetGrBackendFormatForTexture(
@@ -177,6 +183,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   std::unique_ptr<SkiaOutputSurfaceDependency> dependency_;
   const bool is_using_vulkan_;
   UpdateVSyncParametersCallback update_vsync_parameters_callback_;
+  GpuVSyncCallback gpu_vsync_callback_;
   bool is_displayed_as_overlay_ = false;
 
   std::unique_ptr<base::WaitableEvent> initialize_waitable_event_;

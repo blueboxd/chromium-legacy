@@ -10,6 +10,7 @@
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "base/strings/string_number_conversions.h"
 
 namespace media {
 
@@ -434,12 +435,17 @@ void FileIOTestRunner::AddTests() {
     EXPECT_FILE_WRITTEN(kSuccess)
     WRITE_FILE(kBigData, kBigDataSize)
     CLOSE_FILE
-    // Write() didn't finish and the content of the file is not modified.
+    // Write() is async, so it may or may not modify the content of the file.
     CREATE_FILE_IO
     OPEN_FILE
     EXPECT_FILE_OPENED(kSuccess)
     READ_FILE
-    EXPECT_FILE_READ(kSuccess, kData, kDataSize)
+    // As Write() is async, it is possible that the second write above
+    // succeeds before the file is closed. So check that the contents
+    // is either data set.
+    EXPECT_FILE_READ_EITHER(kSuccess,
+                            kData, kDataSize,
+                            kBigData, kBigDataSize)
   END_TEST_CASE
 
   START_TEST_CASE("CloseDuringPendingOverwriteWithSmallerData")
@@ -449,12 +455,17 @@ void FileIOTestRunner::AddTests() {
     EXPECT_FILE_WRITTEN(kSuccess)
     WRITE_FILE(kData, kDataSize)
     CLOSE_FILE
-    // Write() didn't finish and the content of the file is not modified.
+    // Write() is async, so it may or may not modify the content of the file.
     CREATE_FILE_IO
     OPEN_FILE
     EXPECT_FILE_OPENED(kSuccess)
     READ_FILE
-    EXPECT_FILE_READ(kSuccess, kBigData, kBigDataSize)
+    // As Write() is async, it is possible that the second write above
+    // succeeds before the file is closed. So check that the contents
+    // is either data set.
+    EXPECT_FILE_READ_EITHER(kSuccess,
+                            kBigData, kBigDataSize,
+                            kData, kDataSize)
   END_TEST_CASE
 
   START_TEST_CASE("CloseDuringPendingRead")
@@ -656,7 +667,10 @@ void FileIOTest::OnResult(const TestStep& result) {
   if (!CheckResult(result)) {
     LOG(WARNING) << test_name_ << " got unexpected result. type=" << result.type
                  << ", status=" << (uint32_t)result.status
-                 << ", data_size=" << result.data_size;
+                 << ", data_size=" << result.data_size << ", received data="
+                 << (result.data
+                         ? base::HexEncode(result.data, result.data_size)
+                         : "<null>");
     for (const auto& step : test_steps_) {
       if (IsResult(step)) {
         LOG(WARNING) << test_name_ << " expected type=" << step.type

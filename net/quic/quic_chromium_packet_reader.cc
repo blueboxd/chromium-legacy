@@ -31,7 +31,7 @@ QuicChromiumPacketReader::QuicChromiumPacketReader(
       yield_after_duration_(yield_after_duration),
       yield_after_(quic::QuicTime::Infinite()),
       read_buffer_(base::MakeRefCounted<IOBufferWithSize>(
-          static_cast<size_t>(quic::kMaxOutgoingPacketSize))),
+          static_cast<size_t>(quic::kMaxIncomingPacketSize))),
       net_log_(net_log) {}
 
 QuicChromiumPacketReader::~QuicChromiumPacketReader() {}
@@ -74,8 +74,7 @@ void QuicChromiumPacketReader::StartReading() {
 }
 
 size_t QuicChromiumPacketReader::EstimateMemoryUsage() const {
-  // Return the size of |read_buffer_|.
-  return quic::kMaxOutgoingPacketSize;
+  return read_buffer_->size();
 }
 
 bool QuicChromiumPacketReader::ProcessReadResult(int result) {

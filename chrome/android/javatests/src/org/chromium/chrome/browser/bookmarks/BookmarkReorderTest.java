@@ -13,6 +13,8 @@ import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighligh
 import static org.chromium.chrome.browser.ViewHighlighterTestUtils.checkHighlightPulse;
 
 import android.support.test.filters.MediumTest;
+import android.support.test.filters.SmallTest;
+import android.support.v7.widget.RecyclerView.AdapterDataObserver;
 import android.support.v7.widget.RecyclerView.ViewHolder;
 import android.view.View;
 
@@ -28,8 +30,11 @@ import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
+import org.chromium.chrome.browser.bookmarks.BookmarkBridge.BookmarkModelObserver;
+import org.chromium.chrome.browser.bookmarks.BookmarkPromoHeader.PromoState;
 import org.chromium.chrome.browser.night_mode.NightModeTestUtils;
 import org.chromium.chrome.browser.ui.widget.ListMenuButton;
+import org.chromium.chrome.browser.widget.selection.SelectableListToolbar.ViewType;
 import org.chromium.chrome.test.ChromeJUnit4RunnerDelegate;
 import org.chromium.chrome.test.util.BookmarkTestUtil;
 import org.chromium.chrome.test.util.browser.Features;
@@ -96,6 +101,8 @@ public class BookmarkReorderTest extends BookmarkTest {
         // Callback occurs when Item "test" is selected.
         CriteriaHelper.pollUiThread(test::isChecked, "Expected item \"test\" to become selected");
 
+        Assert.assertEquals("Expected bookmark toolbar to be selection mode",
+                mManager.getToolbarForTests().getCurrentViewType(), ViewType.SELECTION_VIEW);
         Assert.assertEquals("Expected more button of selected item to be gone when drag is active.",
                 View.GONE, testMoreButton.getVisibility());
         Assert.assertEquals(
@@ -210,10 +217,10 @@ public class BookmarkReorderTest extends BookmarkTest {
             mBookmarkModel.addObserver(bookmarkModelObserver);
         });
 
-        View foo = mItemsContainer.findViewHolderForAdapterPosition(3).itemView;
-        Assert.assertEquals("Wrong bookmark item selected.", TEST_PAGE_TITLE_FOO,
-                ((BookmarkItemRow) foo).getTitle());
-        toggleSelectionAndEndAnimation(fooId, (BookmarkRow) foo);
+        BookmarkRow foo =
+                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(3).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_PAGE_TITLE_FOO, foo.getTitle());
+        toggleSelectionAndEndAnimation(fooId, foo);
 
         // Starts as last bookmark (2nd index) and ends as 0th bookmark (promo header not included).
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -228,6 +235,7 @@ public class BookmarkReorderTest extends BookmarkTest {
                     mBookmarkModel.getChildIDs(mBookmarkModel.getDefaultFolder(), true, true);
             // Exclude partner bookmarks folder
             Assert.assertEquals(expected, observed.subList(0, 3));
+            Assert.assertTrue("The selected item should stay selected", foo.isItemSelected());
         });
     }
 
@@ -275,11 +283,11 @@ public class BookmarkReorderTest extends BookmarkTest {
             mBookmarkModel.addObserver(bookmarkModelObserver);
         });
 
-        View test = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
-        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
-                ((BookmarkFolderRow) test).getTitle());
+        BookmarkFolderRow test =
+                (BookmarkFolderRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE, test.getTitle());
 
-        toggleSelectionAndEndAnimation(testId, (BookmarkRow) test);
+        toggleSelectionAndEndAnimation(testId, test);
 
         // Starts as 0th bookmark (not counting promo header) and ends as last (index 3).
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -294,6 +302,7 @@ public class BookmarkReorderTest extends BookmarkTest {
                     mBookmarkModel.getChildIDs(mBookmarkModel.getDefaultFolder(), true, true);
             // Exclude partner bookmarks folder
             Assert.assertEquals(expected, observed.subList(0, 4));
+            Assert.assertTrue("The selected item should stay selected", test.isItemSelected());
         });
     }
 
@@ -337,11 +346,11 @@ public class BookmarkReorderTest extends BookmarkTest {
             mBookmarkModel.addObserver(bookmarkModelObserver);
         });
 
-        View test = mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
-        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE,
-                ((BookmarkFolderRow) test).getTitle());
+        BookmarkFolderRow test =
+                (BookmarkFolderRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        Assert.assertEquals("Wrong bookmark item selected.", TEST_FOLDER_TITLE, test.getTitle());
 
-        toggleSelectionAndEndAnimation(testId, (BookmarkRow) test);
+        toggleSelectionAndEndAnimation(testId, test);
 
         // Starts as 0th bookmark (not counting promo header) and ends at the 1st index.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
@@ -356,6 +365,7 @@ public class BookmarkReorderTest extends BookmarkTest {
                     mBookmarkModel.getChildIDs(mBookmarkModel.getDefaultFolder(), true, true);
             // Exclude partner bookmarks folder
             Assert.assertEquals(expected, observed.subList(0, 3));
+            Assert.assertTrue("The selected item should stay selected", test.isItemSelected());
         });
     }
 
@@ -732,6 +742,135 @@ public class BookmarkReorderTest extends BookmarkTest {
         Assert.assertTrue(
                 "Expected highlight to not be highlighted after exiting and re-entering folder!",
                 checkHighlightOff(itemASecondView));
+    }
+
+    @Test
+    @SmallTest
+    public void testAddBookmarkInBackgroundWithSelection() throws Exception {
+        BookmarkId id = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
+        BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        openBookmarkManager();
+        Assert.assertEquals(1, getAdapter().getItemCount());
+        BookmarkRow row =
+                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        toggleSelectionAndEndAnimation(id, row);
+        CallbackHelper helper = new CallbackHelper();
+        getAdapter().registerAdapterDataObserver(new AdapterDataObserver() {
+            @Override
+            public void onChanged() {
+                helper.notifyCalled();
+            }
+        });
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            mBookmarkModel.addBookmark(
+                    mBookmarkModel.getDefaultFolder(), 1, TEST_PAGE_TITLE_GOOGLE, mTestPage);
+        });
+
+        helper.waitForCallback(0, 1);
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertTrue(isItemPresentInBookmarkList(TEST_PAGE_TITLE_FOO));
+            Assert.assertTrue(isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
+            Assert.assertEquals(2, getAdapter().getItemCount());
+            Assert.assertTrue("The selected row should be kept selected", row.isItemSelected());
+        });
+    }
+
+    @Test
+    @SmallTest
+    public void testDeleteAllSelectedBookmarksInBackground() throws Exception {
+        // selected on bookmark and then remove that in background
+        // in the meantime, the toolbar changes from selection mode to normal mode
+        BookmarkId fooId = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
+        BookmarkId googleId = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
+        BookmarkId aId = addBookmark(TEST_TITLE_A, TEST_URL_A);
+        BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        openBookmarkManager();
+        Assert.assertEquals(3, getAdapter().getItemCount());
+        BookmarkRow row =
+                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        toggleSelectionAndEndAnimation(googleId, row);
+        CallbackHelper helper = new CallbackHelper();
+        mManager.getSelectionDelegate().addObserver((x) -> { helper.notifyCalled(); });
+
+        removeBookmark(googleId);
+
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+        helper.waitForCallback(0, 1);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertFalse(
+                    "Item is not deleted", isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
+            Assert.assertEquals(2, getReorderAdapter().getItemCount());
+            Assert.assertEquals("Bookmark View should be back to normal view",
+                    mManager.getToolbarForTests().getCurrentViewType(), ViewType.NORMAL_VIEW);
+        });
+    }
+
+    @Test
+    @SmallTest
+    public void testDeleteSomeSelectedBookmarksInBackground() throws Exception {
+        // selected on bookmarks and then remove one of them in background
+        // in the meantime, the toolbar stays in selection mode
+        BookmarkId fooId = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
+        BookmarkId googleId = addBookmark(TEST_PAGE_TITLE_GOOGLE, mTestPage);
+        BookmarkId aId = addBookmark(TEST_TITLE_A, TEST_URL_A);
+        BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        openBookmarkManager();
+        Assert.assertEquals(3, getAdapter().getItemCount());
+        BookmarkRow row =
+                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(1).itemView;
+        toggleSelectionAndEndAnimation(googleId, row);
+        BookmarkRow aRow =
+                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        toggleSelectionAndEndAnimation(aId, aRow);
+        CallbackHelper helper = new CallbackHelper();
+        mManager.getSelectionDelegate().addObserver((x) -> { helper.notifyCalled(); });
+
+        removeBookmark(googleId);
+
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+        helper.waitForCallback(0, 1);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertFalse(
+                    "Item is not deleted", isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
+            Assert.assertEquals(2, getReorderAdapter().getItemCount());
+            Assert.assertTrue("Item selected should not be cleared", aRow.isItemSelected());
+            Assert.assertEquals("Should stay in selection mode because there is one selected",
+                    mManager.getToolbarForTests().getCurrentViewType(), ViewType.SELECTION_VIEW);
+        });
+    }
+
+    @Test
+    @SmallTest
+    public void testUpdateSelectedBookmarkInBackground() throws Exception {
+        BookmarkId id = addBookmark(TEST_PAGE_TITLE_FOO, mTestPageFoo);
+        BookmarkPromoHeader.forcePromoStateForTests(PromoState.PROMO_NONE);
+        openBookmarkManager();
+        Assert.assertEquals(1, getAdapter().getItemCount());
+        BookmarkRow row =
+                (BookmarkRow) mItemsContainer.findViewHolderForAdapterPosition(0).itemView;
+        toggleSelectionAndEndAnimation(id, row);
+        CallbackHelper helper = new CallbackHelper();
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mBookmarkModel.addObserver(new BookmarkModelObserver() {
+                    @Override
+                    public void bookmarkModelChanged() {
+                        helper.notifyCalled();
+                    }
+                }));
+
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> mBookmarkModel.setBookmarkTitle(id, TEST_PAGE_TITLE_GOOGLE));
+
+        helper.waitForCallback(0, 1);
+        RecyclerViewTestUtils.waitForStableRecyclerView(mItemsContainer);
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertFalse(isItemPresentInBookmarkList(TEST_PAGE_TITLE_FOO));
+            Assert.assertTrue(isItemPresentInBookmarkList(TEST_PAGE_TITLE_GOOGLE));
+            Assert.assertEquals(1, getAdapter().getItemCount());
+            Assert.assertTrue("The selected row should stay selected", row.isItemSelected());
+        });
     }
 
     @Override

@@ -553,7 +553,15 @@ void ChromeBrowserMainExtraPartsMetrics::PreBrowserStart() {
                                                             "Disabled"
 #endif
                                                             );
+  // Log once here at browser start rather than at each renderer launch.
+  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial("ChromeWinMultiDll",
+#if defined(CHROME_MULTIPLE_DLL_BROWSER)
+                                                            "Enabled"
+#else
+                                                            "Disabled"
 #endif
+                                                            );
+#endif  // defined(OS_WIN)
 }
 
 void ChromeBrowserMainExtraPartsMetrics::PostBrowserStart() {

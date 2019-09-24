@@ -545,13 +545,6 @@
       },
     },
   },
-  'pie': {
-    'swarming': {
-      'dimensions': {
-        'device_os': 'P',
-      },
-    },
-  },
   'pie-x86-emulator': {
     '$mixin_append': {
       'args': [

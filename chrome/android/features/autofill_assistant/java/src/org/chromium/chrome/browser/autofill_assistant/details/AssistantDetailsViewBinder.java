@@ -28,10 +28,10 @@ import androidx.annotation.StyleRes;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.autofill_assistant.R;
-import org.chromium.chrome.browser.compositor.animation.CompositorAnimator;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.image_fetcher.ImageFetcher;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modaldialog.ModalDialogManager.ModalDialogType;
@@ -305,7 +305,7 @@ class AssistantDetailsViewBinder
         mPulseAnimation.setEvaluator(new ArgbEvaluator());
         mPulseAnimation.setRepeatCount(ValueAnimator.INFINITE);
         mPulseAnimation.setRepeatMode(ValueAnimator.REVERSE);
-        mPulseAnimation.setInterpolator(CompositorAnimator.ACCELERATE_INTERPOLATOR);
+        mPulseAnimation.setInterpolator(Interpolators.ACCELERATE_INTERPOLATOR);
         mPulseAnimation.addListener(new AnimatorListenerAdapter() {
             @Override
             public void onAnimationCancel(Animator animation) {

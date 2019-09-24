@@ -146,8 +146,16 @@ ProfileSyncComponentsFactoryImpl::CreateCommonDataTypeControllers(
   syncer::RepeatingModelTypeStoreFactory model_type_store_factory =
       model_type_store_service->GetStoreFactory();
 
+  // TODO(crbug.com/1005651): Consider using a separate delegate for
+  // transport-only.
   controllers.push_back(std::make_unique<ModelTypeController>(
       syncer::DEVICE_INFO,
+      /*delegate_for_full_sync_mode=*/
+      std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
+          sync_client_->GetDeviceInfoSyncService()
+              ->GetControllerDelegate()
+              .get()),
+      /*delegate_for_transport_mode=*/
       std::make_unique<syncer::ForwardingModelTypeControllerDelegate>(
           sync_client_->GetDeviceInfoSyncService()
               ->GetControllerDelegate()

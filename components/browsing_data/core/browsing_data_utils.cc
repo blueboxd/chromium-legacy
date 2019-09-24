@@ -345,8 +345,7 @@ BrowsingDataType GetDataTypeFromDeletionPreference(
           {prefs::kDeleteSiteSettings, BrowsingDataType::SITE_SETTINGS},
           {prefs::kDeleteDownloadHistory, BrowsingDataType::DOWNLOADS},
           {prefs::kDeleteHostedAppsData, BrowsingDataType::HOSTED_APPS_DATA},
-      },
-      base::KEEP_FIRST_OF_DUPES);
+      });
 
   auto iter = preference_to_datatype->find(pref_name);
   DCHECK(iter != preference_to_datatype->end());

@@ -319,7 +319,7 @@ std::vector<mojom::XRAnchorDataPtr> ArCoreImpl::GetUpdatedAnchorsData() {
       return;
     }
 
-    int32_t anchor_id;
+    AnchorId anchor_id;
     bool created;
     std::tie(anchor_id, created) = *maybe_anchor_id_and_created;
 
@@ -327,16 +327,17 @@ std::vector<mojom::XRAnchorDataPtr> ArCoreImpl::GetUpdatedAnchorsData() {
         << "Anchor creation is app-initiated - we should never encounter an "
            "anchor that was created outside of `ArCoreImpl::CreateAnchor()`.";
 
-    result.push_back(mojom::XRAnchorData::New(anchor_id, std::move(pose)));
+    result.push_back(
+        mojom::XRAnchorData::New(anchor_id.GetUnsafeValue(), std::move(pose)));
   });
 
   return result;
 }
 
-std::vector<int32_t> ArCoreImpl::GetAllAnchorIds() {
+std::vector<uint32_t> ArCoreImpl::GetAllAnchorIds() {
   EnsureArCoreAnchorsList();
 
-  std::vector<int32_t> result;
+  std::vector<uint32_t> result;
 
   ArSession_getAllAnchors(arcore_session_.get(), arcore_anchors_.get());
 
@@ -349,7 +350,7 @@ std::vector<int32_t> ArCoreImpl::GetAllAnchorIds() {
       return;
     }
 
-    int32_t anchor_id;
+    AnchorId anchor_id;
     bool created;
     std::tie(anchor_id, created) = *maybe_anchor_id_and_created;
 
@@ -440,12 +441,12 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
       return;
     }
 
-    int32_t plane_id;
+    PlaneId plane_id;
     bool created;
     std::tie(plane_id, created) = *maybe_plane_id_and_created;
 
     result.push_back(mojom::XRPlaneData::New(
-        plane_id,
+        plane_id.GetUnsafeValue(),
         mojo::ConvertTo<device::mojom::XRPlaneOrientation>(plane_type),
         std::move(pose), std::move(vertices)));
   });
@@ -453,17 +454,16 @@ std::vector<mojom::XRPlaneDataPtr> ArCoreImpl::GetUpdatedPlanesData() {
   return result;
 }
 
-std::vector<int32_t> ArCoreImpl::GetAllPlaneIds() {
+std::vector<uint32_t> ArCoreImpl::GetAllPlaneIds() {
   EnsureArCorePlanesList();
 
-  std::vector<int32_t> result;
+  std::vector<uint32_t> result;
 
   ArTrackableType plane_tracked_type = AR_TRACKABLE_PLANE;
   ArSession_getAllTrackables(arcore_session_.get(), plane_tracked_type,
                              arcore_planes_.get());
 
-  std::unordered_map<int32_t,
-                     device::internal::ScopedArCoreObject<ArTrackable*>>
+  std::map<PlaneId, device::internal::ScopedArCoreObject<ArTrackable*>>
       plane_id_to_plane_object;
 
   ForEachArCorePlane([this, &plane_id_to_plane_object, &result](
@@ -477,7 +477,7 @@ std::vector<int32_t> ArCoreImpl::GetAllPlaneIds() {
       return;
     }
 
-    int32_t plane_id;
+    PlaneId plane_id;
     bool created;
     std::tie(plane_id, created) = *maybe_plane_id_and_created;
 
@@ -496,8 +496,8 @@ std::vector<int32_t> ArCoreImpl::GetAllPlaneIds() {
 mojom::XRPlaneDetectionDataPtr ArCoreImpl::GetDetectedPlanesData() {
   TRACE_EVENT0("gpu", __FUNCTION__);
 
-  std::vector<mojom::XRPlaneDataPtr> updated_planes = GetUpdatedPlanesData();
-  std::vector<int32_t> all_plane_ids = GetAllPlaneIds();
+  auto updated_planes = GetUpdatedPlanesData();
+  auto all_plane_ids = GetAllPlaneIds();
 
   return mojom::XRPlaneDetectionData::New(all_plane_ids,
                                           std::move(updated_planes));
@@ -512,38 +512,38 @@ mojom::XRAnchorsDataPtr ArCoreImpl::GetAnchorsData() {
   return mojom::XRAnchorsData::New(all_anchor_ids, std::move(updated_anchors));
 }
 
-base::Optional<std::pair<int32_t, bool>> ArCoreImpl::CreateOrGetPlaneId(
+base::Optional<std::pair<PlaneId, bool>> ArCoreImpl::CreateOrGetPlaneId(
     void* plane_address) {
   auto it = ar_plane_address_to_id_.find(plane_address);
   if (it != ar_plane_address_to_id_.end()) {
     return std::make_pair(it->second, false);
   }
 
-  if (next_id_ == std::numeric_limits<int32_t>::max()) {
+  if (next_id_ == std::numeric_limits<uint32_t>::max()) {
     return base::nullopt;
   }
 
-  int32_t current_id = next_id_++;
+  uint32_t current_id = next_id_++;
   ar_plane_address_to_id_.emplace(plane_address, current_id);
 
-  return std::make_pair(current_id, true);
+  return std::make_pair(PlaneId(current_id), true);
 }
 
-base::Optional<std::pair<int32_t, bool>> ArCoreImpl::CreateOrGetAnchorId(
+base::Optional<std::pair<AnchorId, bool>> ArCoreImpl::CreateOrGetAnchorId(
     void* anchor_address) {
   auto it = ar_anchor_address_to_id_.find(anchor_address);
   if (it != ar_anchor_address_to_id_.end()) {
     return std::make_pair(it->second, false);
   }
 
-  if (next_id_ == std::numeric_limits<int32_t>::max()) {
+  if (next_id_ == std::numeric_limits<uint32_t>::max()) {
     return base::nullopt;
   }
 
-  int32_t current_id = next_id_++;
+  uint32_t current_id = next_id_++;
   ar_anchor_address_to_id_.emplace(anchor_address, current_id);
 
-  return std::make_pair(current_id, true);
+  return std::make_pair(AnchorId(current_id), true);
 }
 
 void ArCoreImpl::Pause() {
@@ -717,7 +717,7 @@ bool ArCoreImpl::RequestHitTest(
   return true;
 }
 
-base::Optional<int32_t> ArCoreImpl::CreateAnchor(
+base::Optional<uint32_t> ArCoreImpl::CreateAnchor(
     const device::mojom::VRPosePtr& pose) {
   DCHECK(pose);
 
@@ -734,7 +734,7 @@ base::Optional<int32_t> ArCoreImpl::CreateAnchor(
     return base::nullopt;
   }
 
-  int32_t anchor_id;
+  AnchorId anchor_id;
   bool created;
   std::tie(anchor_id, created) = *maybe_anchor_id_and_created;
 
@@ -743,17 +743,17 @@ base::Optional<int32_t> ArCoreImpl::CreateAnchor(
 
   anchor_id_to_anchor_object_[anchor_id] = std::move(ar_anchor);
 
-  return anchor_id;
+  return anchor_id.GetUnsafeValue();
 }
 
-base::Optional<int32_t> ArCoreImpl::CreateAnchor(
+base::Optional<uint32_t> ArCoreImpl::CreateAnchor(
     const device::mojom::VRPosePtr& pose,
-    int32_t plane_id) {
+    uint32_t plane_id) {
   DCHECK(pose);
 
   auto ar_pose = GetArPoseFromMojomPose(arcore_session_.get(), pose);
 
-  auto it = plane_id_to_plane_object_.find(plane_id);
+  auto it = plane_id_to_plane_object_.find(PlaneId(plane_id));
   if (it == plane_id_to_plane_object_.end()) {
     return base::nullopt;
   }
@@ -769,7 +769,7 @@ base::Optional<int32_t> ArCoreImpl::CreateAnchor(
     return base::nullopt;
   }
 
-  int32_t anchor_id;
+  AnchorId anchor_id;
   bool created;
   std::tie(anchor_id, created) = *maybe_anchor_id_and_created;
 
@@ -778,11 +778,11 @@ base::Optional<int32_t> ArCoreImpl::CreateAnchor(
 
   anchor_id_to_anchor_object_[anchor_id] = std::move(ar_anchor);
 
-  return anchor_id;
+  return anchor_id.GetUnsafeValue();
 }
 
-void ArCoreImpl::DetachAnchor(int32_t anchor_id) {
-  auto it = anchor_id_to_anchor_object_.find(anchor_id);
+void ArCoreImpl::DetachAnchor(uint32_t anchor_id) {
+  auto it = anchor_id_to_anchor_object_.find(AnchorId(anchor_id));
   if (it == anchor_id_to_anchor_object_.end()) {
     return;
   }

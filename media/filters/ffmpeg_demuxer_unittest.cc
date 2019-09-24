@@ -1384,7 +1384,7 @@ TEST_F(FFmpegDemuxerTest, HEVC_in_MP4_container) {
 
 TEST_F(FFmpegDemuxerTest, Read_AC3_Audio) {
   CreateDemuxer("bear-ac3-only-frag.mp4");
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
   // AC3 is not supported by default media platform. Embedders who add support
   // must declare it via MediaClient.
   MockMediaClient media_client;
@@ -1414,7 +1414,7 @@ TEST_F(FFmpegDemuxerTest, Read_AC3_Audio) {
 
 TEST_F(FFmpegDemuxerTest, Read_EAC3_Audio) {
   CreateDemuxer("bear-eac3-only-frag.mp4");
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
   // EAC3 is not supported by default media platform. Embedders who add support
   // must declare it via MediaClient.
   MockMediaClient media_client;

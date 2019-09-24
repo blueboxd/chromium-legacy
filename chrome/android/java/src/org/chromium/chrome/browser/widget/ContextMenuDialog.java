@@ -8,7 +8,6 @@ import android.app.Activity;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
-import android.support.v4.view.animation.LinearOutSlowInInterpolator;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnLayoutChangeListener;
@@ -20,6 +19,7 @@ import android.view.animation.Animation.AnimationListener;
 import android.view.animation.ScaleAnimation;
 
 import org.chromium.chrome.browser.ui.widget.AlwaysDismissedDialog;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 
 /**
  * ContextMenuDialog is a subclass of AlwaysDismissedDialog that ensures that the proper scale
@@ -166,7 +166,7 @@ public class ContextMenuDialog extends AlwaysDismissedDialog {
         long duration = isEnterAnimation ? ENTER_ANIMATION_DURATION_MS : EXIT_ANIMATION_DURATION_MS;
 
         animation.setDuration(duration);
-        animation.setInterpolator(new LinearOutSlowInInterpolator());
+        animation.setInterpolator(Interpolators.LINEAR_OUT_SLOW_IN_INTERPOLATOR);
         return animation;
     }
 }

@@ -7,7 +7,6 @@
 //
 // #import {eventToPromise} from 'chrome://test/test_util.m.js';
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // clang-format on
 
 suite('cr-drawer', function() {
@@ -37,7 +36,7 @@ suite('cr-drawer', function() {
           assertTrue(drawer.open);
 
           // Clicking the content does not close the drawer.
-          MockInteractions.tap(document.querySelector('.drawer-content'));
+          document.querySelector('.drawer-content').click();
 
           const whenClosed = test_util.eventToPromise('close', drawer);
           drawer.$.dialog.dispatchEvent(new MouseEvent('click', {
@@ -60,7 +59,7 @@ suite('cr-drawer', function() {
         });
   });
 
-  test('tapping icon closes drawer', async () => {
+  test('clicking icon closes drawer', async () => {
     // Create a drawer with an icon and open it.
     document.body.innerHTML = `
       <cr-drawer id="drawer" align="ltr" icon-name="menu" icon-title="close">
@@ -71,8 +70,8 @@ suite('cr-drawer', function() {
     drawer.openDrawer();
     await test_util.eventToPromise('cr-drawer-opened', drawer);
 
-    // Tapping the icon closes the drawer.
-    MockInteractions.tap(drawer.$.iconButton);
+    // Clicking the icon closes the drawer.
+    drawer.$.iconButton.click();
     await test_util.eventToPromise('close', drawer);
     assertFalse(drawer.open);
     assertTrue(drawer.wasCanceled());

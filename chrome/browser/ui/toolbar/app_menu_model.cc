@@ -883,17 +883,12 @@ void AppMenuModel::CreateCutCopyPasteMenu() {
 }
 
 void AppMenuModel::CreateZoomMenu() {
-  // WARNING: Mac does not use the ButtonMenuItemModel, but instead defines the
-  // layout for this menu item in AppMenu.xib. It does, however, use the
-  // command_id value from AddButtonItem() to identify this special item.
   zoom_menu_item_model_.reset(new ui::ButtonMenuItemModel(IDS_ZOOM_MENU, this));
   zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_MINUS,
                                                   IDS_ZOOM_MINUS2);
   zoom_menu_item_model_->AddGroupItemWithStringId(IDC_ZOOM_PLUS,
                                                   IDS_ZOOM_PLUS2);
-  // TODO(https://crbug.com/957391): Remove the former IDR_ parameter here once
-  // the change to remove it from the model (crrev.com/1816118) is in.
-  zoom_menu_item_model_->AddItemWithImage(IDC_FULLSCREEN, -1);
+  zoom_menu_item_model_->AddImageItem(IDC_FULLSCREEN);
   AddButtonItem(IDC_ZOOM_MENU, zoom_menu_item_model_.get());
 }
 

@@ -575,12 +575,13 @@ Polymer({
 
   /**
    * @param {!mojom.ManagedProperties} managedProperties
+   * @param {boolean} propertiesReceived
    * @param {boolean} outOfRange
    * @return {string} The text to display for the network connection state.
    * @private
    */
-  getStateText_: function(managedProperties, outOfRange) {
-    if (!managedProperties) {
+  getStateText_: function(managedProperties, propertiesReceived, outOfRange) {
+    if (!managedProperties || !propertiesReceived) {
       return '';
     }
 
@@ -1069,9 +1070,9 @@ Polymer({
       if (!response.success) {
         console.error('Froget network failed for: ' + this.guid);
       }
+      // A forgotten network no longer has a valid GUID, close the subpage.
+      this.close();
     });
-    // A forgotten network no longer has a valid GUID, close the subpage.
-    this.close();
   },
 
   /** @private */
@@ -1414,10 +1415,6 @@ Polymer({
 
     /** @type {!Array<string>} */ const fields = [];
     const type = this.managedProperties_.type;
-    // All networks except Tether show MAC address.
-    if (type != mojom.NetworkType.kTether) {
-      fields.push('macAddress');
-    }
     switch (type) {
       case mojom.NetworkType.kCellular:
         fields.push(
@@ -1456,12 +1453,15 @@ Polymer({
 
   /**
    * @param {!mojom.ManagedProperties} managedProperties
+   * @param {boolean} propertiesReceived
    * @return {boolean}
    * @private
    */
-  showAdvanced_: function(managedProperties) {
-    if (!managedProperties ||
-        managedProperties.type == mojom.NetworkType.kTether) {
+  showAdvanced_: function(managedProperties, propertiesReceived) {
+    if (!managedProperties || !propertiesReceived) {
+      return false;
+    }
+    if (managedProperties.type == mojom.NetworkType.kTether) {
       // These settings apply to the underlying WiFi network, not the Tether
       // network.
       return false;

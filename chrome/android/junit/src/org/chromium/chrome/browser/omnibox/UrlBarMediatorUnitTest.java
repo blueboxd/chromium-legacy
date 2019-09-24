@@ -11,9 +11,12 @@ import android.text.Selection;
 import android.text.SpannableStringBuilder;
 
 import org.junit.Assert;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
 import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 
@@ -28,6 +31,16 @@ import org.chromium.ui.modelutil.PropertyObservable.PropertyObserver;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE)
 public class UrlBarMediatorUnitTest {
+    @Mock
+    UrlBar.UrlTextChangeListener mMockListener;
+    @Mock
+    UrlBar.UrlTextChangeListener mAnotherMockListener;
+
+    @Before
+    public void setUp() {
+        MockitoAnnotations.initMocks(this);
+    }
+
     @Test
     public void setUrlData_SendsUpdates() {
         PropertyModel model = new PropertyModel(UrlBarProperties.ALL_KEYS);
@@ -248,6 +261,24 @@ public class UrlBarMediatorUnitTest {
         // be replaced with the full domain from the unformatted URL.
         Assert.assertEquals("https://www.test.com/foo",
                 mediator.getReplacementCutCopyText("www.test.com/foo", 0, 16));
+    }
+
+    @Test
+    public void urlTextChangeListenerCompositeObserver() {
+        PropertyModel model = new PropertyModel(UrlBarProperties.ALL_KEYS);
+        UrlBarMediator mediator = new UrlBarMediator(model);
+        mediator.addUrlTextChangeListener(mMockListener);
+
+        String text = "foo";
+        String textWithAutocomplete = "foo.bar";
+        mediator.onTextChanged(text, textWithAutocomplete);
+        Mockito.verify(mMockListener, Mockito.times(1)).onTextChanged(text, textWithAutocomplete);
+
+        mediator.addUrlTextChangeListener(mAnotherMockListener);
+        mediator.onTextChanged(text, textWithAutocomplete);
+        Mockito.verify(mMockListener, Mockito.times(2)).onTextChanged(text, textWithAutocomplete);
+        Mockito.verify(mAnotherMockListener, Mockito.times(1))
+                .onTextChanged(text, textWithAutocomplete);
     }
 
     private static SpannableStringBuilder spannable(String text) {

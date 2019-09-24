@@ -4,6 +4,7 @@
 
 #include "ash/shelf/scrollable_shelf_view.h"
 
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/shelf/shelf_test_util.h"
 #include "ash/shelf/shelf_tooltip_manager.h"
 #include "ash/shelf/shelf_view_test_api.h"
@@ -39,8 +40,6 @@ class ScrollableShelfViewTest : public AshTestBase {
   ~ScrollableShelfViewTest() override = default;
 
   void SetUp() override {
-    base::CommandLine::ForCurrentProcess()->AppendSwitch(
-        chromeos::switches::kShelfScrollable);
     AshTestBase::SetUp();
     scrollable_shelf_view_ = GetPrimaryShelf()
                                  ->shelf_widget()
@@ -164,6 +163,48 @@ TEST_F(ScrollableShelfViewTest, NotShowTooltipForHiddenIcons) {
       hidden_icon->GetBoundsInScreen().CenterPoint());
   tooltip_manager->ShowTooltip(hidden_icon);
   EXPECT_FALSE(tooltip_manager->IsVisible());
+}
+
+// Test that tapping near the scroll arrow button triggers scrolling. (see
+// https://crbug.com/1004998)
+TEST_F(ScrollableShelfViewTest, ScrollAfterTappingNearScrollArrow) {
+  AddAppShortcutUntilOverflow();
+
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Tap right arrow and check that the scrollable shelf now shows the left
+  // arrow only. Then do the same for the left arrow.
+  const gfx::Rect right_arrow =
+      scrollable_shelf_view_->right_arrow()->GetBoundsInScreen();
+  GetEventGenerator()->GestureTapAt(right_arrow.CenterPoint());
+  ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  const gfx::Rect left_arrow =
+      scrollable_shelf_view_->left_arrow()->GetBoundsInScreen();
+  GetEventGenerator()->GestureTapAt(left_arrow.CenterPoint());
+  ASSERT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  // Recalculate the right arrow  bounds considering the padding for the tap
+  // area.
+  const int horizontalPadding = (32 - right_arrow.width()) / 2;
+  const int verticalPadding =
+      (ShelfConfig::Get()->button_size() - right_arrow.height()) / 2;
+
+  // Tap near the right arrow and check that the scrollable shelf now shows the
+  // left arrow only. Then do the same for the left arrow.
+  GetEventGenerator()->GestureTapAt(
+      gfx::Point(right_arrow.top_right().x() - horizontalPadding,
+                 right_arrow.top_right().y() + verticalPadding));
+  ASSERT_EQ(ScrollableShelfView::kShowLeftArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
+
+  GetEventGenerator()->GestureTapAt(
+      gfx::Point(left_arrow.top_right().x(), left_arrow.top_right().y()));
+  EXPECT_EQ(ScrollableShelfView::kShowRightArrowButton,
+            scrollable_shelf_view_->layout_strategy_for_test());
 }
 
 }  // namespace ash

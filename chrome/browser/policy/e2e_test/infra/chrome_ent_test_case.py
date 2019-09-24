@@ -32,6 +32,7 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
     - mini_installer.exe, and
     - *.msi
     """
+    self.RunCommand(instance_name, r'md -Force c:\temp')
     file_name = self.UploadFile(instance_name, FLAGS.chrome_installer,
                                 r'c:\temp')
 
@@ -96,32 +97,24 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
              "-Key %s -ValueName %s") % (key, policy_name)
       self.clients[instance_name].RunPowershell(cmd)
 
-  def _installChocolatey(self, instance_name):
-    cmd = "Set-ExecutionPolicy Bypass -Scope Process -Force; iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))"
-    self.clients[instance_name].RunPowershell(cmd)
-
-  def InstallPackage(self, instance_name, package_name, package_version):
-    cmd = r'c:\ProgramData\chocolatey\bin\choco install %s -y --version %s' % (
-        package_name, package_version)
-    self.RunCommand(instance_name, cmd)
-
   def InstallWebDriver(self, instance_name):
-    self._installChocolatey(instance_name)
-    self.InstallPackage(instance_name, 'python2', '2.7.15')
-    self.RunCommand(
-        instance_name,
-        r'c:\Python27\python.exe -m pip install selenium absl-py pywin32')
+    self.InstallPipPackagesLatest(instance_name,
+                                  ['selenium', 'absl-py', 'pywin32'])
+
+    temp_dir = 'C:\\temp\\'
     if FLAGS.chromedriver is None:
-      # chromedriver flag is not specified. In this case, install the chocolatey
-      # package
-      self.InstallPackage(instance_name, 'chromedriver', '74.0.3729.60')
+      # chromedriver flag is not specified. Install the chocolatey package.
+      self.InstallChocolateyPackage(instance_name, 'chromedriver',
+                                    '74.0.3729.60')
+      self.RunCommand(
+          instance_name, "copy %s %s" %
+          (r"C:\ProgramData\chocolatey\lib\chromedriver\tools\chromedriver.exe",
+           temp_dir))
     else:
-      self.UploadFile(instance_name, FLAGS.chromedriver,
-                      'C:/ProgramData/chocolatey/lib/chromedriver/tools/')
+      self.UploadFile(instance_name, FLAGS.chromedriver, temp_dir)
 
     dir = os.path.dirname(os.path.abspath(__file__))
-    self.UploadFile(instance_name, os.path.join(dir, 'test_util.py'),
-                    r'c:\temp')
+    self.UploadFile(instance_name, os.path.join(dir, 'test_util.py'), temp_dir)
 
   def RunWebDriverTest(self, instance_name, test_file, args=[]):
     """Runs a python webdriver test on an instance.
@@ -133,6 +126,8 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
 
     Returns:
       the output."""
+    self.EnsurePythonInstalled(instance_name)
+
     # upload the test
     file_name = self.UploadFile(instance_name, test_file, r'c:\temp')
 
@@ -153,6 +148,8 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
 
     Returns:
       the output."""
+    self.EnsurePythonInstalled(instance_name)
+
     # upload the test
     file_name = self.UploadFile(instance_name, test_file, r'c:\temp')
 
@@ -184,10 +181,8 @@ class ChromeEnterpriseTestCase(EnterpriseTestCase):
   def EnableUITest(self, instance_name):
     """Configures the instance so that UI tests can be run on it."""
     self.InstallWebDriver(instance_name)
-    self.InstallPackage(instance_name, 'sysinternals', '2019.9.5')
-    self.RunCommand(
-        instance_name,
-        r'c:\Python27\python.exe -m pip install pywinauto requests')
+    self.InstallChocolateyPackageLatest(instance_name, 'sysinternals')
+    self.InstallPipPackagesLatest(instance_name, ['pywinauto', 'requests'])
 
     password = self._generatePassword()
     user_name = 'ui_user'

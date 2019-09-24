@@ -57,6 +57,9 @@ extern const base::Feature kPasswordProtectionForSignedInUsers;
 // Controls whether Chrome sends on focus ping.
 extern const base::Feature kSendOnFocusPing;
 
+// Controls whether Chrome sends password reuse ping.
+extern const base::Feature kSendPasswordReusePing;
+
 // Controls the daily quota for the suspicious site trigger.
 extern const base::Feature kSuspiciousSiteTriggerQuotaFeature;
 

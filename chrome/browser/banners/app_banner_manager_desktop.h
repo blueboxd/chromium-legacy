@@ -9,6 +9,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/app_registrar_observer.h"
@@ -82,7 +83,7 @@ class AppBannerManagerDesktop
   extensions::ExtensionRegistry* extension_registry_;
 
   ScopedObserver<web_app::AppRegistrar, web_app::AppRegistrarObserver>
-      registrar_observer_;
+      registrar_observer_{this};
 
   base::WeakPtrFactory<AppBannerManagerDesktop> weak_factory_{this};
 

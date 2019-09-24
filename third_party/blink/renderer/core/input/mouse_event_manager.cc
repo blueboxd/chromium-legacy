@@ -790,7 +790,8 @@ WebInputEventResult MouseEventManager::HandleMousePressEvent(
 
   if (RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(
           frame_->GetDocument())) {
-    frame_->View()->DismissFragmentAnchor();
+    if (frame_->View())
+      frame_->View()->DismissFragmentAnchor();
   }
 
   if (frame_->GetDocument()->IsSVGDocument() &&

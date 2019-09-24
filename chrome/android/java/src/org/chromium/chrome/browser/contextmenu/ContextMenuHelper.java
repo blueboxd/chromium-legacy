@@ -54,6 +54,22 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
     private long mMenuShownTimeMs;
     private boolean mSelectedItemBeforeDismiss;
 
+    /**
+     * See function for details.
+     */
+    private static byte[] sHardcodedImageBytesForTesting;
+
+    /**
+     * The tests trigger the context menu via JS rather than via a true native call which means
+     * the native code does not have a reference to the image's render frame host. Instead allow
+     * test cases to hardcode the test image bytes that will be shared.
+     * @param hardcodedImageBytes The hard coded image bytes to fake or null if image should not be
+     *         faked.
+     */
+    public static void setHardcodedImageBytesForTesting(byte[] hardcodedImageBytes) {
+        sHardcodedImageBytesForTesting = hardcodedImageBytes;
+    }
+
     private ContextMenuHelper(long nativeContextMenuHelper, WebContents webContents) {
         mNativeContextMenuHelper = nativeContextMenuHelper;
         mWebContents = webContents;
@@ -237,9 +253,14 @@ public class ContextMenuHelper implements OnCreateContextMenuListener {
                 ShareHelper.generateUriFromData(mActivity, result, callback);
             }
         };
-        ContextMenuHelperJni.get().retrieveImageForShare(mNativeContextMenuHelper,
-                ContextMenuHelper.this, imageRetrievalCallback, MAX_SHARE_DIMEN_PX,
-                MAX_SHARE_DIMEN_PX);
+
+        if (sHardcodedImageBytesForTesting != null) {
+            imageRetrievalCallback.onResult(sHardcodedImageBytesForTesting);
+        } else {
+            ContextMenuHelperJni.get().retrieveImageForShare(mNativeContextMenuHelper,
+                    ContextMenuHelper.this, imageRetrievalCallback, MAX_SHARE_DIMEN_PX,
+                    MAX_SHARE_DIMEN_PX);
+        }
     }
 
     /**

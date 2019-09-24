@@ -82,6 +82,12 @@ group("telemetry_chrome_test_without_chrome") {
   data_deps = [
     "//third_party/catapult:telemetry_chrome_test_support",
   ]
+  if (is_chromeos) {
+    data_deps += [
+      "//third_party/breakpad:minidump_stackwalk",
+      "//third_party/breakpad:dump_syms",
+    ]
+  }
   if (is_android) {
     data += [
       "//build/android/stacktrace/",

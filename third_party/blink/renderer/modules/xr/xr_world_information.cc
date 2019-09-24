@@ -58,7 +58,7 @@ void XRWorldInformation::ProcessPlaneInformation(
 
   is_detected_planes_null_ = false;
 
-  HeapHashMap<int32_t, Member<XRPlane>> updated_planes;
+  HeapHashMap<uint32_t, Member<XRPlane>> updated_planes;
 
   // First, process all planes that had their information updated (new planes
   // are also processed here).

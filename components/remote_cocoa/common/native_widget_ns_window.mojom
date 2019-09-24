@@ -180,6 +180,9 @@ interface NativeWidgetNSWindow {
   // Set the opacity of the NSWindow.
   SetOpacity(float opacity);
 
+  // Set the window level of the NSWindow.
+  SetWindowLevel(int32 level);
+
   // Set the content aspect ratio of the NSWindow.
   SetContentAspectRatio(gfx.mojom.SizeF aspect_ratio);
 

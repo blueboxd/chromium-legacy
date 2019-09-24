@@ -84,18 +84,20 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
       SkiaOutputSurfaceDependency* deps,
       const RendererSettings& renderer_settings,
       const gpu::SequenceId sequence_id,
-      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-      const BufferPresentedCallback& buffer_presented_callback,
-      const ContextLostCallback& context_lost_callback);
+      DidSwapBufferCompleteCallback did_swap_buffer_complete_callback,
+      BufferPresentedCallback buffer_presented_callback,
+      ContextLostCallback context_lost_callback,
+      GpuVSyncCallback gpu_vsync_callback);
 
   SkiaOutputSurfaceImplOnGpu(
       util::PassKey<SkiaOutputSurfaceImplOnGpu> pass_key,
       SkiaOutputSurfaceDependency* deps,
       const RendererSettings& renderer_settings,
       const gpu::SequenceId sequence_id,
-      const DidSwapBufferCompleteCallback& did_swap_buffer_complete_callback,
-      const BufferPresentedCallback& buffer_presented_callback,
-      const ContextLostCallback& context_lost_callback);
+      DidSwapBufferCompleteCallback did_swap_buffer_complete_callback,
+      BufferPresentedCallback buffer_presented_callback,
+      ContextLostCallback context_lost_callback,
+      GpuVSyncCallback gpu_vsync_callback);
   ~SkiaOutputSurfaceImplOnGpu() override;
 
   gpu::CommandBufferId command_buffer_id() const {
@@ -157,6 +159,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
           image_contexts);
   void SetEnableDCLayers(bool enable);
   void ScheduleDCLayers(std::vector<DCLayerOverlay> dc_layers);
+  void SetGpuVSyncEnabled(bool enabled);
 
   bool was_context_lost() { return context_state_->context_lost(); }
 
@@ -220,6 +223,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   const DidSwapBufferCompleteCallback did_swap_buffer_complete_callback_;
   const BufferPresentedCallback buffer_presented_callback_;
   const ContextLostCallback context_lost_callback_;
+  const GpuVSyncCallback gpu_vsync_callback_;
 
 #if defined(USE_OZONE)
   // This should outlive gl_surface_ and vulkan_surface_.

@@ -22,7 +22,6 @@ const char* kTestShaderSource =
     ""
     "#include <metal_stdlib>\n"
     "#include <simd/simd.h>\n"
-    "using namespace metal;\n"
     "typedef struct {\n"
     "    float4 clipSpacePosition [[position]];\n"
     "    float4 color;\n"

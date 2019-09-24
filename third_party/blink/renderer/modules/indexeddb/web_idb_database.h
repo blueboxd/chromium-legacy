@@ -53,7 +53,7 @@ class MODULES_EXPORT WebIDBDatabase {
       int64_t id,
       const Vector<int64_t>& scope,
       mojom::IDBTransactionMode,
-      bool relaxed_durability) = 0;
+      mojom::IDBTransactionDurability) = 0;
   virtual void Close() = 0;
   virtual void VersionChangeIgnored() = 0;
 

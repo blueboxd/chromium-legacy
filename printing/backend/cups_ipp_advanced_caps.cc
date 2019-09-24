@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
@@ -19,8 +20,11 @@ namespace {
 
 using AdvancedCapabilities = std::vector<AdvancedCapability>;
 
-using AttributeHandler = base::RepeatingCallback<
-    void(const CupsOptionProvider&, const char*, AdvancedCapabilities*)>;
+// Handles IPP attribute, usually by adding 1 or more items to |caps|.
+using AttributeHandler =
+    base::RepeatingCallback<void(const CupsOptionProvider& printer,
+                                 const char* name,
+                                 AdvancedCapabilities* caps)>;
 
 void NoOpHandler(const CupsOptionProvider& printer,
                  const char* attribute_name,
@@ -170,14 +174,17 @@ HandlerMap GenerateHandlers() {
   return result;
 }
 
-void AddAttributes(const CupsOptionProvider& printer,
-                   const char* attribute_name,
-                   AdvancedCapabilities* options) {
+// Returns the number of IPP attributes added to |caps| (not necessarily in
+// 1-to-1 correspondence).
+size_t AddAttributes(const CupsOptionProvider& printer,
+                     const char* attr_group_name,
+                     AdvancedCapabilities* caps) {
   static const base::NoDestructor<HandlerMap> handlers(GenerateHandlers());
+  size_t attr_count = 0;
 
-  ipp_attribute_t* attr = printer.GetSupportedOptionValues(attribute_name);
+  ipp_attribute_t* attr = printer.GetSupportedOptionValues(attr_group_name);
   if (!attr)
-    return;
+    return 0;
 
   int num_options = ippGetCount(attr);
   for (int i = 0; i < num_options; i++) {
@@ -187,8 +194,13 @@ void AddAttributes(const CupsOptionProvider& printer,
       LOG(WARNING) << "Unknown IPP option: " << option_name;
       continue;
     }
-    it->second.Run(printer, option_name, options);
+
+    size_t previous_size = caps->size();
+    it->second.Run(printer, option_name, caps);
+    if (caps->size() > previous_size)
+      attr_count++;
   }
+  return attr_count;
 }
 
 }  // namespace
@@ -196,8 +208,9 @@ void AddAttributes(const CupsOptionProvider& printer,
 void ExtractAdvancedCapabilities(const CupsOptionProvider& printer,
                                  PrinterSemanticCapsAndDefaults* printer_info) {
   AdvancedCapabilities* options = &printer_info->advanced_capabilities;
-  AddAttributes(printer, kIppJobAttributes, options);
-  AddAttributes(printer, kIppDocumentAttributes, options);
+  size_t attr_count = AddAttributes(printer, kIppJobAttributes, options);
+  attr_count += AddAttributes(printer, kIppDocumentAttributes, options);
+  base::UmaHistogramCounts1000("Printing.CUPS.IppAttributesCount", attr_count);
 }
 
 }  // namespace printing

@@ -20,9 +20,7 @@ SigninProfileAttributesUpdater::SigninProfileAttributesUpdater(
     : identity_manager_(identity_manager),
       signin_error_controller_(signin_error_controller),
       profile_attributes_storage_(profile_attributes_storage),
-      profile_path_(profile_path),
-      identity_manager_observer_(this),
-      signin_error_controller_observer_(this) {
+      profile_path_(profile_path) {
   DCHECK(identity_manager_);
   DCHECK(signin_error_controller_);
   DCHECK(profile_attributes_storage_);

@@ -5,6 +5,7 @@
 #include "content/child/webthemeengine_impl_default.h"
 
 #include "build/build_config.h"
+#include "content/child/webthemeengine_impl_conversions.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/blink/public/platform/web_rect.h"
 #include "third_party/blink/public/platform/web_size.h"
@@ -34,92 +35,6 @@ int32_t g_horizontal_arrow_bitmap_width;
 #endif
 
 }  // namespace
-
-// TODO(https://crbug.com/988434): The mapping functions below are duplicated
-// inside Blink and in the Android implementation of WebThemeEngine. They should
-// be implemented in one place where dependencies between Blink and
-// ui::NativeTheme make sense.
-static ui::NativeTheme::Part NativeThemePart(
-    WebThemeEngine::Part part) {
-  switch (part) {
-    case WebThemeEngine::kPartScrollbarDownArrow:
-      return ui::NativeTheme::kScrollbarDownArrow;
-    case WebThemeEngine::kPartScrollbarLeftArrow:
-      return ui::NativeTheme::kScrollbarLeftArrow;
-    case WebThemeEngine::kPartScrollbarRightArrow:
-      return ui::NativeTheme::kScrollbarRightArrow;
-    case WebThemeEngine::kPartScrollbarUpArrow:
-      return ui::NativeTheme::kScrollbarUpArrow;
-    case WebThemeEngine::kPartScrollbarHorizontalThumb:
-      return ui::NativeTheme::kScrollbarHorizontalThumb;
-    case WebThemeEngine::kPartScrollbarVerticalThumb:
-      return ui::NativeTheme::kScrollbarVerticalThumb;
-    case WebThemeEngine::kPartScrollbarHorizontalTrack:
-      return ui::NativeTheme::kScrollbarHorizontalTrack;
-    case WebThemeEngine::kPartScrollbarVerticalTrack:
-      return ui::NativeTheme::kScrollbarVerticalTrack;
-    case WebThemeEngine::kPartScrollbarCorner:
-      return ui::NativeTheme::kScrollbarCorner;
-    case WebThemeEngine::kPartCheckbox:
-      return ui::NativeTheme::kCheckbox;
-    case WebThemeEngine::kPartRadio:
-      return ui::NativeTheme::kRadio;
-    case WebThemeEngine::kPartButton:
-      return ui::NativeTheme::kPushButton;
-    case WebThemeEngine::kPartTextField:
-      return ui::NativeTheme::kTextField;
-    case WebThemeEngine::kPartMenuList:
-      return ui::NativeTheme::kMenuList;
-    case WebThemeEngine::kPartSliderTrack:
-      return ui::NativeTheme::kSliderTrack;
-    case WebThemeEngine::kPartSliderThumb:
-      return ui::NativeTheme::kSliderThumb;
-    case WebThemeEngine::kPartInnerSpinButton:
-      return ui::NativeTheme::kInnerSpinButton;
-    case WebThemeEngine::kPartProgressBar:
-      return ui::NativeTheme::kProgressBar;
-    default:
-      return ui::NativeTheme::kScrollbarDownArrow;
-  }
-}
-
-static ui::NativeTheme::ScrollbarOverlayColorTheme
-NativeThemeScrollbarOverlayColorTheme(WebScrollbarOverlayColorTheme theme) {
-  switch (theme) {
-    case WebScrollbarOverlayColorTheme::kWebScrollbarOverlayColorThemeLight:
-      return ui::NativeTheme::ScrollbarOverlayColorThemeLight;
-    case WebScrollbarOverlayColorTheme::kWebScrollbarOverlayColorThemeDark:
-      return ui::NativeTheme::ScrollbarOverlayColorThemeDark;
-    default:
-      return ui::NativeTheme::ScrollbarOverlayColorThemeDark;
-  }
-}
-
-static ui::NativeTheme::State NativeThemeState(
-    WebThemeEngine::State state) {
-  switch (state) {
-    case WebThemeEngine::kStateDisabled:
-      return ui::NativeTheme::kDisabled;
-    case WebThemeEngine::kStateHover:
-      return ui::NativeTheme::kHovered;
-    case WebThemeEngine::kStateNormal:
-      return ui::NativeTheme::kNormal;
-    case WebThemeEngine::kStatePressed:
-      return ui::NativeTheme::kPressed;
-    default:
-      return ui::NativeTheme::kDisabled;
-  }
-}
-
-static ui::NativeTheme::ColorScheme NativeColorScheme(
-    WebColorScheme color_scheme) {
-  switch (color_scheme) {
-    case WebColorScheme::kLight:
-      return ui::NativeTheme::ColorScheme::kLight;
-    case WebColorScheme::kDark:
-      return ui::NativeTheme::ColorScheme::kDark;
-  }
-}
 
 static void GetNativeThemeExtraParams(
     WebThemeEngine::Part part,
@@ -295,6 +210,12 @@ blink::WebSize WebThemeEngineDefault::NinePatchCanvasSize(Part part) const {
 blink::WebRect WebThemeEngineDefault::NinePatchAperture(Part part) const {
   return ui::NativeTheme::GetInstanceForWeb()->GetNinePatchAperture(
       NativeThemePart(part));
+}
+
+base::Optional<SkColor> WebThemeEngineDefault::GetSystemColor(
+    blink::WebThemeEngine::SystemThemeColor system_theme_color) const {
+  return ui::NativeTheme::GetInstanceForWeb()->GetSystemColorFromMap(
+      NativeSystemThemeColor(system_theme_color));
 }
 
 #if defined(OS_WIN)

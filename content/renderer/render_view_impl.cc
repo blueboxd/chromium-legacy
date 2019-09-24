@@ -1882,10 +1882,6 @@ int RenderViewImpl::GetRoutingID() {
   return routing_id_;
 }
 
-gfx::Size RenderViewImpl::GetSize() {
-  return render_widget_->size();
-}
-
 float RenderViewImpl::GetDeviceScaleFactor() {
   return page_properties()->GetDeviceScaleFactor();
 }

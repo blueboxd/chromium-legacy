@@ -1391,8 +1391,10 @@ void PasswordAutofillAgent::OnProbablyFormSubmitted() {
   }
 }
 
-void PasswordAutofillAgent::FillUsingRendererIDs(
+// mojom::PasswordAutofillAgent:
+void PasswordAutofillAgent::FillPasswordForm(
     const PasswordFormFillData& form_data) {
+  DCHECK(form_data.has_renderer_ids);
   std::unique_ptr<RendererSavePasswordProgressLogger> logger;
   if (logging_state_active_) {
     logger.reset(new RendererSavePasswordProgressLogger(
@@ -1438,46 +1440,6 @@ void PasswordAutofillAgent::FillUsingRendererIDs(
 
   FillUserNameAndPassword(username_element, password_element, form_data,
                           logger.get());
-}
-
-// mojom::PasswordAutofillAgent:
-void PasswordAutofillAgent::FillPasswordForm(
-    const PasswordFormFillData& form_data) {
-  if (form_data.has_renderer_ids) {
-    FillUsingRendererIDs(form_data);
-    return;
-  }
-
-  std::vector<WebInputElement> elements;
-  std::unique_ptr<RendererSavePasswordProgressLogger> logger;
-  if (logging_state_active_) {
-    logger.reset(new RendererSavePasswordProgressLogger(
-        GetPasswordManagerDriver().get()));
-    logger->LogMessage(Logger::STRING_ON_FILL_PASSWORD_FORM_METHOD);
-  }
-  GetFillableElementFromFormData(form_data, logger.get(), &elements);
-
-  // If wait_for_username is true, we don't want to initially fill the form
-  // until the user types in a valid username.
-  if (form_data.wait_for_username) {
-    LogFirstFillingResult(form_data, FillingResult::kWaitForUsername);
-    return;
-  }
-
-  if (elements.empty())
-    LogFirstFillingResult(form_data, FillingResult::kNoFillableElementsFound);
-
-  for (auto element : elements) {
-    WebInputElement username_element = !element.IsPasswordFieldForAutofill()
-                                           ? element
-                                           : password_to_username_[element];
-    WebInputElement password_element =
-        element.IsPasswordFieldForAutofill()
-            ? element
-            : web_input_to_password_info_[element].password_field;
-    FillUserNameAndPassword(username_element, password_element, form_data,
-                            logger.get());
-  }
 }
 
 void PasswordAutofillAgent::GetFillableElementFromFormData(
@@ -2042,10 +2004,9 @@ void PasswordAutofillAgent::LogFirstFillingResult(
     return;
   UMA_HISTOGRAM_ENUMERATION("PasswordManager.FirstRendererFillingResult",
                             result);
-  if (form_data.has_renderer_ids) {
-    GetPasswordManagerDriver()->LogFirstFillingResult(
-        form_data.form_renderer_id, base::strict_cast<int32_t>(result));
-  }
+  DCHECK(form_data.has_renderer_ids);
+  GetPasswordManagerDriver()->LogFirstFillingResult(
+      form_data.form_renderer_id, base::strict_cast<int32_t>(result));
   recorded_first_filling_result_ = true;
 }
 

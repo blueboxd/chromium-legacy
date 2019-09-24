@@ -1227,7 +1227,8 @@ static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
                                   ItemPosition position,
                                   LayoutUnit ascent,
                                   LayoutUnit max_ascent,
-                                  bool is_wrap_reverse) {
+                                  bool is_wrap_reverse,
+                                  bool is_deprecated_webkit_box) {
   switch (position) {
     case ItemPosition::kLegacy:
     case ItemPosition::kAuto:
@@ -1248,8 +1249,10 @@ static LayoutUnit AlignmentOffset(LayoutUnit available_free_space,
       break;
     case ItemPosition::kFlexEnd:
       return available_free_space;
-    case ItemPosition::kCenter:
-      return available_free_space / 2;
+    case ItemPosition::kCenter: {
+      const LayoutUnit result = (available_free_space / 2);
+      return is_deprecated_webkit_box ? result.ClampNegativeToZero() : result;
+    }
     case ItemPosition::kBaseline:
       // FIXME: If we get here in columns, we want the use the descent, except
       // we currently can't get the ascent/descent of orthogonal children.
@@ -1299,14 +1302,18 @@ LayoutUnit LayoutFlexibleBox::StaticCrossAxisPositionForPositionedChild(
       available_space,
       FlexLayoutAlgorithm::AlignmentForChild(StyleRef(), child.StyleRef()),
       LayoutUnit(), LayoutUnit(),
-      StyleRef().FlexWrap() == EFlexWrap::kWrapReverse);
+      StyleRef().FlexWrap() == EFlexWrap::kWrapReverse,
+      StyleRef().IsDeprecatedWebkitBox());
 }
 
 LayoutUnit LayoutFlexibleBox::StaticInlinePositionForPositionedChild(
     const LayoutBox& child) {
-  return StartOffsetForContent() +
-         (IsColumnFlow() ? StaticCrossAxisPositionForPositionedChild(child)
-                         : StaticMainAxisPositionForPositionedChild(child));
+  const LayoutUnit start_offset = StartOffsetForContent();
+  if (IsColumnFlow() && StyleRef().IsDeprecatedWebkitBox())
+    return start_offset;
+  return start_offset + (IsColumnFlow()
+                             ? StaticCrossAxisPositionForPositionedChild(child)
+                             : StaticMainAxisPositionForPositionedChild(child));
 }
 
 LayoutUnit LayoutFlexibleBox::StaticBlockPositionForPositionedChild(
@@ -1623,7 +1630,8 @@ void LayoutFlexibleBox::AlignChildren(Vector<FlexLine>& line_contexts) {
       LayoutUnit available_space = flex_item.AvailableAlignmentSpace();
       LayoutUnit offset = AlignmentOffset(
           available_space, position, flex_item.MarginBoxAscent(), max_ascent,
-          StyleRef().FlexWrap() == EFlexWrap::kWrapReverse);
+          StyleRef().FlexWrap() == EFlexWrap::kWrapReverse,
+          StyleRef().IsDeprecatedWebkitBox());
       AdjustAlignmentForChild(*flex_item.box, offset);
       if (position == ItemPosition::kBaseline &&
           StyleRef().FlexWrap() == EFlexWrap::kWrapReverse) {

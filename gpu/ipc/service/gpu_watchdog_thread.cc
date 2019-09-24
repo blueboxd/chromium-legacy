@@ -24,10 +24,6 @@
 #include <windows.h>
 #endif
 
-#if defined(USE_X11)
-#include "ui/gfx/x/x11.h"
-#endif
-
 namespace gpu {
 namespace {
 
@@ -47,7 +43,6 @@ const int kGpuTimeout = 10000;
 #if defined(USE_X11)
 const base::FilePath::CharType kTtyFilePath[] =
     FILE_PATH_LITERAL("/sys/class/tty/tty0/active");
-const unsigned char text[20] = "check";
 #endif
 
 }  // namespace
@@ -66,9 +61,6 @@ GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
       suspension_counter_(this)
 #if defined(USE_X11)
       ,
-      display_(nullptr),
-      window_(0),
-      atom_(x11::None),
       host_tty_(-1)
 #endif
 {
@@ -86,7 +78,7 @@ GpuWatchdogThreadImplV1::GpuWatchdogThreadImplV1()
 
 #if defined(USE_X11)
   tty_file_ = base::OpenFile(base::FilePath(kTtyFilePath), "r");
-  SetupXServer();
+  host_tty_ = GetActiveTTY();
 #endif
   base::MessageLoopCurrent::Get()->AddTaskObserver(&task_observer_);
   GpuWatchdogHistogram(GpuWatchdogThreadEvent::kGpuWatchdogStart);
@@ -233,11 +225,6 @@ GpuWatchdogThreadImplV1::~GpuWatchdogThreadImplV1() {
 #if defined(USE_X11)
   if (tty_file_)
     fclose(tty_file_);
-  if (display_) {
-    DCHECK(window_);
-    XDestroyWindow(display_, window_);
-    XCloseDisplay(display_);
-  }
 #endif
 
   base::MessageLoopCurrent::Get()->RemoveTaskObserver(&task_observer_);
@@ -372,54 +359,6 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
   }
 #endif
 
-#if defined(USE_X11)
-  if (display_) {
-    DCHECK(window_);
-    XWindowAttributes attributes;
-    XGetWindowAttributes(display_, window_, &attributes);
-
-    XSelectInput(display_, window_, PropertyChangeMask);
-    SetupXChangeProp();
-
-    XFlush(display_);
-
-    // We wait for the property change event with a timeout. If it arrives we
-    // know that X is responsive and is not the cause of the watchdog trigger,
-    // so we should terminate. If it times out, it may be due to X taking a long
-    // time, but terminating won't help, so ignore the watchdog trigger.
-    XEvent event_return;
-    base::TimeTicks deadline = base::TimeTicks::Now() + timeout_;
-    while (true) {
-      base::TimeDelta delta = deadline - base::TimeTicks::Now();
-      if (delta < base::TimeDelta()) {
-        return;
-      } else {
-        while (XCheckWindowEvent(display_, window_, PropertyChangeMask,
-                                 &event_return)) {
-          if (MatchXEventAtom(&event_return))
-            break;
-        }
-        struct pollfd fds[1];
-        fds[0].fd = XConnectionNumber(display_);
-        fds[0].events = POLLIN;
-        int status = poll(fds, 1, delta.InMilliseconds());
-        if (status == -1) {
-          if (errno == EINTR) {
-            continue;
-          } else {
-            LOG(FATAL) << "Lost X connection, aborting.";
-            break;
-          }
-        } else if (status == 0) {
-          return;
-        } else {
-          continue;
-        }
-      }
-    }
-  }
-#endif
-
   // For minimal developer annoyance, don't keep terminating. You need to skip
   // the call to base::Process::Terminate below in a debugger for this to be
   // useful.
@@ -507,33 +446,6 @@ void GpuWatchdogThreadImplV1::DeliberatelyTerminateToRecoverFromHang() {
   terminated = true;
 }
 
-#if defined(USE_X11)
-void GpuWatchdogThreadImplV1::SetupXServer() {
-  display_ = XOpenDisplay(nullptr);
-  if (display_) {
-    window_ =
-        XCreateWindow(display_, DefaultRootWindow(display_), 0, 0, 1, 1, 0,
-                      CopyFromParent, InputOutput, CopyFromParent, 0, nullptr);
-    atom_ = XInternAtom(display_, "CHECK", x11::False);
-  }
-  host_tty_ = GetActiveTTY();
-}
-
-void GpuWatchdogThreadImplV1::SetupXChangeProp() {
-  DCHECK(display_);
-  XChangeProperty(display_, window_, atom_, XA_STRING, 8, PropModeReplace, text,
-                  (base::size(text) - 1));
-}
-
-bool GpuWatchdogThreadImplV1::MatchXEventAtom(XEvent* event) {
-  if (event->xproperty.window == window_ && event->type == PropertyNotify &&
-      event->xproperty.atom == atom_)
-    return true;
-
-  return false;
-}
-
-#endif
 void GpuWatchdogThreadImplV1::AddPowerObserver() {
   // As we stop the task runner before destroying this class, the unretained
   // reference will always outlive the task.

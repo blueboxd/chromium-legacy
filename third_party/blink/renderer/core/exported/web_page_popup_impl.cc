@@ -122,7 +122,8 @@ class PagePopupChromeClient final : public EmptyChromeClient {
 #endif
   }
 
-  void ScheduleAnimation(const LocalFrameView*) override {
+  void ScheduleAnimation(const LocalFrameView*,
+                         base::TimeDelta = base::TimeDelta()) override {
     if (WebTestSupport::IsRunningWebTest()) {
       // In single threaded web tests, the main frame's WebWidgetClient
       // (provided by WebViewTestProxy or WebWidgetTestProxy) runs the composite

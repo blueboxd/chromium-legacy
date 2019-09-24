@@ -20,12 +20,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gl/progress_reporter.h"
 
-#if defined(USE_X11)
-#include <sys/poll.h>
-#include "ui/base/x/x11_util.h"  // nogncheck
-#include "ui/gfx/x/x11_types.h"  // nogncheck
-#endif                           // defined(USE_X11)
-
 namespace gpu {
 
 // These values are persisted to logs. Entries should not be renumbered and
@@ -160,11 +154,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   void OnCheckTimeout();
   // Do not change the function name. It is used for [GPU HANG] carsh reports.
   void DeliberatelyTerminateToRecoverFromHang();
-#if defined(USE_X11)
-  void SetupXServer();
-  void SetupXChangeProp();
-  bool MatchXEventAtom(XEvent* event);
-#endif
 
   void OnAddPowerObserver();
 
@@ -231,9 +220,6 @@ class GPU_IPC_SERVICE_EXPORT GpuWatchdogThreadImplV1
   base::TimeTicks check_timeticks_;
 
 #if defined(USE_X11)
-  XDisplay* display_;
-  gfx::AcceleratedWidget window_;
-  XAtom atom_;
   FILE* tty_file_;
   int host_tty_;
 #endif

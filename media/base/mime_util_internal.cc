@@ -320,23 +320,23 @@ void MimeUtil::AddSupportedMediaFormats() {
   CodecSet avc_and_aac(aac);
   avc_and_aac.emplace(H264);
 
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
   mp4_audio_codecs.emplace(AC3);
   mp4_audio_codecs.emplace(EAC3);
-#endif  // BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
 
-#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
   mp4_audio_codecs.emplace(MPEG_H_AUDIO);
-#endif  // BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
 
   mp4_video_codecs.emplace(H264);
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
   mp4_video_codecs.emplace(HEVC);
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
 
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
   mp4_video_codecs.emplace(DOLBY_VISION);
-#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 #if BUILDFLAG(ENABLE_AV1_DECODER)
   mp4_video_codecs.emplace(AV1);
@@ -661,7 +661,7 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
 
     case AC3:
     case EAC3:
-#if BUILDFLAG(ENABLE_AC3_EAC3_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_AC3_EAC3_AUDIO)
       return true;
 #else
       return false;
@@ -831,14 +831,14 @@ bool MimeUtil::ParseCodecHelper(const std::string& mime_type_lower_case,
   }
 #endif
 
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
   if (ParseDolbyVisionCodecId(codec_id, out_profile, out_level)) {
     out_result->codec = MimeUtil::DOLBY_VISION;
     return true;
   }
 #endif
 
-#if BUILDFLAG(ENABLE_MPEG_H_AUDIO_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_MPEG_H_AUDIO)
   if (base::StartsWith(codec_id, "mhm1.", base::CompareCase::SENSITIVE) ||
       base::StartsWith(codec_id, "mha1.", base::CompareCase::SENSITIVE)) {
     out_result->codec = MimeUtil::MPEG_H_AUDIO;

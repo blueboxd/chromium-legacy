@@ -18,7 +18,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "components/content_settings/core/browser/content_settings_details.h"
-#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
@@ -104,8 +103,7 @@ DownloadRequestLimiter::TabDownloadState::TabDownloadState(
       ui_status_(DownloadRequestLimiter::DOWNLOAD_UI_DEFAULT),
       origin_(url::Origin::Create(contents->GetVisibleURL())),
       download_count_(0),
-      download_seen_(false),
-      observer_(this) {
+      download_seen_(false) {
   observer_.Add(GetContentSettings(contents));
   NavigationEntry* last_entry =
       contents->GetController().GetLastCommittedEntry();

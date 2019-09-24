@@ -3709,6 +3709,12 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       <message desc="Appends language in front of content." name="IDS_CHROMEVOX_LANGUAGE_SWITCH">
         <ph name="language">$1<ex>English</ex></ph>: <ph name="content">$2<ex>This is example content</ex></ph>
       </message>
+      <message desc="The description of the readPhoneticPronunciation key. Displayed in the ChromeVox menu." name="IDS_CHROMEVOX_READ_PHONETIC_PRONUNCIATION">
+        Announce phonetic pronunciation for word
+      </message>
+      <message desc="Spoken to inform the user that the node's name is empty" name="IDS_CHROMEVOX_EMPTY_NAME">
+        No available text for this item
+      </message>
     </messages>
   </release>
 </grit>

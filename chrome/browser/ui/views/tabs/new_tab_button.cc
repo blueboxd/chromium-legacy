@@ -132,17 +132,20 @@ const char* NewTabButton::GetClassName() const {
   return kClassName;
 }
 
-void NewTabButton::Layout() {
-  views::ImageButton::Layout();
-  ink_drop_container_->SetBoundsRect(GetLocalBounds());
-}
-
 void NewTabButton::AddLayerBeneathView(ui::Layer* new_layer) {
   ink_drop_container_->AddLayerBeneathView(new_layer);
 }
 
 void NewTabButton::RemoveLayerBeneathView(ui::Layer* old_layer) {
   ink_drop_container_->RemoveLayerBeneathView(old_layer);
+}
+
+void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  ImageButton::OnBoundsChanged(previous_bounds);
+  ink_drop_container_->SetBoundsRect(GetLocalBounds());
+  SetProperty(
+      views::kHighlightPathKey,
+      new SkPath(GetBorderPath(GetContentsBounds().origin(), 1.0f, false)));
 }
 
 #if defined(OS_WIN)
@@ -182,13 +185,6 @@ void NewTabButton::PaintButtonContents(gfx::Canvas* canvas) {
   canvas->Translate(GetContentsBounds().OffsetFromOrigin());
   PaintFill(canvas);
   PaintPlusIcon(canvas);
-}
-
-void NewTabButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  ImageButton::OnBoundsChanged(previous_bounds);
-  SetProperty(
-      views::kHighlightPathKey,
-      new SkPath(GetBorderPath(GetContentsBounds().origin(), 1.0f, false)));
 }
 
 gfx::Size NewTabButton::CalculatePreferredSize() const {

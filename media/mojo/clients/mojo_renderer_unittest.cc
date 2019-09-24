@@ -61,8 +61,10 @@ void WaitFor(base::TimeDelta duration) {
 class MojoRendererTest : public ::testing::Test {
  public:
   MojoRendererTest()
-      : mojo_cdm_service_(&cdm_factory_, &mojo_cdm_service_context_),
-        cdm_binding_(&mojo_cdm_service_) {
+      : mojo_cdm_service_(
+            std::make_unique<MojoCdmService>(&cdm_factory_,
+                                             &mojo_cdm_service_context_)),
+        cdm_binding_(mojo_cdm_service_.get()) {
     std::unique_ptr<StrictMock<MockRenderer>> mock_renderer(
         new StrictMock<MockRenderer>());
     mock_renderer_ = mock_renderer.get();
@@ -215,7 +217,7 @@ class MojoRendererTest : public ::testing::Test {
   // Service side bindings (declaration order is critical).
   MojoCdmServiceContext mojo_cdm_service_context_;
   DefaultCdmFactory cdm_factory_;
-  MojoCdmService mojo_cdm_service_;
+  std::unique_ptr<MojoCdmService> mojo_cdm_service_;
   mojo::Binding<mojom::ContentDecryptionModule> cdm_binding_;
 
   // Service side mocks and helpers.
@@ -304,6 +306,30 @@ TEST_F(MojoRendererTest, SetCdm_NonExistCdmId) {
   Initialize();
   cdm_context_.set_cdm_id(1);
   SetCdmAndExpect(false);
+}
+
+TEST_F(MojoRendererTest, SetCdm_ReleasedCdmId) {
+  // The CdmContext set on |mock_renderer_|.
+  CdmContext* mock_renderer_cdm_context = nullptr;
+
+  Initialize();
+  CreateCdm();
+  EXPECT_CALL(*mock_renderer_, SetCdm(_, _))
+      .WillOnce(
+          DoAll(SaveArg<0>(&mock_renderer_cdm_context), RunCallback<1>(true)));
+  SetCdmAndExpect(true);
+  EXPECT_TRUE(mock_renderer_cdm_context);
+
+  // Release the CDM.
+  mojo_cdm_service_.reset();
+  base::RunLoop().RunUntilIdle();
+
+  // SetCdm() on |mock_renderer_| should not be called.
+  SetCdmAndExpect(false);
+
+  // The CDM should still be around since it's set on the |mock_renderer_|. It
+  // should have a Decryptor since we use kClearKeyKeySystem.
+  EXPECT_TRUE(mock_renderer_cdm_context->GetDecryptor());
 }
 
 TEST_F(MojoRendererTest, SetCdm_BeforeInitialize) {

@@ -15,6 +15,7 @@
 #include "ash/style/default_color_constants.h"
 #include "ash/system/message_center/ash_message_center_lock_screen_controller.h"
 #include "ash/system/message_center/message_center_scroll_bar.h"
+#include "ash/system/message_center/unified_message_center_bubble.h"
 #include "ash/system/message_center/unified_message_list_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_utils.h"
@@ -35,6 +36,7 @@
 #include "ui/views/background.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/scroll_view.h"
+#include "ui/views/focus/focus_search.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -279,15 +281,18 @@ void StackingNotificationCounterView::UpdateVisibility() {
 
 UnifiedMessageCenterView::UnifiedMessageCenterView(
     UnifiedSystemTrayView* parent,
-    UnifiedSystemTrayModel* model)
+    UnifiedSystemTrayModel* model,
+    UnifiedMessageCenterBubble* bubble)
     : parent_(parent),
       model_(model),
+      message_center_bubble_(bubble),
       stacking_counter_(new StackingNotificationCounterView(this)),
       scroll_bar_(new MessageCenterScrollBar(this)),
       scroller_(new views::ScrollView()),
       message_list_view_(new UnifiedMessageListView(this, model)),
       last_scroll_position_from_bottom_(0),
-      animation_(std::make_unique<gfx::LinearAnimation>(this)) {
+      animation_(std::make_unique<gfx::LinearAnimation>(this)),
+      focus_search_(std::make_unique<views::FocusSearch>(this, false, false)) {
   message_list_view_->Init();
 
   AddChildView(stacking_counter_);
@@ -451,6 +456,29 @@ void UnifiedMessageCenterView::OnDidChangeFocus(views::View* before,
     return;
 
   OnMessageCenterScrolled();
+
+  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
+    views::View* first_view = GetFirstFocusableChild();
+    views::View* last_view = GetLastFocusableChild();
+
+    // If we are cycling back to the first view from the last view or vice
+    // verse. Focus out of the message center to the quick settings bubble. The
+    // direction of the cycle determines where the focus will move to in quick
+    // settings.
+    bool focused_out = false;
+    if (before == last_view && now == first_view)
+      focused_out = message_center_bubble_->FocusOut(false /* reverse */);
+    else if (before == first_view && now == last_view)
+      focused_out = message_center_bubble_->FocusOut(true /* reverse */);
+
+    // Clear the focus state completely for the message center.
+    // We acquire the focus back from the quick settings widget based on the
+    // cycling direction.
+    if (focused_out) {
+      GetFocusManager()->ClearFocus();
+      GetFocusManager()->SetStoredFocusView(nullptr);
+    }
+  }
 }
 
 void UnifiedMessageCenterView::AnimationEnded(const gfx::Animation* animation) {
@@ -619,6 +647,34 @@ void UnifiedMessageCenterView::NotifyRectBelowScroll() {
   rect_below_scroll.set_width(notification_bounds.width());
 
   SetNotificationRectBelowScroll(rect_below_scroll);
+}
+
+void UnifiedMessageCenterView::FocusEntered(bool reverse) {
+  views::View* focus_view =
+      reverse ? GetLastFocusableChild() : GetFirstFocusableChild();
+  GetFocusManager()->SetFocusedView(focus_view);
+}
+
+views::View* UnifiedMessageCenterView::GetFirstFocusableChild() {
+  views::FocusTraversable* dummy_focus_traversable;
+  views::View* dummy_focus_traversable_view;
+  return focus_search_->FindNextFocusableView(
+      nullptr, views::FocusSearch::SearchDirection::kForwards,
+      views::FocusSearch::TraversalDirection::kDown,
+      views::FocusSearch::StartingViewPolicy::kSkipStartingView,
+      views::FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
+      &dummy_focus_traversable, &dummy_focus_traversable_view);
+}
+
+views::View* UnifiedMessageCenterView::GetLastFocusableChild() {
+  views::FocusTraversable* dummy_focus_traversable;
+  views::View* dummy_focus_traversable_view;
+  return focus_search_->FindNextFocusableView(
+      nullptr, views::FocusSearch::SearchDirection::kBackwards,
+      views::FocusSearch::TraversalDirection::kDown,
+      views::FocusSearch::StartingViewPolicy::kSkipStartingView,
+      views::FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
+      &dummy_focus_traversable, &dummy_focus_traversable_view);
 }
 
 }  // namespace ash

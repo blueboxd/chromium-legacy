@@ -13,7 +13,6 @@ import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
 import android.view.View;
 import android.view.ViewStub;
-import android.view.animation.LinearInterpolator;
 
 import androidx.annotation.Nullable;
 
@@ -32,6 +31,7 @@ import org.chromium.chrome.browser.toolbar.MenuButton;
 import org.chromium.chrome.browser.toolbar.NewTabButton;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.ui.widget.animation.CancelAwareAnimatorListener;
+import org.chromium.chrome.browser.ui.widget.animation.Interpolators;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.UiUtils;
@@ -169,7 +169,7 @@ public class TabSwitcherModeTTPhone extends OptimizedFrameLayout
         if (showZoomingAnimation && inTabSwitcherMode) {
             mVisiblityAnimator.setStartDelay(duration);
         }
-        mVisiblityAnimator.setInterpolator(new LinearInterpolator());
+        mVisiblityAnimator.setInterpolator(Interpolators.LINEAR_INTERPOLATOR);
 
         // TODO(https://crbug.com/914868): Use consistent logic here for setting clickable/enabled
         // on mIncognitoToggleTabLayout & mNewTabButton?

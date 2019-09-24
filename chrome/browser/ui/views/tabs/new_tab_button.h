@@ -61,9 +61,12 @@ class NewTabButton : public views::ImageButton,
 
   // views::View:
   const char* GetClassName() const override;
-  void Layout() override;
   void AddLayerBeneathView(ui::Layer* new_layer) override;
   void RemoveLayerBeneathView(ui::Layer* old_layer) override;
+
+ protected:
+  // views::View:
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
 // views::ImageButton:
@@ -73,7 +76,6 @@ class NewTabButton : public views::ImageButton,
   void OnGestureEvent(ui::GestureEvent* event) override;
   void NotifyClick(const ui::Event& event) override;
   void PaintButtonContents(gfx::Canvas* canvas) override;
-  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
   gfx::Size CalculatePreferredSize() const override;
 
   // views::MaskedTargeterDelegate:

@@ -63,7 +63,7 @@ cr.define('cr_profile_avatar_selector', function() {
           const items = getGridItems();
 
           // Simulate tapping the third avatar.
-          MockInteractions.tap(items[2]);
+          items[2].click();
           assertEquals(
               'chrome://avatar3.png', avatarSelector.selectedAvatar.url);
           assertFalse(items[0].classList.contains('iron-selected'));

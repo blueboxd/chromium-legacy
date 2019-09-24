@@ -125,7 +125,7 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
 
   // BackForwardCache:
   void DisableForRenderFrameHost(GlobalFrameRoutingId id,
-                                 std::string_view reason) override;
+                                 base::StringPiece reason) override;
   void DisableForTesting(DisableForTestingReason reason) override;
 
  private:

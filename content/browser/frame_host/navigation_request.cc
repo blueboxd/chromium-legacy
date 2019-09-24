@@ -469,11 +469,20 @@ void RecordReadyToCommitMetrics(
 
   UMA_HISTOGRAM_BOOLEAN("Navigation.RequiresDedicatedProcess",
                         new_rfh->GetSiteInstance()->RequiresDedicatedProcess());
+  if (common_params.url.SchemeIsHTTPOrHTTPS()) {
+    UMA_HISTOGRAM_BOOLEAN(
+        "Navigation.RequiresDedicatedProcess.HTTPOrHTTPS",
+        new_rfh->GetSiteInstance()->RequiresDedicatedProcess());
+  }
 
   ChildProcessSecurityPolicyImpl* policy =
       ChildProcessSecurityPolicyImpl::GetInstance();
   GURL process_lock = policy->GetOriginLock(new_rfh->GetProcess()->GetID());
   UMA_HISTOGRAM_BOOLEAN("Navigation.IsLockedProcess", !process_lock.is_empty());
+  if (common_params.url.SchemeIsHTTPOrHTTPS()) {
+    UMA_HISTOGRAM_BOOLEAN("Navigation.IsLockedProcess.HTTPOrHTTPS",
+                          !process_lock.is_empty());
+  }
 
   if (common_params.transition & ui::PAGE_TRANSITION_FORWARD_BACK) {
     UMA_HISTOGRAM_BOOLEAN("Navigation.IsSameProcess.BackForward",

@@ -89,6 +89,11 @@ class APP_LIST_EXPORT SearchResultPageView
   // Sort the result container views.
   void ReorderSearchResultContainers();
 
+  // Passed to |result_selection_controller_| as a callback that gets called
+  // when the currently selected result changes.
+  // Ensures that |scroller_| visible rect contains the newly selected result.
+  void SelectedResultChanged();
+
   AppListViewDelegate* view_delegate_;
 
   // The SearchResultContainerViews that compose the search page. All owned by

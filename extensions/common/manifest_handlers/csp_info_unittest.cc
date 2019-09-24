@@ -266,8 +266,6 @@ TEST_F(CSPInfoUnitTest, CSPDictionary_IsolatedWorlds) {
 // key is mandatory for manifest v3 extensions and that defaults are applied
 // correctly.
 TEST_F(CSPInfoUnitTest, CSPDictionaryMandatoryForV3) {
-  ScopedCurrentChannel channel(version_info::Channel::UNKNOWN);
-
   LoadAndExpectError("csp_invalid_type_v3.json",
                      GetInvalidManifestKeyError(keys::kContentSecurityPolicy));
 

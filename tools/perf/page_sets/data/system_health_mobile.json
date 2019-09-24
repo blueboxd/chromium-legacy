@@ -144,6 +144,9 @@
         "load:media:facebook_photos": {
             "DEFAULT": "system_health_mobile_040.wprgo"
         },
+        "load:media:facebook_photos:2019": {
+            "DEFAULT": "system_health_mobile_6fb624f9e6.wprgo"
+        },
         "load:media:flickr": {
             "DEFAULT": "system_health_mobile_003.wprgo"
         },
@@ -254,6 +257,9 @@
         },
         "load:social:instagram": {
             "DEFAULT": "system_health_mobile_001.wprgo"
+        },
+        "load:social:instagram:2019": {
+            "DEFAULT": "system_health_mobile_71bac3270a.wprgo"
         },
         "load:social:pinterest": {
             "DEFAULT": "system_health_mobile_001.wprgo"

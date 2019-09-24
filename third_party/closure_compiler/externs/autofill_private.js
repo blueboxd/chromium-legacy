@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -195,6 +195,12 @@ chrome.autofillPrivate.migrateCreditCards = function() {};
  * Logs that the server cards edit link was clicked.
  */
 chrome.autofillPrivate.logServerCardLinkClicked = function() {};
+
+/**
+ * Enables or disables FIDO Authentication for credit card unmasking.
+ * @param {boolean} enabled
+ */
+chrome.autofillPrivate.setCreditCardFIDOAuthEnabledState = function(enabled) {};
 
 /**
  * Fired when the address list has changed, meaning that an entry has been

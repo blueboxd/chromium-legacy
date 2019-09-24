@@ -44,12 +44,13 @@ class DatabaseImpl : public blink::mojom::IDBDatabase {
   void RenameObjectStore(int64_t transaction_id,
                          int64_t object_store_id,
                          const base::string16& new_name) override;
-  void CreateTransaction(mojo::PendingAssociatedReceiver<
-                             blink::mojom::IDBTransaction> transaction_receiver,
-                         int64_t transaction_id,
-                         const std::vector<int64_t>& object_store_ids,
-                         blink::mojom::IDBTransactionMode mode,
-                         bool relaxed_durability) override;
+  void CreateTransaction(
+      mojo::PendingAssociatedReceiver<blink::mojom::IDBTransaction>
+          transaction_receiver,
+      int64_t transaction_id,
+      const std::vector<int64_t>& object_store_ids,
+      blink::mojom::IDBTransactionMode mode,
+      blink::mojom::IDBTransactionDurability durability) override;
   void Close() override;
   void VersionChangeIgnored() override;
   void AddObserver(int64_t transaction_id,

@@ -33,6 +33,7 @@
 #include "media/gpu/android/direct_shared_image_video_provider.h"
 #include "media/gpu/android/maybe_render_early_manager.h"
 #include "media/gpu/android/media_codec_video_decoder.h"
+#include "media/gpu/android/pooled_shared_image_video_provider.h"
 #include "media/gpu/android/video_frame_factory_impl.h"
 #include "media/mojo/mojom/media_drm_storage.mojom.h"
 #include "media/mojo/mojom/provision_fetcher.mojom.h"
@@ -208,8 +209,14 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       auto get_stub_cb = base::Bind(
           &GetCommandBufferStub, gpu_task_runner_, media_gpu_channel_manager_,
           command_buffer_id->channel_token, command_buffer_id->route_id);
-      auto image_provider = std::make_unique<DirectSharedImageVideoProvider>(
+      std::unique_ptr<SharedImageVideoProvider> image_provider;
+      image_provider = std::make_unique<DirectSharedImageVideoProvider>(
           gpu_task_runner_, get_stub_cb);
+      if (base::FeatureList::IsEnabled(kUsePooledSharedImageVideoProvider)) {
+        // Wrap |image_provider| in a pool.
+        image_provider = PooledSharedImageVideoProvider::Create(
+            gpu_task_runner_, get_stub_cb, std::move(image_provider));
+      }
       // TODO(liberato): Create this only if we're using Vulkan, else it's
       // ignored.  If we can tell that here, then VideoFrameFactory can use it
       // as a signal about whether it's supposed to get YCbCrInfo rather than

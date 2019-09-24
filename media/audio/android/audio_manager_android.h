@@ -107,6 +107,9 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   void DoSetMuteOnAudioThread(bool muted);
   void DoSetVolumeOnAudioThread(double volume);
 
+  // Returns whether or not we can and should use AAudio.
+  bool UseAAudio();
+
   // Java AudioManager instance.
   base::android::ScopedJavaGlobalRef<jobject> j_audio_manager_;
 
@@ -116,6 +119,8 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
   // Enabled when first input stream is created and set to false when last
   // input stream is destroyed. Also affects the stream type of output streams.
   bool communication_mode_is_on_;
+
+  base::Optional<bool> is_aaudio_available_;
 
   // If set, overrides volume level on output streams
   bool output_volume_override_set_;

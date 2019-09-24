@@ -33,10 +33,7 @@ LoginPerformer::LoginPerformer(scoped_refptr<base::TaskRunner> task_runner,
                                Delegate* delegate)
     : delegate_(delegate),
       task_runner_(task_runner),
-      last_login_failure_(AuthFailure::AuthFailureNone()),
-      password_changed_(false),
-      password_changed_callback_count_(0),
-      auth_mode_(AUTH_MODE_INTERNAL) {}
+      last_login_failure_(AuthFailure::AuthFailureNone()) {}
 
 LoginPerformer::~LoginPerformer() {
   DVLOG(1) << "Deleting LoginPerformer";
@@ -158,7 +155,7 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
     SetupEasyUnlockUserFlow(user_context.GetAccountId());
 
   switch (auth_mode_) {
-    case AUTH_MODE_EXTENSION: {
+    case AuthorizationMode::kExternal: {
       RunOnlineWhitelistCheck(
           account_id, wildcard_match, user_context.GetRefreshToken(),
           base::Bind(&LoginPerformer::StartLoginCompletion,
@@ -167,7 +164,7 @@ void LoginPerformer::DoPerformLogin(const UserContext& user_context,
                      weak_factory_.GetWeakPtr()));
       break;
     }
-    case AUTH_MODE_INTERNAL:
+    case AuthorizationMode::kInternal:
       StartAuthentication();
       break;
   }

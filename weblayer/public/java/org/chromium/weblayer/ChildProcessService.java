@@ -5,9 +5,7 @@
 package org.chromium.weblayer;
 
 import android.app.Service;
-import android.content.ComponentCallbacks;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -33,24 +31,7 @@ public abstract class ChildProcessService extends Service {
                     (IBinder) remoteContext.getClassLoader()
                             .loadClass("org.chromium.weblayer_private.ChildProcessServiceImpl")
                             .getMethod("create", Service.class, Context.class)
-                            .invoke(null, this, new ContextWrapper(remoteContext) {
-                                @Override
-                                public Context getApplicationContext() {
-                                    return remoteContext;
-                                }
-
-                                @Override
-                                public void registerComponentCallbacks(
-                                        ComponentCallbacks callback) {
-                                    getApplication().registerComponentCallbacks(callback);
-                                }
-
-                                @Override
-                                public void unregisterComponentCallbacks(
-                                        ComponentCallbacks callback) {
-                                    getApplication().unregisterComponentCallbacks(callback);
-                                }
-                            }));
+                            .invoke(null, this, remoteContext));
             mImpl.onCreate();
         } catch (Exception e) {
             throw new APICallException(e);

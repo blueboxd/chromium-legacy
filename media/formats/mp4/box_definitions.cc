@@ -29,10 +29,10 @@
 #include "media/formats/mp4/avc.h"
 #include "media/video/h264_parser.h"  // nogncheck
 
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 #include "base/optional.h"
 #include "media/formats/mp4/dolby_vision.h"
-#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
 #include "media/formats/mp4/hevc.h"
@@ -47,7 +47,7 @@ namespace {
 const size_t kKeyIdSize = 16;
 const size_t kFlacMetadataBlockStreaminfoSize = 34;
 
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 // Parse dvcC or dvvC box.
 base::Optional<DOVIDecoderConfigurationRecord> ParseDOVIConfig(
     BoxReader* reader) {
@@ -69,7 +69,7 @@ base::Optional<DOVIDecoderConfigurationRecord> ParseDOVIConfig(
 
   return base::nullopt;
 }
-#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 
 }  // namespace
 
@@ -863,7 +863,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
 
       frame_bitstream_converter =
           base::MakeRefCounted<AVCBitstreamConverter>(std::move(avcConfig));
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
       // It can be Dolby Vision stream if there is DVCC box.
       auto dv_config = ParseDOVIConfig(reader);
       if (dv_config.has_value()) {
@@ -871,7 +871,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
         video_codec = kCodecDolbyVision;
         video_codec_profile = dv_config->codec_profile;
       }
-#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
       break;
     }
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
@@ -885,7 +885,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       video_codec_profile = hevcConfig->GetVideoProfile();
       frame_bitstream_converter =
           base::MakeRefCounted<HEVCBitstreamConverter>(std::move(hevcConfig));
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
       // It can be Dolby Vision stream if there is DVCC box.
       auto dv_config = ParseDOVIConfig(reader);
       if (dv_config.has_value()) {
@@ -893,11 +893,11 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
         video_codec = kCodecDolbyVision;
         video_codec_profile = dv_config->codec_profile;
       }
-#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
       break;
     }
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
     case FOURCC_DVA1:
     case FOURCC_DVAV: {
       DVLOG(2) << __func__ << " reading AVCDecoderConfigurationRecord (avcC)";
@@ -931,7 +931,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       break;
     }
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
-#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
     case FOURCC_VP09: {
       DVLOG(2) << __func__ << " parsing VPCodecConfigurationRecord (vpcC)";
@@ -980,15 +980,15 @@ bool VideoSampleEntry::IsFormatValid() const {
 #if BUILDFLAG(ENABLE_PLATFORM_HEVC)
     case FOURCC_HEV1:
     case FOURCC_HVC1:
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
     case FOURCC_DVH1:
     case FOURCC_DVHE:
-#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 #endif  // BUILDFLAG(ENABLE_PLATFORM_HEVC)
-#if BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#if BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
     case FOURCC_DVA1:
     case FOURCC_DVAV:
-#endif  // BUILDFLAG(ENABLE_DOLBY_VISION_DEMUXING)
+#endif  // BUILDFLAG(ENABLE_PLATFORM_DOLBY_VISION)
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
     case FOURCC_VP09:
       return true;

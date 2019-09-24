@@ -250,13 +250,14 @@ class ChromePasswordManagerClient
       content::NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
+// TODO(crbug.com/1006430): Paste event is not captured on Android.
 #if !defined(OS_ANDROID)
   void OnPaste() override;
 #endif
 
   void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
+// Key events are triggered by Ime text committed event on Android.
 #if !defined(OS_ANDROID)
   // content::RenderWidgetHost::InputEventObserver overrides.
   void OnInputEvent(const blink::WebInputEvent&) override;
@@ -300,7 +301,6 @@ class ChromePasswordManagerClient
   const password_manager::PasswordFeatureManagerImpl password_feature_manager_;
   password_manager::HttpAuthManagerImpl httpauth_manager_;
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   password_manager::PasswordReuseDetectionManager
       password_reuse_detection_manager_;

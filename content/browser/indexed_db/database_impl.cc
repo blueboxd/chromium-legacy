@@ -105,7 +105,7 @@ void DatabaseImpl::CreateTransaction(
     int64_t transaction_id,
     const std::vector<int64_t>& object_store_ids,
     blink::mojom::IDBTransactionMode mode,
-    bool relaxed_durability) {
+    blink::mojom::IDBTransactionDurability durability) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!connection_->IsConnected())
     return;
@@ -125,7 +125,7 @@ void DatabaseImpl::CreateTransaction(
       transaction_id,
       std::set<int64_t>(object_store_ids.begin(), object_store_ids.end()), mode,
       new IndexedDBBackingStore::Transaction(
-          connection_->database()->backing_store(), relaxed_durability));
+          connection_->database()->backing_store(), durability));
   connection_->database()->RegisterAndScheduleTransaction(transaction);
 
   dispatcher_host_->CreateAndBindTransactionImpl(

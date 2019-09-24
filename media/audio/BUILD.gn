@@ -19,6 +19,17 @@ if (use_pulseaudio && !link_pulseaudio) {
   }
 }
 
+if (is_android) {
+  generate_stubs("aaudio_stubs") {
+    extra_header = "android/aaudio_stub_header.fragment"
+    sigs = [ "android/aaudio.sigs" ]
+    output_name = "android/aaudio_stubs"
+    deps = [
+      "//base",
+    ]
+  }
+}
+
 config("platform_config") {
   defines = []
   if (is_chromecast) {
@@ -217,6 +228,8 @@ source_set("audio") {
 
   if (is_android) {
     sources += [
+      "android/aaudio_output.cc",
+      "android/aaudio_output.h",
       "android/audio_manager_android.cc",
       "android/audio_manager_android.h",
       "android/audio_track_output_stream.cc",
@@ -231,7 +244,10 @@ source_set("audio") {
       "android/opensles_wrapper.cc",
     ]
 
-    deps += [ "//media/base/android:media_jni_headers" ]
+    deps += [
+      ":aaudio_stubs",
+      "//media/base/android:media_jni_headers",
+    ]
   }
 
   if (is_linux) {

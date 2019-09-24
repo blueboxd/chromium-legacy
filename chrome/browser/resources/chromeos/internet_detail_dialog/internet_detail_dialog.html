@@ -64,6 +64,10 @@
         flex: auto;
       }
 
+      .section cr-button + cr-button {
+        margin-inline-start: 8px;
+      }
+
       .title {
         font-size: 107.69%;  /* 14px / 13px */
         font-weight: 500;
@@ -90,6 +94,10 @@
           [[getStateText_(managedProperties_)]]
         </div>
       </div>
+      <cr-button on-click="onForgetTap_"
+          hidden$="[[!showForget_(managedProperties_)]]">
+        $i18n{networkButtonForget}
+      </cr-button>
       <cr-button class="action-button" on-click="onConnectDisconnectClick_"
           hidden$="[[!showConnectDisconnect_(managedProperties_)]]"
           disabled="[[!enableConnectDisconnect_(managedProperties_)]]">
@@ -150,7 +158,7 @@
         </network-ip-config>
       </div>
 
-      <!-- IP Config, Nameservers -->
+      <!-- Nameservers -->
       <div class="section single-column">
         <network-nameservers editable
             on-nameservers-change="onIPConfigChange_"
@@ -159,15 +167,22 @@
       </div>
     </template>
 
-    <!-- Other properties to show if present. -->
-    <template is="dom-if" if="[[hasInfoFields_(managedProperties_)]]">
-      <div class="section single-column indented">
+    <div class="section single-column indented">
+      <!-- MAC Address. -->
+      <div class="single-column" hidden$="[[!deviceState_.macAddress]]">
+        <div>$i18n{OncMacAddress}</div>
+        <div class="secondary">[[deviceState_.macAddress]]</div>
+      </div>
+
+      <!-- Other properties to show if present. -->
+      <template is="dom-if" if="[[hasInfoFields_(managedProperties_)]]">
         <network-property-list-mojo
             fields="[[getInfoFields_(managedProperties_)]]"
             property-dict="[[managedProperties_]]">
         </network-property-list-mojo>
-      </div>
-    </template>
+      </template>
+    </div>
+
   </template>
   <script src="internet_detail_dialog.js"></script>
 </dom-module>

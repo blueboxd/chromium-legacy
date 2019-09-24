@@ -22,10 +22,6 @@ class WebView;
 struct WebRect;
 }  // namespace blink
 
-namespace gfx {
-class Size;
-}
-
 namespace content {
 
 class RenderFrame;
@@ -61,9 +57,6 @@ class CONTENT_EXPORT RenderView : public IPC::Sender {
 
   // Get the routing ID of the view.
   virtual int GetRoutingID() = 0;
-
-  // Returns the size of the view.
-  virtual gfx::Size GetSize() = 0;
 
   // Returns the device scale factor of the display the render view is in.
   virtual float GetDeviceScaleFactor() = 0;

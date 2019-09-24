@@ -36,7 +36,7 @@ class MODULES_EXPORT WebIDBDatabaseImpl : public WebIDBDatabase {
                          int64_t transaction_id,
                          const Vector<int64_t>& scope,
                          mojom::IDBTransactionMode mode,
-                         bool relaxed_durability) override;
+                         mojom::IDBTransactionDurability durability) override;
 
   void Close() override;
   void VersionChangeIgnored() override;

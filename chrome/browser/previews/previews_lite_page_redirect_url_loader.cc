@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/previews/previews_lite_page_navigation_throttle.h"
+#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
@@ -132,8 +132,8 @@ void PreviewsLitePageRedirectURLLoader::StartRedirectToPreview(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   GURL original_url = modified_resource_request_.url;
-  GURL lite_page_url = PreviewsLitePageNavigationThrottle::GetPreviewsURLForURL(
-      modified_resource_request_.url);
+  GURL lite_page_url =
+      GetLitePageRedirectURLForURL(modified_resource_request_.url);
 
   CreateRedirectInformation(lite_page_url);
 

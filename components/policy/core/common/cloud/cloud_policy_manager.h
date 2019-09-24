@@ -108,8 +108,6 @@ class POLICY_EXPORT CloudPolicyManager
   // policy update notifications are deferred until after it completes.
   bool waiting_for_policy_refresh_;
 
-  scoped_refptr<base::SequencedTaskRunner> io_task_runner_;
-
   DISALLOW_COPY_AND_ASSIGN(CloudPolicyManager);
 };
 

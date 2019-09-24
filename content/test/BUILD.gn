@@ -1875,6 +1875,7 @@ test("content_unittests") {
     "../child/dwrite_font_proxy/dwrite_font_proxy_win_unittest.cc",
     "../child/dwrite_font_proxy/font_fallback_win_unittest.cc",
     "../child/font_warmup_win_unittest.cc",
+    "../child/webthemeengine_impl_unittest.cc",
     "../common/android/gin_java_bridge_value_unittest.cc",
     "../common/background_fetch/background_fetch_mojom_traits_unittest.cc",
     "../common/common_param_traits_unittest.cc",

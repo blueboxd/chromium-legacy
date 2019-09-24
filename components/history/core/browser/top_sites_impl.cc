@@ -128,13 +128,11 @@ void TopSitesImpl::GetMostVisitedURLs(
   callback.Run(filtered_urls);
 }
 
-// Returns the index of |url| in |urls|, or -1 if not found.
-static int IndexOf(const MostVisitedURLList& urls, const GURL& url) {
-  for (size_t i = 0; i < urls.size(); i++) {
-    if (urls[i].url == url)
-      return i;
-  }
-  return -1;
+static bool Contains(const MostVisitedURLList& urls, const GURL& url) {
+  return std::find_if(urls.begin(), urls.end(),
+                      [&url](const MostVisitedURL& item) {
+                        return item.url == url;
+                      }) != urls.end();
 }
 
 void TopSitesImpl::SyncWithHistory() {
@@ -232,7 +230,7 @@ void TopSitesImpl::RegisterPrefs(PrefRegistrySimple* registry) {
 TopSitesImpl::~TopSitesImpl() = default;
 
 void TopSitesImpl::StartQueryForMostVisited() {
-  const int kDaysOfHistory = 90;
+  constexpr int kDaysOfHistory = 90;
 
   DCHECK(loaded_);
   timer_.Stop();
@@ -261,26 +259,19 @@ void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
   // When we find a match in the old set, we'll reset its index to our special
   // marker. This allows us to quickly identify the deleted ones in a later
   // pass.
-  const size_t kAlreadyFoundMarker = static_cast<size_t>(-1);
+  constexpr size_t kAlreadyFoundMarker = static_cast<size_t>(-1);
   int rank = -1;
-  for (size_t i = 0; i < new_list.size(); i++) {
+  for (const auto& new_url : new_list) {
     rank++;
-    auto found = all_old_urls.find(new_list[i].url);
+    auto found = all_old_urls.find(new_url.url);
     if (found == all_old_urls.end()) {
-      MostVisitedURLWithRank added;
-      added.url = new_list[i];
-      added.rank = rank;
-      delta->added.push_back(added);
+      delta->added.emplace_back(MostVisitedURLWithRank{new_url, rank});
     } else {
       DCHECK(found->second != kAlreadyFoundMarker)
           << "Same URL appears twice in the new list.";
       int old_rank = found->second;
-      if (old_rank != rank) {
-        MostVisitedURLWithRank moved;
-        moved.url = new_list[i];
-        moved.rank = rank;
-        delta->moved.push_back(moved);
-      }
+      if (old_rank != rank)
+        delta->moved.emplace_back(MostVisitedURLWithRank{new_url, rank});
       found->second = kAlreadyFoundMarker;
     }
   }
@@ -296,8 +287,9 @@ void TopSitesImpl::DiffMostVisited(const MostVisitedURLList& old_list,
 bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls) const {
   bool added = false;
   for (const auto& prepopulated_page : prepopulated_pages_) {
-    if (urls->size() < kTopSitesNumber &&
-        IndexOf(*urls, prepopulated_page.most_visited.url) == -1) {
+    if (urls->size() >= kTopSitesNumber)
+      break;
+    if (!Contains(*urls, prepopulated_page.most_visited.url)) {
       urls->push_back(prepopulated_page.most_visited);
       added = true;
     }
@@ -305,8 +297,8 @@ bool TopSitesImpl::AddPrepopulatedPages(MostVisitedURLList* urls) const {
   return added;
 }
 
-void TopSitesImpl::ApplyBlacklist(const MostVisitedURLList& urls,
-                                  MostVisitedURLList* out) {
+MostVisitedURLList TopSitesImpl::ApplyBlacklist(
+    const MostVisitedURLList& urls) {
   // Log the number of times ApplyBlacklist is called so we can compute the
   // average number of blacklisted items per user.
   const base::DictionaryValue* blacklist =
@@ -314,15 +306,15 @@ void TopSitesImpl::ApplyBlacklist(const MostVisitedURLList& urls,
   UMA_HISTOGRAM_BOOLEAN("TopSites.NumberOfApplyBlacklist", true);
   UMA_HISTOGRAM_COUNTS_100("TopSites.NumberOfBlacklistedItems",
       (blacklist ? blacklist->size() : 0));
-  size_t num_urls = 0;
-  for (size_t i = 0; i < urls.size(); ++i) {
-    if (!IsBlacklisted(urls[i].url)) {
-      if (num_urls >= kTopSitesNumber)
-        break;
-      num_urls++;
-      out->push_back(urls[i]);
-    }
+  MostVisitedURLList result;
+  for (const auto& url : urls) {
+    if (IsBlacklisted(url.url))
+      continue;
+    if (result.size() >= kTopSitesNumber)
+      break;
+    result.push_back(url);
   }
+  return result;
 }
 
 // static
@@ -332,11 +324,10 @@ std::string TopSitesImpl::GetURLHash(const GURL& url) {
   return base::MD5String(url.spec());
 }
 
-void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
+void TopSitesImpl::SetTopSites(MostVisitedURLList top_sites,
                                const CallLocation location) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  MostVisitedURLList top_sites(new_top_sites);
   AddPrepopulatedPages(&top_sites);
 
   TopSitesDelta delta;
@@ -373,7 +364,7 @@ void TopSitesImpl::SetTopSites(const MostVisitedURLList& new_top_sites,
   // We always do the following steps (setting top sites in cache, and resetting
   // thread safe cache ...) as this method is invoked during startup at which
   // point the caches haven't been updated yet.
-  top_sites_ = top_sites;
+  top_sites_ = std::move(top_sites);
 
   ResetThreadSafeCache();
 
@@ -409,8 +400,8 @@ void TopSitesImpl::MoveStateToLoaded() {
     }
   }
 
-  for (size_t i = 0; i < pending_callbacks.size(); i++)
-    pending_callbacks[i].Run(urls);
+  for (auto& callback : pending_callbacks)
+    callback.Run(urls);
 
   if (history_service_)
     history_service_observer_.Add(history_service_);
@@ -420,9 +411,7 @@ void TopSitesImpl::MoveStateToLoaded() {
 
 void TopSitesImpl::ResetThreadSafeCache() {
   base::AutoLock lock(lock_);
-  MostVisitedURLList filtered;
-  ApplyBlacklist(top_sites_, &filtered);
-  thread_safe_cache_ = filtered;
+  thread_safe_cache_ = ApplyBlacklist(top_sites_);
 }
 
 void TopSitesImpl::ScheduleUpdateTimer() {
@@ -433,13 +422,12 @@ void TopSitesImpl::ScheduleUpdateTimer() {
                &TopSitesImpl::StartQueryForMostVisited);
 }
 
-void TopSitesImpl::OnGotMostVisitedURLs(
-    const scoped_refptr<MostVisitedThreadSafe>& sites) {
+void TopSitesImpl::OnGotMostVisitedURLs(MostVisitedURLList sites) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Set |top_sites_| directly so that SetTopSites() diffs correctly.
-  top_sites_ = sites->data;
-  SetTopSites(sites->data, CALL_LOCATION_FROM_ON_GOT_MOST_VISITED_URLS);
+  top_sites_ = sites;
+  SetTopSites(std::move(sites), CALL_LOCATION_FROM_ON_GOT_MOST_VISITED_URLS);
 
   MoveStateToLoaded();
 
@@ -449,7 +437,7 @@ void TopSitesImpl::OnGotMostVisitedURLs(
 }
 
 void TopSitesImpl::OnTopSitesAvailableFromHistory(MostVisitedURLList pages) {
-  SetTopSites(pages, CALL_LOCATION_FROM_OTHER_PLACES);
+  SetTopSites(std::move(pages), CALL_LOCATION_FROM_OTHER_PLACES);
 }
 
 void TopSitesImpl::OnURLsDeleted(HistoryService* history_service,

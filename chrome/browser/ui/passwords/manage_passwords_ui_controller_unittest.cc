@@ -228,7 +228,7 @@ class ManagePasswordsUIControllerTest : public ChromeRenderViewHostTestHarness {
 
   std::unique_ptr<PasswordFormManager> CreateFormManagerWithBlacklistedMatches(
       const FormData& observed_form,
-      const std::vector<const PasswordForm*>& blacklisted_matches,
+      bool is_blacklisted,
       scoped_refptr<password_manager::PasswordFormMetricsRecorder>
           metrics_recorder);
 
@@ -330,13 +330,13 @@ ManagePasswordsUIControllerTest::CreateFormManagerWithBestMatches(
 std::unique_ptr<PasswordFormManager>
 ManagePasswordsUIControllerTest::CreateFormManagerWithBlacklistedMatches(
     const FormData& observed_form,
-    const std::vector<const PasswordForm*>& blacklisted_matches,
+    bool is_blacklisted,
     scoped_refptr<password_manager::PasswordFormMetricsRecorder>
         metrics_recorder) {
   auto form_manager = std::make_unique<PasswordFormManager>(
       &client_, driver_.AsWeakPtr(), observed_form, &fetcher_,
       std::make_unique<password_manager::StubFormSaver>(), metrics_recorder);
-  fetcher_.SetBlacklisted(blacklisted_matches);
+  fetcher_.SetBlacklisted(is_blacklisted);
   fetcher_.NotifyFetchCompleted();
   return form_manager;
 }
@@ -418,13 +418,9 @@ TEST_F(ManagePasswordsUIControllerTest, PasswordSubmitted) {
 }
 
 TEST_F(ManagePasswordsUIControllerTest, BlacklistedFormPasswordSubmitted) {
-  PasswordForm blacklisted;
-  blacklisted.origin = test_local_form().origin;
-  blacklisted.signon_realm = blacklisted.origin.spec();
-  blacklisted.blacklisted_by_user = true;
   std::unique_ptr<PasswordFormManager> test_form_manager =
-      CreateFormManagerWithBlacklistedMatches(observed_form(), {&blacklisted},
-                                              nullptr);
+      CreateFormManagerWithBlacklistedMatches(observed_form(),
+                                              /*is_blacklisted=*/true, nullptr);
   EXPECT_CALL(*controller(), OnUpdateBubbleAndIconVisibility());
   controller()->OnPasswordSubmitted(std::move(test_form_manager));
   EXPECT_FALSE(controller()->opened_automatic_bubble());

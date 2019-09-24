@@ -5,10 +5,13 @@
 package org.chromium.weblayer;
 
 import android.app.Application;
+import android.content.ComponentCallbacks;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
@@ -65,8 +68,8 @@ public final class WebLayer {
             mImpl = IWebLayer.Stub.asInterface(
                     (IBinder) remoteContext.getClassLoader()
                             .loadClass("org.chromium.weblayer_private.WebLayerImpl")
-                            .getMethod("create", Application.class, Context.class)
-                            .invoke(null, application, remoteContext));
+                            .getMethod("create", Context.class)
+                            .invoke(null, remoteContext));
         } catch (Exception e) {
             throw new APICallException(e);
         }
@@ -97,14 +100,49 @@ public final class WebLayer {
      * Creates a Context for the remote (weblayer implementation) side.
      */
     static Context createRemoteContext(Context localContext) {
+        Context remoteContext;
         try {
             // TODO(cduvall): Might want to cache the remote context so we don't need to call into
             // package manager more than we need to.
-            return localContext.createPackageContext(getImplPackageName(localContext),
+            remoteContext = localContext.createPackageContext(getImplPackageName(localContext),
                     Context.CONTEXT_IGNORE_SECURITY | Context.CONTEXT_INCLUDE_CODE);
         } catch (NameNotFoundException e) {
             throw new AndroidRuntimeException(e);
         }
+        return wrapContext(localContext, remoteContext);
+    }
+
+    private static Context wrapContext(Context localContext, Context remoteContext) {
+        return new ContextWrapper(localContext) {
+            @Override
+            public Context getApplicationContext() {
+                if (getBaseContext().getApplicationContext() == getBaseContext()) return this;
+                return wrapContext(getBaseContext().getApplicationContext(), remoteContext);
+            }
+
+            @Override
+            public Resources getResources() {
+                return remoteContext.getResources();
+            }
+
+            @Override
+            public ClassLoader getClassLoader() {
+                return remoteContext.getClassLoader();
+            }
+
+            @Override
+            public void registerComponentCallbacks(ComponentCallbacks callback) {
+                // We have to override registerComponentCallbacks and unregisterComponentCallbacks
+                // since they call getApplicationContext().[un]registerComponentCallbacks()
+                // which causes us to go into a loop.
+                getBaseContext().registerComponentCallbacks(callback);
+            }
+
+            @Override
+            public void unregisterComponentCallbacks(ComponentCallbacks callback) {
+                getBaseContext().unregisterComponentCallbacks(callback);
+            }
+        };
     }
 
     private static String getImplPackageName(Context localContext)

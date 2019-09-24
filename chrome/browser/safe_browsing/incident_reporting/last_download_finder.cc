@@ -26,7 +26,6 @@
 #include "chrome/common/safe_browsing/download_type_util.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
 #include "components/history/core/browser/download_constants.h"
-#include "components/history/core/browser/history_service.h"
 #include "components/language/core/browser/pref_names.h"
 #include "components/language/core/common/locale_util.h"
 #include "components/prefs/pref_service.h"
@@ -257,15 +256,13 @@ std::unique_ptr<LastDownloadFinder> LastDownloadFinder::Create(
   return finder;
 }
 
-LastDownloadFinder::LastDownloadFinder() : history_service_observer_(this) {}
+LastDownloadFinder::LastDownloadFinder() = default;
 
 LastDownloadFinder::LastDownloadFinder(
     const DownloadDetailsGetter& download_details_getter,
     const std::vector<Profile*>& profiles,
     const LastDownloadCallback& callback)
-    : download_details_getter_(download_details_getter),
-      callback_(callback),
-      history_service_observer_(this) {
+    : download_details_getter_(download_details_getter), callback_(callback) {
   // Observe profile lifecycle events so that the finder can begin or abandon
   // the search in profiles while it is running.
   notification_registrar_.Add(this,

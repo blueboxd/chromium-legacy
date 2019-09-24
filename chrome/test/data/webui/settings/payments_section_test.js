@@ -7,11 +7,17 @@ cr.define('settings_payments_section', function() {
     test('testAutofillExtensionIndicator', function() {
       // Initializing with fake prefs
       const section = document.createElement('settings-payments-section');
-      section.prefs = {autofill: {credit_card_enabled: {}}};
+      section.prefs = {
+        autofill: {credit_card_enabled: {}, credit_card_fido_auth_enabled: {}}
+      };
       document.body.appendChild(section);
 
       assertFalse(!!section.$$('#autofillExtensionIndicator'));
-      section.set('prefs.autofill.credit_card_enabled.extensionId', 'test-id');
+      section.set(
+          'prefs.autofill.credit_card_enabled.extensionId', 'test-id-1');
+      section.set(
+          'prefs.autofill.credit_card_fido_auth_enabled.extensionId',
+          'test-id-2');
       Polymer.dom.flush();
 
       assertTrue(!!section.$$('#autofillExtensionIndicator'));
@@ -441,6 +447,43 @@ cr.define('settings_payments_section', function() {
           [creditCard], {credit_card_enabled: {value: true}});
 
       assertFalse(section.$$('#migrateCreditCards').hidden);
+    });
+
+    test('verifyFIDOAuthToggleShownIfUserIsVerifiable', function() {
+      // Set |userIsFIDOVerifiable| to true.
+      loadTimeData.overrideValues({userIsFIDOVerifiable: true});
+      const section =
+          createPaymentsSection([], {credit_card_enabled: {value: true}});
+
+      assertTrue(!!section.$$('#autofillCreditCardFIDOAuthToggle'));
+    });
+
+    test('verifyFIDOAuthToggleNotShownIfUserIsNotVerifiable', function() {
+      // Set |userIsFIDOVerifiable| to false.
+      loadTimeData.overrideValues({userIsFIDOVerifiable: false});
+      const section =
+          createPaymentsSection([], {credit_card_enabled: {value: true}});
+      assertFalse(!!section.$$('#autofillCreditCardFIDOAuthToggle'));
+    });
+
+    test('verifyFIDOAuthToggleCheckedIfOptedIn', function() {
+      // Set FIDO auth pref value to true.
+      loadTimeData.overrideValues({userIsFIDOVerifiable: true});
+      const section = createPaymentsSection([], {
+        credit_card_enabled: {value: true},
+        credit_card_fido_auth_enabled: {value: true}
+      });
+      assertTrue(section.$$('#autofillCreditCardFIDOAuthToggle').checked);
+    });
+
+    test('verifyFIDOAuthToggleUncheckedIfOptedOut', function() {
+      // Set FIDO auth pref value to false.
+      loadTimeData.overrideValues({userIsFIDOVerifiable: true});
+      const section = createPaymentsSection([], {
+        credit_card_enabled: {value: true},
+        credit_card_fido_auth_enabled: {value: false}
+      });
+      assertFalse(section.$$('#autofillCreditCardFIDOAuthToggle').checked);
     });
   });
 });

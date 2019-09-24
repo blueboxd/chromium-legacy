@@ -99,6 +99,9 @@
       status: "stable",
     },
     {
+      name: "AccessibilityExposeDisplayNone",
+    },
+    {
       name: "AccessibilityObjectModel",
       status: "experimental",
     },

@@ -152,8 +152,8 @@ bool QuicStreamFactoryPeer::CryptoConfigCacheIsEmpty(
     QuicStreamFactory* factory,
     const quic::QuicServerId& quic_server_id,
     const NetworkIsolationKey& network_isolation_key) {
-  return factory->CryptoConfigCacheIsEmpty(quic_server_id,
-                                           network_isolation_key);
+  return factory->CryptoConfigCacheIsEmptyForTesting(quic_server_id,
+                                                     network_isolation_key);
 }
 
 void QuicStreamFactoryPeer::CacheDummyServerConfig(

@@ -222,12 +222,15 @@ void AccessibilityEventRecorderAuraLinux::ProcessATKEvent(
           base::NumberToString(g_value_get_double(&property_values->new_value));
     } else if (g_strcmp0(property_values->property_name, "accessible-name") ==
                0) {
+      const char* new_name = g_value_get_string(&property_values->new_value);
       log += "NAME-CHANGED:";
-      log += g_value_get_string(&property_values->new_value);
+      log += (new_name) ? new_name : "(null)";
     } else if (g_strcmp0(property_values->property_name,
                          "accessible-description") == 0) {
+      const char* new_description =
+          g_value_get_string(&property_values->new_value);
       log += "DESCRIPTION-CHANGED:";
-      log += g_value_get_string(&property_values->new_value);
+      log += (new_description) ? new_description : "(null)";
     } else {
       return;
     }

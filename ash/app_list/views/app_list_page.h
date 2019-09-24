@@ -75,6 +75,13 @@ class APP_LIST_EXPORT AppListPage : public views::View {
       const gfx::Rect& contents_bounds,
       const gfx::Rect& search_box_bounds) const = 0;
 
+  // Should update the app list page opacity for the current state. Called when
+  // the selected page changes without animation - if the page implements this,
+  // it should make sure the page transition animation updates the opacity as
+  // well.
+  // Default implementation is no-op.
+  virtual void UpdateOpacityForState(ash::AppListState state);
+
   // Convenience method that sets the page bounds to the bounds returned by
   // GetPageBoundsForState().
   void UpdatePageBoundsForState(ash::AppListState state,

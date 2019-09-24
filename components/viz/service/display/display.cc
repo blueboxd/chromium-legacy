@@ -406,10 +406,12 @@ void Display::InitializeRenderer(bool enable_shared_images) {
   renderer_->Initialize();
   renderer_->SetVisible(visible_);
 
-  // TODO(jbauman): Outputting an incomplete quad list doesn't work when using
-  // overlays.
+  // Outputting a partial list of quads might not work in cases where contents
+  // outside the damage rect might be needed by the renderer.
   bool output_partial_list =
+      output_surface_->capabilities().only_invalidates_damage_rect &&
       renderer_->use_partial_swap() && !renderer_->has_overlay_validator();
+
   bool needs_surface_occluding_damage_rect =
       renderer_->OverlayNeedsSurfaceOccludingDamageRect();
   aggregator_ = std::make_unique<SurfaceAggregator>(

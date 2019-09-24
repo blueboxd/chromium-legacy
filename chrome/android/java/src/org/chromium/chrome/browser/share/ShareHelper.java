@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.share;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.PendingIntent;
+import android.content.ActivityNotFoundException;
 import android.content.BroadcastReceiver;
 import android.content.ClipData;
 import android.content.ComponentName;
@@ -100,11 +101,22 @@ public class ShareHelper {
 
     /** Force the use of a Chrome-specific intent chooser, not the system chooser. */
     private static boolean sForceCustomChooserForTesting;
+    private static boolean sIgnoreActivityNotFoundException;
 
     /** If non-null, will be used instead of the real activity. */
     private static FakeIntentReceiver sFakeIntentReceiverForTesting;
 
     private ShareHelper() {}
+
+    /*
+     * If true, dont throw an ActivityNotFoundException if it is fired when attempting
+     * to intent into lens.
+     * @param shouldIgnore Whether to catch the exception.
+     */
+    @VisibleForTesting
+    public static void setIgnoreActivityNotFoundExceptionForTesting(boolean shouldIgnore) {
+        sIgnoreActivityNotFoundException = shouldIgnore;
+    }
 
     /**
      * Fire the intent to share content with the target app.
@@ -404,7 +416,14 @@ public class ShareHelper {
     public static void shareImageWithGoogleLens(
             final Activity activity, Uri imageUri, boolean isIncognito) {
         Intent shareIntent = LensUtils.getShareWithGoogleLensIntent(imageUri, isIncognito);
-        fireIntent(activity, shareIntent, /* allowIdentification= */ true);
+        try {
+            fireIntent(activity, shareIntent, /* allowIdentification= */ true);
+        } catch (ActivityNotFoundException e) {
+            // The initial version check should guarantee that the activity is available. However,
+            // the exception may be thrown in test environments after mocking out the version check.
+            if (Boolean.TRUE.equals(sIgnoreActivityNotFoundException)) return;
+            throw e;
+        }
     }
 
     private static class ExternallyVisibleUriCallback implements Callback<String> {

@@ -388,7 +388,9 @@ const NetworkUI = (function() {
    */
   const handleDeviceDetail = function(state, selectedId, detailCell) {
     if (selectedId == 'shill') {
-      chrome.send('getShillDeviceProperties', [state.type]);
+      chrome.send(
+          'getShillDeviceProperties',
+          [OncMojo.getNetworkTypeString(state.type)]);
     } else {
       showDetail(detailCell, state);
     }

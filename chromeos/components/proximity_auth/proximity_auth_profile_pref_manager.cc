@@ -89,11 +89,20 @@ void ProximityAuthProfilePrefManager::SyncPrefsToLocalState() {
   user_prefs_dict->SetKey(
       chromeos::multidevice_setup::kSmartLockEnabledPrefName,
       base::Value(IsEasyUnlockEnabled()));
-  user_prefs_dict->SetKey(prefs::kProximityAuthIsChromeOSLoginEnabled,
-                          base::Value(IsChromeOSLoginEnabled()));
   user_prefs_dict->SetKey(
       chromeos::multidevice_setup::kSmartLockSigninAllowedPrefName,
       base::Value(IsChromeOSLoginAllowed()));
+  user_prefs_dict->SetKey(prefs::kProximityAuthIsChromeOSLoginEnabled,
+                          base::Value(IsChromeOSLoginEnabled()));
+
+  // If Signin with Smart Lock is enabled, then the "has shown Signin with
+  // Smart Lock is disabled message" flag should be false, to ensure the message
+  // is displayed if Signin with Smart Lock is disabled. Otherwise, copy the
+  // old value.
+  bool has_shown_login_disabled_message =
+      IsChromeOSLoginEnabled() ? false : HasShownLoginDisabledMessage();
+  user_prefs_dict->SetKey(prefs::kProximityAuthHasShownLoginDisabledMessage,
+                          base::Value(has_shown_login_disabled_message));
 
   DictionaryPrefUpdate update(local_state_,
                               prefs::kEasyUnlockLocalStateUserPrefs);
@@ -160,6 +169,31 @@ void ProximityAuthProfilePrefManager::SetIsChromeOSLoginEnabled(
 
 bool ProximityAuthProfilePrefManager::IsChromeOSLoginEnabled() const {
   return pref_service_->GetBoolean(prefs::kProximityAuthIsChromeOSLoginEnabled);
+}
+
+void ProximityAuthProfilePrefManager::SetHasShownLoginDisabledMessage(
+    bool has_shown) {
+  // This is persisted within SyncPrefsToLocalState() instead, since the local
+  // state must act as the source of truth for this pref.
+  NOTREACHED();
+}
+
+bool ProximityAuthProfilePrefManager::HasShownLoginDisabledMessage() const {
+  const base::DictionaryValue* all_user_prefs_dict =
+      local_state_->GetDictionary(prefs::kEasyUnlockLocalStateUserPrefs);
+  const base::DictionaryValue* current_user_prefs;
+  if (!all_user_prefs_dict ||
+      !all_user_prefs_dict->GetDictionaryWithoutPathExpansion(
+          account_id_.GetUserEmail(), &current_user_prefs) ||
+      !current_user_prefs) {
+    PA_LOG(ERROR) << "Failed to find local state prefs for current user.";
+    return false;
+  }
+
+  bool pref_value = false;
+  current_user_prefs->GetBooleanWithoutPathExpansion(
+      prefs::kProximityAuthHasShownLoginDisabledMessage, &pref_value);
+  return pref_value;
 }
 
 void ProximityAuthProfilePrefManager::OnFeatureStatesChanged(

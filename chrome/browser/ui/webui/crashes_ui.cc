@@ -37,6 +37,10 @@
 #include "chromeos/dbus/debug_daemon_client.h"
 #endif
 
+#if defined(OS_LINUX)
+#include "components/crash/content/app/crashpad.h"
+#endif
+
 using content::WebContents;
 using content::WebUIMessageHandler;
 
@@ -168,19 +172,22 @@ void CrashesDOMHandler::UpdateUI() {
   system_crash_reporter = true;
 #endif
 
-  bool upload_list = crash_reporting_enabled;
-  bool support_manual_uploads = false;
-
+  bool using_crashpad = false;
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
-  // Maunal uploads currently are supported only for Crashpad-using platforms
-  // and Android, and only if crash uploads are not disabled by policy.
-  support_manual_uploads =
-      crash_reporting_enabled || !IsMetricsReportingPolicyManaged();
-
-  // Show crash reports regardless of |crash_reporting_enabled| so that users
-  // can manually upload those reports.
-  upload_list = true;
+  using_crashpad = true;
+#elif defined(OS_LINUX)
+  using_crashpad = crash_reporter::IsCrashpadEnabled();
 #endif
+
+  // Manual uploads currently are supported only for Crashpad-using platforms
+  // and only if crash uploads are not disabled by policy.
+  bool support_manual_uploads =
+      using_crashpad &&
+      (crash_reporting_enabled || !IsMetricsReportingPolicyManaged());
+
+  // Show crash reports regardless of |crash_reporting_enabled| when using
+  // Crashpad so that users can manually upload those reports.
+  bool upload_list = using_crashpad || crash_reporting_enabled;
 
   base::ListValue crash_list;
   if (upload_list)

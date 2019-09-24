@@ -236,6 +236,8 @@ class VIEWS_EXPORT NativeWidgetMac : public internal::NativeWidgetPrivate {
   // Internal name.
   std::string name_;
 
+  ui::ZOrderLevel z_order_level_ = ui::ZOrderLevel::kNormal;
+
   Widget::InitParams::Type type_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeWidgetMac);

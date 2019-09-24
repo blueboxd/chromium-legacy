@@ -7,6 +7,8 @@
 #include <memory>
 
 #include "ash/public/cpp/ash_features.h"
+#include "ash/shell.h"
+#include "ash/system/message_center/unified_message_center_view.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/unified/unified_system_tray.h"
 #include "ash/system/unified/unified_system_tray_bubble.h"
@@ -66,6 +68,38 @@ class UnifiedMessageCenterBubbleTest : public AshTestBase {
            tray_bounds.y();
   }
 
+  // Helper functions for focus cycle testing.
+  void DoTab() {
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+    generator.PressKey(ui::KeyboardCode::VKEY_TAB, ui::EventFlags::EF_NONE);
+  }
+
+  void DoShiftTab() {
+    ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow());
+    generator.PressKey(ui::KeyboardCode::VKEY_TAB,
+                       ui::EventFlags::EF_SHIFT_DOWN);
+  }
+
+  views::View* GetFirstMessageCenterFocusable() {
+    return GetMessageCenterBubble()
+        ->message_center_view()
+        ->GetFirstFocusableChild();
+  }
+
+  views::View* GetLastMessageCenterFocusable() {
+    return GetMessageCenterBubble()
+        ->message_center_view()
+        ->GetLastFocusableChild();
+  }
+
+  views::View* GetFirstQuickSettingsFocusable() {
+    return GetSystemTrayBubble()->unified_view()->GetFirstFocusableChild();
+  }
+
+  views::View* GetLastQuickSettingsFocusable() {
+    return GetSystemTrayBubble()->unified_view()->GetLastFocusableChild();
+  }
+
  private:
   int id_ = 0;
   std::unique_ptr<base::test::ScopedFeatureList> scoped_feature_list_;
@@ -115,6 +149,104 @@ TEST_F(UnifiedMessageCenterBubbleTest, PositionedAboveSystemTray) {
     GetSystemTrayBubble()->unified_view()->SetExpandedAmount(i);
     EXPECT_EQ(reference_separation, MessageCenterSeparationHeight());
   }
+}
+
+TEST_F(UnifiedMessageCenterBubbleTest, FocusCycle) {
+  EnableMessageCenterRefactor();
+  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  AddNotification();
+  AddNotification();
+
+  views::Widget* quick_settings_widget =
+      GetSystemTrayBubble()->GetBubbleWidget();
+  views::Widget* message_center_widget =
+      GetMessageCenterBubble()->GetBubbleWidget();
+
+  // First tab should focus the first element in the quick settings bubble.
+  DoTab();
+  EXPECT_TRUE(quick_settings_widget->IsActive());
+  EXPECT_FALSE(message_center_widget->IsActive());
+  EXPECT_EQ(quick_settings_widget->GetFocusManager()->GetFocusedView(),
+            GetFirstQuickSettingsFocusable());
+
+  // Keep tabbing until we reach the last focusable element in the quick
+  // settings bubble.
+  while (quick_settings_widget->GetFocusManager()->GetFocusedView() !=
+         GetLastQuickSettingsFocusable()) {
+    DoTab();
+  }
+
+  // Tab at the last element in the quick settings bubble should move focus to
+  // the first element in the message center.
+  DoTab();
+  EXPECT_TRUE(message_center_widget->IsActive());
+  EXPECT_FALSE(quick_settings_widget->IsActive());
+  EXPECT_EQ(message_center_widget->GetFocusManager()->GetFocusedView(),
+            GetFirstMessageCenterFocusable());
+
+  // Keep tabbing until we reach the last focusable element in the message
+  // center bubble.
+  while (message_center_widget->GetFocusManager()->GetFocusedView() !=
+         GetLastMessageCenterFocusable()) {
+    DoTab();
+  }
+
+  // Tab at the last element in the message center bubble should move focus to
+  // the first element in the quick settings bubble.
+  DoTab();
+  EXPECT_TRUE(quick_settings_widget->IsActive());
+  EXPECT_FALSE(message_center_widget->IsActive());
+  EXPECT_EQ(quick_settings_widget->GetFocusManager()->GetFocusedView(),
+            GetFirstQuickSettingsFocusable());
+}
+
+TEST_F(UnifiedMessageCenterBubbleTest, ReverseFocusCycle) {
+  EnableMessageCenterRefactor();
+  GetPrimaryUnifiedSystemTray()->ShowBubble(true);
+  AddNotification();
+  AddNotification();
+
+  views::Widget* quick_settings_widget =
+      GetSystemTrayBubble()->GetBubbleWidget();
+  views::Widget* message_center_widget =
+      GetMessageCenterBubble()->GetBubbleWidget();
+
+  // First shift tab should focus the last element in the quick settings bubble.
+  DoShiftTab();
+  EXPECT_TRUE(quick_settings_widget->IsActive());
+  EXPECT_FALSE(message_center_widget->IsActive());
+  EXPECT_EQ(quick_settings_widget->GetFocusManager()->GetFocusedView(),
+            GetLastQuickSettingsFocusable());
+
+  // Keep shift tabbing until we reach the first focusable element in the quick
+  // settings bubble.
+  while (quick_settings_widget->GetFocusManager()->GetFocusedView() !=
+         GetFirstQuickSettingsFocusable()) {
+    DoShiftTab();
+  }
+
+  // Shift tab at the first element in the quick settings bubble should move
+  // focus to the last element in the message center.
+  DoShiftTab();
+  EXPECT_TRUE(message_center_widget->IsActive());
+  EXPECT_FALSE(quick_settings_widget->IsActive());
+  EXPECT_EQ(message_center_widget->GetFocusManager()->GetFocusedView(),
+            GetLastMessageCenterFocusable());
+
+  // Keep shift tabbing until we reach the first focusable element in the
+  // message center bubble.
+  while (message_center_widget->GetFocusManager()->GetFocusedView() !=
+         GetFirstMessageCenterFocusable()) {
+    DoShiftTab();
+  }
+
+  // Shift tab at the first element in the message center bubble should move
+  // focus to the last element in the quick settings bubble.
+  DoShiftTab();
+  EXPECT_TRUE(quick_settings_widget->IsActive());
+  EXPECT_FALSE(message_center_widget->IsActive());
+  EXPECT_EQ(quick_settings_widget->GetFocusManager()->GetFocusedView(),
+            GetLastQuickSettingsFocusable());
 }
 
 }  // namespace ash

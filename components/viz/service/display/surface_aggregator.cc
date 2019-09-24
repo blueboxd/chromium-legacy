@@ -1318,8 +1318,7 @@ gfx::Rect SurfaceAggregator::PrewalkTree(Surface* surface,
     return gfx::Rect();
   valid_surfaces_.insert(surface->surface_id());
 
-  ResourceIdSet resource_set(std::move(referenced_resources),
-                             base::KEEP_FIRST_OF_DUPES);
+  ResourceIdSet resource_set(std::move(referenced_resources));
   if (provider_)
     provider_->DeclareUsedResourcesFromChild(child_id, resource_set);
 

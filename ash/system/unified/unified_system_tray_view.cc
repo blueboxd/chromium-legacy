@@ -214,7 +214,8 @@ class UnifiedSystemTrayView::FocusSearch : public views::FocusSearch {
     views::View* default_start_view =
         search_direction == FocusSearch::SearchDirection::kForwards
             ? view_->system_tray_container_
-            : view_->notification_hidden_view_;
+            : view_->detailed_view_container_;
+
     return views::FocusSearch::FindNextFocusableView(
         starting_view ? starting_view : default_start_view, search_direction,
         traversal_direction,
@@ -279,8 +280,8 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
       Shell::Get()->session_controller();
 
   if (!features::IsUnifiedMessageCenterRefactorEnabled()) {
-    message_center_view_ =
-        new UnifiedMessageCenterView(this, controller->model());
+    message_center_view_ = new UnifiedMessageCenterView(
+        this, controller->model(), nullptr /* message_center_bubble */);
     AddChildView(message_center_view_);
     layout->SetFlexForView(message_center_view_, 1);
   }
@@ -467,6 +468,34 @@ int UnifiedSystemTrayView::GetVisibleFeaturePodCount() const {
   return feature_pods_container_->GetVisibleCount();
 }
 
+views::View* UnifiedSystemTrayView::GetFirstFocusableChild() {
+  FocusTraversable* focus_traversable = GetFocusTraversable();
+  views::View* focus_traversable_view = this;
+  return focus_search_->FindNextFocusableView(
+      nullptr, FocusSearch::SearchDirection::kForwards,
+      FocusSearch::TraversalDirection::kDown,
+      FocusSearch::StartingViewPolicy::kSkipStartingView,
+      FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
+      &focus_traversable, &focus_traversable_view);
+}
+
+views::View* UnifiedSystemTrayView::GetLastFocusableChild() {
+  FocusTraversable* focus_traversable = GetFocusTraversable();
+  views::View* focus_traversable_view = this;
+  return focus_search_->FindNextFocusableView(
+      nullptr, FocusSearch::SearchDirection::kBackwards,
+      FocusSearch::TraversalDirection::kDown,
+      FocusSearch::StartingViewPolicy::kSkipStartingView,
+      FocusSearch::AnchoredDialogPolicy::kCanGoIntoAnchoredDialog,
+      &focus_traversable, &focus_traversable_view);
+}
+
+void UnifiedSystemTrayView::FocusEntered(bool reverse) {
+  views::View* focus_view =
+      reverse ? GetLastFocusableChild() : GetFirstFocusableChild();
+  GetFocusManager()->SetFocusedView(focus_view);
+}
+
 void UnifiedSystemTrayView::OnGestureEvent(ui::GestureEvent* event) {
   gfx::Point screen_location = event->location();
   ConvertPointToScreen(this, &screen_location);
@@ -502,6 +531,19 @@ const char* UnifiedSystemTrayView::GetClassName() const {
   return "UnifiedSystemTrayView";
 }
 
+void UnifiedSystemTrayView::AddedToWidget() {
+  focus_manager_ = GetFocusManager();
+  if (focus_manager_)
+    focus_manager_->AddFocusChangeListener(this);
+}
+
+void UnifiedSystemTrayView::RemovedFromWidget() {
+  if (!focus_manager_)
+    return;
+  focus_manager_->RemoveFocusChangeListener(this);
+  focus_manager_ = nullptr;
+}
+
 views::FocusTraversable* UnifiedSystemTrayView::GetFocusTraversable() {
   return this;
 }
@@ -516,6 +558,28 @@ views::FocusTraversable* UnifiedSystemTrayView::GetFocusTraversableParent() {
 
 views::View* UnifiedSystemTrayView::GetFocusTraversableParentView() {
   return this;
+}
+
+void UnifiedSystemTrayView::OnWillChangeFocus(views::View* before,
+                                              views::View* now) {}
+
+void UnifiedSystemTrayView::OnDidChangeFocus(views::View* before,
+                                             views::View* now) {
+  if (features::IsUnifiedMessageCenterRefactorEnabled()) {
+    views::View* first_view = GetFirstFocusableChild();
+    views::View* last_view = GetLastFocusableChild();
+
+    bool focused_out = false;
+    if (before == last_view && now == first_view)
+      focused_out = controller_->FocusOut(false);
+    else if (before == first_view && now == last_view)
+      focused_out = controller_->FocusOut(true);
+
+    if (focused_out) {
+      GetFocusManager()->ClearFocus();
+      GetFocusManager()->SetStoredFocusView(nullptr);
+    }
+  }
 }
 
 }  // namespace ash

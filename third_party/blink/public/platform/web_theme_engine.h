@@ -31,6 +31,7 @@
 #ifndef THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 #define THIRD_PARTY_BLINK_PUBLIC_PLATFORM_WEB_THEME_ENGINE_H_
 
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "third_party/blink/public/platform/web_color_scheme.h"
 #include "third_party/blink/public/platform/web_rect.h"
@@ -79,6 +80,21 @@ class WebThemeEngine {
     kPartSliderThumb,
     kPartInnerSpinButton,
     kPartProgressBar
+  };
+
+  enum class SystemThemeColor {
+    kNotSupported,
+    kButtonFace,
+    kButtonText,
+    kGrayText,
+    kHighlight,
+    kHighlightText,
+    kHotlight,
+    kMenuHighlight,
+    kScrollbar,
+    kWindow,
+    kWindowText,
+    kMaxValue = kWindowText,
   };
 
   // Extra parameters for drawing the PartScrollbarHorizontalTrack and
@@ -203,6 +219,11 @@ class WebThemeEngine {
                      const WebRect&,
                      const ExtraParams*,
                      blink::WebColorScheme) {}
+
+  virtual base::Optional<SkColor> GetSystemColor(
+      SystemThemeColor system_theme) const {
+    return base::nullopt;
+  }
 };
 
 }  // namespace blink

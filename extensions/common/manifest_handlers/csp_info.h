@@ -64,8 +64,8 @@ class CSPHandler : public ManifestHandler {
   CSPHandler();
   ~CSPHandler() override;
 
+  // ManifestHandler override:
   bool Parse(Extension* extension, base::string16* error) override;
-  bool AlwaysParseForType(Manifest::Type type) const override;
 
  private:
   // Parses the "content_security_policy" dictionary in the manifest.
@@ -103,6 +103,8 @@ class CSPHandler : public ManifestHandler {
   // Helper to set the sandbox content security policy manifest data.
   void SetSandboxCSP(Extension* extension, std::string sandbox_csp);
 
+  // ManifestHandler overrides:
+  bool AlwaysParseForType(Manifest::Type type) const override;
   base::span<const char* const> Keys() const override;
 
   DISALLOW_COPY_AND_ASSIGN(CSPHandler);

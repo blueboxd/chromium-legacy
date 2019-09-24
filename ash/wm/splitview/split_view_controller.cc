@@ -1019,23 +1019,21 @@ void SplitViewController::OnOverviewModeEnding(
   }
   aura::Window* root_window = GetDefaultSnappedWindow()->GetRootWindow();
 
-  if (state_ == SplitViewState::kBothSnapped) {
-    // If overview is ended because of the window gets snapped, do not do
-    // exiting overview animation.
+  // If overview is ended because of a window getting snapped, suppress the
+  // overview exiting animation.
+  if (state_ == SplitViewState::kBothSnapped)
     overview_session->SetWindowListNotAnimatedWhenExiting(root_window);
-    return;
-  }
 
-  // If we're in clamshell splitview mode, do not auto snap overview window
-  // when overview ends.
+  // If clamshell split view mode is active, end it and bail out.
   if (split_view_type_ == SplitViewType::kClamshellType) {
     EndSplitView();
     return;
   }
 
-  // If split view mode is active but only has one snapped window when overview
-  // mode is ending, retrieve the first snappable window in the overview window
-  // grid and snap it.
+  // Tablet split view mode is active. If it still only has one snapped window,
+  // snap the first snappable window in the overview grid on the other side.
+  if (state_ == SplitViewState::kBothSnapped)
+    return;
   OverviewGrid* current_grid =
       overview_session->GetGridWithRootWindow(root_window);
   if (!current_grid || current_grid->empty())
@@ -1526,12 +1524,6 @@ void SplitViewController::OnWindowSnapped(aura::Window* window) {
   RestoreTransformIfApplicable(window);
   UpdateSplitViewStateAndNotifyObservers();
   UpdateWindowStackingAfterSnap(window);
-
-  // If there are two window snapped in clamshell mode, splitview mode is ended.
-  if (state_ == SplitViewState::kBothSnapped &&
-      split_view_type_ == SplitViewType::kClamshellType) {
-    EndSplitView();
-  }
 }
 
 void SplitViewController::OnSnappedWindowDetached(aura::Window* window,

@@ -128,7 +128,7 @@ class IndexedDBFakeBackingStore : public IndexedDBBackingStore {
   };
 
   std::unique_ptr<IndexedDBBackingStore::Transaction> CreateTransaction(
-      bool relaxed_durability) override;
+      blink::mojom::IDBTransactionDurability durability) override;
 
  protected:
  private:

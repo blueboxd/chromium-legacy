@@ -23,7 +23,6 @@
 #include "components/password_manager/core/browser/password_store_sync.h"
 #include "components/sync/model/syncable_service.h"
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 #include "components/password_manager/core/browser/hash_password_manager.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
@@ -264,7 +263,6 @@ class PasswordStore : protected PasswordStoreSync,
   std::unique_ptr<syncer::ProxyModelTypeControllerDelegate>
   CreateSyncControllerDelegate();
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Immediately called after |Init()| to retrieve password hash data for
   // reuse detection.
@@ -330,7 +328,6 @@ class PasswordStore : protected PasswordStoreSync,
  protected:
   friend class base::RefCountedThreadSafe<PasswordStore>;
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Represents a single CheckReuse() request. Implements functionality to
   // listen to reuse events and propagate them to |consumer| on the sequence on
@@ -453,7 +450,6 @@ class PasswordStore : protected PasswordStoreSync,
   // been changed.
   void NotifyLoginsChanged(const PasswordStoreChangeList& changes) override;
 
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   // Saves |username| and a hash of |password| for password reuse checking.
   // |is_gaia_password| indicates if it is a Gaia account. |event| is used for
@@ -675,7 +671,7 @@ class PasswordStore : protected PasswordStoreSync,
   std::unique_ptr<PasswordSyncBridge> sync_bridge_;
 
   std::unique_ptr<AffiliatedMatchHelper> affiliated_match_helper_;
-// TODO(crbug.com/706392): Fix password reuse detection for Android.
+
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
   PrefService* prefs_ = nullptr;
   // PasswordReuseDetector can be only destroyed on the background sequence. It

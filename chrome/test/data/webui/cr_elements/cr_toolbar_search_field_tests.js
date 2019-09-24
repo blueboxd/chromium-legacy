@@ -6,7 +6,7 @@
 // #import 'chrome://resources/cr_elements/cr_toolbar/cr_toolbar_search_field.m.js';
 //
 // #import {flush} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-// #import {blur, pressAndReleaseKeyOn, tap} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
+// #import {blur, pressAndReleaseKeyOn} from 'chrome://resources/polymer/v3_0/iron-test-helpers/mock-interactions.js';
 // clang-format on
 
 /** @fileoverview Suite of tests for cr-toolbar-search-field. */
@@ -85,7 +85,7 @@ suite('cr-toolbar-search-field', function() {
 
     const clearSearch = field.$$('#clearSearch');
     clearSearch.focus();
-    MockInteractions.tap(clearSearch);
+    clearSearch.click();
     assertTrue(field.showingSearch);
     assertEquals('', field.getValue());
     assertEquals(field.$.searchInput, field.root.activeElement);
@@ -98,7 +98,7 @@ suite('cr-toolbar-search-field', function() {
     Polymer.dom.flush();
     assertEquals('query1', field.getValue());
 
-    MockInteractions.tap(field.$$('#clearSearch'));
+    field.$$('#clearSearch').click();
     assertTrue(field.showingSearch);
     assertEquals('', field.getValue());
 

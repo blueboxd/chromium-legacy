@@ -1,4 +1,20 @@
 Tests accessibility in heap profiler using the axe-core linter.
-aXe violations: []
+aXe violations: [
+  {
+    "ruleDescription": "Ensures role attribute has an appropriate value for the element",
+    "helpUrl": "https://dequeuniversity.com/rules/axe/3.3/aria-allowed-role?application=axeAPI",
+    "ruleId": "aria-allowed-role",
+    "impact": "minor",
+    "failedNodes": [
+      {
+        "target": [
+          "form"
+        ],
+        "html": "<form role=\"radiogroup\" aria-label=\"Select profiling type\">",
+        "failureSummary": "Fix any of the following:\n  ARIA role radiogroup  is not allowed for given element"
+      }
+    ]
+  }
+]
 
 

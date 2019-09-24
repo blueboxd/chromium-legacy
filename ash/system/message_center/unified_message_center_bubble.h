@@ -28,7 +28,15 @@ class ASH_EXPORT UnifiedMessageCenterBubble : public TrayBubbleBase,
   explicit UnifiedMessageCenterBubble(UnifiedSystemTray* tray);
   ~UnifiedMessageCenterBubble() override;
 
+  // Move the message center bubble to keep it on top of the quick settings
+  // widget whenever the quick settings widget is resized.
   void UpdatePosition();
+
+  // Inform message_center_view_ of focus being acquired.
+  void FocusEntered(bool reverse);
+
+  // Relinquish focus and transfer it to the quick settings widget.
+  bool FocusOut(bool reverse);
 
   // TrayBubbleBase:
   TrayBackgroundView* GetTray() const override;
@@ -42,6 +50,10 @@ class ASH_EXPORT UnifiedMessageCenterBubble : public TrayBubbleBase,
 
   // views::WidgetObserver:
   void OnWidgetDestroying(views::Widget* widget) override;
+
+  UnifiedMessageCenterView* message_center_view() {
+    return message_center_view_;
+  }
 
  private:
   UnifiedSystemTray* const tray_;

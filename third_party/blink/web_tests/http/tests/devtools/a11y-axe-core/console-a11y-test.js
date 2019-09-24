@@ -10,6 +10,7 @@
   await UI.viewManager.showView('console');
   const widget = await UI.viewManager.view('console').widget();
 
+  //TODO(crbug.com/1004940): expected.txt file has 'aria-input-field-name' exceptions
   await AxeCoreTestRunner.runValidation(widget.element);
   TestRunner.completeTest();
 })();

@@ -1723,7 +1723,7 @@ CSSCustomIdentValue* ConsumeCustomIdentForGridLine(
 }
 
 // Appends to the passed in CSSGridLineNamesValue if any, otherwise creates a
-// new one.
+// new one. Returns nullptr if an empty list is consumed.
 CSSGridLineNamesValue* ConsumeGridLineNames(
     CSSParserTokenRange& range,
     const CSSParserContext& context,
@@ -1739,6 +1739,8 @@ CSSGridLineNamesValue* ConsumeGridLineNames(
   if (range_copy.ConsumeIncludingWhitespace().GetType() != kRightBracketToken)
     return nullptr;
   range = range_copy;
+  if (line_names->length() == 0U)
+    return nullptr;
   return line_names;
 }
 
@@ -1939,12 +1941,11 @@ CSSValue* ConsumeGridTrackList(CSSParserTokenRange& range,
                                TrackListType track_list_type) {
   bool allow_grid_line_names = track_list_type != TrackListType::kGridAuto;
   CSSValueList* values = CSSValueList::CreateSpaceSeparated();
+  if (!allow_grid_line_names && range.Peek().GetType() == kLeftBracketToken)
+    return nullptr;
   CSSGridLineNamesValue* line_names = ConsumeGridLineNames(range, context);
-  if (line_names) {
-    if (!allow_grid_line_names)
-      return nullptr;
+  if (line_names)
     values->Append(*line_names);
-  }
 
   bool allow_repeat = track_list_type == TrackListType::kGridTemplate;
   bool seen_auto_repeat = false;
@@ -1970,12 +1971,11 @@ CSSValue* ConsumeGridTrackList(CSSParserTokenRange& range,
     }
     if (seen_auto_repeat && !all_tracks_are_fixed_sized)
       return nullptr;
+    if (!allow_grid_line_names && range.Peek().GetType() == kLeftBracketToken)
+      return nullptr;
     line_names = ConsumeGridLineNames(range, context);
-    if (line_names) {
-      if (!allow_grid_line_names)
-        return nullptr;
+    if (line_names)
       values->Append(*line_names);
-    }
   } while (!range.AtEnd() && range.Peek().GetType() != kDelimiterToken);
   return values;
 }

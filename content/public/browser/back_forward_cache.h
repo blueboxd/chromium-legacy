@@ -5,8 +5,7 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BACK_FORWARD_CACHE_H_
 #define CONTENT_PUBLIC_BROWSER_BACK_FORWARD_CACHE_H_
 
-#include <string_view>
-
+#include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/global_routing_id.h"
 
@@ -43,7 +42,7 @@ class CONTENT_EXPORT BackForwardCache {
   // |id|: If no RenderFrameHost can be found for the given id nothing happens.
   // |reason|: Free form string to be used in logging and metrics.
   virtual void DisableForRenderFrameHost(GlobalFrameRoutingId id,
-                                         std::string_view reason) = 0;
+                                         base::StringPiece reason) = 0;
 
   // List of reasons the BackForwardCache was disabled for a specific test. If a
   // test needs to be disabled for a reason not covered below, please add to

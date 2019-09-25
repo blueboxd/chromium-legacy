@@ -74,6 +74,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) FakeNetworkDeviceHandler
 
   void SetCellularAllowRoaming(bool allow_roaming) override;
 
+  void SetUsbEthernetMacAddressSource(const std::string& source) override;
+
   void SetWifiTDLSEnabled(
       const std::string& ip_or_mac_address,
       bool enabled,

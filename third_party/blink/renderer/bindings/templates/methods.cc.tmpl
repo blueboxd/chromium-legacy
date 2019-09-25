@@ -206,10 +206,10 @@ if (info[{{argument.index}}]->IsObject()) {
   {{v8_value_to_local_cpp_value(argument)}}
 {% if argument.is_nullable %}
 } else if (info[{{argument.index}}]->IsNullOrUndefined()) {
-  {{argument.local_cpp_variable}} = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Null(info.GetIsolate()));
+  {{argument.local_cpp_variable}} = ScriptValue(info.GetIsolate(), v8::Null(info.GetIsolate()));
 {% elif argument.is_optional %}
 } else if (info[{{argument.index}}]->IsUndefined()) {
-  {{argument.local_cpp_variable}} = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Undefined(info.GetIsolate()));
+  {{argument.local_cpp_variable}} = ScriptValue(info.GetIsolate(), v8::Undefined(info.GetIsolate()));
 {% endif %}
 } else {
   {{throw_argument_error(method, argument, "parameter %(index)d ('%(name)s') is not an object.")}}

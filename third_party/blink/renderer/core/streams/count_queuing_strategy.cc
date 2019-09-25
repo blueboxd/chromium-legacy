@@ -52,7 +52,7 @@ CountQueuingStrategy::~CountQueuingStrategy() = default;
 
 ScriptValue CountQueuingStrategy::highWaterMark(
     ScriptState* script_state) const {
-  return ScriptValue(script_state,
+  return ScriptValue(script_state->GetIsolate(),
                      high_water_mark_.NewLocal(script_state->GetIsolate()));
 }
 
@@ -60,7 +60,7 @@ ScriptValue CountQueuingStrategy::size(ScriptState* script_state) const {
   // We don't cache the result because normally this method will only be called
   // once anyway.
   return ScriptValue(
-      script_state,
+      script_state->GetIsolate(),
       CountQueuingStrategySizeFunction::CreateFunction(script_state));
 }
 

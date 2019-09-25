@@ -264,6 +264,8 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
      */
     public boolean shouldStayInChrome(boolean hasExternalProtocol,
             boolean isForTrustedCallingApp) {
+        // http://crbug/424029 : Need to stay in Chrome for an intent heading explicitly to Chrome.
+        // http://crbug/881740 : Relax stay in Chrome restriction for Custom Tabs.
         return (mIsInitialIntentHeadingToChrome && !hasExternalProtocol)
                 || shouldNavigationTypeStayInChrome(isForTrustedCallingApp);
     }

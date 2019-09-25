@@ -119,19 +119,9 @@ std::string DescribeFeatures(uint64_t blocklisted_features) {
 
 }  // namespace
 
-enum class BackForwardCacheImpl::CanStoreDocumentResult::Reason : uint8_t {
-  kNotMainFrame,
-  kBackForwardCacheDisabled,
-  kRelatedActiveContentsExist,
-  kHTTPStatusNotOK,
-  kSchemeNotHTTPOrHTTPS,
-  kLoading,
-  kWasGrantedMediaAccess,
-  kBlocklistedFeatures,
-  kDisableForRenderFrameHostCalled
-};
-
 std::string BackForwardCacheImpl::CanStoreDocumentResult::ToString() {
+  using Reason = BackForwardCacheMetrics::CanNotStoreDocumentReason;
+
   if (can_store)
     return "Yes";
 
@@ -169,20 +159,23 @@ BackForwardCacheImpl::CanStoreDocumentResult::Yes() {
 }
 
 BackForwardCacheImpl::CanStoreDocumentResult
-BackForwardCacheImpl::CanStoreDocumentResult::No(Reason reason) {
+BackForwardCacheImpl::CanStoreDocumentResult::No(
+    BackForwardCacheMetrics::CanNotStoreDocumentReason reason) {
   return CanStoreDocumentResult(false, reason, 0);
 }
 
 BackForwardCacheImpl::CanStoreDocumentResult
 BackForwardCacheImpl::CanStoreDocumentResult::NoDueToFeatures(
     uint64_t blocklisted_features) {
-  return CanStoreDocumentResult(false, Reason::kBlocklistedFeatures,
-                                blocklisted_features);
+  return CanStoreDocumentResult(
+      false,
+      BackForwardCacheMetrics::CanNotStoreDocumentReason::kBlocklistedFeatures,
+      blocklisted_features);
 }
 
 BackForwardCacheImpl::CanStoreDocumentResult::CanStoreDocumentResult(
     bool can_store,
-    base::Optional<Reason> reason,
+    base::Optional<BackForwardCacheMetrics::CanNotStoreDocumentReason> reason,
     uint64_t blocklisted_features)
     : can_store(can_store),
       reason(reason),
@@ -202,17 +195,19 @@ BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
   // Use the BackForwardCache only for the main frame.
   if (rfh->GetParent()) {
     return CanStoreDocumentResult::No(
-        CanStoreDocumentResult::Reason::kNotMainFrame);
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::kNotMainFrame);
   }
 
   if (!IsBackForwardCacheEnabled() || is_disabled_for_testing_) {
     return CanStoreDocumentResult::No(
-        CanStoreDocumentResult::Reason::kBackForwardCacheDisabled);
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::
+            kBackForwardCacheDisabled);
   }
 
   if (rfh->is_back_forward_cache_disallowed()) {
     return CanStoreDocumentResult::No(
-        CanStoreDocumentResult::Reason::kDisableForRenderFrameHostCalled);
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::
+            kDisableForRenderFrameHostCalled);
   }
 
   // Two pages in the same BrowsingInstance can script each other. When a page
@@ -226,21 +221,23 @@ BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
   // BrowsingInstance.
   if (rfh->GetSiteInstance()->GetRelatedActiveContentsCount() != 0) {
     return CanStoreDocumentResult::No(
-        CanStoreDocumentResult::Reason::kRelatedActiveContentsExist);
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::
+            kRelatedActiveContentsExist);
   }
 
   // Only store documents that have successful http status code.
   // Note that for error pages, |last_http_status_code| is equal to 0.
   if (rfh->last_http_status_code() != net::HTTP_OK) {
     return CanStoreDocumentResult::No(
-        CanStoreDocumentResult::Reason::kHTTPStatusNotOK);
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::kHTTPStatusNotOK);
   }
 
   // Do store main document with non HTTP/HTTPS URL scheme. In particular, this
   // excludes the new tab page.
   if (!rfh->GetLastCommittedURL().SchemeIsHTTPOrHTTPS()) {
     return CanStoreDocumentResult::No(
-        CanStoreDocumentResult::Reason::kSchemeNotHTTPOrHTTPS);
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::
+            kSchemeNotHTTPOrHTTPS);
   }
 
   return CanStoreRenderFrameHost(rfh, GetDisallowedFeatures());
@@ -257,15 +254,18 @@ BackForwardCacheImpl::CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
   bool is_loading = rfh->frame_tree_node()->IsMainFrame()
                         ? rfh->is_loading()
                         : rfh->frame_tree_node()->IsLoading();
-  if (is_loading)
-    return CanStoreDocumentResult::No(CanStoreDocumentResult::Reason::kLoading);
+  if (is_loading) {
+    return CanStoreDocumentResult::No(
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::kLoading);
+  }
 
   // If the rfh has ever granted media access, prevent it from entering cache.
   // TODO(crbug.com/989379): Consider only blocking when there's an active
   //                         media stream.
   if (rfh->was_granted_media_access()) {
     return CanStoreDocumentResult::No(
-        CanStoreDocumentResult::Reason::kWasGrantedMediaAccess);
+        BackForwardCacheMetrics::CanNotStoreDocumentReason::
+            kWasGrantedMediaAccess);
   }
 
   // Don't cache the page if it uses any disallowed features.

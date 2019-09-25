@@ -80,6 +80,9 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) MockNetworkDeviceHandler
 
   MOCK_METHOD1(SetMACAddressRandomizationEnabled, void(bool enabled));
 
+  MOCK_METHOD1(SetUsbEthernetMacAddressSource,
+               void(const std::string& enabled));
+
   MOCK_METHOD4(SetWifiTDLSEnabled,
                void(const std::string& ip_or_mac_address,
                     bool enabled,

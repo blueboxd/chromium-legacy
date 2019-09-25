@@ -296,7 +296,7 @@ void PaymentRequestEvent::OnChangePaymentMethodResponse(
           change_payment_method_resolver_.Clear();
           return;
         }
-        mod->setData(ScriptValue(script_state, parsed_value));
+        mod->setData(ScriptValue(script_state->GetIsolate(), parsed_value));
         modifiers->emplace_back(mod);
       }
     }
@@ -315,7 +315,8 @@ void PaymentRequestEvent::OnChangePaymentMethodResponse(
       change_payment_method_resolver_.Clear();
       return;
     }
-    dictionary->setPaymentMethodErrors(ScriptValue(script_state, parsed_value));
+    dictionary->setPaymentMethodErrors(
+        ScriptValue(script_state->GetIsolate(), parsed_value));
   }
 
   change_payment_method_resolver_->Resolve(

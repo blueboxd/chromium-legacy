@@ -427,7 +427,7 @@ void PaymentInstruments::onGetPaymentInstrument(
                                    ExceptionState::kGetterContext,
                                    "PaymentInstruments", "get");
     instrument->setCapabilities(
-        ScriptValue(resolver->GetScriptState(),
+        ScriptValue(resolver->GetScriptState()->GetIsolate(),
                     FromJSONString(resolver->GetScriptState()->GetIsolate(),
                                    resolver->GetScriptState()->GetContext(),
                                    stored_instrument->stringified_capabilities,

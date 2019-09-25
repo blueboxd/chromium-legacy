@@ -425,6 +425,13 @@ class PixelTestPages(object):
         ]),
 
       PixelTestPage(
+        'pixel_video_mp4_rounded_corner.html',
+        base_name + '_Video_MP4_Rounded_Corner',
+        test_rect=[0, 0, 240, 135],
+        revision=0,
+        tolerance=tolerance),
+
+      PixelTestPage(
         'pixel_video_vp9.html',
         base_name + '_Video_VP9',
         test_rect=[0, 0, 240, 135],
@@ -1750,4 +1757,12 @@ class PixelTestPages(object):
             'size': [65, 30],
             'color': [44, 255, 16],
           }]),
+
+      PixelTestPage(
+        'pixel_video_mp4_rounded_corner.html',
+        base_name + '_DirectComposition_Video_MP4_Rounded_Corner',
+        test_rect=[0, 0, 240, 135],
+        revision=0,
+        browser_args=browser_args,
+        tolerance=tolerance_dc),
       ]

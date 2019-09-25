@@ -116,8 +116,8 @@ HeapVector<ScriptValue> GPUDevice::createBufferMapped(
   v8::Local<v8::Object> creation_context = script_state->GetContext()->Global();
 
   return HeapVector<ScriptValue>({
-      ScriptValue(script_state, ToV8(gpu_buffer, creation_context, isolate)),
-      ScriptValue(script_state, ToV8(array_buffer, creation_context, isolate)),
+      ScriptValue(isolate, ToV8(gpu_buffer, creation_context, isolate)),
+      ScriptValue(isolate, ToV8(array_buffer, creation_context, isolate)),
   });
 }
 
@@ -138,7 +138,7 @@ ScriptPromise GPUDevice::createBufferMappedAsync(
       ToV8(array_buffer, creation_context, isolate),
   };
 
-  ScriptValue result(script_state, v8::Array::New(isolate, elements, 2));
+  ScriptValue result(isolate, v8::Array::New(isolate, elements, 2));
 
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();

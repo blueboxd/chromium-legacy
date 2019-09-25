@@ -263,8 +263,8 @@ Animator* AnimationWorkletGlobalScope::CreateInstance(
   v8::Local<v8::Value> v8_state = serialized_state
                                       ? serialized_state->Deserialize(isolate)
                                       : v8::Undefined(isolate).As<v8::Value>();
-  ScriptValue options_value(script_state, v8_options);
-  ScriptValue state_value(script_state, v8_state);
+  ScriptValue options_value(isolate, v8_options);
+  ScriptValue state_value(isolate, v8_state);
 
   ScriptValue instance;
   if (!definition->ConstructorFunction()

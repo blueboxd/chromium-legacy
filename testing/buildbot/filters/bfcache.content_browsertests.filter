@@ -52,10 +52,6 @@
 # happen when the BackForwardCache is used to store the old document.
 -RenderFrameHostManagerTest.RenderViewInitAfterNewProxyAndProcessKill
 
-# Waiting for unload handler, but they aren't executed.
--SitePerProcessBrowserTest.PartialUnloadHandler
--SitePerProcessBrowserTest.Unload_ABAB
-
 # FATAL:casting.h Security DCHECK failed: IsA<Derived>(from).
 # In content::RenderFrameProxy::OnSetFrameOwnerProperties()
 # https://crbug.com/999849

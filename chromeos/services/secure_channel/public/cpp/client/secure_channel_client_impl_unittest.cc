@@ -74,8 +74,9 @@ class FakeClientChannelImplFactory : public ClientChannelImpl::Factory {
 
   // ClientChannelImpl::Factory:
   std::unique_ptr<ClientChannel> BuildInstance(
-      mojom::ChannelPtr channel,
-      mojom::MessageReceiverRequest message_receiver_request) override {
+      mojo::PendingRemote<mojom::Channel> channel,
+      mojo::PendingReceiver<mojom::MessageReceiver> message_receiver_receiver)
+      override {
     auto client_channel = std::make_unique<FakeClientChannel>();
     last_client_channel_created_ = client_channel.get();
     return client_channel;
@@ -233,11 +234,11 @@ TEST_F(SecureChannelClientImplTest, TestInitiateConnectionToDevice) {
   fake_connection_attempt->set_on_connection_callback(run_loop.QuitClosure());
 
   auto fake_channel = std::make_unique<FakeChannel>();
-  mojom::MessageReceiverPtr message_receiver_ptr;
+  mojo::PendingRemote<mojom::MessageReceiver> message_receiver_remote;
 
   fake_secure_channel_->delegate_from_last_initiate_call()->OnConnection(
-      fake_channel->GenerateInterfacePtr(),
-      mojo::MakeRequest(&message_receiver_ptr));
+      fake_channel->GenerateRemote(),
+      message_receiver_remote.InitWithNewPipeAndPassReceiver());
 
   run_loop.Run();
 
@@ -276,11 +277,11 @@ TEST_F(SecureChannelClientImplTest, TestListenForConnectionFromDevice) {
   fake_connection_attempt->set_on_connection_callback(run_loop.QuitClosure());
 
   auto fake_channel = std::make_unique<FakeChannel>();
-  mojom::MessageReceiverPtr message_receiver_ptr;
+  mojo::PendingRemote<mojom::MessageReceiver> message_receiver_remote;
 
   fake_secure_channel_->delegate_from_last_listen_call()->OnConnection(
-      fake_channel->GenerateInterfacePtr(),
-      mojo::MakeRequest(&message_receiver_ptr));
+      fake_channel->GenerateRemote(),
+      message_receiver_remote.InitWithNewPipeAndPassReceiver());
 
   run_loop.Run();
 
@@ -317,10 +318,10 @@ TEST_F(SecureChannelClientImplTest, TestMultipleConnections) {
   fake_connection_attempt_1->set_on_connection_callback(
       run_loop_1.QuitClosure());
   auto fake_channel_1 = std::make_unique<FakeChannel>();
-  mojom::MessageReceiverPtr message_receiver_ptr_1;
+  mojo::PendingRemote<mojom::MessageReceiver> message_receiver_remote_1;
   fake_secure_channel_->delegate_from_last_initiate_call()->OnConnection(
-      fake_channel_1->GenerateInterfacePtr(),
-      mojo::MakeRequest(&message_receiver_ptr_1));
+      fake_channel_1->GenerateRemote(),
+      message_receiver_remote_1.InitWithNewPipeAndPassReceiver());
   run_loop_1.Run();
 
   ClientChannel* client_channel_1 =
@@ -335,10 +336,10 @@ TEST_F(SecureChannelClientImplTest, TestMultipleConnections) {
   fake_connection_attempt_2->set_on_connection_callback(
       run_loop_2.QuitClosure());
   auto fake_channel_2 = std::make_unique<FakeChannel>();
-  mojom::MessageReceiverPtr message_receiver_ptr_2;
+  mojo::PendingRemote<mojom::MessageReceiver> message_receiver_remote_2;
   fake_secure_channel_->delegate_from_last_listen_call()->OnConnection(
-      fake_channel_2->GenerateInterfacePtr(),
-      mojo::MakeRequest(&message_receiver_ptr_2));
+      fake_channel_2->GenerateRemote(),
+      message_receiver_remote_2.InitWithNewPipeAndPassReceiver());
   run_loop_2.Run();
 
   ClientChannel* client_channel_2 =

@@ -22,6 +22,7 @@ import static org.mockito.MockitoAnnotations.initMocks;
 
 import android.accounts.Account;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -30,6 +31,8 @@ import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.metrics.RecordHistogram;
+import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.components.signin.AccountManagerFacade;
@@ -61,6 +64,10 @@ public class SigninManagerTest {
 
     @Before
     public void setUp() {
+        // TODO(https://crbug.com/1007903): Use DisableNativeTestRule instead.
+        RecordHistogram.setDisabledForTests(true);
+        RecordUserAction.setDisabledForTests(true);
+
         initMocks(this);
 
         mocker.mock(SigninManagerJni.TEST_HOOKS, mNativeMock);
@@ -81,6 +88,13 @@ public class SigninManagerTest {
 
         mAccount = new CoreAccountInfo(new CoreAccountId("gaia-id-user"),
                 AccountManagerFacade.createAccountFromName("user@domain.com"), "gaia-id-user");
+    }
+
+    @After
+    public void tearDown() {
+        // TODO(https://crbug.com/1007903): Use DisableNativeTestRule instead.
+        RecordHistogram.setDisabledForTests(false);
+        RecordUserAction.setDisabledForTests(false);
     }
 
     @Test
@@ -225,7 +239,7 @@ public class SigninManagerTest {
 
         mSigninManager.onFirstRunCheckDone(); // Allow sign-in.
 
-        mSigninManager.signIn(account.getAccount(), null, null);
+        mSigninManager.signIn(account.getAccount(), null);
         assertTrue(mSigninManager.isOperationInProgress());
         AtomicInteger callCount = new AtomicInteger(0);
         mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);

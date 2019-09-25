@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 1271 tests; 1224 PASS, 47 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 1272 tests; 1224 PASS, 48 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
 PASS Partial interface Document: original interface defined
 PASS Partial interface mixin DocumentOrShadowRoot: original interface mixin defined
@@ -1226,6 +1226,7 @@ FAIL SVGElement interface: attribute onsecuritypolicyviolation assert_true: The 
 PASS SVGElement interface: attribute onseeked
 PASS SVGElement interface: attribute onseeking
 PASS SVGElement interface: attribute onselect
+FAIL SVGElement interface: attribute onslotchange assert_true: The prototype object must have a property "onslotchange" expected true got false
 PASS SVGElement interface: attribute onstalled
 PASS SVGElement interface: attribute onsubmit
 PASS SVGElement interface: attribute onsuspend

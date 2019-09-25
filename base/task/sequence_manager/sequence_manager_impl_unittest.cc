@@ -566,6 +566,18 @@ class TestCountUsesTimeSource : public TickClock {
   DISALLOW_COPY_AND_ASSIGN(TestCountUsesTimeSource);
 };
 
+TEST_P(SequenceManagerTest, GetCorrectTaskRunnerForCurrentTask) {
+  auto queue = CreateTaskQueue();
+
+  queue->task_runner()->PostTask(
+      FROM_HERE, BindLambdaForTesting([&]() {
+        EXPECT_EQ(queue->task_runner(),
+                  sequence_manager()->GetTaskRunnerForCurrentTask());
+      }));
+
+  RunLoop().RunUntilIdle();
+}
+
 TEST_P(SequenceManagerTest, NowNotCalledIfUnneeded) {
   sequence_manager()->SetWorkBatchSize(6);
 
@@ -2356,9 +2368,9 @@ TEST_P(SequenceManagerTest, TaskQueueObserver_ImmediateTask) {
   Mock::VerifyAndClearExpectations(&observer);
 
   // Unless the immediate work queue is emptied.
-  sequence_manager()->TakeTask();
+  sequence_manager()->SelectNextTask();
   sequence_manager()->DidRunTask();
-  sequence_manager()->TakeTask();
+  sequence_manager()->SelectNextTask();
   sequence_manager()->DidRunTask();
   EXPECT_CALL(observer, OnPostTask(_, TimeDelta()));
   EXPECT_CALL(observer, OnQueueNextWakeUpChanged(_));

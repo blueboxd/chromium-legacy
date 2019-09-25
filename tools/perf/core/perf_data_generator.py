@@ -12,6 +12,8 @@ logic to inflate those into the full (unwieldy) configurations in
 //testing/buildbot that are consumed by the chromium recipe code.
 """
 
+from __future__ import print_function
+
 import argparse
 import collections
 import csv
@@ -821,10 +823,10 @@ def update_all_tests(builders_dict, file_path):
 
 
 def merge_dicts(*dict_args):
-    result = {}
-    for dictionary in dict_args:
-      result.update(dictionary)
-    return result
+  result = {}
+  for dictionary in dict_args:
+    result.update(dictionary)
+  return result
 
 
 class BenchmarkMetadata(object):
@@ -981,7 +983,7 @@ def is_perf_benchmarks_scheduling_valid(
         '//tools/perf/core/perf_data_generator.py.' % test_name)
 
   for message in error_messages:
-    print >> outstream, '*', textwrap.fill(message, 70), '\n'
+    print('*', textwrap.fill(message, 70), '\n', file=outstream)
 
   return not error_messages
 
@@ -1289,11 +1291,11 @@ def main(args):
         and validate_docs(labs_docs_file)
         and is_perf_benchmarks_scheduling_valid(
             perf_waterfall_file, outstream=sys.stderr)):
-      print 'All the perf config files are up-to-date. \\o/'
+      print('All the perf config files are up-to-date. \\o/')
       return 0
     else:
-      print ('Not all perf config files are up-to-date. Please run %s '
-             'to update them.') % sys.argv[0]
+      print('Not all perf config files are up-to-date. Please run %s '
+            'to update them.' % sys.argv[0])
       return 1
   else:
     update_all_tests(FYI_BUILDERS, fyi_waterfall_file)

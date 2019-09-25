@@ -445,10 +445,6 @@ enum class GenerationPresaveConflict {
   kMaxValue = kConflictWithEmptyUsername
 };
 
-// A version of the UMA_HISTOGRAM_BOOLEAN macro that allows the |name|
-// to vary over the program's runtime.
-void LogUMAHistogramBoolean(const std::string& name, bool sample);
-
 // Log the |reason| a user dismissed the password manager UI except save/update
 // bubbles.
 void LogGeneralUIDismissalReason(UIDismissalReason reason);

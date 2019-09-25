@@ -37,14 +37,6 @@ let Page;
 
 /**
  * @typedef {{
- *   term: ?string,
- *   results: ?Array<App>,
- * }}
- */
-let SearchState;
-
-/**
- * @typedef {{
  *   allowedIds: !Set<string>,
  *   blockedIds: !Set<string>,
  * }}
@@ -56,7 +48,6 @@ let NotificationsState;
  *   apps: !AppMap,
  *   currentPage: !Page,
  *   arcSupported: boolean,
- *   search: !SearchState,
  *   notifications: !NotificationsState,
  * }}
  */

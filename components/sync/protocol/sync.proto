@@ -225,11 +225,8 @@ message SyncEntity {
   // Present in both GetUpdatesResponse and CommitMessage.
   optional string non_unique_name = 8;
 
-  // A value from a monotonically increasing sequence that indicates when
-  // this item was last updated on the server. This is now equivalent
-  // to version. This is now deprecated in favor of version.
-  // Present only in GetUpdatesResponse.
-  optional int64 sync_timestamp = 9;
+  reserved 9;
+  reserved "sync_timestamp";
 
   // If present, this tag identifies this item as being a uniquely
   // instanced item.  The server ensures that there is never more
@@ -249,26 +246,14 @@ message SyncEntity {
   // Present only in GetUpdatesResponse.
   optional string server_defined_unique_tag = 10;
 
-  // If this group is present, it implies that this SyncEntity corresponds to
-  // a bookmark or a bookmark folder.
-  //
-  // This group is deprecated; clients should use the bookmark EntitySpecifics
-  // protocol buffer extension instead.
-  optional group BookmarkData = 11 [deprecated = true] {
-    // We use a required field to differentiate between a bookmark and a
-    // bookmark folder.
-    // Present in both GetUpdatesMessage and CommitMessage.
-    required bool bookmark_folder = 12;
-
-    // For bookmark objects, contains the bookmark's URL.
-    // Present in both GetUpdatesResponse and CommitMessage.
-    optional string bookmark_url = 13;
-
-    // For bookmark objects, contains the bookmark's favicon. The favicon is
-    // represented as a 16X16 PNG image.
-    // Present in both GetUpdatesResponse and CommitMessage.
-    optional bytes bookmark_favicon = 14;
-  }
+  reserved 11;
+  reserved "BookmarkData";
+  reserved 12;
+  reserved "bookmark_folder";
+  reserved 13;
+  reserved "bookmark_url";
+  reserved 14;
+  reserved "bookmark_favicon";
 
   // Supplies a numeric position for this item, relative to other items with the
   // same parent.  Deprecated in M26, though clients are still required to set
@@ -296,7 +281,7 @@ message SyncEntity {
   // Conversion from UniquePosition to int64 reverses this process: the first 8
   // bytes of the position are to be interpreted as a big endian int64 value
   // with its sign bit flipped.
-  optional int64 position_in_parent = 15;
+  optional int64 position_in_parent = 15 [deprecated = true];
 
   // Contains the ID of the element (under the same parent) after which this
   // element resides. An empty string indicates that the element is the first
@@ -309,7 +294,7 @@ message SyncEntity {
   //
   // This is deprecated.  Clients are allowed to omit this as long as they
   // include |position_in_parent| instead.
-  optional string insert_after_item_id = 16;
+  optional string insert_after_item_id = 16 [deprecated = true];
 
   reserved 17;
   reserved "extended_attributes";
@@ -380,7 +365,7 @@ message SyncEntity {
   // attempt to support it.  In fact, no client ever read or set this field.
   //
   // Deprecated in M26.
-  optional bytes ordinal_in_parent = 24;
+  optional bytes ordinal_in_parent = 24 [deprecated = true];
 
   // This is the fourth attempt at positioning.
   //
@@ -603,7 +588,7 @@ message DataTypeProgressMarker {
   // token mechanism can set this field in a GetUpdatesMessage.  The server
   // will perform a get updates operation as normal from the indicated
   // timestamp, and return only an opaque progress token.
-  optional int64 timestamp_token_for_migration = 3;
+  optional int64 timestamp_token_for_migration = 3 [deprecated = true];
 
   // An opaque-to-the-client string of bytes, received through a notification,
   // that the server may interpret as a hint about the location of the latest
@@ -611,7 +596,7 @@ message DataTypeProgressMarker {
   //
   // Deprecated in M29.  We should use the repeated field version in the
   // PerClientTypeState instead.
-  optional string notification_hint = 4;
+  optional string notification_hint = 4 [deprecated = true];
 
   // This field will be included only in GetUpdates with origin GU_TRIGGER.
   optional GetUpdateTriggers get_update_triggers = 5;
@@ -624,14 +609,8 @@ message DataTypeProgressMarker {
 }
 
 message GetUpdatesMessage {
-  // Indicates the client's current progress in downloading updates.  A
-  // from_timestamp value of zero means that the client is requesting a first-
-  // time sync.  After that point, clients should fill in this value with the
-  // value returned in the last-seen GetUpdatesResponse.new_timestamp.
-  //
-  // from_timestamp has been deprecated; clients should use
-  // |from_progress_marker| instead, which allows more flexibility.
-  optional int64 from_timestamp = 1;
+  reserved 1;
+  reserved "from_timestamp";
 
   // Indicates the reason for the GetUpdatesMessage.
   // This was *mostly* deprecated in M29.  GetUpdatesOrigin is the new way to
@@ -690,8 +669,6 @@ message GetUpdatesMessage {
   // Set of optional per-client datatype contexts.
   repeated DataTypeContext client_contexts = 11;
 
-  // requested_types is a deprecated predecessor to using progress markers.
-  // See https://crbug.com/687426.
   reserved 4;
   reserved "requested_types";
 };
@@ -881,15 +858,8 @@ message GetUpdatesResponse {
   // New sync entries that the client should apply.
   repeated SyncEntity entries = 1;
 
-  // If there are more changes on the server that weren't processed during this
-  // GetUpdates request, the client should send another GetUpdates request and
-  // use new_timestamp as the from_timestamp value within GetUpdatesMessage.
-  //
-  // This field has been deprecated and will be returned only to clients
-  // that set the also-deprecated |from_timestamp| field in the update request.
-  // Clients should use |from_progress_marker| and |new_progress_marker|
-  // instead.
-  optional int64 new_timestamp = 2;
+  reserved 2;
+  reserved "new_timestamp";
 
   reserved 3;
   reserved "newest_timestamp";
@@ -899,11 +869,9 @@ message GetUpdatesResponse {
   // after the current batch.
   optional int64 changes_remaining = 4;
 
-  // Opaque, per-datatype timestamp-like tokens.  A client should use this
-  // field in lieu of new_timestamp, which is deprecated in newer versions
-  // of the protocol.  Clients should retain and persist the values returned
-  // in this field, and present them back to the server to indicate the
-  // starting point for future update requests.
+  // Opaque, per-datatype timestamp-like tokens.  Clients should retain and
+  // persist the values returned in this field, and present them back to the
+  // server to indicate the starting point for future update requests.
   //
   // This will be sent only if the client provided |from_progress_marker|
   // in the update request.
@@ -928,29 +896,6 @@ message GetUpdatesResponse {
 
   // Set of optional datatype contexts server mutations.
   repeated DataTypeContext context_mutations = 7;
-};
-
-// The metadata response for GetUpdatesMessage.  This response is sent when
-// streaming is set to true in the request.  It is prefixed with a length
-// delimiter, which is encoded in varint.
-message GetUpdatesMetadataResponse {
-  // Approximate count of changes remaining.  Detailed comment is available in
-  // GetUpdatesResponse.
-  optional int64 changes_remaining = 1;
-
-  // Opaque, per-datatype timestamp-like tokens.  Detailed comment is available
-  // in GetUpdatesResponse.
-  repeated DataTypeProgressMarker new_progress_marker = 2;
-};
-
-// The streaming response message for GetUpdatesMessage.  This message is sent
-// when streaming is set to true in the request.  There may be multiple
-// GetUpdatesStreamingResponse messages in a response.  This type of messages
-// is preceded by GetUpdatesMetadataResponse.  It is prefixed with a length
-// delimiter, which is encoded in varint.
-message GetUpdatesStreamingResponse {
-  // New sync entries that the client should apply.
-  repeated SyncEntity entries = 1;
 };
 
 message ClientToServerResponse {
@@ -978,10 +923,10 @@ message ClientToServerResponse {
   optional ClientCommand client_command = 7;
   optional ProfilingData profiling_data = 8;
   reserved 9;
-  optional GetUpdatesMetadataResponse stream_metadata = 10;
-  // If GetUpdatesStreamingResponse is contained in the ClientToServerResponse,
-  // none of the other fields (error_code and etc) will be set.
-  optional GetUpdatesStreamingResponse stream_data = 11;
+  reserved 10;
+  reserved "stream_metadata";
+  reserved 11;
+  reserved "stream_data";
 
   // The data types whose storage has been migrated.  Present when the value of
   // error_code is MIGRATION_DONE.

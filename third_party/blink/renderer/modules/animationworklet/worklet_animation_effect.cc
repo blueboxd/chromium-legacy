@@ -31,8 +31,14 @@ ComputedEffectTiming* WorkletAnimationEffect::getComputedTiming() const {
   last_update_time_ = local_time;
 
   if (needs_update) {
+    // The playback rate is needed to calculate whether the effect is current or
+    // not (https://drafts.csswg.org/web-animations-1/#current). Since we only
+    // use this information to create a ComputedEffectTiming, which does not
+    // include that information, we do not need to supply one.
+    base::Optional<double> playback_rate = base::nullopt;
     calculated_ = specified_timing_.CalculateTimings(
-        local_time, Timing::AnimationDirection::kForwards, false);
+        local_time, Timing::AnimationDirection::kForwards, false,
+        playback_rate);
   }
 
   return specified_timing_.getComputedTiming(calculated_,

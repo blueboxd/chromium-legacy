@@ -87,6 +87,7 @@ public class WebApkActivity extends WebappActivity {
 
         WebApkInfo info = getWebApkInfo();
         WebApkUma.recordShellApkVersion(info.shellApkVersion(), info.distributor());
+        storage.incrementLaunchCount();
 
         mUpdateManager = new WebApkUpdateManager(storage);
         mUpdateManager.updateIfNeeded(getActivityTab(), info);

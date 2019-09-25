@@ -56,7 +56,6 @@ class TestAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
     return suggestions;
   }
 #if !defined(OS_ANDROID)
-  void SetTypesetter(gfx::Typesetter typesetter) override {}
   int GetElidedValueWidthForRow(int row) override { return 0; }
   int GetElidedLabelWidthForRow(int row) override { return 0; }
 #endif

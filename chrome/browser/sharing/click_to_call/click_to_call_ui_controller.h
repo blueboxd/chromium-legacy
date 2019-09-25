@@ -43,7 +43,7 @@ class ClickToCallUiController
   PageActionIconType GetIconType() override;
   sync_pb::SharingSpecificFields::EnabledFeatures GetRequiredFeature() override;
   void OnDeviceChosen(const syncer::DeviceInfo& device) override;
-  void OnAppChosen(const App& app) override;
+  void OnAppChosen(const SharingApp& app) override;
   void OnDialogClosed(SharingDialog* dialog) override;
   base::string16 GetContentType() const override;
   const gfx::VectorIcon& GetVectorIcon() const override;

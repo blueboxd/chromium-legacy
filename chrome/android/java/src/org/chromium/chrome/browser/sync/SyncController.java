@@ -20,7 +20,6 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGenerator;
 import org.chromium.chrome.browser.identity.UniqueIdentificationGeneratorFactory;
-import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.signin.IdentityServicesProvider;
 import org.chromium.chrome.browser.signin.SigninManager;
@@ -184,18 +183,11 @@ public class SyncController implements ProfileSyncService.SyncStateChangedListen
     @Override
     public void syncStateChanged() {
         ThreadUtils.assertOnUiThread();
-        InvalidationController invalidationController = InvalidationController.get();
         if (mProfileSyncService.isSyncRequested()) {
-            if (!invalidationController.isStarted()) {
-                invalidationController.ensureStartedAndUpdateRegisteredTypes();
-            }
             if (!AndroidSyncSettings.get().isSyncEnabled()) {
                 AndroidSyncSettings.get().enableChromeSync();
             }
         } else {
-            if (invalidationController.isStarted()) {
-                invalidationController.stop();
-            }
             if (AndroidSyncSettings.get().isSyncEnabled()) {
                 // Both Android's master and Chrome sync setting are enabled, so we want to disable
                 // the Chrome sync setting to match isSyncRequested. We have to be careful not to

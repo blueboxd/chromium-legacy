@@ -6,11 +6,9 @@ package org.chromium.chrome.browser.search_engines;
 
 import android.content.Context;
 
-import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeVersionInfo;
@@ -20,11 +18,7 @@ import org.chromium.chrome.browser.preferences.SearchEnginePreference;
 import org.chromium.chrome.browser.snackbar.Snackbar;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.snackbar.SnackbarManager.SnackbarController;
-import org.chromium.components.search_engines.TemplateUrl;
-import org.chromium.components.search_engines.TemplateUrlService;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -40,10 +34,6 @@ public final class SearchEngineChoiceNotification {
     static final String PREF_SEARCH_ENGINE_CHOICE_PRESENTED_VERSION =
             "search_engine_choice_presented_version";
 
-    /** Key used to store the default Search Engine Type before choice is presented. */
-    static final String PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE =
-            "search_engine_choice_default_type_before";
-
     /** Variations parameter name for notification snackbar duration (in seconds). */
     private static final String PARAM_NOTIFICATION_SNACKBAR_DURATION_SECONDS =
             "notification-snackbar-duration-seconds";
@@ -54,18 +44,6 @@ public final class SearchEngineChoiceNotification {
     /** Variations parameter name for invalidating version number. */
     private static final String PARAM_NOTIFICATION_INVALIDATING_VERSION_NUMBER =
             "notification-invalidating-version-number";
-
-    // AndroidSearchEngineChoiceEvents defined in tools/metrics/histograms/enums.xml.
-    // These values are persisted to logs. Entries should not be renumbered and numeric values
-    // should never be reused.
-    @IntDef({Events.SNACKBAR_SHOWN, Events.PROMPT_FOLLOWED, Events.SEARCH_ENGINE_CHANGED})
-    @Retention(RetentionPolicy.SOURCE)
-    @interface Events {
-        int SNACKBAR_SHOWN = 0;
-        int PROMPT_FOLLOWED = 1;
-        int SEARCH_ENGINE_CHANGED = 2;
-        int MAX = 3;
-    }
 
     /**
      * Snackbar controller for search engine choice notification. It takes the user to the settings
@@ -81,8 +59,8 @@ public final class SearchEngineChoiceNotification {
         @Override
         public void onAction(Object actionData) {
             PreferencesLauncher.launchSettingsPage(mContext, SearchEnginePreference.class);
-            recordEvent(Events.PROMPT_FOLLOWED);
-            recordSearchEngineTypeBeforeChoicePresented();
+            SearchEngineChoiceMetrics.recordEvent(SearchEngineChoiceMetrics.Events.PROMPT_FOLLOWED);
+            SearchEngineChoiceMetrics.recordSearchEngineTypeBeforeChoice();
         }
     }
 
@@ -112,25 +90,10 @@ public final class SearchEngineChoiceNotification {
         if (searchEngineChoiceRequested && !searchEngineChoicePresented) {
             snackbarManager.showSnackbar(buildSnackbarNotification(context));
             updateSearchEngineChoicePresented();
-            recordEvent(Events.SNACKBAR_SHOWN);
-        } else if (isSearchEnginePossiblyDifferent()) {
-            @SearchEngineType
-            int previousSearchEngineType = getPreviousSearchEngineType();
-            @SearchEngineType
-            int currentSearchEngineType = getDefaultSearchEngineType();
-            if (previousSearchEngineType != currentSearchEngineType) {
-                recordEvent(Events.SEARCH_ENGINE_CHANGED);
-                RecordHistogram.recordEnumeratedHistogram(
-                        "Android.SearchEngineChoice.ChosenSearchEngine", currentSearchEngineType,
-                        SearchEngineType.SEARCH_ENGINE_MAX);
-            }
-            removePreviousSearchEngineType();
+            SearchEngineChoiceMetrics.recordEvent(SearchEngineChoiceMetrics.Events.SNACKBAR_SHOWN);
+        } else {
+            SearchEngineChoiceMetrics.recordSearchEngineTypeAfterChoice();
         }
-    }
-
-    private static void recordEvent(@Events int event) {
-        RecordHistogram.recordEnumeratedHistogram(
-                "Android.SearchEngineChoice.Events", event, Events.MAX);
     }
 
     private static Snackbar buildSnackbarNotification(Context context) {
@@ -191,46 +154,6 @@ public final class SearchEngineChoiceNotification {
         return VersionNumber.fromString(ChromeFeatureList.getFieldTrialParamByFeature(
                 ChromeFeatureList.ANDROID_SEARCH_ENGINE_CHOICE_NOTIFICATION,
                 PARAM_NOTIFICATION_INVALIDATING_VERSION_NUMBER));
-    }
-
-    @SearchEngineType
-    private static int getDefaultSearchEngineType() {
-        TemplateUrlService templateUrlService = TemplateUrlServiceFactory.get();
-        TemplateUrl currentSearchEngine = templateUrlService.getDefaultSearchEngineTemplateUrl();
-        if (currentSearchEngine == null) return SearchEngineType.SEARCH_ENGINE_UNKNOWN;
-        return templateUrlService.getSearchEngineTypeFromTemplateUrl(
-                currentSearchEngine.getKeyword());
-    }
-
-    private static void recordSearchEngineTypeBeforeChoicePresented() {
-        @SearchEngineType
-        int currentSearchEngineType = getDefaultSearchEngineType();
-        RecordHistogram.recordEnumeratedHistogram(
-                "Android.SearchEngineChoice.SearchEngineBeforeChoicePrompt",
-                currentSearchEngineType, SearchEngineType.SEARCH_ENGINE_MAX);
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .putInt(PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE, currentSearchEngineType)
-                .apply();
-    }
-
-    private static boolean isSearchEnginePossiblyDifferent() {
-        return ContextUtils.getAppSharedPreferences().contains(
-                PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE);
-    }
-
-    @SearchEngineType
-    private static int getPreviousSearchEngineType() {
-        return ContextUtils.getAppSharedPreferences().getInt(
-                PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE,
-                SearchEngineType.SEARCH_ENGINE_UNKNOWN);
-    }
-
-    private static void removePreviousSearchEngineType() {
-        ContextUtils.getAppSharedPreferences()
-                .edit()
-                .remove(PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE)
-                .apply();
     }
 
     private static int getNotificationSnackbarDuration() {

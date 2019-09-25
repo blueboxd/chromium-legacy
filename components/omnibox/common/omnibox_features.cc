@@ -280,6 +280,10 @@ const base::Feature kOmniboxPreserveDefaultMatchAgainstAsyncUpdate{
     "OmniboxPreserveDefaultMatchAgainstAsyncUpdate",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Feature used to allow users to remove suggestions from clipboard.
+const base::Feature kOmniboxRemoveSuggestionsFromClipboard{
+    "OmniboxRemoveSuggestionsFromClipboard", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Feature to configure on-focus suggestions provided by ZeroSuggestProvider.
 // This feature's main job is to contain some field trial parameters such as:
 //  - "ZeroSuggestVariant" configures the per-page-classification mode of

@@ -26,7 +26,7 @@ TransformStream::~TransformStream() = default;
 
 TransformStream* TransformStream::Create(ScriptState* script_state,
                                          ExceptionState& exception_state) {
-  ScriptValue undefined(script_state,
+  ScriptValue undefined(script_state->GetIsolate(),
                         v8::Undefined(script_state->GetIsolate()));
   return Create(script_state, undefined, undefined, undefined, exception_state);
 }
@@ -35,7 +35,7 @@ TransformStream* TransformStream::Create(
     ScriptState* script_state,
     ScriptValue transform_stream_transformer,
     ExceptionState& exception_state) {
-  ScriptValue undefined(script_state,
+  ScriptValue undefined(script_state->GetIsolate(),
                         v8::Undefined(script_state->GetIsolate()));
   return Create(script_state, transform_stream_transformer, undefined,
                 undefined, exception_state);
@@ -46,7 +46,7 @@ TransformStream* TransformStream::Create(
     ScriptValue transform_stream_transformer,
     ScriptValue writable_strategy,
     ExceptionState& exception_state) {
-  ScriptValue undefined(script_state,
+  ScriptValue undefined(script_state->GetIsolate(),
                         v8::Undefined(script_state->GetIsolate()));
   return Create(script_state, transform_stream_transformer, writable_strategy,
                 undefined, exception_state);

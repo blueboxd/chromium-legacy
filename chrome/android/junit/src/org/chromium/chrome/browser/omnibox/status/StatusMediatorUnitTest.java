@@ -4,6 +4,9 @@
 
 package org.chromium.chrome.browser.omnibox.status;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyBoolean;
+
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 
@@ -22,6 +25,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.ui.modelutil.PropertyModel;
 
@@ -35,6 +39,8 @@ public final class StatusMediatorUnitTest {
 
     @Mock
     Resources mResources;
+    @Mock
+    ToolbarCommonPropertiesModel mToolbarCommonPropertiesModel;
     @Mock
     StatusMediator.StatusMediatorDelegate mDelegate;
     @Mock
@@ -51,13 +57,14 @@ public final class StatusMediatorUnitTest {
 
         mModel = new PropertyModel(StatusProperties.ALL_KEYS);
         mMediator = new StatusMediator(mModel, mResources);
+        mMediator.setToolbarCommonPropertiesModel(mToolbarCommonPropertiesModel);
         mMediator.setDelegateForTesting(mDelegate);
     }
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     public void searchEngineLogo_showGoogleLogo() {
-        setupSearchEngineLogoForTesting(false, true, false);
+        setupSearchEngineLogoForTesting(true, false, false, false);
 
         mMediator.setUrlHasFocus(true);
         mMediator.setShowIconsWhenUrlFocused(true);
@@ -69,7 +76,7 @@ public final class StatusMediatorUnitTest {
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     public void searchEngineLogo_showGoogleLogo_searchLoupeEverywhere() {
-        setupSearchEngineLogoForTesting(false, true, true);
+        setupSearchEngineLogoForTesting(true, true, true, false);
 
         mMediator.setUrlHasFocus(true);
         mMediator.setShowIconsWhenUrlFocused(true);
@@ -80,7 +87,7 @@ public final class StatusMediatorUnitTest {
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     public void searchEngineLogo_showNonGoogleLogo() {
-        setupSearchEngineLogoForTesting(false, false, false);
+        setupSearchEngineLogoForTesting(true, false, false, false);
 
         mMediator.setUrlHasFocus(true);
         mMediator.setShowIconsWhenUrlFocused(true);
@@ -89,8 +96,7 @@ public final class StatusMediatorUnitTest {
         Mockito.clearInvocations(mDelegate);
         mMediator.updateSearchEngineStatusIcon(true, false, TEST_SEARCH_URL);
         Assert.assertEquals(R.drawable.ic_search, mModel.get(StatusProperties.STATUS_ICON_RES));
-        Mockito.verify(mDelegate, Mockito.times(1))
-                .getSearchEngineLogoFavicon(Mockito.any(), Mockito.any());
+        Mockito.verify(mDelegate, Mockito.times(1)).getSearchEngineLogoFavicon(any(), any());
         mCallbackCaptor.getValue().onResult(mBitmap);
         Assert.assertEquals(mBitmap, mModel.get(StatusProperties.STATUS_ICON));
     }
@@ -98,7 +104,7 @@ public final class StatusMediatorUnitTest {
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     public void searchEngineLogo_showNonGoogleLogo_searchLoupeEverywhere() {
-        setupSearchEngineLogoForTesting(false, false, true);
+        setupSearchEngineLogoForTesting(true, false, true, false);
 
         mMediator.setUrlHasFocus(true);
         mMediator.setShowIconsWhenUrlFocused(true);
@@ -107,14 +113,13 @@ public final class StatusMediatorUnitTest {
         Mockito.clearInvocations(mDelegate);
         mMediator.updateSearchEngineStatusIcon(true, false, TEST_SEARCH_URL);
         Assert.assertEquals(R.drawable.ic_search, mModel.get(StatusProperties.STATUS_ICON_RES));
-        Mockito.verify(mDelegate, Mockito.times(0))
-                .getSearchEngineLogoFavicon(Mockito.any(), Mockito.any());
+        Mockito.verify(mDelegate, Mockito.times(0)).getSearchEngineLogoFavicon(any(), any());
     }
 
     @Test
     @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     public void searchEngineLogo_onTextChanged_globeReplacesIconWhenTextIsSite() {
-        setupSearchEngineLogoForTesting(true, false, false);
+        setupSearchEngineLogoForTesting(true, true, false, true);
 
         mMediator.setUrlHasFocus(true);
         mMediator.setShowIconsWhenUrlFocused(true);
@@ -122,13 +127,31 @@ public final class StatusMediatorUnitTest {
         Assert.assertEquals(R.drawable.ic_globe_24dp, mModel.get(StatusProperties.STATUS_ICON_RES));
     }
 
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void searchEngineLogo_incognitoNoIcon() {
+        setupSearchEngineLogoForTesting(true, true, false, false);
+        Mockito.doReturn(true).when(mToolbarCommonPropertiesModel).isIncognito();
+
+        mMediator.setUrlHasFocus(false);
+        mMediator.setShowIconsWhenUrlFocused(true);
+        mMediator.setSecurityIconResource(0);
+        mMediator.updateSearchEngineStatusIcon(true, false, TEST_SEARCH_URL);
+
+        Assert.assertEquals(0, mModel.get(StatusProperties.STATUS_ICON_RES));
+    }
+
     private void setupSearchEngineLogoForTesting(
-            boolean validUrl, boolean showGoogle, boolean loupeEverywhere) {
-        Mockito.doReturn(validUrl).when(mDelegate).isUrlValid(Mockito.any());
-        Mockito.doReturn(true).when(mDelegate).shouldShowSearchEngineLogo();
-        Mockito.doReturn(loupeEverywhere).when(mDelegate).shouldShowSearchLoupeEverywhere();
+            boolean shouldShowLogo, boolean showGoogle, boolean loupeEverywhere, boolean validUrl) {
+        Mockito.doReturn(shouldShowLogo).when(mDelegate).shouldShowSearchEngineLogo(false);
+        Mockito.doReturn(false).when(mDelegate).shouldShowSearchEngineLogo(true);
+        Mockito.doReturn(loupeEverywhere)
+                .when(mDelegate)
+                .shouldShowSearchLoupeEverywhere(anyBoolean());
         Mockito.doNothing().when(mDelegate).getSearchEngineLogoFavicon(
-                Mockito.any(), mCallbackCaptor.capture());
-        mMediator.updateSearchEngineStatusIcon(true, showGoogle, TEST_SEARCH_URL);
+                any(), mCallbackCaptor.capture());
+        Mockito.doReturn(validUrl).when(mDelegate).isUrlValid(any());
+
+        mMediator.updateSearchEngineStatusIcon(shouldShowLogo, showGoogle, TEST_SEARCH_URL);
     }
 }

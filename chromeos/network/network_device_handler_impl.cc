@@ -259,6 +259,8 @@ void CallPerformTDLSOperation(
 
 }  // namespace
 
+NetworkDeviceHandlerImpl::NetworkDeviceHandlerImpl() = default;
+
 NetworkDeviceHandlerImpl::~NetworkDeviceHandlerImpl() {
   if (network_state_handler_)
     network_state_handler_->RemoveObserver(this, FROM_HERE);
@@ -378,6 +380,13 @@ void NetworkDeviceHandlerImpl::SetMACAddressRandomizationEnabled(
   ApplyMACAddressRandomizationToShill();
 }
 
+void NetworkDeviceHandlerImpl::SetUsbEthernetMacAddressSource(
+    const std::string& source) {
+  usb_ethernet_mac_address_source_ = source;
+  usb_ethernet_mac_address_source_needs_update_ = true;
+  ApplyUsbEthernetMacAddressSourceToShill();
+}
+
 void NetworkDeviceHandlerImpl::SetWifiTDLSEnabled(
     const std::string& ip_or_mac_address,
     bool enabled,
@@ -490,9 +499,13 @@ void NetworkDeviceHandlerImpl::RemoveAllWifiWakeOnPacketConnections(
 void NetworkDeviceHandlerImpl::DeviceListChanged() {
   ApplyCellularAllowRoamingToShill();
   ApplyMACAddressRandomizationToShill();
+  ApplyUsbEthernetMacAddressSourceToShill();
 }
 
-NetworkDeviceHandlerImpl::NetworkDeviceHandlerImpl() {}
+void NetworkDeviceHandlerImpl::DevicePropertiesUpdated(
+    const DeviceState* device) {
+  ApplyUsbEthernetMacAddressSourceToShill();
+}
 
 void NetworkDeviceHandlerImpl::Init(
     NetworkStateHandler* network_state_handler) {
@@ -561,6 +574,106 @@ void NetworkDeviceHandlerImpl::ApplyMACAddressRandomizationToShill() {
   }
 }
 
+void NetworkDeviceHandlerImpl::ApplyUsbEthernetMacAddressSourceToShill() {
+  const std::string new_primary_enabled_usb_ethernet_device_path =
+      FindPrimaryEnabledUsbEthernetDevicePath();
+  // Restore USB Ethernet MAC address source value to "builtin" at the old
+  // device path if primary enabled USB Ethernet device path has changed.
+  if (new_primary_enabled_usb_ethernet_device_path !=
+          primary_enabled_usb_ethernet_device_path_ &&
+      !primary_enabled_usb_ethernet_device_path_.empty()) {
+    ShillDeviceClient::Get()->SetUsbEthernetMacAddressSource(
+        dbus::ObjectPath(primary_enabled_usb_ethernet_device_path_),
+        shill::kUsbEthernetMacAddressSourceUsbAdapterMac, base::DoNothing(),
+        base::Bind(&HandleShillCallFailure,
+                   primary_enabled_usb_ethernet_device_path_,
+                   network_handler::ErrorCallback()));
+  }
+
+  // Do nothing else if device path and MAC address source have not changed.
+  if (!usb_ethernet_mac_address_source_needs_update_ &&
+      new_primary_enabled_usb_ethernet_device_path ==
+          primary_enabled_usb_ethernet_device_path_) {
+    return;
+  }
+
+  primary_enabled_usb_ethernet_device_path_ =
+      new_primary_enabled_usb_ethernet_device_path;
+  usb_ethernet_mac_address_source_needs_update_ = false;
+
+  const DeviceState* primary_enabled_usb_ethernet_device_state =
+      network_state_handler_->GetDeviceState(
+          primary_enabled_usb_ethernet_device_path_);
+
+  // Do nothing else if device path is empty or device state is nullptr.
+  if (primary_enabled_usb_ethernet_device_path_.empty() ||
+      !primary_enabled_usb_ethernet_device_state) {
+    return;
+  }
+
+  ShillDeviceClient::Get()->SetUsbEthernetMacAddressSource(
+      dbus::ObjectPath(primary_enabled_usb_ethernet_device_path_),
+      usb_ethernet_mac_address_source_, base::DoNothing(),
+      base::Bind(
+          &NetworkDeviceHandlerImpl::OnSetUsbEthernetMacAddressSourceError,
+          weak_ptr_factory_.GetWeakPtr(),
+          primary_enabled_usb_ethernet_device_path_,
+          primary_enabled_usb_ethernet_device_state->mac_address(),
+          network_handler::ErrorCallback()));
+}
+
+void NetworkDeviceHandlerImpl::OnSetUsbEthernetMacAddressSourceError(
+    const std::string& device_path,
+    const std::string& device_mac_address,
+    const network_handler::ErrorCallback& error_callback,
+    const std::string& shill_error_name,
+    const std::string& shill_error_message) {
+  mac_address_change_not_supported_.insert(device_mac_address);
+  HandleShillCallFailure(device_path, error_callback, shill_error_name,
+                         shill_error_message);
+  ApplyUsbEthernetMacAddressSourceToShill();
+}
+
+bool NetworkDeviceHandlerImpl::IsUsbEnabledDevice(
+    const DeviceState* device_state) const {
+  return device_state && device_state->link_up() &&
+         device_state->Matches(NetworkTypePattern::Ethernet()) &&
+         device_state->device_bus_type() == shill::kDeviceBusTypeUsb &&
+         mac_address_change_not_supported_.find(device_state->mac_address()) ==
+             mac_address_change_not_supported_.end();
+}
+
+std::string NetworkDeviceHandlerImpl::FindPrimaryEnabledUsbEthernetDevicePath()
+    const {
+  NetworkStateHandler::DeviceStateList device_state_list;
+  network_state_handler_->GetDeviceListByType(NetworkTypePattern::Ethernet(),
+                                              &device_state_list);
+
+  // Try to avoid situation when both PCI and USB Ethernet devices are enabled
+  // and have the same MAC address. In this situation we will change back USB
+  // Ethernet MAC address.
+  if (usb_ethernet_mac_address_source_ ==
+      shill::kUsbEthernetMacAddressSourceBuiltinAdapterMac) {
+    for (const auto* device_state : device_state_list) {
+      if (device_state && device_state->link_up() &&
+          device_state->device_bus_type() == shill::kDeviceBusTypePci) {
+        return "";
+      }
+    }
+  }
+
+  if (IsUsbEnabledDevice(network_state_handler_->GetDeviceState(
+          primary_enabled_usb_ethernet_device_path_))) {
+    return primary_enabled_usb_ethernet_device_path_;
+  }
+
+  for (const auto* device_state : device_state_list) {
+    if (IsUsbEnabledDevice(device_state))
+      return device_state->path();
+  }
+  return "";
+}
+
 void NetworkDeviceHandlerImpl::HandleMACAddressRandomization(
     const std::string& device_path,
     const base::DictionaryValue& properties) {
@@ -591,12 +704,12 @@ const DeviceState* NetworkDeviceHandlerImpl::GetWifiDeviceState(
       network_state_handler_->GetDeviceStateByType(NetworkTypePattern::WiFi());
   if (!device_state) {
     if (error_callback.is_null())
-      return NULL;
+      return nullptr;
     std::unique_ptr<base::DictionaryValue> error_data(
         new base::DictionaryValue);
     error_data->SetString(network_handler::kErrorName, kErrorDeviceMissing);
     error_callback.Run(kErrorDeviceMissing, std::move(error_data));
-    return NULL;
+    return nullptr;
   }
 
   return device_state;

@@ -29,9 +29,6 @@ void StubPasswordManagerDriver::PreviewSuggestion(
     const base::string16& password) {
 }
 
-void StubPasswordManagerDriver::ShowInitialPasswordAccountSuggestions(
-    const autofill::PasswordFormFillData& form_data) {}
-
 void StubPasswordManagerDriver::ClearPreviewedForm() {
 }
 

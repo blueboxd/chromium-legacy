@@ -7,6 +7,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/sharing/sharing_app.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/views/accessibility/non_accessible_image_view.h"
@@ -60,7 +61,7 @@ gfx::ImageSkia CreateDeviceIcon(
                               : kHardwareSmartphoneIcon);
 }
 
-gfx::ImageSkia CreateAppIcon(const SharingUiController::App& app) {
+gfx::ImageSkia CreateAppIcon(const SharingApp& app) {
   return app.vector_icon ? CreateVectorIcon(*app.vector_icon)
                          : app.image.AsImageSkia();
 }
@@ -170,7 +171,7 @@ void SharingDialogView::ButtonPressed(views::Button* sender,
   size_t index = static_cast<size_t>(sender->tag());
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
       controller_->devices();
-  const std::vector<SharingUiController::App>& apps = controller_->apps();
+  const std::vector<SharingApp>& apps = controller_->apps();
   DCHECK(index < devices.size() + apps.size());
 
   if (index < devices.size()) {
@@ -230,7 +231,7 @@ void SharingDialogView::OnThemeChanged() {
 
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
       controller_->devices();
-  const std::vector<SharingUiController::App>& apps = controller_->apps();
+  const std::vector<SharingApp>& apps = controller_->apps();
   DCHECK_EQ(devices.size() + apps.size(), button_icons_.size());
 
   size_t button_index = 0;
@@ -248,7 +249,7 @@ void SharingDialogView::OnThemeChanged() {
 void SharingDialogView::InitListView() {
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices =
       controller_->devices();
-  const std::vector<SharingUiController::App>& apps = controller_->apps();
+  const std::vector<SharingApp>& apps = controller_->apps();
   int tag = 0;
 
   // Devices:

@@ -311,6 +311,15 @@ class DeviceSettingsProviderTest : public DeviceSettingsTestBase {
     BuildAndInstallDevicePolicy();
   }
 
+  // Helper routine to set DeviceLoginScreenSystemInfoEnforced policy.
+  void SetSystemInfoEnforced(bool enabled) {
+    em::DeviceLoginScreenSystemInfoEnforcedProto* proto =
+        device_policy_->payload()
+            .mutable_device_login_screen_system_info_enforced();
+    proto->set_enabled(enabled);
+    BuildAndInstallDevicePolicy();
+  }
+
   ScopedTestingLocalState local_state_;
 
   std::unique_ptr<DeviceSettingsProvider> provider_;
@@ -835,6 +844,19 @@ TEST_F(DeviceSettingsProviderTest, DevicePowerwashAllowed) {
 
   SetDevicePowerwashAllowed(false);
   EXPECT_EQ(base::Value(false), *provider_->Get(kDevicePowerwashAllowed));
+}
+
+TEST_F(DeviceSettingsProviderTest, DeviceLoginScreenSystemInfoEnforced) {
+  // Policy should not be set by default
+  VerifyPolicyValue(kDeviceLoginScreenSystemInfoEnforced, nullptr);
+
+  SetSystemInfoEnforced(true);
+  EXPECT_EQ(base::Value(true),
+            *provider_->Get(kDeviceLoginScreenSystemInfoEnforced));
+
+  SetSystemInfoEnforced(false);
+  EXPECT_EQ(base::Value(false),
+            *provider_->Get(kDeviceLoginScreenSystemInfoEnforced));
 }
 
 }  // namespace chromeos

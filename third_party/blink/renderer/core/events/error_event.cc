@@ -110,7 +110,7 @@ ScriptValue ErrorEvent::error(ScriptState* script_state) const {
   // 2) Errors cannot be cloned (or serialized):
   if (World() != &script_state->World() || error_.IsEmpty())
     return ScriptValue::CreateNull(script_state->GetIsolate());
-  return ScriptValue(script_state, error_.Get(script_state));
+  return ScriptValue(script_state->GetIsolate(), error_.Get(script_state));
 }
 
 void ErrorEvent::Trace(blink::Visitor* visitor) {

@@ -114,5 +114,24 @@ TEST(NigoriKeyBagTest, ShouldClone) {
   EXPECT_TRUE(cloned_key_bag.HasKey(key_name2));
 }
 
+TEST(NigoriKeyBagTest, ShouldIgnoreKeyNameProtoField) {
+  NigoriKeyBag original_key_bag = NigoriKeyBag::CreateEmpty();
+  const std::string real_key_name =
+      original_key_bag.AddKey(CreateTestNigori("password1"));
+  ASSERT_THAT(original_key_bag, SizeIs(1));
+
+  const std::string actual_key_name_in_proto =
+      NigoriKeyBag::CreateEmpty().AddKey(CreateTestNigori("password2"));
+
+  sync_pb::NigoriKeyBag proto = original_key_bag.ToProto();
+  proto.mutable_key(0)->set_name(actual_key_name_in_proto);
+
+  NigoriKeyBag restored_key_bag = NigoriKeyBag::CreateFromProto(proto);
+
+  ASSERT_THAT(restored_key_bag, SizeIs(1));
+  EXPECT_TRUE(restored_key_bag.HasKey(real_key_name));
+  EXPECT_FALSE(restored_key_bag.HasKey(actual_key_name_in_proto));
+}
+
 }  // namespace
 }  // namespace syncer

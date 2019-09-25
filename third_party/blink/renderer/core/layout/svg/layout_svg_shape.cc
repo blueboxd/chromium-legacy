@@ -35,6 +35,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/svg_shape_painter.h"
 #include "third_party/blink/renderer/core/svg/svg_geometry_element.h"
@@ -58,14 +59,14 @@ LayoutSVGShape::LayoutSVGShape(SVGGeometryElement* node,
       // Default is true, so we grab a AffineTransform object once from
       // SVGGeometryElement.
       needs_transform_update_(true),
-      // Default to false, since |needs_transform_update_| is true this will be
-      // updated the first time transforms are updated.
       transform_uses_reference_box_(false) {}
 
 LayoutSVGShape::~LayoutSVGShape() = default;
 
 void LayoutSVGShape::StyleDidChange(StyleDifference diff,
                                     const ComputedStyle* old_style) {
+  transform_uses_reference_box_ =
+      TransformHelper::DependsOnReferenceBox(StyleRef());
   LayoutSVGModelObject::StyleDidChange(diff, old_style);
   SVGResources::UpdatePaints(*GetElement(), old_style, StyleRef());
 }
@@ -94,7 +95,7 @@ void LayoutSVGShape::UpdateShapeFromElement() {
   if (HasNonScalingStroke()) {
     // NonScalingStrokeTransform may depend on LocalTransform which in turn may
     // depend on ObjectBoundingBox, thus we need to call them in this order.
-    UpdateLocalTransform();
+    local_transform_ = CalculateLocalTransform();
     UpdateNonScalingStrokeData();
   }
 
@@ -209,42 +210,6 @@ bool LayoutSVGShape::StrokeContains(const HitTestLocation& location,
   return ShapeDependentStrokeContains(location);
 }
 
-static inline bool TransformOriginIsFixed(const ComputedStyle& style) {
-  // If the transform box is view-box and the transform origin is absolute, then
-  // is does not depend on the reference box. For fill-box, the origin will
-  // always move with the bounding box.
-  return style.TransformBox() == ETransformBox::kViewBox &&
-         style.TransformOriginX().IsFixed() &&
-         style.TransformOriginY().IsFixed();
-}
-
-static inline bool TransformDependsOnReferenceBox(const ComputedStyle& style) {
-  // We're passing kExcludeMotionPath here because we're checking that
-  // explicitly later.
-  if (!TransformOriginIsFixed(style) &&
-      style.RequireTransformOrigin(ComputedStyle::kIncludeTransformOrigin,
-                                   ComputedStyle::kExcludeMotionPath))
-    return true;
-  if (style.Transform().DependsOnBoxSize())
-    return true;
-  if (style.Translate() && style.Translate()->DependsOnBoxSize())
-    return true;
-  if (style.HasOffset())
-    return true;
-  return false;
-}
-
-bool LayoutSVGShape::UpdateLocalTransform() {
-  auto* graphics_element = To<SVGGraphicsElement>(GetElement());
-  if (graphics_element->HasTransform(SVGElement::kIncludeMotionTransform)) {
-    local_transform_.SetTransform(graphics_element->CalculateTransform(
-        SVGElement::kIncludeMotionTransform));
-    return TransformDependsOnReferenceBox(StyleRef());
-  }
-  local_transform_ = AffineTransform();
-  return false;
-}
-
 void LayoutSVGShape::UpdateLayout() {
   LayoutAnalyzer::Scope analyzer(*this);
 
@@ -278,24 +243,14 @@ void LayoutSVGShape::UpdateLayout() {
     update_parent_boundaries = true;
   }
 
-  // If the transform is relative to the reference box, check relevant
-  // conditions to see if we need to recompute the transform.
   if (!needs_transform_update_ && transform_uses_reference_box_) {
-    switch (StyleRef().TransformBox()) {
-      case ETransformBox::kViewBox:
-        needs_transform_update_ =
-            SVGLayoutSupport::LayoutSizeOfNearestViewportChanged(this);
-        break;
-      case ETransformBox::kFillBox:
-        needs_transform_update_ = bbox_changed;
-        break;
-    }
+    needs_transform_update_ = CheckForImplicitTransformChange(bbox_changed);
     if (needs_transform_update_)
       SetNeedsPaintPropertyUpdate();
   }
 
   if (needs_transform_update_) {
-    transform_uses_reference_box_ = UpdateLocalTransform();
+    local_transform_ = CalculateLocalTransform();
     needs_transform_update_ = false;
     update_parent_boundaries = true;
   }

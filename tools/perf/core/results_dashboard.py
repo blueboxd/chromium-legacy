@@ -10,6 +10,8 @@
 # That file is now deprecated and this one is
 # the new source of truth.
 
+from __future__ import print_function
+
 import calendar
 import datetime
 import httplib
@@ -92,8 +94,8 @@ def SendResults(data, data_label, url, send_as_histograms=False,
 
   for i in xrange(1, num_retries + 1):
     try:
-      print 'Sending %s result of %s to dashboard (attempt %i out of %i).' % (
-          data_type, data_label, i, num_retries)
+      print('Sending %s result of %s to dashboard (attempt %i out of %i).' %
+            (data_type, data_label, i, num_retries))
       if send_as_histograms:
         _SendHistogramJson(url, dashboard_data_str, token_generator_callback)
       else:
@@ -117,9 +119,9 @@ def SendResults(data, data_label, url, send_as_histograms=False,
       break
 
   for err in errors:
-    print err
+    print(err)
 
-  print 'Time spent sending results to %s: %s' % (url, time.time() - start)
+  print('Time spent sending results to %s: %s' % (url, time.time() - start))
 
   return all_data_uploaded
 
@@ -267,8 +269,8 @@ def MakeDashboardJsonV1(chart_json, revision_dict, test_name, bot, buildername,
     A dictionary in the format accepted by the perf dashboard.
   """
   if not chart_json:
-    print 'Error: No json output from telemetry.'
-    print '@@@STEP_FAILURE@@@'
+    print('Error: No json output from telemetry.')
+    print('@@@STEP_FAILURE@@@')
 
   point_id, versions = _RevisionNumberColumns(revision_dict, prefix='')
 

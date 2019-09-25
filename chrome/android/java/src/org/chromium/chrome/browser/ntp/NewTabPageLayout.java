@@ -185,7 +185,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
             mExploreSectionView = exploreStub.inflate();
         }
 
-        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+        if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             int lateral_padding =
                     getResources().getDimensionPixelOffset(R.dimen.sei_search_box_lateral_padding);
             mSearchBoxView.setPaddingRelative(lateral_padding, mSearchBoxView.getPaddingTop(),
@@ -320,7 +320,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
         TraceEvent.begin(TAG + ".initializeVoiceSearchButton()");
         mVoiceSearchButton = findViewById(R.id.voice_search_button);
         mVoiceSearchButton.setOnClickListener(v -> mManager.focusSearchBox(true, null));
-        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+        if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             // View is 48dp, image is 24dp. Increasing the padding from 4dp -> 8dp will split the
             // remaining 16dp evenly between start/end resulting in a paddingEnd of 8dp.
             int paddingStart = getResources().getDimensionPixelSize(
@@ -733,7 +733,7 @@ public class NewTabPageLayout extends LinearLayout implements TileGroup.Observer
      */
     void updateVoiceSearchButtonVisibility() {
         if (mSearchBoxEndPadding == UNSET_RESOURCE_FLAG) {
-            mSearchBoxEndPadding = SearchEngineLogoUtils.shouldShowSearchEngineLogo()
+            mSearchBoxEndPadding = SearchEngineLogoUtils.isSearchEngineLogoEnabled()
                     ? getResources().getDimensionPixelSize(R.dimen.sei_search_box_lateral_padding)
                     : getResources().getDimensionPixelSize(R.dimen.location_bar_lateral_padding);
         }

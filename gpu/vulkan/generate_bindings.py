@@ -150,6 +150,7 @@ VULKAN_DEVICE_FUNCTIONS = [
   {
     'min_api_version': 'VK_API_VERSION_1_1',
     'functions': [
+      'vkGetDeviceQueue2',
       'vkGetImageMemoryRequirements2',
     ]
   },

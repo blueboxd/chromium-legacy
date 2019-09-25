@@ -50,9 +50,6 @@ class IOSChromeNetworkDelegate : public net::NetworkDelegateImpl {
   int OnBeforeURLRequest(net::URLRequest* request,
                          net::CompletionOnceCallback callback,
                          GURL* new_url) override;
-  void OnCompleted(net::URLRequest* request,
-                   bool started,
-                   int net_error) override;
   bool OnCanGetCookies(const net::URLRequest& request,
                        const net::CookieList& cookie_list,
                        bool allowed_from_caller) override;

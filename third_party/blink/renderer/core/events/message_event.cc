@@ -302,7 +302,7 @@ ScriptValue MessageEvent::data(ScriptState* script_state) {
       break;
   }
 
-  return ScriptValue(script_state, value);
+  return ScriptValue(isolate, value);
 }
 
 const AtomicString& MessageEvent::InterfaceName() const {

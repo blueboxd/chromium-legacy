@@ -100,7 +100,6 @@ class Node;
 class NodeTraversal;
 class PerformanceMonitor;
 class PluginData;
-class ResourceRequest;
 class ScriptController;
 class SmoothScrollSequencer;
 class SpellChecker;
@@ -322,9 +321,6 @@ class CORE_EXPORT LocalFrame final : public Frame,
   IdlenessDetector* GetIdlenessDetector() { return idleness_detector_; }
   AdTracker* GetAdTracker() { return ad_tracker_; }
   void SetAdTrackerForTesting(AdTracker* ad_tracker);
-
-  // Returns true if Client Lo-Fi should be used for this request.
-  bool IsClientLoFiAllowed(const ResourceRequest&) const;
 
   enum class LazyLoadImageSetting {
     kDisabled,

@@ -1645,9 +1645,10 @@ CrosNetworkConfig::~CrosNetworkConfig() {
   }
 }
 
-void CrosNetworkConfig::BindRequest(mojom::CrosNetworkConfigRequest request) {
-  NET_LOG(EVENT) << "CrosNetworkConfig::BindRequest()";
-  bindings_.AddBinding(this, std::move(request));
+void CrosNetworkConfig::BindReceiver(
+    mojo::PendingReceiver<mojom::CrosNetworkConfig> receiver) {
+  NET_LOG(EVENT) << "CrosNetworkConfig::BindReceiver()";
+  receivers_.Add(this, std::move(receiver));
 }
 
 void CrosNetworkConfig::AddObserver(

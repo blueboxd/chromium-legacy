@@ -40,9 +40,15 @@ specific_include_rules = {
   "assistant_util_unittest\.cc": [
     "+ui/events/devices/device_data_manager.h",
   ],
+  "child_status_collector_browsertest.cc": [
+    "+mojo/core/embedder/embedder.h",
+  ],
   "chrome_browser_main_chromeos\.cc": [
     "+ash/shell.h",
     "+ash/sticky_keys/sticky_keys_controller.h",
+  ],
+  "device_status_collector_browsertest.cc": [
+    "+mojo/core/embedder/embedder.h",
   ],
   "event_rewriter_unittest\.cc": [
     "+ui/events/devices/device_data_manager.h",

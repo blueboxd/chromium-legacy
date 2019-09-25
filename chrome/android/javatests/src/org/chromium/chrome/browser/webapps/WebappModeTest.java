@@ -110,16 +110,18 @@ public class WebappModeTest {
                     WEBAPP_1_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
                         @Override
                         public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                            storage.updateFromShortcutIntent(createIntent(
+                            WebappInfo webappInfo = WebappInfo.create(createIntent(
                                     WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                            storage.updateFromWebappInfo(webappInfo);
                         }
                     });
             WebappRegistry.getInstance().register(
                     WEBAPP_2_ID, new WebappRegistry.FetchWebappDataStorageCallback() {
                         @Override
                         public void onWebappDataStorageRetrieved(WebappDataStorage storage) {
-                            storage.updateFromShortcutIntent(createIntent(
+                            WebappInfo webappInfo = WebappInfo.create(createIntent(
                                     WEBAPP_1_ID, WEBAPP_1_URL, WEBAPP_1_TITLE, WEBAPP_ICON, true));
+                            storage.updateFromWebappInfo(webappInfo);
                         }
                     });
         });

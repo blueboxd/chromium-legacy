@@ -12,6 +12,7 @@ NS_ASSUME_NONNULL_BEGIN
 typedef NS_ENUM(NSInteger, CWVPasswordUserDecision);
 @class CWVAutofillSuggestion;
 @class CWVPasswordController;
+@class CWVPassword;
 
 namespace web {
 class WebState;
@@ -20,29 +21,25 @@ class WebState;
 // Internal protocol to receive callbacks related to password autofilling.
 @protocol CWVPasswordControllerDelegate
 
-// Called when user needs to decide on whether or not to save the
-// password for |username|.
+// Called when user needs to decide on whether or not to save the |password|.
 // This can happen when user is successfully logging into a web site with a new
 // username.
 // Pass user decision to |decisionHandler|. This block should be called only
 // once if user made the decision, or not get called if user ignores the prompt.
 - (void)passwordController:(CWVPasswordController*)passwordController
-    decidePasswordSavingPolicyForUsername:(NSString*)username
-                          decisionHandler:
-                              (void (^)(CWVPasswordUserDecision decision))
-                                  decisionHandler;
+    decideSavePolicyForPassword:(CWVPassword*)password
+                decisionHandler:
+                    (void (^)(CWVPasswordUserDecision decision))decisionHandler;
 
-// Called when user needs to decide on whether or not to update the
-// password for |username|.
+// Called when user needs to decide on whether or not to update the |password|.
 // This can happen when user is successfully logging into a web site with a new
 // password and an existing username.
 // Pass user decision to |decisionHandler|. This block should be called only
 // once if user made the decision, or not get called if user ignores the prompt.
 - (void)passwordController:(CWVPasswordController*)passwordController
-    decidePasswordUpdatingPolicyForUsername:(NSString*)username
-                            decisionHandler:
-                                (void (^)(CWVPasswordUserDecision decision))
-                                    decisionHandler;
+    decideUpdatePolicyForPassword:(CWVPassword*)password
+                  decisionHandler:(void (^)(CWVPasswordUserDecision decision))
+                                      decisionHandler;
 
 @end
 

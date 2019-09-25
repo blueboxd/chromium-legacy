@@ -5,6 +5,7 @@
 package org.chromium.base.compat;
 
 import android.annotation.TargetApi;
+import android.content.ClipDescription;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -41,5 +42,10 @@ public final class ApiHelperForO {
     /** See {@link View#setDefaultFocusHighlightEnabled(boolean) }. */
     public static void setDefaultFocusHighlightEnabled(View view, boolean enabled) {
         view.setDefaultFocusHighlightEnabled(enabled);
+    }
+
+    /** See {@link ClipDescription#getTimestamp()}. */
+    public static long getTimestamp(ClipDescription clipDescription) {
+        return clipDescription.getTimestamp();
     }
 }

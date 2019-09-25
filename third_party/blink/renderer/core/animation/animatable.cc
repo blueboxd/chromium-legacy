@@ -100,10 +100,12 @@ HeapVector<Member<Animation>> Animatable::getAnimations(
        element->GetDocument().Timeline().getAnimations()) {
     DCHECK(animation->effect());
     Element* target = ToKeyframeEffect(animation->effect())->target();
-
     if (element == target || (use_subtree && element->contains(target))) {
-      if (animation->effect()->IsCurrent() || animation->effect()->IsInEffect())
-        animations.push_back(animation);
+      // DocumentTimeline::getAnimations should only give us animations that are
+      // either current or in effect.
+      DCHECK(animation->effect()->IsCurrent() ||
+             animation->effect()->IsInEffect());
+      animations.push_back(animation);
     }
   }
   return animations;

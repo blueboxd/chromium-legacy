@@ -292,9 +292,6 @@
       status: "experimental",
     },
     {
-      name: "ClientPlaceholdersForServerLoFi",
-    },
-    {
       name: "CompositeAfterPaint",
     },
     {

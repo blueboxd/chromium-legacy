@@ -474,9 +474,11 @@ def argument_set_default_value(argument):
     if not default_value:
         return None
     if idl_type.is_dictionary:
-        if not argument.default_value.is_null:
-            raise Exception('invalid default value for dictionary type')
-        return None
+        if argument.default_value.is_null:
+            return None
+        if argument.default_value.value == '{}':
+            return None
+        raise Exception('invalid default value for dictionary type')
     if idl_type.is_array_or_sequence_type:
         if default_value.value != '[]':
             raise Exception('invalid default value for sequence type: %s' % default_value.value)

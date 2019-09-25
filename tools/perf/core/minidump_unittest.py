@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import logging
 import os
 import time
@@ -83,7 +85,7 @@ class BrowserMinidumpTest(tab_test_case.TabTestCase):
     self.assertTrue(crash_function in sections[3])
     # If we actually have a valid Crashpad stack, make sure it contains the
     # crash function as well.
-    print sections[4][:80]
+    print(sections[4][:80])
     if '**EMPTY**' not in sections[4]:
       self.assertTrue(crash_function in sections[4])
 

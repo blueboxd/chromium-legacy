@@ -68,7 +68,8 @@ inline v8::Local<v8::Value> ToV8(const ScriptValue& value,
 // and ScriptValue
 template <typename T>
 inline ScriptValue ScriptValue::From(ScriptState* script_state, T&& value) {
-  return ScriptValue(script_state, ToV8(std::forward<T>(value), script_state));
+  return ScriptValue(script_state->GetIsolate(),
+                     ToV8(std::forward<T>(value), script_state));
 }
 
 }  // namespace blink

@@ -1636,6 +1636,22 @@ void ReportOutOfSyncURLInDidStartProvisionalNavigation(
 
   web::NavigationContextImpl* navigationContext =
       [self.navigationStates contextForNavigation:navigation];
+
+  if (@available(iOS 13, *)) {
+  } else {
+    if (provisionalLoad && !navigationContext &&
+        web::RequiresProvisionalNavigationFailureWorkaround()) {
+      // It is likely that |navigationContext| is null because
+      // didStartProvisionalNavigation: was not called with this WKNavigation
+      // object. Log UMA to know when this workaround can be removed and
+      // do not call OnNavigationFinished() to avoid crash on null pointer
+      // dereferencing. See crbug.com/973653 and crbug.com/1004634 for details.
+      UMA_HISTOGRAM_BOOLEAN(
+          "Navigation.IOSNullContextInDidFailProvisionalNavigation", true);
+      return;
+    }
+  }
+
   navigationContext->SetError(error);
   navigationContext->SetIsPost([self isCurrentNavigationItemPOST]);
   // TODO(crbug.com/803631) DCHECK that self.currentNavItem is the navigation

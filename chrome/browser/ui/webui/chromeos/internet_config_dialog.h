@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/webui/chromeos/system_web_dialog_delegate.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
 namespace chromeos {
@@ -56,7 +57,8 @@ class InternetConfigDialogUI : public ui::MojoWebDialogUI {
 
  private:
   void BindCrosNetworkConfig(
-      chromeos::network_config::mojom::CrosNetworkConfigRequest request);
+      mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+          receiver);
 
   DISALLOW_COPY_AND_ASSIGN(InternetConfigDialogUI);
 };

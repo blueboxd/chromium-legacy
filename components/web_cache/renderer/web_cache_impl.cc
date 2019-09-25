@@ -21,7 +21,7 @@ namespace web_cache {
 WebCacheImpl::WebCacheImpl() : clear_cache_state_(kInit) {
   auto registry = std::make_unique<service_manager::BinderRegistry>();
   registry->AddInterface(
-      base::Bind(&WebCacheImpl::BindRequest, base::Unretained(this)),
+      base::Bind(&WebCacheImpl::BindReceiver, base::Unretained(this)),
       base::ThreadTaskRunnerHandle::Get());
   if (content::ChildThread::Get()) {
     content::ChildThread::Get()
@@ -33,8 +33,9 @@ WebCacheImpl::WebCacheImpl() : clear_cache_state_(kInit) {
 
 WebCacheImpl::~WebCacheImpl() {}
 
-void WebCacheImpl::BindRequest(mojom::WebCacheRequest web_cache_request) {
-  bindings_.AddBinding(this, std::move(web_cache_request));
+void WebCacheImpl::BindReceiver(
+    mojo::PendingReceiver<mojom::WebCache> web_cache_receiver) {
+  receivers_.Add(this, std::move(web_cache_receiver));
 }
 
 void WebCacheImpl::ExecutePendingClearCache() {

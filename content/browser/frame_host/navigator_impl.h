@@ -127,13 +127,12 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
       const FrameHostMsg_DidCommitProvisionalLoad_Params& params,
       SiteInstance* site_instance);
 
-  // Called when a navigation has started in a main frame, to update the pending
-  // NavigationEntry if the controller does not currently have a
-  // browser-initiated one.
-  void DidStartMainFrameNavigation(
+  // Called when a renderer initiated navigation has started. Returns the
+  // pending NavigationEntry to be used. Either null or a new one owned
+  // NavigationController.
+  NavigationEntryImpl* GetNavigationEntryForRendererInitiatedNavigation(
       const mojom::CommonNavigationParams& common_params,
-      SiteInstanceImpl* site_instance,
-      NavigationHandleImpl* navigation_handle);
+      FrameTreeNode* frame_tree_node);
 
   // The NavigationController that will keep track of session history for all
   // RenderFrameHost objects using this NavigatorImpl.

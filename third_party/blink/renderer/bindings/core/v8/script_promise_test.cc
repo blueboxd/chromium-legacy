@@ -283,8 +283,8 @@ TEST(ScriptPromiseTest, CastNonPromise) {
   V8TestingScope scope;
   ScriptValue on_fulfilled1, on_fulfilled2, on_rejected1, on_rejected2;
 
-  ScriptValue value = ScriptValue(scope.GetScriptState(),
-                                  V8String(scope.GetIsolate(), "hello"));
+  ScriptValue value =
+      ScriptValue(scope.GetIsolate(), V8String(scope.GetIsolate(), "hello"));
   ScriptPromise promise1 =
       ScriptPromise::Cast(scope.GetScriptState(), ScriptValue(value));
   ScriptPromise promise2 =
@@ -322,8 +322,8 @@ TEST(ScriptPromiseTest, Reject) {
   V8TestingScope scope;
   ScriptValue on_fulfilled, on_rejected;
 
-  ScriptValue value = ScriptValue(scope.GetScriptState(),
-                                  V8String(scope.GetIsolate(), "hello"));
+  ScriptValue value =
+      ScriptValue(scope.GetIsolate(), V8String(scope.GetIsolate(), "hello"));
   ScriptPromise promise =
       ScriptPromise::Reject(scope.GetScriptState(), ScriptValue(value));
   promise.Then(FunctionForScriptPromiseTest::CreateFunction(

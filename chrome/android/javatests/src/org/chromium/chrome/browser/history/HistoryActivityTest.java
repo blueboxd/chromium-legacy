@@ -615,7 +615,7 @@ public class HistoryActivityTest {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             IdentityServicesProvider.getSigninManager().onFirstRunCheckDone();
             IdentityServicesProvider.getSigninManager().addSignInStateObserver(mTestObserver);
-            IdentityServicesProvider.getSigninManager().signIn(account, null, null);
+            IdentityServicesProvider.getSigninManager().signIn(account, null);
         });
 
         mTestObserver.onSigninStateChangedCallback.waitForCallback(

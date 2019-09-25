@@ -51,6 +51,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.VerifiesOnLollipop;
+import org.chromium.base.annotations.VerifiesOnN;
 
 import java.io.UnsupportedEncodingException;
 
@@ -136,7 +137,7 @@ public class ApiCompatibilityUtils {
      * @see android.text.Html#toHtml(Spanned, int)
      * @param option is ignored on below N
      */
-    @SuppressWarnings("deprecation")
+    @VerifiesOnN
     public static String toHtml(Spanned spanned, int option) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             return Html.toHtml(spanned, option);

@@ -28,6 +28,11 @@ void StubWindow::Close() {
   delegate_->OnClosed();
 }
 
+bool StubWindow::IsVisible() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return true;
+}
+
 void StubWindow::PrepareForShutdown() {}
 
 void StubWindow::SetBounds(const gfx::Rect& bounds) {

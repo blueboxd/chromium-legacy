@@ -78,7 +78,7 @@ public final class ForcedSigninProcessor {
                 Log.d(TAG, "Incorrect number of accounts (%d)", accounts.size());
                 return;
             }
-            signinManager.signIn(accounts.get(0), null, new SigninManager.SignInCallback() {
+            signinManager.signIn(accounts.get(0), new SigninManager.SignInCallback() {
                 @Override
                 public void onSignInComplete() {
                     if (onComplete != null) {

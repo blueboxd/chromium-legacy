@@ -80,6 +80,9 @@ class LayoutSVGModelObject : public LayoutObject {
  protected:
   void WillBeDestroyed() override;
 
+  AffineTransform CalculateLocalTransform() const;
+  bool CheckForImplicitTransformChange(bool bbox_changed) const;
+
  private:
   // LayoutSVGModelObject subclasses should use GetElement() instead.
   void GetNode() const = delete;

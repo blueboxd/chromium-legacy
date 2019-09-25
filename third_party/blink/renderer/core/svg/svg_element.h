@@ -37,7 +37,6 @@ namespace blink {
 
 class AffineTransform;
 class Document;
-class FloatRect;
 class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGAnimatedString;
@@ -333,8 +332,6 @@ struct SVGAttributeHashTranslator {
     return a.Matches(b);
   }
 };
-
-FloatRect ComputeSVGTransformReferenceBox(const LayoutObject&);
 
 DEFINE_ELEMENT_TYPE_CASTS(SVGElement, IsSVGElement());
 

@@ -50,17 +50,6 @@ password_manager::SyncState GetPasswordSyncState(
 // custom passphrase.
 bool IsSyncingWithNormalEncryption(const syncer::SyncService* sync_service);
 
-// Finds the forms with a duplicate sync tags in |forms|. The first one of
-// the duplicated entries stays in |forms|, the others are moved to
-// |duplicates|.
-// |tag_groups| is optional. It will contain |forms| and |duplicates| grouped by
-// the sync tag. The first element in each group is one from |forms|. It's
-// followed by the duplicates.
-void FindDuplicates(
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* forms,
-    std::vector<std::unique_ptr<autofill::PasswordForm>>* duplicates,
-    std::vector<std::vector<autofill::PasswordForm*>>* tag_groups);
-
 // Removes Android username-only credentials from |android_credentials|.
 // Transforms federated credentials into non zero-click ones.
 void TrimUsernameOnlyCredentials(

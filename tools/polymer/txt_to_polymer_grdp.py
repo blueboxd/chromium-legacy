@@ -4,6 +4,8 @@
 # found in the LICENSE file.
 
 from __future__ import with_statement
+from __future__ import print_function
+
 import argparse
 import os
 import string
@@ -100,11 +102,15 @@ def main(argv):
         'name': PathToGritId(polymer_version, path),
         'path': path})
 
-  print FILE_TEMPLATE % {
-    'contents': '\n'.join(lines),
-        'web_animations': '' if polymer_version == '3' else
-            DEFINITION_TEMPLATE_WEB_ANIMATIONS,
-        'version' : polymer_version }
+  print(FILE_TEMPLATE % {
+      'contents':
+          '\n'.join(lines),
+      'web_animations':
+          '' if polymer_version == '3' else DEFINITION_TEMPLATE_WEB_ANIMATIONS,
+      'version':
+          polymer_version
+  })
+
 
 if __name__ == '__main__':
   sys.exit(main(sys.argv[1:]))

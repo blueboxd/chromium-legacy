@@ -313,7 +313,6 @@ sync_pb::SyncEntity* MockConnectionManager::SetNigori(
   ent->set_name("Nigori");
   ent->set_non_unique_name("Nigori");
   ent->set_version(version);
-  ent->set_sync_timestamp(sync_ts);
   ent->set_mtime(sync_ts);
   ent->set_ctime(1);
   ent->set_position_in_parent(0);
@@ -365,7 +364,6 @@ sync_pb::SyncEntity* MockConnectionManager::AddUpdateMeta(
   ent->set_non_unique_name(name);
   ent->set_name(name);
   ent->set_version(version);
-  ent->set_sync_timestamp(sync_ts);
   ent->set_mtime(sync_ts);
   ent->set_ctime(1);
   ent->set_position_in_parent(GeneratePositionInParent());
@@ -523,7 +521,6 @@ bool MockConnectionManager::ProcessGetUpdates(
   }
   const GetUpdatesMessage& gu = csm->get_updates();
   num_get_updates_requests_++;
-  EXPECT_FALSE(gu.has_from_timestamp());
 
   if (fail_non_periodic_get_updates_) {
     EXPECT_EQ(sync_pb::SyncEnums::PERIODIC, gu.get_updates_origin());

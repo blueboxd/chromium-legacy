@@ -60,6 +60,8 @@ class CORE_EXPORT StyleGeneratedImage final : public StyleImage {
                                 const FloatSize& target_size) const override;
   bool KnownToBeOpaque(const Document&, const ComputedStyle&) const override;
 
+  bool IsUsingCustomProperty(const AtomicString& custom_property_name) const;
+
   void Trace(blink::Visitor*) override;
 
  private:

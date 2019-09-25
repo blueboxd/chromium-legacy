@@ -44,7 +44,6 @@ class MockAccessoryView
                void(const base::string16&,
                     const base::string16&,
                     base::OnceClosure));
-  MOCK_METHOD1(SetTypesetter, void(gfx::Typesetter));
   MOCK_METHOD1(GetElidedValueWidthForRow, int(int));
   MOCK_METHOD1(GetElidedLabelWidthForRow, int(int));
 

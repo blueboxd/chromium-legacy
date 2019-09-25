@@ -78,6 +78,11 @@ void StyleGeneratedImage::RemoveClient(ImageResourceObserver* observer) {
   image_generator_value_->RemoveClient(observer);
 }
 
+bool StyleGeneratedImage::IsUsingCustomProperty(
+    const AtomicString& custom_property_name) const {
+  return image_generator_value_->IsUsingCustomProperty(custom_property_name);
+}
+
 scoped_refptr<Image> StyleGeneratedImage::GetImage(
     const ImageResourceObserver& observer,
     const Document& document,

@@ -7,6 +7,7 @@
 #include <memory>
 #include <string>
 
+#include "base/run_loop.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/login/existing_user_controller.h"
@@ -60,6 +61,10 @@ class LoginApiUnittest : public ExtensionApiUnittest {
         std::make_unique<chromeos::MockLoginDisplayHost>();
     mock_existing_user_controller_ =
         std::make_unique<MockExistingUserController>();
+
+    // Run pending async tasks resulting from profile construction to ensure
+    // these are complete before the test begins.
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {

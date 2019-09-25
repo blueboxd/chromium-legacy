@@ -54,9 +54,6 @@ class PasswordReuseDetector : public PasswordStoreConsumer {
                   const std::string& domain,
                   PasswordReuseDetectorConsumer* consumer);
 
-  // Stores internal |sync_password_data| for password reuse checking.
-  void UseSyncPasswordHash(base::Optional<PasswordHashData> sync_password_data);
-
   // Stores a vector of PasswordHashData for Gaia password reuse checking.
   void UseGaiaPasswordHash(
       base::Optional<std::vector<PasswordHashData>> password_hash_data_list);

@@ -663,8 +663,9 @@ TEST_F(LockContentsViewUnitTest, SystemInfoViewBounds) {
 
   // Verify that the system info view becomes visible and it doesn't block the
   // note action button.
-  DataDispatcher()->SetSystemInfo(true /*show_if_hidden*/, "Best version ever",
-                                  "Asset ID: 6666", "Bluetooth adapter");
+  DataDispatcher()->SetSystemInfo(true /*show*/, false /*enforced*/,
+                                  "Best version ever", "Asset ID: 6666",
+                                  "Bluetooth adapter");
   EXPECT_TRUE(test_api.system_info()->GetVisible());
   EXPECT_TRUE(test_api.note_action()->GetVisible());
   gfx::Size note_action_size = test_api.note_action()->GetPreferredSize();
@@ -697,8 +698,9 @@ TEST_F(LockContentsViewUnitTest, AltVShowsHiddenSystemInfo) {
 
   // Verify that the system info view does not become visible when given data
   // but show is false.
-  DataDispatcher()->SetSystemInfo(false /*show_if_hidden*/, "Best version ever",
-                                  "Asset ID: 6666", "Bluetooth adapter");
+  DataDispatcher()->SetSystemInfo(false /*show*/, false /*enforced*/,
+                                  "Best version ever", "Asset ID: 6666",
+                                  "Bluetooth adapter");
   EXPECT_FALSE(test_api.system_info()->GetVisible());
 
   // Alt-V shows hidden system info.
@@ -712,7 +714,7 @@ TEST_F(LockContentsViewUnitTest, AltVShowsHiddenSystemInfo) {
   EXPECT_TRUE(test_api.system_info()->GetVisible());
 }
 
-// Updating existing system info and setting show_if_hidden=true later will
+// Updating existing system info and setting show_=true later will
 // reveal hidden system info.
 TEST_F(LockContentsViewUnitTest, ShowRevealsHiddenSystemInfo) {
   auto* contents = new LockContentsView(
@@ -724,21 +726,31 @@ TEST_F(LockContentsViewUnitTest, ShowRevealsHiddenSystemInfo) {
   std::unique_ptr<views::Widget> widget = CreateWidgetWithContent(contents);
   LockContentsView::TestApi test_api(contents);
 
-  auto set_system_info = [&](bool show_if_hidden) {
-    DataDispatcher()->SetSystemInfo(show_if_hidden, "Best version ever",
+  auto set_system_info = [&](bool show, bool enforced) {
+    DataDispatcher()->SetSystemInfo(show, enforced, "Best version ever",
                                     "Asset ID: 6666", "Bluetooth adapter");
   };
 
   // Start with hidden system info.
-  set_system_info(false);
+  set_system_info(false, false);
   EXPECT_FALSE(test_api.system_info()->GetVisible());
 
   // Update system info but request it be shown.
-  set_system_info(true);
+  set_system_info(true, false);
   EXPECT_TRUE(test_api.system_info()->GetVisible());
 
   // Trying to hide system info from mojom call doesn't do anything.
-  set_system_info(false);
+  set_system_info(false, false);
+  EXPECT_TRUE(test_api.system_info()->GetVisible());
+
+  // Trying to hide system info from mojom call with enforced=true. It should
+  // work.
+  set_system_info(false, true);
+  EXPECT_FALSE(test_api.system_info()->GetVisible());
+
+  // System info will be shown again when enforced is reset to false
+  // because the view remembers user wants to show it if possible.
+  set_system_info(false, false);
   EXPECT_TRUE(test_api.system_info()->GetVisible());
 }
 

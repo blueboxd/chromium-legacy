@@ -104,9 +104,6 @@ class PlatformApiImpl : public assistant_client::PlatformApi,
 
   CrasAudioHandler* const cras_audio_handler_;
 
-  chromeos::network_config::mojom::CrosNetworkConfigPtr
-      cros_network_config_ptr_;
-
   DISALLOW_COPY_AND_ASSIGN(PlatformApiImpl);
 };
 

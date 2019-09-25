@@ -17,8 +17,9 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 class Profile;
 
@@ -49,7 +50,7 @@ class ArcApps : public KeyedService,
   void Shutdown() override;
 
   // apps::mojom::Publisher overrides.
-  void Connect(apps::mojom::SubscriberPtr subscriber,
+  void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
@@ -96,7 +97,7 @@ class ArcApps : public KeyedService,
       const arc::mojom::ArcPackageInfo& package_info);
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
-  mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
+  mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* profile_;
   ArcIconOnceLoader arc_icon_once_loader_;

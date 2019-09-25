@@ -521,9 +521,7 @@ void ImageLoader::DoUpdateFromElement(
     if (update_behavior != kUpdateForcedReload &&
         lazy_image_load_state_ == LazyImageLoadState::kNone) {
       const auto* frame = document.GetFrame();
-      if (frame->IsClientLoFiAllowed(params.GetResourceRequest())) {
-        params.SetClientLoFiPlaceholder();
-      } else if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
+      if (auto* html_image = ToHTMLImageElementOrNull(GetElement())) {
         switch (LazyImageHelper::DetermineEligibilityAndTrackVisibilityMetrics(
             *frame, html_image, params.Url())) {
           case LazyImageHelper::Eligibility::kEnabledFullyDeferred:

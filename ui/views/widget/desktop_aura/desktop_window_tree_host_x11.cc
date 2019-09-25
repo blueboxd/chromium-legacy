@@ -280,10 +280,6 @@ void DesktopWindowTreeHostX11::Show(ui::WindowShowState show_state,
   content_window()->Show();
 }
 
-bool DesktopWindowTreeHostX11::IsVisible() const {
-  return platform_window() ? GetXWindow()->IsVisible() : false;
-}
-
 void DesktopWindowTreeHostX11::SetSize(const gfx::Size& requested_size) {
   gfx::Size size_in_pixels = ToPixelRect(gfx::Rect(requested_size)).size();
   size_in_pixels = AdjustSizeForDisplay(size_in_pixels);

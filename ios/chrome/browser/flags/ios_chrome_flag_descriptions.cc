@@ -287,6 +287,10 @@ const char kOptionalArticleThumbnailDescription[] =
     "Make thumbnails of NTP articles optional due to European copyright "
     "directive(EUCD). Also change the layout of article cells";
 
+const char kPasswordLeakDetectionName[] = "Password Leak Detection";
+const char kPasswordLeakDetectionDescription[] =
+    "Enables the detection of leaked passwords.";
+
 const char kSearchIconToggleName[] = "Change the icon for the search button";
 const char kSearchIconToggleDescription[] =
     "Different icons for the search button.";

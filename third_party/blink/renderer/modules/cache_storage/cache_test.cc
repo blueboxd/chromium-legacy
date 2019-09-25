@@ -22,6 +22,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_tester.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_request.h"
@@ -303,12 +304,10 @@ class CacheStorageTest : public PageTestBase {
 
   // Convenience methods for testing the returned promises.
   ScriptValue GetRejectValue(ScriptPromise& promise) {
-    ScriptValue on_reject;
-    promise.Then(UnreachableFunction::Create(GetScriptState()),
-                 TestFunction::Create(GetScriptState(), &on_reject));
-    v8::MicrotasksScope::PerformCheckpoint(GetIsolate());
-    test::RunPendingTasks();
-    return on_reject;
+    ScriptPromiseTester tester(GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    EXPECT_TRUE(tester.IsRejected());
+    return tester.Value();
   }
 
   std::string GetRejectString(ScriptPromise& promise) {
@@ -320,12 +319,10 @@ class CacheStorageTest : public PageTestBase {
   }
 
   ScriptValue GetResolveValue(ScriptPromise& promise) {
-    ScriptValue on_resolve;
-    promise.Then(TestFunction::Create(GetScriptState(), &on_resolve),
-                 UnreachableFunction::Create(GetScriptState()));
-    v8::MicrotasksScope::PerformCheckpoint(GetIsolate());
-    test::RunPendingTasks();
-    return on_resolve;
+    ScriptPromiseTester tester(GetScriptState(), promise);
+    tester.WaitUntilSettled();
+    EXPECT_TRUE(tester.IsFulfilled());
+    return tester.Value();
   }
 
   std::string GetResolveString(ScriptPromise& promise) {
@@ -337,48 +334,6 @@ class CacheStorageTest : public PageTestBase {
   }
 
  private:
-  // A ScriptFunction that creates a test failure if it is ever called.
-  class UnreachableFunction : public ScriptFunction {
-   public:
-    static v8::Local<v8::Function> Create(ScriptState* script_state) {
-      UnreachableFunction* self =
-          MakeGarbageCollected<UnreachableFunction>(script_state);
-      return self->BindToV8Function();
-    }
-
-    UnreachableFunction(ScriptState* script_state)
-        : ScriptFunction(script_state) {}
-
-    ScriptValue Call(ScriptValue value) override {
-      ADD_FAILURE() << "Unexpected call to a null ScriptFunction.";
-      return value;
-    }
-  };
-
-  // A ScriptFunction that saves its parameter; used by tests to assert on
-  // correct values being passed.
-  class TestFunction : public ScriptFunction {
-   public:
-    static v8::Local<v8::Function> Create(ScriptState* script_state,
-                                          ScriptValue* out_value) {
-      TestFunction* self =
-          MakeGarbageCollected<TestFunction>(script_state, out_value);
-      return self->BindToV8Function();
-    }
-
-    TestFunction(ScriptState* script_state, ScriptValue* out_value)
-        : ScriptFunction(script_state), value_(out_value) {}
-
-    ScriptValue Call(ScriptValue value) override {
-      DCHECK(!value.IsEmpty());
-      *value_ = value;
-      return value;
-    }
-
-   private:
-    ScriptValue* value_;
-  };
-
   std::unique_ptr<ErrorCacheForTests> cache_;
   std::unique_ptr<mojo::AssociatedReceiver<mojom::blink::CacheStorageCache>>
       receiver_;

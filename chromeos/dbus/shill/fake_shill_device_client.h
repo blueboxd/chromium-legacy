@@ -95,6 +95,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
       const dbus::ObjectPath& device_path,
       const base::Closure& callback,
       const ErrorCallback& error_callback) override;
+  void SetUsbEthernetMacAddressSource(
+      const dbus::ObjectPath& device_path,
+      const std::string& source,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) override;
 
   ShillDeviceClient::TestInterface* GetTestInterface() override;
 
@@ -113,6 +118,9 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
   void SetTDLSState(const std::string& state) override;
   void SetSimLocked(const std::string& device_path, bool locked) override;
   void AddCellularFoundNetwork(const std::string& device_path) override;
+  void SetUsbEthernetMacAddressSourceError(
+      const std::string& device_path,
+      const std::string& error_name) override;
 
   static const char kSimPuk[];
   static const char kDefaultSimPin[];
@@ -179,6 +187,12 @@ class COMPONENT_EXPORT(SHILL_CLIENT) FakeShillDeviceClient
 
   // Current SIM PIN per device path.
   std::map<std::string, std::string> sim_pin_;
+
+  // Error names for SetUsbEthernetMacAddressSource error callback for each
+  // device. Error callback must not be called if error name is not present or
+  // empty.
+  std::map<std::string, std::string>
+      set_usb_ethernet_mac_address_source_error_names_;
 
   // Note: This should remain the last member so it'll be destroyed and
   // invalidate its weak pointers before any other members are destroyed.

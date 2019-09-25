@@ -646,6 +646,7 @@ void AddAppsStrings(content::WebUIDataSource* html_source) {
 void AddAppManagementStrings(content::WebUIDataSource* html_source) {
   static constexpr LocalizedString localized_strings[] = {
       {"appListTitle", IDS_APP_MANAGEMENT_APP_LIST_TITLE},
+      {"appManagementSearchPrompt", IDS_APP_MANAGEMENT_SEARCH_PROMPT},
       {"appNoPermission", IDS_APPLICATION_INFO_APP_NO_PERMISSIONS_TEXT},
       {"camera", IDS_APP_MANAGEMENT_CAMERA},
       {"contacts", IDS_APP_MANAGEMENT_CONTACTS},
@@ -655,6 +656,7 @@ void AddAppManagementStrings(content::WebUIDataSource* html_source) {
       {"microphone", IDS_APP_MANAGEMENT_MICROPHONE},
       {"moreApps", IDS_APP_MANAGEMENT_MORE_APPS},
       {"moreSettings", IDS_APP_MANAGEMENT_MORE_SETTINGS},
+      {"appManagementNoAppsFound", IDS_APP_MANAGEMENT_NO_APPS_FOUND},
       {"notifications", IDS_APP_MANAGEMENT_NOTIFICATIONS},
       {"notificationSublabel", IDS_APP_MANAGEMENT_NOTIFICATIONS_SUBLABEL},
       {"openAndroidSettings", IDS_APP_MANAGEMENT_ANDROID_SETTINGS},

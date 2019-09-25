@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/supports_user_data.h"
 #include "build/build_config.h"
@@ -24,7 +25,7 @@
 namespace content {
 class NavigationHandle;
 class RenderFrameHost;
-}
+}  // namespace content
 
 namespace autofill {
 
@@ -119,10 +120,6 @@ class ContentAutofillDriver : public AutofillDriver,
   // Called when the main frame has navigated. Explicitely will not trigger for
   // subframe navigations. See navigation_handle.h for details.
   void DidNavigateMainFrame(content::NavigationHandle* navigation_handle);
-
-  AutofillExternalDelegate* autofill_external_delegate() {
-    return autofill_external_delegate_.get();
-  }
 
   AutofillManager* autofill_manager() { return autofill_manager_; }
   AutofillHandler* autofill_handler() { return autofill_handler_.get(); }

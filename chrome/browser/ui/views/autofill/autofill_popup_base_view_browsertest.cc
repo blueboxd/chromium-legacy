@@ -43,7 +43,6 @@ class MockAutofillPopupViewDelegate : public AutofillPopupViewDelegate {
   MOCK_CONST_METHOD0(IsRTL, bool());
   MOCK_METHOD0(GetSuggestions, const std::vector<autofill::Suggestion>());
 #if !defined(OS_ANDROID)
-  MOCK_METHOD1(SetTypesetter, void(gfx::Typesetter typesetter));
   MOCK_METHOD1(GetElidedValueWidthForRow, int(int));
   MOCK_METHOD1(GetElidedLabelWidthForRow, int(int));
 #endif

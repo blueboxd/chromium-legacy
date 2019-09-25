@@ -353,7 +353,7 @@ ScriptValue Notification::data(ScriptState* script_state) {
   scoped_refptr<SerializedScriptValue> serialized_value =
       SerializedScriptValue::Create(data, length);
 
-  return ScriptValue(script_state,
+  return ScriptValue(script_state->GetIsolate(),
                      serialized_value->Deserialize(script_state->GetIsolate()));
 }
 

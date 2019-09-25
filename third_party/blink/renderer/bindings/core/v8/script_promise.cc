@@ -224,7 +224,7 @@ ScriptPromise::ScriptPromise(ScriptState* script_state,
                                      "the given value is not a Promise");
     return;
   }
-  promise_ = ScriptValue(script_state, value);
+  promise_ = ScriptValue(script_state->GetIsolate(), value);
 }
 
 ScriptPromise::ScriptPromise(const ScriptPromise& other) {

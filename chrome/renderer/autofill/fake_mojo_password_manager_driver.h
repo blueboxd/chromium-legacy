@@ -75,9 +75,9 @@ class FakeMojoPasswordManagerDriver
     return called_same_document_navigation_;
   }
 
-  const base::Optional<autofill::PasswordForm>&
-  password_form_same_document_navigation() const {
-    return password_form_same_document_navigation_;
+  const base::Optional<autofill::PasswordForm>& password_form_maybe_submitted()
+      const {
+    return password_form_maybe_submitted_;
   }
 
   bool called_password_forms_parsed() const {
@@ -150,8 +150,8 @@ class FakeMojoPasswordManagerDriver
   void PasswordFormSubmitted(
       const autofill::PasswordForm& password_form) override;
 
-  void SameDocumentNavigation(
-      const autofill::PasswordForm& password_form) override;
+  void SameDocumentNavigation(autofill::mojom::SubmissionIndicatorEvent
+                                  submission_indication_event) override;
 
   void ShowPasswordSuggestions(base::i18n::TextDirection text_direction,
                                const base::string16& typed_username,
@@ -187,11 +187,10 @@ class FakeMojoPasswordManagerDriver
   bool called_password_form_submitted_ = false;
   // Records data received via PasswordFormSubmitted() call.
   base::Optional<autofill::PasswordForm> password_form_submitted_;
+  // Records data received via ShowManualFallbackForSaving() call.
+  base::Optional<autofill::PasswordForm> password_form_maybe_submitted_;
   // Records whether SameDocumentNavigation() gets called.
   bool called_same_document_navigation_ = false;
-  // Records data received via SameDocumentNavigation() call.
-  base::Optional<autofill::PasswordForm>
-      password_form_same_document_navigation_;
   // Records whether PasswordFormsParsed() gets called.
   bool called_password_forms_parsed_ = false;
   // Records if the list received via PasswordFormsParsed() call was empty.

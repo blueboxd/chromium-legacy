@@ -573,6 +573,10 @@ class FileManagerPathUtilConvertUrlTest : public testing::Test {
                                      storage::kFileSystemTypeNativeLocal,
                                      storage::FileSystemMountOption(),
                                      crostini_mount_point_);
+
+    // Run pending async tasks resulting from profile construction to ensure
+    // these are complete before the test begins.
+    base::RunLoop().RunUntilIdle();
   }
 
   void TearDown() override {

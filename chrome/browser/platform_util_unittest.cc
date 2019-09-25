@@ -113,6 +113,11 @@ class PlatformUtilTestBase : public BrowserWithTestWindowTest {
     extensions::ExtensionRegistry::Get(GetProfile())->AddEnabled(extension);
   }
 
+  void SetUp() override {
+    BrowserWithTestWindowTest::SetUp();
+    base::RunLoop().RunUntilIdle();
+  }
+
   void TearDown() override {
     content::ContentBrowserClient* content_browser_client =
         content::SetBrowserClientForTesting(old_content_browser_client_);
@@ -151,7 +156,7 @@ class PlatformUtilTest : public PlatformUtilTestBase {
     static const char kTestFileData[] = "Cow says moo!";
     const int kTestFileDataLength = base::size(kTestFileData) - 1;
 
-    // This prevents platfrom_util from invoking any shell or external APIs
+    // This prevents platform_util from invoking any shell or external APIs
     // during tests. Doing so may result in external applications being launched
     // and intefering with tests.
     internal::DisableShellOperationsForTesting();

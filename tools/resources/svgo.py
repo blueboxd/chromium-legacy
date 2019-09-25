@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 
 def Run(os_path=None, args=None):
   _HERE_PATH = os_path.dirname(os_path.realpath(__file__))
@@ -23,4 +25,4 @@ def Run(os_path=None, args=None):
 if __name__ == '__main__':
   import os
   import sys
-  print Run(os_path=os.path, args=sys.argv[1:])
+  print(Run(os_path=os.path, args=sys.argv[1:]))

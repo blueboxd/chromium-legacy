@@ -14,10 +14,13 @@
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/ozone/common/linux/drm_util_linux.h"
 #include "ui/ozone/platform/wayland/gpu/wayland_surface_gpu.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
 #include "ui/ozone/platform/wayland/test/mock_surface.h"
-#include "ui/ozone/platform/wayland/test/mock_zwp_linux_buffer_params.h"
 #include "ui/ozone/platform/wayland/test/mock_zwp_linux_dmabuf.h"
+#include "ui/ozone/platform/wayland/test/test_zwp_linux_buffer_params.h"
 #include "ui/ozone/platform/wayland/test/wayland_test.h"
 
 using testing::_;
@@ -81,7 +84,7 @@ class WaylandBufferManagerTest : public WaylandTest {
     // callback and bind the interface again if the manager failed.
     manager_host_->SetTerminateGpuCallback(callback_.Get());
     auto interface_ptr = manager_host_->BindInterface();
-    buffer_manager_gpu_->SetWaylandBufferManagerHost(std::move(interface_ptr));
+    buffer_manager_gpu_->Initialize(std::move(interface_ptr), {}, false);
   }
 
  protected:
@@ -109,11 +112,15 @@ class WaylandBufferManagerTest : public WaylandTest {
           .Times(1)
           .WillRepeatedly(::testing::Invoke([this, callback](std::string) {
             manager_host_->OnChannelDestroyed();
+
             manager_host_->SetTerminateGpuCallback(callback->Get());
 
             auto interface_ptr = manager_host_->BindInterface();
-            buffer_manager_gpu_->SetWaylandBufferManagerHost(
-                std::move(interface_ptr));
+            // Recreate the gpu side manager (the production code does the
+            // same).
+            buffer_manager_gpu_ = std::make_unique<WaylandBufferManagerGpu>();
+            buffer_manager_gpu_->Initialize(std::move(interface_ptr), {},
+                                            false);
           }));
     }
   }
@@ -199,6 +206,54 @@ TEST_P(WaylandBufferManagerTest, CreateDmabufBasedBuffers) {
                                                    kDmabufBufferId);
   DestroyBufferAndSetTerminateExpectation(widget, kDmabufBufferId,
                                           false /*fail*/);
+}
+
+TEST_P(WaylandBufferManagerTest, VerifyModifiers) {
+  constexpr uint32_t kDmabufBufferId = 1;
+  constexpr uint32_t kFourccFormatR8 = DRM_FORMAT_R8;
+  constexpr uint64_t kFormatModiferLinear = DRM_FORMAT_MOD_LINEAR;
+
+  const std::vector<uint64_t> kFormatModifiers{DRM_FORMAT_MOD_INVALID,
+                                               kFormatModiferLinear};
+
+  // Tests that fourcc format is added, but invalid modifier is ignored first.
+  // Then, when valid modifier comes, it is stored.
+  for (const auto& modifier : kFormatModifiers) {
+    uint32_t modifier_hi = modifier >> 32;
+    uint32_t modifier_lo = modifier & UINT32_MAX;
+    zwp_linux_dmabuf_v1_send_modifier(server_.zwp_linux_dmabuf_v1()->resource(),
+                                      kFourccFormatR8, modifier_hi,
+                                      modifier_lo);
+
+    Sync();
+
+    auto buffer_formats = connection_->zwp_dmabuf()->supported_buffer_formats();
+    DCHECK_EQ(buffer_formats.size(), 1u);
+    DCHECK_EQ(buffer_formats.begin()->first,
+              GetBufferFormatFromFourCCFormat(kFourccFormatR8));
+
+    auto modifiers = buffer_formats.begin()->second;
+    if (modifier == DRM_FORMAT_MOD_INVALID) {
+      DCHECK_EQ(modifiers.size(), 0u);
+    } else {
+      DCHECK_EQ(modifiers.size(), 1u);
+      DCHECK_EQ(modifiers[0], modifier);
+    }
+  }
+
+  EXPECT_CALL(*server_.zwp_linux_dmabuf_v1(), CreateParams(_, _, _)).Times(1);
+  const gfx::AcceleratedWidget widget = window_->GetWidget();
+
+  CreateDmabufBasedBufferAndSetTerminateExpecation(
+      false /*fail*/, widget, kDmabufBufferId, base::ScopedFD(), kDefaultSize,
+      {1}, {2}, {kFormatModiferLinear}, kFourccFormatR8, 1);
+
+  Sync();
+
+  auto params_vector = server_.zwp_linux_dmabuf_v1()->buffer_params();
+  EXPECT_EQ(params_vector.size(), 1u);
+  EXPECT_EQ(params_vector[0]->modifier_hi_, kFormatModiferLinear >> 32);
+  EXPECT_EQ(params_vector[0]->modifier_lo_, kFormatModiferLinear & UINT32_MAX);
 }
 
 TEST_P(WaylandBufferManagerTest, CreateShmBasedBuffers) {

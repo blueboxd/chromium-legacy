@@ -62,7 +62,7 @@ ScriptValue StringDataToScriptValue(ScriptState* script_state,
            .ToLocal(&v8_value)) {
     return ScriptValue();
   }
-  return ScriptValue(script_state, v8_value);
+  return ScriptValue(script_state->GetIsolate(), v8_value);
 }
 
 PaymentMethodData* ToPaymentMethodData(

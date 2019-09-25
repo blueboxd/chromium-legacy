@@ -12,7 +12,6 @@
 #include "base/debug/stack_trace.h"
 #include "base/logging.h"
 #include "base/metrics/histogram.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
 #include "components/prefs/pref_member.h"
@@ -41,21 +40,6 @@ void ReportInvalidReferrerSend(const GURL& target_url,
   NOTREACHED();
 }
 
-// Record network errors that HTTP requests complete with, including OK and
-// ABORTED.
-void RecordNetworkErrorHistograms(const net::URLRequest* request,
-                                  int net_error) {
-  if (request->url().SchemeIs("http")) {
-    base::UmaHistogramSparse("Net.HttpRequestCompletionErrorCodes",
-                             std::abs(net_error));
-
-    if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
-      base::UmaHistogramSparse("Net.HttpRequestCompletionErrorCodes.MainFrame",
-                               std::abs(net_error));
-    }
-  }
-}
-
 }  // namespace
 
 IOSChromeNetworkDelegate::IOSChromeNetworkDelegate()
@@ -82,12 +66,6 @@ int IOSChromeNetworkDelegate::OnBeforeURLRequest(
   if (enable_do_not_track_ && enable_do_not_track_->GetValue())
     request->SetExtraRequestHeaderByName(kDNTHeader, "1", true /* override */);
   return net::OK;
-}
-
-void IOSChromeNetworkDelegate::OnCompleted(net::URLRequest* request,
-                                           bool started,
-                                           int net_error) {
-  RecordNetworkErrorHistograms(request, net_error);
 }
 
 bool IOSChromeNetworkDelegate::OnCanGetCookies(

@@ -52,6 +52,9 @@ class VersionInfoUpdater : public policy::CloudPolicyStore::Observer {
   // is received.
   void StartUpdate(bool is_official_build);
 
+  // Determine whether the system information will be displayed forcedly.
+  base::Optional<bool> IsSystemInfoEnforced() const;
+
  private:
   // policy::CloudPolicyStore::Observer interface:
   void OnStoreLoaded(policy::CloudPolicyStore* store) override;

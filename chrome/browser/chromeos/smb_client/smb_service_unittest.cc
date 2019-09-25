@@ -97,6 +97,10 @@ class SmbServiceTest : public testing::Test {
                                           "abc"),
         false, user_manager::UserType::USER_TYPE_ACTIVE_DIRECTORY, ad_profile_);
 
+    // Run pending async tasks resulting from profile construction to ensure
+    // these are complete before the test begins.
+    base::RunLoop().RunUntilIdle();
+
     user_manager_enabler_ = std::make_unique<user_manager::ScopedUserManager>(
         std::move(user_manager_temp));
 

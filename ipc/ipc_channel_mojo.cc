@@ -26,7 +26,8 @@
 #include "ipc/ipc_mojo_bootstrap.h"
 #include "ipc/ipc_mojo_handle_attachment.h"
 #include "ipc/native_handle_type_converters.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
 namespace IPC {
@@ -150,8 +151,8 @@ bool ChannelMojo::Connect() {
 
   WillConnect();
 
-  mojom::ChannelAssociatedPtr sender;
-  mojom::ChannelAssociatedRequest receiver;
+  mojo::AssociatedRemote<mojom::Channel> sender;
+  mojo::PendingAssociatedReceiver<mojom::Channel> receiver;
   bootstrap_->Connect(&sender, &receiver);
 
   DCHECK(!message_reader_);

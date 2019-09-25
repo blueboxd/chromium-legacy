@@ -1179,52 +1179,6 @@ TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessful) {
                                          observer.get(), false);
 }
 
-TEST(ImageResourceTest, FetchAllowPlaceholderUnsuccessfulClientLoFi) {
-  KURL test_url(kTestURL);
-  ScopedMockedURLLoad scoped_mocked_url_load(test_url, GetTestFilePath());
-
-  ResourceRequest request = ResourceRequest(test_url);
-  request.SetPreviewsState(WebURLRequest::kClientLoFiOn);
-  FetchParameters params{request};
-  params.SetAllowImagePlaceholder();
-  ImageResource* image_resource = ImageResource::Fetch(params, CreateFetcher());
-  EXPECT_EQ(FetchParameters::kAllowPlaceholder,
-            params.GetImageRequestOptimization());
-  EXPECT_EQ("bytes=0-2047",
-            image_resource->GetResourceRequest().HttpHeaderField("range"));
-  EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
-  auto observer =
-      std::make_unique<MockImageResourceObserver>(image_resource->GetContent());
-
-  const char kBadData[] = "notanimageresponse";
-
-  ResourceResponse bad_response(test_url);
-  bad_response.SetMimeType("image/jpeg");
-  bad_response.SetExpectedContentLength(sizeof(kBadData));
-  bad_response.SetHttpStatusCode(206);
-  bad_response.SetHttpHeaderField(
-      "content-range", BuildContentRange(sizeof(kBadData), sizeof(kJpegImage)));
-
-  image_resource->Loader()->DidReceiveResponse(
-      WrappedResourceResponse(bad_response));
-
-  EXPECT_EQ(0, observer->ImageChangedCount());
-
-  image_resource->Loader()->DidReceiveData(kBadData, sizeof(kBadData));
-
-  // The dimensions could not be extracted, so the full original image should be
-  // loading.
-  EXPECT_FALSE(observer->ImageNotifyFinishedCalled());
-  EXPECT_EQ(2, observer->ImageChangedCount());
-
-  TestThatReloadIsStartedThenServeReload(test_url, image_resource,
-                                         image_resource->GetContent(),
-                                         observer.get(), true);
-
-  EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsBitmapImage());
-  EXPECT_TRUE(image_resource->ShouldShowPlaceholder());
-}
-
 TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
   const struct {
     WebURLRequest::PreviewsState initial_previews_state;
@@ -1234,10 +1188,6 @@ TEST(ImageResourceTest, FetchAllowPlaceholderPartialContentWithoutDimensions) {
   } tests[] = {
       {WebURLRequest::kPreviewsUnspecified, WebURLRequest::kPreviewsNoTransform,
        false},
-      {WebURLRequest::kClientLoFiOn,
-       WebURLRequest::kPreviewsNoTransform |
-           WebURLRequest::kClientLoFiAutoReload,
-       true},
   };
 
   for (const auto& test : tests) {

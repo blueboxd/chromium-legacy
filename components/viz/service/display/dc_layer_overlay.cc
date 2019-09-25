@@ -42,7 +42,8 @@ enum DCLayerResult {
   DC_LAYER_FAILED_NON_ROOT,
   DC_LAYER_FAILED_TOO_MANY_OVERLAYS,
   DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,  // deprecated
-  kMaxValue = DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,
+  DC_LAYER_FAILED_ROUNDED_CORNERS,
+  kMaxValue = DC_LAYER_FAILED_ROUNDED_CORNERS,
 };
 
 enum : size_t {
@@ -89,6 +90,10 @@ DCLayerResult FromYUVQuad(const YUVVideoDrawQuad* quad,
 
     if (current_frame_processed_overlay_count > 0)
       return DC_LAYER_FAILED_TOO_MANY_OVERLAYS;
+
+    // Rounded corner on overlays are not supported.
+    if (!quad->shared_quad_state->rounded_corner_bounds.IsEmpty())
+      return DC_LAYER_FAILED_ROUNDED_CORNERS;
   }
 
   // Direct composition path only supports single NV12 buffer, or two buffers
@@ -135,6 +140,7 @@ DCLayerResult FromTextureQuad(const TextureDrawQuad* quad,
     if (!resource_provider->IsOverlayCandidate(resource))
       return DC_LAYER_FAILED_TEXTURE_NOT_CANDIDATE;
   }
+
   if (quad->shared_quad_state->blend_mode != SkBlendMode::kSrcOver)
     return DC_LAYER_FAILED_QUAD_BLEND_MODE;
 
@@ -144,6 +150,10 @@ DCLayerResult FromTextureQuad(const TextureDrawQuad* quad,
           features::kDirectCompositionComplexOverlays)) {
     return DC_LAYER_FAILED_COMPLEX_TRANSFORM;
   }
+
+  // Rounded corner on overlays are not supported.
+  if (!quad->shared_quad_state->rounded_corner_bounds.IsEmpty())
+    return DC_LAYER_FAILED_ROUNDED_CORNERS;
 
   dc_layer->resources[kTextureResourceIndex] = quad->resource_id();
   dc_layer->z_order = 1;

@@ -67,9 +67,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
 
   bool HandleKeyPressEvent(const content::NativeWebKeyboardEvent& event);
 
-  // Tells the view to capture mouse events. Must be called before |Show()|.
-  void set_hide_on_outside_click(bool hide_on_outside_click);
-
  protected:
   FRIEND_TEST_ALL_PREFIXES(AutofillPopupControllerUnitTest,
                            ProperlyResetController);
@@ -93,7 +90,6 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   bool IsRTL() const override;
   const std::vector<Suggestion> GetSuggestions() override;
 #if !defined(OS_ANDROID)
-  void SetTypesetter(gfx::Typesetter typesetter) override;
   int GetElidedValueWidthForRow(int row) override;
   int GetElidedLabelWidthForRow(int row) override;
 #endif

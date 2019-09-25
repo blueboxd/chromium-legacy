@@ -916,7 +916,7 @@ void ImageBitmap::ResolvePromiseOnOriginalThread(
     sk_sp<SkImage> skia_image) {
   if (!skia_image) {
     resolver->Reject(
-        ScriptValue(resolver->GetScriptState(),
+        ScriptValue(resolver->GetScriptState()->GetIsolate(),
                     v8::Null(resolver->GetScriptState()->GetIsolate())));
     return;
   }
@@ -928,14 +928,14 @@ void ImageBitmap::ResolvePromiseOnOriginalThread(
   }
   if (!image) {
     resolver->Reject(
-        ScriptValue(resolver->GetScriptState(),
+        ScriptValue(resolver->GetScriptState()->GetIsolate(),
                     v8::Null(resolver->GetScriptState()->GetIsolate())));
     return;
   }
   image = ApplyColorSpaceConversion(std::move(image), *(parsed_options.get()));
   if (!image) {
     resolver->Reject(
-        ScriptValue(resolver->GetScriptState(),
+        ScriptValue(resolver->GetScriptState()->GetIsolate(),
                     v8::Null(resolver->GetScriptState()->GetIsolate())));
     return;
   }

@@ -55,6 +55,21 @@ String CSSPaintValue::GetName() const {
   return name_->Value();
 }
 
+bool CSSPaintValue::IsUsingCustomProperty(
+    const AtomicString& custom_property_name) const {
+  if (!generator_ || !generator_->IsImageGeneratorReady())
+    return false;
+  return generator_->CustomInvalidationProperties().Contains(
+      custom_property_name);
+}
+
+void CSSPaintValue::CreateGeneratorForTesting(const Document& document) {
+  if (!generator_) {
+    generator_ = CSSPaintImageGenerator::Create(
+        GetName(), document, paint_image_generator_observer_);
+  }
+}
+
 scoped_refptr<Image> CSSPaintValue::GetImage(
     const ImageResourceObserver& client,
     const Document& document,

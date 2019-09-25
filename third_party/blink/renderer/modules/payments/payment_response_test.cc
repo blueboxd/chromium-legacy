@@ -82,7 +82,7 @@ TEST(PaymentResponseTest, DataCopiedOver) {
   ASSERT_TRUE(details.V8Value()->IsObject());
 
   ScriptValue transaction_id(
-      scope.GetScriptState(),
+      scope.GetIsolate(),
       details.V8Value()
           .As<v8::Object>()
           ->Get(scope.GetContext(),

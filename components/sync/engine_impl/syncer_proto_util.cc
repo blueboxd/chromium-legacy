@@ -420,7 +420,6 @@ SyncerError SyncerProtoUtil::PostClientToServerMessage(
   DCHECK(msg.has_api_key());
   DCHECK(msg.has_client_status());
   DCHECK(msg.has_invalidator_client_id());
-  DCHECK(!msg.get_updates().has_from_timestamp());  // Deprecated.
 
   LogClientToServerMessage(msg);
   if (!PostAndProcessHeaders(cycle->context()->connection_manager(), cycle, msg,
@@ -613,12 +612,12 @@ std::string SyncerProtoUtil::SyncEntityDebugString(
       "d (%s), "
       "ctime: %" PRId64
       "d (%s), "
-      "name: %s, sync_timestamp: %" PRId64
+      "name: %s, "
       "d, "
       "%s ",
       entry.id_string().c_str(), entry.parent_id_string().c_str(),
       entry.version(), entry.mtime(), mtime_str.c_str(), entry.ctime(),
-      ctime_str.c_str(), entry.name().c_str(), entry.sync_timestamp(),
+      ctime_str.c_str(), entry.name().c_str(),
       entry.deleted() ? "deleted, " : "");
 }
 

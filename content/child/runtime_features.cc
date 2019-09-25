@@ -334,10 +334,6 @@ void SetIndividualRuntimeFeatures(
       base::FeatureList::IsEnabled(features::kWebAuth));
 #endif
 
-  WebRuntimeFeatures::EnableClientPlaceholdersForServerLoFi(
-      base::GetFieldTrialParamValue("PreviewsClientLoFi",
-                                    "replace_server_placeholders") != "false");
-
   WebRuntimeFeatures::EnableResourceLoadScheduler(
       base::FeatureList::IsEnabled(features::kResourceLoadScheduler));
 

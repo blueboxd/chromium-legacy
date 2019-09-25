@@ -1,8 +1,5 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
 
-# Rely on an unload handler to run. It doesn't run.
--IsolatedAppTest.IsolatedAppProcessModel
-
 # No focused view.
 -PaymentRequestShippingAddressEditorTest.FocusFirstInvalidField_NotName
 

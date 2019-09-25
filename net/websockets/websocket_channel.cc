@@ -597,6 +597,8 @@ ChannelState WebSocketChannel::ReadFrames() {
     ignore_result(RespondToClosingHandshake());
   }
 
+  // TODO(crbug.com/999235): Remove this CHECK.
+  CHECK(event_interface_);
   while (!event_interface_->HasPendingDataFrames()) {
     DCHECK(stream_);
     // This use of base::Unretained is safe because this object owns the
@@ -614,6 +616,8 @@ ChannelState WebSocketChannel::ReadFrames() {
       return CHANNEL_DELETED;
     }
     DCHECK_NE(CLOSED, state_);
+    // TODO(crbug.com/999235): Remove this CHECK.
+    CHECK(event_interface_);
   }
   return CHANNEL_ALIVE;
 }

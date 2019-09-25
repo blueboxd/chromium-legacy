@@ -552,8 +552,8 @@ public class WebappActivity extends SingleTabActivity {
     protected void updateStorage(WebappDataStorage storage) {
         // The information in the WebappDataStorage may have been purged by the
         // user clearing their history or not launching the web app recently.
-        // Restore the data if necessary from the intent.
-        storage.updateFromShortcutIntent(getIntent());
+        // Restore the data if necessary.
+        storage.updateFromWebappInfo(mWebappInfo);
 
         // A recent last used time is the indicator that the web app is still
         // present on the home screen, and enables sources such as notifications to

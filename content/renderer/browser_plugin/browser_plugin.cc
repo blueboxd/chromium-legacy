@@ -91,7 +91,9 @@ BrowserPlugin::BrowserPlugin(
       browser_plugin_instance_id_(browser_plugin::kInstanceIDNone),
       delegate_(delegate),
       task_runner_(
-          render_frame->GetTaskRunner(blink::TaskType::kInternalDefault)) {
+          // Make sure BrowserPlugin::UpdateInternalInstanceId runs in FIFO
+          // order with respect to other loading tasks.
+          render_frame->GetTaskRunner(blink::TaskType::kInternalLoading)) {
   browser_plugin_instance_id_ =
       BrowserPluginManager::Get()->GetNextInstanceID();
 

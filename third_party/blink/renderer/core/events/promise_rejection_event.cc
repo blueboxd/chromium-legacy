@@ -36,9 +36,11 @@ ScriptPromise PromiseRejectionEvent::promise(ScriptState* script_state) const {
 ScriptValue PromiseRejectionEvent::reason(ScriptState* script_state) const {
   // Return undefined when the value is accessed by a different world than the
   // world that created the value.
-  if (reason_.IsEmpty() || !CanBeDispatchedInWorld(script_state->World()))
-    return ScriptValue(script_state, v8::Undefined(script_state->GetIsolate()));
-  return ScriptValue(script_state,
+  if (reason_.IsEmpty() || !CanBeDispatchedInWorld(script_state->World())) {
+    return ScriptValue(script_state->GetIsolate(),
+                       v8::Undefined(script_state->GetIsolate()));
+  }
+  return ScriptValue(script_state->GetIsolate(),
                      reason_.NewLocal(script_state->GetIsolate()));
 }
 

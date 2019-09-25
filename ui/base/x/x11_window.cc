@@ -478,7 +478,7 @@ void XWindow::SetFullscreen(bool fullscreen) {
 }
 
 void XWindow::Activate() {
-  if (!IsVisible() || !activatable_)
+  if (!IsXWindowVisible() || !activatable_)
     return;
 
   BeforeActivationStateChanged();
@@ -611,7 +611,7 @@ void XWindow::SetBounds(const gfx::Rect& requested_bounds_in_pixels) {
   bounds_in_pixels_ = bounds_in_pixels;
 }
 
-bool XWindow::IsVisible() const {
+bool XWindow::IsXWindowVisible() const {
   // On Windows, IsVisible() returns true for minimized windows.  On X11, a
   // minimized window is not mapped, so an explicit IsMinimized() check is
   // necessary.

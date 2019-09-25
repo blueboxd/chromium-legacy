@@ -36,7 +36,7 @@ class SharedClipboardUiController
   PageActionIconType GetIconType() override;
   sync_pb::SharingSpecificFields::EnabledFeatures GetRequiredFeature() override;
   void OnDeviceChosen(const syncer::DeviceInfo& device) override;
-  void OnAppChosen(const App& app) override;
+  void OnAppChosen(const SharingApp& app) override;
   base::string16 GetContentType() const override;
   base::string16 GetErrorDialogTitle() const override;
   base::string16 GetErrorDialogText() const override;

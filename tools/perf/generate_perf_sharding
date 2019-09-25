@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import argparse
 import collections
 import json
@@ -145,7 +147,7 @@ def _LoadTimingData(args):
   data = retrieve_story_timing.FetchAverageStortyTimingData(
       configurations=[builder_name], num_last_days=5)
   _DumpJson(data, timing_file_path)
-  print 'Finish retrieve story timing data for %s' % repr(builder_name)
+  print('Finish retrieve story timing data for %s' % repr(builder_name))
 
 
 def _GenerateShardMap(
@@ -176,10 +178,10 @@ def _PromptWarning():
              'perf-sheriffs@chromium.org and put a warning about expected '
              'false regressions in your CL '
              'description')
-  print textwrap.fill(message, 70), '\n'
+  print(textwrap.fill(message, 70), '\n')
   answer = raw_input("Enter 'y' to continue: ")
   if answer != 'y':
-    print 'Abort updating shard maps for benchmarks on perf waterfall'
+    print('Abort updating shard maps for benchmarks on perf waterfall')
     sys.exit(0)
 
 
@@ -197,7 +199,7 @@ def _UpdateShardsForBuilders(args):
     _PromptWarning()
 
   if not args.use_old_timing_data:
-    print 'Update shards timing data. May take a while...'
+    print('Update shards timing data. May take a while...')
     load_timing_args = []
     for b in builders:
       load_timing_args.append((b.name, b.timing_file_path))
@@ -207,7 +209,7 @@ def _UpdateShardsForBuilders(args):
   for b in builders:
     _GenerateShardMap(
         b, b.num_shards, b.shards_map_file_path, args.debug, benchmark=None)
-    print 'Updated sharding map for %s' % repr(b.name)
+    print('Updated sharding map for %s' % repr(b.name))
 
 
 def _CreateShardMapForBenchmark(args):
@@ -250,7 +252,7 @@ def _DescheduleBenchmark(args):
             del benchmarks[benchmark]
     os.remove(b.shards_map_file_path)
     _DumpJson(shards_map, b.shards_map_file_path)
-  print 'done.'
+  print('done.')
 
 
 def _ParseBenchmarks(shard_map_path):
@@ -313,7 +315,7 @@ def _ValidateShardMaps(args):
                   'UNSCHEDULED_{benchmark}'.format(benchmark=benchmark))
 
   for error in errors:
-    print >> sys.stderr, '*', textwrap.fill(error, 70), '\n'
+    print('*', textwrap.fill(error, 70), '\n', file=sys.stderr)
   if errors:
     return 1
   return 0

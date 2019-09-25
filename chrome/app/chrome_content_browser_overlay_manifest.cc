@@ -67,7 +67,6 @@
 #include "chrome/browser/ui/webui/explore_sites_internals/explore_sites_internals.mojom.h"
 #else
 #include "chrome/browser/ui/webui/app_management/app_management.mojom.h"
-#include "chrome/services/app_service/public/cpp/manifest.h"
 #endif
 
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_LINUX) || \
@@ -106,7 +105,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #endif
                               rappor::mojom::RapporRecorder,
                               safe_browsing::mojom::SafeBrowsing>())
-        .RequireCapability("apps", "app_service")
         .RequireCapability("ash", "system_ui")
         .RequireCapability("ash", "test")
         .RequireCapability("ash", "display")
@@ -225,9 +223,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #if defined(OS_CHROMEOS)
         .PackageService(chromeos::multidevice_setup::GetManifest())
 #endif  // defined(OS_CHROMEOS)
-#if !defined(OS_ANDROID)
-        .PackageService(apps::GetManifest())
-#endif
         .Build()
   };
   return *manifest;

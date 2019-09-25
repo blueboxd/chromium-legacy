@@ -228,8 +228,8 @@ void AddPropertyValuePairsForKeyframe(
 
   v8::TryCatch try_catch(isolate);
   for (const auto& property : keyframe_properties) {
-    if (property == "offset" || property == "composite" ||
-        property == "easing") {
+    if (property == "offset" || property == "float" ||
+        property == "composite" || property == "easing") {
       continue;
     }
 
@@ -490,8 +490,8 @@ StringKeyframeVector ConvertObjectForm(Element* element,
             WTF::CodeUnitCompareLessThan);
 
   for (const auto& property : keyframe_properties) {
-    if (property == "offset" || property == "composite" ||
-        property == "easing") {
+    if (property == "offset" || property == "float" ||
+        property == "composite" || property == "easing") {
       continue;
     }
 

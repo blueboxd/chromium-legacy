@@ -267,6 +267,11 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
           if (keyframe_value) {
             DCHECK(RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled());
             DCHECK(keyframe_value->IsDouble() || keyframe_value->IsColor());
+            // If a custom property is not used by CSS Paint, then we should not
+            // support that on the compositor thread.
+            if (!layout_object->Style()->HasCSSPaintImagesUsingCustomProperty(
+                    property.CustomPropertyName()))
+              reasons |= kUnsupportedCSSProperty;
             // TODO: Add support for keyframes containing different types
             if (keyframes.front()->GetCompositorKeyframeValue()->GetType() !=
                 keyframe_value->GetType()) {

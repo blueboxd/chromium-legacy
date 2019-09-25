@@ -59,6 +59,7 @@ class CountingPolicyTest : public testing::Test {
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile_.get()))->CreateExtensionService
             (&no_program_command_line, base::FilePath(), false);
+    base::RunLoop().RunUntilIdle();
   }
 
   ~CountingPolicyTest() override {

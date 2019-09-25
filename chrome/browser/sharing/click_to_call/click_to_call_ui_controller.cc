@@ -26,7 +26,6 @@
 #include "ui/strings/grit/ui_strings.h"
 
 using SharingMessage = chrome_browser_sharing::SharingMessage;
-using App = ClickToCallUiController::App;
 
 // static
 ClickToCallUiController* ClickToCallUiController::GetOrCreateFromWebContents(
@@ -85,7 +84,7 @@ ClickToCallUiController::GetRequiredFeature() {
 }
 
 void ClickToCallUiController::DoUpdateApps(UpdateAppsCallback callback) {
-  std::vector<App> apps;
+  std::vector<SharingApp> apps;
   if (hide_default_handler_) {
     std::move(callback).Run(std::move(apps));
     return;
@@ -118,7 +117,7 @@ void ClickToCallUiController::SendNumberToDevice(
   SendMessageToDevice(device, std::move(sharing_message));
 }
 
-void ClickToCallUiController::OnAppChosen(const App& app) {
+void ClickToCallUiController::OnAppChosen(const SharingApp& app) {
   if (ukm_recorder_)
     std::move(ukm_recorder_).Run(SharingClickToCallSelection::kApp);
 

@@ -83,7 +83,7 @@ ScriptValue PushMessageData::json(ScriptState* script_state,
   if (exception_state.HadException())
     return ScriptValue();
 
-  return ScriptValue(script_state, parsed);
+  return ScriptValue(script_state->GetIsolate(), parsed);
 }
 
 String PushMessageData::text() const {

@@ -49,9 +49,6 @@ void WebViewPasswordManagerDriver::PreviewSuggestion(
   NOTIMPLEMENTED();
 }
 
-void WebViewPasswordManagerDriver::ShowInitialPasswordAccountSuggestions(
-    const autofill::PasswordFormFillData& form_data) {}
-
 void WebViewPasswordManagerDriver::ClearPreviewedForm() {
   NOTIMPLEMENTED();
 }

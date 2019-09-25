@@ -373,7 +373,8 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
     execution_state_->error_message = ToCoreString(message->Get());
     execution_state_->location_ = SourceLocation::FromMessage(
         isolate_, message, ExecutionContext::From(script_state_));
-    execution_state_->exception = ScriptValue(script_state_, block.Exception());
+    execution_state_->exception =
+        ScriptValue(script_state_->GetIsolate(), block.Exception());
     block.Reset();
   } else {
     execution_state_->had_exception = false;
@@ -383,7 +384,7 @@ ScriptValue WorkerOrWorkletScriptController::EvaluateInternal(
   if (!maybe_result.ToLocal(&result) || result->IsUndefined())
     return ScriptValue();
 
-  return ScriptValue(script_state_, result);
+  return ScriptValue(script_state_->GetIsolate(), result);
 }
 
 bool WorkerOrWorkletScriptController::Evaluate(

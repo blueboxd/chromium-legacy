@@ -115,4 +115,5 @@ INSTANTIATE_TEST_SUITE_P(
     WebAppFileHandlingBrowserTest,
     ::testing::Values(
         web_app::ControllerType::kHostedAppController,
-        web_app::ControllerType::kUnifiedControllerWithBookmarkApp));
+        web_app::ControllerType::kUnifiedControllerWithBookmarkApp,
+        web_app::ControllerType::kUnifiedControllerWithWebApp));

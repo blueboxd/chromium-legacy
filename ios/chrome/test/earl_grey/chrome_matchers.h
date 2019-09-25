@@ -225,9 +225,6 @@ id<GREYMatcher> SettingsImportDataContinueButton();
 // Returns matcher for the privacy settings table view.
 id<GREYMatcher> SettingsPrivacyTableView();
 
-// Returns matcher for the Manage Synced Data button in sync setting view.
-id<GREYMatcher> SettingsSyncManageSyncedDataButton();
-
 // Returns matcher for the menu button to sync accounts.
 id<GREYMatcher> AccountsSyncButton();
 

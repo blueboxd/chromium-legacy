@@ -706,6 +706,13 @@
     "expiry_milestone": 83
   },
   {
+    "name": "disable-office-editing-component-app",
+    "owners": [
+      "chrome-apps-platform-rationalization@google.com",
+      "quickoffice-chrome-eng@google.com" ],
+    "expiry_milestone": 88
+  },
+  {
     // See https://crbug.com/882238.
     "name": "disable-pushstate-throttle",
     "owners": [ "arthursonzogni@chromium.org", "palmer@chromium.org" ],
@@ -2636,6 +2643,11 @@
   {
     "name": "omnibox-preserve-default-match-against-async-update",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
+    "expiry_milestone": 85
+  },
+  {
+    "name": "omnibox-remove-suggestions-from-clipboard",
+    "owners": [ "gangwu" ],
     "expiry_milestone": 85
   },
   {

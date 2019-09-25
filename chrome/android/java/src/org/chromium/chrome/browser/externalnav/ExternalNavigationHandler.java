@@ -216,36 +216,120 @@ public class ExternalNavigationHandler {
         return true;
     }
 
+    // http://crbug.com/441284 : Disallow firing external intent while Chrome is in the
+    // background.
+    private boolean blockExternalNavWhileBackgrounded(ExternalNavigationParams params) {
+        if (params.isApplicationMustBeInForeground() && !mDelegate.isChromeAppInForeground()) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Chrome is not in foreground");
+            return true;
+        }
+        return false;
+    }
+
+    // http://crbug.com/464669 : Disallow firing external intent from background tab.
+    private boolean blockExternalNavFromBackgroundTab(ExternalNavigationParams params) {
+        if (params.isBackgroundTabNavigation()) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation in background tab");
+            return true;
+        }
+        return false;
+    }
+
+    // http://crbug.com/164194 . A navigation forwards or backwards should never trigger
+    // the intent picker.
+    private boolean ignoreBackForwardNav(ExternalNavigationParams params) {
+        if ((params.getPageTransition() & PageTransition.FORWARD_BACK) != 0) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Forward or back navigation");
+            return true;
+        }
+        return false;
+    }
+
+    // http://crbug.com/605302 : Allow Chrome to handle all pdf file downloads.
+    private boolean isInternalPdfDownload(
+            boolean isExternalProtocol, ExternalNavigationParams params) {
+        if (!isExternalProtocol && mDelegate.isPdfDownload(params.getUrl())) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: PDF downloads are now handled by Chrome");
+            return true;
+        }
+        return false;
+    }
+
+    // If accessing a file URL, ensure that the user has granted the necessary file access
+    // to Chrome.
+    private boolean startFileIntentIfNecessary(ExternalNavigationParams params, Intent intent) {
+        if (params.getUrl().startsWith(UrlConstants.FILE_URL_SHORT_PREFIX)
+                && mDelegate.shouldRequestFileAccess(params.getUrl())) {
+            mDelegate.startFileIntent(intent, params.getReferrerUrl(),
+                    params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent());
+            if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_ASYNC_ACTION: Requesting filesystem access");
+            return true;
+        }
+        return false;
+    }
+
+    // http://crbug.com/169549 : If you type in a URL that then redirects in server side to a link
+    // that cannot be rendered by the browser, we want to show the intent picker.
+    private boolean isTypedRedirectToExternalProtocol(
+            ExternalNavigationParams params, int pageTransitionCore, boolean isExternalProtocol) {
+        boolean isTyped = (pageTransitionCore == PageTransition.TYPED)
+                || ((params.getPageTransition() & PageTransition.FROM_ADDRESS_BAR) != 0);
+        return isTyped && params.isRedirect() && isExternalProtocol;
+    }
+
+    // http://crbug.com/659301: Handle redirects to Instant Apps out of Custom Tabs.
+    private boolean handleCCTRedirectsToInstantApps(ExternalNavigationParams params,
+            boolean isExternalProtocol, boolean incomingIntentRedirect) {
+        TabRedirectHandler handler = params.getRedirectHandler();
+        if (handler == null) return false;
+        if (handler.isFromCustomTabIntent() && !isExternalProtocol && incomingIntentRedirect
+                && !handler.shouldNavigationTypeStayInChrome()
+                && mDelegate.maybeLaunchInstantApp(
+                        params.getUrl(), params.getReferrerUrl(), true)) {
+            if (DEBUG) {
+                Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT: Launching redirect to an instant app");
+            }
+            return true;
+        }
+        return false;
+    }
+
+    private boolean redirectShouldStayInChrome(
+            ExternalNavigationParams params, boolean isExternalProtocol, Intent intent) {
+        TabRedirectHandler handler = params.getRedirectHandler();
+        if (handler == null) return false;
+        boolean shouldStayInChrome = handler.shouldStayInChrome(
+                isExternalProtocol, mDelegate.isIntentForTrustedCallingApp(intent));
+        if (shouldStayInChrome || handler.shouldNotOverrideUrlLoading()) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: RedirectHandler decision");
+            return true;
+        }
+        return false;
+    }
+
     private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
             ExternalNavigationParams params, Intent intent, boolean hasBrowserFallbackUrl,
             String browserFallbackUrl) {
-        // http://crbug.com/441284 : Disallow firing external intent while Chrome is in the
-        // background.
-        if (params.isApplicationMustBeInForeground() && !mDelegate.isChromeAppInForeground()) {
-            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Chrome is not in foreground");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
-        // http://crbug.com/464669 : Disallow firing external intent from background tab.
-        if (params.isBackgroundTabNavigation()) {
-            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation in background tab");
+        if (blockExternalNavWhileBackgrounded(params) || blockExternalNavFromBackgroundTab(params)
+                || ignoreBackForwardNav(params)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        // pageTransition is a combination of an enumeration (core value) and bitmask.
         int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
         boolean isLink = pageTransitionCore == PageTransition.LINK;
         boolean isFormSubmit = pageTransitionCore == PageTransition.FORM_SUBMIT;
         boolean isFromIntent = (params.getPageTransition() & PageTransition.FROM_API) != 0;
-        boolean isForwardBackNavigation =
-                (params.getPageTransition() & PageTransition.FORWARD_BACK) != 0;
         boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(params.getUrl());
 
-        // http://crbug.com/169549 : If you type in a URL that then redirects in server side to an
-        // link that cannot be rendered by the browser, we want to show the intent picker.
-        boolean isTyped = (pageTransitionCore == PageTransition.TYPED)
-                || ((params.getPageTransition() & PageTransition.FROM_ADDRESS_BAR) != 0);
-        boolean typedRedirectToExternalProtocol = isTyped && params.isRedirect()
-                && isExternalProtocol;
+        if (isInternalPdfDownload(isExternalProtocol, params)) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
+
+        // This check should happen for reloads, navigations, etc..., which is why
+        // it occurs before the subsequent blocks.
+        if (startFileIntentIfNecessary(params, intent)) {
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
+        }
 
         // We do not want to show the intent picker for core types typed, bookmarks, auto toplevel,
         // generated, keyword, keyword generated. See below for exception to typed URL and
@@ -255,30 +339,6 @@ public class ExternalNavigationHandler {
         // - http://crbug.com/159153 : Don't override http or https URLs from the NTP or bookmarks.
         // - http://crbug.com/162106: Intent picker should not be presented on returning to a page.
         //   This should be covered by not showing the picker if the core type is reload.
-
-        // http://crbug.com/164194 . A navigation forwards or backwards should never trigger
-        // the intent picker.
-        if (isForwardBackNavigation) {
-            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Forward or back navigation");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
-
-        // http://crbug.com/605302 : Allow Chrome to handle all pdf file downloads.
-        if (!isExternalProtocol && mDelegate.isPdfDownload(params.getUrl())) {
-            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: PDF downloads are now handled by Chrome");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
-
-        // If accessing a file URL, ensure that the user has granted the necessary file access
-        // to Chrome.  This check should happen for reloads, navigations, etc..., which is why
-        // it occurs before the subsequent blocks.
-        if (params.getUrl().startsWith(UrlConstants.FILE_URL_SHORT_PREFIX)
-                && mDelegate.shouldRequestFileAccess(params.getUrl())) {
-            mDelegate.startFileIntent(intent, params.getReferrerUrl(),
-                    params.shouldCloseContentsOnOverrideUrlLoadingAndLaunchIntent());
-            if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_ASYNC_ACTION: Requesting filesystem access");
-            return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
-        }
 
         // http://crbug.com/149218: We want to show the intent picker for ordinary links, providing
         // the link is not an incoming intent from another application, unless it's a redirect (see
@@ -293,36 +353,18 @@ public class ExternalNavigationHandler {
         boolean incomingIntentRedirect = (isLink && isFromIntent && params.isRedirect())
                 || isOnEffectiveIntentRedirect;
 
-
-        // http://crbug/331571 : Do not override a navigation started from user typing.
-        // http://crbug/424029 : Need to stay in Chrome for an intent heading explicitly to Chrome.
-        // http://crbug/881740 : Relax stay in Chrome restriction for Custom Tabs.
-        if (params.getRedirectHandler() != null) {
-            TabRedirectHandler handler = params.getRedirectHandler();
-            boolean shouldStayInChrome = handler.shouldStayInChrome(
-                    isExternalProtocol, mDelegate.isIntentForTrustedCallingApp(intent));
-            if (shouldStayInChrome || handler.shouldNotOverrideUrlLoading()) {
-                // http://crbug.com/659301: Handle redirects to Instant Apps out of Custom Tabs.
-                if (handler.isFromCustomTabIntent() && !isExternalProtocol && incomingIntentRedirect
-                        && !handler.shouldNavigationTypeStayInChrome()
-                        && mDelegate.maybeLaunchInstantApp(
-                                   params.getUrl(), params.getReferrerUrl(), true)) {
-                    if (DEBUG) {
-                        Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT: Launching redirect to "
-                                + "an instant app");
-                    }
-                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
-                }
-                if (DEBUG) Log.i(TAG, "NO_OVERRIDE: RedirectHandler decision");
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
+        // Don't stay in Chrome for Custom Tabs redirecting to Instant Apps.
+        if (handleCCTRedirectsToInstantApps(params, isExternalProtocol, incomingIntentRedirect)) {
+            return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+        } else if (redirectShouldStayInChrome(params, isExternalProtocol, intent)) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
-        // following a form submit.
-        boolean isRedirectFromFormSubmit = isFormSubmit && params.isRedirect();
+        if (!isTypedRedirectToExternalProtocol(params, pageTransitionCore, isExternalProtocol)) {
+            // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
+            // following a form submit.
+            boolean isRedirectFromFormSubmit = isFormSubmit && params.isRedirect();
 
-        if (!typedRedirectToExternalProtocol) {
             if (!linkNotFromIntent && !incomingIntentRedirect && !isRedirectFromFormSubmit) {
                 if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Incoming intent (not a redirect)");
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
@@ -341,6 +383,7 @@ public class ExternalNavigationHandler {
                 }
                 return OverrideUrlLoadingResult.NO_OVERRIDE;
             }
+            // http://crbug/331571 : Do not override a navigation started from user typing.
             if (params.getRedirectHandler() != null
                     && params.getRedirectHandler().isNavigationFromUserTyping()) {
                 if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation from user typing");
@@ -561,7 +604,7 @@ public class ExternalNavigationHandler {
 
                     if (previousIntent != null
                             && resolversSubsetOf(resolvingInfos,
-                                       mDelegate.queryIntentActivities(previousIntent))) {
+                                    mDelegate.queryIntentActivities(previousIntent))) {
                         if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Same host, no new resolvers");
                         return OverrideUrlLoadingResult.NO_OVERRIDE;
                     }
@@ -781,17 +824,18 @@ public class ExternalNavigationHandler {
      */
     public boolean canExternalAppHandleUrl(String url) {
         if (url.startsWith(WTAI_MC_URL_PREFIX)) return true;
+        Intent intent;
         try {
-            Intent intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
-            if (intent.getPackage() != null) return true;
-
-            List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(intent);
-            if (resolvingInfos != null && resolvingInfos.size() > 0) return true;
-        } catch (Exception ex) {
+            intent = Intent.parseUri(url, Intent.URI_INTENT_SCHEME);
+        } catch (URISyntaxException ex) {
             // Ignore the error.
             Log.w(TAG, "Bad URI %s", url, ex);
+            return false;
         }
-        return false;
+        if (intent.getPackage() != null) return true;
+
+        List<ResolveInfo> resolvingInfos = mDelegate.queryIntentActivities(intent);
+        return resolvingInfos != null && !resolvingInfos.isEmpty();
     }
 
     /**
@@ -837,9 +881,8 @@ public class ExternalNavigationHandler {
         } catch (URISyntaxException ex) {
             return false;
         }
-        return ExternalNavigationDelegateImpl.getSpecializedHandlersWithFilter(handlers, appId)
-                       .size()
-                > 0;
+        return !ExternalNavigationDelegateImpl.getSpecializedHandlersWithFilter(handlers, appId)
+                        .isEmpty();
     }
 
     /**
@@ -884,6 +927,6 @@ public class ExternalNavigationHandler {
      */
     private boolean deviceCanHandleIntent(Intent intent) {
         List<ResolveInfo> resolveInfos = mDelegate.queryIntentActivities(intent);
-        return resolveInfos != null && resolveInfos.size() > 0;
+        return resolveInfos != null && !resolveInfos.isEmpty();
     }
 }

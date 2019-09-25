@@ -21,6 +21,9 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.util.ConversionUtils;
 import org.chromium.chrome.browser.webapps.WebApkDistributor;
+import org.chromium.chrome.browser.webapps.WebApkUkmRecorder;
+import org.chromium.chrome.browser.webapps.WebappDataStorage;
+import org.chromium.chrome.browser.webapps.WebappRegistry;
 
 import java.io.File;
 import java.lang.annotation.Retention;
@@ -124,20 +127,46 @@ public class WebApkUma {
     /** Makes recordings that were deferred in order to not load native. */
     public static void recordDeferredUma() {
         ChromePreferenceManager preferenceManager = ChromePreferenceManager.getInstance();
-        int numUninstalls =
-                preferenceManager.readInt(ChromePreferenceManager.WEBAPK_NUMBER_OF_UNINSTALLS);
-        if (numUninstalls == 0) return;
+        Set<String> uninstalledPackages = preferenceManager.readStringSet(
+                ChromePreferenceManager.WEBAPK_UNINSTALLED_PACKAGES);
+        if (uninstalledPackages.isEmpty()) return;
 
-        for (int i = 0; i < numUninstalls; ++i) {
+        long fallbackUninstallTimestamp = System.currentTimeMillis();
+        WebappRegistry.warmUpSharedPrefs();
+        for (String uninstalledPackage : uninstalledPackages) {
             RecordHistogram.recordBooleanHistogram("WebApk.Uninstall.Browser", true);
+
+            String webApkId = WebappRegistry.webApkIdForPackage(uninstalledPackage);
+            WebappDataStorage webappDataStorage =
+                    WebappRegistry.getInstance().getWebappDataStorage(webApkId);
+            if (webappDataStorage != null) {
+                long uninstallTimestamp = webappDataStorage.getWebApkUninstallTimestamp();
+                if (uninstallTimestamp == 0) {
+                    uninstallTimestamp = fallbackUninstallTimestamp;
+                }
+                WebApkUkmRecorder.recordWebApkUninstall(webappDataStorage.getWebApkManifestUrl(),
+                        WebApkDistributor.BROWSER, webappDataStorage.getWebApkVersionCode(),
+                        webappDataStorage.getLaunchCount(),
+                        uninstallTimestamp - webappDataStorage.getWebApkInstallTimestamp());
+            }
         }
-        preferenceManager.writeInt(ChromePreferenceManager.WEBAPK_NUMBER_OF_UNINSTALLS, 0);
+        preferenceManager.writeStringSet(
+                ChromePreferenceManager.WEBAPK_UNINSTALLED_PACKAGES, new HashSet<String>());
+
+        // TODO(http://crbug.com/1000312): Clear WebappDataStorage for uninstalled WebAPK.
     }
 
     /** Sets WebAPK uninstall to be recorded next time that native is loaded. */
-    public static void deferRecordWebApkUninstalled() {
-        ChromePreferenceManager.getInstance().incrementInt(
-                ChromePreferenceManager.WEBAPK_NUMBER_OF_UNINSTALLS);
+    public static void deferRecordWebApkUninstalled(String packageName) {
+        ChromePreferenceManager.getInstance().addToStringSet(
+                ChromePreferenceManager.WEBAPK_UNINSTALLED_PACKAGES, packageName);
+        String webApkId = WebappRegistry.webApkIdForPackage(packageName);
+        WebappRegistry.warmUpSharedPrefsForId(webApkId);
+        WebappDataStorage webappDataStorage =
+                WebappRegistry.getInstance().getWebappDataStorage(webApkId);
+        if (webappDataStorage != null) {
+            webappDataStorage.setWebApkUninstallTimestamp();
+        }
     }
 
     /**

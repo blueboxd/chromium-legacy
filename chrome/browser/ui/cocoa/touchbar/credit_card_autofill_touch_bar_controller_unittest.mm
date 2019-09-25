@@ -56,7 +56,6 @@ class MockAutofillPopupController : public autofill::AutofillPopupController {
   const std::vector<autofill::Suggestion> GetSuggestions() override {
     return suggestions_;
   }
-  MOCK_METHOD1(SetTypesetter, void(gfx::Typesetter typesetter));
   MOCK_METHOD1(GetElidedValueWidthForRow, int(int row));
   MOCK_METHOD1(GetElidedLabelWidthForRow, int(int row));
 

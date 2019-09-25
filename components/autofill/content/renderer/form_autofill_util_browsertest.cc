@@ -692,3 +692,30 @@ TEST_F(FormAutofillUtilsTest, GetAriaDescribedByInvalid) {
   EXPECT_EQ(autofill::form_util::GetAriaDescription(doc, element),
             base::UTF8ToUTF16(""));
 }
+
+TEST_F(FormAutofillUtilsTest, IsFormVisible) {
+  LoadHTML("<body><form id='form1'><input id='i1'></form></body>");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto form = doc.GetElementById("form1").To<WebFormElement>();
+  uint32_t form_id = form.UniqueRendererFormId();
+
+  EXPECT_TRUE(autofill::form_util::IsFormVisible(GetMainFrame(), form_id));
+
+  // Hide a form.
+  form.SetAttribute("style", "display:none");
+  EXPECT_FALSE(autofill::form_util::IsFormVisible(GetMainFrame(), form_id));
+}
+
+TEST_F(FormAutofillUtilsTest, IsFormControlVisible) {
+  LoadHTML("<body><input id='input1'></body>");
+  WebDocument doc = GetMainFrame()->GetDocument();
+  auto input = doc.GetElementById("input1").To<WebFormControlElement>();
+  uint32_t input_id = input.UniqueRendererFormControlId();
+
+  EXPECT_TRUE(
+      autofill::form_util::IsFormControlVisible(GetMainFrame(), input_id));
+
+  // Hide a field.
+  input.SetAttribute("style", "display:none");
+  EXPECT_FALSE(autofill::form_util::IsFormVisible(GetMainFrame(), input_id));
+}

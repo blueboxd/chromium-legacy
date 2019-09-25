@@ -71,15 +71,14 @@ GURL StripAuthAndParams(const GURL& gurl);
 // successful.
 bool ExtractFormData(const blink::WebFormElement& form_element, FormData* data);
 
-// Helper function to check if there exist any visible form on |frame| which
-// equals |form_element|. If |form_element| is null, checks if forms action
-// equals |action|. Returns true if so. For forms with empty or unspecified
-// actions, all form data are used for comparison.
-bool IsFormVisible(blink::WebLocalFrame* frame,
-                   const blink::WebFormElement& form_element,
-                   const GURL& action,
-                   const GURL& origin,
-                   const FormData& form_data);
+// Helper function to check if a form with renderer id |form_renderer_id| exists
+// in |frame| and is visible.
+bool IsFormVisible(blink::WebLocalFrame* frame, uint32_t form_renderer_id);
+
+// Helper function to check if a field with renderer id |field_renderer_id|
+// exists in |frame| and is visible.
+bool IsFormControlVisible(blink::WebLocalFrame* frame,
+                          uint32_t field_renderer_id);
 
 // Returns true if at least one element from |control_elements| is visible.
 bool IsSomeControlElementVisible(

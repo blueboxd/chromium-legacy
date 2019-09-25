@@ -18,10 +18,6 @@ cr.define('app_management.util', function() {
         selectedAppId: null,
       },
       arcSupported: false,
-      search: {
-        term: null,
-        results: null,
-      },
       notifications: {
         allowedIds: new Set(),
         blockedIds: new Set(),

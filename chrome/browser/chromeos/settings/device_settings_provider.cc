@@ -80,6 +80,7 @@ const char* const kKnownSettings[] = {
     kDeviceLoginScreenExtensions,
     kDeviceLoginScreenInputMethods,
     kDeviceLoginScreenLocales,
+    kDeviceLoginScreenSystemInfoEnforced,
     kDeviceOffHours,
     kDeviceOwner,
     kDeviceNativePrintersAccessMode,
@@ -388,6 +389,13 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
       input_methods.push_back(base::Value(input_method));
     new_values_cache->SetValue(kDeviceLoginScreenInputMethods,
                                base::Value(std::move(input_methods)));
+  }
+
+  if (policy.has_device_login_screen_system_info_enforced() &&
+      policy.device_login_screen_system_info_enforced().has_enabled()) {
+    new_values_cache->SetBoolean(
+        kDeviceLoginScreenSystemInfoEnforced,
+        policy.device_login_screen_system_info_enforced().enabled());
   }
 
   if (policy.has_saml_login_authentication_type() &&

@@ -111,9 +111,9 @@ TEST_P(ReadableStreamTest, CreateWithUnderlyingSourceOnly) {
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
   ScriptValue js_underlying_source = ScriptValue(
-      scope.GetScriptState(),
+      scope.GetIsolate(),
       ToV8(underlying_source, scope.GetScriptState()->GetContext()->Global(),
-           scope.GetScriptState()->GetIsolate()));
+           scope.GetIsolate()));
 
   EXPECT_FALSE(underlying_source->IsStartCalled());
 
@@ -130,9 +130,9 @@ TEST_P(ReadableStreamTest, CreateWithFullArguments) {
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
   ScriptValue js_underlying_source = ScriptValue(
-      scope.GetScriptState(),
+      scope.GetIsolate(),
       ToV8(underlying_source, scope.GetScriptState()->GetContext()->Global(),
-           scope.GetScriptState()->GetIsolate()));
+           scope.GetIsolate()));
   ScriptValue js_empty_strategy = EvalWithPrintingError(&scope, "{}");
   ASSERT_FALSE(js_empty_strategy.IsEmpty());
   ReadableStream* stream =
@@ -148,9 +148,9 @@ TEST_P(ReadableStreamTest, CreateWithPathologicalStrategy) {
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(scope.GetScriptState());
   ScriptValue js_underlying_source = ScriptValue(
-      scope.GetScriptState(),
+      scope.GetIsolate(),
       ToV8(underlying_source, scope.GetScriptState()->GetContext()->Global(),
-           scope.GetScriptState()->GetIsolate()));
+           scope.GetIsolate()));
   ScriptValue js_pathological_strategy =
       EvalWithPrintingError(&scope, "({get size() { throw Error('e'); }})");
   ASSERT_FALSE(js_pathological_strategy.IsEmpty());
@@ -167,13 +167,13 @@ TEST_P(ReadableStreamTest, CreateWithPathologicalStrategy) {
 TEST_P(ReadableStreamTest, GetReader) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
+  v8::Isolate* isolate = scope.GetIsolate();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
-  ScriptValue js_underlying_source =
-      ScriptValue(script_state,
-                  ToV8(underlying_source, script_state->GetContext()->Global(),
-                       script_state->GetIsolate()));
+  ScriptValue js_underlying_source = ScriptValue(
+      isolate,
+      ToV8(underlying_source, script_state->GetContext()->Global(), isolate));
   ReadableStream* stream = ReadableStream::Create(
       script_state, js_underlying_source, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(stream);
@@ -219,13 +219,13 @@ TEST_P(ReadableStreamTest, GetReader) {
 TEST_P(ReadableStreamTest, Cancel) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
+  v8::Isolate* isolate = scope.GetIsolate();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
-  ScriptValue js_underlying_source =
-      ScriptValue(script_state,
-                  ToV8(underlying_source, script_state->GetContext()->Global(),
-                       script_state->GetIsolate()));
+  ScriptValue js_underlying_source = ScriptValue(
+      isolate,
+      ToV8(underlying_source, script_state->GetContext()->Global(), isolate));
   ReadableStream* stream = ReadableStream::Create(
       script_state, js_underlying_source, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(stream);
@@ -244,13 +244,13 @@ TEST_P(ReadableStreamTest, Cancel) {
 TEST_P(ReadableStreamTest, CancelWithNull) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
+  v8::Isolate* isolate = scope.GetIsolate();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
-  ScriptValue js_underlying_source =
-      ScriptValue(script_state,
-                  ToV8(underlying_source, script_state->GetContext()->Global(),
-                       script_state->GetIsolate()));
+  ScriptValue js_underlying_source = ScriptValue(
+      isolate,
+      ToV8(underlying_source, script_state->GetContext()->Global(), isolate));
   ReadableStream* stream = ReadableStream::Create(
       script_state, js_underlying_source, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(stream);
@@ -259,10 +259,8 @@ TEST_P(ReadableStreamTest, CancelWithNull) {
   EXPECT_FALSE(underlying_source->IsCancelledWithUndefined());
   EXPECT_FALSE(underlying_source->IsCancelledWithNull());
 
-  stream->cancel(
-      script_state,
-      ScriptValue(script_state, v8::Null(script_state->GetIsolate())),
-      ASSERT_NO_EXCEPTION);
+  stream->cancel(script_state, ScriptValue(isolate, v8::Null(isolate)),
+                 ASSERT_NO_EXCEPTION);
 
   EXPECT_TRUE(underlying_source->IsCancelled());
   EXPECT_FALSE(underlying_source->IsCancelledWithUndefined());
@@ -274,21 +272,19 @@ TEST_P(ReadableStreamTest, CancelWithNull) {
 TEST_P(ReadableStreamTest, Tee) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
+  v8::Isolate* isolate = scope.GetIsolate();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
-  ScriptValue js_underlying_source =
-      ScriptValue(script_state,
-                  ToV8(underlying_source, script_state->GetContext()->Global(),
-                       script_state->GetIsolate()));
+  ScriptValue js_underlying_source = ScriptValue(
+      isolate,
+      ToV8(underlying_source, script_state->GetContext()->Global(), isolate));
   ReadableStream* stream = ReadableStream::Create(
       script_state, js_underlying_source, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(stream);
 
-  underlying_source->Enqueue(
-      ScriptValue(script_state, V8String(script_state->GetIsolate(), "hello")));
-  underlying_source->Enqueue(
-      ScriptValue(script_state, V8String(script_state->GetIsolate(), ", bye")));
+  underlying_source->Enqueue(ScriptValue(isolate, V8String(isolate, "hello")));
+  underlying_source->Enqueue(ScriptValue(isolate, V8String(isolate, ", bye")));
   underlying_source->Close();
 
   ReadableStream* branch1 = nullptr;
@@ -356,6 +352,7 @@ TEST_P(ReadableStreamTest, Close) {
 TEST_P(ReadableStreamTest, Error) {
   V8TestingScope scope;
   ScriptState* script_state = scope.GetScriptState();
+  v8::Isolate* isolate = scope.GetIsolate();
   ExceptionState& exception_state = scope.GetExceptionState();
 
   auto* underlying_source =
@@ -372,8 +369,7 @@ TEST_P(ReadableStreamTest, Error) {
   EXPECT_EQ(stream->IsErrored(script_state, exception_state),
             base::make_optional(false));
 
-  underlying_source->Error(
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
+  underlying_source->Error(ScriptValue(isolate, v8::Undefined(isolate)));
 
   EXPECT_EQ(stream->IsReadable(script_state, exception_state),
             base::make_optional(false));
@@ -414,6 +410,7 @@ TEST_P(ReadableStreamTest, Serialize) {
 
   V8TestingScope scope;
   auto* script_state = scope.GetScriptState();
+  auto* isolate = scope.GetIsolate();
 
   auto* underlying_source =
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
@@ -431,10 +428,8 @@ TEST_P(ReadableStreamTest, Serialize) {
       script_state, channel->port2(), ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(transferred);
 
-  underlying_source->Enqueue(
-      ScriptValue(script_state, V8String(script_state->GetIsolate(), "hello")));
-  underlying_source->Enqueue(
-      ScriptValue(script_state, V8String(script_state->GetIsolate(), ", bye")));
+  underlying_source->Enqueue(ScriptValue(isolate, V8String(isolate, "hello")));
+  underlying_source->Enqueue(ScriptValue(isolate, V8String(isolate, ", bye")));
   underlying_source->Close();
 
   EXPECT_EQ(ReadAll(scope, transferred),
@@ -450,13 +445,13 @@ TEST_P(ReadableStreamTest, GetReadHandle) {
       MakeGarbageCollected<TestUnderlyingSource>(script_state);
 
   ScriptValue js_underlying_source = ScriptValue(
-      script_state,
+      isolate,
       ToV8(underlying_source, script_state->GetContext()->Global(), isolate));
   ReadableStream* stream = ReadableStream::Create(
       script_state, js_underlying_source, ASSERT_NO_EXCEPTION);
   ASSERT_TRUE(stream);
 
-  ScriptValue abc = ScriptValue(script_state, V8String(isolate, "abc"));
+  ScriptValue abc = ScriptValue(isolate, V8String(isolate, "abc"));
   underlying_source->Enqueue(abc);
   underlying_source->Close();
 

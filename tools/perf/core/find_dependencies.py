@@ -2,6 +2,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import fnmatch
 import imp
 import logging
@@ -217,7 +219,7 @@ class FindDependenciesCommand(command_line.OptparseCommand):
     dependencies = FindDependencies(target_paths, args)
     if args.zip:
       ZipDependencies(target_paths, dependencies, args)
-      print 'Zip archive written to %s.' % args.zip
+      print('Zip archive written to %s.' % args.zip)
     else:
-      print '\n'.join(sorted(dependencies))
+      print('\n'.join(sorted(dependencies)))
     return 0

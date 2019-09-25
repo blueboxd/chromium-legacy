@@ -202,8 +202,9 @@ class ChannelAssociatedGroupController
       SendMessage(&message);
   }
 
-  void CreateChannelEndpoints(mojom::ChannelAssociatedPtr* sender,
-                              mojom::ChannelAssociatedRequest* receiver) {
+  void CreateChannelEndpoints(
+      mojo::AssociatedRemote<mojom::Channel>* sender,
+      mojo::PendingAssociatedReceiver<mojom::Channel>* receiver) {
     mojo::InterfaceId sender_id, receiver_id;
     if (set_interface_id_namespace_bit_) {
       sender_id = 1 | mojo::kInterfaceIdNamespaceMask;
@@ -228,8 +229,10 @@ class ChannelAssociatedGroupController
     mojo::ScopedInterfaceEndpointHandle receiver_handle =
         CreateScopedInterfaceEndpointHandle(receiver_id);
 
-    sender->Bind(mojom::ChannelAssociatedPtrInfo(std::move(sender_handle), 0));
-    *receiver = mojom::ChannelAssociatedRequest(std::move(receiver_handle));
+    sender->Bind(mojo::PendingAssociatedRemote<mojom::Channel>(
+        std::move(sender_handle), 0));
+    *receiver = mojo::PendingAssociatedReceiver<mojom::Channel>(
+        std::move(receiver_handle));
   }
 
   void ShutDown() {
@@ -1059,8 +1062,9 @@ class MojoBootstrapImpl : public MojoBootstrap {
   }
 
  private:
-  void Connect(mojom::ChannelAssociatedPtr* sender,
-               mojom::ChannelAssociatedRequest* receiver) override {
+  void Connect(
+      mojo::AssociatedRemote<mojom::Channel>* sender,
+      mojo::PendingAssociatedReceiver<mojom::Channel>* receiver) override {
     controller_->Bind(std::move(handle_));
     controller_->CreateChannelEndpoints(sender, receiver);
   }

@@ -208,16 +208,6 @@ size_t PasswordReuseDetector::CheckSavedPasswordReuse(
   return longest_match_len;
 }
 
-void PasswordReuseDetector::UseSyncPasswordHash(
-    base::Optional<PasswordHashData> sync_password_data) {
-  // TODO(crbug.com/841438): Remove this function when the migration is done.
-  if (sync_password_data) {
-    gaia_password_hash_data_list_ =
-        base::make_optional<std::vector<PasswordHashData>>();
-    gaia_password_hash_data_list_->push_back(sync_password_data.value());
-  }
-}
-
 void PasswordReuseDetector::UseGaiaPasswordHash(
     base::Optional<std::vector<PasswordHashData>> password_hash_data_list) {
   gaia_password_hash_data_list_ = std::move(password_hash_data_list);

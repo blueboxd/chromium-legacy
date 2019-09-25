@@ -100,26 +100,6 @@ BrowserSavePasswordProgressLogger::BrowserSavePasswordProgressLogger(
 
 BrowserSavePasswordProgressLogger::~BrowserSavePasswordProgressLogger() {}
 
-void BrowserSavePasswordProgressLogger::LogFormSignatures(
-    SavePasswordProgressLogger::StringID label,
-    const autofill::PasswordForm& form) {
-  FormStructure form_structure(form.form_data);
-  std::string message = GetStringFromID(label) + ": {\n";
-  message += GetStringFromID(STRING_FORM_SIGNATURE) + ": " +
-             FormSignatureToDebugString(form_structure.form_signature()) + "\n";
-  message += GetStringFromID(STRING_SIGNON_REALM) + ": " +
-             ScrubURL(GURL(form.signon_realm)) + "\n";
-  message +=
-      GetStringFromID(STRING_ORIGIN) + ": " + ScrubURL(form.origin) + "\n";
-  message +=
-      GetStringFromID(STRING_ACTION) + ": " + ScrubURL(form.action) + "\n";
-  message += GetStringFromID(STRING_FORM_NAME) + ": " +
-             ScrubElementID(form.form_data.name) + "\n";
-  message += FormStructureToFieldsLogString(form_structure);
-  message += "}";
-  SendLog(message);
-}
-
 void BrowserSavePasswordProgressLogger::LogFormStructure(
     StringID label,
     const FormStructure& form_structure) {

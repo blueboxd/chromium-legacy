@@ -62,6 +62,11 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
     virtual void SetSimLocked(const std::string& device_path, bool enabled) = 0;
     // Adds a new entry to Cellular.FoundNetworks.
     virtual void AddCellularFoundNetwork(const std::string& device_path) = 0;
+    // Sets error for SetUsbEthernetMacAddressSourceError error callback. Error
+    // callback must be called only if |error_name| is not empty.
+    virtual void SetUsbEthernetMacAddressSourceError(
+        const std::string& device_path,
+        const std::string& error_name) = 0;
 
    protected:
     virtual ~TestInterface() {}
@@ -199,6 +204,15 @@ class COMPONENT_EXPORT(SHILL_CLIENT) ShillDeviceClient {
   // the system from suspend.
   virtual void RemoveAllWakeOnPacketConnections(
       const dbus::ObjectPath& device_path,
+      const base::Closure& callback,
+      const ErrorCallback& error_callback) = 0;
+
+  // Set MAC address source for USB Ethernet adapter. |source| corresponds to
+  // "USB Ethernet MAC address sources." in
+  // third_party/cros_system_api/dbus/shill/dbus-constants.h.
+  virtual void SetUsbEthernetMacAddressSource(
+      const dbus::ObjectPath& device_path,
+      const std::string& source,
       const base::Closure& callback,
       const ErrorCallback& error_callback) = 0;
 

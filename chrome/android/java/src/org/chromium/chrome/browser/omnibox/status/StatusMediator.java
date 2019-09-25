@@ -47,13 +47,13 @@ class StatusMediator {
         }
 
         /** @see {@link SearchEngineLogoUtils#shouldShowSearchEngineLogo} */
-        boolean shouldShowSearchEngineLogo() {
-            return SearchEngineLogoUtils.shouldShowSearchEngineLogo();
+        boolean shouldShowSearchEngineLogo(boolean isIncognito) {
+            return SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito);
         }
 
         /** @see {@link SearchEngineLogoUtils#shouldShowSearchLoupeEverywhere} */
-        boolean shouldShowSearchLoupeEverywhere() {
-            return SearchEngineLogoUtils.shouldShowSearchLoupeEverywhere();
+        boolean shouldShowSearchLoupeEverywhere(boolean isIncognito) {
+            return SearchEngineLogoUtils.shouldShowSearchLoupeEverywhere(isIncognito);
         }
 
         /** @see {@link SearchEngineLogoUtils#doesUrlMatchDefaultSearchEngine} */
@@ -387,7 +387,9 @@ class StatusMediator {
                 && mToolbarCommonPropertiesModel.getDisplaySearchTerms() != null
                 && mDelegate.doesUrlMatchDefaultSearchEngine(
                         mToolbarCommonPropertiesModel.getCurrentUrl());
-        if (mDelegate.shouldShowSearchEngineLogo() && mIsSearchEngineStateSetup
+        boolean isIncognito = mToolbarCommonPropertiesModel != null
+                && mToolbarCommonPropertiesModel.isIncognito();
+        if (mDelegate.shouldShowSearchEngineLogo(isIncognito) && mIsSearchEngineStateSetup
                 && (showFocused || showUnfocusedNewTabPage || showUnfocusedSearchResultsPage)) {
             mShouldCancelCustomFavicon = false;
             // If the current url text is a valid url, then swap the dse icon for a globe.
@@ -395,12 +397,12 @@ class StatusMediator {
                 mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_globe_24dp);
             } else if (mIsSearchEngineGoogle) {
                 mModel.set(StatusProperties.STATUS_ICON_RES,
-                        mDelegate.shouldShowSearchLoupeEverywhere()
+                        mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)
                                 ? R.drawable.ic_search
                                 : R.drawable.ic_logo_googleg_24dp);
             } else {
                 mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_search);
-                if (!mDelegate.shouldShowSearchLoupeEverywhere()) {
+                if (!mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
                     mDelegate.getSearchEngineLogoFavicon(mResources, (favicon) -> {
                         if (favicon == null || mShouldCancelCustomFavicon) return;
                         mModel.set(StatusProperties.STATUS_ICON, favicon);
@@ -445,7 +447,8 @@ class StatusMediator {
     /** Return the resource id for the accessibility description or 0 if none apply. */
     private int getAccessibilityDescriptionRes() {
         if (mUrlHasFocus) {
-            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                        mToolbarCommonPropertiesModel.isIncognito())) {
                 return 0;
             } else if (mShowStatusIconWhenUrlFocused) {
                 return R.string.accessibility_toolbar_btn_site_info;

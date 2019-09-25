@@ -15,6 +15,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "content/browser/frame_host/back_forward_cache_metrics.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/global_routing_id.h"
@@ -35,17 +36,16 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
   ~BackForwardCacheImpl();
 
   struct CanStoreDocumentResult {
-    enum class Reason : uint8_t;
-
     CanStoreDocumentResult(const CanStoreDocumentResult&);
     ~CanStoreDocumentResult();
 
     bool can_store;
-    base::Optional<Reason> reason;
+    base::Optional<BackForwardCacheMetrics::CanNotStoreDocumentReason> reason;
     uint64_t blocklisted_features;
 
     static CanStoreDocumentResult Yes();
-    static CanStoreDocumentResult No(Reason reason);
+    static CanStoreDocumentResult No(
+        BackForwardCacheMetrics::CanNotStoreDocumentReason reason);
     static CanStoreDocumentResult NoDueToFeatures(uint64_t features);
 
     std::string ToString();
@@ -53,9 +53,11 @@ class CONTENT_EXPORT BackForwardCacheImpl : public BackForwardCache {
     operator bool() const { return can_store; }
 
    private:
-    CanStoreDocumentResult(bool can_store,
-                           base::Optional<Reason> reason,
-                           uint64_t blocklisted_features);
+    CanStoreDocumentResult(
+        bool can_store,
+        base::Optional<BackForwardCacheMetrics::CanNotStoreDocumentReason>
+            reason,
+        uint64_t blocklisted_features);
   };
 
   // Returns whether a RenderFrameHost can be stored into the

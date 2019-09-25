@@ -2373,7 +2373,11 @@ void PaintOpBuffer::PlaybackFoldingIterator::FindNextOp() {
       third = NextUnfoldedOp();
       if (third && third->GetType() == PaintOpType::Restore) {
         auto* save_op = static_cast<const SaveLayerAlphaOp*>(current_op_);
-        if (draw_op->IsPaintOpWithFlags()) {
+        if (draw_op->IsPaintOpWithFlags() &&
+            // SkPaint::drawTextBlob() applies alpha on each glyph so we don't
+            // fold SaveLayerAlpha into DrwaTextBlob to ensure correct alpha
+            // even if some glyphs overlap.
+            draw_op->GetType() != PaintOpType::DrawTextBlob) {
           auto* flags_op = static_cast<const PaintOpWithFlags*>(draw_op);
           if (flags_op->flags.SupportsFoldingAlpha()) {
             current_alpha_ = save_op->alpha;

@@ -49,6 +49,7 @@
 #include "third_party/blink/renderer/core/inspector/console_message.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_resource_container.h"
+#include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/svg/properties/svg_property.h"
 #include "third_party/blink/renderer/core/svg/svg_document_extensions.h"
 #include "third_party/blink/renderer/core/svg/svg_element_rare_data.h"
@@ -59,7 +60,6 @@
 #include "third_party/blink/renderer/core/svg_names.h"
 #include "third_party/blink/renderer/core/xml_names.h"
 #include "third_party/blink/renderer/platform/heap/heap.h"
-#include "third_party/blink/renderer/platform/instrumentation/use_counter.h"
 #include "third_party/blink/renderer/platform/wtf/threading.h"
 
 namespace blink {
@@ -297,76 +297,13 @@ bool SVGElement::HasTransform(
           HasSVGRareData());
 }
 
-static inline bool TransformUsesBoxSize(const ComputedStyle& style) {
-  if ((style.TransformOriginX().IsPercent() ||
-       style.TransformOriginY().IsPercent()) &&
-      style.RequireTransformOrigin(ComputedStyle::kIncludeTransformOrigin,
-                                   ComputedStyle::kExcludeMotionPath))
-    return true;
-  if (style.Transform().DependsOnBoxSize())
-    return true;
-  if (style.Translate() && style.Translate()->DependsOnBoxSize())
-    return true;
-  if (style.HasOffset())
-    return true;
-  return false;
-}
-
-FloatRect ComputeSVGTransformReferenceBox(const LayoutObject& layout_object) {
-  const ComputedStyle& style = layout_object.StyleRef();
-  FloatRect reference_box;
-  if (style.TransformBox() == ETransformBox::kFillBox) {
-    reference_box = layout_object.ObjectBoundingBox();
-  } else {
-    DCHECK_EQ(style.TransformBox(), ETransformBox::kViewBox);
-    SVGLengthContext length_context(
-        DynamicTo<SVGElement>(layout_object.GetNode()));
-    FloatSize viewport_size;
-    length_context.DetermineViewport(viewport_size);
-    reference_box.SetSize(viewport_size);
-  }
-  const float zoom = style.EffectiveZoom();
-  if (zoom != 1)
-    reference_box.Scale(zoom);
-  return reference_box;
-}
-
 AffineTransform SVGElement::CalculateTransform(
     ApplyMotionTransform apply_motion_transform) const {
-  const ComputedStyle* style =
-      GetLayoutObject() ? GetLayoutObject()->Style() : nullptr;
+  const LayoutObject* layout_object = GetLayoutObject();
 
-  // If CSS property was set, use that, otherwise fallback to attribute (if
-  // set).
   AffineTransform matrix;
-  if (style && style->HasTransform()) {
-    if (TransformUsesBoxSize(*style))
-      UseCounter::Count(GetDocument(), WebFeature::kTransformUsesBoxSizeOnSVG);
-
-    // CSS transforms operate with pre-scaled lengths. To make this work with
-    // SVG (which applies the zoom factor globally, at the root level) we
-    //
-    //   * pre-scale the reference box (to bring it into the same space as the
-    //     other CSS values) (Handled by ComputeSVGTransformReferenceBox)
-    //   * invert the zoom factor (to effectively compute the CSS transform
-    //     under a 1.0 zoom)
-    //
-    // Note: objectBoundingBox is an emptyRect for elements like pattern or
-    // clipPath. See
-    // https://svgwg.org/svg2-draft/coords.html#ObjectBoundingBoxUnits
-    TransformationMatrix transform;
-    FloatRect reference_box =
-        ComputeSVGTransformReferenceBox(*GetLayoutObject());
-    style->ApplyTransform(
-        transform, reference_box, ComputedStyle::kIncludeTransformOrigin,
-        ComputedStyle::kIncludeMotionPath,
-        ComputedStyle::kIncludeIndependentTransformProperties);
-    const float zoom = style->EffectiveZoom();
-    if (zoom != 1)
-      transform.Zoom(1 / zoom);
-    // Flatten any 3D transform.
-    matrix = transform.ToAffineTransform();
-  }
+  if (layout_object && layout_object->StyleRef().HasTransform())
+    matrix = TransformHelper::ComputeTransform(*layout_object);
 
   // Apply any "motion transform" contribution if requested (and existing.)
   if (apply_motion_transform == kIncludeMotionTransform && HasSVGRareData())

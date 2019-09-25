@@ -389,7 +389,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
     @VisibleForTesting
     @DrawableRes
-    static int getSecurityIconResource(
+    int getSecurityIconResource(
             int securityLevel, boolean isSmallDevice, boolean isOfflinePage, boolean isPreview) {
         // Checking for a preview first because one possible preview type is showing an offline page
         // on a slow connection. In this case, the previews UI takes precedence.
@@ -401,7 +401,8 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
 
         switch (securityLevel) {
             case ConnectionSecurityLevel.NONE:
-                return isSmallDevice && !SearchEngineLogoUtils.shouldShowSearchEngineLogo()
+                return isSmallDevice
+                                && !SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
                         ? 0
                         : R.drawable.omnibox_info;
             case ConnectionSecurityLevel.HTTP_SHOW_WARNING:

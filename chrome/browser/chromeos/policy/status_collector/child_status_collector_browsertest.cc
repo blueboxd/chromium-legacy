@@ -51,6 +51,7 @@
 #include "components/user_manager/user_type.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/test_utils.h"
+#include "mojo/core/embedder/embedder.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -196,6 +197,10 @@ class BaseChildStatusCollectorTest : public testing::Test {
     scoped_stub_install_attributes_.Get()->SetCloudManaged("managed.com",
                                                            "device_id");
     EXPECT_CALL(*user_manager_, Shutdown()).Times(1);
+
+    // Ensure mojo is started, otherwise browser context keyed services that
+    // rely on mojo will explode.
+    mojo::core::Init();
 
     // Although this is really a unit test which runs in the browser_tests
     // binary, it doesn't get the unit setup which normally happens in the unit

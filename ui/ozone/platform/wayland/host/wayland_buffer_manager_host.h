@@ -14,7 +14,9 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 #include "ui/gfx/presentation_feedback.h"
@@ -47,24 +49,20 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
       base::OnceCallback<void(std::string)> terminate_gpu_cb);
 
   // Returns bound pointer to own mojo interface.
-  ozone::mojom::WaylandBufferManagerHostPtr BindInterface();
+  mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> BindInterface();
 
   // Unbinds the interface and clears the state of the |buffer_manager_|. Used
   // only when the GPU channel, which uses the mojo pipe to this interface, is
   // destroyed.
   void OnChannelDestroyed();
 
-  // Says if zwp_linux_dmabuf interface is available, and the manager is able to
-  // create dmabuf based buffers.
-  bool CanCreateDmabufBasedBuffer() const;
-
   // ozone::mojom::WaylandBufferManagerHost overrides:
   //
   // These overridden methods below are invoked by the GPU when hardware
   // accelerated rendering is used.
-  void SetWaylandBufferManagerGpuPtr(
-      ozone::mojom::WaylandBufferManagerGpuAssociatedPtrInfo
-          buffer_manager_gpu_associated_ptr) override;
+  void SetWaylandBufferManagerGpu(
+      mojo::PendingAssociatedRemote<ozone::mojom::WaylandBufferManagerGpu>
+          buffer_manager_gpu_associated) override;
   //
   // Called by the GPU and asks to import a wl_buffer based on a gbm file
   // descriptor using zwp_linux_dmabuf protocol. Check comments in the
@@ -160,9 +158,9 @@ class WaylandBufferManagerHost : public ozone::mojom::WaylandBufferManagerHost,
   // Non-owned pointer to the main connection.
   WaylandConnection* const connection_;
 
-  ozone::mojom::WaylandBufferManagerGpuAssociatedPtr
-      buffer_manager_gpu_associated_ptr_;
-  mojo::Binding<ozone::mojom::WaylandBufferManagerHost> binding_;
+  mojo::AssociatedRemote<ozone::mojom::WaylandBufferManagerGpu>
+      buffer_manager_gpu_associated_;
+  mojo::Receiver<ozone::mojom::WaylandBufferManagerHost> receiver_;
 
   // A callback, which is used to terminate a GPU process in case of invalid
   // data sent by the GPU to the browser process.

@@ -72,6 +72,9 @@ using blink::WebView;
 
 namespace autofill {
 
+using form_util::IsFormControlVisible;
+using form_util::IsFormVisible;
+
 using mojom::FocusedFieldType;
 using mojom::SubmissionIndicatorEvent;
 using mojom::SubmissionSource;
@@ -115,180 +118,6 @@ bool DoesFormContainAmbiguousOrEmptyNames(
           (!FillDataContainsFillableUsername(fill_data) ||
            fill_data.username_field.name ==
                base::ASCIIToUTF16(kDummyUsernameField)));
-}
-
-bool IsFieldPasswordField(const FormFieldData& field) {
-  return (field.form_control_type == "password");
-}
-
-// Returns true if any password field within |control_elements| is supplied with
-// either |autocomplete='current-password'| or |autocomplete='new-password'|
-// attribute.
-bool HasPasswordWithAutocompleteAttribute(
-    const std::vector<WebFormControlElement>& control_elements) {
-  for (const WebFormControlElement& control_element : control_elements) {
-    if (!control_element.HasHTMLTagName("input"))
-      continue;
-
-    const WebInputElement input_element =
-        control_element.ToConst<WebInputElement>();
-    const AutocompleteFlag flag = AutocompleteFlagForElement(input_element);
-    if (input_element.IsPasswordFieldForAutofill() &&
-        (flag == AutocompleteFlag::CURRENT_PASSWORD ||
-         flag == AutocompleteFlag::NEW_PASSWORD)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
-// Returns the |field|'s autofillable name. If |ambiguous_or_empty_names| is set
-// to true returns a dummy name instead.
-base::string16 FieldName(const FormFieldData& field,
-                         bool ambiguous_or_empty_names) {
-  return ambiguous_or_empty_names
-             ? (IsFieldPasswordField(field)
-                    ? base::ASCIIToUTF16(kDummyPasswordField)
-                    : base::ASCIIToUTF16(kDummyUsernameField))
-             : field.name;
-}
-
-bool IsUnownedPasswordFormVisible(const WebInputElement& input_element) {
-  return !input_element.IsNull() &&
-         form_util::IsWebElementVisible(input_element);
-}
-
-// Utility function to find the unique entry of |control_elements| for the
-// specified input |field|. On successful find, adds it to |result| and returns
-// |true|. Otherwise clears the references from each |HTMLInputElement| from
-// |result| and returns |false|.
-bool FindFormInputElement(
-    const std::vector<WebFormControlElement>& control_elements,
-    const FormFieldData& field,
-    bool ambiguous_or_empty_names,
-    FormInputElementMap* result) {
-  // Match the first input element, if any.
-  bool found_input = false;
-  bool is_password_field = IsFieldPasswordField(field);
-  bool does_password_field_has_ambigous_or_empty_name =
-      ambiguous_or_empty_names && is_password_field;
-  bool ambiguous_and_multiple_password_fields_with_autocomplete =
-      does_password_field_has_ambigous_or_empty_name &&
-      HasPasswordWithAutocompleteAttribute(control_elements);
-  base::string16 field_name = FieldName(field, ambiguous_or_empty_names);
-  for (const WebFormControlElement& control_element : control_elements) {
-    if (!ambiguous_or_empty_names &&
-        control_element.NameForAutofill().Utf16() != field_name) {
-      continue;
-    }
-
-    if (!control_element.HasHTMLTagName("input"))
-      continue;
-
-    // Only fill saved passwords into password fields and usernames into text
-    // fields.
-    const WebInputElement input_element =
-        control_element.ToConst<WebInputElement>();
-    if (!input_element.IsTextField() ||
-        input_element.IsPasswordFieldForAutofill() != is_password_field)
-      continue;
-
-    // For change password form with ambiguous or empty names keep only the
-    // first password field having |autocomplete='current-password'| attribute
-    // set. Also make sure we avoid keeping password fields having
-    // |autocomplete='new-password'| attribute set.
-    if (ambiguous_and_multiple_password_fields_with_autocomplete &&
-        AutocompleteFlagForElement(input_element) !=
-            AutocompleteFlag::CURRENT_PASSWORD) {
-      continue;
-    }
-
-    // Check for a non-unique match.
-    if (found_input) {
-      // For change password form keep only the first password field entry.
-      if (does_password_field_has_ambigous_or_empty_name) {
-        if (!form_util::IsWebElementVisible((*result)[field_name])) {
-          // If a previously chosen field was invisible then take the current
-          // one.
-          (*result)[field_name] = input_element;
-        }
-        continue;
-      }
-
-      found_input = false;
-      break;
-    }
-
-    (*result)[field_name] = input_element;
-    found_input = true;
-  }
-
-  // A required element was not found. This is not the right form.
-  // Make sure no input elements from a partially matched form in this
-  // iteration remain in the result set.
-  // Note: clear will remove a reference from each InputElement.
-  if (!found_input) {
-    result->clear();
-    return false;
-  }
-
-  return true;
-}
-
-// Helper to search through |control_elements| for the specified input elements
-// in |data|, and add results to |result|.
-bool FindFormInputElements(
-    const std::vector<WebFormControlElement>& control_elements,
-    const PasswordFormFillData& data,
-    bool ambiguous_or_empty_names,
-    FormInputElementMap* result) {
-  return FindFormInputElement(control_elements, data.password_field,
-                              ambiguous_or_empty_names, result) &&
-         (!FillDataContainsFillableUsername(data) ||
-          FindFormInputElement(control_elements, data.username_field,
-                               ambiguous_or_empty_names, result));
-}
-
-// Helper to locate form elements identified by |data|.
-void FindFormElements(content::RenderFrame* render_frame,
-                      const PasswordFormFillData& data,
-                      bool ambiguous_or_empty_names,
-                      FormElementsList* results) {
-  DCHECK(results);
-
-  WebDocument doc = render_frame->GetWebFrame()->GetDocument();
-
-  if (GetSignOnRealm(data.origin) !=
-      GetSignOnRealm(form_util::GetCanonicalOriginForDocument(doc)))
-    return;
-
-  WebVector<WebFormElement> forms;
-  doc.Forms(forms);
-
-  for (const WebFormElement& form : forms) {
-    // Action URL must match.
-    if (data.action != form_util::GetCanonicalActionForForm(form))
-      continue;
-
-    std::vector<WebFormControlElement> control_elements =
-        form_util::ExtractAutofillableElementsInForm(form);
-    FormInputElementMap cur_map;
-    if (FindFormInputElements(control_elements, data, ambiguous_or_empty_names,
-                              &cur_map))
-      results->push_back(cur_map);
-  }
-  // If the element to be filled are not in a <form> element, the "action" and
-  // origin should be the same.
-  if (data.action != data.origin)
-    return;
-
-  std::vector<WebFormControlElement> control_elements =
-      form_util::GetUnownedAutofillableFormFieldElements(doc.All(), nullptr);
-  FormInputElementMap unowned_elements_map;
-  if (FindFormInputElements(control_elements, data, ambiguous_or_empty_names,
-                            &unowned_elements_map))
-    results->push_back(unowned_elements_map);
 }
 
 bool IsElementEditable(const WebInputElement& element) {
@@ -1067,23 +896,27 @@ void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
   // Prompt to save only if the form is now gone, either invisible or
   // removed from the DOM.
   WebLocalFrame* frame = render_frame()->GetWebFrame();
-  const auto& password_form = provisionally_saved_form_.password_form();
   // TODO(crbug.com/720347): This method could be called often and checking form
-  // visibility could be expesive. Add performance metrics for this.
+  // visibility could be expensive. Add performance metrics for this.
   if (event != SubmissionIndicatorEvent::DOM_MUTATION_AFTER_XHR) {
-    if (form_util::IsFormVisible(frame,
-                                 provisionally_saved_form_.form_element(),
-                                 password_form.action, password_form.origin,
-                                 password_form.form_data) ||
-        (provisionally_saved_form_.form_element().IsNull() &&
-         IsUnownedPasswordFormVisible(
-             provisionally_saved_form_.input_element()))) {
-      return;
+    bool is_last_updated_field_in_form =
+        last_updated_form_renderer_id_ != FormData::kNotSetFormRendererId;
+    // Check whether the form which is the candidate for submission disappeared.
+    // If yes this form is considered to be successfully submitted.
+    if (is_last_updated_field_in_form) {
+      // A form is inside <form> tag. Check the visibility of the whole form.
+      if (IsFormVisible(frame, last_updated_form_renderer_id_))
+        return;
+    } else {
+      // A form is without <form> tag. Check the visibility of the last updated
+      // field.
+      if (IsFormControlVisible(frame, last_updated_field_renderer_id_))
+        return;
     }
   }
 
   provisionally_saved_form_.SetSubmissionIndicatorEvent(event);
-  GetPasswordManagerDriver()->SameDocumentNavigation(password_form);
+  GetPasswordManagerDriver()->SameDocumentNavigation(event);
   provisionally_saved_form_.Reset();
 }
 
@@ -1274,7 +1107,7 @@ void PasswordAutofillAgent::OnFrameDetached() {
     provisionally_saved_form_.SetSubmissionIndicatorEvent(
         SubmissionIndicatorEvent::FRAME_DETACHED);
     GetPasswordManagerDriver()->SameDocumentNavigation(
-        provisionally_saved_form_.password_form());
+        SubmissionIndicatorEvent::FRAME_DETACHED);
   }
   CleanupOnDocumentShutdown();
 }
@@ -1413,76 +1246,6 @@ void PasswordAutofillAgent::FillPasswordForm(
 
   FillUserNameAndPassword(username_element, password_element, form_data,
                           logger.get());
-}
-
-void PasswordAutofillAgent::GetFillableElementFromFormData(
-    const PasswordFormFillData& form_data,
-    RendererSavePasswordProgressLogger* logger,
-    std::vector<WebInputElement>* elements) {
-  DCHECK(elements);
-  bool ambiguous_or_empty_names =
-      DoesFormContainAmbiguousOrEmptyNames(form_data);
-  FormElementsList forms;
-  FindFormElements(render_frame(), form_data, ambiguous_or_empty_names, &forms);
-  if (logger) {
-    logger->LogBoolean(Logger::STRING_AMBIGUOUS_OR_EMPTY_NAMES,
-                       ambiguous_or_empty_names);
-    logger->LogNumber(Logger::STRING_NUMBER_OF_POTENTIAL_FORMS_TO_FILL,
-                      forms.size());
-    logger->LogBoolean(Logger::STRING_FORM_DATA_WAIT,
-                       form_data.wait_for_username);
-  }
-  for (const auto& form : forms) {
-    base::string16 username_field_name;
-    base::string16 password_field_name =
-        FieldName(form_data.password_field, ambiguous_or_empty_names);
-    bool form_contains_fillable_username_field =
-        FillDataContainsFillableUsername(form_data);
-    if (form_contains_fillable_username_field) {
-      username_field_name =
-          FieldName(form_data.username_field, ambiguous_or_empty_names);
-    }
-    if (logger) {
-      logger->LogBoolean(Logger::STRING_CONTAINS_FILLABLE_USERNAME_FIELD,
-                         form_contains_fillable_username_field);
-      logger->LogBoolean(Logger::STRING_USERNAME_FIELD_NAME_EMPTY,
-                         username_field_name.empty());
-      logger->LogBoolean(Logger::STRING_PASSWORD_FIELD_NAME_EMPTY,
-                         password_field_name.empty());
-    }
-
-    // Attach autocomplete listener to enable selecting alternate logins.
-    WebInputElement username_element;
-    WebInputElement password_element;
-
-    // Check whether the password form has a username input field.
-    if (!username_field_name.empty()) {
-      const auto it = form.find(username_field_name);
-      DCHECK(it != form.end());
-      username_element = it->second;
-    }
-
-    // No password field, bail out.
-    if (password_field_name.empty())
-      break;
-
-    // Get pointer to password element. (We currently only support single
-    // password forms).
-    {
-      const auto it = form.find(password_field_name);
-      DCHECK(it != form.end());
-      password_element = it->second;
-    }
-
-    WebInputElement main_element =
-        username_element.IsNull() ? password_element : username_element;
-    if (elements)
-      elements->push_back(main_element);
-    StoreDataForFillOnAccountSelect(form_data, username_element,
-                                    password_element);
-  }
-
-  MaybeStoreFallbackData(form_data);
 }
 
 void PasswordAutofillAgent::FocusedNodeHasChanged(const blink::WebNode& node) {
@@ -1640,6 +1403,8 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   username_detector_cache_.clear();
   forms_structure_cache_.clear();
   autofilled_elements_cache_.clear();
+  last_updated_field_renderer_id_ = FormData::kNotSetFormRendererId;
+  last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
   page_passwords_analyser_.Reset();
 #endif
@@ -1664,6 +1429,7 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
     ProvisionallySaveRestriction restriction) {
   DCHECK(!form.IsNull() || !element.IsNull());
 
+  SetLastUpdatedFormAndField(form, element);
   std::unique_ptr<PasswordForm> password_form;
   if (form.IsNull()) {
     password_form = GetPasswordFormFromUnownedInputElements();
@@ -2064,6 +1830,19 @@ void PasswordAutofillAgent::AutofillField(const base::string16& value,
       field, value, FieldPropertiesFlags::AUTOFILLED_ON_PAGELOAD);
   autofilled_elements_cache_.emplace(field.UniqueRendererFormControlId(),
                                      WebString::FromUTF16(value));
+}
+
+void SetLastUpdatedFormAndField(const blink::WebFormElement& Form,
+                                const blink::WebFormControlElement& input);
+void PasswordAutofillAgent::SetLastUpdatedFormAndField(
+    const WebFormElement& form,
+    const WebFormControlElement& input) {
+  last_updated_form_renderer_id_ = form.IsNull()
+                                       ? FormData::kNotSetFormRendererId
+                                       : form.UniqueRendererFormId();
+  last_updated_field_renderer_id_ = input.IsNull()
+                                        ? FormData::kNotSetFormRendererId
+                                        : input.UniqueRendererFormControlId();
 }
 
 }  // namespace autofill

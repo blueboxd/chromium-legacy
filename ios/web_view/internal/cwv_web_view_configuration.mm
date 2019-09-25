@@ -8,6 +8,8 @@
 
 #include "base/logging.h"
 #include "base/threading/thread_restrictions.h"
+#include "components/keyed_service/core/service_access_type.h"
+#include "components/password_manager/core/browser/password_store_default.h"
 #include "components/sync/driver/sync_service.h"
 #include "ios/web_view/cwv_web_view_buildflags.h"
 #include "ios/web_view/internal/app/application_context.h"
@@ -16,6 +18,7 @@
 #import "ios/web_view/internal/cwv_preferences_internal.h"
 #import "ios/web_view/internal/cwv_user_content_controller_internal.h"
 #import "ios/web_view/internal/cwv_web_view_internal.h"
+#include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
@@ -135,8 +138,12 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
     autofill::PersonalDataManager* personalDataManager =
         ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
             self.browserState);
+    scoped_refptr<password_manager::PasswordStore> passwordStore =
+        ios_web_view::WebViewPasswordStoreFactory::GetForBrowserState(
+            self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
     _autofillDataManager = [[CWVAutofillDataManager alloc]
-        initWithPersonalDataManager:personalDataManager];
+        initWithPersonalDataManager:personalDataManager
+                      passwordStore:passwordStore.get()];
   }
   return _autofillDataManager;
 }

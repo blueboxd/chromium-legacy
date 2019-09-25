@@ -440,6 +440,7 @@ test("ios_web_view_unittests") {
     "//components/autofill/ios/browser:test_support",
     "//components/autofill/ios/form_util:test_support",
     "//components/browser_sync:test_support",
+    "//components/password_manager/core/browser:test_support",
     "//components/prefs:test_support",
     "//components/signin/public/base:test_support",
     "//components/signin/public/identity_manager:test_support",

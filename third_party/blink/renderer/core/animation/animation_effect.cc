@@ -76,8 +76,11 @@ void AnimationEffect::updateTiming(OptionalEffectTiming* optional_timing,
 
 void AnimationEffect::UpdateInheritedTime(double inherited_time,
                                           TimingUpdateReason reason) const {
+  base::Optional<double> playback_rate = base::nullopt;
+  if (GetAnimation())
+    playback_rate = GetAnimation()->playbackRate();
   const Timing::AnimationDirection direction =
-      (GetAnimation() && GetAnimation()->playbackRate() < 0)
+      (playback_rate && playback_rate.value() < 0)
           ? Timing::AnimationDirection::kBackwards
           : Timing::AnimationDirection::kForwards;
   bool needs_update =
@@ -91,7 +94,7 @@ void AnimationEffect::UpdateInheritedTime(double inherited_time,
   const double local_time = inherited_time;
   if (needs_update) {
     Timing::CalculatedTiming calculated = SpecifiedTiming().CalculateTimings(
-        local_time, direction, IsKeyframeEffect());
+        local_time, direction, IsKeyframeEffect(), playback_rate);
 
     const bool was_canceled = calculated.phase != calculated_.phase &&
                               calculated.phase == Timing::kPhaseNone;

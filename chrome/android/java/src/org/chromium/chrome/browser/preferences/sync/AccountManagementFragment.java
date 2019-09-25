@@ -310,6 +310,8 @@ public class AccountManagementFragment extends PreferenceFragmentCompat
             SigninUtils.logEvent(ProfileAccountManagementMetrics.ADD_ACCOUNT, mGaiaServiceType);
 
             AccountManagerFacade.get().createAddAccountIntent((@Nullable Intent intent) -> {
+                if (!isVisible() || !isResumed()) return;
+
                 if (intent != null) {
                     startActivity(intent);
                     return;

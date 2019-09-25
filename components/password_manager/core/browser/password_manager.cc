@@ -392,17 +392,23 @@ void PasswordManager::OnPasswordFormSubmitted(
   ProvisionallySaveForm(password_form.form_data, driver, false);
 }
 
-
 void PasswordManager::OnPasswordFormSubmittedNoChecks(
     password_manager::PasswordManagerDriver* driver,
-    const PasswordForm& password_form) {
+    autofill::mojom::SubmissionIndicatorEvent event) {
   if (password_manager_util::IsLoggingActive(client_)) {
     BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
     logger.LogMessage(Logger::STRING_ON_SAME_DOCUMENT_NAVIGATION);
   }
+  PasswordFormManager* submitted_manager = GetSubmittedManager();
+  // TODO(crbug.com/949519): Add UMA metric for how frequently submitted_manager
+  // is actually null.
+  if (!submitted_manager || !submitted_manager->GetSubmittedForm())
+    return;
 
-  if (gaia::IsGaiaSignonRealm(GURL(password_form.signon_realm)) &&
-      !IsThereVisiblePasswordField(password_form.form_data)) {
+  const PasswordForm* submitted_form = submitted_manager->GetSubmittedForm();
+
+  if (gaia::IsGaiaSignonRealm(GURL(submitted_form->signon_realm)) &&
+      !IsThereVisiblePasswordField(submitted_form->form_data)) {
     // Gaia form without visible password fields is found.
     // It might happen only when Password Manager autofilled a username
     // (visible) and a password (invisible) fields. Then the user typed a new
@@ -411,11 +417,27 @@ void PasswordManager::OnPasswordFormSubmittedNoChecks(
     return;
   }
 
+  submitted_manager->UpdateSubmissionIndicatorEvent(event);
+
+  if (IsAutomaticSavePromptAvailable())
+    OnLoginSuccessful();
+}
+
+#if defined(OS_IOS)
+void PasswordManager::OnPasswordFormSubmittedNoChecksForiOS(
+    password_manager::PasswordManagerDriver* driver,
+    const PasswordForm& password_form) {
+  if (password_manager_util::IsLoggingActive(client_)) {
+    BrowserSavePasswordProgressLogger logger(client_->GetLogManager());
+    logger.LogMessage(Logger::STRING_ON_SAME_DOCUMENT_NAVIGATION);
+  }
+
   ProvisionallySaveForm(password_form.form_data, driver, false);
 
   if (IsAutomaticSavePromptAvailable())
     OnLoginSuccessful();
 }
+#endif
 
 void PasswordManager::OnUserModifiedNonPasswordField(
     PasswordManagerDriver* driver,

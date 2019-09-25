@@ -30,6 +30,7 @@ import androidx.annotation.StringRes;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
+import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
 import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
 import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.ui.UiUtils;
@@ -65,6 +66,8 @@ public class StatusView extends LinearLayout {
     private boolean mLastTouchDelegateRtlness;
     private Rect mLastTouchDelegateRect;
 
+    private ToolbarCommonPropertiesModel mToolbarCommonPropertiesModel;
+
     public StatusView(Context context, AttributeSet attributes) {
         super(context, attributes);
     }
@@ -81,12 +84,19 @@ public class StatusView extends LinearLayout {
         configureAccessibilityDescriptions();
     }
 
+    void setToolbarCommonPropertiesModel(
+            ToolbarCommonPropertiesModel toolbarCommonPropertiesModel) {
+        mToolbarCommonPropertiesModel = toolbarCommonPropertiesModel;
+    }
+
     /**
      * @see {@link org.chromium.chrome.browser.omnibox.LocationBar#updateSearchEngineStatusIcon}.
      */
     public void updateSearchEngineStatusIcon(boolean shouldShowSearchEngineLogo,
             boolean isSearchEngineGoogle, String searchEngineUrl) {
-        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+        if (mToolbarCommonPropertiesModel != null
+                && SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                        mToolbarCommonPropertiesModel.isIncognito())) {
             LinearLayout.LayoutParams layoutParams =
                     new LinearLayout.LayoutParams(mIconView.getLayoutParams());
             layoutParams.setMarginEnd(0);

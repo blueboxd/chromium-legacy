@@ -15,9 +15,10 @@
 #include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/services/app_service/public/mojom/app_service.mojom.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 class PrefChangeRegistrar;
 class Profile;
@@ -31,11 +32,11 @@ class CrostiniApps : public KeyedService,
                      public apps::mojom::Publisher,
                      public crostini::CrostiniRegistryService::Observer {
  public:
-  CrostiniApps();
+  CrostiniApps(const mojo::Remote<apps::mojom::AppService>& app_service,
+               Profile* profile);
   ~CrostiniApps() override;
 
-  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service,
-                  Profile* profile);
+  void FlushMojoCallsForTesting();
 
   void ReInitializeForTesting(
       const mojo::Remote<apps::mojom::AppService>& app_service,
@@ -48,8 +49,10 @@ class CrostiniApps : public KeyedService,
     kUpdate,
   };
 
+  void Initialize(const mojo::Remote<apps::mojom::AppService>& app_service);
+
   // apps::mojom::Publisher overrides.
-  void Connect(apps::mojom::SubscriberPtr subscriber,
+  void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override;
   void LoadIcon(const std::string& app_id,
                 apps::mojom::IconKeyPtr icon_key,
@@ -94,7 +97,7 @@ class CrostiniApps : public KeyedService,
   void Publish(apps::mojom::AppPtr app);
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
-  mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
+  mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 
   Profile* profile_;
 

@@ -164,6 +164,21 @@ bool DirectoryCryptographer::AddNonDefaultKey(const KeyParams& params) {
       /*set_as_default=*/false);
 }
 
+void DirectoryCryptographer::AddAllUnknownKeysFrom(const NigoriKeyBag& other) {
+  key_bag_.AddAllUnknownKeysFrom(other);
+}
+
+void DirectoryCryptographer::SelectDefaultEncryptionKey(
+    const std::string& key_name) {
+  DCHECK(!key_name.empty());
+  DCHECK(key_bag_.HasKey(key_name));
+  default_nigori_name_ = key_name;
+}
+
+void DirectoryCryptographer::ClearPendingKeys() {
+  pending_keys_.reset();
+}
+
 bool DirectoryCryptographer::AddKeyFromBootstrapToken(
     const Encryptor& encryptor,
     const std::string& restored_bootstrap_token) {

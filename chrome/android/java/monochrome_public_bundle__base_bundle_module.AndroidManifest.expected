@@ -1231,9 +1231,6 @@
         android:name="ipc.invalidation.ticl.gcm_upstream_service_class"
         android:value="org.chromium.chrome.browser.services.gcm.InvalidationGcmUpstreamSender"/>
     <meta-data
-        android:name="ipc.invalidation.ticl.listener_service_class"
-        android:value="org.chromium.chrome.browser.invalidation.ChromeInvalidationClientService"/>
-    <meta-data
         android:name="org.chromium.chrome:privileged_process0.ignore_multidex"
         android:value="true"/>
     <meta-data
@@ -1530,13 +1527,6 @@
         <action android:name="android.content.SyncAdapter"/>
       </intent-filter>
       <meta-data android:name="android.content.SyncAdapter" android:resource="@xml/syncadapter"/>
-    </service>
-    <service
-        android:exported="false"
-        android:name="org.chromium.chrome.browser.invalidation.ChromeInvalidationClientService">
-      <intent-filter>
-        <action android:name="com.google.ipc.invalidation.AUTH_TOKEN_REQUEST"/>
-      </intent-filter>
     </service>
     <service
         android:exported="false"

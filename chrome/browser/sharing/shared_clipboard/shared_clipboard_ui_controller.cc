@@ -17,8 +17,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/strings/grit/ui_strings.h"
 
-using App = SharingUiController::App;
-
 // static
 SharedClipboardUiController*
 SharedClipboardUiController::GetOrCreateFromWebContents(
@@ -56,7 +54,7 @@ SharedClipboardUiController::GetRequiredFeature() {
 
 // No need for apps for shared clipboard feature
 void SharedClipboardUiController::DoUpdateApps(UpdateAppsCallback callback) {
-  std::move(callback).Run(std::vector<App>());
+  std::move(callback).Run(std::vector<SharingApp>());
 }
 
 // Error message dialog.
@@ -74,7 +72,7 @@ void SharedClipboardUiController::OnDeviceChosen(
   SendMessageToDevice(device, std::move(sharing_message));
 }
 
-void SharedClipboardUiController::OnAppChosen(const App& app) {
+void SharedClipboardUiController::OnAppChosen(const SharingApp& app) {
   // Do nothing - there is no apps
 }
 

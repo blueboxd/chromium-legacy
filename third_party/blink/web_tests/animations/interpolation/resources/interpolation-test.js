@@ -158,6 +158,8 @@
         }
         if (property === 'offset')
           property = 'cssOffset';
+        else if (property === 'float')
+          property = 'cssFloat';
       }
       var keyframes = [];
       if (!isNeutralKeyframe(from)) {

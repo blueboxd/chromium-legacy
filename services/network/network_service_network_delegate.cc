@@ -8,7 +8,6 @@
 
 #include "base/bind.h"
 #include "base/debug/dump_without_crashing.h"
-#include "base/metrics/histogram_functions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "components/domain_reliability/monitor.h"
@@ -160,22 +159,6 @@ void NetworkServiceNetworkDelegate::OnCompleted(net::URLRequest* request,
   if (network_context_->domain_reliability_monitor()) {
     network_context_->domain_reliability_monitor()->OnCompleted(request,
                                                                 started);
-  }
-
-  // Record network errors that HTTP requests complete with, including OK and
-  // ABORTED.
-  // TODO(mmenke): Seems like this really should be looking at HTTPS requests,
-  // too.
-  // TODO(mmenke): We should remove the main frame case from here, and move it
-  // into the consumer - the network service shouldn't know what a main frame
-  // is.
-  if (request->url().SchemeIs("http")) {
-    base::UmaHistogramSparse("Net.HttpRequestCompletionErrorCodes", -net_error);
-
-    if (request->load_flags() & net::LOAD_MAIN_FRAME_DEPRECATED) {
-      base::UmaHistogramSparse("Net.HttpRequestCompletionErrorCodes.MainFrame",
-                               -net_error);
-    }
   }
 
   ForwardProxyErrors(net_error);

@@ -102,6 +102,11 @@ void ScenicWindow::Close() {
   delegate_->OnClosed();
 }
 
+bool ScenicWindow::IsVisible() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return true;
+}
+
 void ScenicWindow::PrepareForShutdown() {
   NOTIMPLEMENTED();
 }

@@ -1677,7 +1677,8 @@ TEST_F(TabletModeControllerScreenshotTest, NoAnimationNoScreenshot) {
 
 // Regression test for screenshot staying visible when entering tablet mode when
 // already in overview mode. See https://crbug.com/1002735.
-TEST_F(TabletModeControllerScreenshotTest, FromOverviewNoScreenshot) {
+// Flaky in remote builds, see: crbug.com/1007961
+TEST_F(TabletModeControllerScreenshotTest, DISABLED_FromOverviewNoScreenshot) {
   // Create two maximized windows.
   auto window = CreateTestWindow(gfx::Rect(200, 200));
   auto window2 = CreateTestWindow(gfx::Rect(200, 200));

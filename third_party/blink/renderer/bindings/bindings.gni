@@ -217,6 +217,8 @@ bindings_unittest_files =
           "core/v8/serialization/v8_script_value_serializer_test.cc",
           "core/v8/v8_extras_test_utils.cc",
           "core/v8/v8_extras_test_utils.h",
+          "core/v8/script_promise_tester.cc",
+          "core/v8/script_promise_tester.h",
         ],
         "abspath")
 bindings_unittest_files += bindings_modules_v8_unittest_files

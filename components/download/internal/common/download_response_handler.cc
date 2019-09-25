@@ -215,7 +215,7 @@ void DownloadResponseHandler::OnStartLoadingResponseBody(
   mojom::DownloadStreamHandlePtr stream_handle =
       mojom::DownloadStreamHandle::New();
   stream_handle->stream = std::move(body);
-  stream_handle->client_request = mojo::MakeRequest(&client_ptr_);
+  stream_handle->client_receiver = client_remote_.BindNewPipeAndPassReceiver();
   OnResponseStarted(std::move(stream_handle));
 }
 
@@ -229,8 +229,8 @@ void DownloadResponseHandler::OnComplete(
       static_cast<net::Error>(status.error_code), has_strong_validators_,
       cert_status_, is_partial_request_, abort_reason_);
 
-  if (client_ptr_) {
-    client_ptr_->OnStreamCompleted(
+  if (client_remote_) {
+    client_remote_->OnStreamCompleted(
         ConvertInterruptReasonToMojoNetworkRequestStatus(reason));
   }
 

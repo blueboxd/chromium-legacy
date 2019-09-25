@@ -49,11 +49,19 @@ void MojoSystemInfoDispatcher::OnDeviceInfoUpdated(
 }
 
 void MojoSystemInfoDispatcher::OnSystemInfoUpdated() {
-  version_info::Channel channel = chrome::GetChannel();
-  bool show_if_hidden = channel != version_info::Channel::STABLE &&
-                        channel != version_info::Channel::BETA;
+  const base::Optional<bool> policy_show =
+      version_info_updater_.IsSystemInfoEnforced();
+  bool enforced = policy_show.has_value();
+  bool show = false;
+  if (enforced) {
+    show = policy_show.value();
+  } else {
+    version_info::Channel channel = chrome::GetChannel();
+    show = channel != version_info::Channel::STABLE &&
+           channel != version_info::Channel::BETA;
+  }
   ash::LoginScreen::Get()->GetModel()->SetSystemInfo(
-      show_if_hidden, os_version_label_text_, enterprise_info_,
+      show, enforced, os_version_label_text_, enterprise_info_,
       bluetooth_name_);
 }
 

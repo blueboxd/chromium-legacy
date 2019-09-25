@@ -80,7 +80,7 @@ ScriptValue PortalActivateEvent::data(ScriptState* script_state) {
   v8::Isolate* isolate = script_state->GetIsolate();
   v8::HandleScope handle_scope(isolate);
   if (!data_ && data_from_init_.IsEmpty())
-    return ScriptValue(script_state, v8::Null(isolate));
+    return ScriptValue(isolate, v8::Null(isolate));
 
   auto result =
       v8_data_.insert(script_state, TraceWrapperV8Reference<v8::Value>());
@@ -88,7 +88,7 @@ ScriptValue PortalActivateEvent::data(ScriptState* script_state) {
       result.stored_value->value;
 
   if (!result.is_new_entry)
-    return ScriptValue(script_state, relevant_data.NewLocal(isolate));
+    return ScriptValue(isolate, relevant_data.NewLocal(isolate));
 
   v8::Local<v8::Value> value;
   if (data_) {
@@ -101,7 +101,7 @@ ScriptValue PortalActivateEvent::data(ScriptState* script_state) {
   }
 
   relevant_data.Set(isolate, value);
-  return ScriptValue(script_state, value);
+  return ScriptValue(isolate, value);
 }
 
 void PortalActivateEvent::Trace(blink::Visitor* visitor) {

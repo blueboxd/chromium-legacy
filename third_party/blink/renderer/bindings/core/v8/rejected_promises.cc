@@ -75,7 +75,7 @@ class RejectedPromises::Message final {
         sanitize_script_errors_ == SanitizeScriptErrors::kDoNotSanitize) {
       PromiseRejectionEventInit* init = PromiseRejectionEventInit::Create();
       init->setPromise(ScriptPromise(script_state_, value));
-      init->setReason(ScriptValue(script_state_, reason));
+      init->setReason(ScriptValue(script_state_->GetIsolate(), reason));
       init->setCancelable(true);
       PromiseRejectionEvent* event = PromiseRejectionEvent::Create(
           script_state_, event_type_names::kUnhandledrejection, init);
@@ -115,7 +115,7 @@ class RejectedPromises::Message final {
         sanitize_script_errors_ == SanitizeScriptErrors::kDoNotSanitize) {
       PromiseRejectionEventInit* init = PromiseRejectionEventInit::Create();
       init->setPromise(ScriptPromise(script_state_, value));
-      init->setReason(ScriptValue(script_state_, reason));
+      init->setReason(ScriptValue(script_state_->GetIsolate(), reason));
       PromiseRejectionEvent* event = PromiseRejectionEvent::Create(
           script_state_, event_type_names::kRejectionhandled, init);
       target->DispatchEvent(*event);

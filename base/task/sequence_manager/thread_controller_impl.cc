@@ -174,7 +174,7 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
   WeakPtr<ThreadControllerImpl> weak_ptr = weak_factory_.GetWeakPtr();
   // TODO(scheduler-dev): Consider moving to a time based work batch instead.
   for (int i = 0; i < main_sequence_only().work_batch_size_; i++) {
-    Optional<PendingTask> task = sequence_->TakeTask();
+    Task* task = sequence_->SelectNextTask();
     if (!task)
       break;
 
@@ -189,7 +189,7 @@ void ThreadControllerImpl::DoWork(WorkType work_type) {
       // Trace events should finish before we call DidRunTask to ensure that
       // SequenceManager trace events do not interfere with them.
       TRACE_TASK_EXECUTION("ThreadControllerImpl::RunTask", *task);
-      task_annotator_.RunTask("SequenceManager RunTask", &*task);
+      task_annotator_.RunTask("SequenceManager RunTask", task);
     }
 
     if (!weak_ptr)

@@ -113,6 +113,10 @@ void X11Window::Close() {
   platform_window_delegate_->OnClosed();
 }
 
+bool X11Window::IsVisible() const {
+  return XWindow::IsXWindowVisible();
+}
+
 void X11Window::PrepareForShutdown() {
   PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 }

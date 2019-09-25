@@ -17,20 +17,21 @@ namespace blink {
 
 WritableStream* WritableStream::Create(ScriptState* script_state,
                                        ExceptionState& exception_state) {
-  return Create(
-      script_state,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return Create(script_state,
+                ScriptValue(script_state->GetIsolate(),
+                            v8::Undefined(script_state->GetIsolate())),
+                ScriptValue(script_state->GetIsolate(),
+                            v8::Undefined(script_state->GetIsolate())),
+                exception_state);
 }
 
 WritableStream* WritableStream::Create(ScriptState* script_state,
                                        ScriptValue underlying_sink,
                                        ExceptionState& exception_state) {
-  return Create(
-      script_state, underlying_sink,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return Create(script_state, underlying_sink,
+                ScriptValue(script_state->GetIsolate(),
+                            v8::Undefined(script_state->GetIsolate())),
+                exception_state);
 }
 
 WritableStream* WritableStream::Create(ScriptState* script_state,

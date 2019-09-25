@@ -729,8 +729,7 @@ ScriptValue DeserializeScriptValue(ScriptState* script_state,
   SerializedScriptValue::DeserializeOptions options;
   options.blob_info = blob_info;
   options.read_wasm_from_stream = read_wasm_from_stream;
-  return ScriptValue(script_state,
-                     serialized_value->Deserialize(isolate, options));
+  return ScriptValue(isolate, serialized_value->Deserialize(isolate, options));
 }
 
 SQLValue NativeValueTraits<SQLValue>::NativeValue(
@@ -792,8 +791,7 @@ void AssertPrimaryKeyValidOrInjectable(ScriptState* script_state,
   ScriptState::Scope scope(script_state);
   v8::Isolate* isolate = script_state->GetIsolate();
   ScriptValue key_value = ScriptValue::From(script_state, value->PrimaryKey());
-  ScriptValue script_value(script_state,
-                           DeserializeIDBValueData(isolate, value));
+  ScriptValue script_value(isolate, DeserializeIDBValueData(isolate, value));
 
   DummyExceptionStateForTesting exception_state;
   std::unique_ptr<IDBKey> expected_key = CreateIDBKeyFromValueAndKeyPath(

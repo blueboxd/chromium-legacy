@@ -64,6 +64,10 @@ class CORE_EXPORT CSSPaintValue : public CSSImageGeneratorValue {
     return this;
   }
 
+  bool IsUsingCustomProperty(const AtomicString& custom_property_name) const;
+
+  void CreateGeneratorForTesting(const Document& document);
+
   void TraceAfterDispatch(blink::Visitor*);
 
  private:

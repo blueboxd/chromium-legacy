@@ -2302,7 +2302,12 @@ class ComputedStyle : public ComputedStyleBase,
   }
 
   // Paint utility functions.
-  void AddPaintImage(StyleImage*);
+  CORE_EXPORT void AddPaintImage(StyleImage*);
+
+  // Returns true if any property has an <image> value that is a CSS paint
+  // function that is using a given custom property.
+  bool HasCSSPaintImagesUsingCustomProperty(
+      const AtomicString& custom_property_name) const;
 
   // FIXME: reflections should belong to this helper function but they are
   // currently handled through their self-painting layers. So the layout code

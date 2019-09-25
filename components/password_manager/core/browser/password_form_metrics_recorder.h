@@ -226,7 +226,9 @@ class PasswordFormMetricsRecorder
     kFoasOnHTTP = 4,
     // The Touch To Fill feature is enabled.
     kTouchToFill = 5,
-    kMaxValue = kTouchToFill,
+    // Show suggestion on account selection feature is enabled.
+    kFoasFeature = 6,
+    kMaxValue = kFoasFeature,
   };
 
   // This metric records the user experience with the passwords filling. The

@@ -278,6 +278,11 @@ const char kDeviceLoginScreenLocales[] = "cros.device_login_screen_locales";
 const char kDeviceLoginScreenInputMethods[] =
     "cros.device_login_screen_input_methods";
 
+// A boolean pref that indicates whether the system information is forcedly
+// shown (or hidden) on the login screen.
+const char kDeviceLoginScreenSystemInfoEnforced[] =
+    "cros.device_login_screen_system_info_enforced";
+
 // A boolean pref that matches enable-per-user-time-zone chrome://flags value.
 const char kPerUserTimezoneEnabled[] = "cros.flags.per_user_timezone_enabled";
 

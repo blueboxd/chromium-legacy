@@ -71,6 +71,11 @@ class NATIVE_THEME_EXPORT NativeThemeAura : public NativeThemeBase {
                                const gfx::Rect& rect,
                                const MenuItemExtraParams& menu_item,
                                ColorScheme color_scheme) const override;
+  void PaintProgressBar(cc::PaintCanvas* canvas,
+                        State state,
+                        const gfx::Rect& rect,
+                        const ProgressBarExtraParams& progress_bar,
+                        ColorScheme color_scheme) const override;
   void PaintArrowButton(cc::PaintCanvas* gc,
                         const gfx::Rect& rect,
                         Part direction,

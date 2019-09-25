@@ -22,6 +22,7 @@
 #include "components/web_cache/public/mojom/web_cache.mojom.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "mojo/public/cpp/bindings/remote.h"
 
 namespace base {
 template<typename Type>
@@ -133,7 +134,7 @@ class WebCacheManager : public content::NotificationObserver {
   typedef std::list<Allocation> AllocationStrategy;
 
   // The key is the unique id of every render process host.
-  typedef std::map<int, mojom::WebCachePtr> WebCacheServicesMap;
+  typedef std::map<int, mojo::Remote<mojom::WebCache>> WebCacheServicesMap;
 
   // This class is a singleton.  Do not instantiate directly.
   WebCacheManager();
@@ -239,7 +240,8 @@ class WebCacheManager : public content::NotificationObserver {
 
   content::NotificationRegistrar registrar_;
 
-  // Maps every renderer_id with its corresponding mojom::WebCachePtr.
+  // Maps every renderer_id with its corresponding
+  // mojo::Remote<mojom::WebCache>.
   WebCacheServicesMap web_cache_services_;
 
   base::WeakPtrFactory<WebCacheManager> weak_factory_{this};

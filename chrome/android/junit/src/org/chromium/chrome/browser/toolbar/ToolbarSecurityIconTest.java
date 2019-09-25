@@ -4,7 +4,11 @@
 package org.chromium.chrome.browser.toolbar;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.when;
+
+import android.content.Context;
+import android.content.res.Resources;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -34,10 +38,18 @@ public final class ToolbarSecurityIconTest {
 
     @Mock
     private Tab mTab;
+    @Mock
+    private Context mContext;
+    @Mock
+    private Resources mResources;
+
+    private LocationBarModel mLocationBarModel;
 
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        doReturn(mResources).when(mContext).getResources();
+        mLocationBarModel = new LocationBarModel(mContext);
     }
 
     @Test
@@ -74,64 +86,64 @@ public final class ToolbarSecurityIconTest {
         for (int securityLevel : SECURITY_LEVELS) {
             assertEquals("Wrong phone resource for security level " + securityLevel,
                     R.drawable.ic_offline_pin_24dp,
-                    LocationBarModel.getSecurityIconResource(
+                    mLocationBarModel.getSecurityIconResource(
                             securityLevel, IS_SMALL_DEVICE, IS_OFFLINE_PAGE, !IS_PREVIEW));
             assertEquals("Wrong tablet resource for security level " + securityLevel,
                     R.drawable.ic_offline_pin_24dp,
-                    LocationBarModel.getSecurityIconResource(
+                    mLocationBarModel.getSecurityIconResource(
                             securityLevel, !IS_SMALL_DEVICE, IS_OFFLINE_PAGE, !IS_PREVIEW));
             assertEquals("Wrong phone resource for security level " + securityLevel,
                     R.drawable.preview_pin_round,
-                    LocationBarModel.getSecurityIconResource(
+                    mLocationBarModel.getSecurityIconResource(
                             securityLevel, IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, IS_PREVIEW));
             assertEquals("Wrong tablet resource for security level " + securityLevel,
                     R.drawable.preview_pin_round,
-                    LocationBarModel.getSecurityIconResource(
+                    mLocationBarModel.getSecurityIconResource(
                             securityLevel, !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, IS_PREVIEW));
         }
 
         assertEquals(0,
-                LocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_info,
-                LocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.NONE,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_info,
-                LocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_info,
-                LocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_https_invalid,
-                LocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.DANGEROUS,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.DANGEROUS,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_https_invalid,
-                LocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.DANGEROUS,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.DANGEROUS,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarModel.getSecurityIconResource(
+                mLocationBarModel.getSecurityIconResource(
                         ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT, IS_SMALL_DEVICE,
                         !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarModel.getSecurityIconResource(
+                mLocationBarModel.getSecurityIconResource(
                         ConnectionSecurityLevel.SECURE_WITH_POLICY_INSTALLED_CERT, !IS_SMALL_DEVICE,
                         !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.SECURE,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.SECURE,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.SECURE,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.SECURE,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.EV_SECURE,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.EV_SECURE,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_https_valid,
-                LocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.EV_SECURE,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.EV_SECURE,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
     }
 }

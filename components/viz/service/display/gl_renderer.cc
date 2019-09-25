@@ -2418,6 +2418,11 @@ void GLRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
       current_program_->tex_matrix_location(), false, gl_matrix);
 
   SetShaderOpacity(quad->shared_quad_state->opacity);
+  if (current_program_->rounded_corner_rect_location() != -1) {
+    SetShaderRoundedCorner(
+        quad->shared_quad_state->rounded_corner_bounds,
+        current_frame()->window_matrix * current_frame()->projection_matrix);
+  }
   gfx::Size texture_size = lock.size();
   gfx::RectF uv_visible_rect(quad->uv_top_left.x(), quad->uv_top_left.y(),
                              quad->uv_bottom_right.x() - quad->uv_top_left.x(),

@@ -557,6 +557,15 @@ void LockContentsView::FocusPreviousUser() {
   }
 }
 
+void LockContentsView::ShowSystemInfo() {
+  enable_system_info_if_possible_ = true;
+  bool system_info_visible = GetSystemInfoVisibility();
+  if (system_info_visible && !system_info_->GetVisible()) {
+    system_info_->SetVisible(true);
+    LayoutTopHeader();
+  }
+}
+
 void LockContentsView::ShowParentAccessDialog() {
   // ParentAccessDialog should only be shown on lock screen from here.
   DCHECK(primary_big_view_);
@@ -1001,6 +1010,7 @@ void LockContentsView::OnLockScreenNoteStateChanged(
 
 void LockContentsView::OnSystemInfoChanged(
     bool show,
+    bool enforced,
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
     const std::string& bluetooth_name) {
@@ -1024,8 +1034,15 @@ void LockContentsView::OnSystemInfoChanged(
       system_info_->AddChildView(create_info_label());
   }
 
-  if (show)
-    system_info_->SetVisible(true);
+  if (enforced) {
+    enable_system_info_enforced_ = show;
+  } else {
+    enable_system_info_enforced_ = base::nullopt;
+    enable_system_info_if_possible_ |= show;
+  }
+
+  bool system_info_visible = GetSystemInfoVisibility();
+  system_info_->SetVisible(system_info_visible);
 
   auto update_label = [&](size_t index, const std::string& text) {
     views::Label* label =
@@ -2024,10 +2041,7 @@ void LockContentsView::PerformAction(AcceleratorAction action) {
       FocusPreviousUser();
       break;
     case AcceleratorAction::kShowSystemInfo:
-      if (!system_info_->GetVisible()) {
-        system_info_->SetVisible(true);
-        LayoutTopHeader();
-      }
+      ShowSystemInfo();
       break;
     case AcceleratorAction::kShowFeedback:
       Shell::Get()->login_screen_controller()->ShowFeedback();
@@ -2037,6 +2051,14 @@ void LockContentsView::PerformAction(AcceleratorAction action) {
       break;
     default:
       NOTREACHED();
+  }
+}
+
+bool LockContentsView::GetSystemInfoVisibility() const {
+  if (enable_system_info_enforced_.has_value()) {
+    return enable_system_info_enforced_.value();
+  } else {
+    return enable_system_info_if_possible_;
   }
 }
 

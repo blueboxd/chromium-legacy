@@ -15,6 +15,7 @@ NS_ASSUME_NONNULL_BEGIN
 @class CWVCreditCard;
 @class CWVCreditCardSaver;
 @class CWVCreditCardVerifier;
+@class CWVPassword;
 
 // User decision for saving / updating password.
 // Note: CWVPasswordUserDecisionNever is only used in saving scenarios.
@@ -97,31 +98,27 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision) {
 - (void)autofillController:(CWVAutofillController*)autofillController
     verifyCreditCardWithVerifier:(CWVCreditCardVerifier*)verifier;
 
-// Called when user needs to decide on whether or not to save the
-// password for |username|.
+// Called when user needs to decide on whether or not to save the |password|.
 // This can happen when user successfully logs into a web site with a new
 // username.
 // Pass user decision to |decisionHandler|. This block should be called only
 // once if user made the decision, or not get called if user ignores the prompt.
 // Not implementing it is equivalent of not calling |decisionHandler|.
 - (void)autofillController:(CWVAutofillController*)autofillController
-    decidePasswordSavingPolicyForUsername:(NSString*)username
-                          decisionHandler:
-                              (void (^)(CWVPasswordUserDecision decision))
-                                  decisionHandler;
+    decideSavePolicyForPassword:(CWVPassword*)password
+                decisionHandler:
+                    (void (^)(CWVPasswordUserDecision decision))decisionHandler;
 
-// Called when user needs to decide on whether or not to update the
-// password for |username|.
+// Called when user needs to decide on whether or not to update the |password|.
 // This can happen when user successfully logs into a web site with a new
 // password and an existing username.
 // Pass user decision to |decisionHandler|. This block should be called only
 // once if user made the decision, or not get called if user ignores the prompt.
 // Not implementing it is equivalent of not calling |decisionHandler|.
 - (void)autofillController:(CWVAutofillController*)autofillController
-    decidePasswordUpdatingPolicyForUsername:(NSString*)username
-                            decisionHandler:
-                                (void (^)(CWVPasswordUserDecision decision))
-                                    decisionHandler;
+    decideUpdatePolicyForPassword:(CWVPassword*)password
+                  decisionHandler:(void (^)(CWVPasswordUserDecision decision))
+                                      decisionHandler;
 
 @end
 

@@ -34,7 +34,8 @@
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/test_utils.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -531,8 +532,9 @@ class VisitCountingContext : public mojom::VisitedLinkNotificationSink {
         new_table_count_(0) {}
 
   void Bind(mojo::ScopedMessagePipeHandle handle) {
-    binding_.AddBinding(
-        this, mojom::VisitedLinkNotificationSinkRequest(std::move(handle)));
+    receiver_.Add(this,
+                  mojo::PendingReceiver<mojom::VisitedLinkNotificationSink>(
+                      std::move(handle)));
   }
 
   void WaitForUpdate() {
@@ -541,10 +543,10 @@ class VisitCountingContext : public mojom::VisitedLinkNotificationSink {
     run_loop.Run();
   }
 
-  void WaitForNoUpdate() { binding_.FlushForTesting(); }
+  void WaitForNoUpdate() { receiver_.FlushForTesting(); }
 
-  mojo::BindingSet<mojom::VisitedLinkNotificationSink>& binding() {
-    return binding_;
+  mojo::ReceiverSet<mojom::VisitedLinkNotificationSink>& binding() {
+    return receiver_;
   }
 
   void NotifyUpdate() {
@@ -588,7 +590,7 @@ class VisitCountingContext : public mojom::VisitedLinkNotificationSink {
   int new_table_count_;
 
   base::Closure quit_closure_;
-  mojo::BindingSet<mojom::VisitedLinkNotificationSink> binding_;
+  mojo::ReceiverSet<mojom::VisitedLinkNotificationSink> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(VisitCountingContext);
 };

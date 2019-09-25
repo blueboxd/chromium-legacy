@@ -556,6 +556,7 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
   }
 
   bool frame_was_disabled = !frame_enabled();
+  // TODO(b/141151475): Make frame_type a committable property.
   frame_type_ = frame_type;
   switch (frame_type) {
     case SurfaceFrameType::NONE:
@@ -564,9 +565,11 @@ void ShellSurfaceBase::OnSetFrame(SurfaceFrameType frame_type) {
     case SurfaceFrameType::NORMAL:
     case SurfaceFrameType::AUTOHIDE:
     case SurfaceFrameType::OVERLAY:
-      // Initialize the shadow if it didn't exist.  Do not reset if
-      // the frame type just switched from another enabled type.
-      if (!shadow_bounds_ || frame_was_disabled)
+      // Initialize the shadow if it didn't exist. Do not reset if
+      // the frame type just switched from another enabled type or
+      // there is a pending shadow_bounds_ change to avoid overriding
+      // a shadow bounds which have been changed and not yet committed.
+      if (!shadow_bounds_ || (frame_was_disabled && !shadow_bounds_changed_))
         shadow_bounds_ = gfx::Rect();
       break;
     case SurfaceFrameType::SHADOW:

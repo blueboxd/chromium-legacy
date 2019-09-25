@@ -102,7 +102,7 @@ ValueWrapperSyntheticModuleScript::CreateWithError(
   settings_object->GetModuleRecordResolver()->RegisterModuleScript(
       value_wrapper_module_script);
   value_wrapper_module_script->SetParseErrorAndClearRecord(
-      ScriptValue(settings_object->GetScriptState(), error));
+      ScriptValue(settings_object->GetScriptState()->GetIsolate(), error));
   // Step 7. "Return script."
   // [spec text]
   return value_wrapper_module_script;

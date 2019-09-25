@@ -26,7 +26,7 @@ class ReadableStreamWrapper::ReadHandleImpl final
   ScriptPromise Read(ScriptState* script_state) override {
     return ReadableStreamOperations::DefaultReaderRead(
         script_state,
-        ScriptValue(script_state,
+        ScriptValue(script_state->GetIsolate(),
                     reader_.NewLocal(script_state->GetIsolate())));
   }
 
@@ -58,7 +58,7 @@ void ReadableStreamWrapper::InitWithInternalStream(
     v8::Local<v8::Object> object,
     ExceptionState& exception_state) {
   DCHECK(ReadableStreamOperations::IsReadableStreamForDCheck(
-      script_state, ScriptValue(script_state, object)));
+      script_state, ScriptValue(script_state->GetIsolate(), object)));
   object_.Set(script_state->GetIsolate(), object);
 
   v8::Isolate* isolate = script_state->GetIsolate();
@@ -151,10 +151,10 @@ void ReadableStreamWrapper::Trace(Visitor* visitor) {
 
 ScriptPromise ReadableStreamWrapper::cancel(ScriptState* script_state,
                                             ExceptionState& exception_state) {
-  return cancel(
-      script_state,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return cancel(script_state,
+                ScriptValue(script_state->GetIsolate(),
+                            v8::Undefined(script_state->GetIsolate())),
+                exception_state);
 }
 
 bool ReadableStreamWrapper::locked(ScriptState* script_state,
@@ -200,10 +200,10 @@ ScriptValue ReadableStreamWrapper::pipeThrough(
     ScriptState* script_state,
     ScriptValue transform_stream,
     ExceptionState& exception_state) {
-  return pipeThrough(
-      script_state, transform_stream,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return pipeThrough(script_state, transform_stream,
+                     ScriptValue(script_state->GetIsolate(),
+                                 v8::Undefined(script_state->GetIsolate())),
+                     exception_state);
 }
 
 // https://streams.spec.whatwg.org/#rs-pipe-through
@@ -249,10 +249,10 @@ ScriptValue ReadableStreamWrapper::pipeThrough(
 ScriptPromise ReadableStreamWrapper::pipeTo(ScriptState* script_state,
                                             ScriptValue destination,
                                             ExceptionState& exception_state) {
-  return pipeTo(
-      script_state, destination,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return pipeTo(script_state, destination,
+                ScriptValue(script_state->GetIsolate(),
+                            v8::Undefined(script_state->GetIsolate())),
+                exception_state);
 }
 
 ScriptPromise ReadableStreamWrapper::pipeTo(ScriptState* script_state,
@@ -432,7 +432,7 @@ ReadableStreamWrapper* ReadableStreamWrapper::Deserialize(
 
 ScriptValue ReadableStreamWrapper::GetInternalStream(
     ScriptState* script_state) const {
-  return ScriptValue(script_state,
+  return ScriptValue(script_state->GetIsolate(),
                      object_.NewLocal(script_state->GetIsolate()));
 }
 

@@ -9,7 +9,6 @@
 #include "base/bind_helpers.h"
 #include "base/format_macros.h"
 #include "base/memory/ptr_util.h"
-#include "base/message_loop/message_loop.h"
 #include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/single_thread_task_runner.h"
@@ -98,12 +97,7 @@ class ScheduleWorkTest : public testing::Test {
       target_.reset(new Thread("test"));
 
       Thread::Options options(target_type, 0u);
-
-      std::unique_ptr<MessageLoop> message_loop =
-          MessageLoop::CreateUnbound(target_type);
-      message_loop_ = message_loop.get();
-      options.delegate =
-          new internal::MessageLoopThreadDelegate(std::move(message_loop));
+      options.message_pump_type = target_type;
       target_->StartWithOptions(options);
 
       // Without this, it's possible for the scheduling threads to start and run
@@ -203,7 +197,6 @@ class ScheduleWorkTest : public testing::Test {
 
  private:
   std::unique_ptr<Thread> target_;
-  MessageLoop* message_loop_;
 #if defined(OS_ANDROID)
   std::unique_ptr<JavaHandlerThreadForTest> java_thread_;
 #endif

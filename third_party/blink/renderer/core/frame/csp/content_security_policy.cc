@@ -950,6 +950,9 @@ static void GatherSecurityPolicyViolationEventData(
       case ContentSecurityPolicy::kTrustedTypesViolation:
         init->setBlockedURI("trusted-types");
         break;
+      case ContentSecurityPolicy::kTrustedTypesPolicyViolation:
+        init->setBlockedURI("trusted-types-policy");
+        break;
     }
   }
 

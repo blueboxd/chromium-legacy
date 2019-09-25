@@ -54,6 +54,7 @@
 #include "third_party/blink/renderer/core/style/shadow_list.h"
 #include "third_party/blink/renderer/core/style/style_difference.h"
 #include "third_party/blink/renderer/core/style/style_fetched_image.h"
+#include "third_party/blink/renderer/core/style/style_generated_image.h"
 #include "third_party/blink/renderer/core/style/style_image.h"
 #include "third_party/blink/renderer/core/style/style_inherited_variables.h"
 #include "third_party/blink/renderer/core/style/style_non_inherited_variables.h"
@@ -941,6 +942,22 @@ void ComputedStyle::AddPaintImage(StyleImage* image) {
     SetPaintImagesInternal(std::make_unique<PaintImages>());
   }
   MutablePaintImagesInternal()->push_back(image);
+}
+
+bool ComputedStyle::HasCSSPaintImagesUsingCustomProperty(
+    const AtomicString& custom_property_name) const {
+  if (PaintImagesInternal()) {
+    for (const auto& image : *PaintImagesInternal()) {
+      DCHECK(image);
+      // IsPaintImage is true for CSS Paint images only, please refer to the
+      // constructor of StyleGeneratedImage.
+      if (image->IsPaintImage()) {
+        return To<StyleGeneratedImage>(image.Get())
+            ->IsUsingCustomProperty(custom_property_name);
+      }
+    }
+  }
+  return false;
 }
 
 void ComputedStyle::AddCursor(StyleImage* image,

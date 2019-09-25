@@ -534,8 +534,9 @@ void SettingsUI::AddSettingsPageUIHandler(
 
 #if defined(OS_CHROMEOS)
 void SettingsUI::BindCrosNetworkConfig(
-    chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
-  ash::GetNetworkConfigService(std::move(request));
+    mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+        receiver) {
+  ash::GetNetworkConfigService(std::move(receiver));
 }
 #endif  // defined(OS_CHROMEOS)
 

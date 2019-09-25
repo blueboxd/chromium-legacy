@@ -2574,7 +2574,6 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/infobar/UpdatePasswordInfoBar.java",
     "java/src/org/chromium/chrome/browser/init/NativeStartupBridge.java",
     "java/src/org/chromium/chrome/browser/instantapps/InstantAppsSettings.java",
-    "java/src/org/chromium/chrome/browser/invalidation/InvalidationServiceFactory.java",
     "java/src/org/chromium/chrome/browser/jsdialog/JavascriptAppModalDialog.java",
     "java/src/org/chromium/chrome/browser/jsdialog/JavascriptTabModalDialog.java",
     "java/src/org/chromium/chrome/browser/locale/LocaleManager.java",

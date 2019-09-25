@@ -570,7 +570,7 @@ V8_VALUE_TO_CPP_VALUE = {
     # Interface types
     'FlexibleArrayBufferView': 'ToFlexibleArrayBufferView({isolate}, {v8_value}, {variable_name}, allocateFlexibleArrayBufferViewStorage({v8_value}))',
     'Promise': 'ScriptPromise::Cast(ScriptState::Current({isolate}), {v8_value})',
-    'ScriptValue': 'ScriptValue(ScriptState::Current({isolate}), {v8_value})',
+    'ScriptValue': 'ScriptValue({isolate}, {v8_value})',
     'Window': 'ToDOMWindow({isolate}, {v8_value})',
     'XPathNSResolver': 'ToXPathNSResolver(ScriptState::Current({isolate}), {v8_value})',
 }
@@ -1055,6 +1055,8 @@ def literal_cpp_value(idl_type, idl_literal):
     literal_value = str(idl_literal)
     if idl_type.base_type in ('octet', 'unsigned short', 'unsigned long'):
         return literal_value + 'u'
+    if idl_type.is_dictionary and literal_value == '{}':
+        return 'MakeGarbageCollected<{}>()'.format(idl_type.base_type)
     return literal_value
 
 

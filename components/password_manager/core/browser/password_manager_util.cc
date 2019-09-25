@@ -97,37 +97,6 @@ bool IsSyncingWithNormalEncryption(const syncer::SyncService* sync_service) {
          password_manager::SYNCING_NORMAL_ENCRYPTION;
 }
 
-void FindDuplicates(std::vector<std::unique_ptr<PasswordForm>>* forms,
-                    std::vector<std::unique_ptr<PasswordForm>>* duplicates,
-                    std::vector<std::vector<PasswordForm*>>* tag_groups) {
-  if (forms->empty())
-    return;
-
-  // Linux backends used to treat the first form as a prime oneamong the
-  // duplicates. Therefore, the caller should try to preserve it.
-  std::stable_sort(forms->begin(), forms->end(), autofill::LessThanUniqueKey());
-
-  std::vector<std::unique_ptr<PasswordForm>> unique_forms;
-  unique_forms.push_back(std::move(forms->front()));
-  if (tag_groups) {
-    tag_groups->clear();
-    tag_groups->push_back(std::vector<PasswordForm*>());
-    tag_groups->front().push_back(unique_forms.front().get());
-  }
-  for (auto it = forms->begin() + 1; it != forms->end(); ++it) {
-    if (ArePasswordFormUniqueKeysEqual(**it, *unique_forms.back())) {
-      if (tag_groups)
-        tag_groups->back().push_back(it->get());
-      duplicates->push_back(std::move(*it));
-    } else {
-      if (tag_groups)
-        tag_groups->push_back(std::vector<PasswordForm*>(1, it->get()));
-      unique_forms.push_back(std::move(*it));
-    }
-  }
-  forms->swap(unique_forms);
-}
-
 void TrimUsernameOnlyCredentials(
     std::vector<std::unique_ptr<PasswordForm>>* android_credentials) {
   // Remove username-only credentials which are not federated.

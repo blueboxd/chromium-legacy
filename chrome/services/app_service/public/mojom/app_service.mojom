@@ -14,9 +14,13 @@ import "chrome/services/app_service/public/mojom/types.mojom";
 //
 // See chrome/services/app_service/README.md.
 interface AppService {
-  // App Registry methods.
+  // Called by a publisher of apps to register itself and its apps with the App
+  // Service.
   RegisterPublisher(pending_remote<Publisher> publisher, AppType app_type);
-  RegisterSubscriber(Subscriber subscriber, ConnectOptions? opts);
+
+  // Called by a consumer that wishes to know about available apps to register
+  // itself with the App Service.
+  RegisterSubscriber(pending_remote<Subscriber> subscriber, ConnectOptions? opts);
 
   // App Icon Factory methods.
   LoadIcon(
@@ -51,7 +55,7 @@ interface AppService {
 
 interface Publisher {
   // App Registry methods.
-  Connect(Subscriber subscriber, ConnectOptions? opts);
+  Connect(pending_remote<Subscriber> subscriber, ConnectOptions? opts);
 
   // App Icon Factory methods.
   LoadIcon(
@@ -82,11 +86,11 @@ interface Publisher {
 interface Subscriber {
   OnApps(array<App> deltas);
 
-  // Binds this to the given request (message pipe endpoint), being to Mojo
+  // Binds this to the given receiver (message pipe endpoint), being to Mojo
   // interfaces what POSIX's dup is to file descriptors.
   //
   // See https://groups.google.com/a/chromium.org/d/msg/chromium-mojo/nFhBzGsb5Pg/V7t_8kNRAgAJ
-  Clone(Subscriber& request);
+  Clone(pending_receiver<Subscriber> receiver);
 };
 
 struct ConnectOptions {

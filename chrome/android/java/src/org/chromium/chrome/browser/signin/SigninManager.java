@@ -11,9 +11,7 @@ import android.content.Context;
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
 
-import org.chromium.base.ActivityState;
 import org.chromium.base.ApiCompatibilityUtils;
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -119,7 +117,6 @@ public class SigninManager
      */
     private static class SignInState {
         final Account mAccount;
-        final Activity mActivity;
         final SignInCallback mCallback;
 
         /**
@@ -138,31 +135,11 @@ public class SigninManager
 
         /**
          * @param account The account to sign in to.
-         * @param activity Reference to the UI to use for dialogs. Null means forced signin.
          * @param callback Called when the sign-in process finishes or is cancelled. Can be null.
          */
-        SignInState(
-                Account account, @Nullable Activity activity, @Nullable SignInCallback callback) {
+        SignInState(Account account, @Nullable SignInCallback callback) {
             this.mAccount = account;
-            this.mActivity = activity;
             this.mCallback = callback;
-        }
-
-        /**
-         * Returns whether this is an interactive sign-in flow.
-         */
-        boolean isInteractive() {
-            return mActivity != null;
-        }
-
-        /**
-         * Returns whether the sign-in flow activity was set but is no longer visible to the user.
-         */
-        boolean isActivityInvisible() {
-            return mActivity != null
-                    && (ApplicationStatus.getStateForActivity(mActivity) == ActivityState.STOPPED
-                            || ApplicationStatus.getStateForActivity(mActivity)
-                                    == ActivityState.DESTROYED);
         }
     }
 
@@ -407,12 +384,10 @@ public class SigninManager
      *   - Call the callback if provided.
      *
      * @param account The account to sign in to.
-     * @param activity The activity used to launch UI prompts, or null for a forced signin.
      * @param callback Optional callback for when the sign-in process is finished.
      */
     // TODO(crbug.com/1002056) SigninManager.Signin should use CoreAccountInfo as a parameter.
-    public void signIn(
-            Account account, @Nullable Activity activity, @Nullable SignInCallback callback) {
+    public void signIn(Account account, @Nullable SignInCallback callback) {
         if (account == null) {
             Log.w(TAG, "Ignoring sign-in request due to null account.");
             if (callback != null) callback.onSignInAborted();
@@ -431,7 +406,7 @@ public class SigninManager
             return;
         }
 
-        mSignInState = new SignInState(account, activity, callback);
+        mSignInState = new SignInState(account, callback);
         notifySignInAllowedChanged();
 
         progressSignInFlowSeedSystemAccounts();
@@ -444,7 +419,7 @@ public class SigninManager
     public void signIn(String accountName, @Nullable final Activity activity,
             @Nullable final SignInCallback callback) {
         AccountManagerFacade.get().getAccountFromName(
-                accountName, account -> signIn(account, activity, callback));
+                accountName, account -> signIn(account, callback));
     }
 
     private void progressSignInFlowSeedSystemAccounts() {
@@ -474,11 +449,6 @@ public class SigninManager
 
         // CoreAccountInfo must be set and valid to progress
         assert mSignInState.mCoreAccountInfo != null;
-
-        if (mSignInState.isActivityInvisible()) {
-            abortSignIn();
-            return;
-        }
 
         Log.d(TAG, "Checking if account has policy management enabled");
         fetchAndApplyCloudPolicy(mSignInState.mCoreAccountInfo, this::onPolicyFetchedBeforeSignIn);
@@ -517,15 +487,12 @@ public class SigninManager
         mIdentityMutator.reloadAllAccountsFromSystemWithPrimaryAccount(
                 mSignInState.mCoreAccountInfo.getId());
 
-        if (mSignInState.isInteractive()) {
-            // If signin was a user action, record that it succeeded.
-            RecordUserAction.record("Signin_Signin_Succeed");
-            logSigninCompleteAccessPoint();
-            // Log signin in reason as defined in signin_metrics.h. Right now only
-            // SIGNIN_PRIMARY_ACCOUNT available on Android.
-            RecordHistogram.recordEnumeratedHistogram("Signin.SigninReason",
-                    SigninReason.SIGNIN_PRIMARY_ACCOUNT, SigninReason.MAX);
-        }
+        RecordUserAction.record("Signin_Signin_Succeed");
+        logSigninCompleteAccessPoint();
+        // Log signin in reason as defined in signin_metrics.h. Right now only
+        // SIGNIN_PRIMARY_ACCOUNT available on Android.
+        RecordHistogram.recordEnumeratedHistogram(
+                "Signin.SigninReason", SigninReason.SIGNIN_PRIMARY_ACCOUNT, SigninReason.MAX);
 
         Log.d(TAG, "Signin completed.");
         mSignInState = null;

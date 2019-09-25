@@ -575,10 +575,6 @@ void WebRuntimeFeatures::EnableWebAuth(bool enable) {
   RuntimeEnabledFeatures::SetWebAuthEnabled(enable);
 }
 
-void WebRuntimeFeatures::EnableClientPlaceholdersForServerLoFi(bool enable) {
-  RuntimeEnabledFeatures::SetClientPlaceholdersForServerLoFiEnabled(enable);
-}
-
 void WebRuntimeFeatures::EnableLazyInitializeMediaControls(bool enable) {
   RuntimeEnabledFeatures::SetLazyInitializeMediaControlsEnabled(enable);
 }

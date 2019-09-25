@@ -44,7 +44,8 @@ std::unique_ptr<ui::ScopedMakeCurrent> MakeCurrentIfNeeded(
 CodecImage::CodecImage() = default;
 
 CodecImage::~CodecImage() {
-  NotifyUnused();
+  for (auto& cb : unused_cbs_)
+    std::move(cb).Run(this);
 }
 
 void CodecImage::Initialize(
@@ -60,19 +61,6 @@ void CodecImage::Initialize(
 
 void CodecImage::AddUnusedCB(UnusedCB unused_cb) {
   unused_cbs_.push_back(std::move(unused_cb));
-}
-
-void CodecImage::NotifyUnused() {
-  // If we haven't done so yet, release the codec output buffer.  Also drop
-  // our reference to the TextureOwner (if any).  In other words, undo anything
-  // that we did in Initialize.
-  ReleaseCodecBuffer();
-  codec_buffer_wait_coordinator_.reset();
-  promotion_hint_cb_ = PromotionHintAggregator::NotifyPromotionHintCB();
-
-  for (auto& cb : unused_cbs_)
-    std::move(cb).Run(this);
-  unused_cbs_.clear();
 }
 
 gfx::Size CodecImage::GetSize() {
@@ -339,10 +327,6 @@ CodecImage::GetAHardwareBuffer() {
 
   RenderToTextureOwnerFrontBuffer(BindingsMode::kDontRestoreIfBound);
   return codec_buffer_wait_coordinator_->texture_owner()->GetAHardwareBuffer();
-}
-
-bool CodecImage::HasMutableState() const {
-  return false;
 }
 
 CodecImageHolder::CodecImageHolder(

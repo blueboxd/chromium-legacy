@@ -23,6 +23,7 @@
 #import "ios/web/public/web_state.h"
 #import "ios/web/public/web_state_observer_bridge.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
+#import "ios/web_view/internal/passwords/cwv_password_internal.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_client.h"
 #import "ios/web_view/internal/passwords/web_view_password_manager_driver.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -207,25 +208,25 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   __block std::unique_ptr<PasswordFormManagerForUI> formPtr(
       std::move(formToSave));
 
-  NSString* userName =
-      base::SysUTF16ToNSString(formPtr->GetPendingCredentials().username_value);
+  const PasswordForm& credentials = formPtr->GetPendingCredentials();
+  CWVPassword* password =
+      [[CWVPassword alloc] initWithPasswordForm:credentials];
 
   [self.delegate passwordController:self
-      decidePasswordSavingPolicyForUsername:userName
-                            decisionHandler:^(
-                                CWVPasswordUserDecision decision) {
-                              switch (decision) {
-                                case CWVPasswordUserDecisionYes:
-                                  formPtr->Save();
-                                  break;
-                                case CWVPasswordUserDecisionNever:
-                                  formPtr->PermanentlyBlacklist();
-                                  break;
-                                default:
-                                  // Do nothing.
-                                  break;
-                              }
-                            }];
+        decideSavePolicyForPassword:password
+                    decisionHandler:^(CWVPasswordUserDecision decision) {
+                      switch (decision) {
+                        case CWVPasswordUserDecisionYes:
+                          formPtr->Save();
+                          break;
+                        case CWVPasswordUserDecisionNever:
+                          formPtr->PermanentlyBlacklist();
+                          break;
+                        default:
+                          // Do nothing.
+                          break;
+                      }
+                    }];
 }
 
 - (void)showUpdatePasswordInfoBar:
@@ -240,18 +241,17 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
       std::move(formToUpdate));
 
   const PasswordForm& credentials = formPtr->GetPendingCredentials();
-  NSString* userName = base::SysUTF16ToNSString(credentials.username_value);
+  CWVPassword* password =
+      [[CWVPassword alloc] initWithPasswordForm:credentials];
 
   [self.delegate passwordController:self
-      decidePasswordUpdatingPolicyForUsername:userName
-                              decisionHandler:^(
-                                  CWVPasswordUserDecision decision) {
-                                DCHECK_NE(decision,
-                                          CWVPasswordUserDecisionNever);
-                                if (decision == CWVPasswordUserDecisionYes) {
-                                  formPtr->Update(credentials);
-                                }
-                              }];
+      decideUpdatePolicyForPassword:password
+                    decisionHandler:^(CWVPasswordUserDecision decision) {
+                      DCHECK_NE(decision, CWVPasswordUserDecisionNever);
+                      if (decision == CWVPasswordUserDecisionYes) {
+                        formPtr->Update(credentials);
+                      }
+                    }];
 }
 
 - (void)showAutosigninNotification:(std::unique_ptr<PasswordForm>)formSignedIn {
@@ -285,7 +285,7 @@ typedef void (^PasswordSuggestionsAvailableCompletion)(
   } else {
     // Show a save prompt immediately because for iframes it is very hard to
     // figure out correctness of password forms submission.
-    self.passwordManager->OnPasswordFormSubmittedNoChecks(
+    self.passwordManager->OnPasswordFormSubmittedNoChecksForiOS(
         self.passwordManagerDriver, password_form);
   }
 }

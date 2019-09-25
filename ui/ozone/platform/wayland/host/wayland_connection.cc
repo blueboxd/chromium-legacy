@@ -144,12 +144,6 @@ int WaylandConnection::GetKeyboardModifiers() const {
   return modifiers;
 }
 
-std::vector<gfx::BufferFormat> WaylandConnection::GetSupportedBufferFormats() {
-  if (zwp_dmabuf_)
-    return zwp_dmabuf_->supported_buffer_formats();
-  return std::vector<gfx::BufferFormat>();
-}
-
 void WaylandConnection::StartDrag(const ui::OSExchangeData& data,
                                   int operation) {
   if (!dragdrop_data_source_)

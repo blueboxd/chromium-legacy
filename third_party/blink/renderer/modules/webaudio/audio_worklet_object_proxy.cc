@@ -41,8 +41,12 @@ void AudioWorkletObjectProxy::DidEvaluateModuleScript(bool success) {
   if (processor_info_list->size() == 0)
     return;
 
+  // This method is called by a loading task which calls
+  // WorkletModuleTreeClient::NotifyModuleTreeLoadFinished and
+  // SynchronizeWorkletProcessorInfoList needs to run in FIFO order with other
+  // loading tasks.
   PostCrossThreadTask(
-      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalMedia),
+      *GetParentExecutionContextTaskRunners()->Get(TaskType::kInternalLoading),
       FROM_HERE,
       CrossThreadBindOnce(
           &AudioWorkletMessagingProxy::SynchronizeWorkletProcessorInfoList,

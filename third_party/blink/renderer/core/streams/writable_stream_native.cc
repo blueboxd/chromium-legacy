@@ -143,10 +143,10 @@ bool WritableStreamNative::locked(ScriptState* script_state,
 
 ScriptPromise WritableStreamNative::abort(ScriptState* script_state,
                                           ExceptionState& exception_state) {
-  return abort(
-      script_state,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return abort(script_state,
+               ScriptValue(script_state->GetIsolate(),
+                           v8::Undefined(script_state->GetIsolate())),
+               exception_state);
 }
 
 ScriptPromise WritableStreamNative::abort(ScriptState* script_state,
@@ -179,7 +179,7 @@ ScriptValue WritableStreamNative::getWriter(ScriptState* script_state,
   // This call to ToV8() is only reached directly from JavaScript, and so
   // shouldn't be called while the execution context is being shutdown and so
   // shouldn't fail.
-  return ScriptValue(script_state, ToV8(writer, script_state));
+  return ScriptValue(script_state->GetIsolate(), ToV8(writer, script_state));
 }
 
 // General Writable Stream Abstract Operations

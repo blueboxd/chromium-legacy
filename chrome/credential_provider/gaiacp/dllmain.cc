@@ -58,8 +58,6 @@ extern "C" BOOL WINAPI DllMain(HINSTANCE hinstance,
   return _AtlModule.DllMain(hinstance, reason, reserved);
 }
 
-using namespace ATL;
-
 // Used to determine whether the DLL can be unloaded by OLE.
 STDAPI DllCanUnloadNow(void) {
   HRESULT hr = _AtlModule.DllCanUnloadNow();

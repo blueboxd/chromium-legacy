@@ -428,6 +428,17 @@ void DecodeLoginPolicies(const em::ChromeDeviceSettingsProto& policy,
     }
   }
 
+  if (policy.has_device_login_screen_system_info_enforced()) {
+    const em::DeviceLoginScreenSystemInfoEnforcedProto& container(
+        policy.device_login_screen_system_info_enforced());
+    if (container.has_enabled()) {
+      policies->Set(
+          key::kDeviceLoginScreenSystemInfoEnforced, POLICY_LEVEL_MANDATORY,
+          POLICY_SCOPE_MACHINE, POLICY_SOURCE_CLOUD,
+          std::make_unique<base::Value>(container.enabled()), nullptr);
+    }
+  }
+
   if (policy.has_saml_login_authentication_type()) {
     const em::SamlLoginAuthenticationTypeProto& container(
         policy.saml_login_authentication_type());

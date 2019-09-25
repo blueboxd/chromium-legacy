@@ -6,6 +6,7 @@
 
 #include "chrome/browser/apps/app_service/app_service_proxy.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_registry_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/services/app_service/public/cpp/app_registry_cache.h"
 #include "chrome/services/app_service/public/cpp/app_update.h"
@@ -81,6 +82,21 @@ void AppServiceAppIconLoader::CallLoadIcon(const std::string& app_id,
   apps::AppServiceProxy* proxy =
       apps::AppServiceProxyFactory::GetForProfile(profile());
   if (!proxy) {
+    return;
+  }
+
+  // When Crostini generates shelf id as the app_id, which couldn't match to an
+  // app, the default penguin icon should be loaded.
+  if (base::StartsWith(app_id, crostini::kCrostiniAppIdPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    apps::mojom::IconKeyPtr icon_key = apps::mojom::IconKey::New();
+    icon_key->resource_id = apps::mojom::IconKey::kInvalidResourceId;
+    proxy->LoadIconFromIconKey(
+        apps::mojom::AppType::kCrostini, app_id, std::move(icon_key),
+        apps::mojom::IconCompression::kUncompressed, icon_size_in_dip(),
+        allow_placeholder_icon,
+        base::BindOnce(&AppServiceAppIconLoader::OnLoadIcon,
+                       weak_ptr_factory_.GetWeakPtr(), app_id));
     return;
   }
 

@@ -513,8 +513,8 @@ class WaylandBufferManagerHost::Surface {
   // surface it backed to avoid its contents shown on screen. However, it
   // means that the Wayland compositor no longer sends new buffer release events
   // as long as there has not been buffer attached and no submission callback is
-  // sent. To avoid this, |contents_reset_| can be used as an identification of a
-  // need to call submission callback manually.
+  // sent. To avoid this, |contents_reset_| can be used as an identification of
+  // a need to call submission callback manually.
   bool contents_reset_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Surface);
@@ -528,7 +528,7 @@ WaylandBufferManagerHost::Surface::WaylandBuffer::~WaylandBuffer() = default;
 
 WaylandBufferManagerHost::WaylandBufferManagerHost(
     WaylandConnection* connection)
-    : connection_(connection), binding_(this), weak_factory_(this) {
+    : connection_(connection), receiver_(this), weak_factory_(this) {
   connection_->wayland_window_manager()->AddObserver(this);
 }
 
@@ -552,31 +552,27 @@ void WaylandBufferManagerHost::SetTerminateGpuCallback(
   terminate_gpu_cb_ = std::move(terminate_callback);
 }
 
-ozone::mojom::WaylandBufferManagerHostPtr
+mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
 WaylandBufferManagerHost::BindInterface() {
-  DCHECK(!binding_.is_bound());
-  ozone::mojom::WaylandBufferManagerHostPtr buffer_manager_host_ptr;
-  binding_.Bind(MakeRequest(&buffer_manager_host_ptr));
-  return buffer_manager_host_ptr;
+  DCHECK(!receiver_.is_bound());
+  mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
+      buffer_manager_host;
+  receiver_.Bind(buffer_manager_host.InitWithNewPipeAndPassReceiver());
+  return buffer_manager_host;
 }
 
 void WaylandBufferManagerHost::OnChannelDestroyed() {
-  buffer_manager_gpu_associated_ptr_.reset();
-  binding_.Close();
+  buffer_manager_gpu_associated_.reset();
+  receiver_.reset();
 
   for (auto& surface_pair : surfaces_)
     surface_pair.second->ClearState();
 }
 
-bool WaylandBufferManagerHost::CanCreateDmabufBasedBuffer() const {
-  return !!connection_->zwp_dmabuf();
-}
-
-void WaylandBufferManagerHost::SetWaylandBufferManagerGpuPtr(
-    ozone::mojom::WaylandBufferManagerGpuAssociatedPtrInfo
-        buffer_manager_gpu_associated_ptr) {
-  buffer_manager_gpu_associated_ptr_.Bind(
-      std::move(buffer_manager_gpu_associated_ptr));
+void WaylandBufferManagerHost::SetWaylandBufferManagerGpu(
+    mojo::PendingAssociatedRemote<ozone::mojom::WaylandBufferManagerGpu>
+        buffer_manager_gpu_associated) {
+  buffer_manager_gpu_associated_.Bind(std::move(buffer_manager_gpu_associated));
 }
 
 void WaylandBufferManagerHost::CreateDmabufBasedBuffer(
@@ -826,9 +822,8 @@ void WaylandBufferManagerHost::OnSubmission(
     const gfx::SwapResult& swap_result) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
-  DCHECK(buffer_manager_gpu_associated_ptr_);
-  buffer_manager_gpu_associated_ptr_->OnSubmission(widget, buffer_id,
-                                                   swap_result);
+  DCHECK(buffer_manager_gpu_associated_);
+  buffer_manager_gpu_associated_->OnSubmission(widget, buffer_id, swap_result);
 }
 
 void WaylandBufferManagerHost::OnPresentation(
@@ -837,9 +832,8 @@ void WaylandBufferManagerHost::OnPresentation(
     const gfx::PresentationFeedback& feedback) {
   DCHECK(base::MessageLoopCurrentForUI::IsSet());
 
-  DCHECK(buffer_manager_gpu_associated_ptr_);
-  buffer_manager_gpu_associated_ptr_->OnPresentation(widget, buffer_id,
-                                                     feedback);
+  DCHECK(buffer_manager_gpu_associated_);
+  buffer_manager_gpu_associated_->OnPresentation(widget, buffer_id, feedback);
 }
 
 void WaylandBufferManagerHost::TerminateGpuProcess() {

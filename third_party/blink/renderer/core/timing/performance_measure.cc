@@ -47,16 +47,16 @@ PerformanceMeasure* PerformanceMeasure::Create(
 ScriptValue PerformanceMeasure::detail(ScriptState* script_state) {
   v8::Isolate* isolate = script_state->GetIsolate();
   if (!serialized_detail_)
-    return ScriptValue(script_state, v8::Null(isolate));
+    return ScriptValue(isolate, v8::Null(isolate));
   auto result = deserialized_detail_map_.insert(
       script_state, TraceWrapperV8Reference<v8::Value>());
   TraceWrapperV8Reference<v8::Value>& relevant_data =
       result.stored_value->value;
   if (!result.is_new_entry)
-    return ScriptValue(script_state, relevant_data.NewLocal(isolate));
+    return ScriptValue(isolate, relevant_data.NewLocal(isolate));
   v8::Local<v8::Value> value = serialized_detail_->Deserialize(isolate);
   relevant_data.Set(isolate, value);
-  return ScriptValue(script_state, value);
+  return ScriptValue(isolate, value);
 }
 
 AtomicString PerformanceMeasure::entryType() const {

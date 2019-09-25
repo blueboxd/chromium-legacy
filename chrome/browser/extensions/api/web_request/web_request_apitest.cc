@@ -526,10 +526,9 @@ class ExtensionWebRequestApiAuthRequiredTest
   }
 };
 
-// Note: this is flaky on multiple platforms (crbug.com/1003598). Temporarily
-// enabled to find flakiness cause.
+// Note: this is flaky on multiple platforms (crbug.com/1003598).
 IN_PROC_BROWSER_TEST_P(ExtensionWebRequestApiAuthRequiredTest,
-                       WebRequestAuthRequired) {
+                       DISABLED_WebRequestAuthRequired) {
   CancelLoginDialog login_dialog_helper;
 
   ASSERT_TRUE(StartEmbeddedTestServer());

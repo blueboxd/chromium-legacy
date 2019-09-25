@@ -4,8 +4,6 @@
 
 source_set("lib") {
   sources = [
-    "app_service.cc",
-    "app_service.h",
     "app_service_impl.cc",
     "app_service_impl.h",
   ]
@@ -13,8 +11,6 @@ source_set("lib") {
   deps = [
     "//base",
     "//mojo/public/cpp/bindings",
-    "//services/preferences/public/cpp",
-    "//services/service_manager/public/cpp",
   ]
 
   public_deps = [

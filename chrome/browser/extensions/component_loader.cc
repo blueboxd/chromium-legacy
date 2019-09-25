@@ -6,7 +6,6 @@
 
 #include <string>
 
-#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "base/bind.h"
 #include "base/command_line.h"
@@ -541,9 +540,12 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 #endif  // BUILDFLAG(ENABLE_NACL)
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-    Add(IDR_QUICKOFFICE_MANIFEST,
-        base::FilePath(
-            FILE_PATH_LITERAL("/usr/share/chromeos-assets/quickoffice")));
+    if (base::FeatureList::IsEnabled(
+            features::kDisableOfficeEditingComponentApp)) {
+      Add(IDR_QUICKOFFICE_MANIFEST,
+          base::FilePath(
+              FILE_PATH_LITERAL("/usr/share/chromeos-assets/quickoffice")));
+    }
 
     // TODO(https://crbug.com/1005083): Force the off the record profile to be
     // created to allow the virtual keyboard to work in guest mode.

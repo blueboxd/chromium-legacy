@@ -4,7 +4,6 @@
 
 package org.chromium.chrome.browser.browsing_data;
 
-import android.content.Intent;
 import android.support.test.filters.MediumTest;
 
 import org.junit.Assert;
@@ -17,13 +16,14 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
-import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
 import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge.OnClearBrowsingDataListener;
 import org.chromium.chrome.browser.webapps.TestFetchStorageCallback;
+import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.webapps.WebappTestHelper;
 import org.chromium.content_public.browser.test.util.Criteria;
 import org.chromium.content_public.browser.test.util.CriteriaHelper;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
@@ -70,12 +70,11 @@ public class BrowsingDataRemoverIntegrationTest {
     }
 
     private void registerWebapp(final String webappId, final String webappUrl) throws Exception {
-        Intent shortcutIntent =
-                ShortcutHelper.createWebappShortcutIntentForTesting(webappId, webappUrl);
+        WebappInfo webappInfo = WebappTestHelper.createWebappInfo(webappId, webappUrl);
         TestFetchStorageCallback callback = new TestFetchStorageCallback();
-        WebappRegistry.getInstance().register(webappId, callback);
+        WebappRegistry.getInstance().register(webappInfo.id(), callback);
         callback.waitForCallback(0);
-        callback.getStorage().updateFromShortcutIntent(shortcutIntent);
+        callback.getStorage().updateFromWebappInfo(webappInfo);
     }
 
     /**

@@ -56,8 +56,8 @@ void CustomEvent::initCustomEvent(ScriptState* script_state,
 ScriptValue CustomEvent::detail(ScriptState* script_state) const {
   v8::Isolate* isolate = script_state->GetIsolate();
   if (detail_.IsEmpty())
-    return ScriptValue(script_state, v8::Null(isolate));
-  return ScriptValue(script_state, detail_.GetAcrossWorld(script_state));
+    return ScriptValue(isolate, v8::Null(isolate));
+  return ScriptValue(isolate, detail_.GetAcrossWorld(script_state));
 }
 
 const AtomicString& CustomEvent::InterfaceName() const {

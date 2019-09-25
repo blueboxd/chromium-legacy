@@ -15,6 +15,7 @@ import android.widget.TextView;
 
 import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
+import androidx.annotation.StringRes;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
@@ -192,6 +193,18 @@ class AutocompleteMediator
     }
 
     /**
+     * Check if the suggestion is created from clipboard.
+     *
+     * @param suggestion The OmniboxSuggestion to check.
+     * @return Whether or not the suggestion is from clipboard.
+     */
+    private boolean isSuggestionFromClipboard(OmniboxSuggestion suggestion) {
+        return suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_URL
+                || suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_TEXT
+                || suggestion.getType() == OmniboxSuggestionType.CLIPBOARD_IMAGE;
+    }
+
+    /**
      * Record histograms for presented suggestions.
      */
     private void recordSuggestionsShown() {
@@ -246,7 +259,7 @@ class AutocompleteMediator
         return mDataProvider != null ? mDataProvider.getProfile() : null;
     }
 
-    /**m
+    /**
      * Sets the data provider for the toolbar.
      */
     void setToolbarDataProvider(ToolbarDataProvider provider) {
@@ -598,12 +611,16 @@ class AutocompleteMediator
         };
 
         Resources resources = mContext.getResources();
+        @StringRes int dialogMessageId = R.string.omnibox_confirm_delete;
+        if (isSuggestionFromClipboard(suggestion)) {
+            dialogMessageId = R.string.omnibox_confirm_delete_from_clipboard;
+        }
+
         PropertyModel model =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER, dialogController)
                         .with(ModalDialogProperties.TITLE, suggestion.getDisplayText())
-                        .with(ModalDialogProperties.MESSAGE, resources,
-                                R.string.omnibox_confirm_delete)
+                        .with(ModalDialogProperties.MESSAGE, resources, dialogMessageId)
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, resources, R.string.ok)
                         .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT, resources,
                                 R.string.cancel)

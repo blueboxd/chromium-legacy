@@ -10,6 +10,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/extensions/extension_management.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest.h"
 #include "extensions/strings/grit/extensions_strings.h"
@@ -74,9 +75,15 @@ std::string
 bool StandardManagementPolicyProvider::UserMayLoad(
     const Extension* extension,
     base::string16* error) const {
-  // Component extensions are always allowed.
-  if (Manifest::IsComponentLocation(extension->location()))
+  // Component extensions are always allowed, besides the camera app that can be
+  // disabled by extension policy. This is a temporary solution until there's a
+  // dedicated policy to disable the camera, at which point the special check in
+  // the 'if' statement should be removed.
+  // TODO(http://crbug.com/1002935)
+  if (Manifest::IsComponentLocation(extension->location()) &&
+      extension->id() != extension_misc::kCameraAppId) {
     return true;
+  }
 
   // Shared modules are always allowed too: they only contain resources that
   // are used by other extensions. The extension that depends on the shared

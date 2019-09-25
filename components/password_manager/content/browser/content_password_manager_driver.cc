@@ -113,14 +113,6 @@ void ContentPasswordManagerDriver::FormEligibleForGenerationFound(
   }
 }
 
-void ContentPasswordManagerDriver::AutofillDataReceived(
-    const autofill::FormsPredictionsMap& predictions) {
-  // TODO(https://crbug.com/949519): Remove this method, MOJO calls and
-  // processing server predictions in the renderer.
-  GetPasswordAutofillAgent()->AutofillUsernameAndPasswordDataReceived(
-      predictions);
-}
-
 void ContentPasswordManagerDriver::GeneratedPasswordAccepted(
     const base::string16& password) {
   GetPasswordGenerationAgent()->GeneratedPasswordAccepted(password);
@@ -150,12 +142,6 @@ void ContentPasswordManagerDriver::PreviewSuggestion(
     const base::string16& username,
     const base::string16& password) {
   GetAutofillAgent()->PreviewPasswordSuggestion(username, password);
-}
-
-void ContentPasswordManagerDriver::ShowInitialPasswordAccountSuggestions(
-    const autofill::PasswordFormFillData& form_data) {
-  password_autofill_manager_.OnAddPasswordFillData(form_data);
-  GetAutofillAgent()->ShowInitialPasswordAccountSuggestions(form_data);
 }
 
 void ContentPasswordManagerDriver::ClearPreviewedForm() {
@@ -269,13 +255,9 @@ void ContentPasswordManagerDriver::HideManualFallbackForSaving() {
 }
 
 void ContentPasswordManagerDriver::SameDocumentNavigation(
-    const autofill::PasswordForm& password_form) {
-  if (!password_manager::bad_message::CheckChildProcessSecurityPolicy(
-          render_frame_host_, password_form,
-          BadMessageReason::CPMD_BAD_ORIGIN_IN_PAGE_NAVIGATION))
-    return;
-  GetPasswordManager()->OnPasswordFormSubmittedNoChecks(this, password_form);
-
+    autofill::mojom::SubmissionIndicatorEvent submission_indication_event) {
+  GetPasswordManager()->OnPasswordFormSubmittedNoChecks(
+      this, submission_indication_event);
   LogSiteIsolationMetricsForSubmittedForm(render_frame_host_);
 }
 

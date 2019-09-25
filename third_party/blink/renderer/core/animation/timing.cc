@@ -155,12 +155,13 @@ ComputedEffectTiming* Timing::getComputedTiming(
 Timing::CalculatedTiming Timing::CalculateTimings(
     double local_time,
     AnimationDirection animation_direction,
-    bool is_keyframe_effect) const {
+    bool is_keyframe_effect,
+    base::Optional<double> playback_rate) const {
   const double active_duration = ActiveDuration();
 
   const Timing::Phase current_phase =
       CalculatePhase(active_duration, local_time, animation_direction, *this);
-  const base::Optional<double> active_time =
+  const base::Optional<AnimationTimeDelta> active_time =
       CalculateActiveTime(active_duration, ResolvedFillMode(is_keyframe_effect),
                           local_time, current_phase, *this);
 
@@ -204,7 +205,7 @@ Timing::CalculatedTiming Timing::CalculateTimings(
       DCHECK(active_time);
       time_to_next_iteration =
           iteration_duration - iteration_time->InSecondsF();
-      if (active_duration - active_time.value() < time_to_next_iteration)
+      if (active_duration - active_time->InSecondsF() < time_to_next_iteration)
         time_to_next_iteration = std::numeric_limits<double>::infinity();
     }
   }
@@ -219,8 +220,10 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   DCHECK(!calculated.is_in_effect ||
          (current_iteration.has_value() && progress.has_value()));
   calculated.is_in_play = calculated.phase == Timing::kPhaseActive;
-  calculated.is_current =
-      calculated.phase == Timing::kPhaseBefore || calculated.is_in_play;
+  // https://drafts.csswg.org/web-animations-1/#current
+  calculated.is_current = calculated.is_in_play ||
+                          (playback_rate.has_value() && playback_rate > 0 &&
+                           calculated.phase == Timing::kPhaseBefore);
   calculated.local_time = local_time;
   calculated.time_to_next_iteration = time_to_next_iteration;
 

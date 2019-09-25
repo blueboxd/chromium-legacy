@@ -107,7 +107,7 @@ ScriptValue ModuleRecord::Instantiate(ScriptState* script_state,
            .To(&success) ||
       !success) {
     DCHECK(try_catch.HasCaught());
-    return ScriptValue(script_state, try_catch.Exception());
+    return ScriptValue(isolate, try_catch.Exception());
   }
   DCHECK(!try_catch.HasCaught());
   return ScriptValue();
@@ -133,7 +133,7 @@ ScriptValue ModuleRecord::Evaluate(ScriptState* script_state,
                                       script_state->GetContext())
            .ToLocal(&result)) {
     DCHECK(try_catch.HasCaught());
-    return ScriptValue(script_state, try_catch.Exception());
+    return ScriptValue(isolate, try_catch.Exception());
   }
 
   return ScriptValue();

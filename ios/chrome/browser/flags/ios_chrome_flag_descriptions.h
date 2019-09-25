@@ -240,6 +240,11 @@ extern const char kOmniboxOnDeviceHeadSuggestionsDescription[];
 extern const char kOptionalArticleThumbnailName[];
 extern const char kOptionalArticleThumbnailDescription[];
 
+// Title and description for the flag to enable leak detection for entered
+// credentials.
+extern const char kPasswordLeakDetectionName[];
+extern const char kPasswordLeakDetectionDescription[];
+
 // Title and description for the flag to toggle the flag of the search button.
 extern const char kSearchIconToggleName[];
 extern const char kSearchIconToggleDescription[];

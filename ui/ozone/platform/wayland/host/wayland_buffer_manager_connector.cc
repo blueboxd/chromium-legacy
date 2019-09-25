@@ -7,6 +7,8 @@
 #include "base/bind.h"
 #include "base/task_runner_util.h"
 #include "ui/ozone/platform/wayland/host/wayland_buffer_manager_host.h"
+#include "ui/ozone/platform/wayland/host/wayland_connection.h"
+#include "ui/ozone/platform/wayland/host/wayland_zwp_linux_dmabuf.h"
 
 namespace ui {
 
@@ -23,17 +25,18 @@ void BindInterfaceInGpuProcess(const std::string& interface_name,
 }
 
 template <typename Interface>
-void BindInterfaceInGpuProcess(mojo::InterfaceRequest<Interface> request,
+void BindInterfaceInGpuProcess(mojo::PendingReceiver<Interface> request,
                                const BinderCallback& binder_callback) {
-  BindInterfaceInGpuProcess(
-      Interface::Name_, std::move(request.PassMessagePipe()), binder_callback);
+  BindInterfaceInGpuProcess(Interface::Name_, std::move(request.PassPipe()),
+                            binder_callback);
 }
 
 }  // namespace
 
 WaylandBufferManagerConnector::WaylandBufferManagerConnector(
-    WaylandBufferManagerHost* buffer_manager)
-    : buffer_manager_(buffer_manager) {}
+    WaylandConnection* wayland_connection)
+    : buffer_manager_(wayland_connection->buffer_manager_host()),
+      wayland_connection_(wayland_connection) {}
 
 WaylandBufferManagerConnector::~WaylandBufferManagerConnector() = default;
 
@@ -78,20 +81,27 @@ void WaylandBufferManagerConnector::OnGpuServiceLaunched(
 }
 
 void WaylandBufferManagerConnector::OnBufferManagerHostPtrBinded(
-    ozone::mojom::WaylandBufferManagerHostPtr buffer_manager_host_ptr) const {
-  ozone::mojom::WaylandBufferManagerGpuPtr buffer_manager_gpu_ptr;
-  auto request = mojo::MakeRequest(&buffer_manager_gpu_ptr);
-  BindInterfaceInGpuProcess(std::move(request), binder_);
-  DCHECK(buffer_manager_host_ptr);
-  buffer_manager_gpu_ptr->SetWaylandBufferManagerHost(
-      std::move(buffer_manager_host_ptr));
+    mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost>
+        buffer_manager_host) const {
+  mojo::Remote<ozone::mojom::WaylandBufferManagerGpu> buffer_manager_gpu;
+  auto receiver = buffer_manager_gpu.BindNewPipeAndPassReceiver();
+  BindInterfaceInGpuProcess(std::move(receiver), binder_);
+  DCHECK(buffer_manager_gpu);
 
+  WaylandZwpLinuxDmabuf::BufferFormatsWithModifiersMap
+      buffer_formats_with_modifiers;
+  bool supports_dma_buf = false;
 #if defined(WAYLAND_GBM)
-  if (!buffer_manager_->CanCreateDmabufBasedBuffer()) {
-    LOG(WARNING) << "zwp_linux_dmabuf is not available.";
-    buffer_manager_gpu_ptr->ResetGbmDevice();
+  auto* zwp_linux_dmabuf = wayland_connection_->zwp_dmabuf();
+  if (zwp_linux_dmabuf) {
+    supports_dma_buf = true;
+    buffer_formats_with_modifiers =
+        zwp_linux_dmabuf->supported_buffer_formats();
   }
 #endif
+  buffer_manager_gpu->Initialize(std::move(buffer_manager_host),
+                                 buffer_formats_with_modifiers,
+                                 supports_dma_buf);
 }
 
 void WaylandBufferManagerConnector::OnTerminateGpuProcess(std::string message) {

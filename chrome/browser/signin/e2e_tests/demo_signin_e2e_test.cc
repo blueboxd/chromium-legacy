@@ -2,23 +2,35 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
+#include "base/time/time.h"
 #include "chrome/browser/signin/e2e_tests/live_test.h"
 #include "chrome/browser/signin/e2e_tests/test_accounts_util.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/browser/ui/webui/signin/login_ui_test_utils.h"
+#include "components/signin/public/identity_manager/account_info.h"
 #include "components/signin/public/identity_manager/accounts_in_cookie_jar_info.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
 #include "components/signin/public/identity_manager/test_identity_manager_observer.h"
+#include "components/sync/driver/sync_service.h"
+#include "google_apis/gaia/core_account_id.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
+
+#if !defined(OS_CHROMEOS)
+#include "chrome/browser/sync/sync_ui_util.h"
+#endif  // !defined(OS_CHROMEOS)
 
 namespace signin {
 namespace test {
 
 // IdentityManager observer allowing to wait for sign out events for several
 // accounts.
+// Counts both token removals and token persistent errors as sign out events.
 class SignOutTestObserver : public IdentityManager::Observer {
  public:
   explicit SignOutTestObserver(IdentityManager* identity_manager)
@@ -30,19 +42,31 @@ class SignOutTestObserver : public IdentityManager::Observer {
   void OnRefreshTokenRemovedForAccount(
       const CoreAccountId& account_id) override {
     ++signed_out_accounts_;
-    if (expected_accounts_ != -1 && signed_out_accounts_ >= expected_accounts_)
-      run_loop_.Quit();
+    QuitIfConditionIsSatisfied();
+  }
+
+  void OnErrorStateOfRefreshTokenUpdatedForAccount(
+      const CoreAccountInfo& account_info,
+      const GoogleServiceAuthError& error) override {
+    if (!error.IsPersistentError())
+      return;
+
+    ++signed_out_accounts_;
+    QuitIfConditionIsSatisfied();
   }
 
   void WaitForRefreshTokenRemovedForAccounts(int expected_accounts) {
     expected_accounts_ = expected_accounts;
-    if (signed_out_accounts_ >= expected_accounts_)
-      return;
-
+    QuitIfConditionIsSatisfied();
     run_loop_.Run();
   }
 
  private:
+  void QuitIfConditionIsSatisfied() {
+    if (expected_accounts_ != -1 && signed_out_accounts_ >= expected_accounts_)
+      run_loop_.Quit();
+  }
+
   signin::IdentityManager* identity_manager_;
   base::RunLoop run_loop_;
   int signed_out_accounts_ = 0;
@@ -65,6 +89,18 @@ class DemoSignInTest : public signin::test::LiveTest {
   void SignInFromWeb(const TestAccount& test_account) {
     AddTabAtIndex(0, GaiaUrls::GetInstance()->add_account_url(),
                   ui::PageTransition::PAGE_TRANSITION_TYPED);
+    SignInFromCurrentPage(test_account);
+  }
+
+  void SignInFromSettings(const TestAccount& test_account) {
+    GURL settings_url("chrome://settings");
+    AddTabAtIndex(0, settings_url, ui::PageTransition::PAGE_TRANSITION_TYPED);
+    auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
+    EXPECT_TRUE(content::ExecuteScript(
+        settings_tab,
+        "testElement = document.createElement('settings-sync-account-control');"
+        "document.body.appendChild(testElement);"
+        "testElement.$$('#sign-in').click();"));
     SignInFromCurrentPage(test_account);
   }
 
@@ -97,22 +133,19 @@ class DemoSignInTest : public signin::test::LiveTest {
   signin::IdentityManager* identity_manager() {
     return IdentityManagerFactory::GetForProfile(browser()->profile());
   }
+
+  syncer::SyncService* sync_service() {
+    return ProfileSyncServiceFactory::GetForProfile(browser()->profile());
+  }
 };
 
 // Sings in an account through the settings page and checks that the account is
-// added to Chrome. Sync should be disabled.
+// added to Chrome. Sync should be disabled because the test doesn't pass
+// through the Sync confirmation dialog.
 IN_PROC_BROWSER_TEST_F(DemoSignInTest, SimpleSignInFlow) {
-  GURL url("chrome://settings");
-  AddTabAtIndex(0, url, ui::PageTransition::PAGE_TRANSITION_TYPED);
-  auto* settings_tab = browser()->tab_strip_model()->GetActiveWebContents();
-  EXPECT_TRUE(content::ExecuteScript(
-      settings_tab,
-      "testElement = document.createElement('settings-sync-account-control');"
-      "document.body.appendChild(testElement);"
-      "testElement.$$('#sign-in').click();"));
   TestAccount ta;
   CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", ta));
-  SignInFromCurrentPage(ta);
+  SignInFromSettings(ta);
 
   const AccountsInCookieJarInfo& accounts_in_cookie_jar =
       identity_manager()->GetAccountsInCookieJar();
@@ -124,6 +157,47 @@ IN_PROC_BROWSER_TEST_F(DemoSignInTest, SimpleSignInFlow) {
   EXPECT_TRUE(gaia::AreEmailsSame(ta.user, account.email));
   EXPECT_TRUE(identity_manager()->HasAccountWithRefreshToken(account.id));
   EXPECT_FALSE(identity_manager()->HasPrimaryAccount());
+}
+
+// Signs in an account through the settings page and enables Sync. Checks that
+// Sync is enabled.
+// Then, signs out on the web and checks that the account is removed from
+// cookies and Sync paused error is displayed.
+IN_PROC_BROWSER_TEST_F(DemoSignInTest, WebSignOut) {
+  TestAccount test_account;
+  CHECK(GetTestAccountsUtil()->GetAccount("TEST_ACCOUNT_1", test_account));
+  SignInFromSettings(test_account);
+
+  TestIdentityManagerObserver observer(identity_manager());
+  base::RunLoop primary_account_set_loop;
+  observer.SetOnPrimaryAccountSetCallback(
+      primary_account_set_loop.QuitClosure());
+  login_ui_test_utils::DismissSyncConfirmationDialog(
+      browser(), base::TimeDelta::FromSeconds(3));
+  primary_account_set_loop.Run();
+  const CoreAccountInfo& primary_account =
+      observer.PrimaryAccountFromSetCallback();
+  EXPECT_TRUE(gaia::AreEmailsSame(test_account.user, primary_account.email));
+  EXPECT_TRUE(sync_service()->IsSyncFeatureEnabled());
+
+  SignOutFromWeb(1);
+
+  const AccountsInCookieJarInfo& accounts_in_cookie_jar =
+      identity_manager()->GetAccountsInCookieJar();
+  EXPECT_TRUE(accounts_in_cookie_jar.accounts_are_fresh);
+  ASSERT_TRUE(accounts_in_cookie_jar.signed_in_accounts.empty());
+  ASSERT_EQ(1u, accounts_in_cookie_jar.signed_out_accounts.size());
+  EXPECT_TRUE(gaia::AreEmailsSame(
+      test_account.user, accounts_in_cookie_jar.signed_out_accounts[0].email));
+  EXPECT_TRUE(
+      identity_manager()->HasAccountWithRefreshTokenInPersistentErrorState(
+          primary_account.account_id));
+#if !defined(OS_CHROMEOS)
+  int unused1, unused2;
+  EXPECT_EQ(sync_ui_util::GetMessagesForAvatarSyncError(browser()->profile(),
+                                                        &unused1, &unused2),
+            sync_ui_util::AUTH_ERROR);
+#endif  // !defined(OS_CHROMEOS)
 }
 
 // Sings in two accounts on the web and checks that cookies and refresh tokens
@@ -168,6 +242,7 @@ IN_PROC_BROWSER_TEST_F(DemoSignInTest, WebSignInAndSignOut) {
   EXPECT_TRUE(accounts_in_cookie_jar_3.accounts_are_fresh);
   ASSERT_TRUE(accounts_in_cookie_jar_3.signed_in_accounts.empty());
   EXPECT_EQ(2u, accounts_in_cookie_jar_3.signed_out_accounts.size());
+  EXPECT_TRUE(identity_manager()->GetAccountsWithRefreshTokens().empty());
 }
 
 }  // namespace test

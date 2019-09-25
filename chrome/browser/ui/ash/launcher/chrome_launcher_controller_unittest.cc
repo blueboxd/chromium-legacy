@@ -121,7 +121,6 @@
 #include "extensions/common/manifest_constants.h"
 #include "extensions/grit/extensions_browser_resources.h"
 #include "services/network/test/test_network_connection_tracker.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/window.h"
@@ -324,7 +323,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
 
     DCHECK(profile());
     extension_registry_ = extensions::ExtensionRegistry::Get(profile());
-
     app_service_test_.SetUp(profile());
 
     if (auto_start_arc_test_)
@@ -477,7 +475,6 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   void TearDown() override {
     arc_test_.TearDown();
     launcher_controller_ = nullptr;
-
     BrowserWithTestWindowTest::TearDown();
   }
 
@@ -502,7 +499,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
   // Create and initialize the controller, owned by the test shell delegate.
   void InitLauncherController() {
     CreateLauncherController()->Init();
-    app_service_test_.FlushMojoCallsForAppService();
+    app_service_test_.FlushMojoCalls();
   }
 
   // Create and initialize the controller; create a tab and show the browser.
@@ -670,7 +667,7 @@ class ChromeLauncherControllerTest : public BrowserWithTestWindowTest {
       app_list_syncable_service_->ProcessSyncChanges(FROM_HERE,
                                                      combined_sync_list);
     }
-    app_service_test_.FlushMojoCallsForAppService();
+    app_service_test_.FlushMojoCalls();
   }
 
   // Set the index at which the chrome icon should be.
@@ -3711,7 +3708,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   // Switch to a new profile
   SwitchActiveUser(account_id2);
-  app_service_test().FlushMojoCallsForAppService();
+  app_service_test().FlushMojoCalls();
   EXPECT_FALSE(launcher_controller_->IsAppPinned(app_id));
   EXPECT_EQ(1, model_->item_count());
   EXPECT_FALSE(
@@ -3719,7 +3716,7 @@ TEST_F(MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerTest,
 
   // Switch back
   SwitchActiveUser(account_id);
-  app_service_test().FlushMojoCallsForAppService();
+  app_service_test().FlushMojoCalls();
   EXPECT_TRUE(launcher_controller_->IsAppPinned(app_id));
   EXPECT_EQ(2, model_->item_count());
   EXPECT_TRUE(
@@ -4597,7 +4594,7 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOnline) {
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
 
-  app_service_test().FlushMojoCallsForAppService();
+  app_service_test().FlushMojoCalls();
 
   // Since the device is online, all policy pinned apps are pinned.
   EXPECT_TRUE(launcher_controller_->IsAppPinned(extension1_->id()));
@@ -4648,7 +4645,7 @@ TEST_F(ChromeLauncherControllerDemoModeTest, PinnedAppsOffline) {
 
   profile()->GetTestingPrefService()->SetManagedPref(
       prefs::kPolicyPinnedLauncherApps, policy_value.CreateDeepCopy());
-  app_service_test().FlushMojoCallsForAppService();
+  app_service_test().FlushMojoCalls();
 
   // Since the device is online, the policy pinned apps that shouldn't be pinned
   // in Demo Mode are unpinned.

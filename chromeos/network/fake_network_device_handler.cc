@@ -62,6 +62,9 @@ void FakeNetworkDeviceHandler::ChangePin(
 
 void FakeNetworkDeviceHandler::SetCellularAllowRoaming(bool allow_roaming) {}
 
+void FakeNetworkDeviceHandler::SetUsbEthernetMacAddressSource(
+    const std::string& source) {}
+
 void FakeNetworkDeviceHandler::SetWifiTDLSEnabled(
     const std::string& ip_or_mac_address,
     bool enabled,

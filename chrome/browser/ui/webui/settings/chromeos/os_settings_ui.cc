@@ -187,8 +187,8 @@ void OSSettingsUI::AddSettingsPageUIHandler(
 }
 
 void OSSettingsUI::BindCrosNetworkConfig(
-    network_config::mojom::CrosNetworkConfigRequest request) {
-  ash::GetNetworkConfigService(std::move(request));
+    mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver) {
+  ash::GetNetworkConfigService(std::move(receiver));
 }
 
 void OSSettingsUI::BindAppManagementPageHandlerFactory(

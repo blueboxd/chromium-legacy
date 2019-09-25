@@ -154,6 +154,7 @@ Animation::Animation(ExecutionContext* execution_context,
                      AnimationEffect* content)
     : ContextLifecycleObserver(execution_context),
       internal_play_state_(kIdle),
+      reported_play_state_(kIdle),
       animation_play_state_(kIdle),
       playback_rate_(1),
       start_time_(),
@@ -1449,31 +1450,8 @@ Animation::PlayStateUpdateScope::PlayStateUpdateScope(
 Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
   AnimationPlayState old_play_state = initial_play_state_;
   AnimationPlayState new_play_state = animation_->CalculatePlayState();
-
-  // TODO(crbug.com/958433): Phase out internal_play_state_ in favor of the spec
-  // compliant version. At present, both are needed as the web exposed play
-  // state cannot simply be inferred from the internal play state.
   animation_->internal_play_state_ = new_play_state;
   animation_->animation_play_state_ = animation_->CalculateAnimationPlayState();
-  if (old_play_state != new_play_state) {
-    bool was_active = old_play_state == kPending || old_play_state == kRunning;
-    bool is_active = new_play_state == kPending || new_play_state == kRunning;
-    if (!was_active && is_active) {
-      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
-          "blink.animations,devtools.timeline,benchmark,rail", "Animation",
-          animation_, "data", inspector_animation_event::Data(*animation_));
-    } else if (was_active && !is_active) {
-      TRACE_EVENT_NESTABLE_ASYNC_END1(
-          "blink.animations,devtools.timeline,benchmark,rail", "Animation",
-          animation_, "endData",
-          inspector_animation_state_event::Data(*animation_));
-    } else {
-      TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
-          "blink.animations,devtools.timeline,benchmark,rail", "Animation",
-          animation_, "data",
-          inspector_animation_state_event::Data(*animation_));
-    }
-  }
 
   // Ordering is important, the ready promise should resolve/reject before
   // the finished promise.
@@ -1539,11 +1517,7 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
       break;
   }
   animation_->EndUpdatingState();
-
-  if (old_play_state != new_play_state) {
-    probe::AnimationPlayStateChanged(animation_->document_, animation_,
-                                     old_play_state, new_play_state);
-  }
+  animation_->NotifyProbe();
 }
 
 void Animation::AddedEventListener(
@@ -1621,6 +1595,35 @@ void Animation::RejectAndResetPromiseMaybeAsync(AnimationPromise* promise) {
                              WrapPersistent(this), WrapPersistent(promise)));
   } else {
     RejectAndResetPromise(promise);
+  }
+}
+
+void Animation::NotifyProbe() {
+  AnimationPlayState old_play_state = reported_play_state_;
+  AnimationPlayState new_play_state =
+      pending() ? kPending : CalculateAnimationPlayState();
+
+  if (old_play_state != new_play_state) {
+    probe::AnimationPlayStateChanged(document_, this, old_play_state,
+                                     new_play_state);
+    reported_play_state_ = new_play_state;
+
+    bool was_active = old_play_state == kPending || old_play_state == kRunning;
+    bool is_active = new_play_state == kPending || new_play_state == kRunning;
+
+    if (!was_active && is_active) {
+      TRACE_EVENT_NESTABLE_ASYNC_BEGIN1(
+          "blink.animations,devtools.timeline,benchmark,rail", "Animation",
+          this, "data", inspector_animation_event::Data(*this));
+    } else if (was_active && !is_active) {
+      TRACE_EVENT_NESTABLE_ASYNC_END1(
+          "blink.animations,devtools.timeline,benchmark,rail", "Animation",
+          this, "endData", inspector_animation_state_event::Data(*this));
+    } else {
+      TRACE_EVENT_NESTABLE_ASYNC_INSTANT1(
+          "blink.animations,devtools.timeline,benchmark,rail", "Animation",
+          this, "data", inspector_animation_state_event::Data(*this));
+    }
   }
 }
 

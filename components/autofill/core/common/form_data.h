@@ -29,6 +29,8 @@ using ButtonTitleList = std::vector<ButtonTitleInfo>;
 
 // Holds information about a form to be filled and/or submitted.
 struct FormData {
+  // TODO(https://crbug.com/875768): Rename this const to kNotSetRendererId, and
+  // use it also for not set renderer ids in FormFieldData.
   static constexpr uint32_t kNotSetFormRendererId =
       std::numeric_limits<uint32_t>::max();
 

@@ -8,6 +8,8 @@ static_library("common") {
   sources = [
     "file_stream.cc",
     "file_stream.h",
+    "glyph_usage.cc",
+    "glyph_usage.h",
   ]
 
   deps = [
@@ -21,6 +23,7 @@ source_set("unit_tests") {
 
   sources = [
     "file_stream_unittest.cc",
+    "glyph_usage_unittest.cc",
   ]
 
   deps = [

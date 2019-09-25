@@ -23,6 +23,8 @@ using objdump, we can disassemble those functions and dump all symbols that
 they reference.
 """
 
+from __future__ import print_function
+
 import optparse
 import re
 import subprocess
@@ -252,18 +254,19 @@ def main():
 
     if opts.diffable:
       if ref_output:
-        print '\n'.join('# ' + qualified_filename + ' ' + r for r in ref_output)
+        print('\n'.join(
+            '# ' + qualified_filename + ' ' + r for r in ref_output))
       else:
-        print '# %s: (empty initializer list)' % qualified_filename
+        print('# %s: (empty initializer list)' % qualified_filename)
     else:
-      print '%s (initializer offset 0x%x size 0x%x)' % (qualified_filename,
-                                                        addr, size)
-      print ''.join('  %s\n' % r for r in ref_output)
+      print('%s (initializer offset 0x%x size 0x%x)' % (qualified_filename,
+                                                        addr, size))
+      print(''.join('  %s\n' % r for r in ref_output))
 
   if opts.diffable:
-    print '#',
-  print 'Found %d static initializers in %d files.' % (initializer_count,
-                                                       file_count)
+    print('#', end=' ')
+  print('Found %d static initializers in %d files.' % (initializer_count,
+                                                       file_count))
 
   return 0
 

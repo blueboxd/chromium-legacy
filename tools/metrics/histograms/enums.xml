@@ -13101,6 +13101,7 @@ Called by update_net_error_codes.py.-->
   <int value="7" label="Failed non-root renderpass"/>
   <int value="8" label="Failed too many overlays"/>
   <int value="9" label="Failed no hw overlay support (deprecated)"/>
+  <int value="10" label="Failed quad has rounded corners"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -18122,6 +18123,7 @@ Called by update_net_error_codes.py.-->
   <int value="606" label="DeviceLoginScreenHighContrastEnabled"/>
   <int value="607" label="DeviceLoginScreenVirtualKeyboardEnabled"/>
   <int value="608" label="CloudExtensionRequestEnabled"/>
+  <int value="609" label="DeviceLoginScreenSystemInfoEnforced"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -35121,6 +35123,7 @@ Called by update_gpu_driver_bug_workaround_entries.py.-->
   <int value="-1692384483" label="disambiguate-autofill-server-name-types"/>
   <int value="-1691892152" label="SafeSearchUrlReporting:disabled"/>
   <int value="-1691668194" label="enable-new-bookmark-apps"/>
+  <int value="-1691602043" label="DisableOfficeEditingComponentApp:enabled"/>
   <int value="-1691281364" label="enable-notification-action-icons"/>
   <int value="-1687406612" label="UseSkiaRenderer:disabled"/>
   <int value="-1686782572" label="ChromeHomeInactivitySheetExpansion:disabled"/>
@@ -35929,6 +35932,7 @@ from previous Chrome versions.
   <int value="-684223908" label="enable-android-wallpapers-app"/>
   <int value="-683370370" label="EnableAppDataSearch:enabled"/>
   <int value="-683306022" label="OverscrollHistoryNavigation:enabled"/>
+  <int value="-682580680" label="DisableOfficeEditingComponentApp:disabled"/>
   <int value="-680787130" label="ExperimentalVRFeatures:disabled"/>
   <int value="-680589442" label="MacRTL:disabled"/>
   <int value="-674804217" label="SoleIntegration:enabled"/>
@@ -37466,6 +37470,8 @@ from previous Chrome versions.
   <int value="1435251818" label="AutofillNoLocalSaveOnUploadSuccess:enabled"/>
   <int value="1437413720" label="CooperativeScheduling:disabled"/>
   <int value="1441897340" label="AndroidSpellCheckerNonLowEnd:enabled"/>
+  <int value="1442129147"
+      label="OmniboxRemoveSuggestionsFromClipboard:disabled"/>
   <int value="1442798825" label="enable-quic"/>
   <int value="1442830837" label="MemoryAblation:disabled"/>
   <int value="1447295459" label="SyncPseudoUSSApps:enabled"/>
@@ -37936,6 +37942,8 @@ from previous Chrome versions.
   <int value="2063091429" label="OfflinePagesSharing:enabled"/>
   <int value="2067634730" label="LsdPermissionPrompt:disabled"/>
   <int value="2067735898" label="WebVrAutopresentFromIntent:enabled"/>
+  <int value="2067903732"
+      label="OmniboxRemoveSuggestionsFromClipboard:enabled"/>
   <int value="2068193488" label="SharedClipboardUI:disabled"/>
   <int value="2069999572"
       label="AllowSignedHTTPExchangeCertsWithoutExtension:disabled"/>
@@ -47215,6 +47223,9 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="5" label="Touch To Fill">
     User is browsing with the Touch To Fill feature enabled.
+  </int>
+  <int value="6" label="Fill On Select">
+    User is browsing with the Fill On Select feature enabled.
   </int>
 </enum>
 

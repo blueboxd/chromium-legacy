@@ -39,10 +39,11 @@
 #include "third_party/blink/renderer/core/layout/layout_block.h"
 #include "third_party/blink/renderer/core/layout/layout_box.h"
 #include "third_party/blink/renderer/core/layout/layout_grid.h"
+#include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/style/computed_style_constants.h"
 #include "third_party/blink/renderer/core/style/style_svg_resource.h"
 #include "third_party/blink/renderer/core/style_property_shorthand.h"
-#include "third_party/blink/renderer/core/svg/svg_element.h"
+#include "third_party/blink/renderer/core/svg_element_type_helpers.h"
 
 namespace blink {
 
@@ -1697,7 +1698,7 @@ FloatRect ComputedStyleUtils::ReferenceBoxForTransform(
     const LayoutObject& layout_object,
     UsePixelSnappedBox pixel_snap_box) {
   if (layout_object.IsSVGChild())
-    return ComputeSVGTransformReferenceBox(layout_object);
+    return TransformHelper::ComputeReferenceBox(layout_object);
   if (layout_object.IsBox()) {
     const auto& layout_box = ToLayoutBox(layout_object);
     if (pixel_snap_box == kUsePixelSnappedBox)

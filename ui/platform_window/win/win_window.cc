@@ -75,6 +75,11 @@ void WinWindow::Close() {
   Destroy();
 }
 
+bool WinWindow::IsVisible() const {
+  NOTIMPLEMENTED_LOG_ONCE();
+  return true;
+}
+
 void WinWindow::PrepareForShutdown() {}
 
 void WinWindow::SetBounds(const gfx::Rect& bounds) {

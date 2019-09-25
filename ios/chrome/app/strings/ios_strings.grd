@@ -866,14 +866,8 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_DESCRIPTION" desc="Subtitle for the cell to open 'Data from Chromium sync' web page where the user can control all their data data from sync.">
         Manage synced data on Google Dashboard
       </message>
-      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT" desc="Label on the button to proceed with signout and clear all Chrome data.[Length: 30em].">
-        Accept and sign out
-      </message>
       <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_ACCEPT_UNITY" desc="Label on the button to proceed with signout and clear all Chrome data.[Length: 30em].">
         Clear
-      </message>
-      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_TITLE" desc="Title of the dialog shown when signing out of a managed account.[Length: 50em] [iOS only].">
-        Sign out of managed account
       </message>
       <message name="IDS_IOS_MANAGED_SIGNIN_ACCEPT_BUTTON" desc="The title of the Accept button of the Sign in to a managed account dialog. [40em]">
         Accept and sign in
@@ -1022,20 +1016,8 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_OPTIONS_ACCOUNTS_DESCRIPTION" desc="Text informing the user of the accounts they are signed in to Chrome with [iOS only] [150em]">
         Signed In to Google as
       </message>
-      <message name="IDS_IOS_OPTIONS_ACCOUNTS_GOOGLE_DESCRIPTION" desc="Text of the Google Activity Controls button on the accounts settings screen [Length: 150em]">
-        Control how Google uses your browsing history to personalize Search, ads, and other Google services
-      </message>
-      <message name="IDS_IOS_OPTIONS_ACCOUNTS_GOOGLE_TITLE" desc="Title of the Google Activity Controls button on the accounts settings screen [Length: 50em]">
-        Google Activity Controls
-      </message>
-      <message name="IDS_IOS_OPTIONS_ACCOUNTS_SYNC_ERROR" desc="Text informing the user that sync isn't working properly [iOS only] [60em]">
-        Sync isn't working. Tap to fix.
-      </message>
       <message name="IDS_IOS_OPTIONS_ACCOUNTS_SYNC_IS_OFF" desc="Text informing the user that sync is off [iOS only] [60em]">
         Off
-      </message>
-      <message name="IDS_IOS_OPTIONS_ACCOUNTS_SYNC_TITLE" desc="Title of the Sync button on the accounts settings screen [iOS only] [30em]">
-        Sync
       </message>
       <message name="IDS_IOS_OPTIONS_ACCOUNTS_SIGN_OUT_TURN_OFF_SYNC" desc="Title of the button to sign out and turn off sync. [iOS only]">
         Sign out and turn off sync
@@ -1660,9 +1642,6 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_SYNC_CONFIRM_PASSPHRASE_LABEL" desc="The text for the confirm-passphrase field. [Length: 20em] [iOS only]">
         Confirm passphrase
       </message>
-      <message name="IDS_IOS_SYNC_DATA_TYPES_TITLE" desc="The title for the section of the data types to sync to">
-        Data Types
-      </message>
       <message name="IDS_IOS_SYNC_DECRYPT_BUTTON" desc="The title for the decrypt button on the encryption password screen [Length: 10em] [iOS only]">
         Submit
       </message>
@@ -1732,12 +1711,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       <message name="IDS_IOS_SYNC_PASSPHRASE_RECOVER" desc="Message about how to recover from a lost passphrase. [Length:100em, may be multiple lines] [iOS only]">
         If you forget your passphrase or want to change this setting, <ph name="BEGIN_LINK">BEGIN_LINK</ph>reset sync<ph name="END_LINK">END_LINK</ph>
       </message>
-      <message name="IDS_IOS_SYNC_RESET_GOOGLE_DASHBOARD_NO_LINK" desc="Message about how to reset sync via Google Dashboard without any link. [Length: 50em] [iOS only]">
-        Manage Synced Data…
-      </message>
-      <message name="IDS_IOS_SYNC_SETTING_TITLE" desc="The title for the Sync control for sync [iOS only]">
-        Sync
-      </message>
       <message name="IDS_IOS_SYNC_SETTINGS_NOT_CONFIRMED" desc="The error message to display when sign-in was interrupted and the user didn't review the sync settings.">
         Initial sync setup was not finished. Sync is off.
       </message>
@@ -1758,9 +1731,6 @@ Your data was encrypted with your sync passphrase on <ph name="TIME">$2<ex>Sept 
       </message>
       <message name="IDS_IOS_SYNC_STATUS_UNRECOVERABLE_ERROR" desc="Message shown throughout the sync settings screens when there is an unrecoverable error. [Length: 80em, can be multiple lines] [iOS only]">
         Sync has stopped working.
-      </message>
-      <message name="IDS_IOS_SYNC_TO_TITLE" desc="The title for the section of the accounts available for sync">
-        Sync to
       </message>
       <message name="IDS_IOS_SYNC_UPDATE_CREDENTIALS" desc="Title displayed when the signed in user needs to update its credentials. [Length: 20em] [iOS only]">
         Update

@@ -45,7 +45,8 @@ ScriptPromise UnderlyingSourceBase::Cancel(ScriptState* script_state,
 }
 
 ScriptValue UnderlyingSourceBase::type(ScriptState* script_state) const {
-  return ScriptValue(script_state, v8::Undefined(script_state->GetIsolate()));
+  return ScriptValue(script_state->GetIsolate(),
+                     v8::Undefined(script_state->GetIsolate()));
 }
 
 void UnderlyingSourceBase::ContextDestroyed(ExecutionContext*) {

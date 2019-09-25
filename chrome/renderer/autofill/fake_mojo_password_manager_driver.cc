@@ -43,9 +43,12 @@ void FakeMojoPasswordManagerDriver::PasswordFormSubmitted(
 }
 
 void FakeMojoPasswordManagerDriver::SameDocumentNavigation(
-    const autofill::PasswordForm& password_form) {
+    autofill::mojom::SubmissionIndicatorEvent submission_indication_event) {
   called_same_document_navigation_ = true;
-  password_form_same_document_navigation_ = password_form;
+  password_form_maybe_submitted_->form_data.submission_event =
+      submission_indication_event;
+  password_form_maybe_submitted_->submission_event =
+      submission_indication_event;
 }
 
 void FakeMojoPasswordManagerDriver::ShowPasswordSuggestions(
@@ -80,6 +83,7 @@ void FakeMojoPasswordManagerDriver::CheckSafeBrowsingReputation(
 void FakeMojoPasswordManagerDriver::ShowManualFallbackForSaving(
     const autofill::PasswordForm& password_form) {
   called_show_manual_fallback_for_saving_count_++;
+  password_form_maybe_submitted_ = password_form;
 }
 
 void FakeMojoPasswordManagerDriver::HideManualFallbackForSaving() {

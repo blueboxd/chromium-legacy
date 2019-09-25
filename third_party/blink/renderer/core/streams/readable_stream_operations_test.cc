@@ -135,23 +135,23 @@ TEST(ReadableStreamOperationsTest, IsReadableStream) {
 
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
-  EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
-                   scope.GetScriptState(),
-                   ScriptValue(scope.GetScriptState(),
-                               v8::Undefined(scope.GetIsolate())),
-                   ASSERT_NO_EXCEPTION)
-                   .value_or(true));
+  EXPECT_FALSE(
+      ReadableStreamOperations::IsReadableStream(
+          scope.GetScriptState(),
+          ScriptValue(scope.GetIsolate(), v8::Undefined(scope.GetIsolate())),
+          ASSERT_NO_EXCEPTION)
+          .value_or(true));
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
                    scope.GetScriptState(),
                    ScriptValue::CreateNull(scope.GetIsolate()),
                    ASSERT_NO_EXCEPTION)
                    .value_or(true));
-  EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
-                   scope.GetScriptState(),
-                   ScriptValue(scope.GetScriptState(),
-                               v8::Object::New(scope.GetIsolate())),
-                   ASSERT_NO_EXCEPTION)
-                   .value_or(true));
+  EXPECT_FALSE(
+      ReadableStreamOperations::IsReadableStream(
+          scope.GetScriptState(),
+          ScriptValue(scope.GetIsolate(), v8::Object::New(scope.GetIsolate())),
+          ASSERT_NO_EXCEPTION)
+          .value_or(true));
   ScriptValue stream = EvalWithPrintingError(&scope, "new ReadableStream()");
   EXPECT_FALSE(stream.IsEmpty());
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStream(
@@ -173,23 +173,23 @@ TEST(ReadableStreamOperationsTest, IsReadableStreamDefaultReaderInvalid) {
 
   V8TestingScope scope;
   TryCatchScope try_catch_scope(scope.GetIsolate());
-  EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
-                   scope.GetScriptState(),
-                   ScriptValue(scope.GetScriptState(),
-                               v8::Undefined(scope.GetIsolate())),
-                   ASSERT_NO_EXCEPTION)
-                   .value_or(true));
+  EXPECT_FALSE(
+      ReadableStreamOperations::IsReadableStreamDefaultReader(
+          scope.GetScriptState(),
+          ScriptValue(scope.GetIsolate(), v8::Undefined(scope.GetIsolate())),
+          ASSERT_NO_EXCEPTION)
+          .value_or(true));
   EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
                    scope.GetScriptState(),
                    ScriptValue::CreateNull(scope.GetIsolate()),
                    ASSERT_NO_EXCEPTION)
                    .value_or(true));
-  EXPECT_FALSE(ReadableStreamOperations::IsReadableStreamDefaultReader(
-                   scope.GetScriptState(),
-                   ScriptValue(scope.GetScriptState(),
-                               v8::Object::New(scope.GetIsolate())),
-                   ASSERT_NO_EXCEPTION)
-                   .value_or(true));
+  EXPECT_FALSE(
+      ReadableStreamOperations::IsReadableStreamDefaultReader(
+          scope.GetScriptState(),
+          ScriptValue(scope.GetIsolate(), v8::Object::New(scope.GetIsolate())),
+          ASSERT_NO_EXCEPTION)
+          .value_or(true));
   ScriptValue stream = EvalWithPrintingError(&scope, "new ReadableStream()");
   ASSERT_FALSE(stream.IsEmpty());
 
@@ -402,7 +402,7 @@ TEST(ReadableStreamOperationsTest, IsReadable) {
       scope.GetScriptState(), erroring_source, 0);
   ASSERT_TRUE(errored);
   erroring_source->Error(
-      ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate())));
+      ScriptValue(scope.GetIsolate(), v8::Undefined(scope.GetIsolate())));
 
   EXPECT_EQ(ReadableStreamOperations::IsReadable(
                 scope.GetScriptState(),
@@ -444,7 +444,7 @@ TEST(ReadableStreamOperationsTest, IsClosed) {
       scope.GetScriptState(), erroring_source, 0);
   ASSERT_TRUE(errored);
   erroring_source->Error(
-      ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate())));
+      ScriptValue(scope.GetIsolate(), v8::Undefined(scope.GetIsolate())));
 
   EXPECT_EQ(ReadableStreamOperations::IsClosed(
                 scope.GetScriptState(),
@@ -486,7 +486,7 @@ TEST(ReadableStreamOperationsTest, IsErrored) {
       scope.GetScriptState(), erroring_source, 0);
   ASSERT_TRUE(errored);
   erroring_source->Error(
-      ScriptValue(scope.GetScriptState(), v8::Undefined(scope.GetIsolate())));
+      ScriptValue(scope.GetIsolate(), v8::Undefined(scope.GetIsolate())));
 
   EXPECT_EQ(ReadableStreamOperations::IsErrored(
                 scope.GetScriptState(),
@@ -531,8 +531,8 @@ TEST(ReadableStreamOperationsTest, Tee) {
   ASSERT_TRUE(
       result.V8Value().As<v8::Object>()->Get(context, 1).ToLocal(&v8_branch2));
 
-  ScriptValue new1(scope.GetScriptState(), v8_branch1);
-  ScriptValue new2(scope.GetScriptState(), v8_branch2);
+  ScriptValue new1(scope.GetIsolate(), v8_branch1);
+  ScriptValue new2(scope.GetIsolate(), v8_branch2);
 
   ASSERT_TRUE(ReadableStreamOperations::IsReadableStream(
                   scope.GetScriptState(), new1, ASSERT_NO_EXCEPTION)
@@ -564,8 +564,8 @@ TEST(ReadableStreamOperationsTest, Tee) {
   EXPECT_FALSE(it1->IsSet());
   EXPECT_FALSE(it2->IsSet());
 
-  source->Enqueue(ScriptValue(scope.GetScriptState(),
-                              V8String(scope.GetIsolate(), "hello")));
+  source->Enqueue(
+      ScriptValue(scope.GetIsolate(), V8String(scope.GetIsolate(), "hello")));
   v8::MicrotasksScope::PerformCheckpoint(scope.GetIsolate());
 
   EXPECT_TRUE(it1->IsSet());
@@ -590,8 +590,8 @@ TEST(ReadableStreamOperationsTest, Serialize) {
       scope.GetScriptState(), source, 0);
   ASSERT_TRUE(stream);
 
-  source->Enqueue(ScriptValue(scope.GetScriptState(),
-                              V8String(scope.GetIsolate(), "hello")));
+  source->Enqueue(
+      ScriptValue(scope.GetIsolate(), V8String(scope.GetIsolate(), "hello")));
   ScriptValue internal_stream =
       CheckedGetInternalStream(scope.GetScriptState(), stream);
   auto* channel =

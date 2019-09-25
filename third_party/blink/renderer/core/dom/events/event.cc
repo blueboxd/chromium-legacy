@@ -301,7 +301,7 @@ void Event::InitEventPath(Node& node) {
 
 ScriptValue Event::path(ScriptState* script_state) const {
   return ScriptValue(
-      script_state,
+      script_state->GetIsolate(),
       ToV8(PathInternal(script_state, kNonEmptyAfterDispatch), script_state));
 }
 

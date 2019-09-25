@@ -137,11 +137,15 @@ class CORE_EXPORT ContentSecurityPolicy final
   // https://w3c.github.io/webappsec-csp/#violation-resource. By the time we
   // generate a report, we're guaranteed that the value isn't 'null', so we
   // don't need that state in this enum.
+  //
+  // Trusted Types violation's 'resource' values are defined in
+  // https://wicg.github.io/trusted-types/dist/spec/#csp-violation-object-hdr.
   enum ViolationType {
     kInlineViolation,
     kEvalViolation,
     kURLViolation,
-    kTrustedTypesViolation
+    kTrustedTypesViolation,
+    kTrustedTypesPolicyViolation
   };
 
   // The |type| argument given to inline checks, e.g.:

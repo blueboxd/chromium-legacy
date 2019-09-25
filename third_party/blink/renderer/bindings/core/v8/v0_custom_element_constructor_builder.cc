@@ -318,7 +318,7 @@ bool V0CustomElementConstructorBuilder::DidRegisterDefinition() const {
 }
 
 ScriptValue V0CustomElementConstructorBuilder::BindingsReturnValue() const {
-  return ScriptValue(script_state_, constructor_);
+  return ScriptValue(script_state_->GetIsolate(), constructor_);
 }
 
 bool V0CustomElementConstructorBuilder::HasValidPrototypeChainFor(

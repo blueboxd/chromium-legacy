@@ -9,6 +9,8 @@
 If the file was pretty-printed, the updated version is pretty-printed too.
 """
 
+from __future__ import print_function
+
 import os.path
 import re
 import sys
@@ -42,7 +44,7 @@ def ReadNetErrorCodes(filename, error_regex):
       # CERT_END is not a real NET_ERROR and does not have a stable value.
       # Don't include it.
       if name == 'CERT_END':
-          continue
+        continue
 
       errors[code] = name
 
@@ -51,7 +53,7 @@ def ReadNetErrorCodes(filename, error_regex):
 
 def main():
   if len(sys.argv) > 1:
-    print >>sys.stderr, 'No arguments expected!'
+    print('No arguments expected!', file=sys.stderr)
     sys.stderr.write(__doc__)
     sys.exit(1)
 

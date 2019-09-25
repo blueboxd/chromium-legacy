@@ -150,7 +150,8 @@ struct CORE_EXPORT Timing {
 
   CalculatedTiming CalculateTimings(double local_time,
                                     AnimationDirection animation_direction,
-                                    bool is_keyframe_effect) const;
+                                    bool is_keyframe_effect,
+                                    base::Optional<double> playback_rate) const;
   ComputedEffectTiming* getComputedTiming(const CalculatedTiming& calculated,
                                           bool is_keyframe_effect) const;
 };

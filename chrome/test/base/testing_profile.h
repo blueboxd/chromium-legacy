@@ -51,10 +51,6 @@ class SchemaRegistryService;
 class UserCloudPolicyManager;
 }  // namespace policy
 
-namespace service_manager {
-class Service;
-}
-
 namespace storage {
 class SpecialStoragePolicy;
 }
@@ -300,9 +296,6 @@ class TestingProfile : public Profile {
       std::vector<network::mojom::CorsOriginPatternPtr> allow_patterns,
       std::vector<network::mojom::CorsOriginPatternPtr> block_patterns,
       base::OnceClosure closure) override;
-  std::unique_ptr<service_manager::Service> HandleServiceRequest(
-      const std::string& service_name,
-      service_manager::mojom::ServiceRequest request) override;
 
   TestingProfile* AsTestingProfile() override;
 

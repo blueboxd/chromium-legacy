@@ -184,6 +184,8 @@ class ExtensionSettingsSyncTest : public testing::Test {
   void SetUp() override {
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
     profile_.reset(new TestingProfile(temp_dir_.GetPath()));
+    content::RunAllTasksUntilIdle();
+
     storage_factory_->Reset();
     frontend_ =
         StorageFrontend::CreateForTesting(storage_factory_, profile_.get());

@@ -230,9 +230,6 @@
 // Returns matcher for the privacy table view.
 + (id<GREYMatcher>)settingsPrivacyTableView;
 
-// Returns matcher for the Manage Synced Data button in sync setting view.
-+ (id<GREYMatcher>)settingsSyncManageSyncedDataButton;
-
 // Returns matcher for the menu button to sync accounts.
 + (id<GREYMatcher>)accountsSyncButton;
 

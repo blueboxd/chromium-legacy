@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import android.content.Context;
@@ -26,6 +27,7 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.ShortcutHelper;
+import org.chromium.chrome.test.util.browser.webapps.WebApkInfoBuilder;
 
 import java.util.concurrent.TimeUnit;
 
@@ -82,7 +84,6 @@ public class WebappDataStorageTest {
         assertEquals("theme_color", WebappDataStorage.KEY_THEME_COLOR);
         assertEquals("background_color", WebappDataStorage.KEY_BACKGROUND_COLOR);
         assertEquals("source", WebappDataStorage.KEY_SOURCE);
-        assertEquals("action", WebappDataStorage.KEY_ACTION);
         assertEquals("is_icon_generated", WebappDataStorage.KEY_IS_ICON_GENERATED);
         assertEquals("version", WebappDataStorage.KEY_VERSION);
     }
@@ -197,9 +198,8 @@ public class WebappDataStorageTest {
 
     @Test
     @Feature({"Webapp"})
-    public void testIntentUpdate() throws Exception {
+    public void testWebappInfoUpdate() throws Exception {
         final String id = "id";
-        final String action = "action";
         final String url = "url";
         final String scope = "scope";
         final String name = "name";
@@ -211,14 +211,15 @@ public class WebappDataStorageTest {
         final long backgroundColor = 3;
         final boolean isIconGenerated = false;
         final boolean isIconAdaptive = false;
-        Intent shortcutIntent = ShortcutHelper.createWebappShortcutIntent(id, action, url, scope,
-                name, shortName, encodedIcon, ShortcutHelper.WEBAPP_SHORTCUT_VERSION, displayMode,
+        Intent shortcutIntent = ShortcutHelper.createWebappShortcutIntent(id, url, scope, name,
+                shortName, encodedIcon, ShortcutHelper.WEBAPP_SHORTCUT_VERSION, displayMode,
                 orientation, themeColor, backgroundColor, isIconGenerated, isIconAdaptive);
+        WebappInfo info = WebappInfo.create(shortcutIntent);
+        assertNotNull(info);
 
         WebappDataStorage storage = WebappDataStorage.open("test");
-        storage.updateFromShortcutIntent(shortcutIntent);
+        storage.updateFromWebappInfo(info);
 
-        assertEquals(action, mSharedPreferences.getString(WebappDataStorage.KEY_ACTION, null));
         assertEquals(url, mSharedPreferences.getString(WebappDataStorage.KEY_URL, null));
         assertEquals(scope, mSharedPreferences.getString(WebappDataStorage.KEY_SCOPE, null));
         assertEquals(name, mSharedPreferences.getString(WebappDataStorage.KEY_NAME, null));
@@ -238,7 +239,6 @@ public class WebappDataStorageTest {
 
         // Wipe out the data and ensure that it is all gone.
         mSharedPreferences.edit()
-                .remove(WebappDataStorage.KEY_ACTION)
                 .remove(WebappDataStorage.KEY_URL)
                 .remove(WebappDataStorage.KEY_SCOPE)
                 .remove(WebappDataStorage.KEY_NAME)
@@ -252,7 +252,6 @@ public class WebappDataStorageTest {
                 .remove(WebappDataStorage.KEY_IS_ICON_ADAPTIVE)
                 .apply();
 
-        assertEquals(null, mSharedPreferences.getString(WebappDataStorage.KEY_ACTION, null));
         assertEquals(null, mSharedPreferences.getString(WebappDataStorage.KEY_URL, null));
         assertEquals(null, mSharedPreferences.getString(WebappDataStorage.KEY_SCOPE, null));
         assertEquals(null, mSharedPreferences.getString(WebappDataStorage.KEY_NAME, null));
@@ -267,10 +266,9 @@ public class WebappDataStorageTest {
         assertEquals(true,
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_ADAPTIVE, true));
 
-        // Update again from the intent and ensure that the data is restored.
-        storage.updateFromShortcutIntent(shortcutIntent);
+        // Update again from the WebappInfo and ensure that the data is restored.
+        storage.updateFromWebappInfo(info);
 
-        assertEquals(action, mSharedPreferences.getString(WebappDataStorage.KEY_ACTION, null));
         assertEquals(url, mSharedPreferences.getString(WebappDataStorage.KEY_URL, null));
         assertEquals(scope, mSharedPreferences.getString(WebappDataStorage.KEY_SCOPE, null));
         assertEquals(name, mSharedPreferences.getString(WebappDataStorage.KEY_NAME, null));
@@ -287,6 +285,34 @@ public class WebappDataStorageTest {
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_GENERATED, true));
         assertEquals(isIconAdaptive,
                 mSharedPreferences.getBoolean(WebappDataStorage.KEY_IS_ICON_GENERATED, true));
+    }
+
+    /**
+     * Test that the WebAPK's shared preferences are populated as result of calling
+     * {@link WebappDataStorage#updateFromWebappInfo()} when the shared preferences are initiially
+     * unset.
+     */
+    @Test
+    @Feature({"Webapp"})
+    public void testWebApkInfoUpdate() throws Exception {
+        String webApkPackageName = "org.chromium.webapk.random123";
+        String url = "url";
+        String scopeUrl = "scope";
+        String manifestUrl = "manifest_url";
+        int webApkVersionCode = 5;
+
+        WebApkInfoBuilder webApkInfoBuilder = new WebApkInfoBuilder(webApkPackageName, url);
+        webApkInfoBuilder.setScope(scopeUrl);
+        webApkInfoBuilder.setManifestUrl(manifestUrl);
+        webApkInfoBuilder.setWebApkVersionCode(webApkVersionCode);
+
+        WebappDataStorage storage = WebappDataStorage.open("test");
+        storage.updateFromWebappInfo(webApkInfoBuilder.build());
+
+        assertEquals(webApkPackageName, storage.getWebApkPackageName());
+        assertEquals(scopeUrl, storage.getScope());
+        assertEquals(manifestUrl, storage.getWebApkManifestUrl());
+        assertEquals(webApkVersionCode, storage.getWebApkVersionCode());
     }
 
     /**

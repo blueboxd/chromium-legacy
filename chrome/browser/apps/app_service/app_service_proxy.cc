@@ -13,12 +13,10 @@
 #include "chrome/browser/apps/app_service/app_service_metrics.h"
 #include "chrome/browser/apps/app_service/app_service_proxy_factory.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/services/app_service/public/mojom/constants.mojom.h"
+#include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/url_data_source.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace apps {
 
@@ -32,7 +30,7 @@ apps::mojom::IconKeyPtr AppServiceProxy::InnerIconLoader::GetIconKey(
   }
 
   apps::mojom::IconKeyPtr icon_key;
-  if (host_->app_service_.is_bound()) {
+  if (host_->app_service_.is_connected()) {
     host_->cache_.ForOneApp(app_id, [&icon_key](const apps::AppUpdate& update) {
       icon_key = update.IconKey();
     });
@@ -55,7 +53,7 @@ AppServiceProxy::InnerIconLoader::LoadIconFromIconKey(
         size_hint_in_dip, allow_placeholder_icon, std::move(callback));
   }
 
-  if (host_->app_service_.is_bound() && icon_key) {
+  if (host_->app_service_.is_connected() && icon_key) {
     // TODO(crbug.com/826982): Mojo doesn't guarantee the order of messages,
     // so multiple calls to this method might not resolve their callbacks in
     // order. As per khmel@, "you may have race here, assume you publish change
@@ -72,59 +70,56 @@ AppServiceProxy::InnerIconLoader::LoadIconFromIconKey(
 }
 
 AppServiceProxy::AppServiceProxy(Profile* profile)
-    : AppServiceProxy(profile, nullptr) {}
-
-AppServiceProxy::AppServiceProxy(Profile* profile,
-                                 service_manager::Connector* connector)
     : inner_icon_loader_(this),
       icon_coalescer_(&inner_icon_loader_),
       outer_icon_loader_(&icon_coalescer_,
                          apps::IconCache::GarbageCollectionPolicy::kEager) {
-  Initialize(profile, connector);
+  Initialize(profile);
 }
 
 AppServiceProxy::~AppServiceProxy() = default;
 
-void AppServiceProxy::ReInitializeForTesting(
-    Profile* profile,
-    service_manager::Connector* connector) {
+void AppServiceProxy::ReInitializeForTesting(Profile* profile) {
   // Some test code creates a profile and profile-linked services, like the App
-  // Service without linking to the correct connector. To work around that, we
-  // issue a second Initialize call to set the connector.
-  Initialize(profile, connector);
+  // Service, before the profile is fully initialized. Such tests can call this
+  // after full profile initialization to ensure the App Service implementation
+  // has all of profile state it needs.
+  app_service_.reset();
+  Initialize(profile);
 }
 
-void AppServiceProxy::Initialize(Profile* profile,
-                                 service_manager::Connector* connector) {
+void AppServiceProxy::Initialize(Profile* profile) {
   if (!profile) {
     return;
   }
-  if (!connector) {
-    connector = content::BrowserContext::GetConnectorFor(profile);
-    if (!connector) {
-      return;
-    }
-  }
-  connector->Connect(apps::mojom::kServiceName,
-                     app_service_.BindNewPipeAndPassReceiver());
 
-  if (app_service_.is_bound()) {
-    // The AppServiceProxy is a subscriber: something that wants to be able
-    // to list all known apps.
-    apps::mojom::SubscriberPtr subscriber;
-    bindings_.AddBinding(this, mojo::MakeRequest(&subscriber));
+  // We only initialize the App Service for regular or guest profiles. Non-guest
+  // off-the-record profiles do not get an instance.
+  if (profile->IsOffTheRecord() && !profile->IsGuestSession()) {
+    return;
+  }
+
+  app_service_impl_ = std::make_unique<apps::AppServiceImpl>();
+  app_service_impl_->BindReceiver(app_service_.BindNewPipeAndPassReceiver());
+
+  if (app_service_.is_connected()) {
+    // The AppServiceProxy is a subscriber: something that wants to be able to
+    // list all known apps.
+    mojo::PendingRemote<apps::mojom::Subscriber> subscriber;
+    receivers_.Add(this, subscriber.InitWithNewPipeAndPassReceiver());
     app_service_->RegisterSubscriber(std::move(subscriber), nullptr);
 
 #if defined(OS_CHROMEOS)
-    // The AppServiceProxy is also a publisher, of a variety of app types.
-    // That responsibility isn't intrinsically part of the AppServiceProxy,
-    // but doing that here, for each such app type, is as good a place as any.
-    built_in_chrome_os_apps_.Initialize(app_service_, profile);
-    crostini_apps_.Initialize(app_service_, profile);
-    extension_apps_.Initialize(app_service_, profile,
-                               apps::mojom::AppType::kExtension);
-    extension_web_apps_.Initialize(app_service_, profile,
-                                   apps::mojom::AppType::kWeb);
+    // The AppServiceProxy is also a publisher, of a variety of app types. That
+    // responsibility isn't intrinsically part of the AppServiceProxy, but doing
+    // that here, for each such app type, is as good a place as any.
+    built_in_chrome_os_apps_ =
+        std::make_unique<BuiltInChromeOsApps>(app_service_, profile);
+    crostini_apps_ = std::make_unique<CrostiniApps>(app_service_, profile);
+    extension_apps_ = std::make_unique<ExtensionApps>(
+        app_service_, profile, apps::mojom::AppType::kExtension);
+    extension_web_apps_ = std::make_unique<ExtensionApps>(
+        app_service_, profile, apps::mojom::AppType::kWeb);
 
     // Asynchronously add app icon source, so we don't do too much work in the
     // constructor.
@@ -165,7 +160,7 @@ void AppServiceProxy::Launch(const std::string& app_id,
                              int32_t event_flags,
                              apps::mojom::LaunchSource launch_source,
                              int64_t display_id) {
-  if (app_service_.is_bound()) {
+  if (app_service_.is_connected()) {
     cache_.ForOneApp(app_id, [this, event_flags, launch_source,
                               display_id](const apps::AppUpdate& update) {
       RecordAppLaunch(update.AppId(), launch_source);
@@ -177,7 +172,7 @@ void AppServiceProxy::Launch(const std::string& app_id,
 
 void AppServiceProxy::SetPermission(const std::string& app_id,
                                     apps::mojom::PermissionPtr permission) {
-  if (app_service_.is_bound()) {
+  if (app_service_.is_connected()) {
     cache_.ForOneApp(
         app_id, [this, &permission](const apps::AppUpdate& update) {
           app_service_->SetPermission(update.AppType(), update.AppId(),
@@ -187,7 +182,7 @@ void AppServiceProxy::SetPermission(const std::string& app_id,
 }
 
 void AppServiceProxy::Uninstall(const std::string& app_id) {
-  if (app_service_.is_bound()) {
+  if (app_service_.is_connected()) {
     cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
       app_service_->Uninstall(update.AppType(), update.AppId());
     });
@@ -195,7 +190,7 @@ void AppServiceProxy::Uninstall(const std::string& app_id) {
 }
 
 void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
-  if (app_service_.is_bound()) {
+  if (app_service_.is_connected()) {
     cache_.ForOneApp(app_id, [this](const apps::AppUpdate& update) {
       app_service_->OpenNativeSettings(update.AppType(), update.AppId());
     });
@@ -203,7 +198,14 @@ void AppServiceProxy::OpenNativeSettings(const std::string& app_id) {
 }
 
 void AppServiceProxy::FlushMojoCallsForTesting() {
-  bindings_.FlushForTesting();
+  app_service_impl_->FlushMojoCallsForTesting();
+#if defined(OS_CHROMEOS)
+  built_in_chrome_os_apps_->FlushMojoCallsForTesting();
+  crostini_apps_->FlushMojoCallsForTesting();
+  extension_apps_->FlushMojoCallsForTesting();
+  extension_web_apps_->FlushMojoCallsForTesting();
+#endif
+  receivers_.FlushForTesting();
 }
 
 apps::IconLoader* AppServiceProxy::OverrideInnerIconLoaderForTesting(
@@ -216,8 +218,8 @@ apps::IconLoader* AppServiceProxy::OverrideInnerIconLoaderForTesting(
 
 void AppServiceProxy::ReInitializeCrostiniForTesting(Profile* profile) {
 #if defined(OS_CHROMEOS)
-  if (app_service_.is_bound()) {
-    crostini_apps_.ReInitializeForTesting(app_service_, profile);
+  if (app_service_.is_connected()) {
+    crostini_apps_->ReInitializeForTesting(app_service_, profile);
   }
 #endif
 }
@@ -230,9 +232,9 @@ void AppServiceProxy::AddAppIconSource(Profile* profile) {
 
 void AppServiceProxy::Shutdown() {
 #if defined(OS_CHROMEOS)
-  if (app_service_.is_bound()) {
-    extension_apps_.Shutdown();
-    extension_web_apps_.Shutdown();
+  if (app_service_.is_connected()) {
+    extension_apps_->Shutdown();
+    extension_web_apps_->Shutdown();
   }
 #endif  // OS_CHROMEOS
 }
@@ -241,8 +243,9 @@ void AppServiceProxy::OnApps(std::vector<apps::mojom::AppPtr> deltas) {
   cache_.OnApps(std::move(deltas));
 }
 
-void AppServiceProxy::Clone(apps::mojom::SubscriberRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void AppServiceProxy::Clone(
+    mojo::PendingReceiver<apps::mojom::Subscriber> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 }  // namespace apps

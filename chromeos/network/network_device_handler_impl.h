@@ -5,8 +5,8 @@
 #ifndef CHROMEOS_NETWORK_NETWORK_DEVICE_HANDLER_IMPL_H_
 #define CHROMEOS_NETWORK_NETWORK_DEVICE_HANDLER_IMPL_H_
 
-#include <map>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 #include "base/callback.h"
@@ -82,6 +82,8 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
 
   void SetMACAddressRandomizationEnabled(bool enabled) override;
 
+  void SetUsbEthernetMacAddressSource(const std::string& source) override;
+
   void SetWifiTDLSEnabled(
       const std::string& ip_or_mac_address,
       bool enabled,
@@ -119,6 +121,7 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
 
   // NetworkStateHandlerObserver overrides
   void DeviceListChanged() override;
+  void DevicePropertiesUpdated(const DeviceState* device) override;
 
  private:
   friend class NetworkHandler;
@@ -149,6 +152,23 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   // devices.
   void ApplyMACAddressRandomizationToShill();
 
+  // Apply the current value of |usb_ethernet_mac_address_source_| to primary
+  // enabled USB Ethernet device.
+  void ApplyUsbEthernetMacAddressSourceToShill();
+
+  void OnSetUsbEthernetMacAddressSourceError(
+      const std::string& device_path,
+      const std::string& device_mac_address,
+      const network_handler::ErrorCallback& error_callback,
+      const std::string& shill_error_name,
+      const std::string& shill_error_message);
+
+  // Checks whether Device is enabled USB Ethernet adapter.
+  bool IsUsbEnabledDevice(const DeviceState* device_state) const;
+
+  // Returns path for primary enabled USB Ethernet device.
+  std::string FindPrimaryEnabledUsbEthernetDevicePath() const;
+
   // Sets the value of |mac_addr_randomization_supported_| based on
   // whether shill thinks it is supported on the wifi device. If it is
   // supported, also apply |mac_addr_randomization_enabled_| to the
@@ -165,6 +185,14 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandlerImpl
   MACAddressRandomizationSupport mac_addr_randomization_supported_ =
       MACAddressRandomizationSupport::NOT_REQUESTED;
   bool mac_addr_randomization_enabled_ = false;
+
+  std::string usb_ethernet_mac_address_source_;
+  bool usb_ethernet_mac_address_source_needs_update_ = false;
+  std::string primary_enabled_usb_ethernet_device_path_;
+  // Set of device's MAC addresses that do not support MAC address change. Use
+  // MAC address as unique device identifier, because link name can change.
+  std::unordered_set<std::string> mac_address_change_not_supported_;
+
   base::WeakPtrFactory<NetworkDeviceHandlerImpl> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(NetworkDeviceHandlerImpl);

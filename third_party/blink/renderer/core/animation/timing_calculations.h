@@ -94,7 +94,7 @@ static inline Timing::Phase CalculatePhase(double active_duration,
 }
 
 // https://drafts.csswg.org/web-animations/#calculating-the-active-time
-static inline base::Optional<double> CalculateActiveTime(
+static inline base::Optional<AnimationTimeDelta> CalculateActiveTime(
     double active_duration,
     Timing::FillMode fill_mode,
     double local_time,
@@ -105,16 +105,20 @@ static inline base::Optional<double> CalculateActiveTime(
   switch (phase) {
     case Timing::kPhaseBefore:
       if (fill_mode == Timing::FillMode::BACKWARDS ||
-          fill_mode == Timing::FillMode::BOTH)
-        return std::max(local_time - specified.start_delay, 0.0);
+          fill_mode == Timing::FillMode::BOTH) {
+        return AnimationTimeDelta::FromSecondsD(
+            std::max(local_time - specified.start_delay, 0.0));
+      }
       return base::nullopt;
     case Timing::kPhaseActive:
-      return local_time - specified.start_delay;
+      return AnimationTimeDelta::FromSecondsD(local_time -
+                                              specified.start_delay);
     case Timing::kPhaseAfter:
       if (fill_mode == Timing::FillMode::FORWARDS ||
           fill_mode == Timing::FillMode::BOTH) {
-        return std::max(
-            0.0, std::min(active_duration, local_time - specified.start_delay));
+        return AnimationTimeDelta::FromSecondsD(std::max(
+            0.0,
+            std::min(active_duration, local_time - specified.start_delay)));
       }
       return base::nullopt;
     case Timing::kPhaseNone:
@@ -131,7 +135,7 @@ static inline base::Optional<double> CalculateActiveTime(
 // https://drafts.csswg.org/web-animations/#calculating-the-overall-progress
 static inline base::Optional<double> CalculateOverallProgress(
     Timing::Phase phase,
-    base::Optional<double> active_time,
+    base::Optional<AnimationTimeDelta> active_time,
     double iteration_duration,
     double iteration_count,
     double iteration_start) {
@@ -145,7 +149,7 @@ static inline base::Optional<double> CalculateOverallProgress(
     if (phase != Timing::kPhaseBefore)
       overall_progress = iteration_count;
   } else {
-    overall_progress = active_time.value() / iteration_duration;
+    overall_progress = active_time->InSecondsF() / iteration_duration;
   }
 
   return overall_progress + iteration_start;
@@ -161,7 +165,7 @@ static inline base::Optional<double> CalculateSimpleIterationProgress(
     Timing::Phase phase,
     base::Optional<double> overall_progress,
     double iteration_start,
-    base::Optional<double> active_time,
+    base::Optional<AnimationTimeDelta> active_time,
     double active_duration,
     double iteration_count) {
   // 1. If the overall progress is unresolved, return unresolved.
@@ -187,7 +191,7 @@ static inline base::Optional<double> CalculateSimpleIterationProgress(
   // let the simple iteration progress be 1.0.
   if (IsWithinEpsilon(simple_iteration_progress, 0.0) &&
       (phase == Timing::kPhaseActive || phase == Timing::kPhaseAfter) &&
-      IsWithinEpsilon(active_time.value(), active_duration) &&
+      IsWithinEpsilon(active_time->InSecondsF(), active_duration) &&
       !IsWithinEpsilon(iteration_count, 0.0)) {
     simple_iteration_progress = 1.0;
   }
@@ -199,7 +203,7 @@ static inline base::Optional<double> CalculateSimpleIterationProgress(
 // https://drafts.csswg.org/web-animations/#calculating-the-current-iteration
 static inline base::Optional<double> CalculateCurrentIteration(
     Timing::Phase phase,
-    base::Optional<double> active_time,
+    base::Optional<AnimationTimeDelta> active_time,
     double iteration_count,
     base::Optional<double> overall_progress,
     base::Optional<double> simple_iteration_progress) {
@@ -316,7 +320,7 @@ static inline base::Optional<double> CalculateTransformedProgress(
 // iteration to optimize scheduling.
 static inline base::Optional<AnimationTimeDelta> CalculateOffsetActiveTime(
     double active_duration,
-    base::Optional<double> active_time,
+    base::Optional<AnimationTimeDelta> active_time,
     double start_offset) {
   DCHECK_GE(active_duration, 0);
   DCHECK_GE(start_offset, 0);
@@ -324,13 +328,14 @@ static inline base::Optional<AnimationTimeDelta> CalculateOffsetActiveTime(
   if (!active_time)
     return base::nullopt;
 
-  DCHECK(active_time.value() >= 0 &&
-         LessThanOrEqualToWithinEpsilon(active_time.value(), active_duration));
+  DCHECK(active_time.value() >= AnimationTimeDelta() &&
+         LessThanOrEqualToWithinEpsilon(active_time->InSecondsF(),
+                                        active_duration));
 
-  if (!std::isfinite(active_time.value()))
+  if (active_time->is_max())
     return AnimationTimeDelta::Max();
 
-  return AnimationTimeDelta::FromSecondsD(active_time.value() + start_offset);
+  return active_time.value() + AnimationTimeDelta::FromSecondsD(start_offset);
 }
 
 // Maps the offset active time into 'iteration time space'[0], aka the offset

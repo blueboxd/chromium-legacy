@@ -14,13 +14,13 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sharing/proto/sharing_message.pb.h"
+#include "chrome/browser/sharing/sharing_app.h"
 #include "chrome/browser/sharing/sharing_constants.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/sharing/sharing_service.h"
 #include "chrome/browser/ui/page_action/page_action_icon_type.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
 #include "components/sync_device_info/device_info.h"
-#include "ui/gfx/image/image.h"
 #include "ui/views/controls/styled_label.h"
 #include "ui/views/controls/styled_label_listener.h"
 
@@ -39,21 +39,7 @@ class WebContents;
 // The controller for desktop dialog with the list of synced devices and apps.
 class SharingUiController {
  public:
-  struct App {
-    App(const gfx::VectorIcon* vector_icon,
-        const gfx::Image& image,
-        base::string16 name,
-        std::string identifier);
-    App(App&& other);
-    ~App();
-
-    const gfx::VectorIcon* vector_icon = nullptr;
-    gfx::Image image;
-    base::string16 name;
-    std::string identifier;
-  };
-
-  using UpdateAppsCallback = base::OnceCallback<void(std::vector<App>)>;
+  using UpdateAppsCallback = base::OnceCallback<void(std::vector<SharingApp>)>;
 
   explicit SharingUiController(content::WebContents* web_contents);
   virtual ~SharingUiController();
@@ -63,7 +49,7 @@ class SharingUiController {
   // Called when user chooses a synced device to complete the task.
   virtual void OnDeviceChosen(const syncer::DeviceInfo& device) = 0;
   // Called when user chooses a local app to complete the task.
-  virtual void OnAppChosen(const App& app) = 0;
+  virtual void OnAppChosen(const SharingApp& app) = 0;
   virtual PageActionIconType GetIconType() = 0;
   virtual sync_pb::SharingSpecificFields::EnabledFeatures
   GetRequiredFeature() = 0;
@@ -113,12 +99,14 @@ class SharingUiController {
   bool HasSendFailed() const;
 
   content::WebContents* web_contents() const { return web_contents_; }
-  const std::vector<App>& apps() const { return apps_; }
+  const std::vector<SharingApp>& apps() const { return apps_; }
   const std::vector<std::unique_ptr<syncer::DeviceInfo>>& devices() const {
     return devices_;
   }
 
-  void set_apps_for_testing(std::vector<App> apps) { apps_ = std::move(apps); }
+  void set_apps_for_testing(std::vector<SharingApp> apps) {
+    apps_ = std::move(apps);
+  }
   void set_devices_for_testing(
       std::vector<std::unique_ptr<syncer::DeviceInfo>> devices) {
     devices_ = std::move(devices);
@@ -150,7 +138,7 @@ class SharingUiController {
   // |success| is false and updates the omnibox icon.
   void OnMessageSentToDevice(int dialog_id, SharingSendMessageResult result);
 
-  void OnAppsReceived(int dialog_id, std::vector<App> apps);
+  void OnAppsReceived(int dialog_id, std::vector<SharingApp> apps);
 
   SharingDialog* dialog_ = nullptr;
   content::WebContents* web_contents_ = nullptr;
@@ -161,7 +149,7 @@ class SharingUiController {
   std::string target_device_name_;
 
   // Currently used apps and devices since the last call to UpdateAndShowDialog.
-  std::vector<App> apps_;
+  std::vector<SharingApp> apps_;
   std::vector<std::unique_ptr<syncer::DeviceInfo>> devices_;
 
   // ID of the last shown dialog used to ignore events from old dialogs.

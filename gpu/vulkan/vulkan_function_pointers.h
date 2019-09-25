@@ -168,6 +168,7 @@ struct VulkanFunctionPointers {
   PFN_vkUpdateDescriptorSets vkUpdateDescriptorSetsFn = nullptr;
   PFN_vkWaitForFences vkWaitForFencesFn = nullptr;
 
+  PFN_vkGetDeviceQueue2 vkGetDeviceQueue2Fn = nullptr;
   PFN_vkGetImageMemoryRequirements2 vkGetImageMemoryRequirements2Fn = nullptr;
 
 #if defined(OS_ANDROID)
@@ -359,6 +360,7 @@ struct VulkanFunctionPointers {
   gpu::GetVulkanFunctionPointers()->vkUpdateDescriptorSetsFn
 #define vkWaitForFences gpu::GetVulkanFunctionPointers()->vkWaitForFencesFn
 
+#define vkGetDeviceQueue2 gpu::GetVulkanFunctionPointers()->vkGetDeviceQueue2Fn
 #define vkGetImageMemoryRequirements2 \
   gpu::GetVulkanFunctionPointers()->vkGetImageMemoryRequirements2Fn
 

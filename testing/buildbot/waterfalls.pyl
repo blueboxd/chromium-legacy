@@ -2592,7 +2592,7 @@
           'bullhead',
        ],
        'test_suites': {
-         'gpu_telemetry_tests': 'gpu_skia_renderer_non_vulkan_telemetry_tests',
+         'gpu_telemetry_tests': 'gpu_skia_renderer_egl_telemetry_tests',
        }
       },
       'Android FYI SkiaRenderer Vulkan (Pixel 2)': {

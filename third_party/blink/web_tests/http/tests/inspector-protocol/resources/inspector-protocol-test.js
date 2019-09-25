@@ -140,6 +140,22 @@ var TestRunner = class {
     return eval(`${source}\n//# sourceURL=${url}`);
   };
 
+  async loadScriptModule(path) {
+    const source = await this._fetch(this._testBaseURL + path);
+
+    return new Promise((resolve, reject) => {
+      const src = URL.createObjectURL(new Blob([source], { type: 'application/javascript' }));
+      const script = Object.assign(document.createElement('script'), {
+        src,
+        type: 'module',
+        onerror: reject,
+        onload: resolve
+      });
+
+      document.head.appendChild(script);
+    })
+  };
+
   browserP() {
     return this._browserSession.protocol;
   }

@@ -567,42 +567,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
   EXPECT_TRUE(prompt_observer->IsSavePromptShownAutomatically());
 }
 
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
-                       PromptAfterSubmitFromSubFrameToMainFrame) {
-  NavigateToFile("/password/password_form_in_crosssite_iframe.html");
-  // Create an iframe and navigate cross-site.
-  NavigationObserver iframe_observer(WebContents());
-  iframe_observer.SetPathToWaitFor("/password/password_form_with_hash.html");
-  GURL iframe_url =
-      embedded_test_server()->GetURL("/password/password_form_with_hash.html");
-  std::string create_iframe =
-      base::StringPrintf("create_iframe('%s');", iframe_url.spec().c_str());
-  ASSERT_TRUE(content::ExecuteScriptWithoutUserGesture(RenderFrameHost(),
-                                                       create_iframe));
-  iframe_observer.Wait();
-
-  // Make sure that we prompt to save the password even if the sub-frame submits
-  // the form to the main frame.
-  NavigationObserver observer(WebContents());
-  std::string fill_and_submit =
-      "var first_frame = document.getElementById('iframe');"
-      "var frame_doc = first_frame.contentDocument;"
-      "frame_doc.getElementById('username_field').value = 'Admin';"
-      "frame_doc.getElementById('password_field').value = '12345';"
-      "frame_doc.getElementById('input_submit_button').click();";
-  ASSERT_TRUE(content::ExecuteScript(WebContents(), fill_and_submit));
-  observer.Wait();
-
-  BubbleObserver prompt_observer(WebContents());
-  EXPECT_TRUE(prompt_observer.IsSavePromptShownAutomatically());
-  prompt_observer.AcceptSavePrompt();
-  WaitForPasswordStore();
-
-  // The typed credentials are saved despite the password is hashed before
-  // submission.
-  CheckThatCredentialsStored("Admin", "12345");
-}
-
 IN_PROC_BROWSER_TEST_F(
     PasswordManagerBrowserTest,
     NoPromptForFailedLoginFromMainFrameWithMultiFramesSameDocument) {

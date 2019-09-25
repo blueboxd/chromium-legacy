@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/core/layout/svg/layout_svg_viewport_container.h"
 
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
+#include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/svg/svg_svg_element.h"
 
 namespace blink {

@@ -62,17 +62,8 @@ class HashPasswordManager {
       const base::Callback<void(const std::string& username)>& callback);
 
  private:
-  // Saves encrypted string |s| in a preference |pref_name|. Returns true on
-  // success.
-  bool EncryptAndSaveToPrefs(const std::string& pref_name,
-                             const std::string& s);
-
   // Encrypts and saves |password_hash_data| to prefs. Returns true on success.
   bool EncryptAndSave(const PasswordHashData& password_hash_data);
-
-  // Retrieves and decrypts string value from a preference |pref_name|. Returns
-  // an empty string on failure.
-  std::string RetrievedDecryptedStringFromPrefs(const std::string& pref_name);
 
   PrefService* prefs_ = nullptr;
 

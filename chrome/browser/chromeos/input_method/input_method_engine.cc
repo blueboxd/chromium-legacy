@@ -66,11 +66,7 @@ InputMethodEngine::CandidateWindowProperty::CandidateWindowProperty()
 InputMethodEngine::CandidateWindowProperty::~CandidateWindowProperty() =
     default;
 
-InputMethodEngine::InputMethodEngine()
-    : candidate_window_(new ui::CandidateWindow()),
-      window_visible_(false),
-      is_mirroring_(false),
-      is_casting_(false) {}
+InputMethodEngine::InputMethodEngine() = default;
 
 InputMethodEngine::~InputMethodEngine() = default;
 
@@ -127,18 +123,18 @@ void InputMethodEngine::SetCandidateWindowProperty(
   dest_property.show_window_at_composition =
       property.show_window_at_composition;
   dest_property.cursor_position =
-      candidate_window_->GetProperty().cursor_position;
+      candidate_window_.GetProperty().cursor_position;
   dest_property.auxiliary_text = property.auxiliary_text;
   dest_property.is_auxiliary_text_visible = property.is_auxiliary_text_visible;
 
-  candidate_window_->SetProperty(dest_property);
+  candidate_window_.SetProperty(dest_property);
   candidate_window_property_ = property;
 
   if (IsActive()) {
     IMECandidateWindowHandlerInterface* cw_handler =
         ui::IMEBridge::Get()->GetCandidateWindowHandler();
     if (cw_handler)
-      cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
+      cw_handler->UpdateLookupTable(candidate_window_, window_visible_);
   }
 }
 
@@ -153,7 +149,7 @@ bool InputMethodEngine::SetCandidateWindowVisible(bool visible,
   IMECandidateWindowHandlerInterface* cw_handler =
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
   if (cw_handler)
-    cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
+    cw_handler->UpdateLookupTable(candidate_window_, window_visible_);
   return true;
 }
 
@@ -173,7 +169,7 @@ bool InputMethodEngine::SetCandidates(
   // TODO: Nested candidates
   candidate_ids_.clear();
   candidate_indexes_.clear();
-  candidate_window_->mutable_candidates()->clear();
+  candidate_window_.mutable_candidates()->clear();
   for (const auto& candidate : candidates) {
     ui::CandidateWindow::Entry entry;
     entry.value = base::UTF8ToUTF16(candidate.value);
@@ -186,13 +182,13 @@ bool InputMethodEngine::SetCandidates(
     candidate_indexes_[candidate.id] = candidate_ids_.size();
     candidate_ids_.push_back(candidate.id);
 
-    candidate_window_->mutable_candidates()->push_back(entry);
+    candidate_window_.mutable_candidates()->push_back(entry);
   }
   if (IsActive()) {
     IMECandidateWindowHandlerInterface* cw_handler =
         ui::IMEBridge::Get()->GetCandidateWindowHandler();
     if (cw_handler)
-      cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
+      cw_handler->UpdateLookupTable(candidate_window_, window_visible_);
   }
   return true;
 }
@@ -216,11 +212,11 @@ bool InputMethodEngine::SetCursorPosition(int context_id,
     return false;
   }
 
-  candidate_window_->set_cursor_position(position->second);
+  candidate_window_.set_cursor_position(position->second);
   IMECandidateWindowHandlerInterface* cw_handler =
       ui::IMEBridge::Get()->GetCandidateWindowHandler();
   if (cw_handler)
-    cw_handler->UpdateLookupTable(*candidate_window_, window_visible_);
+    cw_handler->UpdateLookupTable(candidate_window_, window_visible_);
   return true;
 }
 

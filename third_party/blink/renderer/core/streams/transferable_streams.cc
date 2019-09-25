@@ -121,7 +121,7 @@ void PackAndPostMessage(ScriptState* script_state,
   v8::Local<v8::Object> packed = CreateKeyValueObject(
       isolate, "t", v8::Number::New(isolate, static_cast<int>(type)), "v",
       value);
-  port->postMessage(script_state, ScriptValue(script_state, packed),
+  port->postMessage(script_state, ScriptValue(isolate, packed),
                     PostMessageOptions::Create(), exception_state);
 }
 

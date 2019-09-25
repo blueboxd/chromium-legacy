@@ -97,6 +97,27 @@ void LayoutSVGModelObject::WillBeDestroyed() {
   LayoutObject::WillBeDestroyed();
 }
 
+AffineTransform LayoutSVGModelObject::CalculateLocalTransform() const {
+  auto* element = GetElement();
+  if (element->HasTransform(SVGElement::kIncludeMotionTransform))
+    return element->CalculateTransform(SVGElement::kIncludeMotionTransform);
+  return AffineTransform();
+}
+
+bool LayoutSVGModelObject::CheckForImplicitTransformChange(
+    bool bbox_changed) const {
+  // If the transform is relative to the reference box, check relevant
+  // conditions to see if we need to recompute the transform.
+  switch (StyleRef().TransformBox()) {
+    case ETransformBox::kViewBox:
+      return SVGLayoutSupport::LayoutSizeOfNearestViewportChanged(this);
+    case ETransformBox::kFillBox:
+      return bbox_changed;
+  }
+  NOTREACHED();
+  return false;
+}
+
 void LayoutSVGModelObject::StyleDidChange(StyleDifference diff,
                                           const ComputedStyle* old_style) {
   // Since layout depends on the bounds of the filter, we need to force layout

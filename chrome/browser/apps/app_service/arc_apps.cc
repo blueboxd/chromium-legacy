@@ -164,8 +164,9 @@ void ArcApps::Shutdown() {
   arc_icon_once_loader_.StopObserving(prefs);
 }
 
-void ArcApps::Connect(apps::mojom::SubscriberPtr subscriber,
-                      apps::mojom::ConnectOptionsPtr opts) {
+void ArcApps::Connect(
+    mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
+    apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
   ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_);
   if (prefs) {
@@ -177,8 +178,10 @@ void ArcApps::Connect(apps::mojom::SubscriberPtr subscriber,
       }
     }
   }
+  mojo::Remote<apps::mojom::Subscriber> subscriber(
+      std::move(subscriber_remote));
   subscriber->OnApps(std::move(apps));
-  subscribers_.AddPtr(std::move(subscriber));
+  subscribers_.Add(std::move(subscriber));
 }
 
 void ArcApps::LoadIcon(const std::string& app_id,
@@ -472,11 +475,11 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
 }
 
 void ArcApps::Publish(apps::mojom::AppPtr app) {
-  subscribers_.ForAllPtrs([&app](apps::mojom::Subscriber* subscriber) {
+  for (auto& subscriber : subscribers_) {
     std::vector<apps::mojom::AppPtr> apps;
     apps.push_back(app.Clone());
     subscriber->OnApps(std::move(apps));
-  });
+  }
 }
 
 void ArcApps::ConvertAndPublishPackageApps(

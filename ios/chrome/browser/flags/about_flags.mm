@@ -554,6 +554,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"ios-breadcrumbs", flag_descriptions::kLogBreadcrumbsName,
      flag_descriptions::kLogBreadcrumbsDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(kLogBreadcrumbs)},
+    {"password-leak-detection", flag_descriptions::kPasswordLeakDetectionName,
+     flag_descriptions::kPasswordLeakDetectionDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(password_manager::features::kLeakDetection)},
 };
 
 // Add all switches from experimental flags to |command_line|.

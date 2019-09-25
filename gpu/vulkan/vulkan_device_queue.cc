@@ -171,7 +171,6 @@ bool VulkanDeviceQueue::Initialize(
   enabled_device_features_2_.pNext = &sampler_ycbcr_conversion_features_;
 #endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA)
 
-#if defined(OS_FUCHSIA)
   if (allow_protected_memory) {
     if (device_api_version < VK_MAKE_VERSION(1, 1, 0)) {
       DLOG(ERROR) << "Vulkan 1.1 is required for protected memory";
@@ -194,7 +193,6 @@ bool VulkanDeviceQueue::Initialize(
     protected_memory_features_.pNext = enabled_device_features_2_.pNext;
     enabled_device_features_2_.pNext = &protected_memory_features_;
   }
-#endif  // defined(OS_FUCHSIA)
 
   // Disable all physical device features by default.
   enabled_device_features_2_.features = {};
@@ -227,7 +225,16 @@ bool VulkanDeviceQueue::Initialize(
 
   vk_device_ = owned_vk_device_;
 
-  vkGetDeviceQueue(vk_device_, queue_index, 0, &vk_queue_);
+  if (allow_protected_memory) {
+    VkDeviceQueueInfo2 queue_info2 = {};
+    queue_info2.sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_INFO_2;
+    queue_info2.flags = VK_DEVICE_QUEUE_CREATE_PROTECTED_BIT;
+    queue_info2.queueFamilyIndex = queue_index;
+    queue_info2.queueIndex = 0;
+    vkGetDeviceQueue2(vk_device_, &queue_info2, &vk_queue_);
+  } else {
+    vkGetDeviceQueue(vk_device_, queue_index, 0, &vk_queue_);
+  }
 
   cleanup_helper_ = std::make_unique<VulkanFenceHelper>(this);
 

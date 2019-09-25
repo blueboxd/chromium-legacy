@@ -26,9 +26,9 @@ foo.test
             </SPAN>
         </DIV>
         <DIV class=view-network-button >
-            <BUTTON class=origin-button text-button type=button role=link >
+            <SPAN class=devtools-link origin-button role=link >
 View requests in Network Panel
-            </BUTTON>
+            </SPAN>
         </DIV>
     </DIV>
     <DIV class=origin-view-section >

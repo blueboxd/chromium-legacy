@@ -2779,7 +2779,8 @@ TEST_P(CertVerifyProcInternalWithNetFetchingTest, MAYBE_IntermediateFromAia404) 
   if (verify_proc_type() == CERT_VERIFY_PROC_WIN) {
     // CertVerifyProcWin has a flaky result of ERR_CERT_AUTHORITY_INVALID or
     // ERR_CERT_INVALID (https://crbug.com/859387) - accept either.
-    EXPECT_TRUE(error == ERR_CERT_AUTHORITY_INVALID || ERR_CERT_INVALID)
+    EXPECT_TRUE(error == ERR_CERT_AUTHORITY_INVALID ||
+                error == ERR_CERT_INVALID)
         << "Unexpected error: " << error;
   } else {
     EXPECT_THAT(error, IsError(ERR_CERT_AUTHORITY_INVALID));

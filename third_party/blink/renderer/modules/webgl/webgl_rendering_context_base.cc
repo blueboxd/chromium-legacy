@@ -3038,7 +3038,7 @@ ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* script_state,
       ToV8(extension, script_state->GetContext()->Global(),
            script_state->GetIsolate());
 
-  return ScriptValue(script_state, wrapped_extension);
+  return ScriptValue(script_state->GetIsolate(), wrapped_extension);
 }
 
 ScriptValue WebGLRenderingContextBase::getFramebufferAttachmentParameter(

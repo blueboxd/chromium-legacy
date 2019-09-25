@@ -58,9 +58,9 @@ ScriptPromise ReadableStreamReader::closed(ScriptState* script_state) const {
 }
 
 ScriptPromise ReadableStreamReader::cancel(ScriptState* script_state) {
-  return cancel(
-      script_state,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
+  return cancel(script_state,
+                ScriptValue(script_state->GetIsolate(),
+                            v8::Undefined(script_state->GetIsolate())));
 }
 
 ScriptPromise ReadableStreamReader::cancel(ScriptState* script_state,

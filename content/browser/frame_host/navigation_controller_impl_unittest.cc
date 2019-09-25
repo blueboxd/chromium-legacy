@@ -3541,11 +3541,35 @@ TEST_F(NavigationControllerTest, SubframeWhilePending) {
   TestRenderFrameHost* subframe = static_cast<TestRenderFrameHost*>(
       contents()->GetFrameTree()->root()->child_at(0)->current_frame_host());
   const GURL url1_sub("http://foo/subframe");
-  NavigationSimulator::NavigateAndCommitFromDocument(url1_sub, subframe);
+
+  auto subframe_navigation =
+      NavigationSimulator::CreateRendererInitiated(url1_sub, subframe);
+  subframe_navigation->Start();
+
+  // Creating the subframe navigation should have no effect on the pending
+  // navigation entry and on the visible URL.
+  EXPECT_EQ(url1, controller.GetLastCommittedEntry()->GetURL());
+  EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
+
+  auto nav_entry_id = [](NavigationSimulator* simulator) {
+    return NavigationRequest::From(simulator->GetNavigationHandle())
+        ->nav_entry_id();
+  };
+
+  // The main frame navigation is still associated with the pending entry, the
+  // subframe one isn't.
+  EXPECT_EQ(controller.GetPendingEntry()->GetUniqueID(),
+            nav_entry_id(main_frame_navigation.get()));
+  EXPECT_EQ(0, nav_entry_id(subframe_navigation.get()));
+
+  subframe_navigation->Commit();
 
   // The subframe navigation should have no effect on the displayed url.
   EXPECT_EQ(url1, controller.GetLastCommittedEntry()->GetURL());
   EXPECT_EQ(url2, controller.GetVisibleEntry()->GetURL());
+
+  EXPECT_EQ(controller.GetPendingEntry()->GetUniqueID(),
+            nav_entry_id(main_frame_navigation.get()));
 }
 
 // Test CopyStateFrom with 2 urls, the first selected and nothing in the target.

@@ -32,7 +32,7 @@ class OSSettingsUI : public ui::MojoWebUIController {
   void AddSettingsPageUIHandler(
       std::unique_ptr<content::WebUIMessageHandler> handler);
   void BindCrosNetworkConfig(
-      network_config::mojom::CrosNetworkConfigRequest request);
+      mojo::PendingReceiver<network_config::mojom::CrosNetworkConfig> receiver);
   void BindAppManagementPageHandlerFactory(
       mojo::PendingReceiver<app_management::mojom::PageHandlerFactory>
           receiver);

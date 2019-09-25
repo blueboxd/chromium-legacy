@@ -1069,14 +1069,6 @@ by a child template that "extends" this file.
             android:exported="false"/>
 
         <!-- Notification service for sync. -->
-        <meta-data android:name="ipc.invalidation.ticl.listener_service_class"
-            android:value="org.chromium.chrome.browser.invalidation.ChromeInvalidationClientService"/>
-        <service android:name="org.chromium.chrome.browser.invalidation.ChromeInvalidationClientService"
-            android:exported="false">
-            <intent-filter>
-              <action android:name="com.google.ipc.invalidation.AUTH_TOKEN_REQUEST"/>
-            </intent-filter>
-        </service>
         <service android:name="com.google.ipc.invalidation.ticl.android2.TiclService"
             android:exported="false"/>
         <service android:name="com.google.ipc.invalidation.ticl.android2.channel.AndroidMessageSenderService"

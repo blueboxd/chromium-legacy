@@ -11,7 +11,8 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/web_cache/public/mojom/web_cache.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace web_cache {
 
@@ -21,7 +22,7 @@ class WebCacheImpl : public mojom::WebCache {
   WebCacheImpl();
   ~WebCacheImpl() override;
 
-  void BindRequest(mojom::WebCacheRequest web_cache_request);
+  void BindReceiver(mojo::PendingReceiver<mojom::WebCache> web_cache_receiver);
 
   // Needs to be called by RenderViews in case of navigations to execute
   // any 'clear cache' commands that were delayed until the next navigation.
@@ -45,7 +46,7 @@ class WebCacheImpl : public mojom::WebCache {
   // get executed on navigation.
   State clear_cache_state_;
 
-  mojo::BindingSet<mojom::WebCache> bindings_;
+  mojo::ReceiverSet<mojom::WebCache> receivers_;
 
   DISALLOW_COPY_AND_ASSIGN(WebCacheImpl);
 };

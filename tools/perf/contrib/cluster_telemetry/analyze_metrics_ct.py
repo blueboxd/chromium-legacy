@@ -3,8 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-
 from __future__ import division
+from __future__ import print_function
 
 import argparse
 import json
@@ -46,7 +46,7 @@ def main():
   trace_size_in_mib = os.path.getsize(args.local_trace_path) / (2 ** 20)
   # Bails out on trace that are too big. See crbug.com/812631 for more details.
   if trace_size_in_mib > 400:
-    print 'Trace size is too big: %s MiB' % trace_size_in_mib
+    print('Trace size is too big: %s MiB' % trace_size_in_mib)
     return 1
 
   logging.warning('Starting to compute metrics on trace')
@@ -59,8 +59,8 @@ def main():
       time.time() - start))
 
   for f in mre_result.failures:
-    print 'Running metric failed:'
-    print f.stack
+    print('Running metric failed:')
+    print(f.stack)
     return 1
 
   with tempfile.NamedTemporaryFile() as temp:
@@ -70,12 +70,12 @@ def main():
 
     result = histograms_to_csv.HistogramsToCsv(temp.name)
     if result.returncode != 0:
-      print 'histograms_to_csv.HistogramsToCsv returned %d' % result.returncode
+      print('histograms_to_csv.HistogramsToCsv returned %d' % result.returncode)
       return result.returncode
     else:
       with open(args.output_csv, 'w') as f:
         f.write(result.stdout.rstrip())
-      print 'Output CSV created in file://' + args.output_csv
+      print('Output CSV created in file://' + args.output_csv)
 
 
 if __name__ == '__main__':

@@ -59,8 +59,6 @@ class ContentPasswordManagerDriver
       const autofill::PasswordFormFillData& form_data) override;
   void FormEligibleForGenerationFound(
       const autofill::PasswordFormGenerationData& form) override;
-  void AutofillDataReceived(
-      const autofill::FormsPredictionsMap& predictions) override;
   void GeneratedPasswordAccepted(const base::string16& password) override;
   void GeneratedPasswordAccepted(const autofill::FormData& form_data,
                                  uint32_t generation_element_id,
@@ -71,8 +69,6 @@ class ContentPasswordManagerDriver
                             const base::string16& credential) override;
   void PreviewSuggestion(const base::string16& username,
                          const base::string16& password) override;
-  void ShowInitialPasswordAccountSuggestions(
-      const autofill::PasswordFormFillData& form_data) override;
   void ClearPreviewedForm() override;
   PasswordGenerationFrameHelper* GetPasswordGenerationHelper() override;
   PasswordManager* GetPasswordManager() override;
@@ -105,8 +101,8 @@ class ContentPasswordManagerDriver
       const autofill::PasswordForm& password_form) override;
   void ShowManualFallbackForSaving(const autofill::PasswordForm& form) override;
   void HideManualFallbackForSaving() override;
-  void SameDocumentNavigation(
-      const autofill::PasswordForm& password_form) override;
+  void SameDocumentNavigation(autofill::mojom::SubmissionIndicatorEvent
+                                  submission_indication_event) override;
   void RecordSavePasswordProgress(const std::string& log) override;
   void UserModifiedPasswordField() override;
   void UserModifiedNonPasswordField(uint32_t renderer_id,

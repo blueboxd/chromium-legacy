@@ -111,7 +111,7 @@ class COMPONENT_EXPORT(UI_BASE_X) XWindow {
 
   void SetSize(const gfx::Size& size_in_pixels);
   void SetBounds(const gfx::Rect& requested_bounds);
-  bool IsVisible() const;
+  bool IsXWindowVisible() const;
   bool IsMinimized() const;
   bool IsMaximized() const;
   bool IsFullscreen() const;

@@ -29,7 +29,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.AppHooks;
 import org.chromium.chrome.browser.autofill.PersonalDataManager;
 import org.chromium.chrome.browser.help.HelpAndFeedback;
-import org.chromium.chrome.browser.invalidation.InvalidationController;
 import org.chromium.chrome.browser.preferences.ChromeSwitchPreference;
 import org.chromium.chrome.browser.preferences.PreferenceUtils;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -149,10 +148,6 @@ public class ManageSyncPreferences extends PreferenceFragmentCompat
     public void onDestroy() {
         super.onDestroy();
         mSyncSetupInProgressHandle.close();
-
-        if (mProfileSyncService.isSyncRequested()) {
-            InvalidationController.get().ensureStartedAndUpdateRegisteredTypes();
-        }
     }
 
     @Override

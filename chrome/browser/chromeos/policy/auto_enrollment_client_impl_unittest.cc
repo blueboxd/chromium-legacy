@@ -46,6 +46,9 @@ const char kInitialEnrollmentIdHash[] = "\x30\x18\xb7\x0f\x76\x09\xc5\xc7";
 
 const int kInitialEnrollmentIdHashLength = 8;
 
+const bool kNotWithLicense = false;
+const bool kWithLicense = true;
+
 // This is modulus power value used in initial enrollment to detect that the
 // server is outdated and does not support initial enrollment. See the
 // |DetectOutdatedServer| test case.
@@ -189,13 +192,14 @@ class AutoEnrollmentClientImplTest
   void ServerWillSendState(
       const std::string& management_domain,
       em::DeviceStateRetrievalResponse::RestoreMode restore_mode,
-      const std::string& device_disabled_message) {
+      const std::string& device_disabled_message,
+      bool is_license_packaged_with_device) {
     if (GetParam() == AutoEnrollmentProtocol::kFRE) {
       ServerWillSendFREState(management_domain, restore_mode,
                              device_disabled_message);
     } else {
       ServerWillSendInitialEnrollmentState(
-          management_domain,
+          management_domain, is_license_packaged_with_device,
           MapRestoreModeToInitialEnrollmentMode(restore_mode));
     }
   }
@@ -232,6 +236,7 @@ class AutoEnrollmentClientImplTest
 
   void ServerWillSendInitialEnrollmentState(
       const std::string& management_domain,
+      bool is_license_packaged_with_device,
       em::DeviceInitialEnrollmentStateResponse::InitialEnrollmentMode
           initial_enrollment_mode) {
     em::DeviceManagementResponse response;
@@ -239,6 +244,8 @@ class AutoEnrollmentClientImplTest
         response.mutable_device_initial_enrollment_state_response();
     state_response->set_initial_enrollment_mode(initial_enrollment_mode);
     state_response->set_management_domain(management_domain);
+    state_response->set_is_license_packaged_with_device(
+        is_license_packaged_with_device);
     EXPECT_CALL(*service_, StartJob(_))
         .WillOnce(
             DoAll(service_->CaptureJobType(&state_retrieval_job_type_),
@@ -281,7 +288,8 @@ class AutoEnrollmentClientImplTest
 
   void VerifyServerBackedState(const std::string& expected_management_domain,
                                const std::string& expected_restore_mode,
-                               const std::string& expected_disabled_message) {
+                               const std::string& expected_disabled_message,
+                               bool expected_is_license_packaged_with_device) {
     const base::Value* state =
         local_state_->GetUserPref(prefs::kServerBackedDeviceState);
     ASSERT_TRUE(state);
@@ -314,6 +322,17 @@ class AutoEnrollmentClientImplTest
     } else {
       EXPECT_FALSE(state_dict->GetString(kDeviceStateDisabledMessage,
                                          &actual_disabled_message));
+    }
+
+    if (GetParam() == AutoEnrollmentProtocol::kFRE) {
+      EXPECT_FALSE(state_dict->FindBoolPath(kDeviceStatePackagedLicense));
+    } else {
+      base::Optional<bool> actual_is_license_packaged_with_device;
+      actual_is_license_packaged_with_device =
+          state_dict->FindBoolPath(kDeviceStatePackagedLicense);
+      EXPECT_TRUE(actual_is_license_packaged_with_device.has_value());
+      EXPECT_EQ(expected_is_license_packaged_with_device,
+                actual_is_license_packaged_with_device.value());
     }
   }
 
@@ -432,7 +451,7 @@ TEST_P(AutoEnrollmentClientImplTest, AskForLess) {
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
-      kDisabledMessage);
+      kDisabledMessage, kWithLicense);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
@@ -442,7 +461,7 @@ TEST_P(AutoEnrollmentClientImplTest, AskForLess) {
   VerifyCachedResult(true, 8);
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentEnforced,
-                          kDisabledMessage);
+                          kDisabledMessage, kWithLicense);
 }
 
 TEST_P(AutoEnrollmentClientImplTest, AskForSame) {
@@ -452,7 +471,7 @@ TEST_P(AutoEnrollmentClientImplTest, AskForSame) {
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
-      kDisabledMessage);
+      kDisabledMessage, kNotWithLicense);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
@@ -462,7 +481,7 @@ TEST_P(AutoEnrollmentClientImplTest, AskForSame) {
   VerifyCachedResult(true, 8);
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentEnforced,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
 }
 
 TEST_P(AutoEnrollmentClientImplTest, AskForSameTwice) {
@@ -565,7 +584,7 @@ TEST_P(AutoEnrollmentClientImplTest, ForcedReEnrollment) {
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
-      kDisabledMessage);
+      kDisabledMessage, kNotWithLicense);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
@@ -575,7 +594,7 @@ TEST_P(AutoEnrollmentClientImplTest, ForcedReEnrollment) {
   VerifyCachedResult(true, 8);
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentEnforced,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
 
   // Network changes don't trigger retries after obtaining a response from
   // the server.
@@ -590,7 +609,7 @@ TEST_P(AutoEnrollmentClientImplTest, ForcedEnrollmentZeroTouch) {
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ZERO_TOUCH,
-      kDisabledMessage);
+      kDisabledMessage, kNotWithLicense);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
@@ -600,7 +619,7 @@ TEST_P(AutoEnrollmentClientImplTest, ForcedEnrollmentZeroTouch) {
   VerifyCachedResult(true, 8);
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentZeroTouch,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
 
   // Network changes don't trigger retries after obtaining a response from
   // the server.
@@ -620,7 +639,7 @@ TEST_P(AutoEnrollmentClientImplTest, RequestedReEnrollment) {
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_REQUESTED,
-      kDisabledMessage);
+      kDisabledMessage, kNotWithLicense);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
@@ -630,7 +649,7 @@ TEST_P(AutoEnrollmentClientImplTest, RequestedReEnrollment) {
   VerifyCachedResult(true, 8);
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentRequested,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
 }
 
 TEST_P(AutoEnrollmentClientImplTest, DeviceDisabled) {
@@ -642,7 +661,7 @@ TEST_P(AutoEnrollmentClientImplTest, DeviceDisabled) {
   ServerWillReply(-1, true, true);
   ServerWillSendState("example.com",
                       em::DeviceStateRetrievalResponse::RESTORE_MODE_DISABLED,
-                      kDisabledMessage);
+                      kDisabledMessage, kNotWithLicense);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
@@ -651,7 +670,7 @@ TEST_P(AutoEnrollmentClientImplTest, DeviceDisabled) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_DISABLED, state_);
   VerifyCachedResult(true, 8);
   VerifyServerBackedState("example.com", kDeviceStateRestoreModeDisabled,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
 }
 
 TEST_P(AutoEnrollmentClientImplTest, NoBitsUploaded) {
@@ -706,7 +725,7 @@ TEST_P(AutoEnrollmentClientImplTest, MoreThan32BitsUploaded) {
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
-      kDisabledMessage);
+      kDisabledMessage, kNotWithLicense);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
@@ -716,7 +735,7 @@ TEST_P(AutoEnrollmentClientImplTest, MoreThan32BitsUploaded) {
   VerifyCachedResult(true, 37);
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentEnforced,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
 }
 
 TEST_P(AutoEnrollmentClientImplTest, ReuseCachedDecision) {
@@ -733,7 +752,7 @@ TEST_P(AutoEnrollmentClientImplTest, ReuseCachedDecision) {
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
-      kDisabledMessage);
+      kDisabledMessage, kNotWithLicense);
 
   client()->Start();
   base::RunLoop().RunUntilIdle();
@@ -741,7 +760,7 @@ TEST_P(AutoEnrollmentClientImplTest, ReuseCachedDecision) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentEnforced,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
 }
 
 TEST_P(AutoEnrollmentClientImplTest, RetryIfPowerLargerThanCached) {
@@ -756,7 +775,7 @@ TEST_P(AutoEnrollmentClientImplTest, RetryIfPowerLargerThanCached) {
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
-      kDisabledMessage);
+      kDisabledMessage, kNotWithLicense);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
@@ -765,7 +784,7 @@ TEST_P(AutoEnrollmentClientImplTest, RetryIfPowerLargerThanCached) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentEnforced,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
 }
 
 TEST_P(AutoEnrollmentClientImplTest, NetworkChangeRetryAfterErrors) {
@@ -793,7 +812,7 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkChangeRetryAfterErrors) {
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
-      kDisabledMessage);
+      kDisabledMessage, kNotWithLicense);
   client()->OnConnectionChanged(
       network::mojom::ConnectionType::CONNECTION_ETHERNET);
   base::RunLoop().RunUntilIdle();
@@ -804,7 +823,7 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkChangeRetryAfterErrors) {
   EXPECT_TRUE(HasCachedDecision());
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentEnforced,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
 
   // Subsequent network changes don't trigger retries.
   client()->OnConnectionChanged(
@@ -817,7 +836,7 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkChangeRetryAfterErrors) {
   EXPECT_TRUE(HasCachedDecision());
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentEnforced,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
 }
 
 TEST_P(AutoEnrollmentClientImplTest, CancelAndDeleteSoonWithPendingRequest) {
@@ -887,7 +906,7 @@ TEST_P(AutoEnrollmentClientImplTest, CancelAndDeleteSoonAfterCompletion) {
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
-      kDisabledMessage);
+      kDisabledMessage, kNotWithLicense);
   client()->Start();
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
@@ -896,7 +915,7 @@ TEST_P(AutoEnrollmentClientImplTest, CancelAndDeleteSoonAfterCompletion) {
   EXPECT_EQ(AUTO_ENROLLMENT_STATE_TRIGGER_ENROLLMENT, state_);
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentEnforced,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
 
   // The client will delete itself immediately if there are no pending
   // requests.
@@ -947,7 +966,7 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkFailureThenRequireUpdatedModulus) {
   ServerWillSendState(
       "example.com",
       em::DeviceStateRetrievalResponse::RESTORE_MODE_REENROLLMENT_ENFORCED,
-      kDisabledMessage);
+      kDisabledMessage, kNotWithLicense);
 
   // Trigger a network change event.
   client()->OnConnectionChanged(
@@ -957,7 +976,7 @@ TEST_P(AutoEnrollmentClientImplTest, NetworkFailureThenRequireUpdatedModulus) {
   EXPECT_TRUE(HasCachedDecision());
   VerifyServerBackedState("example.com",
                           kDeviceStateRestoreModeReEnrollmentEnforced,
-                          kDisabledMessage);
+                          kDisabledMessage, kNotWithLicense);
   Mock::VerifyAndClearExpectations(service_.get());
   EXPECT_EQ(DeviceManagementService::JobConfiguration::TYPE_AUTO_ENROLLMENT,
             auto_enrollment_job_type_);

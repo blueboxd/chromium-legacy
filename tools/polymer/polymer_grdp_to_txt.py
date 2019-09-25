@@ -3,6 +3,8 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from __future__ import print_function
+
 import argparse
 import sys
 import xml.sax
@@ -35,7 +37,7 @@ def main(argv):
 
   xml_handler = PathsExtractor(args.polymer_version)
   xml.sax.parse(args.input, xml_handler)
-  print '\n'.join(sorted(xml_handler.paths))
+  print('\n'.join(sorted(xml_handler.paths)))
 
 
 if __name__ == '__main__':

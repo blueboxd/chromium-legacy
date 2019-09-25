@@ -110,6 +110,10 @@ bool DeviceState::PropertyChanged(const std::string& key,
     // calls to IPConfigPropertiesChanged.
     ip_configs_.Clear();
     return false;  // No actual state change.
+  } else if (key == shill::kLinkUpProperty) {
+    return GetBooleanValue(key, value, &link_up_);
+  } else if (key == shill::kDeviceBusTypeProperty) {
+    return GetStringValue(key, value, &device_bus_type_);
   }
   return false;
 }

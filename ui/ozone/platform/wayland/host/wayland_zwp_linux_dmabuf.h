@@ -10,6 +10,7 @@
 #include "base/containers/flat_map.h"
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "ui/ozone/platform/wayland/common/wayland_object.h"
 #include "ui/ozone/platform/wayland/common/wayland_util.h"
 
@@ -29,6 +30,9 @@ class WaylandConnection;
 // |wl_buffer|s backed by dmabuf |file| descriptor.
 class WaylandZwpLinuxDmabuf {
  public:
+  using BufferFormatsWithModifiersMap =
+      base::flat_map<gfx::BufferFormat, std::vector<uint64_t>>;
+
   WaylandZwpLinuxDmabuf(zwp_linux_dmabuf_v1* zwp_linux_dmabuf,
                         WaylandConnection* connection);
   ~WaylandZwpLinuxDmabuf();
@@ -46,15 +50,17 @@ class WaylandZwpLinuxDmabuf {
                     wl::OnRequestBufferCallback callback);
 
   // Returns supported buffer formats received from the Wayland compositor.
-  std::vector<gfx::BufferFormat> supported_buffer_formats() const {
-    return supported_buffer_formats_;
+  BufferFormatsWithModifiersMap supported_buffer_formats() const {
+    return supported_buffer_formats_with_modifiers_;
   }
 
  private:
   // Receives supported |fourcc_format| from either ::Modifers or ::Format call
   // (depending on the protocol version), and stores it as gfx::BufferFormat to
-  // the |supported_buffer_formats_| container.
-  void AddSupportedFourCCFormat(uint32_t fourcc_format);
+  // the |supported_buffer_formats_| container. Modifiers can also be passed to
+  // this method to be stored as a map of the format and modifier.
+  void AddSupportedFourCCFormatAndModifier(uint32_t fourcc_format,
+                                           base::Optional<uint64_t> modifier);
 
   // Finds the stored callback corresponding to the |params| created in the
   // RequestBufferAsync call, and passes the wl_buffer to the client. The
@@ -79,14 +85,16 @@ class WaylandZwpLinuxDmabuf {
   static void CreateFailed(void* data,
                            struct zwp_linux_buffer_params_v1* params);
 
-  // Holds pointer to the zwp_linux_dmabuf_v1 Wayland factory.
+  // Holds pointer to the
+  // zwp_linux_dmabuf_v1 Wayland
+  // factory.
   const wl::Object<zwp_linux_dmabuf_v1> zwp_linux_dmabuf_;
 
   // Non-owned.
   WaylandConnection* const connection_;
 
   // Holds supported DRM formats translated to gfx::BufferFormat.
-  std::vector<gfx::BufferFormat> supported_buffer_formats_;
+  BufferFormatsWithModifiersMap supported_buffer_formats_with_modifiers_;
 
   // Contains callbacks for requests to create |wl_buffer|s using
   // |zwp_linux_dmabuf_| factory.

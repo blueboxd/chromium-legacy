@@ -13,8 +13,6 @@
 #include "base/base_export.h"
 #include "base/callback.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/message_loop/timer_slack.h"
 #include "base/sequence_checker.h"
@@ -330,24 +328,6 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
 
   DISALLOW_COPY_AND_ASSIGN(Thread);
 };
-
-namespace internal {
-
-class BASE_EXPORT MessageLoopThreadDelegate : public Thread::Delegate {
- public:
-  explicit MessageLoopThreadDelegate(std::unique_ptr<MessageLoop> message_loop);
-
-  ~MessageLoopThreadDelegate() override;
-
-  // Thread::Delegate:
-  scoped_refptr<SingleThreadTaskRunner> GetDefaultTaskRunner() override;
-  void BindToCurrentThread(TimerSlack timer_slack) override;
-
- private:
-  std::unique_ptr<MessageLoop> message_loop_;
-};
-
-}  // namespace internal
 
 }  // namespace base
 

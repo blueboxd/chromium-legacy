@@ -145,9 +145,10 @@ class BodyJsonConsumer final : public BodyConsumerBase {
     v8::Local<v8::Value> parsed;
     if (v8::JSON::Parse(Resolver()->GetScriptState()->GetContext(),
                         input_string)
-            .ToLocal(&parsed))
-      ResolveLater(ScriptValue(Resolver()->GetScriptState(), parsed));
-    else
+            .ToLocal(&parsed)) {
+      ResolveLater(
+          ScriptValue(Resolver()->GetScriptState()->GetIsolate(), parsed));
+    } else
       Resolver()->Reject(trycatch.Exception());
   }
   DISALLOW_COPY_AND_ASSIGN(BodyJsonConsumer);

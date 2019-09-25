@@ -97,7 +97,7 @@ class WaylandSurfaceFactoryTest : public WaylandTest {
     WaylandTest::SetUp();
 
     auto manager_ptr = connection_->buffer_manager_host()->BindInterface();
-    buffer_manager_gpu_->SetWaylandBufferManagerHost(std::move(manager_ptr));
+    buffer_manager_gpu_->Initialize(std::move(manager_ptr), {}, false);
 
     // Wait until initialization and mojo calls go through.
     base::RunLoop().RunUntilIdle();
@@ -198,7 +198,7 @@ TEST_P(WaylandSurfaceFactoryTest, CreateSurfaceCheckGbm) {
 
   // Reset gbm now. WaylandConnectionProxy can reset it when zwp is not
   // available. And factory must behave the same way as previously.
-  buffer_manager_gpu_->ResetGbmDevice();
+  buffer_manager_gpu_->set_gbm_device(nullptr);
   gl_surface = gl_ozone->CreateSurfacelessViewGLSurface(widget_);
   EXPECT_FALSE(gl_surface);
 }

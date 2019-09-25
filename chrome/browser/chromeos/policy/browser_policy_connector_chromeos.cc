@@ -28,6 +28,7 @@
 #include "chrome/browser/chromeos/policy/bluetooth_policy_handler.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 #include "chrome/browser/chromeos/policy/device_cloud_policy_store_chromeos.h"
+#include "chrome/browser/chromeos/policy/device_dock_mac_address_source_handler.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
 #include "chrome/browser/chromeos/policy/device_local_account_policy_service.h"
 #include "chrome/browser/chromeos/policy/device_network_configuration_updater.h"
@@ -231,6 +232,11 @@ void BrowserPolicyConnectorChromeOS::Init(
   minimum_version_policy_handler_ =
       std::make_unique<MinimumVersionPolicyHandler>(
           chromeos::CrosSettings::Get());
+
+  device_dock_mac_address_source_handler_ =
+      std::make_unique<DeviceDockMacAddressHandler>(
+          chromeos::CrosSettings::Get(),
+          chromeos::NetworkHandler::Get()->network_device_handler());
 
   device_wifi_allowed_handler_ =
       std::make_unique<DeviceWiFiAllowedHandler>(chromeos::CrosSettings::Get());

@@ -347,7 +347,7 @@ class TouchSelectionControllerClientAuraSiteIsolationTest
   void SendTouch(RenderWidgetHostViewAura* view,
                  ui::EventType type,
                  gfx::Point point) {
-    DCHECK(type >= ui::ET_TOUCH_RELEASED && type << ui::ET_TOUCH_CANCELLED);
+    DCHECK(type >= ui::ET_TOUCH_RELEASED && type <= ui::ET_TOUCH_CANCELLED);
     // If we want the GestureRecognizer to create the gestures for us, we must
     // register the outgoing touch event with it by sending it through the
     // window's event dispatching system.

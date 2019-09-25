@@ -67,17 +67,17 @@ apps::mojom::AppPtr Convert(const app_list::InternalApp& internal_app) {
 
 namespace apps {
 
-BuiltInChromeOsApps::BuiltInChromeOsApps() : profile_(nullptr) {}
+BuiltInChromeOsApps::BuiltInChromeOsApps(
+    const mojo::Remote<apps::mojom::AppService>& app_service,
+    Profile* profile)
+    : profile_(profile) {
+  Initialize(app_service);
+}
 
 BuiltInChromeOsApps::~BuiltInChromeOsApps() = default;
 
-void BuiltInChromeOsApps::Initialize(
-    const mojo::Remote<apps::mojom::AppService>& app_service,
-    Profile* profile) {
-  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
-                                 apps::mojom::AppType::kBuiltIn);
-
-  profile_ = profile;
+void BuiltInChromeOsApps::FlushMojoCallsForTesting() {
+  receiver_.FlushForTesting();
 }
 
 bool BuiltInChromeOsApps::hide_settings_app_for_testing_ = false;
@@ -89,8 +89,15 @@ bool BuiltInChromeOsApps::SetHideSettingsAppForTesting(bool hide) {
   return old_value;
 }
 
-void BuiltInChromeOsApps::Connect(apps::mojom::SubscriberPtr subscriber,
-                                  apps::mojom::ConnectOptionsPtr opts) {
+void BuiltInChromeOsApps::Initialize(
+    const mojo::Remote<apps::mojom::AppService>& app_service) {
+  app_service->RegisterPublisher(receiver_.BindNewPipeAndPassRemote(),
+                                 apps::mojom::AppType::kBuiltIn);
+}
+
+void BuiltInChromeOsApps::Connect(
+    mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
+    apps::mojom::ConnectOptionsPtr opts) {
   std::vector<apps::mojom::AppPtr> apps;
   if (profile_) {
     // TODO(crbug.com/826982): move source of truth for built-in apps from
@@ -117,11 +124,13 @@ void BuiltInChromeOsApps::Connect(apps::mojom::SubscriberPtr subscriber,
       }
     }
   }
+  mojo::Remote<apps::mojom::Subscriber> subscriber(
+      std::move(subscriber_remote));
   subscriber->OnApps(std::move(apps));
 
   // Unlike other apps::mojom::Publisher implementations, we don't need to
   // retain the subscriber (e.g. add it to a
-  // mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_) after this
+  // mojo::RemoteSet<apps::mojom::Subscriber> subscribers_) after this
   // function returns. The list of built-in Chrome OS apps is fixed for the
   // lifetime of the Chrome OS session. There won't be any further updates.
 }

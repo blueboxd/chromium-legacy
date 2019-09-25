@@ -295,16 +295,6 @@ std::unique_ptr<StateSubscription> HashPasswordManager::RegisterStateCallback(
   return state_callback_list_.Add(callback);
 }
 
-bool HashPasswordManager::EncryptAndSaveToPrefs(const std::string& pref_name,
-                                                const std::string& s) {
-  std::string encrypted_base64_text = EncryptString(s);
-  if (encrypted_base64_text.empty())
-    return false;
-
-  prefs_->SetString(pref_name, encrypted_base64_text);
-  return true;
-}
-
 bool HashPasswordManager::EncryptAndSave(
     const PasswordHashData& password_hash_data) {
   if (!prefs_ || password_hash_data.username.empty()) {
@@ -364,13 +354,6 @@ bool HashPasswordManager::EncryptAndSave(
 
   update->Append(std::move(encrypted_password_hash_entry));
   return true;
-}
-
-std::string HashPasswordManager::RetrievedDecryptedStringFromPrefs(
-    const std::string& pref_name) {
-  DCHECK(prefs_);
-  std::string encrypted_base64_text = prefs_->GetString(pref_name);
-  return DecryptBase64String(encrypted_base64_text);
 }
 
 }  // namespace password_manager

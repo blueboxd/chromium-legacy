@@ -204,6 +204,9 @@
         "load:news:nytimes": {
             "DEFAULT": "system_health_mobile_009.wprgo"
         },
+        "load:news:nytimes:2019": {
+            "DEFAULT": "system_health_mobile_79b5ecd0df.wprgo"
+        },
         "load:news:qq": {
             "DEFAULT": "system_health_mobile_010.wprgo"
         },

@@ -127,12 +127,6 @@ StyleImage* CSSImageSetValue::CacheImage(
                                          cross_origin);
     }
 
-    if (document.GetFrame() &&
-        image_request_optimization == FetchParameters::kAllowPlaceholder &&
-        document.GetFrame()->IsClientLoFiAllowed(params.GetResourceRequest())) {
-      params.SetClientLoFiPlaceholder();
-    }
-
     cached_image_ = MakeGarbageCollected<StyleFetchedImageSet>(
         ImageResourceContent::Fetch(params, document.Fetcher()),
         image.scale_factor, this, params.Url());

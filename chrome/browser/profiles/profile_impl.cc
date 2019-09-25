@@ -201,8 +201,6 @@
 #if defined(OS_ANDROID)
 #include "chrome/browser/android/profile_key_startup_accessor.h"
 #else
-#include "chrome/services/app_service/app_service.h"
-#include "chrome/services/app_service/public/mojom/constants.mojom.h"
 #include "components/zoom/zoom_event_manager.h"
 #include "content/public/common/page_zoom.h"
 #endif
@@ -1304,14 +1302,6 @@ std::unique_ptr<service_manager::Service> ProfileImpl::HandleServiceRequest(
     return std::make_unique<image_annotation::ImageAnnotationService>(
         std::move(request), APIKeyForChannel(), GetURLLoaderFactory());
   }
-
-#if !defined(OS_ANDROID)
-  if (service_name == apps::mojom::kServiceName) {
-    // TODO(crbug.com/826982): Use the current profile to fetch existing
-    // registries.
-    return std::make_unique<apps::AppService>(std::move(request));
-  }
-#endif  // !defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
   if (service_name == chromeos::multidevice_setup::mojom::kServiceName) {

@@ -134,63 +134,6 @@ cr.define('app_management', function() {
     }
   };
 
-  const SearchState = {};
-
-  /**
-   * @param {AppMap} apps
-   * @param {SearchState} search
-   * @param {Object} action
-   * @return {SearchState}
-   */
-  SearchState.startSearch = function(apps, search, action) {
-    if (action.term === search.term) {
-      return search;
-    }
-
-    const results = [];
-
-    for (const app of Object.values(apps)) {
-      if (app.title.toLowerCase().includes(action.term.toLowerCase())) {
-        results.push(app);
-      }
-    }
-
-    results.sort(
-        (a, b) => app_management.util.alphabeticalSort(
-            assert(a.title), assert(b.title)));
-
-    return /** @type {SearchState} */ (Object.assign({}, search, {
-      term: action.term,
-      results: results,
-    }));
-  };
-
-  /** @return {SearchState} */
-  SearchState.clearSearch = function() {
-    return {
-      term: null,
-      results: null,
-    };
-  };
-
-  /**
-   * @param {AppMap} apps
-   * @param {SearchState} search
-   * @param {Object} action
-   * @return {SearchState}
-   */
-  SearchState.updateSearch = function(apps, search, action) {
-    switch (action.name) {
-      case 'start-search':
-        return SearchState.startSearch(apps, search, action);
-      case 'clear-search':
-      case 'change-page':
-        return SearchState.clearSearch();
-      default:
-        return search;
-    }
-  };
-
   const NotificationsState = {};
 
   /**
@@ -301,7 +244,6 @@ cr.define('app_management', function() {
       currentPage: CurrentPageState.updateCurrentPage(
           state.apps, state.currentPage, action),
       arcSupported: ArcSupported.updateArcSupported(state.arcSupported, action),
-      search: SearchState.updateSearch(state.apps, state.search, action),
       notifications:
           NotificationsState.updateNotifications(state.notifications, action),
     };
@@ -313,6 +255,5 @@ cr.define('app_management', function() {
     CurrentPageState: CurrentPageState,
     ArcSupported: ArcSupported,
     NotificationsState: NotificationsState,
-    SearchState: SearchState,
   };
 });

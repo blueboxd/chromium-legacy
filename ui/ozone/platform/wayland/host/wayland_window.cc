@@ -374,6 +374,12 @@ void WaylandWindow::Close() {
   delegate_->OnClosed();
 }
 
+bool WaylandWindow::IsVisible() const {
+  // X and Windows return true if the window is minimized. For consistency, do
+  // the same.
+  return (!!xdg_surface_ || !!xdg_popup_) || IsMinimized();
+}
+
 void WaylandWindow::PrepareForShutdown() {}
 
 void WaylandWindow::SetBounds(const gfx::Rect& bounds_px) {

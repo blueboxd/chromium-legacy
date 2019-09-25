@@ -74,18 +74,6 @@ class CORE_EXPORT ScriptValue final {
   // TODO(rikaf): Forbid passing empty v8::Local<v8::Value> to ScriptValue's
   // ctor.
 
-  // TODO(crbug.com/998994): Remove ScriptValue(ScriptState*,
-  // v8::Local<v8::Value>) once we finish replacing with ScriptValue(Isolate*,
-  // v8::Local<v8::Value>)
-  ScriptValue(ScriptState* script_state, v8::Local<v8::Value> value)
-      : isolate_(script_state->GetIsolate()),
-        value_(value.IsEmpty()
-                   ? WorldSafeV8Reference<v8::Value>()
-                   : WorldSafeV8Reference<v8::Value>(script_state->GetIsolate(),
-                                                     value)) {
-    DCHECK(isolate_);
-  }
-
   ScriptValue(v8::Isolate* isolate, v8::Local<v8::Value> value)
       : isolate_(isolate),
         value_(value.IsEmpty()
@@ -201,7 +189,7 @@ struct NativeValueTraits<ScriptValue>
   static inline ScriptValue NativeValue(v8::Isolate* isolate,
                                         v8::Local<v8::Value> value,
                                         ExceptionState& exception_state) {
-    return ScriptValue(ScriptState::Current(isolate), value);
+    return ScriptValue(isolate, value);
   }
 };
 

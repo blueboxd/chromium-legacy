@@ -137,32 +137,6 @@ suite('current page state', function() {
   });
 });
 
-suite('search state', function() {
-  let state;
-
-  setup(function() {
-    state = app_management.util.createInitialState([
-      createApp('1'),
-      createApp('2'),
-    ]);
-  });
-
-  test('state updates when search starts', function() {
-    // State updates when a search term has been typed in.
-    let action = app_management.actions.setSearchTerm('searchTerm');
-    state = app_management.reduceAction(state, action);
-
-    assertEquals('searchTerm', state.search.term);
-
-    // Search disappears when there is no term entered.
-    action = app_management.actions.clearSearch();
-    state = app_management.reduceAction(state, action);
-    assertEquals(PageType.MAIN, state.currentPage.pageType);
-
-    assertEquals(null, state.search.term);
-  });
-});
-
 suite('notifications state', function() {
   let state;
 

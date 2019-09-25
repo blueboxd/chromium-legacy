@@ -716,7 +716,7 @@ IntrusiveHeap<T, Compare, HeapHandleAccessor>::~IntrusiveHeap() {
 template <typename T, typename Compare, typename HeapHandleAccessor>
 IntrusiveHeap<T, Compare, HeapHandleAccessor>&
 IntrusiveHeap<T, Compare, HeapHandleAccessor>::operator=(
-    IntrusiveHeap&& other) {
+    IntrusiveHeap&& other) noexcept {
   clear();
   impl_ = std::move(other.impl_);
   return *this;

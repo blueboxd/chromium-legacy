@@ -624,7 +624,8 @@ ScriptValue WebGL2ComputeRenderingContextBase::WrapLocation(
       DCHECK_GE(location, 0);
       WebGLUniformLocation* uniform_location =
           WebGLUniformLocation::Create(program, location);
-      return ScriptValue(script_state, ToV8(uniform_location, script_state));
+      return ScriptValue(script_state->GetIsolate(),
+                         ToV8(uniform_location, script_state));
     }
     default: {
       return WebGLAny(script_state, location);

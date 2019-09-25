@@ -82,6 +82,7 @@ TemplateURLServiceTestUtil::TemplateURLServiceTestUtil() : changed_count_(0) {
 
 TemplateURLServiceTestUtil::~TemplateURLServiceTestUtil() {
   ClearModel();
+  web_data_service_->ShutdownOnUISequence();
   profile_.reset();
 
   // Flush the message loop to make application verifiers happy.

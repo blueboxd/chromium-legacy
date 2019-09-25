@@ -48,6 +48,10 @@ const base::Feature kGooglePasswordManager = {
 const base::Feature kLeakDetection = {"PasswordLeakDetection",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables storing leaked credentials in the database.
+const base::Feature kLeakHistory = {"PasswordLeakHistory",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls whether to offer manual password generation in the accessory sheet
 // on Android.
 const base::Feature kManualPasswordGenerationAndroid{

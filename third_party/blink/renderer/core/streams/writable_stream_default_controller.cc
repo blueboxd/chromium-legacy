@@ -25,8 +25,8 @@ WritableStreamDefaultController::WritableStreamDefaultController()
     : queue_(MakeGarbageCollected<QueueWithSizes>()) {}
 
 void WritableStreamDefaultController::error(ScriptState* script_state) {
-  error(script_state,
-        ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
+  error(script_state, ScriptValue(script_state->GetIsolate(),
+                                  v8::Undefined(script_state->GetIsolate())));
 }
 
 void WritableStreamDefaultController::error(ScriptState* script_state,

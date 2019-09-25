@@ -36,6 +36,11 @@ Polymer({
     havePlayStoreApp: Boolean,
 
     /**
+     * @type {string}
+     */
+    searchTerm: String,
+
+    /**
      * Show ARC++ related settings and sub-page.
      * @type {boolean}
      */

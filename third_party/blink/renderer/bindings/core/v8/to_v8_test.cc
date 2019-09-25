@@ -152,7 +152,7 @@ TEST(ToV8Test, undefinedType) {
 
 TEST(ToV8Test, scriptValue) {
   V8TestingScope scope;
-  ScriptValue value(scope.GetScriptState(),
+  ScriptValue value(scope.GetIsolate(),
                     v8::Number::New(scope.GetIsolate(), 1234));
 
   TEST_TOV8("1234", value);
@@ -300,7 +300,7 @@ TEST(ToV8Test, heapVector) {
 
 TEST(ToV8Test, withScriptState) {
   V8TestingScope scope;
-  ScriptValue value(scope.GetScriptState(),
+  ScriptValue value(scope.GetIsolate(),
                     v8::Number::New(scope.GetIsolate(), 1234.0));
 
   v8::Local<v8::Value> actual = ToV8(value, scope.GetScriptState());

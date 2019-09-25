@@ -22,6 +22,7 @@ public class WebApkInfoBuilder {
     private String mScope;
     private @WebDisplayMode int mDisplayMode = WebDisplayMode.STANDALONE;
     private String mManifestUrl;
+    private int mWebApkVersionCode;
 
     public WebApkInfoBuilder(String webApkPackageName, String url) {
         mWebApkPackageName = webApkPackageName;
@@ -40,6 +41,10 @@ public class WebApkInfoBuilder {
         mManifestUrl = manifestUrl;
     }
 
+    public void setWebApkVersionCode(int versionCode) {
+        mWebApkVersionCode = versionCode;
+    }
+
     /**
      * Builds {@link WebApkInfo} object using options that have been set.
      */
@@ -53,6 +58,6 @@ public class WebApkInfoBuilder {
                 WebApkDistributor.BROWSER,
                 new HashMap<String, String>() /* iconUrlToMurmur2HashMap */, null,
                 false /* forceNavigation */, false /* isSplashProvidedByWebApk */, null,
-                1 /* webApkVersionCode */);
+                mWebApkVersionCode);
     }
 }

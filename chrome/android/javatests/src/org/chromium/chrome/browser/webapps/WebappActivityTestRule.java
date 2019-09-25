@@ -120,8 +120,9 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
                 // runnable.
                 callback.waitForCallback(0);
 
-                TestThreadUtils.runOnUiThreadBlocking(
-                        () -> { callback.getStorage().updateFromShortcutIntent(createIntent()); });
+                TestThreadUtils.runOnUiThreadBlocking(() -> {
+                    callback.getStorage().updateFromWebappInfo(WebappInfo.create(createIntent()));
+                });
 
                 base.evaluate();
 

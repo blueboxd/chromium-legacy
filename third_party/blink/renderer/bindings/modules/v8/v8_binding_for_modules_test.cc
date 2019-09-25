@@ -255,7 +255,7 @@ TEST(IDBKeyFromValue, Exceptions) {
   {
     // Value is an array with a getter that throws.
     ScriptValue script_value(
-        scope.GetScriptState(),
+        scope.GetIsolate(),
         EvaluateScriptAsObject(
             scope,
             "(()=>{"
@@ -273,7 +273,7 @@ TEST(IDBKeyFromValue, Exceptions) {
   {
     // Value is an array containing an array with a getter that throws.
     ScriptValue script_value(
-        scope.GetScriptState(),
+        scope.GetIsolate(),
         EvaluateScriptAsObject(
             scope,
             "(()=>{"
@@ -293,7 +293,7 @@ TEST(IDBKeyFromValue, Exceptions) {
 TEST(IDBKeyFromValueAndKeyPathTest, Exceptions) {
   V8TestingScope scope;
   ScriptValue script_value(
-      scope.GetScriptState(),
+      scope.GetIsolate(),
       EvaluateScriptAsObject(scope,
                              "({id:1, get throws() { throw Error(); }})"));
   {
@@ -380,14 +380,14 @@ TEST(InjectIDBKeyTest, ImplicitValues) {
   v8::Isolate* isolate = scope.GetIsolate();
   {
     v8::Local<v8::String> string = V8String(isolate, "string");
-    ScriptValue value = ScriptValue(scope.GetScriptState(), string);
+    ScriptValue value = ScriptValue(scope.GetIsolate(), string);
     std::unique_ptr<IDBKey> idb_key = IDBKey::CreateNumber(123);
     CheckInjectionIgnored(scope.GetScriptState(), idb_key.get(), value,
                           "length");
   }
   {
     v8::Local<v8::Array> array = v8::Array::New(isolate);
-    ScriptValue value = ScriptValue(scope.GetScriptState(), array);
+    ScriptValue value = ScriptValue(scope.GetIsolate(), array);
     std::unique_ptr<IDBKey> idb_key = IDBKey::CreateNumber(456);
     CheckInjectionIgnored(scope.GetScriptState(), idb_key.get(), value,
                           "length");

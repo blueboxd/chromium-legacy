@@ -805,6 +805,7 @@
         'DeviceLoginScreenExtensions',
         'DeviceLoginScreenLocales',
         'DeviceLoginScreenInputMethods',
+        'DeviceLoginScreenSystemInfoEnforced',
         'DeviceSecondFactorAuthentication',
         'DeviceLoginScreenIsolateOrigins',
         'DeviceLoginScreenSitePerProcess',
@@ -13111,6 +13112,29 @@
       If this policy is set to a list of input method identifiers, the given input methods will be available on the sign-in screen. The first given input method will be preselected. While a user pod is focused on the sign-in screen, the user's last used input method will be available in addition to the input methods given by this policy. If this policy is not set, the input methods on the sign-in screen will be derived from the locale in which the sign-in screen is displayed. Values which are not valid input method identifiers will be ignored.''',
     },
     {
+      'name': 'DeviceLoginScreenSystemInfoEnforced',
+      'owners': ['anqing@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'supported_chrome_os_management': ['google_cloud'],
+      'device_only': True,
+      'features': {
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 609,
+      'caption': '''Force the sign-in screen to show or hide system information.''',
+      'tags': [],
+      'desc': '''Specify whether the system information (e.g. Chrome OS version, device serial
+      number) is always shown (or hidden) on the login screen.
+
+      If the policy is set to true, the system information will be shown forcedly.
+      If the policy is set to false, the system information will be hidden forcedly.
+      If the policy is unset, default hehavior (being shown for Canary / Dev channel)
+      is effective. Users can toggle the visibility by specific operations (e.g., Alt-V).'''
+    },
+    {
       'name': 'SmsMessagesAllowed',
       'owners': ['jlklein@chromium.org', 'jonmann@chromium.org'],
       'type': 'main',
@@ -18051,6 +18075,7 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenDomainAutoComplete': 'login_screen_domain_auto_complete.login_screen_domain_auto_complete',
     'DeviceLoginScreenLocales': 'login_screen_locales.login_screen_locales',
     'DeviceLoginScreenInputMethods': 'login_screen_input_methods.login_screen_input_methods',
+    'DeviceLoginScreenSystemInfoEnforced': 'device_login_screen_system_info_enforced.enabled',
     'DeviceSamlLoginAuthenticationType': 'saml_login_authentication_type.saml_login_authentication_type',
     'DeviceDataRoamingEnabled': 'data_roaming_enabled.data_roaming_enabled',
     'AllowKioskAppControlChromeVersion': 'allow_kiosk_app_control_chrome_version.allow_kiosk_app_control_chrome_version',
@@ -18606,6 +18631,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 608,
+  'highest_id_currently_used': 609,
   'highest_atomic_group_id_currently_used': 37
 }

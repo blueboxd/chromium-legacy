@@ -141,10 +141,10 @@ bool WritableStreamWrapper::locked(ScriptState* script_state,
 
 ScriptPromise WritableStreamWrapper::abort(ScriptState* script_state,
                                            ExceptionState& exception_state) {
-  return abort(
-      script_state,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return abort(script_state,
+               ScriptValue(script_state->GetIsolate(),
+                           v8::Undefined(script_state->GetIsolate())),
+               exception_state);
 }
 
 ScriptPromise WritableStreamWrapper::abort(ScriptState* script_state,
@@ -182,7 +182,7 @@ ScriptValue WritableStreamWrapper::getWriter(ScriptState* script_state,
     exception_state.RethrowV8Exception(block.Exception());
     return ScriptValue();
   }
-  return ScriptValue(script_state, result);
+  return ScriptValue(script_state->GetIsolate(), result);
 }
 
 base::Optional<bool> WritableStreamWrapper::IsLocked(
@@ -246,7 +246,7 @@ WritableStreamWrapper* WritableStreamWrapper::Deserialize(
 
 ScriptValue WritableStreamWrapper::GetInternalStream(
     ScriptState* script_state) const {
-  return ScriptValue(script_state,
+  return ScriptValue(script_state->GetIsolate(),
                      internal_stream_.NewLocal(script_state->GetIsolate()));
 }
 

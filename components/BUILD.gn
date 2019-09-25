@@ -170,6 +170,7 @@ test("components_unittests") {
     "//components/variations/service:unit_tests",
     "//components/web_resource:unit_tests",
     "//components/webdata/common:unit_tests",
+    "//components/webdata_services:unit_tests",
   ]
 
   if (toolkit_views) {

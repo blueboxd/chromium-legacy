@@ -7,6 +7,8 @@
 histograms.
 """
 
+from __future__ import print_function
+
 import extract_histograms
 import os
 import sys
@@ -48,9 +50,10 @@ def main():
 
     if not obsolete:
       if owners:
-        print name, ' '.join(owners)
+        print(name, ' '.join(owners))
       else:
-        print name, 'NO_OWNER'
+        print(name, 'NO_OWNER')
+
 
 if __name__ == '__main__':
   main()

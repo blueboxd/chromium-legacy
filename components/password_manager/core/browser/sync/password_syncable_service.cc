@@ -338,12 +338,6 @@ bool PasswordSyncableService::ReadFromPasswordStore(
   std::vector<std::unique_ptr<autofill::PasswordForm>> blacklist_entries;
   if (!password_store_->FillAutofillableLogins(&autofillable_entries) ||
       !password_store_->FillBlacklistLogins(&blacklist_entries)) {
-    // Password store often fails to load passwords. Track failures with UMA.
-    // (http://crbug.com/249000)
-    // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
-    UMA_HISTOGRAM_ENUMERATION("Sync.LocalDataFailedToLoad",
-                              ModelTypeToHistogramInt(syncer::PASSWORDS),
-                              static_cast<int>(syncer::ModelType::NUM_ENTRIES));
     return false;
   }
   password_entries->resize(autofillable_entries.size() +

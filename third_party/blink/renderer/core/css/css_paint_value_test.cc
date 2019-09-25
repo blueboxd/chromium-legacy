@@ -10,6 +10,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
 #include "third_party/blink/renderer/core/css/css_syntax_definition.h"
+#include "third_party/blink/renderer/core/css/mock_css_paint_image_generator.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/web_local_frame_impl.h"
@@ -54,41 +55,6 @@ INSTANTIATE_TEST_SUITE_P(,
                                 kOffMainThreadCSSPaint,
                                 kCSSPaintAPIArguments |
                                     kOffMainThreadCSSPaint));
-
-class MockCSSPaintImageGenerator : public CSSPaintImageGenerator {
- public:
-  MockCSSPaintImageGenerator() {
-    // These methods return references, so setup a default ON_CALL to make them
-    // easier to use. They can be overridden by a specific test if desired.
-    ON_CALL(*this, NativeInvalidationProperties())
-        .WillByDefault(ReturnRef(native_properties_));
-    ON_CALL(*this, CustomInvalidationProperties())
-        .WillByDefault(ReturnRef(custom_properties_));
-    ON_CALL(*this, InputArgumentTypes())
-        .WillByDefault(ReturnRef(input_argument_types_));
-  }
-
-  MOCK_METHOD4(Paint,
-               scoped_refptr<Image>(const ImageResourceObserver&,
-                                    const FloatSize& container_size,
-                                    const CSSStyleValueVector*,
-                                    float device_scale_factor));
-  MOCK_CONST_METHOD0(NativeInvalidationProperties, Vector<CSSPropertyID>&());
-  MOCK_CONST_METHOD0(CustomInvalidationProperties, Vector<AtomicString>&());
-  MOCK_CONST_METHOD0(HasAlpha, bool());
-  MOCK_CONST_METHOD0(InputArgumentTypes, Vector<CSSSyntaxDefinition>&());
-  MOCK_CONST_METHOD0(IsImageGeneratorReady, bool());
-  MOCK_CONST_METHOD0(WorkletId, int());
-
-  void AddNativeProperty() {
-    native_properties_.push_back(CSSPropertyID::kBorderImageSource);
-  }
-
- private:
-  Vector<CSSPropertyID> native_properties_;
-  Vector<AtomicString> custom_properties_;
-  Vector<CSSSyntaxDefinition> input_argument_types_;
-};
 
 // CSSPaintImageGenerator requires that CSSPaintImageGeneratorCreateFunction be
 // a static method. As such, it cannot access a class member and so instead we

@@ -55,27 +55,6 @@ cr.define('app_management.actions', function() {
     };
   }
 
-  /** @return {!cr.ui.Action} */
-  function clearSearch() {
-    return {
-      name: 'clear-search',
-    };
-  }
-
-  /**
-   * @param {string} term
-   * @return {!cr.ui.Action}
-   */
-  function setSearchTerm(term) {
-    if (!term) {
-      return clearSearch();
-    }
-    return {
-      name: 'start-search',
-      term: term,
-    };
-  }
-
   /**
    * @param {boolean} isSupported
    * @return {!cr.ui.Action}
@@ -93,8 +72,6 @@ cr.define('app_management.actions', function() {
     changeApp: changeApp,
     removeApp: removeApp,
     changePage: changePage,
-    clearSearch: clearSearch,
-    setSearchTerm: setSearchTerm,
     updateArcSupported: updateArcSupported,
   };
 });

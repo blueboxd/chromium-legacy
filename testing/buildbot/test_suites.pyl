@@ -3713,6 +3713,37 @@
       }
     },
 
+    'gpu_skia_renderer_egl_telemetry_tests': {
+      'egl_pixel_skia': {
+        'name': 'egl_pixel_skia_gold_test',
+        'args': [
+          '--dont-restore-color-profile-after-test',
+          '--os-type',
+          '${os_type}',
+          '--build-revision',
+          '${got_revision}',
+          '--test-machine-name',
+          '${buildername}',
+          '--extra-browser-args=--enable-features=VizDisplayCompositor,UseSkiaRenderer,UseSkiaForGLReadback --use-gl=egl --enable-gpu-rasterization --force-gpu-rasterization --enable-oop-rasterization --disable-software-compositing-fallback --disable-headless-mode',
+        ],
+        'precommit_args': [
+          # Gerrit issue ID
+          '--review-patch-issue',
+          '${patch_issue}',
+          # Patch set number
+          '--review-patch-set',
+          '${patch_set}',
+          # Buildbucket ID
+          '--buildbucket-build-id',
+          '${buildbucket_build_id}',
+        ],
+        'swarming': {
+          'service_account': 'chrome-gpu-gold@chops-service-accounts.iam.gserviceaccount.com'
+        },
+        'telemetry_test_name': 'pixel',
+      },
+    },
+
     'gpu_skia_renderer_non_vulkan_telemetry_tests': {
       'skia_renderer_pixel_skia_gold_test': {
         'name': 'skia_renderer_pixel_skia_gold_test',

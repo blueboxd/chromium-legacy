@@ -872,7 +872,8 @@ bool CSPDirectiveList::AllowTrustedTypePolicy(const String& policy_name) const {
           "\"%s\".",
           policy_name.Utf8().c_str(),
           trusted_types_.Get()->GetText().Utf8().c_str()),
-      KURL(), RedirectStatus::kNoRedirect);
+      KURL(), RedirectStatus::kNoRedirect,
+      ContentSecurityPolicy::kTrustedTypesPolicyViolation, policy_name);
 
   return DenyIfEnforcingPolicy();
 }

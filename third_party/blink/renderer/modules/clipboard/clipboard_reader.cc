@@ -33,6 +33,7 @@ class ClipboardImageReader final : public ClipboardReader {
 
     Vector<uint8_t> png_data;
     SkPngEncoder::Options options;
+    options.fZLibLevel = 1;
     if (!ImageEncoder::Encode(&png_data, pixmap, options))
       return nullptr;
 

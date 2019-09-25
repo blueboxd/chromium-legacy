@@ -185,8 +185,6 @@ source_set("test_support") {
     "test/mock_xdg_shell.h",
     "test/mock_xdg_surface.cc",
     "test/mock_xdg_surface.h",
-    "test/mock_zwp_linux_buffer_params.cc",
-    "test/mock_zwp_linux_buffer_params.h",
     "test/mock_zwp_linux_dmabuf.cc",
     "test/mock_zwp_linux_dmabuf.h",
     "test/mock_zwp_text_input.cc",
@@ -217,6 +215,8 @@ source_set("test_support") {
     "test/test_touch.h",
     "test/test_wayland_server_thread.cc",
     "test/test_wayland_server_thread.h",
+    "test/test_zwp_linux_buffer_params.cc",
+    "test/test_zwp_linux_buffer_params.h",
     "test/test_zwp_text_input_manager.cc",
     "test/test_zwp_text_input_manager.h",
   ]
@@ -275,6 +275,7 @@ source_set("wayland_unittests") {
     "//ui/events/ozone:events_ozone_layout",
     "//ui/ozone:platform",
     "//ui/ozone:test_support",
+    "//ui/ozone/common/linux:drm",
     "//ui/ozone/common/linux:gbm",
   ]
 

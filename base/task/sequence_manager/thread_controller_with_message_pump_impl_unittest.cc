@@ -79,17 +79,17 @@ class FakeSequencedTaskSource : public internal::SequencedTaskSource {
   explicit FakeSequencedTaskSource(TickClock* clock) : clock_(clock) {}
   ~FakeSequencedTaskSource() override = default;
 
-  Optional<Task> TakeTask() override {
+  Task* SelectNextTask() override {
     if (tasks_.empty())
-      return nullopt;
+      return nullptr;
     if (tasks_.front().delayed_run_time > clock_->NowTicks())
-      return nullopt;
-    Task task = std::move(tasks_.front());
+      return nullptr;
+    running_stack_.push_back(std::move(tasks_.front()));
     tasks_.pop();
-    return task;
+    return &running_stack_.back();
   }
 
-  void DidRunTask() override {}
+  void DidRunTask() override { running_stack_.pop_back(); }
 
   TimeDelta DelayTillNextTask(LazyNow* lazy_now) const override {
     if (tasks_.empty())
@@ -106,8 +106,9 @@ class FakeSequencedTaskSource : public internal::SequencedTaskSource {
                TimeTicks delayed_run_time) {
     DCHECK(tasks_.empty() || delayed_run_time.is_null() ||
            tasks_.back().delayed_run_time < delayed_run_time);
-    tasks_.push(Task(internal::PostedTask(std::move(task), posted_from),
-                     delayed_run_time, EnqueueOrder::FromIntForTesting(13)));
+    tasks_.push(
+        Task(internal::PostedTask(nullptr, std::move(task), posted_from),
+             delayed_run_time, EnqueueOrder::FromIntForTesting(13)));
   }
 
   bool HasPendingHighResolutionTasks() override { return false; }
@@ -117,6 +118,7 @@ class FakeSequencedTaskSource : public internal::SequencedTaskSource {
  private:
   TickClock* clock_;
   std::queue<Task> tasks_;
+  std::vector<Task> running_stack_;
 };
 
 TimeTicks Seconds(int seconds) {

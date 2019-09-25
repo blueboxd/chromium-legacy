@@ -8,14 +8,13 @@
 
 #include "base/bind.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
 
 namespace {
 
 void Connect(apps::mojom::Publisher* publisher,
              apps::mojom::Subscriber* subscriber) {
-  apps::mojom::SubscriberPtr clone;
-  subscriber->Clone(mojo::MakeRequest(&clone));
+  mojo::PendingRemote<apps::mojom::Subscriber> clone;
+  subscriber->Clone(clone.InitWithNewPipeAndPassReceiver());
   // TODO: replace nullptr with a ConnectOptions.
   publisher->Connect(std::move(clone), nullptr);
 }
@@ -33,14 +32,19 @@ void AppServiceImpl::BindReceiver(
   receivers_.Add(this, std::move(receiver));
 }
 
+void AppServiceImpl::FlushMojoCallsForTesting() {
+  subscribers_.FlushForTesting();
+  receivers_.FlushForTesting();
+}
+
 void AppServiceImpl::RegisterPublisher(
     mojo::PendingRemote<apps::mojom::Publisher> publisher_remote,
     apps::mojom::AppType app_type) {
   mojo::Remote<apps::mojom::Publisher> publisher(std::move(publisher_remote));
   // Connect the new publisher with every registered subscriber.
-  subscribers_.ForAllPtrs([&publisher](auto* subscriber) {
-    ::Connect(publisher.get(), subscriber);
-  });
+  for (auto& subscriber : subscribers_) {
+    ::Connect(publisher.get(), subscriber.get());
+  }
 
   // Check that no previous publisher has registered for the same app_type.
   CHECK(publishers_.find(app_type) == publishers_.end());
@@ -53,9 +57,12 @@ void AppServiceImpl::RegisterPublisher(
   CHECK(result.second);
 }
 
-void AppServiceImpl::RegisterSubscriber(apps::mojom::SubscriberPtr subscriber,
-                                        apps::mojom::ConnectOptionsPtr opts) {
+void AppServiceImpl::RegisterSubscriber(
+    mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
+    apps::mojom::ConnectOptionsPtr opts) {
   // Connect the new subscriber with every registered publisher.
+  mojo::Remote<apps::mojom::Subscriber> subscriber(
+      std::move(subscriber_remote));
   for (const auto& iter : publishers_) {
     ::Connect(iter.second.get(), subscriber.get());
   }
@@ -63,7 +70,7 @@ void AppServiceImpl::RegisterSubscriber(apps::mojom::SubscriberPtr subscriber,
   // TODO: store the opts somewhere.
 
   // Add the new subscriber to the set.
-  subscribers_.AddPtr(std::move(subscriber));
+  subscribers_.Add(std::move(subscriber));
 }
 
 void AppServiceImpl::LoadIcon(apps::mojom::AppType app_type,

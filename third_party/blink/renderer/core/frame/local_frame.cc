@@ -141,18 +141,6 @@ inline float ParentTextZoomFactor(LocalFrame* frame) {
   return parent_local_frame ? parent_local_frame->TextZoomFactor() : 1;
 }
 
-bool ShouldUseClientLoFiForRequest(
-    const ResourceRequest& request,
-    WebURLRequest::PreviewsState frame_previews_state) {
-  if (request.GetPreviewsState() != WebURLRequest::kPreviewsUnspecified)
-    return request.GetPreviewsState() & WebURLRequest::kClientLoFiOn;
-
-  if (!(frame_previews_state & WebURLRequest::kClientLoFiOn))
-    return false;
-
-  return true;
-}
-
 }  // namespace
 
 template class CORE_TEMPLATE_EXPORT Supplement<LocalFrame>;
@@ -1289,11 +1277,6 @@ void ScopedFrameBlamer::LeaveContext() {
     context->Leave();
 }
 
-bool LocalFrame::IsClientLoFiAllowed(const ResourceRequest& request) const {
-  return Client() && ShouldUseClientLoFiForRequest(
-                         request, Client()->GetPreviewsStateForFrame());
-}
-
 LocalFrame::LazyLoadImageSetting LocalFrame::GetLazyLoadImageSetting() const {
   DCHECK(GetSettings());
   if (!RuntimeEnabledFeatures::LazyImageLoadingEnabled() ||
@@ -1456,8 +1439,7 @@ bool LocalFrame::IsUsingDataSavingPreview() const {
   WebURLRequest::PreviewsState previews_state =
       Client()->GetPreviewsStateForFrame();
   // Check for any data saving type of preview.
-  return previews_state &
-         (WebURLRequest::kClientLoFiOn | WebURLRequest::kNoScriptOn);
+  return previews_state & WebURLRequest::kNoScriptOn;
 }
 
 bool LocalFrame::IsAdSubframe() const {

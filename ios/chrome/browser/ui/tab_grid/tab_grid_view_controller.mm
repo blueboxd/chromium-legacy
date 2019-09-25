@@ -125,7 +125,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 @property(nonatomic, weak) UIBarButtonItem* closeAllButton;
 @property(nonatomic, assign) BOOL undoCloseAllAvailable;
 @property(nonatomic, assign) TabGridConfiguration configuration;
-// Setting the current page will adjust the scroll view to the correct position.
+// Setting the current page doesn't scroll the scroll view; use
+// -scrollToPage:animated: for that.
 @property(nonatomic, assign) TabGridPage currentPage;
 // The UIViewController corresponding with |currentPage|.
 @property(nonatomic, readonly) UIViewController* currentPageViewController;
@@ -170,6 +171,14 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // Hide the toolbars and the floating button, so they can fade in the first
   // time there's a transition into this view controller.
   [self hideToolbars];
+
+  // Mark the non-current page view controllers' contents as hidden for
+  // VoiceOver.
+  for (UIViewController* pageViewController in self.pageViewControllers) {
+    if (pageViewController != self.currentPageViewController) {
+      pageViewController.view.accessibilityElementsHidden = YES;
+    }
+  }
 }
 
 - (void)viewWillAppear:(BOOL)animated {
@@ -223,9 +232,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
            (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
   auto animate = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
-    // Call the current page setter to sync the scroll view offset to the
-    // current page value.
-    self.currentPage = _currentPage;
+    // Sync the scroll view offset to the  current page value. SInce this is
+    // already inside an animation block, the scrolling doesn't need to be
+    // animated.
+    [self scrollToPage:_currentPage animated:NO];
     [self configureViewControllerForCurrentSizeClassesAndPage];
     [self setInsetForRemoteTabs];
   };
@@ -255,8 +265,8 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     self.topToolbar.pageControl.sliderPosition = offset;
 
     TabGridPage page = GetPageFromScrollView(scrollView);
-    if (page != _currentPage) {
-      _currentPage = page;
+    if (page != self.currentPage) {
+      self.currentPage = page;
       [self broadcastIncognitoContentVisibility];
       [self configureButtonsForActiveAndCurrentPage];
       // Records when the user drags the scrollView to switch pages.
@@ -284,24 +294,19 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   // cause other interactions to be mislabeled.
   self.pageChangeInteraction = PageChangeInteractionNone;
 
-  // Update _currentPage if scroll view has moved to a new page. Especially
+  // Update currentPage if scroll view has moved to a new page. Especially
   // important here for 3-finger accessibility swipes since it's not registered
   // as dragging in scrollViewDidScroll:
   TabGridPage page = GetPageFromScrollView(scrollView);
-  if (page != _currentPage) {
-    // Original current page is about to not be visible. Disable it from being
-    // focused by VoiceOver.
-    self.currentPageViewController.view.accessibilityElementsHidden = YES;
-    _currentPage = page;
-    // Allow VoiceOver to focus on the new current page's elements.
-    self.currentPageViewController.view.accessibilityElementsHidden = NO;
+  if (page != self.currentPage) {
+    self.currentPage = page;
     [self broadcastIncognitoContentVisibility];
     [self configureButtonsForActiveAndCurrentPage];
   }
 }
 
 - (void)scrollViewDidEndScrollingAnimation:(UIScrollView*)scrollView {
-  _currentPage = GetPageFromScrollView(scrollView);
+  self.currentPage = GetPageFromScrollView(scrollView);
   self.scrollViewAnimatingContentOffset = NO;
   [self broadcastIncognitoContentVisibility];
   [self configureButtonsForActiveAndCurrentPage];
@@ -408,7 +413,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 #pragma mark - TabGridPaging
 
 - (void)setActivePage:(TabGridPage)activePage {
-  [self setCurrentPage:activePage animated:YES];
+  [self scrollToPage:activePage animated:YES];
   _activePage = activePage;
 }
 
@@ -417,10 +422,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Sets the proper insets for the Remote Tabs ViewController to accomodate for
 // the safe area, toolbar, and status bar.
 - (void)setInsetForRemoteTabs {
-  // Call the current page setter to sync the scroll view offset to the current
-  // page value, if the scroll view isn't scrolling. Don't animate this.
+  // Sync the scroll view offset to the current page value if the scroll view
+  // isn't scrolling. Don't animate this.
   if (!self.scrollView.dragging && !self.scrollView.decelerating) {
-    self.currentPage = _currentPage;
+    [self scrollToPage:self.currentPage animated:NO];
   }
   // The content inset of the tab grids must be modified so that the toolbars
   // do not obscure the tabs. This may change depending on orientation.
@@ -452,10 +457,10 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 // Sets the proper insets for the Grid ViewControllers to accomodate for the
 // safe area and toolbar.
 - (void)setInsetForGridViews {
-  // Call the current page setter to sync the scroll view offset to the current
-  // page value, if the scroll view isn't scrolling. Don't animate this.
+  // Sync the scroll view offset to the current page value if the scroll view
+  // isn't scrolling. Don't animate this.
   if (!self.scrollView.dragging && !self.scrollView.decelerating) {
-    self.currentPage = _currentPage;
+    [self scrollToPage:self.currentPage animated:NO];
   }
   // The content inset of the tab grids must be modified so that the toolbars
   // do not obscure the tabs. This may change depending on orientation.
@@ -486,38 +491,34 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
 }
 
 - (void)setCurrentPage:(TabGridPage)currentPage {
-  // Setting the current page will adjust the scroll view to the correct
-  // position.
-  [self setCurrentPage:currentPage animated:NO];
+  // Original current page is about to not be visible. Disable it from being
+  // focused by VoiceOver.
+  self.currentPageViewController.view.accessibilityElementsHidden = YES;
+  _currentPage = currentPage;
+  self.currentPageViewController.view.accessibilityElementsHidden = NO;
 }
 
 // Sets the value of |currentPage|, adjusting the position of the scroll view
 // to match. If |animated| is YES, the scroll view change may animate; if it is
 // NO, it will never animate.
-- (void)setCurrentPage:(TabGridPage)currentPage animated:(BOOL)animated {
+- (void)scrollToPage:(TabGridPage)targetPage animated:(BOOL)animated {
   // This method should never early return if |currentPage| == |_currentPage|;
   // the ivar may have been set before the scroll view could be updated. Calling
   // this method should always update the scroll view's offset if possible.
 
-  // Original current page is about to not be visible. Disable it from being
-  // focused by VoiceOver.
-  self.currentPageViewController.view.accessibilityElementsHidden = YES;
-
-  // If the view isn't loaded yet, just do bookkeeping on _currentPage.
+  // If the view isn't loaded yet, just do bookkeeping on |currentPage|.
   if (!self.viewLoaded) {
-    _currentPage = currentPage;
-    // Allow VoiceOver to focus on the new current page's elements.
-    self.currentPageViewController.view.accessibilityElementsHidden = NO;
+    self.currentPage = targetPage;
     return;
   }
   CGFloat pageWidth = self.scrollView.frame.size.width;
-  NSUInteger pageIndex = GetPageIndexFromPage(currentPage);
+  NSUInteger pageIndex = GetPageIndexFromPage(targetPage);
   CGPoint offset = CGPointMake(pageIndex * pageWidth, 0);
   // If the view is visible and |animated| is YES, animate the change.
   // Otherwise don't.
   if (self.view.window == nil || !animated) {
     [self.scrollView setContentOffset:offset animated:NO];
-    _currentPage = currentPage;
+    self.currentPage = targetPage;
   } else {
     // Only set |scrollViewAnimatingContentOffset| to YES if there's an actual
     // change in the contentOffset, as |-scrollViewDidEndScrollingAnimation:| is
@@ -525,19 +526,17 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     if (!CGPointEqualToPoint(self.scrollView.contentOffset, offset)) {
       self.scrollViewAnimatingContentOffset = YES;
       [self.scrollView setContentOffset:offset animated:YES];
-      // _currentPage is set in scrollViewDidEndScrollingAnimation:
+      // |self.currentPage| is set in scrollViewDidEndScrollingAnimation:
     } else {
-      _currentPage = currentPage;
+      self.currentPage = targetPage;
     }
   }
-  // Allow VoiceOver to focus on the new current page's elements.
-  self.currentPageViewController.view.accessibilityElementsHidden = NO;
 
   // TODO(crbug.com/872303) : This is a workaround because TabRestoreService
   // does not notify observers when entries are removed. When close all tabs
   // removes entries, the remote tabs page in the tab grid are not updated. This
   // ensures that the table is updated whenever scrolling to it.
-  if (currentPage == TabGridPageRemoteTabs) {
+  if (targetPage == TabGridPageRemoteTabs) {
     [self.remoteTabsViewController loadModel];
     [self.remoteTabsViewController.tableView reloadData];
   }
@@ -1054,7 +1053,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
   if (self.topToolbar.pageControl.selectedPage != page)
     [self.topToolbar.pageControl setSelectedPage:page animated:animated];
   if (self.currentPage != page)
-    [self setCurrentPage:page animated:animated];
+    [self scrollToPage:page animated:animated];
 }
 
 #pragma mark - GridViewControllerDelegate
@@ -1238,7 +1237,7 @@ NSUInteger GetPageIndexFromPage(TabGridPage page) {
     self.pageChangeInteraction = PageChangeInteractionPageControlTap;
 
   TabGridPage currentPage = self.currentPage;
-  [self setCurrentPage:newPage animated:YES];
+  [self scrollToPage:newPage animated:YES];
   // Records when the user uses the pageControl to switch pages.
   if (currentPage != newPage)
     [self recordActionSwitchingToPage:newPage];

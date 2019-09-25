@@ -93,7 +93,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
       v8::Local<v8::Value> error = V8ThrowException::CreateError(
           script_state_->GetIsolate(), "Parse failure.");
       module_script->SetParseErrorAndClearRecord(
-          ScriptValue(script_state_, error));
+          ScriptValue(script_state_->GetIsolate(), error));
     }
 
     EXPECT_TRUE(pending_clients_.Contains(url));
@@ -152,7 +152,7 @@ class ModuleTreeLinkerTestModulator final : public DummyModulator {
       ScriptState::Scope scope(script_state_);
       v8::Local<v8::Value> error = V8ThrowException::CreateError(
           script_state_->GetIsolate(), "Instantiation failure.");
-      return ScriptValue(script_state_, error);
+      return ScriptValue(script_state_->GetIsolate(), error);
     }
     instantiated_records_.insert(MakeGarbageCollected<BoxedV8Module>(
         script_state_->GetIsolate(), record));

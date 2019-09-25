@@ -64,13 +64,11 @@ public class LocationBarPhone extends LocationBarLayout {
                 shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
 
         // The search engine icon will be the first visible focused view when it's showing.
-        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
-            mStatusView = findViewById(R.id.location_bar_status);
-            mStatusView.updateSearchEngineStatusIcon(
-                    shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
-            mIconView = mStatusView.findViewById(R.id.location_bar_status_icon);
-            mFirstVisibleFocusedView = mStatusView;
+        shouldShowSearchEngineLogo = SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                getToolbarDataProvider().isIncognito());
 
+        // This branch will be hit if the search engine logo experiment is enabled.
+        if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
             // Setup the padding once we're loaded, the focused padding changes will happen with
             // post-layout positioning via setTranslation. This is a byproduct of the way we do the
             // omnibox un/focus animation which is by writing a function f(x) where x ranges from
@@ -82,10 +80,20 @@ public class LocationBarPhone extends LocationBarLayout {
                     R.dimen.sei_location_bar_lateral_padding);
             setPaddingRelative(
                     lateral_padding, getPaddingTop(), lateral_padding, getPaddingBottom());
+        }
+
+        // This branch will be hit if the search engine logo experiment is enabled and we should
+        // show the logo.
+        if (shouldShowSearchEngineLogo) {
+            mStatusView = findViewById(R.id.location_bar_status);
+            mStatusView.updateSearchEngineStatusIcon(
+                    shouldShowSearchEngineLogo, isSearchEngineGoogle, searchEngineUrl);
+            mIconView = mStatusView.findViewById(R.id.location_bar_status_icon);
+            mFirstVisibleFocusedView = mStatusView;
 
             // When the search engine icon is enabled, icons are translations into the parent view's
             // padding area. Set clip padding to false to prevent them from getting clipped.
-            if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) setClipToPadding(false);
+            setClipToPadding(false);
         }
         setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
     }
@@ -109,7 +117,10 @@ public class LocationBarPhone extends LocationBarLayout {
         if (mStatusView == null) return 0;
 
         // No offset is required if the experiment is disabled.
-        if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo()) return 0;
+        if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                    getToolbarDataProvider().isIncognito())) {
+            return 0;
+        }
 
         // On non-NTP pages, there will always be an icon when unfocused.
         if (mToolbarDataProvider.getNewTabPageForCurrentTab() == null) return 0;
@@ -147,7 +158,10 @@ public class LocationBarPhone extends LocationBarLayout {
         if (mStatusView == null) return 0;
 
         // No offset is required if the experiment is disabled.
-        if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo()) return 0;
+        if (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                    getToolbarDataProvider().isIncognito())) {
+            return 0;
+        }
 
         boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
         // The calculation here is:  the difference in padding between the focused vs unfocused
@@ -290,7 +304,11 @@ public class LocationBarPhone extends LocationBarLayout {
      * @param urlFocusChangePercent The completion percentage of the URL focus change animation.
      */
     private void updateStatusButtonVisibility(float urlFocusChangePercent) {
-        if (mIconView == null || !SearchEngineLogoUtils.shouldShowSearchEngineLogo()) return;
+        if (mIconView == null
+                || !SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                        getToolbarDataProvider().isIncognito())) {
+            return;
+        }
 
         if (mToolbarDataProvider.getNewTabPageForCurrentTab() != null
                 && mToolbarDataProvider.getNewTabPageForCurrentTab().isLocationBarShownInNTP()) {
@@ -329,5 +347,16 @@ public class LocationBarPhone extends LocationBarLayout {
     private int getAdditionalOffsetForNTP() {
         return getResources().getDimensionPixelSize(R.dimen.sei_search_box_lateral_padding)
                 - getResources().getDimensionPixelSize(R.dimen.sei_location_bar_lateral_padding);
+    }
+
+    @Override
+    public void updateVisualsForState() {
+        super.updateVisualsForState();
+        boolean isIncognito = getToolbarDataProvider().isIncognito();
+        boolean shouldShowSearchEngineLogo =
+                SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito);
+        if (mIconView != null) mIconView.setVisibility(shouldShowSearchEngineLogo ? VISIBLE : GONE);
+        setShowIconsWhenUrlFocused(shouldShowSearchEngineLogo);
+        mFirstVisibleFocusedView = shouldShowSearchEngineLogo ? mStatusView : mUrlBar;
     }
 }

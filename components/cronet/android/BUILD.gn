@@ -732,13 +732,40 @@ repackage_jars("repackage_util") {
   ]
 }
 
+# See crbug.com/1005836 for more info on why repackage_native requires 2 extra
+# targets. These 3 targets exist to ensure the correct version of GEN_JNI
+# (a generated class containing native method definitions) is included.
 repackage_jars("repackage_native") {
   output = "$_package_dir/cronet_impl_native_java.jar"
-  deps = cronet_impl_native_java_deps_to_package + [
-           ":cronet_impl_native_base_java",
-           ":cronet_jni_registration_java",
-         ]
+  deps = [
+    ":cronet_jni_registration_java",
+    ":repackage_native_java",
+  ]
   jar_excluded_patterns = _jar_excluded_patterns
+}
+
+_native_intermediate_jar_path = "$target_out_dir/repackage_native_impl.jar"
+
+# Do not depend on this target directly. Use :repackage_native.
+repackage_jars("repackage_native_impl") {
+  output = _native_intermediate_jar_path
+  deps = cronet_impl_native_java_deps_to_package +
+         [ ":cronet_impl_native_base_java" ]
+  jar_excluded_patterns = _jar_excluded_patterns
+}
+
+# Do not depend on this target directly. Use :repackage_native.
+# This target exists to provide :repackage_native with a suitable target to
+# depend on (since dist_aar only pulls in deps of type "java_library").
+android_java_prebuilt("repackage_native_java") {
+  jar_path = _native_intermediate_jar_path
+
+  # Since only the unprocessed jar is used, no need to complete the bytecode
+  # processing steps.
+  enable_bytecode_rewriter = false
+  deps = [
+    ":repackage_native_impl",
+  ]
 }
 
 repackage_jars("repackage_common") {

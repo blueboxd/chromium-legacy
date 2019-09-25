@@ -13,8 +13,10 @@
 #include "base/test/task_environment.h"
 #include "chrome/services/app_service/app_service_impl.h"
 #include "chrome/services/app_service/public/mojom/types.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,9 +34,9 @@ class FakePublisher : public apps::mojom::Publisher {
   }
 
   void PublishMoreApps(std::vector<std::string> app_ids) {
-    subscribers_.ForAllPtrs([this, &app_ids](auto* subscriber) {
-      CallOnApps(subscriber, app_ids);
-    });
+    for (auto& subscriber : subscribers_) {
+      CallOnApps(subscriber.get(), app_ids);
+    }
     for (const auto& app_id : app_ids) {
       known_app_ids_.push_back(app_id);
     }
@@ -43,10 +45,12 @@ class FakePublisher : public apps::mojom::Publisher {
   std::string load_icon_app_id;
 
  private:
-  void Connect(apps::mojom::SubscriberPtr subscriber,
+  void Connect(mojo::PendingRemote<apps::mojom::Subscriber> subscriber_remote,
                apps::mojom::ConnectOptionsPtr opts) override {
+    mojo::Remote<apps::mojom::Subscriber> subscriber(
+        std::move(subscriber_remote));
     CallOnApps(subscriber.get(), known_app_ids_);
-    subscribers_.AddPtr(std::move(subscriber));
+    subscribers_.Add(std::move(subscriber));
   }
 
   void LoadIcon(const std::string& app_id,
@@ -86,15 +90,15 @@ class FakePublisher : public apps::mojom::Publisher {
   apps::mojom::AppType app_type_;
   std::vector<std::string> known_app_ids_;
   mojo::ReceiverSet<apps::mojom::Publisher> receivers_;
-  mojo::InterfacePtrSet<apps::mojom::Subscriber> subscribers_;
+  mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;
 };
 
 class FakeSubscriber : public apps::mojom::Subscriber {
  public:
   explicit FakeSubscriber(AppServiceImpl* impl) {
-    apps::mojom::SubscriberPtr ptr;
-    bindings_.AddBinding(this, mojo::MakeRequest(&ptr));
-    impl->RegisterSubscriber(std::move(ptr), nullptr);
+    mojo::PendingRemote<apps::mojom::Subscriber> remote;
+    receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+    impl->RegisterSubscriber(std::move(remote), nullptr);
   }
 
   std::string AppIdsSeen() {
@@ -112,11 +116,11 @@ class FakeSubscriber : public apps::mojom::Subscriber {
     }
   }
 
-  void Clone(apps::mojom::SubscriberRequest request) override {
-    bindings_.AddBinding(this, std::move(request));
+  void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override {
+    receivers_.Add(this, std::move(receiver));
   }
 
-  mojo::BindingSet<apps::mojom::Subscriber> bindings_;
+  mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
   std::set<std::string> app_ids_seen_;
 };
 

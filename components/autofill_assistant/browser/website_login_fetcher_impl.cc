@@ -46,14 +46,21 @@ class WebsiteLoginFetcherImpl::PendingRequest
     // This needs to be done asynchronously, because it will lead to the
     // destruction of |this|, which needs to happen *after* this call has
     // returned.
-    base::PostTask(FROM_HERE, {content::BrowserThread::UI},
-                   base::BindOnce(&PendingRequest::NotifyFinished,
-                                  weak_ptr_factory_.GetWeakPtr()));
+    if (notify_finished_callback_) {
+      base::PostTask(FROM_HERE, {content::BrowserThread::UI},
+                     base::BindOnce(&PendingRequest::NotifyFinished,
+                                    weak_ptr_factory_.GetWeakPtr(),
+                                    std::move(notify_finished_callback_)));
+    }
   }
   std::unique_ptr<password_manager::FormFetcher> form_fetcher_;
 
  private:
-  void NotifyFinished() { std::move(notify_finished_callback_).Run(this); }
+  void NotifyFinished(
+      base::OnceCallback<void(const PendingRequest*)> callback) {
+    form_fetcher_->RemoveConsumer(this);
+    std::move(callback).Run(this);
+  }
 
   base::OnceCallback<void(const PendingRequest*)> notify_finished_callback_;
   base::WeakPtrFactory<PendingRequest> weak_ptr_factory_;

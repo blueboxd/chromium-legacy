@@ -70,7 +70,8 @@ void ReadableStreamDefaultController::close(ScriptState* script_state,
 void ReadableStreamDefaultController::enqueue(ScriptState* script_state,
                                               ExceptionState& exception_state) {
   enqueue(script_state,
-          ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
+          ScriptValue(script_state->GetIsolate(),
+                      v8::Undefined(script_state->GetIsolate())),
           exception_state);
 }
 
@@ -90,8 +91,8 @@ void ReadableStreamDefaultController::enqueue(ScriptState* script_state,
 }
 
 void ReadableStreamDefaultController::error(ScriptState* script_state) {
-  error(script_state,
-        ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())));
+  error(script_state, ScriptValue(script_state->GetIsolate(),
+                                  v8::Undefined(script_state->GetIsolate())));
 }
 
 void ReadableStreamDefaultController::error(ScriptState* script_state,

@@ -174,24 +174,6 @@ void AffiliationDatabase::DeleteAffiliationsAndBrandingForFacetURI(
   transaction.Commit();
 }
 
-void AffiliationDatabase::DeleteAffiliationsAndBrandingOlderThan(
-    const base::Time& cutoff_threshold) {
-  // Children will get deleted due to 'ON DELETE CASCADE'.
-  sql::Statement statement_parent(sql_connection_->GetCachedStatement(
-      SQL_FROM_HERE,
-      "DELETE FROM eq_classes "
-      "WHERE eq_classes.last_update_time < ?"));
-  statement_parent.BindInt64(0, cutoff_threshold.ToInternalValue());
-  statement_parent.Run();
-}
-
-void AffiliationDatabase::DeleteAllAffiliationsAndBranding() {
-  // Children will get deleted due to 'ON DELETE CASCADE'.
-  sql::Statement statement_parent(
-      sql_connection_->GetUniqueStatement("DELETE FROM eq_classes"));
-  statement_parent.Run();
-}
-
 bool AffiliationDatabase::Store(
     const AffiliatedFacetsWithUpdateTime& affiliated_facets) {
   DCHECK(!affiliated_facets.facets.empty());

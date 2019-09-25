@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/time/default_tick_clock.h"
@@ -114,6 +115,20 @@ void VersionUpdater::StartExitUpdate(Result result) {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
   network_portal_detector::GetInstance()->RemoveObserver(this);
   delegate_->FinishExitUpdate(result);
+}
+
+void VersionUpdater::GetEolStatus(EolStatusCallback callback) {
+  // Request the End of Life (Auto Update Expiration) status. Bind to a weak_ptr
+  // bound method rather than passing |callback| directly so that |callback|
+  // does not outlive |this|.
+  DBusThreadManager::Get()->GetUpdateEngineClient()->GetEolStatus(
+      base::BindOnce(&VersionUpdater::OnGetEolStatus,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+}
+
+void VersionUpdater::OnGetEolStatus(EolStatusCallback callback,
+                                    update_engine::EndOfLifeStatus status) {
+  std::move(callback).Run(status);
 }
 
 base::OneShotTimer* VersionUpdater::GetRebootTimerForTesting() {

@@ -123,7 +123,7 @@ public final class SearchEngineChoiceNotificationTest {
         assertEquals(0,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Android.SearchEngineChoice.Events",
-                        SearchEngineChoiceNotification.Events.SNACKBAR_SHOWN));
+                        SearchEngineChoiceMetrics.Events.SNACKBAR_SHOWN));
     }
 
     @Test
@@ -138,7 +138,7 @@ public final class SearchEngineChoiceNotificationTest {
         assertEquals("We are expecting exactly one snackbar shown event.", 1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Android.SearchEngineChoice.Events",
-                        SearchEngineChoiceNotification.Events.SNACKBAR_SHOWN));
+                        SearchEngineChoiceMetrics.Events.SNACKBAR_SHOWN));
 
         assertTrue("Version of the app should be persisted upon prompting.",
                 ContextUtils.getAppSharedPreferences().contains(
@@ -162,8 +162,7 @@ public final class SearchEngineChoiceNotificationTest {
         SearchEngineChoiceNotification.handleSearchEngineChoice(mContext, mSnackbarManager);
         assertFalse("Second call removes the preference for search engine choice before.",
                 ContextUtils.getAppSharedPreferences().contains(
-                        SearchEngineChoiceNotification
-                                .PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
+                        SearchEngineChoiceMetrics.PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
 
         SearchEngineChoiceNotification.handleSearchEngineChoice(mContext, mSnackbarManager);
 
@@ -172,7 +171,7 @@ public final class SearchEngineChoiceNotificationTest {
         assertEquals(1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Android.SearchEngineChoice.Events",
-                        SearchEngineChoiceNotification.Events.SNACKBAR_SHOWN));
+                        SearchEngineChoiceMetrics.Events.SNACKBAR_SHOWN));
     }
 
     @Test
@@ -186,7 +185,7 @@ public final class SearchEngineChoiceNotificationTest {
         assertEquals(1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Android.SearchEngineChoice.Events",
-                        SearchEngineChoiceNotification.Events.PROMPT_FOLLOWED));
+                        SearchEngineChoiceMetrics.Events.PROMPT_FOLLOWED));
         verify(mContext, times(1)).startActivity(any(Intent.class), isNull());
     }
 
@@ -204,13 +203,12 @@ public final class SearchEngineChoiceNotificationTest {
         assertFalse(
                 "First handleSearchEngineChoice call after prompt removes SE choice before pref.",
                 ContextUtils.getAppSharedPreferences().contains(
-                        SearchEngineChoiceNotification
-                                .PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
+                        SearchEngineChoiceMetrics.PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
 
         assertEquals(0,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Android.SearchEngineChoice.Events",
-                        SearchEngineChoiceNotification.Events.SEARCH_ENGINE_CHANGED));
+                        SearchEngineChoiceMetrics.Events.SEARCH_ENGINE_CHANGED));
         assertEquals(0,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Android.SearchEngineChoice.ChosenSearchEngine",
@@ -230,8 +228,7 @@ public final class SearchEngineChoiceNotificationTest {
         assertFalse(
                 "First handleSearchEngineChoice call after prompt removes SE choice before pref.",
                 ContextUtils.getAppSharedPreferences().contains(
-                        SearchEngineChoiceNotification
-                                .PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
+                        SearchEngineChoiceMetrics.PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
 
         doReturn(mAlternativeSearchEngine)
                 .when(mTemplateUrlService)
@@ -241,7 +238,7 @@ public final class SearchEngineChoiceNotificationTest {
         assertEquals(0,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Android.SearchEngineChoice.Events",
-                        SearchEngineChoiceNotification.Events.SEARCH_ENGINE_CHANGED));
+                        SearchEngineChoiceMetrics.Events.SEARCH_ENGINE_CHANGED));
         assertEquals(0,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Android.SearchEngineChoice.ChosenSearchEngine",
@@ -265,7 +262,7 @@ public final class SearchEngineChoiceNotificationTest {
         assertEquals("Event is recorded when search engine was changed.", 1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Android.SearchEngineChoice.Events",
-                        SearchEngineChoiceNotification.Events.SEARCH_ENGINE_CHANGED));
+                        SearchEngineChoiceMetrics.Events.SEARCH_ENGINE_CHANGED));
         assertEquals("Newly chosen search engine type should be recoreded.", 1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Android.SearchEngineChoice.ChosenSearchEngine",
@@ -274,15 +271,14 @@ public final class SearchEngineChoiceNotificationTest {
         assertFalse(
                 "First handleSearchEngineChoice call after prompt removes SE choice before pref.",
                 ContextUtils.getAppSharedPreferences().contains(
-                        SearchEngineChoiceNotification
-                                .PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
+                        SearchEngineChoiceMetrics.PREF_SEARCH_ENGINE_CHOICE_DEFAULT_TYPE_BEFORE));
 
         SearchEngineChoiceNotification.handleSearchEngineChoice(mContext, mSnackbarManager);
 
         assertEquals("Event should only be recorded once, therefore count should be still 1.", 1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(
                         "Android.SearchEngineChoice.Events",
-                        SearchEngineChoiceNotification.Events.SEARCH_ENGINE_CHANGED));
+                        SearchEngineChoiceMetrics.Events.SEARCH_ENGINE_CHANGED));
         assertEquals("New Search Engine shoudl only be reported once, therefore count should be 1",
                 1,
                 ShadowRecordHistogram.getHistogramValueCountForTesting(

@@ -43,6 +43,7 @@ class AffiliatedRemoteCommandsInvalidator;
 class BluetoothPolicyHandler;
 class DeviceActiveDirectoryPolicyManager;
 class DeviceCloudPolicyInitializer;
+class DeviceDockMacAddressHandler;
 class DeviceLocalAccountPolicyService;
 class DeviceNetworkConfigurationUpdater;
 class DeviceWiFiAllowedHandler;
@@ -243,6 +244,8 @@ class BrowserPolicyConnectorChromeOS
   std::unique_ptr<BluetoothPolicyHandler> bluetooth_policy_handler_;
   std::unique_ptr<HostnameHandler> hostname_handler_;
   std::unique_ptr<MinimumVersionPolicyHandler> minimum_version_policy_handler_;
+  std::unique_ptr<DeviceDockMacAddressHandler>
+      device_dock_mac_address_source_handler_;
   std::unique_ptr<DeviceWiFiAllowedHandler> device_wifi_allowed_handler_;
   std::unique_ptr<TPMAutoUpdateModePolicyHandler>
       tpm_auto_update_mode_policy_handler_;

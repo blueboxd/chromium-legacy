@@ -97,7 +97,7 @@ ModuleScript* CreateTargetModuleScript(Modulator* modulator,
     v8::Local<v8::Value> error =
         V8ThrowException::CreateError(scope.GetIsolate(), "hoge");
     module_script->SetParseErrorAndClearRecord(
-        ScriptValue(scope.GetScriptState(), error));
+        ScriptValue(scope.GetIsolate(), error));
   }
   return module_script;
 }

@@ -15,6 +15,7 @@
 #include "components/download/public/common/download_stream.mojom.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/download_utils.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/cert/cert_status_flags.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
@@ -104,8 +105,8 @@ class COMPONENTS_DOWNLOAD_EXPORT DownloadResponseHandler
   // The abort reason if this class decides to block the download.
   DownloadInterruptReason abort_reason_;
 
-  // Mojo interface ptr to send the completion status to the download sink.
-  mojom::DownloadStreamClientPtr client_ptr_;
+  // Mojo interface remote to send the completion status to the download sink.
+  mojo::Remote<mojom::DownloadStreamClient> client_remote_;
 
   // Whether the download is running in background mode.
   bool is_background_mode_;

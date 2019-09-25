@@ -309,11 +309,13 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
             Map<String, String> iconUrlToMurmur2HashMap, ShareTarget shareTarget,
             boolean forceNavigation, boolean isSplashProvidedByWebApk, ShareData shareData,
             int webApkVersionCode) {
-        if (url == null || manifestStartUrl == null || webApkPackageName == null) {
-            Log.e(TAG,
-                    "Incomplete data provided: " + url + ", " + manifestStartUrl + ", "
-                            + webApkPackageName);
+        if (manifestStartUrl == null || webApkPackageName == null) {
+            Log.e(TAG, "Incomplete data provided: " + manifestStartUrl + ", " + webApkPackageName);
             return null;
+        }
+
+        if (TextUtils.isEmpty(url)) {
+            url = manifestStartUrl;
         }
 
         // The default scope should be computed from the Web Manifest start URL. If the WebAPK was

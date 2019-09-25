@@ -61,7 +61,9 @@ void CookieSettings::RegisterProfilePrefs(
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
   registry->RegisterIntegerPref(
       prefs::kCookieControlsMode,
-      static_cast<int>(CookieControlsMode::kIncognitoOnly),
+      static_cast<int>(kImprovedCookieControlsDefaultInIncognito.Get()
+                           ? CookieControlsMode::kIncognitoOnly
+                           : CookieControlsMode::kOff),
       user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }
 

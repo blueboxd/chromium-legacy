@@ -4,6 +4,8 @@
 
 #include "components/open_from_clipboard/clipboard_recent_content_generic.h"
 
+#include <string>
+
 #include "base/strings/string_util.h"
 #include "ui/base/clipboard/clipboard.h"
 
@@ -101,6 +103,10 @@ void ClipboardRecentContentGeneric::SuppressClipboardContent() {
   // omnibox list.  Do this by pretending the current clipboard is ancient,
   // not recent.
   ui::Clipboard::GetForCurrentThread()->ClearLastModifiedTime();
+}
+
+void ClipboardRecentContentGeneric::ClearClipboardContent() {
+  ui::Clipboard::GetForCurrentThread()->Clear(ui::ClipboardBuffer::kCopyPaste);
 }
 
 // static

@@ -43,10 +43,15 @@
         margin-inline-end: 8px;
         padding: 12px;
       }
+
+      #no-apps-label {
+        @apply --cr-secondary-text;
+        text-align: center;
+      }
     </style>
 
     <div id="app-list">
-      <template is="dom-repeat" items="[[appsList]]" as="app">
+      <template is="dom-repeat" items="[[appList_]]" as="app">
         <app-management-app-item app="[[app]]">
           <cr-icon-button slot="right-content"
               class="subpage-arrow app-management-item-arrow"
@@ -56,6 +61,12 @@
         </app-management-app-item>
       </template>
     </div>
+
+    <template is="dom-if" if="[[isAppListEmpty_(appList_)]]">
+      <div id="no-apps-label">
+        $i18n{appManagementNoAppsFound}
+      </div>
+    </template>
 
     <div class="card-container" hidden>
       <span class="notification-row" on-click="onClickNotificationSublabel_">

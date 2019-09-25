@@ -161,7 +161,7 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
     if (exception_state.HadException()) {
       ScriptPromise rejection =
           ScriptPromise::Reject(GetScriptState(), exception_state);
-      return ScriptValue(GetScriptState(), rejection.V8Value());
+      return ScriptValue(GetScriptState()->GetIsolate(), rejection.V8Value());
     }
 
     for (const auto& response : responses) {
@@ -170,21 +170,21 @@ class Cache::FetchResolvedForAdd final : public ScriptFunction {
             GetScriptState(),
             V8ThrowException::CreateTypeError(GetScriptState()->GetIsolate(),
                                               "Request failed"));
-        return ScriptValue(GetScriptState(), rejection.V8Value());
+        return ScriptValue(GetScriptState()->GetIsolate(), rejection.V8Value());
       }
       if (VaryHeaderContainsAsterisk(response)) {
         ScriptPromise rejection = ScriptPromise::Reject(
             GetScriptState(),
             V8ThrowException::CreateTypeError(GetScriptState()->GetIsolate(),
                                               "Vary header contains *"));
-        return ScriptValue(GetScriptState(), rejection.V8Value());
+        return ScriptValue(GetScriptState()->GetIsolate(), rejection.V8Value());
       }
     }
 
     ScriptPromise put_promise =
         cache_->PutImpl(GetScriptState(), method_name_, requests_, responses,
                         exception_state, trace_id_);
-    return ScriptValue(GetScriptState(), put_promise.V8Value());
+    return ScriptValue(GetScriptState()->GetIsolate(), put_promise.V8Value());
   }
 
   void Trace(blink::Visitor* visitor) override {

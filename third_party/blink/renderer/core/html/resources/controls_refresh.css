@@ -75,29 +75,36 @@ input[type="range" i]:disabled {
   color: #c5c5c5;
 }
 
+meter::-webkit-meter-inner-element::before,
+meter::-webkit-meter-inner-element::after {
+  display: block;
+  content: "";
+  height: 25%;
+}
+
 meter::-webkit-meter-bar {
   background: #efefef;
   border-width: 1px;
+  height: 50%;
   border-style: solid;
-  border-color: #cecece;
-  border-radius: 2px;
+  border-color: rgba(118, 118, 118, 0.3);
+  border-radius: 20px;
   box-sizing: border-box;
-  padding: 1px;
 }
 
 meter::-webkit-meter-optimum-value {
   background: #107c10;
-  border-radius: 1px 0px 0px 1px;
+  border-radius: 20px 0px 0px 20px;
 }
 
 meter::-webkit-meter-suboptimum-value {
   background: #ffb900;
-  border-radius: 1px 0px 0px 1px;
+  border-radius: 20px 0px 0px 20px;
 }
 
 meter::-webkit-meter-even-less-good-value {
   background: #d83b01;
-  border-radius: 1px 0px 0px 1px;
+  border-radius: 20px 0px 0px 20px;
 }
 
 input[type="date" i]::-webkit-calendar-picker-indicator,

@@ -195,9 +195,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_MANAGE_SYNC_DATA_FROM_CHROME_SYNC_TITLE" desc="Title for the cell to open 'Data from Chromium sync' web page where the user can control all their data data from sync.">
         Data from Chromium sync
       </message>
-      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO" desc="Message explaining that signing out of a managed account will clear all the Chromium data.[Length: 200em, may be line wrapped to multiple lines at run time.] [iOS only].">
-        You are signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN">$1<ex>google.com</ex></ph>. This will delete your Chromium data from this device, but your data will remain in your Google account.
-      </message>
       <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO_UNITY" desc="Message explaining that signing out of a managed account will clear all the Chromium data.[Length: 200em, may be line wrapped to multiple lines at run time.] [iOS only].">
         Because you're signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN">$1<ex>google.com</ex></ph>, your Chromium data will be deleted from this device. Your data will remain in your Google Account.
       </message>
@@ -221,9 +218,6 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_OPEN_TABS_SYNC_IS_OFF_MOBILE" desc="Short paragraph(s) encouraging the user to enable sync on device [Length: 300em, may be line wrapped to multiple lines at run time.]">
         Tabs that you've opened in Chromium on your other devices will appear here.
-      </message>
-      <message name="IDS_IOS_OPTIONS_ACCOUNTS_SIGNOUT" desc="Title of the button to sign out of Chromium [iOS only] [60em]">
-        Sign out of Chromium
       </message>
       <message name="IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN" desc="The title of the Import Data settings screen when signing in. [30em]">
         Sign in to Chromium

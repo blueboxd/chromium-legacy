@@ -30,6 +30,18 @@ class RenderFrameHostImpl;
 class BackForwardCacheMetrics
     : public base::RefCounted<BackForwardCacheMetrics> {
  public:
+  enum class CanNotStoreDocumentReason : uint8_t {
+    kNotMainFrame,
+    kBackForwardCacheDisabled,
+    kRelatedActiveContentsExist,
+    kHTTPStatusNotOK,
+    kSchemeNotHTTPOrHTTPS,
+    kLoading,
+    kWasGrantedMediaAccess,
+    kBlocklistedFeatures,
+    kDisableForRenderFrameHostCalled
+  };
+
   // Creates a potential new metrics object for the navigation.
   // Note that this object will not be used if the entry we are navigating to
   // already has the BackForwardCacheMetrics object (which happens for history

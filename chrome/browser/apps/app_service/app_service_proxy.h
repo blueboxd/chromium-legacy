@@ -13,7 +13,8 @@
 #include "chrome/services/app_service/public/cpp/icon_cache.h"
 #include "chrome/services/app_service/public/cpp/icon_coalescer.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 #if defined(OS_CHROMEOS)
@@ -24,11 +25,9 @@
 
 class Profile;
 
-namespace service_manager {
-class Connector;
-}
-
 namespace apps {
+
+class AppServiceImpl;
 
 // Singleton (per Profile) proxy and cache of an App Service's apps.
 //
@@ -41,11 +40,9 @@ class AppServiceProxy : public KeyedService,
                         public apps::mojom::Subscriber {
  public:
   explicit AppServiceProxy(Profile* profile);
-
   ~AppServiceProxy() override;
 
-  void ReInitializeForTesting(Profile* profile,
-                              service_manager::Connector* connector);
+  void ReInitializeForTesting(Profile* profile);
 
   mojo::Remote<apps::mojom::AppService>& AppService();
   apps::AppRegistryCache& AppRegistryCache();
@@ -139,9 +136,7 @@ class AppServiceProxy : public KeyedService,
     apps::IconLoader* overriding_icon_loader_for_testing_;
   };
 
-  AppServiceProxy(Profile* profile, service_manager::Connector* connector);
-
-  void Initialize(Profile* profile, service_manager::Connector* connector);
+  void Initialize(Profile* profile);
 
   void AddAppIconSource(Profile* profile);
 
@@ -150,12 +145,16 @@ class AppServiceProxy : public KeyedService,
 
   // apps::mojom::Subscriber overrides.
   void OnApps(std::vector<apps::mojom::AppPtr> deltas) override;
-  void Clone(apps::mojom::SubscriberRequest request) override;
+  void Clone(mojo::PendingReceiver<apps::mojom::Subscriber> receiver) override;
+
+  // This proxy privately owns its instance of the App Service. This should not
+  // be exposed except through the Mojo interface connected to |app_service_|.
+  std::unique_ptr<apps::AppServiceImpl> app_service_impl_;
 
   mojo::Remote<apps::mojom::AppService> app_service_;
   apps::AppRegistryCache cache_;
 
-  mojo::BindingSet<apps::mojom::Subscriber> bindings_;
+  mojo::ReceiverSet<apps::mojom::Subscriber> receivers_;
 
   // The LoadIconFromIconKey implementation sends a chained series of requests
   // through each icon loader, starting from the outer and working back to the
@@ -167,10 +166,10 @@ class AppServiceProxy : public KeyedService,
   IconCache outer_icon_loader_;
 
 #if defined(OS_CHROMEOS)
-  BuiltInChromeOsApps built_in_chrome_os_apps_;
-  CrostiniApps crostini_apps_;
-  ExtensionApps extension_apps_;
-  ExtensionApps extension_web_apps_;
+  std::unique_ptr<BuiltInChromeOsApps> built_in_chrome_os_apps_;
+  std::unique_ptr<CrostiniApps> crostini_apps_;
+  std::unique_ptr<ExtensionApps> extension_apps_;
+  std::unique_ptr<ExtensionApps> extension_web_apps_;
 #endif  // OS_CHROMEOS
 
   base::WeakPtrFactory<AppServiceProxy> weak_ptr_factory_{this};

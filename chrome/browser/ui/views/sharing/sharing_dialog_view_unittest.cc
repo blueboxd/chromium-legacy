@@ -12,6 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/simple_test_clock.h"
 #include "chrome/browser/sharing/click_to_call/click_to_call_ui_controller.h"
+#include "chrome/browser/sharing/sharing_app.h"
 #include "chrome/browser/sharing/sharing_metrics.h"
 #include "chrome/browser/ui/views/hover_button.h"
 #include "chrome/test/base/testing_profile.h"
@@ -35,7 +36,7 @@ class ClickToCallUiControllerMock : public ClickToCallUiController {
   ~ClickToCallUiControllerMock() override = default;
 
   MOCK_METHOD1(OnDeviceChosen, void(const syncer::DeviceInfo& device));
-  MOCK_METHOD1(OnAppChosen, void(const App& app));
+  MOCK_METHOD1(OnAppChosen, void(const SharingApp& app));
   MOCK_METHOD1(OnHelpTextClicked, void(SharingDialogType dialog_type));
 };
 
@@ -101,8 +102,8 @@ class SharingDialogViewTest : public ChromeViewsTestBase {
     return devices;
   }
 
-  std::vector<ClickToCallUiController::App> CreateApps(int count) {
-    std::vector<ClickToCallUiController::App> apps;
+  std::vector<SharingApp> CreateApps(int count) {
+    std::vector<SharingApp> apps;
     for (int i = 0; i < count; i++) {
       apps.emplace_back(
           &vector_icons::kOpenInNewIcon, gfx::Image(),
@@ -153,8 +154,8 @@ TEST_F(SharingDialogViewTest, DevicePressed) {
 }
 
 TEST_F(SharingDialogViewTest, AppPressed) {
-  ClickToCallUiController::App app(&vector_icons::kOpenInNewIcon, gfx::Image(),
-                                   base::UTF8ToUTF16("app0"), std::string());
+  SharingApp app(&vector_icons::kOpenInNewIcon, gfx::Image(),
+                 base::UTF8ToUTF16("app0"), std::string());
   EXPECT_CALL(*controller_.get(), OnAppChosen(AppEquals(&app)));
 
   auto dialog = CreateDialogView(/*devices=*/3, /*apps=*/2);

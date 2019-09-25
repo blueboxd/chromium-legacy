@@ -5,5 +5,10 @@
 Polymer({
   is: 'settings-app-management-page',
 
-  properties: {},
+  properties: {
+    /**
+     * @type {string}
+     */
+    searchTerm: String,
+  },
 });

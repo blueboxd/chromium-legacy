@@ -97,6 +97,7 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
 
     // Called when the system info has changed.
     virtual void OnSystemInfoChanged(bool show,
+                                     bool enforced,
                                      const std::string& os_version_label_text,
                                      const std::string& enterprise_info_text,
                                      const std::string& bluetooth_name);
@@ -172,7 +173,8 @@ class ASH_EXPORT LoginDataDispatcher : public LoginScreenModel {
   void ShowEasyUnlockIcon(const AccountId& user,
                           const EasyUnlockIconOptions& icon) override;
   void UpdateWarningMessage(const base::string16& message) override;
-  void SetSystemInfo(bool show_if_hidden,
+  void SetSystemInfo(bool show,
+                     bool enforced,
                      const std::string& os_version_label_text,
                      const std::string& enterprise_info_text,
                      const std::string& bluetooth_name) override;

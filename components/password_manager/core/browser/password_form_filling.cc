@@ -41,7 +41,7 @@ bool ContainsAndroidCredentials(const PasswordFormFillData& fill_data) {
   return PreferredRealmIsFromAndroid(fill_data);
 }
 
-bool ShouldShowInitialPasswordAccountSuggestions() {
+bool IsFillOnAccountSelectFeatureEnabled() {
   return base::FeatureList::IsEnabled(
       password_manager::features::kFillOnAccountSelect);
 }
@@ -75,29 +75,6 @@ void Autofill(PasswordManagerClient* client,
 
   client->PasswordWasAutofilled(best_matches, form_for_autofill.origin,
                                 &federated_matches);
-}
-
-void ShowInitialPasswordAccountSuggestions(
-    const PasswordManagerClient& client,
-    PasswordManagerDriver* driver,
-    const PasswordForm& form_for_autofill,
-    const std::map<base::string16, const PasswordForm*>& best_matches,
-    const PasswordForm& preferred_match,
-    bool wait_for_username) {
-  DCHECK_EQ(PasswordForm::Scheme::kHtml, preferred_match.scheme);
-
-  std::unique_ptr<BrowserSavePasswordProgressLogger> logger;
-  if (password_manager_util::IsLoggingActive(&client)) {
-    logger.reset(new BrowserSavePasswordProgressLogger(client.GetLogManager()));
-    logger->LogMessage(
-        Logger::
-            STRING_PASSWORDMANAGER_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS);
-  }
-
-  if (logger)
-    logger->LogBoolean(Logger::STRING_WAIT_FOR_USERNAME, wait_for_username);
-  driver->ShowInitialPasswordAccountSuggestions(PasswordFormFillData(
-      form_for_autofill, best_matches, preferred_match, wait_for_username));
 }
 
 }  // namespace
@@ -158,6 +135,8 @@ LikelyFormFilling SendFillInformationToRenderer(
     wait_for_username_reason = WaitForUsernameReason::kFoasOnHTTP;
   } else if (autofill::IsTouchToFillEnabled()) {
     wait_for_username_reason = WaitForUsernameReason::kTouchToFill;
+  } else if (IsFillOnAccountSelectFeatureEnabled()) {
+    wait_for_username_reason = WaitForUsernameReason::kFoasFeature;
   }
 
   // Record no "FirstWaitForUsernameReason" metrics for a form that is not meant
@@ -182,19 +161,9 @@ LikelyFormFilling SendFillInformationToRenderer(
         PasswordFormMetricsRecorder::kManagerFillEventAutofilled);
     base::RecordAction(base::UserMetricsAction("PasswordManager_Autofilled"));
   }
-  if (ShouldShowInitialPasswordAccountSuggestions()) {
-    // This is for the fill-on-account-select experiment. Instead of autofilling
-    // found usernames and passwords on load, this instructs the renderer to
-    // return with any found password forms so a list of password account
-    // suggestions can be drawn.
-    ShowInitialPasswordAccountSuggestions(*client, driver, observed_form,
-                                          best_matches, *preferred_match,
-                                          wait_for_username);
-    return LikelyFormFilling::kShowInitialAccountSuggestions;
-  }
 
-  // If fill-on-account-select is not enabled, continue with autofilling any
-  // password forms as traditionally has been done.
+  // Continue with autofilling any password forms as traditionally has been
+  // done.
   Autofill(client, driver, observed_form, best_matches, federated_matches,
            *preferred_match, wait_for_username);
   return wait_for_username ? LikelyFormFilling::kFillOnAccountSelect

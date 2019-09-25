@@ -277,9 +277,7 @@ void DesktopWindowTreeHostPlatform::Show(ui::WindowShowState show_state,
 }
 
 bool DesktopWindowTreeHostPlatform::IsVisible() const {
-  // TODO: needs PlatformWindow support.
-  NOTIMPLEMENTED_LOG_ONCE();
-  return true;
+  return platform_window()->IsVisible();
 }
 
 void DesktopWindowTreeHostPlatform::SetSize(const gfx::Size& size) {
@@ -572,7 +570,7 @@ bool DesktopWindowTreeHostPlatform::ShouldCreateVisibilityController() const {
 
 gfx::Transform DesktopWindowTreeHostPlatform::GetRootTransform() const {
   display::Display display = display::Screen::GetScreen()->GetPrimaryDisplay();
-  if (IsVisible()) {
+  if (platform_window() && IsVisible()) {
     display = display::Screen::GetScreen()->GetDisplayNearestWindow(
         GetWidget()->GetNativeWindow());
   }

@@ -13,7 +13,9 @@
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_launch/web_launch_files_helper.h"
 #include "content/public/browser/render_view_host.h"
+#include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 
 namespace web_app {
@@ -70,6 +72,12 @@ content::WebContents* ShowWebApplicationWindow(
 
   browser->window()->Show();
   web_contents->SetInitialFocus();
+
+  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI)) {
+    web_launch::WebLaunchFilesHelper::SetLaunchPaths(web_contents, launch_url,
+                                                     params.launch_files);
+  }
+
   return web_contents;
 }
 

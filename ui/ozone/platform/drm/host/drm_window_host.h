@@ -61,6 +61,7 @@ class DrmWindowHost : public PlatformWindow,
   void Show() override;
   void Hide() override;
   void Close() override;
+  bool IsVisible() const override;
   void PrepareForShutdown() override;
   void SetBounds(const gfx::Rect& bounds) override;
   gfx::Rect GetBounds() override;

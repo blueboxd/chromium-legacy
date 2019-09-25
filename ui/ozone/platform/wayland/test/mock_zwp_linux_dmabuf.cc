@@ -8,7 +8,7 @@
 #include <wayland-server-core.h>
 
 #include "ui/ozone/platform/wayland/test/mock_buffer.h"
-#include "ui/ozone/platform/wayland/test/mock_zwp_linux_buffer_params.h"
+#include "ui/ozone/platform/wayland/test/test_zwp_linux_buffer_params.h"
 
 namespace wl {
 
@@ -18,14 +18,14 @@ constexpr uint32_t kLinuxDmabufVersion = 1;
 
 void CreateParams(wl_client* client, wl_resource* resource, uint32_t id) {
   wl_resource* params_resource =
-      CreateResourceWithImpl<::testing::NiceMock<MockZwpLinuxBufferParamsV1>>(
+      CreateResourceWithImpl<TestZwpLinuxBufferParamsV1>(
           client, &zwp_linux_buffer_params_v1_interface,
-          wl_resource_get_version(resource), &kMockZwpLinuxBufferParamsV1Impl,
+          wl_resource_get_version(resource), &kTestZwpLinuxBufferParamsV1Impl,
           id);
 
   auto* zwp_linux_dmabuf = GetUserDataAs<MockZwpLinuxDmabufV1>(resource);
   auto* buffer_params =
-      GetUserDataAs<MockZwpLinuxBufferParamsV1>(params_resource);
+      GetUserDataAs<TestZwpLinuxBufferParamsV1>(params_resource);
 
   DCHECK(buffer_params);
   zwp_linux_dmabuf->StoreBufferParams(buffer_params);
@@ -50,12 +50,12 @@ MockZwpLinuxDmabufV1::~MockZwpLinuxDmabufV1() {
 }
 
 void MockZwpLinuxDmabufV1::StoreBufferParams(
-    MockZwpLinuxBufferParamsV1* params) {
+    TestZwpLinuxBufferParamsV1* params) {
   buffer_params_.push_back(params);
 }
 
 void MockZwpLinuxDmabufV1::OnBufferParamsDestroyed(
-    MockZwpLinuxBufferParamsV1* params) {
+    TestZwpLinuxBufferParamsV1* params) {
   auto it = std::find(buffer_params_.begin(), buffer_params_.end(), params);
   DCHECK(it != buffer_params_.end());
   buffer_params_.erase(it);

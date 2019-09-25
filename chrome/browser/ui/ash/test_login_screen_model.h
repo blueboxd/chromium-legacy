@@ -36,7 +36,8 @@ class TestLoginScreenModel : public ash::LoginScreenModel {
                                               bool enabled) override;
 
   void UpdateWarningMessage(const base::string16& message) override;
-  void SetSystemInfo(bool show_if_hidden,
+  void SetSystemInfo(bool show,
+                     bool enforced,
                      const std::string& os_version_label_text,
                      const std::string& enterprise_info_text,
                      const std::string& bluetooth_name) override;

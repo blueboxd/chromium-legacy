@@ -323,7 +323,11 @@ public class ChromePreferenceManager {
             "twa_dialog_number_of_dismissals_on_clear_data";
 
     /** Key for deferred recording of WebAPK uninstalls. */
+    @Deprecated
     public static final String WEBAPK_NUMBER_OF_UNINSTALLS = "webapk_number_of_uninstalls";
+
+    /** Key for deferred recording of list of uninstalled WebAPK packages. */
+    public static final String WEBAPK_UNINSTALLED_PACKAGES = "webapk_uninstalled_packages";
 
     public static final String INTEREST_FEED_CONTENT_SUGGESTIONS_KEY =
             "interest_feed_content_suggestions";
@@ -566,8 +570,7 @@ public class ChromePreferenceManager {
      * Stores a set of account names on the device when signin promo is shown.
      */
     public void setSigninPromoLastAccountNames(Set<String> accountNames) {
-        SharedPreferences.Editor editor = mSharedPreferences.edit();
-        editor.putStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, accountNames).apply();
+        writeStringSet(SIGNIN_PROMO_LAST_SHOWN_ACCOUNT_NAMES, accountNames);
     }
 
     /**
@@ -662,8 +665,7 @@ public class ChromePreferenceManager {
     public Set<String> getVerifiedDigitalAssetLinks() {
         // From the official docs, modifying the result of a SharedPreferences.getStringSet can
         // cause bad things to happen including exceptions or ruining the data.
-        return new HashSet<>(mSharedPreferences.getStringSet(VERIFIED_DIGITAL_ASSET_LINKS,
-                Collections.emptySet()));
+        return new HashSet<>(readStringSet(VERIFIED_DIGITAL_ASSET_LINKS));
     }
 
     /**
@@ -671,13 +673,12 @@ public class ChromePreferenceManager {
      * Can be retrieved by {@link #getVerifiedDigitalAssetLinks()}.
      */
     public void setVerifiedDigitalAssetLinks(Set<String> links) {
-        mSharedPreferences.edit().putStringSet(VERIFIED_DIGITAL_ASSET_LINKS, links).apply();
+        writeStringSet(VERIFIED_DIGITAL_ASSET_LINKS, links);
     }
 
     /** Do not modify the set returned by this method. */
     private Set<String> getTrustedWebActivityDisclosureAcceptedPackages() {
-        return mSharedPreferences.getStringSet(
-                TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, Collections.emptySet());
+        return readStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES);
     }
 
     /**
@@ -685,10 +686,7 @@ public class ChromePreferenceManager {
      * TWAs launched by the given package.
      */
     public void setUserAcceptedTwaDisclosureForPackage(String packageName) {
-        Set<String> packages = new HashSet<>(getTrustedWebActivityDisclosureAcceptedPackages());
-        packages.add(packageName);
-        mSharedPreferences.edit().putStringSet(
-                TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packages).apply();
+        addToStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
     }
 
     /**
@@ -696,11 +694,7 @@ public class ChromePreferenceManager {
      * TWAs launched by the given package.
      */
     public void removeTwaDisclosureAcceptanceForPackage(String packageName) {
-        Set<String> packages = new HashSet<>(getTrustedWebActivityDisclosureAcceptedPackages());
-        if (packages.remove(packageName)) {
-            mSharedPreferences.edit().putStringSet(
-                    TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packages).apply();
-        }
+        removeFromStringSet(TRUSTED_WEB_ACTIVITY_DISCLOSURE_ACCEPTED_PACKAGES, packageName);
     }
 
     /**
@@ -709,6 +703,41 @@ public class ChromePreferenceManager {
      */
     public boolean hasUserAcceptedTwaDisclosureForPackage(String packageName) {
         return getTrustedWebActivityDisclosureAcceptedPackages().contains(packageName);
+    }
+
+    /**
+     * Reads set of String values from preferences.
+     *
+     * Note that you must not modify the set instance returned by this call.
+     */
+    public Set<String> readStringSet(String key) {
+        return mSharedPreferences.getStringSet(key, Collections.emptySet());
+    }
+
+    /**
+     * Adds a value to string set in shared preferences.
+     */
+    public void addToStringSet(String key, String value) {
+        Set<String> values = new HashSet<>(readStringSet(key));
+        values.add(value);
+        writeStringSet(key, values);
+    }
+
+    /**
+     * Removes value from string set in shared preferences.
+     */
+    public void removeFromStringSet(String key, String value) {
+        Set<String> values = new HashSet<>(readStringSet(key));
+        if (values.remove(value)) {
+            writeStringSet(key, values);
+        }
+    }
+
+    /**
+     * Writes string set to shared preferences.
+     */
+    public void writeStringSet(String key, Set<String> values) {
+        mSharedPreferences.edit().putStringSet(key, values).apply();
     }
 
     /**

@@ -18,7 +18,6 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.chrome.browser.invalidation.DelayedInvalidationsController;
 import org.chromium.chrome.browser.omaha.OmahaBase;
 
 import java.lang.annotation.Retention;
@@ -107,7 +106,6 @@ public class PowerBroadcastReceiver extends BroadcastReceiver {
         public void runActions() {
             Context context = ContextUtils.getApplicationContext();
             OmahaBase.onForegroundSessionStart(context);
-            DelayedInvalidationsController.getInstance().notifyPendingInvalidations();
         }
 
         public long getDelayToRun() {

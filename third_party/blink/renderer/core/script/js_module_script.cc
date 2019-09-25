@@ -67,7 +67,7 @@ JSModuleScript* JSModuleScript::Create(
     // <spec step="8.1">Set script's parse error to result[0].</spec>
     v8::Local<v8::Value> error = exception_state.GetException();
     exception_state.ClearException();
-    script->SetParseErrorAndClearRecord(ScriptValue(script_state, error));
+    script->SetParseErrorAndClearRecord(ScriptValue(isolate, error));
 
     // <spec step="8.2">Return script.</spec>
     return script;
@@ -93,7 +93,7 @@ JSModuleScript* JSModuleScript::Create(
         V8ThrowException::CreateTypeError(isolate, error_message);
 
     // <spec step="9.2.2">Set script's parse error to error.</spec>
-    script->SetParseErrorAndClearRecord(ScriptValue(script_state, error));
+    script->SetParseErrorAndClearRecord(ScriptValue(isolate, error));
 
     // <spec step="9.2.3">Return script.</spec>
     return script;

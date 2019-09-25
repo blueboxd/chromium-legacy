@@ -210,7 +210,7 @@ CALL_WITH_ARGUMENTS = {
     'ScriptState': 'script_state',
     'ExecutionContext': 'execution_context',
     'Document': 'document',
-    'ThisValue': 'ScriptValue(script_state, info.Holder())',
+    'ThisValue': 'ScriptValue(info.GetIsolate(), info.Holder())',
 }
 # List because key order matters, as we want arguments in deterministic order
 CALL_WITH_VALUES = [

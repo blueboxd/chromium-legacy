@@ -36,30 +36,26 @@ class SharingDialogView : public SharingDialog,
 
   ~SharingDialogView() override;
 
-  // SharingDialogView:
+  // SharingDialog:
   void Hide() override;
 
-  // views::WidgetDelegateView:
+  // LocationBarBubbleDelegateView:
   bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   void WindowClosing() override;
+  int GetDialogButtons() const override;
+  std::unique_ptr<views::View> CreateFootnoteView() override;
+  gfx::Size CalculatePreferredSize() const override;
+  void AddedToWidget() override;
+  void OnThemeChanged() override;
 
   // views::StyledLabelListener:
   void StyledLabelLinkClicked(views::StyledLabel* label,
                               const gfx::Range& range,
                               int event_flags) override;
 
-  // views::DialogDelegate:
-  int GetDialogButtons() const override;
-  std::unique_ptr<views::View> CreateFootnoteView() override;
-
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
-
-  // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-  void AddedToWidget() override;
-  void OnThemeChanged() override;
 
   static views::BubbleDialogDelegateView* GetAsBubble(SharingDialog* dialog);
   std::unique_ptr<views::StyledLabel> CreateHelpText(
@@ -74,7 +70,7 @@ class SharingDialogView : public SharingDialog,
 
   SharingDialogType GetDialogType() const;
 
-  // views::BubbleDialogDelegateView:
+  // LocationBarBubbleDelegateView:
   void Init() override;
 
   // Shows a header image in the dialog view.

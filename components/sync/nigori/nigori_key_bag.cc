@@ -55,17 +55,11 @@ NigoriKeyBag NigoriKeyBag::CreateEmpty() {
 NigoriKeyBag NigoriKeyBag::CreateFromProto(const sync_pb::NigoriKeyBag& proto) {
   NigoriKeyBag output;
   for (const sync_pb::NigoriKey& key : proto.key()) {
-    std::unique_ptr<Nigori> nigori = Nigori::CreateByImport(
-        key.user_key(), key.encryption_key(), key.mac_key());
-    if (!nigori) {
+    if (output.AddKeyFromProto(key).empty()) {
       // TODO(crbug.com/922900): Consider propagating this error to callers such
       // that they can do smarter handling.
       DLOG(ERROR) << "Invalid NigoriKey protocol buffer message.";
-      continue;
     }
-    // TODO(crbug.com/967417): We shouldn't trust the name in the proto and
-    // instead should compute ComputeNigoriName(*nigori).
-    output.nigori_map_[key.name()] = std::move(nigori);
   }
   return output;
 }
@@ -118,6 +112,22 @@ std::string NigoriKeyBag::AddKey(std::unique_ptr<Nigori> nigori) {
   return key_name;
 }
 
+std::string NigoriKeyBag::AddKeyFromProto(const sync_pb::NigoriKey& key) {
+  std::unique_ptr<Nigori> nigori = Nigori::CreateByImport(
+      key.user_key(), key.encryption_key(), key.mac_key());
+  if (!nigori) {
+    return std::string();
+  }
+
+  const std::string key_name = ComputeNigoriName(*nigori);
+  if (key_name.empty()) {
+    return std::string();
+  }
+
+  nigori_map_[key_name] = std::move(nigori);
+  return key_name;
+}
+
 void NigoriKeyBag::AddAllUnknownKeysFrom(const NigoriKeyBag& other) {
   for (const auto& key_name_and_nigori : other.nigori_map_) {
     // Only use this key if we don't already know about it.
@@ -145,6 +155,11 @@ bool NigoriKeyBag::EncryptWithKey(
   return true;
 }
 
+bool NigoriKeyBag::CanDecrypt(
+    const sync_pb::EncryptedData& encrypted_input) const {
+  return HasKey(encrypted_input.key_name());
+}
+
 bool NigoriKeyBag::Decrypt(const sync_pb::EncryptedData& encrypted_input,
                            std::string* decrypted_output) const {
   DCHECK(decrypted_output);
@@ -155,7 +170,6 @@ bool NigoriKeyBag::Decrypt(const sync_pb::EncryptedData& encrypted_input,
   if (it == nigori_map_.end()) {
     // The key used to encrypt the blob is not part of the set of installed
     // nigoris.
-    DLOG(ERROR) << "Cannot decrypt message";
     return false;
   }
 

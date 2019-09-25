@@ -322,11 +322,20 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   double TimelineTime() const;
   DocumentTimeline& TickingTimeline();
 
+  // Tracking the state of animations in dev tools.
+  void NotifyProbe();
+
   String id_;
 
   // Extended play state with additional pending state for managing timing of
   // micro-tasks.
+  // TODO(crbug.com/958433): Phase out this version of the play state. Should
+  // just need the reported play state.
   AnimationPlayState internal_play_state_;
+  // Extended play state reported to dev tools. This play state has an
+  // additional pending state that is not part of the spec by expected by dev
+  // tools.
+  AnimationPlayState reported_play_state_;
   // Web exposed play state, which does not have pending state.
   AnimationPlayState animation_play_state_;
   double playback_rate_;

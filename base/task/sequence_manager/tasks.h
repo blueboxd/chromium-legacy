@@ -6,6 +6,7 @@
 #define BASE_TASK_SEQUENCE_MANAGER_TASKS_H_
 
 #include "base/pending_task.h"
+#include "base/sequenced_task_runner.h"
 #include "base/task/sequence_manager/enqueue_order.h"
 
 namespace base {
@@ -21,7 +22,8 @@ enum class WakeUpResolution { kLow, kHigh };
 // Wrapper around PostTask method arguments and the assigned task type.
 // Eventually it becomes a PendingTask once accepted by a TaskQueueImpl.
 struct BASE_EXPORT PostedTask {
-  explicit PostedTask(OnceClosure callback = OnceClosure(),
+  explicit PostedTask(scoped_refptr<SequencedTaskRunner> task_runner,
+                      OnceClosure callback = OnceClosure(),
                       Location location = Location(),
                       TimeDelta delay = TimeDelta(),
                       Nestable nestable = Nestable::kNestable,
@@ -34,6 +36,9 @@ struct BASE_EXPORT PostedTask {
   TimeDelta delay;
   Nestable nestable;
   TaskType task_type;
+  // The task runner this task is running on. Can be used by task runners that
+  // support posting back to the "current sequence".
+  scoped_refptr<SequencedTaskRunner> task_runner;
   // The time at which the task was queued.
   TimeTicks queue_time;
 
@@ -76,6 +81,9 @@ struct BASE_EXPORT Task : public PendingTask {
        EnqueueOrder enqueue_order = EnqueueOrder(),
        internal::WakeUpResolution wake_up_resolution =
            internal::WakeUpResolution::kLow);
+  Task(Task&& move_from);
+  ~Task();
+  Task& operator=(Task&& other);
 
   internal::DelayedWakeUp delayed_wake_up() const {
     return internal::DelayedWakeUp{delayed_run_time, sequence_num};
@@ -96,6 +104,10 @@ struct BASE_EXPORT Task : public PendingTask {
   bool enqueue_order_set() const { return enqueue_order_; }
 
   TaskType task_type;
+
+  // The task runner this task is running on. Can be used by task runners that
+  // support posting back to the "current sequence".
+  scoped_refptr<SequencedTaskRunner> task_runner;
 
 #if DCHECK_IS_ON()
   bool cross_thread_;

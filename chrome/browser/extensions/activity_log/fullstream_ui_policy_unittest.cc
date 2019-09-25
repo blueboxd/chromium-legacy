@@ -57,6 +57,10 @@ class FullStreamUIPolicyTest : public testing::Test {
     extension_service_ = static_cast<TestExtensionSystem*>(
         ExtensionSystem::Get(profile_.get()))->CreateExtensionService
             (&no_program_command_line, base::FilePath(), false);
+
+    // Run pending async tasks resulting from profile construction to ensure
+    // these are complete before the test begins.
+    base::RunLoop().RunUntilIdle();
   }
 
   ~FullStreamUIPolicyTest() override {

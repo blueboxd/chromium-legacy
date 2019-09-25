@@ -102,9 +102,12 @@ interface PasswordManagerDriver {
   // save/update prompt anchored to the omnibox icon should be removed.
   HideManualFallbackForSaving();
 
-  // Notification that same-document navigation happened and at this moment we
-  // have filled password form. We use this as a signal for successful login.
-  SameDocumentNavigation(PasswordForm password_form);
+  // Notification that same-document navigation happened. We use this as a
+  // signal for successful login.
+  // TODO(crbug.com/949519): Rename this method to a more generic name since
+  // it's called in many scenarios other than SameDocumentNavigation such as
+  // FRAME_DETACHED.
+  SameDocumentNavigation(SubmissionIndicatorEvent submission_indication_event);
 
   // Sends |log| to browser for displaying to the user. Only strings passed as
   // an argument to methods overriding SavePasswordProgressLogger::SendLog may

@@ -176,6 +176,10 @@ class COMPONENT_EXPORT(CHROMEOS_NETWORK) NetworkDeviceHandler {
   // which become available in the future.
   virtual void SetMACAddressRandomizationEnabled(bool enabled) = 0;
 
+  // Sets up USB Ethernet MAC address source. This applies to primary enabled
+  // USB Ethernet device.
+  virtual void SetUsbEthernetMacAddressSource(const std::string& source) = 0;
+
   // Attempts to enable or disable TDLS for the specified IP or MAC address for
   // the active wifi device.
   virtual void SetWifiTDLSEnabled(

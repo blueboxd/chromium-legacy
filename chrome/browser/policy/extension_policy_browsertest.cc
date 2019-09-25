@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/background/background_contents_service.h"
+#include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_management_constants.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
@@ -35,6 +37,7 @@
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/scoped_ignore_content_verifier_for_test.h"
 #include "extensions/browser/test_extension_registry_observer.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/features/feature_channel.h"
 #include "extensions/common/manifest_handlers/shared_module_info.h"
 #include "extensions/common/value_builder.h"
@@ -193,6 +196,52 @@ class ExtensionPolicyTest : public PolicyTest {
 };
 
 }  // namespace
+
+#if defined(OS_CHROMEOS)
+// Check that component extension can't be blacklisted, besides the camera app
+// that can be disabled by extension policy. This is a temporary solution until
+// there's a dedicated policy to disable the camera, at which point the special
+// check should be removed.
+// TODO(http://crbug.com/1002935)
+IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
+                       ExtensionInstallBlacklistComponentApps) {
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(browser()->profile());
+
+  // Load all component extensions.
+  extensions::ComponentLoader::EnableBackgroundExtensionsForTesting();
+  extension_service()->component_loader()->AddDefaultComponentExtensions(false);
+  base::RunLoop().RunUntilIdle();
+
+  extensions::ExtensionRegistry* registry = extension_registry();
+  ASSERT_TRUE(
+      registry->enabled_extensions().GetByID(extension_misc::kCameraAppId));
+  ASSERT_TRUE(
+      registry->enabled_extensions().GetByID(extensions::kWebStoreAppId));
+  const size_t enabled_count = registry->enabled_extensions().size();
+
+  // Verify that only Camera app can be blacklisted.
+  base::ListValue blacklist;
+  blacklist.AppendString(extension_misc::kCameraAppId);
+  blacklist.AppendString(extensions::kWebStoreAppId);
+  PolicyMap policies;
+  policies.Set(key::kExtensionInstallBlacklist, POLICY_LEVEL_MANDATORY,
+               POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
+               blacklist.CreateDeepCopy(), nullptr);
+  UpdateProviderPolicy(policies);
+
+  ASSERT_FALSE(
+      registry->enabled_extensions().GetByID(extension_misc::kCameraAppId));
+  ASSERT_TRUE(
+      registry->disabled_extensions().GetByID(extension_misc::kCameraAppId));
+  EXPECT_EQ(1u, registry->disabled_extensions().size());
+  EXPECT_EQ(extensions::disable_reason::DISABLE_BLOCKED_BY_POLICY,
+            extension_prefs->GetDisableReasons(extension_misc::kCameraAppId));
+  ASSERT_TRUE(
+      registry->enabled_extensions().GetByID(extensions::kWebStoreAppId));
+  EXPECT_EQ(enabled_count - 1, registry->enabled_extensions().size());
+}
+#endif  // defined(OS_CHROMEOS)
 
 IN_PROC_BROWSER_TEST_F(ExtensionPolicyTest,
                        ExtensionInstallBlacklistSelective) {

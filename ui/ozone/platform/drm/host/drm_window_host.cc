@@ -74,6 +74,11 @@ void DrmWindowHost::Hide() {
 void DrmWindowHost::Close() {
 }
 
+bool DrmWindowHost::IsVisible() const {
+  NOTREACHED();
+  return true;
+}
+
 void DrmWindowHost::PrepareForShutdown() {}
 
 void DrmWindowHost::SetBounds(const gfx::Rect& bounds) {

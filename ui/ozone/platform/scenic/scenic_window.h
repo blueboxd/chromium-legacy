@@ -53,6 +53,7 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   void Show() override;
   void Hide() override;
   void Close() override;
+  bool IsVisible() const override;
   void PrepareForShutdown() override;
   void SetCapture() override;
   void ReleaseCapture() override;

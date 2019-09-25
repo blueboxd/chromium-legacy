@@ -19,13 +19,13 @@ class SequencedTaskSource {
  public:
   virtual ~SequencedTaskSource() = default;
 
-  // Returns the next task to run from this source or nullopt if
+  // Returns the next task to run from this source or nullptr if
   // there're no more tasks ready to run. If a task is returned,
-  // DidRunTask() must be invoked before the next call to TakeTask().
-  virtual Optional<Task> TakeTask() = 0;
+  // DidRunTask() must be invoked before the next call to SelectNextTask().
+  virtual Task* SelectNextTask() = 0;
 
   // Notifies this source that the task previously obtained
-  // from TakeTask() has been completed.
+  // from SelectNextTask() has been completed.
   virtual void DidRunTask() = 0;
 
   // Returns the delay till the next task or TimeDelta::Max()

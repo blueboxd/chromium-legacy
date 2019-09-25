@@ -916,7 +916,7 @@ static void AnyAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(ScriptState::Current(info.GetIsolate()), v8_value);
+  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
 
   impl->setAnyAttribute(cpp_value);
 }
@@ -2030,7 +2030,7 @@ static void CachedAttributeAnyAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(ScriptState::Current(info.GetIsolate()), v8_value);
+  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
 
   impl->setCachedAttributeAnyAttribute(cpp_value);
 
@@ -2164,7 +2164,7 @@ static void CallWithExecutionContextAnyAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(ScriptState::Current(info.GetIsolate()), v8_value);
+  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
 
   ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
 
@@ -2192,7 +2192,7 @@ static void CallWithScriptStateAnyAttributeAttributeSetter(
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(ScriptState::Current(info.GetIsolate()), v8_value);
+  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
 
   ScriptState* script_state = ScriptState::ForRelevantRealm(info);
 
@@ -2222,7 +2222,7 @@ static void CallWithExecutionContextAndScriptStateAndIsolateAnyAttributeAttribut
   TestObject* impl = V8TestObject::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(ScriptState::Current(info.GetIsolate()), v8_value);
+  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
 
   ExecutionContext* execution_context = ExecutionContext::ForRelevantRealm(info);
 
@@ -3147,7 +3147,7 @@ static void CachedAttributeRaisesExceptionGetterAnyAttributeAttributeSetter(
   ExceptionState exception_state(isolate, ExceptionState::kSetterContext, "TestObject", "cachedAttributeRaisesExceptionGetterAnyAttribute");
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(ScriptState::Current(info.GetIsolate()), v8_value);
+  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
 
   impl->setCachedAttributeRaisesExceptionGetterAnyAttribute(cpp_value, exception_state);
 
@@ -4817,7 +4817,7 @@ static void VoidMethodAnyArgMethod(const v8::FunctionCallbackInfo<v8::Value>& in
   }
 
   ScriptValue any_arg;
-  any_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
+  any_arg = ScriptValue(info.GetIsolate(), info[0]);
 
   impl->voidMethodAnyArg(any_arg);
 }
@@ -7807,9 +7807,7 @@ static void CallWithScriptStateExecutionContextIsolateVoidMethodMethod(const v8:
 static void CallWithThisValueMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
   TestObject* impl = V8TestObject::ToImpl(info.Holder());
 
-  ScriptState* script_state = ScriptState::ForRelevantRealm(info);
-
-  impl->callWithThisValue(ScriptValue(script_state, info.Holder()));
+  impl->callWithThisValue(ScriptValue(info.GetIsolate(), info.Holder()));
 }
 
 static void CheckSecurityForNodeVoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -8988,9 +8986,9 @@ static void ForEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  this_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+  this_arg = ScriptValue(info.GetIsolate(), info[1]);
 
-  impl->forEachForBinding(script_state, ScriptValue(script_state, info.Holder()), callback, this_arg, exception_state);
+  impl->forEachForBinding(script_state, ScriptValue(info.GetIsolate(), info.Holder()), callback, this_arg, exception_state);
   if (exception_state.HadException()) {
     return;
   }

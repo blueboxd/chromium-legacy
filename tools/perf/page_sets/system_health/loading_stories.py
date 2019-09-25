@@ -196,6 +196,11 @@ class LoadNytimesMobileStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
+class LoadNytimesMobileStory2019(_LoadingStory):
+  NAME = 'load:news:nytimes:2019'
+  URL = 'http://mobile.nytimes.com'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
 class LoadQqMobileStory(_LoadingStory):
   NAME = 'load:news:qq'

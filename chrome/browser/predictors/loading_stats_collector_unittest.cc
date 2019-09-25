@@ -51,8 +51,7 @@ class LoadingStatsCollectorTest : public testing::Test {
   std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
-LoadingStatsCollectorTest::LoadingStatsCollectorTest()
-    : profile_(std::make_unique<TestingProfile>()) {}
+LoadingStatsCollectorTest::LoadingStatsCollectorTest() = default;
 
 LoadingStatsCollectorTest::~LoadingStatsCollectorTest() = default;
 
@@ -60,6 +59,7 @@ void LoadingStatsCollectorTest::SetUp() {
   LoadingPredictorConfig config;
   PopulateTestConfig(&config);
   profile_ = std::make_unique<TestingProfile>();
+  content::RunAllTasksUntilIdle();
   mock_predictor_ = std::make_unique<StrictMock<MockResourcePrefetchPredictor>>(
       config, profile_.get());
   stats_collector_ =

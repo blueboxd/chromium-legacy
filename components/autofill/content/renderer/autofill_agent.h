@@ -41,7 +41,6 @@ namespace autofill {
 
 struct FormData;
 struct FormFieldData;
-struct PasswordFormFillData;
 class PasswordAutofillAgent;
 class PasswordGenerationAgent;
 
@@ -89,8 +88,6 @@ class AutofillAgent : public content::RenderFrameObserver,
                               const base::string16& password) override;
   void PreviewPasswordSuggestion(const base::string16& username,
                                  const base::string16& password) override;
-  void ShowInitialPasswordAccountSuggestions(
-      const PasswordFormFillData& form_data) override;
   void SetUserGestureRequired(bool required) override;
   void SetSecureContextRequired(bool required) override;
   void SetFocusRequiresScroll(bool require) override;

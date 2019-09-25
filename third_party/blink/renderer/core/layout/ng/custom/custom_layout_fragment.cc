@@ -46,8 +46,9 @@ ScriptValue CustomLayoutFragment::data(ScriptState* script_state) const {
   if (layout_worklet_world_v8_data_.IsEmpty())
     return ScriptValue::CreateNull(script_state->GetIsolate());
 
-  return ScriptValue(script_state, layout_worklet_world_v8_data_.NewLocal(
-                                       script_state->GetIsolate()));
+  return ScriptValue(
+      script_state->GetIsolate(),
+      layout_worklet_world_v8_data_.NewLocal(script_state->GetIsolate()));
 }
 
 void CustomLayoutFragment::Trace(blink::Visitor* visitor) {

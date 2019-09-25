@@ -7,8 +7,6 @@ import("//build/config/chrome_build.gni")
 source_set("cells") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "account_control_item.h",
-    "account_control_item.mm",
     "signin_promo_view.h",
     "signin_promo_view.mm",
     "signin_promo_view_configurator.h",
@@ -44,7 +42,6 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
-    "account_control_item_unittest.mm",
     "signin_promo_view_unittest.mm",
     "table_view_account_item_unittest.mm",
   ]

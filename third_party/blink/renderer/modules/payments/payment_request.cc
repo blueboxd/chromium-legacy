@@ -1211,7 +1211,8 @@ void PaymentRequest::OnPaymentMethodChange(const String& method_name,
       ClearResolversAndCloseMojoConnection();
       return;
     }
-    init->setMethodDetails(ScriptValue(script_state, parsed_value));
+    init->setMethodDetails(
+        ScriptValue(script_state->GetIsolate(), parsed_value));
   }
 
   PaymentRequestUpdateEvent* event = PaymentMethodChangeEvent::Create(

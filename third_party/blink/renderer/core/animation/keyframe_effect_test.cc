@@ -123,7 +123,7 @@ TEST_F(AnimationKeyframeEffectV8Test, CanCreateAnAnimation) {
           .GetScriptValue()};
 
   ScriptValue js_keyframes(
-      script_state,
+      scope.GetIsolate(),
       ToV8(blink_keyframes, scope.GetContext()->Global(), scope.GetIsolate()));
 
   KeyframeEffect* animation =
@@ -202,7 +202,7 @@ TEST_F(AnimationKeyframeEffectV8Test, KeyframeCompositeOverridesEffect) {
       V8ObjectBuilder(script_state).AddString("width", "0px").GetScriptValue()};
 
   ScriptValue js_keyframes(
-      script_state,
+      scope.GetIsolate(),
       ToV8(blink_keyframes, scope.GetContext()->Global(), scope.GetIsolate()));
 
   KeyframeEffect* effect = CreateAnimationFromOption(
@@ -351,7 +351,7 @@ TEST_F(AnimationKeyframeEffectV8Test, SetKeyframesAdditiveCompositeOperation) {
       V8ObjectBuilder(script_state).AddString("width", "10px").GetScriptValue(),
       V8ObjectBuilder(script_state).AddString("width", "0px").GetScriptValue()};
   ScriptValue new_js_keyframes(
-      script_state,
+      scope.GetIsolate(),
       ToV8(blink_keyframes, scope.GetContext()->Global(), scope.GetIsolate()));
   effect->setKeyframes(script_state, new_js_keyframes, exception_state);
   ASSERT_FALSE(exception_state.HadException());

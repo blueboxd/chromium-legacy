@@ -1486,57 +1486,22 @@ bool ExtractFormData(const WebFormElement& form_element, FormData* data) {
       data, nullptr);
 }
 
-bool IsFormVisible(blink::WebLocalFrame* frame,
-                   const blink::WebFormElement& form_element,
-                   const GURL& canonical_action,
-                   const GURL& canonical_origin,
-                   const FormData& form_data) {
-  const GURL frame_origin = GetCanonicalOriginForDocument(frame->GetDocument());
-  blink::WebVector<WebFormElement> forms;
-  frame->GetDocument().Forms(forms);
+bool IsFormVisible(blink::WebLocalFrame* frame, uint32_t form_renderer_id) {
+  WebDocument doc = frame->GetDocument();
+  if (doc.IsNull())
+    return false;
+  WebFormElement form = FindFormByUniqueRendererId(doc, form_renderer_id);
+  return form.IsNull() ? false : AreFormContentsVisible(form);
+}
 
-  // Omitting the action attribute would result in |canonical_origin| for
-  // hierarchical schemes like http:, and in an empty URL for non-hierarchical
-  // schemes like about: or data: etc.
-  const bool action_is_empty = canonical_action.is_empty()
-                               || canonical_action == canonical_origin;
-
-  // Since empty or unspecified action fields are automatically set to page URL,
-  // action field for forms cannot be used for comparing (all forms with
-  // empty/unspecified actions have the same value). If an action field is set
-  // to the page URL, this method checks ALL fields of the form instead (using
-  // FormData.SameFormAs). This is also true if the action was set to the page
-  // URL on purpose.
-  for (const WebFormElement& form : forms) {
-    if (!AreFormContentsVisible(form))
-      continue;
-
-    // Try to match the WebFormElement reference first.
-    if (!form_element.IsNull() && form == form_element) {
-      return true;  // Form still exists.
-    }
-
-    GURL iter_canonical_action = GetCanonicalActionForForm(form);
-    bool form_action_is_empty = iter_canonical_action.is_empty() ||
-                                iter_canonical_action == frame_origin;
-    if (action_is_empty != form_action_is_empty)
-      continue;
-
-    if (action_is_empty) {  // Both actions are empty, compare all fields.
-      FormData extracted_form_data;
-      WebFormElementToFormData(form, WebFormControlElement(), nullptr,
-                               EXTRACT_NONE, &extracted_form_data, nullptr);
-      if (form_data.SameFormAs(extracted_form_data)) {
-        return true;  // Form still exists.
-      }
-    } else {  // Both actions are non-empty, compare actions only.
-      if (canonical_action == iter_canonical_action) {
-        return true;  // Form still exists.
-      }
-    }
-  }
-
-  return false;
+bool IsFormControlVisible(blink::WebLocalFrame* frame,
+                          uint32_t field_renderer_id) {
+  WebDocument doc = frame->GetDocument();
+  if (doc.IsNull())
+    return false;
+  WebFormControlElement field =
+      FindFormControlElementsByUniqueRendererId(doc, field_renderer_id);
+  return field.IsNull() ? false : IsWebElementVisible(field);
 }
 
 bool IsSomeControlElementVisible(

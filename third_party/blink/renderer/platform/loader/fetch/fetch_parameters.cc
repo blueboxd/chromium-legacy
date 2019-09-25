@@ -109,12 +109,6 @@ void FetchParameters::MakeSynchronous() {
   options_.synchronous_policy = kRequestSynchronously;
 }
 
-void FetchParameters::SetClientLoFiPlaceholder() {
-  resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() |
-                                     WebURLRequest::kClientLoFiOn);
-  SetAllowImagePlaceholder();
-}
-
 void FetchParameters::SetLazyImagePlaceholder() {
   resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() |
                                      WebURLRequest::kLazyImageLoadDeferred);
@@ -141,10 +135,8 @@ void FetchParameters::SetAllowImagePlaceholder() {
     // Make sure that the request isn't marked as using an image preview type,
     // since without loading an image placeholder, Client Lo-Fi isn't really
     // in use.
-    resource_request_.SetPreviewsState(
-        resource_request_.GetPreviewsState() &
-        ~(WebURLRequest::kClientLoFiOn |
-          WebURLRequest::kLazyImageLoadDeferred));
+    resource_request_.SetPreviewsState(resource_request_.GetPreviewsState() &
+                                       ~WebURLRequest::kLazyImageLoadDeferred);
     return;
   }
 

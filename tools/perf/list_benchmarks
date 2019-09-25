@@ -2,6 +2,9 @@
 # Copyright 2017 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
+
+from __future__ import print_function
+
 import optparse
 import sys
 
@@ -31,7 +34,7 @@ def main(args):
     benchmarks = benchmark_finders.GetOfficialBenchmarks()
 
   for b in benchmarks:
-    print '{:<60}'.format(b.Name())
+    print('{:<60}'.format(b.Name()))
 
 
 if __name__ == '__main__':

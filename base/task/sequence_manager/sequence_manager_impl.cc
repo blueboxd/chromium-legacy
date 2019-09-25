@@ -320,6 +320,16 @@ void SequenceManagerImpl::BindToCurrentThread(
   BindToMessagePump(std::move(pump));
 }
 
+scoped_refptr<SequencedTaskRunner>
+SequenceManagerImpl::GetTaskRunnerForCurrentTask() {
+  DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
+  if (main_thread_only().task_execution_stack.empty())
+    return nullptr;
+  return main_thread_only()
+      .task_execution_stack.back()
+      .pending_task.task_runner;
+}
+
 void SequenceManagerImpl::CompleteInitializationOnBoundThread() {
   controller_->AddNestingObserver(this);
   main_thread_only().nesting_observer_registered_ = true;
@@ -488,10 +498,10 @@ const char* RunTaskTraceNameForPriority(TaskQueue::QueuePriority priority) {
 
 }  // namespace
 
-Optional<Task> SequenceManagerImpl::TakeTask() {
-  Optional<Task> task = TakeTaskImpl();
+Task* SequenceManagerImpl::SelectNextTask() {
+  Task* task = SelectNextTaskImpl();
   if (!task)
-    return base::nullopt;
+    return nullptr;
 
   ExecutingTask& executing_task =
       *main_thread_only().task_execution_stack.rbegin();
@@ -561,12 +571,12 @@ void SequenceManagerImpl::LogTaskDebugInfo(
 }
 #endif  // DCHECK_IS_ON() && !defined(OS_NACL)
 
-Optional<Task> SequenceManagerImpl::TakeTaskImpl() {
+Task* SequenceManagerImpl::SelectNextTaskImpl() {
   CHECK(Validate());
 
   DCHECK_CALLED_ON_VALID_THREAD(associated_thread_->thread_checker);
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
-               "SequenceManagerImpl::TakeTask");
+               "SequenceManagerImpl::SelectNextTask");
 
   ReloadEmptyWorkQueues();
   LazyNow lazy_now(controller_->GetClock());
@@ -587,7 +597,7 @@ Optional<Task> SequenceManagerImpl::TakeTaskImpl() {
         this, AsValueWithSelectorResult(work_queue, /* force_verbose */ false));
 
     if (!work_queue)
-      return nullopt;
+      return nullptr;
 
     // If the head task was canceled, remove it and run the selector again.
     if (UNLIKELY(work_queue->RemoveAllCanceledTasksFromFront()))
@@ -612,7 +622,7 @@ Optional<Task> SequenceManagerImpl::TakeTaskImpl() {
             work_queue->task_queue()->GetQueuePriority()))) {
       TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("sequence_manager"),
                    "SequenceManager.YieldToNative");
-      return nullopt;
+      return nullptr;
     }
 
 #if DCHECK_IS_ON() && !defined(OS_NACL)
@@ -627,7 +637,7 @@ Optional<Task> SequenceManagerImpl::TakeTaskImpl() {
         *main_thread_only().task_execution_stack.rbegin();
     NotifyWillProcessTask(&executing_task, &lazy_now);
 
-    return std::move(executing_task.pending_task);
+    return &executing_task.pending_task;
   }
 }
 

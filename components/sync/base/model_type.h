@@ -176,6 +176,64 @@ inline ModelType ModelTypeFromInt(int i) {
   return static_cast<ModelType>(i);
 }
 
+// A version of the ModelType enum for use in histograms. ModelType does not
+// have stable values (e.g. new ones may be inserted in the middle), so it can't
+// be recorded directly.
+// Instead of using entries from this enum directly, you'll usually want to get
+// them via ModelTypeHistogramValue(model_type).
+// These values are persisted to logs. Entries should not be renumbered and
+// numeric values should never be reused. When you add a new entry, also update
+// SyncModelTypes in enums.xml
+enum class ModelTypeForHistograms {
+  kUnspecified = 0,
+  kTopLevelFolder = 1,
+  kBookmarks = 2,
+  kPreferences = 3,
+  kPasswords = 4,
+  kAutofillProfile = 5,
+  kAutofill = 6,
+  kThemes = 7,
+  kTypedUrls = 8,
+  kExtensions = 9,
+  kSearchEngines = 10,
+  kSessions = 11,
+  kApps = 12,
+  kAppSettings = 13,
+  kExtensionSettings = 14,
+  kDeprecatedAppNotifications = 15,
+  kHistoryDeleteDirectices = 16,
+  kNigori = 17,
+  kDeviceInfo = 18,
+  kDeprecatedExperiments = 19,
+  kDeprecatedSyncedNotifications = 20,
+  kPriorityPreferences = 21,
+  kDictionary = 22,
+  kFaviconImages = 23,
+  kFaviconTracking = 24,
+  kProxyTabs = 25,
+  kSupervisedUserSettings = 26,
+  kDeprecatedSupervisedUsers = 27,
+  kDeprecatedArticles = 28,
+  kAppList = 29,
+  kDeprecatedSupervisedUserSharedSettings = 30,
+  kDeprecatedSyncedNotificationAppInfo = 31,
+  kDeprecatedWifiCredentials = 32,
+  kSupervisedUserWhitelists = 33,
+  kAutofillWalletData = 34,
+  kAutofillWalletMetadata = 35,
+  kArcPackage = 36,
+  kPrinters = 37,
+  kReadingList = 38,
+  kUserEvents = 39,
+  kMountainShares = 40,
+  kUserConsents = 41,
+  kSendTabToSelf = 42,
+  kSecurityEvents = 43,
+  kWifiConfigurations = 44,
+  kWebApps = 45,
+  kMaxValue = kWebApps
+};
+
 // Used to mark the type of EntitySpecifics that has no actual data.
 void AddDefaultFieldValue(ModelType type, sync_pb::EntitySpecifics* specifics);
 
@@ -308,7 +366,10 @@ const char* ModelTypeToHistogramSuffix(ModelType model_type);
 // The mapping from ModelType to integer is defined here. It defines a
 // completely different order than the ModelType enum itself. The mapping should
 // match the SyncModelTypes mapping from integer to labels defined in enums.xml.
+// TODO(crbug.com/1007293): Update all histogram recording sites to use
+// ModelTypeHistogramValue() and remove ModelTypeToHistogramInt();
 int ModelTypeToHistogramInt(ModelType model_type);
+ModelTypeForHistograms ModelTypeHistogramValue(ModelType model_type);
 
 // Returns for every model_type a positive unique integer that is stable over
 // time and thus can be used when persisting data.

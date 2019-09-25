@@ -31,6 +31,12 @@ class WebApkUkmRecorder {
                           int64_t version_code,
                           int source);
 
+  static void RecordUninstall(const GURL& manifest_url,
+                              int64_t distributor,
+                              int64_t version_code,
+                              int64_t launch_count,
+                              int64_t install_duration);
+
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebApkUkmRecorder);
 };

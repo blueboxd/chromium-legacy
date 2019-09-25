@@ -18,6 +18,8 @@
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/bindings/associated_group.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {
@@ -43,8 +45,9 @@ class COMPONENT_EXPORT(IPC) MojoBootstrap {
       const scoped_refptr<base::SingleThreadTaskRunner>& proxy_task_runner);
 
   // Start the handshake over the underlying message pipe.
-  virtual void Connect(mojom::ChannelAssociatedPtr* sender,
-                       mojom::ChannelAssociatedRequest* receiver) = 0;
+  virtual void Connect(
+      mojo::AssociatedRemote<mojom::Channel>* sender,
+      mojo::PendingAssociatedReceiver<mojom::Channel>* receiver) = 0;
 
   // Stop transmitting messages and start queueing them instead.
   virtual void Pause() = 0;

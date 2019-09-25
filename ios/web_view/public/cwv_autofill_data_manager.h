@@ -13,6 +13,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class CWVAutofillProfile;
 @class CWVCreditCard;
+@class CWVPassword;
 @protocol CWVAutofillDataManagerObserver;
 
 // Exposes saved autofill data such as address profiles and credit cards.
@@ -46,6 +47,13 @@ CWV_EXPORT
 
 // Deletes the card.
 - (void)deleteCreditCard:(CWVCreditCard*)creditCard;
+
+// Returns all saved passwords for password autofill in |completionHandler|.
+- (void)fetchPasswordsWithCompletionHandler:
+    (void (^)(NSArray<CWVPassword*>* passwords))completionHandler;
+
+// Deletes the password.
+- (void)deletePassword:(CWVPassword*)password;
 
 // Deletes all locally saved data.
 - (void)clearAllLocalData;

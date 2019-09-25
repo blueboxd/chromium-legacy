@@ -1307,7 +1307,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
                 mSearchEngine = searchEngine;
                 mLocationBar.updateSearchEngineStatusIcon(
-                        SearchEngineLogoUtils.shouldShowSearchEngineLogo(),
+                        SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                                mLocationBarModel.isIncognito()),
                         TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
                         SearchEngineLogoUtils.getSearchLogoUrl());
                 mToolbar.onDefaultSearchEngineChanged();
@@ -1317,7 +1318,7 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
 
         // Force an update once to populate initial data.
         mLocationBar.updateSearchEngineStatusIcon(
-                SearchEngineLogoUtils.shouldShowSearchEngineLogo(),
+                SearchEngineLogoUtils.shouldShowSearchEngineLogo(mLocationBarModel.isIncognito()),
                 TemplateUrlServiceFactory.get().isDefaultSearchEngineGoogle(),
                 SearchEngineLogoUtils.getSearchLogoUrl());
     }
@@ -1864,7 +1865,8 @@ public class ToolbarManager implements ScrimObserver, ToolbarTabController, UrlF
                 }
                 mLocationBar.setAutocompleteProfile(profile);
                 mLocationBar.setShowIconsWhenUrlFocused(
-                        SearchEngineLogoUtils.shouldShowSearchEngineLogo());
+                        SearchEngineLogoUtils.shouldShowSearchEngineLogo(
+                                mLocationBarModel.isIncognito()));
             }
             mCurrentProfile = profile;
         }

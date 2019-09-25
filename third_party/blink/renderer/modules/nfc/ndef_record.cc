@@ -248,7 +248,7 @@ ScriptValue NDEFRecord::toJSON(ScriptState* script_state,
       exception_state);
   if (exception_state.HadException())
     return ScriptValue::CreateNull(script_state->GetIsolate());
-  return ScriptValue(script_state, json_object);
+  return ScriptValue(script_state->GetIsolate(), json_object);
 }
 
 const WTF::Vector<uint8_t>& NDEFRecord::data() const {

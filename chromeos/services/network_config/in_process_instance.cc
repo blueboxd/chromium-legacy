@@ -38,7 +38,7 @@ void BindToInProcessInstance(
   }
 
   static base::NoDestructor<CrosNetworkConfig> instance;
-  instance->BindRequest(std::move(receiver));
+  instance->BindReceiver(std::move(receiver));
 }
 
 void OverrideInProcessInstanceForTesting(

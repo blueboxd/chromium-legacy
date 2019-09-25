@@ -124,10 +124,10 @@ class NigoriSyncBridgeImpl : public KeystoreKeysHandler,
   // passphrase if SCRYPT is enabled.
   const base::RepeatingCallback<std::string()> random_salt_generator_;
 
-  // Stores serialized sync_pb::NigoriKey derived from explicit passphrase and
-  // loaded from the prefs. Empty if prefs doesn't contain this key or in case
-  // of decryption/decoding errors.
-  std::string serialized_explicit_passphrase_key_;
+  // Stores a key derived from explicit passphrase and loaded from the prefs.
+  // Empty (i.e. default value) if prefs doesn't contain this key or in case of
+  // decryption/decoding errors.
+  const sync_pb::NigoriKey explicit_passphrase_key_;
 
   // Base64 encoded keystore keys. The last element is the current keystore
   // key. These keys are not a part of Nigori node and are persisted

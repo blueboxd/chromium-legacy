@@ -71,7 +71,8 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
 
     int message_counter = next_message_counter_++;
 
-    mojom::ChannelPtr& channel = *fake_client_connection_parameters_->channel();
+    mojo::Remote<mojom::Channel>& channel =
+        fake_client_connection_parameters_->channel();
     channel->SendMessage(
         message,
         base::BindOnce(
@@ -158,7 +159,8 @@ class SecureChannelSingleClientMessageProxyImplTest : public testing::Test {
   mojom::ConnectionMetadataPtr GetConnectionMetadataFromChannel() {
     EXPECT_FALSE(last_metadata_from_channel_);
 
-    mojom::ChannelPtr& channel = *fake_client_connection_parameters_->channel();
+    mojo::Remote<mojom::Channel>& channel =
+        fake_client_connection_parameters_->channel();
     channel->GetConnectionMetadata(base::BindOnce(
         &SecureChannelSingleClientMessageProxyImplTest::OnConnectionMetadata,
         base::Unretained(this)));

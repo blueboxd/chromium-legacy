@@ -78,16 +78,18 @@ TaskQueueImpl::TaskRunner::~TaskRunner() {}
 bool TaskQueueImpl::TaskRunner::PostDelayedTask(const Location& location,
                                                 OnceClosure callback,
                                                 TimeDelta delay) {
-  return task_poster_->PostTask(PostedTask(std::move(callback), location, delay,
-                                           Nestable::kNestable, task_type_));
+  return task_poster_->PostTask(PostedTask(this, std::move(callback), location,
+                                           delay, Nestable::kNestable,
+                                           task_type_));
 }
 
 bool TaskQueueImpl::TaskRunner::PostNonNestableDelayedTask(
     const Location& location,
     OnceClosure callback,
     TimeDelta delay) {
-  return task_poster_->PostTask(PostedTask(std::move(callback), location, delay,
-                                           Nestable::kNonNestable, task_type_));
+  return task_poster_->PostTask(PostedTask(this, std::move(callback), location,
+                                           delay, Nestable::kNonNestable,
+                                           task_type_));
 }
 
 bool TaskQueueImpl::TaskRunner::RunsTasksInCurrentSequence() const {
@@ -423,8 +425,10 @@ void TaskQueueImpl::PushOntoDelayedIncomingQueue(Task pending_task) {
 #endif
 
   // TODO(altimin): Add a copy method to Task to capture metadata here.
+  auto task_runner = pending_task.task_runner;
   PostImmediateTaskImpl(
-      PostedTask(BindOnce(&TaskQueueImpl::ScheduleDelayedWorkTask,
+      PostedTask(std::move(task_runner),
+                 BindOnce(&TaskQueueImpl::ScheduleDelayedWorkTask,
                           Unretained(this), std::move(pending_task)),
                  FROM_HERE, TimeDelta(), Nestable::kNonNestable,
                  pending_task.task_type),

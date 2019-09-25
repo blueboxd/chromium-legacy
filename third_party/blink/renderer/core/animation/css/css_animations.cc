@@ -1230,17 +1230,18 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
       // Per the css-transitions-2 spec, transitioncancel is fired with the
       // "active time of the animation at the moment it was cancelled,
       // calculated using a fill mode of both".
-      base::Optional<double> cancel_active_time = CalculateActiveTime(
-          animation_node.SpecifiedTiming().ActiveDuration(),
-          Timing::FillMode::BOTH, animation_node.LocalTime(), previous_phase_,
-          animation_node.SpecifiedTiming());
+      base::Optional<AnimationTimeDelta> cancel_active_time =
+          CalculateActiveTime(animation_node.SpecifiedTiming().ActiveDuration(),
+                              Timing::FillMode::BOTH,
+                              animation_node.LocalTime(), previous_phase_,
+                              animation_node.SpecifiedTiming());
       // Being the FillMode::BOTH the only possibility to get a null
       // cancel_active_time is that previous_phase_ is kPhaseNone. This cannot
       // happen because we know that current_phase == kPhaseNone and
       // current_phase != previous_phase_ (see early return at the beginning).
       DCHECK(cancel_active_time);
       EnqueueEvent(event_type_names::kTransitioncancel,
-                   cancel_active_time.value());
+                   cancel_active_time->InSecondsF());
     }
   }
 

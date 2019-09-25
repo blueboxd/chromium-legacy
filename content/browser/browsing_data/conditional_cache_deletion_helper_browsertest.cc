@@ -41,18 +41,43 @@ class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
 
   void TearDownOnMainThread() override {}
 
-  void CreateCacheEntry(const std::set<GURL>& urls) {
-    for (auto& url : urls) {
-      ASSERT_EQ(net::OK, LoadBasicRequest(
-                             storage_partition()->GetNetworkContext(), url));
-    }
-  }
-
   bool TestCacheEntry(const GURL& url) {
     return LoadBasicRequest(storage_partition()->GetNetworkContext(), url,
                             0 /* process_id */, 0 /* render_frame_id */,
                             net::LOAD_ONLY_FROM_CACHE |
                                 net::LOAD_SKIP_CACHE_VALIDATION) == net::OK;
+  }
+
+  void CreateCacheEntries(const std::set<GURL>& urls) {
+    for (auto& url : urls) {
+      ASSERT_EQ(net::OK, LoadBasicRequest(
+                             storage_partition()->GetNetworkContext(), url));
+    }
+
+    // Wait for the entries to be written. There is no callback for this action
+    // being completed, only scheduled. Therefore, we need to continuously poll
+    // every |tiny_timeout|. However, wait at most |action_timeout| for this
+    // action to be performed.
+    base::Time start = base::Time::Now();
+    bool all_entries_written = false;
+
+    while (base::Time::Now() - start < TestTimeouts::action_timeout()) {
+      all_entries_written = true;
+      for (auto& url : urls) {
+        if (!TestCacheEntry(url)) {
+          all_entries_written = false;
+          break;
+        }
+      }
+
+      if (all_entries_written)
+        break;
+
+      base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
+    }
+
+    ASSERT_TRUE(all_entries_written)
+        << "Unable to write cache entries. The deletion test can't proceed.";
   }
 
   void CompareRemainingKeys(const std::set<GURL>& expected_urls,
@@ -89,21 +114,14 @@ class ConditionalCacheDeletionHelperBrowserTest : public ContentBrowserTest {
 
 // Tests that ConditionalCacheDeletionHelper only deletes those cache entries
 // that match the condition.
-// Disabled on Android due to flakiness. See https://crbug.com/978891.
-#if defined(OS_ANDROID)
-#define MAYBE_Condition DISABLED_Condition
-#else
-#define MAYBE_Condition Condition
-#endif
-IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
-                       MAYBE_Condition) {
+IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, Condition) {
   std::set<GURL> urls = {
       embedded_test_server()->GetURL("foo.com", "/title1.html"),
       embedded_test_server()->GetURL("bar.com", "/title1.html"),
       embedded_test_server()->GetURL("baz.com", "/title1.html"),
       embedded_test_server()->GetURL("qux.com", "/title1.html")};
 
-  CreateCacheEntry(urls);
+  CreateCacheEntries(urls);
 
   std::set<GURL> erase_urls = {
       embedded_test_server()->GetURL("bar.com", "/title1.html"),
@@ -130,31 +148,15 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
 
 // Tests that ConditionalCacheDeletionHelper correctly constructs a condition
 // for time and URL.
-//
-// Note: This test depends on the timing in cache backends and can be flaky
-// if those backends are slow.
-//
-// It previously flaked on Mac 10.11 (crbug.com/646119) and on Linux/ChromeOS
-// (crbug.com/624836) but it seems to be stable now.
-
-// Disabled on Android due to flakiness. See https://crbug.com/978891.
-#if defined(OS_ANDROID)
-#define MAYBE_TimeAndURL DISABLED_TimeAndURL
-#else
-// https://crbug.com/911171: this test depends on the timing of the cache,
-// which changes if it's running out-of-process.
-#define MAYBE_TimeAndURL DISABLED_TimeAndURL
-#endif
-IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
-                       MAYBE_TimeAndURL) {
+IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest, TimeAndURL) {
   // Create some entries.
   std::set<GURL> urls = {
       embedded_test_server()->GetURL("foo.com", "/title1.html"),
       embedded_test_server()->GetURL("example.com", "/title1.html"),
       embedded_test_server()->GetURL("bar.com", "/title1.html")};
-  CreateCacheEntry(urls);
+  CreateCacheEntries(urls);
 
-  // Wait some milliseconds for the cache to write the entries.
+  // Wait a short time after writing the entries.
   // This assures that future entries will have timestamps strictly greater than
   // the ones we just added.
   base::PlatformThread::Sleep(TestTimeouts::tiny_timeout());
@@ -166,7 +168,7 @@ IN_PROC_BROWSER_TEST_F(ConditionalCacheDeletionHelperBrowserTest,
       embedded_test_server()->GetURL("example.com", "/title2.html"),
       embedded_test_server()->GetURL("example.com", "/title3.html"),
       embedded_test_server()->GetURL("example2.com", "/simple_page.html")};
-  CreateCacheEntry(newer_urls);
+  CreateCacheEntries(newer_urls);
 
   // Create a condition for entries with the "http://example.com" origin
   // created after waiting.

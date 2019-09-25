@@ -27,17 +27,15 @@ void V8WritableStream::ConstructorCustom(
       ScriptState::From(info.NewTarget().As<v8::Object>()->CreationContext());
 
   ScriptValue underlying_sink =
-      ScriptValue(ScriptState::Current(info.GetIsolate()),
-                  v8::Undefined(info.GetIsolate()));
-  ScriptValue strategy = ScriptValue(ScriptState::Current(info.GetIsolate()),
-                                     v8::Undefined(info.GetIsolate()));
+      ScriptValue(info.GetIsolate(), v8::Undefined(info.GetIsolate()));
+  ScriptValue strategy =
+      ScriptValue(info.GetIsolate(), v8::Undefined(info.GetIsolate()));
   int num_args = info.Length();
   if (num_args >= 1) {
-    underlying_sink =
-        ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
+    underlying_sink = ScriptValue(info.GetIsolate(), info[0]);
   }
   if (num_args >= 2)
-    strategy = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+    strategy = ScriptValue(info.GetIsolate(), info[1]);
   v8::Local<v8::Object> wrapper = info.Holder();
 
   if (RuntimeEnabledFeatures::StreamsNativeEnabled()) {

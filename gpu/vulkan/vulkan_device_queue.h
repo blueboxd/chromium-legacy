@@ -115,10 +115,8 @@ class VULKAN_EXPORT VulkanDeviceQueue {
           VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_SAMPLER_YCBCR_CONVERSION_FEATURES};
 #endif  // defined(OS_ANDROID) || defined(OS_FUCHSIA)
 
-#if defined(OS_FUCHSIA)
   VkPhysicalDeviceProtectedMemoryFeatures protected_memory_features_ = {
       VK_STRUCTURE_TYPE_PHYSICAL_DEVICE_PROTECTED_MEMORY_FEATURES};
-#endif  // defined(OS_FUCHSIA)
 
   DISALLOW_COPY_AND_ASSIGN(VulkanDeviceQueue);
 };

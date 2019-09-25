@@ -128,6 +128,9 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   // Sends fill data to the renderer to fill |observed_form|.
   void FillForm(const autofill::FormData& observed_form);
 
+  void UpdateSubmissionIndicatorEvent(
+      autofill::mojom::SubmissionIndicatorEvent event);
+
   // Sends the request to prefill the generated password or pops up an
   // additional UI in case of possible override.
   void OnGeneratedPasswordAccepted(autofill::FormData form_data,

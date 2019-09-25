@@ -23,6 +23,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/v8_for_each_iterator_callback.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_iterator.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_node.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_test_dictionary.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_2.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_test_interface_empty.h"
@@ -688,7 +689,7 @@ static void LenientThisAttributeAttributeSetter(
   TestInterfaceImplementation* impl = V8TestInterface::ToImpl(holder);
 
   // Prepare the value to be set.
-  ScriptValue cpp_value = ScriptValue(ScriptState::Current(info.GetIsolate()), v8_value);
+  ScriptValue cpp_value = ScriptValue(info.GetIsolate(), v8_value);
 
   impl->setLenientThisAttribute(cpp_value);
 }
@@ -1553,16 +1554,16 @@ static void VoidMethodNullableAndOptionalObjectArgsMethod(const v8::FunctionCall
     --num_args_passed;
   }
   if (info[0]->IsObject()) {
-    object_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
+    object_arg = ScriptValue(info.GetIsolate(), info[0]);
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 1 ('objectArg') is not an object."));
     return;
   }
 
   if (info[1]->IsObject()) {
-    nullable_object_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+    nullable_object_arg = ScriptValue(info.GetIsolate(), info[1]);
   } else if (info[1]->IsNullOrUndefined()) {
-    nullable_object_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Null(info.GetIsolate()));
+    nullable_object_arg = ScriptValue(info.GetIsolate(), v8::Null(info.GetIsolate()));
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 2 ('nullableObjectArg') is not an object."));
     return;
@@ -1573,9 +1574,9 @@ static void VoidMethodNullableAndOptionalObjectArgsMethod(const v8::FunctionCall
     return;
   }
   if (info[2]->IsObject()) {
-    optional_object_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[2]);
+    optional_object_arg = ScriptValue(info.GetIsolate(), info[2]);
   } else if (info[2]->IsUndefined()) {
-    optional_object_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), v8::Undefined(info.GetIsolate()));
+    optional_object_arg = ScriptValue(info.GetIsolate(), v8::Undefined(info.GetIsolate()));
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("voidMethodNullableAndOptionalObjectArgs", "TestInterface", "parameter 3 ('optionalObjectArg') is not an object."));
     return;
@@ -1632,6 +1633,23 @@ static void VoidMethodTestEnumArgMethod(const v8::FunctionCallbackInfo<v8::Value
   }
 
   impl->voidMethodTestEnumArg(test_enum_arg);
+}
+
+static void VoidOptionalDictArgWithEmptyDefaultMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  ExceptionState exception_state(info.GetIsolate(), ExceptionState::kExecutionContext, "TestInterface", "voidOptionalDictArgWithEmptyDefault");
+
+  TestInterfaceImplementation* impl = V8TestInterface::ToImpl(info.Holder());
+
+  TestDictionary* test_dict;
+  if (!info[0]->IsNullOrUndefined() && !info[0]->IsObject()) {
+    exception_state.ThrowTypeError("parameter 1 ('testDict') is not an object.");
+    return;
+  }
+  test_dict = NativeValueTraits<TestDictionary>::NativeValue(info.GetIsolate(), info[0], exception_state);
+  if (exception_state.HadException())
+    return;
+
+  impl->voidOptionalDictArgWithEmptyDefault(test_dict);
 }
 
 static void VoidMethodMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
@@ -2119,7 +2137,7 @@ static void PartialVoidMethodPartialCallbackTypeArgMethod(const v8::FunctionCall
 
   ScriptValue partial_callback_type_arg;
   if (info[0]->IsFunction()) {
-    partial_callback_type_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[0]);
+    partial_callback_type_arg = ScriptValue(info.GetIsolate(), info[0]);
   } else {
     V8ThrowException::ThrowTypeError(info.GetIsolate(), ExceptionMessages::FailedToExecute("partialVoidMethodPartialCallbackTypeArg", "TestInterface", "The callback provided as parameter 1 is not a function."));
     return;
@@ -2349,9 +2367,9 @@ static void ForEachMethod(const v8::FunctionCallbackInfo<v8::Value>& info) {
     return;
   }
 
-  this_arg = ScriptValue(ScriptState::Current(info.GetIsolate()), info[1]);
+  this_arg = ScriptValue(info.GetIsolate(), info[1]);
 
-  impl->forEachForBinding(script_state, ScriptValue(script_state, info.Holder()), callback, this_arg, exception_state);
+  impl->forEachForBinding(script_state, ScriptValue(info.GetIsolate(), info.Holder()), callback, this_arg, exception_state);
   if (exception_state.HadException()) {
     return;
   }
@@ -3307,6 +3325,12 @@ void V8TestInterface::VoidMethodTestEnumArgMethodCallback(const v8::FunctionCall
   test_interface_implementation_v8_internal::VoidMethodTestEnumArgMethod(info);
 }
 
+void V8TestInterface::VoidOptionalDictArgWithEmptyDefaultMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
+  RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidOptionalDictArgWithEmptyDefault");
+
+  test_interface_implementation_v8_internal::VoidOptionalDictArgWithEmptyDefaultMethod(info);
+}
+
 void V8TestInterface::VoidMethodMethodCallback(const v8::FunctionCallbackInfo<v8::Value>& info) {
   RUNTIME_CALL_TIMER_SCOPE_DISABLED_BY_DEFAULT(info.GetIsolate(), "Blink_TestInterfaceImplementation_voidMethod");
 
@@ -3726,6 +3750,7 @@ static constexpr V8DOMConfiguration::MethodConfiguration kV8TestInterfaceMethods
     {"voidMethodNullableAndOptionalObjectArgs", V8TestInterface::VoidMethodNullableAndOptionalObjectArgsMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg", V8TestInterface::VoidMethodUnrestrictedDoubleArgUnrestrictedFloatArgMethodCallback, 2, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethodTestEnumArg", V8TestInterface::VoidMethodTestEnumArgMethodCallback, 1, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
+    {"voidOptionalDictArgWithEmptyDefault", V8TestInterface::VoidOptionalDictArgWithEmptyDefaultMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},
     {"voidMethod", V8TestInterface::VoidMethodMethodCallbackForMainWorld, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kMainWorld},
     {"voidMethod", V8TestInterface::VoidMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kNonMainWorlds},
     {"alwaysExposedMethod", V8TestInterface::AlwaysExposedMethodMethodCallback, 0, v8::None, V8DOMConfiguration::kOnPrototype, V8DOMConfiguration::kCheckHolder, V8DOMConfiguration::kDoNotCheckAccess, V8DOMConfiguration::kHasSideEffect, V8DOMConfiguration::kAllWorlds},

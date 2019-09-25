@@ -57,6 +57,7 @@ void LoginDataDispatcher::Observer::OnWarningMessageUpdated(
 
 void LoginDataDispatcher::Observer::OnSystemInfoChanged(
     bool show,
+    bool enforced,
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
     const std::string& bluetooth_name) {}
@@ -181,12 +182,13 @@ void LoginDataDispatcher::UpdateWarningMessage(const base::string16& message) {
 }
 
 void LoginDataDispatcher::SetSystemInfo(
-    bool show_if_hidden,
+    bool show,
+    bool enforced,
     const std::string& os_version_label_text,
     const std::string& enterprise_info_text,
     const std::string& bluetooth_name) {
   for (auto& observer : observers_) {
-    observer.OnSystemInfoChanged(show_if_hidden, os_version_label_text,
+    observer.OnSystemInfoChanged(show, enforced, os_version_label_text,
                                  enterprise_info_text, bluetooth_name);
   }
 }

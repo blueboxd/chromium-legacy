@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.webapps.WebappActivity;
 import org.chromium.chrome.browser.webapps.WebappAuthenticator;
 import org.chromium.chrome.browser.webapps.WebappDataStorage;
+import org.chromium.chrome.browser.webapps.WebappInfo;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
 import org.chromium.chrome.browser.widget.RoundedIconGenerator;
@@ -91,7 +92,7 @@ public class ShortcutHelper {
 
     // When a new field is added to the intent, this version should be incremented so that it will
     // be correctly populated into the WebappRegistry/WebappDataStorage.
-    public static final int WEBAPP_SHORTCUT_VERSION = 2;
+    public static final int WEBAPP_SHORTCUT_VERSION = 3;
 
     // This value is equal to kInvalidOrMissingColor in the C++ blink::Manifest struct.
     public static final long MANIFEST_COLOR_INVALID_OR_MISSING = ((long) Integer.MAX_VALUE) + 1;
@@ -203,22 +204,14 @@ public class ShortcutHelper {
             protected Intent doInBackground() {
                 // Encoding {@link icon} as a string and computing the mac are expensive.
 
-                // Shortcuts as Webapps on O+ launch into a non-exported component for verification.
-                boolean usesMacForVerification = Build.VERSION.SDK_INT < Build.VERSION_CODES.O;
-
                 // Encode the icon as a base64 string (Launcher drops Bitmaps in the Intent).
                 String encodedIcon = encodeBitmapAsString(icon);
 
-                String action = usesMacForVerification
-                        ? sDelegate.getFullscreenAction()
-                        : WebappLauncherActivity.ACTION_START_SECURE_WEBAPP;
-                Intent shortcutIntent = createWebappShortcutIntent(id, action, url, scopeUrl, name,
+                // TODO(http://crbug.com/1000046): Use action which does not require mac on O+
+                Intent shortcutIntent = createWebappShortcutIntent(id, url, scopeUrl, name,
                         shortName, encodedIcon, WEBAPP_SHORTCUT_VERSION, displayMode, orientation,
                         themeColor, backgroundColor, iconUrl.isEmpty(), isIconAdaptive);
-
-                if (usesMacForVerification) {
-                    shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(url));
-                }
+                shortcutIntent.putExtra(EXTRA_MAC, getEncodedMac(url));
                 shortcutIntent.putExtra(EXTRA_SOURCE, source);
                 return shortcutIntent;
             }
@@ -230,9 +223,13 @@ public class ShortcutHelper {
                 // process is complete, call back to native code to start the splash image
                 // download.
                 WebappRegistry.getInstance().register(id, storage -> {
-                    storage.updateFromShortcutIntent(resultIntent);
-                    if (callbackPointer != 0) {
-                        ShortcutHelperJni.get().onWebappDataStored(callbackPointer);
+                    WebappInfo webappInfo = WebappInfo.create(resultIntent);
+                    assert webappInfo != null;
+                    if (webappInfo != null) {
+                        storage.updateFromWebappInfo(webappInfo);
+                        if (callbackPointer != 0) {
+                            ShortcutHelperJni.get().onWebappDataStored(callbackPointer);
+                        }
                     }
                 });
                 if (shouldShowToastWhenAddingShortcut()) {
@@ -360,7 +357,6 @@ public class ShortcutHelper {
     /**
      * Creates a shortcut to launch a web app on the home screen.
      * @param id              Id of the web app.
-     * @param action          Intent action to open a full screen activity.
      * @param url             Url of the web app.
      * @param scope           Url scope of the web app.
      * @param name            Name of the web app.
@@ -376,14 +372,14 @@ public class ShortcutHelper {
      * @return Intent for onclick action of the shortcut.
      * This method must not be called on the UI thread.
      */
-    public static Intent createWebappShortcutIntent(String id, String action, String url,
-            String scope, String name, String shortName, String encodedIcon, int version,
+    public static Intent createWebappShortcutIntent(String id, String url, String scope,
+            String name, String shortName, String encodedIcon, int version,
             @WebDisplayMode int displayMode, int orientation, long themeColor, long backgroundColor,
             boolean isIconGenerated, boolean isIconAdaptive) {
         // Create an intent as a launcher icon for a full-screen Activity.
         Intent shortcutIntent = new Intent();
         shortcutIntent.setPackage(ContextUtils.getApplicationContext().getPackageName())
-                .setAction(action)
+                .setAction(sDelegate.getFullscreenAction())
                 .putExtra(EXTRA_ID, id)
                 .putExtra(EXTRA_URL, url)
                 .putExtra(EXTRA_SCOPE, scope)
@@ -408,7 +404,7 @@ public class ShortcutHelper {
      * This method must not be called on the UI thread.
      */
     public static Intent createWebappShortcutIntentForTesting(String id, String url) {
-        return createWebappShortcutIntent(id, null, url, getScopeFromUrl(url), null, null, null,
+        return createWebappShortcutIntent(id, url, getScopeFromUrl(url), null, null, null,
                 WEBAPP_SHORTCUT_VERSION, WebDisplayMode.STANDALONE, 0, 0, 0, false, false);
     }
 

@@ -178,21 +178,14 @@
     color: GrayText;
   }
 
-  progress::-webkit-progress-bar {
-    background: ButtonFace;
-  }
-
-  progress::-webkit-progress-value {
-    background: Highlight;
-  }
-
   meter::-webkit-meter-bar {
     background: ButtonFace;
+    border-color: WindowText;
   }
 
   meter::-webkit-meter-even-less-good-value,
   meter::-webkit-meter-optimum-value,
-  meter::-webkit-meter-suboptimal-value {
+  meter::-webkit-meter-suboptimum-value {
     background: Highlight;
   }
 }

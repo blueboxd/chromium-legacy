@@ -851,7 +851,6 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {
   VISIT(ctime);
   VISIT(name);
   VISIT(non_unique_name);
-  VISIT(sync_timestamp);
   VISIT(server_defined_unique_tag);
   VISIT(position_in_parent);
   VISIT(unique_position);

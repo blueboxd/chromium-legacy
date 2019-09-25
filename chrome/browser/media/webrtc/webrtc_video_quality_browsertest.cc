@@ -335,8 +335,15 @@ IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
 
 #if BUILDFLAG(RTC_USE_H264)
 
+// Flaky on mac: crbug.com/754684
+#if defined(OS_MACOSX)
+#define MAYBE_MANUAL_TestVideoQualityH264 DISABLED_MANUAL_TestVideoQualityH264
+#else
+#define MAYBE_MANUAL_TestVideoQualityH264 MANUAL_TestVideoQualityH264
+#endif
+
 IN_PROC_BROWSER_TEST_P(WebRtcVideoQualityBrowserTest,
-                       MANUAL_TestVideoQualityH264) {
+                       MAYBE_MANUAL_TestVideoQualityH264) {
   base::ScopedAllowBlockingForTesting allow_blocking;
   // Only run test if run-time feature corresponding to |rtc_use_h264| is on.
   if (!base::FeatureList::IsEnabled(

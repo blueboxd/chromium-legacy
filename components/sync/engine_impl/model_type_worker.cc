@@ -263,61 +263,62 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   data->name = update_entity.name();
   data->is_folder = update_entity.folder();
   data->parent_id = update_entity.parent_id_string();
-
-  // Handle deprecated positioning fields. Relevant only for bookmarks.
-  bool has_position_scheme = false;
-  SyncPositioningScheme sync_positioning_scheme;
-  if (update_entity.has_unique_position()) {
-    data->unique_position = update_entity.unique_position();
-    has_position_scheme = true;
-    sync_positioning_scheme = SyncPositioningScheme::UNIQUE_POSITION;
-  } else if (update_entity.has_position_in_parent() ||
-             update_entity.has_insert_after_item_id()) {
-    bool missing_originator_fields = false;
-    if (!update_entity.has_originator_cache_guid() ||
-        !update_entity.has_originator_client_item_id()) {
-      DLOG(ERROR) << "Update is missing requirements for bookmark position.";
-      missing_originator_fields = true;
-    }
-
-    std::string suffix =
-        missing_originator_fields
-            ? UniquePosition::RandomSuffix()
-            : GenerateSyncableHash(
-                  syncer::GetModelType(update_entity),
-                  /*client_tag=*/update_entity.originator_cache_guid() +
-                      update_entity.originator_client_item_id());
-
-    if (update_entity.has_position_in_parent()) {
-      data->unique_position =
-          UniquePosition::FromInt64(update_entity.position_in_parent(), suffix)
-              .ToProto();
-      has_position_scheme = true;
-      sync_positioning_scheme = SyncPositioningScheme::POSITION_IN_PARENT;
-    } else {
-      // If update_entity has insert_after_item_id, use 0 index.
-      DCHECK(update_entity.has_insert_after_item_id());
-      data->unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
-      has_position_scheme = true;
-      sync_positioning_scheme = SyncPositioningScheme::INSERT_AFTER_ITEM_ID;
-    }
-  } else if (SyncerProtoUtil::ShouldMaintainPosition(update_entity) &&
-             !update_entity.deleted()) {
-    DLOG(ERROR) << "Missing required position information in update.";
-    has_position_scheme = true;
-    sync_positioning_scheme = SyncPositioningScheme::MISSING;
-  }
-  if (has_position_scheme) {
-    UMA_HISTOGRAM_ENUMERATION("Sync.Entities.PositioningScheme",
-                              sync_positioning_scheme);
-  }
+  data->server_defined_unique_tag = update_entity.server_defined_unique_tag();
 
   // Populate |originator_cache_guid| and |originator_client_item_id|. This is
-  // relevant only for bookmarks.
+  // currently relevant only for bookmarks.
   data->originator_cache_guid = update_entity.originator_cache_guid();
   data->originator_client_item_id = update_entity.originator_client_item_id();
 
-  data->server_defined_unique_tag = update_entity.server_defined_unique_tag();
+  // Handle deprecated positioning fields. Relevant only for bookmarks.
+  if (model_type == syncer::BOOKMARKS) {
+    bool has_position_scheme = false;
+    SyncPositioningScheme sync_positioning_scheme;
+    if (update_entity.has_unique_position()) {
+      data->unique_position = update_entity.unique_position();
+      has_position_scheme = true;
+      sync_positioning_scheme = SyncPositioningScheme::UNIQUE_POSITION;
+    } else if (update_entity.has_position_in_parent() ||
+               update_entity.has_insert_after_item_id()) {
+      bool missing_originator_fields = false;
+      if (!update_entity.has_originator_cache_guid() ||
+          !update_entity.has_originator_client_item_id()) {
+        DLOG(ERROR) << "Update is missing requirements for bookmark position.";
+        missing_originator_fields = true;
+      }
+
+      std::string suffix =
+          missing_originator_fields
+              ? UniquePosition::RandomSuffix()
+              : GenerateSyncableHash(
+                    syncer::GetModelType(update_entity),
+                    /*client_tag=*/update_entity.originator_cache_guid() +
+                        update_entity.originator_client_item_id());
+
+      if (update_entity.has_position_in_parent()) {
+        data->unique_position = UniquePosition::FromInt64(
+                                    update_entity.position_in_parent(), suffix)
+                                    .ToProto();
+        has_position_scheme = true;
+        sync_positioning_scheme = SyncPositioningScheme::POSITION_IN_PARENT;
+      } else {
+        // If update_entity has insert_after_item_id, use 0 index.
+        DCHECK(update_entity.has_insert_after_item_id());
+        data->unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
+        has_position_scheme = true;
+        sync_positioning_scheme = SyncPositioningScheme::INSERT_AFTER_ITEM_ID;
+      }
+    } else if (SyncerProtoUtil::ShouldMaintainPosition(update_entity) &&
+               !update_entity.deleted()) {
+      DLOG(ERROR) << "Missing required position information in update.";
+      has_position_scheme = true;
+      sync_positioning_scheme = SyncPositioningScheme::MISSING;
+    }
+    if (has_position_scheme) {
+      UMA_HISTOGRAM_ENUMERATION("Sync.Entities.PositioningScheme",
+                                sync_positioning_scheme);
+    }
+  }
 
   // Deleted entities must use the default instance of EntitySpecifics in
   // order for EntityData to correctly reflect that they are deleted.

@@ -89,14 +89,14 @@ class ASH_PUBLIC_EXPORT LoginScreenModel {
                                 const UserAvatar& avatar) = 0;
 
   // Called when new system information is available.
-  // |show_if_hidden|: If true, the system information should be displayed to
-  //                   the user if it is currently hidden. If false, the system
-  //                   information should remain hidden if not already shown.
-  //                   Hidden system information can be shown by pressing alt-v.
+  // |show|: Whether the system information should be displayed to user.
+  // |enforced|: Whether the display of system information is enforced and
+  // cannot be changed by some specific user operations (e.g., pressing alt-v).
   // |os_version_label_text|: The OS version.
   // |enterprise_info_text|:  The enterprise info.
   // |bluetooth_name|:        The name of the bluetooth adapter.
-  virtual void SetSystemInfo(bool show_if_hidden,
+  virtual void SetSystemInfo(bool show,
+                             bool enforced,
                              const std::string& os_version_label_text,
                              const std::string& enterprise_info_text,
                              const std::string& bluetooth_name) = 0;

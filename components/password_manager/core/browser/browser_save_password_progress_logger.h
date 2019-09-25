@@ -32,10 +32,6 @@ class BrowserSavePasswordProgressLogger
 
   // Browser-specific addition to the base class' Log* methods. The input is
   // sanitized and passed to SendLog for display.
-  void LogFormSignatures(StringID label, const autofill::PasswordForm& form);
-
-  // Browser-specific addition to the base class' Log* methods. The input is
-  // sanitized and passed to SendLog for display.
   void LogFormStructure(StringID label, const autofill::FormStructure& form);
 
   // Browser-specific addition to the base class' Log* methods. The input is

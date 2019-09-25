@@ -262,7 +262,7 @@ v8::Local<v8::Object> ScriptCustomElementDefinition::Constructor() const {
 
 // CustomElementDefinition
 ScriptValue ScriptCustomElementDefinition::GetConstructorForScript() {
-  return ScriptValue(script_state_, Constructor());
+  return ScriptValue(script_state_->GetIsolate(), Constructor());
 }
 
 bool ScriptCustomElementDefinition::HasConnectedCallback() const {

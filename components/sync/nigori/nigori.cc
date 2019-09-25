@@ -202,6 +202,9 @@ bool Nigori::Keys::InitByImport(const std::string& user_key_str,
   // |user_key| is not used anymore so we tolerate a failed import.
   user_key = SymmetricKey::Import(SymmetricKey::AES, user_key_str);
 
+  if (encryption_key_str.empty() || mac_key_str.empty())
+    return false;
+
   encryption_key = SymmetricKey::Import(SymmetricKey::AES, encryption_key_str);
   if (!encryption_key)
     return false;

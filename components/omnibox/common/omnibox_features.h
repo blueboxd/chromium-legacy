@@ -46,6 +46,7 @@ extern const base::Feature kOmniboxPopupShortcutIconsInZeroState;
 extern const base::Feature kOmniboxMaterialDesignWeatherIcons;
 extern const base::Feature kOmniboxDisableInstantExtendedLimit;
 extern const base::Feature kOmniboxSearchEngineLogo;
+extern const base::Feature kOmniboxRemoveSuggestionsFromClipboard;
 
 // Flags that affect the "twiddle" step of AutocompleteResult, i.e. SortAndCull.
 // TODO(tommycli): There are more flags above that belong in this category.

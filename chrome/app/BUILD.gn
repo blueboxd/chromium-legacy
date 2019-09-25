@@ -465,10 +465,7 @@ source_set("chrome_content_browser_overlay_manifest") {
     deps +=
         [ "//chrome/browser/ui/webui/explore_sites_internals:mojo_bindings" ]
   } else {
-    deps += [
-      "//chrome/browser/ui/webui/app_management:mojo_bindings",
-      "//chrome/services/app_service/public/cpp:manifest",
-    ]
+    deps += [ "//chrome/browser/ui/webui/app_management:mojo_bindings" ]
   }
 
   if (is_win || is_mac || is_desktop_linux || is_chromeos) {

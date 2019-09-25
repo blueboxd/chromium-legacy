@@ -20,18 +20,32 @@ suite('AppManagementPageTests', () => {
         1;  // Ignore the dom-repeat element.
   }
 
+  /** @return {Element} */
+  function getNoAppsFoundLabel() {
+    return appManagementPage.$$('app-management-main-view')
+        .$$('#no-apps-label');
+  }
+
+  /**
+   * @param {Element} element
+   * @return {boolean}
+   */
+  function isElementShown(element) {
+    if (!element) {
+      return false;
+    }
+    if (element.style.display === 'none') {
+      return false;
+    }
+    return true;
+  }
+
   setup(async () => {
     fakeHandler = setupFakeHandler();
     store = replaceStore();
-
     appManagementPage = document.createElement('settings-app-management-page');
     assertTrue(!!appManagementPage);
     replaceBody(appManagementPage);
-
-    // TODO: enable when dom-switch is added.
-    // await appManagementPage.$$('app-management-dom-switch')
-    // .firstRenderForTesting_.promise;
-    // await test_util.flushTasks();
   });
 
   test('loads', async () => {
@@ -40,35 +54,48 @@ suite('AppManagementPageTests', () => {
         await app_management.BrowserProxy.getInstance().handler.getApps();
   });
 
-  test('App list renders on page change', () => {
-    const appList = getAppList();
-    let numApps = 0;
+  test('App list renders on page change', async () => {
+    await fakeHandler.addApp();
+    expectEquals(1, getAppListChildren());
+    await fakeHandler.addApp();
+    expectEquals(2, getAppListChildren());
+  });
 
-    fakeHandler.addApp()
-        .then(() => {
-          numApps = 1;
-          expectEquals(numApps, getAppListChildren());
+  test('No Apps Found Label', async () => {
+    expectEquals(0, getAppListChildren());
+    expectTrue(isElementShown(getNoAppsFoundLabel()));
 
-          // TODO(jshikaram): Re-enable once dom-switch works.
-          // // Click app to go to detail page.
-          // appList.querySelector('app-management-app-item').click();
-          // return test_util.flushTasks();
-        })
-        .then(() => {
-          return fakeHandler.addApp();
-        })
-        .then(() => {
-          numApps++;
+    const app = await fakeHandler.addApp();
+    expectEquals(1, getAppListChildren());
+    expectFalse(isElementShown(getNoAppsFoundLabel()));
 
-          // TODO(jshikaram): Re-enable once dom-switch works.
-          // // Click back button to go to main page.
-          // app.$$('app-management-pwa-permission-view')
-          //     .$$('app-management-permission-view-header')
-          //     .$$('#backButton')
-          //     .click();
+    fakeHandler.uninstall(app.id);
+    await test_util.flushTasks();
+    expectEquals(0, getAppListChildren());
+    expectTrue(isElementShown(getNoAppsFoundLabel()));
+  });
 
-          test_util.flushTasks();
-          expectEquals(numApps, getAppListChildren());
-        });
+  test('App list filters when searching', async () => {
+    await fakeHandler.addApp(null, {title: 'slides'});
+    await fakeHandler.addApp(null, {title: 'calculator'});
+    const sheets = await fakeHandler.addApp(null, {title: 'sheets'});
+    expectEquals(3, getAppListChildren());
+
+    appManagementPage.searchTerm = 's';
+    await test_util.flushTasks();
+    expectEquals(2, getAppListChildren());
+
+    fakeHandler.uninstall(sheets.id);
+    await test_util.flushTasks();
+    expectEquals(1, getAppListChildren());
+
+    appManagementPage.searchTerm = 'ss';
+    await test_util.flushTasks();
+    expectEquals(0, getAppListChildren());
+    expectTrue(isElementShown(getNoAppsFoundLabel()));
+
+    appManagementPage.searchTerm = '';
+    await test_util.flushTasks();
+    expectEquals(2, getAppListChildren());
   });
 });

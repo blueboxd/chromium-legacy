@@ -20,7 +20,7 @@ public class WebApkUkmRecorder {
                 manifestUrl, distributor, versionCode, duration);
     }
 
-    /**
+    /*
      * Records that WebAPK was launched and the reason for the launch.
      */
     public static void recordWebApkLaunch(
@@ -28,10 +28,22 @@ public class WebApkUkmRecorder {
         WebApkUkmRecorderJni.get().recordVisit(manifestUrl, distributor, versionCode, source);
     }
 
+    /**
+     * Records how long the WebAPK was installed and how many times the WebAPK has been launched
+     * since the last time that the user clearer Chrome's storage.
+     */
+    public static void recordWebApkUninstall(String manifestUrl, @WebApkDistributor int distributor,
+            int versionCode, int launchCount, long installedDurationMs) {
+        WebApkUkmRecorderJni.get().recordUninstall(
+                manifestUrl, distributor, versionCode, launchCount, installedDurationMs);
+    }
+
     @NativeMethods
     interface Natives {
         void recordSessionDuration(
                 String manifestUrl, int distributor, int versionCode, long duration);
         void recordVisit(String manifestUrl, int distributor, int versionCode, int source);
+        void recordUninstall(String manifestUrl, int distributor, int versionCode, int launchCount,
+                long installedDurationMs);
     }
 }

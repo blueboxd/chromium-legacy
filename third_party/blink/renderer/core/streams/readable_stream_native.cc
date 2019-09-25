@@ -1002,8 +1002,10 @@ ReadableStreamNative* ReadableStreamNative::CreateWithCountQueueingStrategy(
       ToV8(underlying_source, script_state);
 
   auto* stream = MakeGarbageCollected<ReadableStreamNative>(
-      script_state, ScriptValue(script_state, underlying_source_v8),
-      ScriptValue(script_state, strategy_object), true, exception_state);
+      script_state,
+      ScriptValue(script_state->GetIsolate(), underlying_source_v8),
+      ScriptValue(script_state->GetIsolate(), strategy_object), true,
+      exception_state);
 
   if (exception_state.HadException()) {
     exception_state.ClearException();
@@ -1162,10 +1164,10 @@ bool ReadableStreamNative::locked(ScriptState* script_state,
 
 ScriptPromise ReadableStreamNative::cancel(ScriptState* script_state,
                                            ExceptionState& exception_state) {
-  return cancel(
-      script_state,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return cancel(script_state,
+                ScriptValue(script_state->GetIsolate(),
+                            v8::Undefined(script_state->GetIsolate())),
+                exception_state);
 }
 
 ScriptPromise ReadableStreamNative::cancel(ScriptState* script_state,
@@ -1195,7 +1197,7 @@ ScriptValue ReadableStreamNative::getReader(ScriptState* script_state,
     return ScriptValue();
   }
 
-  return ScriptValue(script_state, ToV8(reader, script_state));
+  return ScriptValue(script_state->GetIsolate(), ToV8(reader, script_state));
 }
 
 ScriptValue ReadableStreamNative::getReader(ScriptState* script_state,
@@ -1216,10 +1218,10 @@ ScriptValue ReadableStreamNative::getReader(ScriptState* script_state,
 ScriptValue ReadableStreamNative::pipeThrough(ScriptState* script_state,
                                               ScriptValue transform_stream,
                                               ExceptionState& exception_state) {
-  return pipeThrough(
-      script_state, transform_stream,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return pipeThrough(script_state, transform_stream,
+                     ScriptValue(script_state->GetIsolate(),
+                                 v8::Undefined(script_state->GetIsolate())),
+                     exception_state);
 }
 
 // https://streams.spec.whatwg.org/#rs-pipe-through
@@ -1263,10 +1265,10 @@ ScriptValue ReadableStreamNative::pipeThrough(ScriptState* script_state,
 ScriptPromise ReadableStreamNative::pipeTo(ScriptState* script_state,
                                            ScriptValue destination,
                                            ExceptionState& exception_state) {
-  return pipeTo(
-      script_state, destination,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return pipeTo(script_state, destination,
+                ScriptValue(script_state->GetIsolate(),
+                            v8::Undefined(script_state->GetIsolate())),
+                exception_state);
 }
 
 ScriptPromise ReadableStreamNative::pipeTo(ScriptState* script_state,

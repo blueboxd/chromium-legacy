@@ -153,7 +153,7 @@ AudioWorkletProcessor* AudioWorkletGlobalScope::CreateProcessor(
           std::make_unique<ProcessorCreationParams>(
               name, std::move(message_port_channel)));
 
-  ScriptValue options(script_state,
+  ScriptValue options(isolate,
                       ToV8(node_options->Deserialize(isolate), script_state));
 
   ScriptValue instance;
@@ -310,9 +310,9 @@ bool AudioWorkletGlobalScope::Process(
   // wrapper of v8::Object instance.
   ScriptValue result;
   if (!definition->ProcessFunction()
-           ->Invoke(processor, ScriptValue(script_state, inputs),
-                    ScriptValue(script_state, outputs),
-                    ScriptValue(script_state, param_values))
+           ->Invoke(processor, ScriptValue(isolate, inputs),
+                    ScriptValue(isolate, outputs),
+                    ScriptValue(isolate, param_values))
            .To(&result)) {
     // process() method call failed for some reason or an exception was thrown
     // by the user supplied code. Disable the processor to exclude it from the

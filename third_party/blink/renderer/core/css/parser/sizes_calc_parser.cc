@@ -94,6 +94,16 @@ bool SizesCalcParser::HandleRightParenthesis(Vector<CSSParserToken>& stack) {
     return !comma_count;
   }
 
+  if (left_side.FunctionId() == CSSValueID::kClamp) {
+    if (comma_count != 2)
+      return false;
+    // Convert clamp(MIN, VAL, MAX) into max(MIN, min(VAL, MAX))
+    // https://www.w3.org/TR/css-values-4/#calc-notation
+    value_list_.emplace_back(CSSMathOperator::kMin);
+    value_list_.emplace_back(CSSMathOperator::kMax);
+    return true;
+  }
+
   // Break variadic min/max() into binary operations to fit in the reverse
   // polish notation.
   CSSMathOperator op = left_side.FunctionId() == CSSValueID::kMin
@@ -170,8 +180,8 @@ bool SizesCalcParser::CalcToReversePolishNotation(CSSParserTokenRange range) {
       case kFunctionToken:
         if (RuntimeEnabledFeatures::CSSComparisonFunctionsEnabled()) {
           if (token.FunctionId() == CSSValueID::kMin ||
-              token.FunctionId() == CSSValueID::kMax) {
-            // TODO(crbug.com/825895): Add clamp() when min/max are done.
+              token.FunctionId() == CSSValueID::kMax ||
+              token.FunctionId() == CSSValueID::kClamp) {
             stack.push_back(token);
             break;
           }

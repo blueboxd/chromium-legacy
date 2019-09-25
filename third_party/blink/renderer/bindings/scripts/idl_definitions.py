@@ -509,6 +509,8 @@ class IdlLiteral(object):
             return '%g' % self.value
         if self.idl_type == 'boolean':
             return 'true' if self.value else 'false'
+        if self.idl_type == 'dictionary':
+            return self.value
         raise ValueError('Unsupported literal type: %s' % self.idl_type)
 
 
@@ -537,6 +539,8 @@ def default_node_to_idl_literal(node):
         return IdlLiteral(idl_type, value)
     if idl_type == 'NULL':
         return IdlLiteralNull()
+    if idl_type == 'dictionary':
+        return IdlLiteral(idl_type, value)
     raise ValueError('Unrecognized default value type: %s' % idl_type)
 
 

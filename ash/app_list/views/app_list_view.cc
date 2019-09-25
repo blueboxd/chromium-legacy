@@ -2233,8 +2233,13 @@ void AppListView::UpdateAppListBackgroundYPosition(
   // Update the y position of the background shield.
   gfx::Transform transform;
   if (is_in_drag_) {
+    // For the purpose of determining background shield offset, use progress
+    // with kHalf baseline so the background shield does not start translating
+    // up before it reaches kHalf height (which is larger than kPeeking height).
+    // If the shield transform started at kPeeking height, the app list view
+    // background would jump up when starting drag from the kHalf state.
     float app_list_transition_progress =
-        GetAppListTransitionProgress(kProgressFlagNone);
+        GetAppListTransitionProgress(kProgressFlagSearchResults);
     if (app_list_transition_progress < 1 && !shelf_has_rounded_corners()) {
       const float shelf_height =
           GetScreenBottom() - GetDisplayNearestView().work_area().bottom();

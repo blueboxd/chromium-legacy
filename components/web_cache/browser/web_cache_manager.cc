@@ -85,8 +85,8 @@ void WebCacheManager::Add(int renderer_id) {
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(renderer_id);
   if (host) {
-    mojom::WebCachePtr service;
-    BindInterface(host, &service);
+    mojo::Remote<mojom::WebCache> service;
+    BindInterface(host, service.BindNewPipeAndPassReceiver());
     web_cache_services_[renderer_id] = std::move(service);
   }
 
@@ -306,10 +306,10 @@ void WebCacheManager::EnactStrategy(const AllocationStrategy& strategy) {
       // This is the capacity this renderer has been allocated.
       uint64_t capacity = allocation->second;
 
-      // Find the WebCachePtr by renderer process id.
+      // Find the mojo::Remote<WebCache> by renderer process id.
       auto it = web_cache_services_.find(allocation->first);
       if (it != web_cache_services_.end()) {
-        const mojom::WebCachePtr& service = it->second;
+        const mojo::Remote<mojom::WebCache>& service = it->second;
         DCHECK(service);
         service->SetCacheCapacity(capacity);
       }
@@ -332,10 +332,10 @@ void WebCacheManager::ClearRendererCache(
     content::RenderProcessHost* host =
         content::RenderProcessHost::FromID(*iter);
     if (host) {
-      // Find the WebCachePtr by renderer process id.
+      // Find the mojo::Remote<WebCache> by renderer process id.
       auto it = web_cache_services_.find(*iter);
       if (it != web_cache_services_.end()) {
-        const mojom::WebCachePtr& service = it->second;
+        const mojo::Remote<mojom::WebCache>& service = it->second;
         DCHECK(service);
         service->ClearCache(occasion == ON_NAVIGATION);
       }

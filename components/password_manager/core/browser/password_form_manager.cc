@@ -369,6 +369,12 @@ void PasswordFormManager::UpdatePasswordValue(
   CreatePendingCredentials();
 }
 
+void PasswordFormManager::UpdateSubmissionIndicatorEvent(
+    autofill::mojom::SubmissionIndicatorEvent event) {
+  parsed_submitted_form_->form_data.submission_event = event;
+  parsed_submitted_form_->submission_event = event;
+}
+
 void PasswordFormManager::OnNopeUpdateClicked() {
   votes_uploader_.UploadPasswordVote(*parsed_submitted_form_,
                                      *parsed_submitted_form_,

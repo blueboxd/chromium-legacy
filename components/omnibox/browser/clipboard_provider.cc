@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/feature_list.h"
@@ -32,6 +33,15 @@
 #include "components/url_formatter/url_formatter.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image_util.h"
+
+namespace {
+
+bool IsMatchDeletionEnabled() {
+  return base::FeatureList::IsEnabled(
+      omnibox::kOmniboxRemoveSuggestionsFromClipboard);
+}
+
+}  // namespace
 
 ClipboardProvider::ClipboardProvider(AutocompleteProviderClient* client,
                                      AutocompleteProviderListener* listener,
@@ -81,6 +91,43 @@ void ClipboardProvider::Stop(bool clear_cached_results,
                              bool due_to_user_inactivity) {
   callback_weak_ptr_factory_.InvalidateWeakPtrs();
   AutocompleteProvider::Stop(clear_cached_results, due_to_user_inactivity);
+}
+
+void ClipboardProvider::DeleteMatch(const AutocompleteMatch& match) {
+  clipboard_content_->ClearClipboardContent();
+
+  const auto pred = [&match](const AutocompleteMatch& i) {
+    return i.contents == match.contents && i.type == match.type;
+  };
+  base::EraseIf(matches_, pred);
+}
+
+void ClipboardProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
+  // If a URL wasn't suggested on this most recent focus event, don't bother
+  // setting |times_returned_results_in_session|, as in effect this URL has
+  // never been suggested during the current session.  (For the purpose of
+  // this provider, we define a session as intervals between when a URL
+  // clipboard suggestion changes.)
+  if (current_url_suggested_times_ == 0)
+    return;
+  provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
+  metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
+  new_entry.set_provider(AsOmniboxEventProviderType());
+  new_entry.set_provider_done(done_);
+  new_entry.set_times_returned_results_in_session(current_url_suggested_times_);
+
+  if (field_trial_triggered_ || field_trial_triggered_in_session_) {
+    std::vector<uint32_t> field_trial_hashes;
+    OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
+    for (uint32_t trial : field_trial_hashes) {
+      if (field_trial_triggered_) {
+        new_entry.mutable_field_trial_triggered()->Add(trial);
+      }
+      if (field_trial_triggered_in_session_) {
+        new_entry.mutable_field_trial_triggered_in_session()->Add(trial);
+      }
+    }
+  }
 }
 
 void ClipboardProvider::ResetSession() {
@@ -144,7 +191,7 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateURLMatch(
   DCHECK(url.is_valid());
 
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
-  AutocompleteMatch match(this, 800, false,
+  AutocompleteMatch match(this, 800, IsMatchDeletionEnabled(),
                           AutocompleteMatchType::CLIPBOARD_URL);
   match.destination_url = url;
   // Because the user did not type a related input to get this clipboard
@@ -188,7 +235,7 @@ base::Optional<AutocompleteMatch> ClipboardProvider::CreateTextMatch(
     return base::nullopt;
 
   // Add the clipboard match. The relevance is 800 to beat ZeroSuggest results.
-  AutocompleteMatch match(this, 800, false,
+  AutocompleteMatch match(this, 800, IsMatchDeletionEnabled(),
                           AutocompleteMatchType::CLIPBOARD_TEXT);
   TemplateURLService* url_service = client_->GetTemplateURLService();
   const TemplateURL* default_url = url_service->GetDefaultSearchProvider();
@@ -310,30 +357,3 @@ void ClipboardProvider::ConstructImageMatchCallback(
   }
 }
 
-void ClipboardProvider::AddProviderInfo(ProvidersInfo* provider_info) const {
-  // If a URL wasn't suggested on this most recent focus event, don't bother
-  // setting |times_returned_results_in_session|, as in effect this URL has
-  // never been suggested during the current session.  (For the purpose of
-  // this provider, we define a session as intervals between when a URL
-  // clipboard suggestion changes.)
-  if (current_url_suggested_times_ == 0)
-    return;
-  provider_info->push_back(metrics::OmniboxEventProto_ProviderInfo());
-  metrics::OmniboxEventProto_ProviderInfo& new_entry = provider_info->back();
-  new_entry.set_provider(AsOmniboxEventProviderType());
-  new_entry.set_provider_done(done_);
-  new_entry.set_times_returned_results_in_session(current_url_suggested_times_);
-
-  if (field_trial_triggered_ || field_trial_triggered_in_session_) {
-    std::vector<uint32_t> field_trial_hashes;
-    OmniboxFieldTrial::GetActiveSuggestFieldTrialHashes(&field_trial_hashes);
-    for (uint32_t trial : field_trial_hashes) {
-      if (field_trial_triggered_) {
-        new_entry.mutable_field_trial_triggered()->Add(trial);
-      }
-      if (field_trial_triggered_in_session_) {
-        new_entry.mutable_field_trial_triggered_in_session()->Add(trial);
-      }
-    }
-  }
-}

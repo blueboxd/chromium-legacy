@@ -502,8 +502,9 @@ void OobeUI::BindPrivilegedHostDeviceSetter(
 }
 
 void OobeUI::BindCrosNetworkConfig(
-    chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
-  ash::GetNetworkConfigService(std::move(request));
+    mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+        receiver) {
+  ash::GetNetworkConfigService(std::move(receiver));
 }
 
 OobeUI::OobeUI(content::WebUI* web_ui, const GURL& url)

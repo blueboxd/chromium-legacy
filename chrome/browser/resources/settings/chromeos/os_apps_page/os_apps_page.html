@@ -76,12 +76,14 @@
         </template>
       </template>
     </div>
-
     <!-- APP MANAGEMENT -->
     <template is="dom-if" if="showAppManagement">
       <template is="dom-if" route-path="/app-management" no-search>
-        <settings-subpage page-title="$i18n{appManagementTitle}">
-          <settings-app-management-page>
+        <settings-subpage
+            page-title="$i18n{appManagementTitle}"
+            search-label="$i18n{appManagementSearchPrompt}"
+            search-term="{{searchTerm}}">
+          <settings-app-management-page search-term="[[searchTerm]]">
           </settings-app-management-page>
         </settings-subpage>
       </template>

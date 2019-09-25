@@ -28,13 +28,6 @@ namespace password_manager {
 
 namespace metrics_util {
 
-void LogUMAHistogramBoolean(const std::string& name, bool sample) {
-  // Note: This leaks memory, which is expected behavior.
-  base::HistogramBase* histogram = base::BooleanHistogram::FactoryGet(
-      name, base::Histogram::kUmaTargetedHistogramFlag);
-  histogram->AddBoolean(sample);
-}
-
 void LogGeneralUIDismissalReason(UIDismissalReason reason) {
   base::UmaHistogramEnumeration("PasswordManager.UIDismissalReason", reason,
                                 NUM_UI_RESPONSES);

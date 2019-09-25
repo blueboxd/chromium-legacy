@@ -34,6 +34,8 @@ class PlatformWindow : public PropertyHandler {
   virtual void Hide() = 0;
   virtual void Close() = 0;
 
+  virtual bool IsVisible() const = 0;
+
   // Informs the window it is going to be destroyed sometime soon. This is only
   // called for specific code paths, for example by Ash, so it shouldn't be
   // assumed this will get called before destruction.

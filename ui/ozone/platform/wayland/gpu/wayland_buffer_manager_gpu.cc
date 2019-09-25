@@ -16,26 +16,25 @@
 
 namespace ui {
 
-WaylandBufferManagerGpu::WaylandBufferManagerGpu()
-    : associated_binding_(this) {}
-
+WaylandBufferManagerGpu::WaylandBufferManagerGpu() = default;
 WaylandBufferManagerGpu::~WaylandBufferManagerGpu() = default;
 
-void WaylandBufferManagerGpu::SetWaylandBufferManagerHost(
-    BufferManagerHostPtr buffer_manager_host_ptr) {
-  // This is an IO child thread meant for IPC. Bind interface in this thread and
-  // do all the mojo calls on the same thread.
-  BindHostInterface(std::move(buffer_manager_host_ptr));
+void WaylandBufferManagerGpu::Initialize(
+    mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> remote_host,
+    const base::flat_map<::gfx::BufferFormat, std::vector<uint64_t>>&
+        buffer_formats_with_modifiers,
+    bool supports_dma_buf) {
+  DCHECK(supported_buffer_formats_with_modifiers_.empty());
+  supported_buffer_formats_with_modifiers_ = buffer_formats_with_modifiers;
+
+#if defined(WAYLAND_GBM)
+  if (!supports_dma_buf)
+    set_gbm_device(nullptr);
+#endif
+
+  BindHostInterface(std::move(remote_host));
 
   io_thread_runner_ = base::ThreadTaskRunnerHandle::Get();
-}
-
-void WaylandBufferManagerGpu::ResetGbmDevice() {
-#if defined(WAYLAND_GBM)
-  gbm_device_.reset();
-#else
-  NOTREACHED();
-#endif
 }
 
 void WaylandBufferManagerGpu::OnSubmission(gfx::AcceleratedWidget widget,
@@ -146,8 +145,19 @@ void WaylandBufferManagerGpu::DestroyBuffer(gfx::AcceleratedWidget widget,
 }
 
 void WaylandBufferManagerGpu::AddBindingWaylandBufferManagerGpu(
-    ozone::mojom::WaylandBufferManagerGpuRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+    mojo::PendingReceiver<ozone::mojom::WaylandBufferManagerGpu> receiver) {
+  receiver_.Bind(std::move(receiver));
+}
+
+const std::vector<uint64_t>&
+WaylandBufferManagerGpu::GetModifiersForBufferFormat(
+    gfx::BufferFormat buffer_format) const {
+  auto it = supported_buffer_formats_with_modifiers_.find(buffer_format);
+  if (it != supported_buffer_formats_with_modifiers_.end()) {
+    return it->second;
+  }
+  static std::vector<uint64_t> dummy;
+  return dummy;
 }
 
 void WaylandBufferManagerGpu::CreateDmabufBasedBufferInternal(
@@ -161,8 +171,8 @@ void WaylandBufferManagerGpu::CreateDmabufBasedBufferInternal(
     uint32_t planes_count,
     uint32_t buffer_id) {
   DCHECK(io_thread_runner_->BelongsToCurrentThread());
-  DCHECK(buffer_manager_host_ptr_);
-  buffer_manager_host_ptr_->CreateDmabufBasedBuffer(
+  DCHECK(remote_host_);
+  remote_host_->CreateDmabufBasedBuffer(
       widget,
       mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(dmabuf_fd))),
       size, strides, offsets, modifiers, current_format, planes_count,
@@ -176,8 +186,8 @@ void WaylandBufferManagerGpu::CreateShmBasedBufferInternal(
     gfx::Size size,
     uint32_t buffer_id) {
   DCHECK(io_thread_runner_->BelongsToCurrentThread());
-  DCHECK(buffer_manager_host_ptr_);
-  buffer_manager_host_ptr_->CreateShmBasedBuffer(
+  DCHECK(remote_host_);
+  remote_host_->CreateShmBasedBuffer(
       widget, mojo::WrapPlatformHandle(mojo::PlatformHandle(std::move(shm_fd))),
       length, size, buffer_id);
 }
@@ -187,31 +197,30 @@ void WaylandBufferManagerGpu::CommitBufferInternal(
     uint32_t buffer_id,
     const gfx::Rect& damage_region) {
   DCHECK(io_thread_runner_->BelongsToCurrentThread());
-  DCHECK(buffer_manager_host_ptr_);
+  DCHECK(remote_host_);
 
-  buffer_manager_host_ptr_->CommitBuffer(widget, buffer_id, damage_region);
+  remote_host_->CommitBuffer(widget, buffer_id, damage_region);
 }
 
 void WaylandBufferManagerGpu::DestroyBufferInternal(
     gfx::AcceleratedWidget widget,
     uint32_t buffer_id) {
   DCHECK(io_thread_runner_->BelongsToCurrentThread());
-  DCHECK(buffer_manager_host_ptr_);
+  DCHECK(remote_host_);
 
-  buffer_manager_host_ptr_->DestroyBuffer(widget, buffer_id);
+  remote_host_->DestroyBuffer(widget, buffer_id);
 }
 
 void WaylandBufferManagerGpu::BindHostInterface(
-    BufferManagerHostPtr buffer_manager_host_ptr) {
-  buffer_manager_host_ptr_.Bind(buffer_manager_host_ptr.PassInterface());
+    mojo::PendingRemote<ozone::mojom::WaylandBufferManagerHost> remote_host) {
+  remote_host_.Bind(std::move(remote_host));
 
   // Setup associated interface.
-  ozone::mojom::WaylandBufferManagerGpuAssociatedPtrInfo client_ptr_info;
-  auto request = MakeRequest(&client_ptr_info);
-  DCHECK(buffer_manager_host_ptr_);
-  buffer_manager_host_ptr_->SetWaylandBufferManagerGpuPtr(
-      std::move(client_ptr_info));
-  associated_binding_.Bind(std::move(request));
+  mojo::PendingAssociatedRemote<ozone::mojom::WaylandBufferManagerGpu>
+      client_remote;
+  associated_receiver_.Bind(client_remote.InitWithNewEndpointAndPassReceiver());
+  DCHECK(remote_host_);
+  remote_host_->SetWaylandBufferManagerGpu(std::move(client_remote));
 }
 
 void WaylandBufferManagerGpu::SubmitSwapResultOnOriginThread(

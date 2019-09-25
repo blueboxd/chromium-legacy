@@ -96,7 +96,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
       DesktopNativeCursorManager* cursor_manager) override;
   void Show(ui::WindowShowState show_state,
             const gfx::Rect& restore_bounds) override;
-  bool IsVisible() const override;
   void SetSize(const gfx::Size& requested_size) override;
   void GetWindowPlacement(gfx::Rect* bounds,
                           ui::WindowShowState* show_state) const override;

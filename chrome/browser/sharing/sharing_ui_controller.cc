@@ -33,19 +33,6 @@ content::WebContents* GetCurrentWebContents(
 
 }  // namespace
 
-SharingUiController::App::App(const gfx::VectorIcon* vector_icon,
-                              const gfx::Image& image,
-                              base::string16 name,
-                              std::string identifier)
-    : vector_icon(vector_icon),
-      image(image),
-      name(std::move(name)),
-      identifier(std::move(identifier)) {}
-
-SharingUiController::App::App(App&& other) = default;
-
-SharingUiController::App::~App() = default;
-
 SharingUiController::SharingUiController(content::WebContents* web_contents)
     : web_contents_(web_contents),
       sharing_service_(SharingServiceFactory::GetForBrowserContext(
@@ -199,7 +186,8 @@ int SharingUiController::GetHeaderImageId() const {
   return 0;
 }
 
-void SharingUiController::OnAppsReceived(int dialog_id, std::vector<App> apps) {
+void SharingUiController::OnAppsReceived(int dialog_id,
+                                         std::vector<SharingApp> apps) {
   if (dialog_id != last_dialog_id_)
     return;
 

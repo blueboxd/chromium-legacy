@@ -111,7 +111,7 @@ ScriptValue ReadableStreamOperations::CreateReadableStream(
     exception_state.RethrowV8Exception(block.Exception());
     return ScriptValue();
   }
-  return ScriptValue(script_state, result);
+  return ScriptValue(script_state->GetIsolate(), result);
 }
 
 ScriptValue ReadableStreamOperations::CreateCountQueuingStrategy(
@@ -261,7 +261,7 @@ ScriptValue ReadableStreamOperations::Tee(ScriptState* script_state,
     exception_state.RethrowV8Exception(block.Exception());
     return ScriptValue();
   }
-  return ScriptValue(script_state, result);
+  return ScriptValue(script_state->GetIsolate(), result);
 }
 
 void ReadableStreamOperations::Serialize(ScriptState* script_state,

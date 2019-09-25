@@ -52,10 +52,6 @@ interface AutofillAgent {
   PreviewPasswordSuggestion(mojo_base.mojom.String16 username,
                             mojo_base.mojom.String16 password);
 
-  // Sent when a password form is initially detected and suggestions should be
-  // shown. Used by the fill-on-select experiment.
-  ShowInitialPasswordAccountSuggestions(PasswordFormFillData form_data);
-
   // Configures the render to require, or not, a user gesture before notifying
   // the autofill agent of a field change. The default is true. Bypassing the
   // user gesture check should only used for Android Webview, which needs to

@@ -141,11 +141,6 @@
 #include "extensions/browser/extension_system.h"
 #endif
 
-#if !defined(OS_ANDROID)
-#include "chrome/services/app_service/app_service.h"
-#include "chrome/services/app_service/public/mojom/constants.mojom.h"
-#endif
-
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/net/delay_network_call.h"
@@ -1057,18 +1052,6 @@ void TestingProfile::SetCorsOriginAccessListForOrigin(
   // Extensions need to set the list, but just can be ignored unless they need
   // to make actual network requests beyond the CORS policy.
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, std::move(closure));
-}
-
-std::unique_ptr<service_manager::Service> TestingProfile::HandleServiceRequest(
-    const std::string& service_name,
-    service_manager::mojom::ServiceRequest request) {
-#if !defined(OS_ANDROID)
-  if (service_name == apps::mojom::kServiceName) {
-    return std::make_unique<apps::AppService>(std::move(request));
-  }
-#endif  // !defined(OS_ANDROID)
-
-  return nullptr;
 }
 
 bool TestingProfile::WasCreatedByVersionOrLater(const std::string& version) {

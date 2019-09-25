@@ -100,8 +100,6 @@ class WaylandConnection : public PlatformEventSource,
     return &wayland_window_manager_;
   }
 
-  std::vector<gfx::BufferFormat> GetSupportedBufferFormats();
-
   // Starts drag with |data| to be delivered, |operation| supported by the
   // source side initiated the dragging.
   void StartDrag(const ui::OSExchangeData& data, int operation);

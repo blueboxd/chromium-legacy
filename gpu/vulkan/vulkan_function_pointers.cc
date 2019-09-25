@@ -728,6 +728,14 @@ bool VulkanFunctionPointers::BindDeviceFunctionPointers(
   }
 
   if (api_version >= VK_API_VERSION_1_1) {
+    vkGetDeviceQueue2Fn = reinterpret_cast<PFN_vkGetDeviceQueue2>(
+        vkGetDeviceProcAddrFn(vk_device, "vkGetDeviceQueue2"));
+    if (!vkGetDeviceQueue2Fn) {
+      DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                    << "vkGetDeviceQueue2";
+      return false;
+    }
+
     vkGetImageMemoryRequirements2Fn =
         reinterpret_cast<PFN_vkGetImageMemoryRequirements2>(
             vkGetDeviceProcAddrFn(vk_device, "vkGetImageMemoryRequirements2"));

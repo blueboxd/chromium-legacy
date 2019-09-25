@@ -128,7 +128,7 @@ ScriptValue NativeFileSystemDirectoryHandle::getEntries(
            .ToChecked()) {
     return ScriptValue();
   }
-  return ScriptValue(script_state, result);
+  return ScriptValue(script_state->GetIsolate(), result);
 }
 
 ScriptPromise NativeFileSystemDirectoryHandle::removeEntry(

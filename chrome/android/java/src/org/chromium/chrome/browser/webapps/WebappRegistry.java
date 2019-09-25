@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.webapps;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.support.annotation.NonNull;
 import android.text.TextUtils;
 import android.text.format.DateUtils;
 import android.util.Pair;
@@ -21,6 +22,7 @@ import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.browserservices.permissiondelegation.TrustedWebActivityPermissionStore;
 import org.chromium.chrome.browser.browsing_data.UrlFilter;
 import org.chromium.chrome.browser.browsing_data.UrlFilterBridge;
+import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.webapk.lib.common.WebApkConstants;
 
@@ -266,12 +268,7 @@ public class WebappRegistry {
             WebappDataStorage storage = entry.getValue();
             String webApkPackage = storage.getWebApkPackageName();
             if (webApkPackage != null) {
-                // Prefix check that the key matches the current scheme instead of an old
-                // deprecated naming scheme and that the WebApk is still installed. The former is
-                // necessary as we migrate away from the old naming scheme and garbage collect.
-                if (entry.getKey().startsWith(WebApkConstants.WEBAPK_ID_PREFIX)
-                        && PackageUtils.isPackageInstalled(
-                                   ContextUtils.getApplicationContext(), webApkPackage)) {
+                if (!shouldDeleteStorageForWebApk(entry.getKey(), webApkPackage)) {
                     continue;
                 }
             } else if ((currentTime - storage.getLastUsedTimeMs())
@@ -286,6 +283,27 @@ public class WebappRegistry {
                 .putLong(KEY_LAST_CLEANUP, currentTime)
                 .putStringSet(KEY_WEBAPP_SET, mStorages.keySet())
                 .apply();
+    }
+
+    /**
+     * Returns whether the {@link WebappDataStorage} should be deleted for the passed-in WebAPK
+     * package.
+     */
+    private static boolean shouldDeleteStorageForWebApk(
+            @NonNull String id, @NonNull String webApkPackageName) {
+        // Prefix check that the key matches the current scheme instead of an old deprecated naming
+        // scheme. This is necessary as we migrate away from the old naming scheme and garbage
+        // collect.
+        if (!id.startsWith(WebApkConstants.WEBAPK_ID_PREFIX)) return true;
+
+        // Do not delete WebappDataStorage if we still need it for UKM logging.
+        Set<String> webApkPackagesWithPendingUkm =
+                ChromePreferenceManager.getInstance().readStringSet(
+                        ChromePreferenceManager.WEBAPK_UNINSTALLED_PACKAGES);
+        if (webApkPackagesWithPendingUkm.contains(webApkPackageName)) return false;
+
+        return !PackageUtils.isPackageInstalled(
+                ContextUtils.getApplicationContext(), webApkPackageName);
     }
 
     public TrustedWebActivityPermissionStore getTrustedWebActivityPermissionStore() {

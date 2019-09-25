@@ -8,6 +8,8 @@ definitions read from policy_templates.json.
 If the file was pretty-printed, the updated version is pretty-printed too.
 """
 
+from __future__ import print_function
+
 import os
 import re
 import sys
@@ -51,8 +53,8 @@ def UpdatePoliciesHistogramDefinitions(policy_templates, doc):
   # Find EnterprisePolicies enum.
   for enum_node in doc.getElementsByTagName('enum'):
     if enum_node.attributes['name'].value == POLICIES_ENUM_NAME:
-        policy_enum_node = enum_node
-        break
+      policy_enum_node = enum_node
+      break
   else:
     raise UserError('No policy enum node found')
 
@@ -89,8 +91,8 @@ def UpdateAtomicGroupsHistogramDefinitions(policy_templates, doc):
   # Find EnterprisePolicies enum.
   for enum_node in doc.getElementsByTagName('enum'):
     if enum_node.attributes['name'].value == POLICY_ATOMIC_GROUPS_ENUM_NAME:
-        atomic_group_enum_node = enum_node
-        break
+      atomic_group_enum_node = enum_node
+      break
   else:
     raise UserError('No policy atomic group enum node found')
 
@@ -115,7 +117,7 @@ def UpdateAtomicGroupsHistogramDefinitions(policy_templates, doc):
 
 def main():
   if len(sys.argv) > 1:
-    print >>sys.stderr, 'No arguments expected!'
+    print('No arguments expected!', file=sys.stderr)
     sys.stderr.write(__doc__)
     sys.exit(1)
 
@@ -140,5 +142,5 @@ if __name__ == '__main__':
   try:
     main()
   except UserError as e:
-    print >>sys.stderr, e.message
+    print(e.message, file=sys.stderr)
     sys.exit(1)

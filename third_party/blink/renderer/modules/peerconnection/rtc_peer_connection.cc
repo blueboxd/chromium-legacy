@@ -1995,20 +1995,21 @@ bool RTCPeerConnection::IsRemoteStream(MediaStream* stream) const {
 
 ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
                                           ExceptionState& exception_state) {
-  return getStats(
-      script_state,
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return getStats(script_state,
+                  ScriptValue(script_state->GetIsolate(),
+                              v8::Undefined(script_state->GetIsolate())),
+                  ScriptValue(script_state->GetIsolate(),
+                              v8::Undefined(script_state->GetIsolate())),
+                  exception_state);
 }
 
 ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,
                                           ScriptValue callback_or_selector,
                                           ExceptionState& exception_state) {
-  return getStats(
-      script_state, std::move(callback_or_selector),
-      ScriptValue(script_state, v8::Undefined(script_state->GetIsolate())),
-      exception_state);
+  return getStats(script_state, std::move(callback_or_selector),
+                  ScriptValue(script_state->GetIsolate(),
+                              v8::Undefined(script_state->GetIsolate())),
+                  exception_state);
 }
 
 ScriptPromise RTCPeerConnection::getStats(ScriptState* script_state,

@@ -995,7 +995,8 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // for the dse icon being laid out when focused. This also affects the UrlBar, which is
         // handled below. See comments in LocationBar#getLocationBarOffsetForFocusAnimation() for
         // implementation details.
-        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+        boolean isIncognito = getToolbarDataProvider().isIncognito();
+        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito)) {
             locationBarBaseTranslationX +=
                     mLocationBar.getLocationBarOffsetForFocusAnimation(hasFocus());
         }
@@ -1042,9 +1043,11 @@ public class ToolbarPhone extends ToolbarLayout implements Invalidator.Client, O
         // When the dse icon is enabled, the UrlBar needs additional translation to compensate for
         // the additional translation applied to the LocationBar. See comments in
         // LocationBar#getUrlBarTranslationXForToolbarAnimation() for implementation details.
-        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo()) {
+        if (SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito)) {
             mUrlBar.setTranslationX(mLocationBar.getUrlBarTranslationXForToolbarAnimation(
                     mUrlExpansionPercent, hasFocus()));
+        } else if (SearchEngineLogoUtils.isSearchEngineLogoEnabled()) {
+            mUrlBar.setTranslationX(0);
         }
 
         if (!mExperimentalButtonAnimationRunning) {

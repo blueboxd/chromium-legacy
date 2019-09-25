@@ -5,6 +5,7 @@
 #include "components/open_from_clipboard/clipboard_recent_content_generic.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
 #include "base/stl_util.h"
@@ -132,4 +133,24 @@ TEST_F(ClipboardRecentContentGenericTest, GetRecentTextFromClipboard) {
       "Foo Bar",
       base::UTF16ToUTF8(recent_content.GetRecentTextFromClipboard().value())
           .c_str());
+}
+
+TEST_F(ClipboardRecentContentGenericTest, ClearClipboardContent) {
+  // Make sure the URL is suggested.
+  ClipboardRecentContentGeneric recent_content;
+  base::Time now = base::Time::Now();
+  std::string text = "http://example.com/";
+  test_clipboard_->WriteText(text.data(), text.length());
+  test_clipboard_->SetLastModifiedTime(now - base::TimeDelta::FromSeconds(10));
+  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
+
+  // After clear it, it shouldn't be suggested.
+  recent_content.ClearClipboardContent();
+  EXPECT_FALSE(recent_content.GetRecentURLFromClipboard().has_value());
+
+  // If the clipboard changes, even if to the same thing again, the content
+  // should be suggested again.
+  test_clipboard_->WriteText(text.data(), text.length());
+  test_clipboard_->SetLastModifiedTime(now);
+  EXPECT_TRUE(recent_content.GetRecentURLFromClipboard().has_value());
 }

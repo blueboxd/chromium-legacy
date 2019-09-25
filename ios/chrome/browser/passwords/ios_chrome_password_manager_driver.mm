@@ -58,12 +58,6 @@ void IOSChromePasswordManagerDriver::PreviewSuggestion(
   NOTIMPLEMENTED();
 }
 
-// TODO(crbug.com/568713): This method should be given a non-trivial
-// implementation before launch of the fill-on-account password manager
-// experiment.
-void IOSChromePasswordManagerDriver::ShowInitialPasswordAccountSuggestions(
-    const autofill::PasswordFormFillData& form_data) {}
-
 void IOSChromePasswordManagerDriver::ClearPreviewedForm() {
   NOTIMPLEMENTED();
 }

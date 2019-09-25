@@ -127,6 +127,7 @@ class ASH_EXPORT LockContentsView
 
   void FocusNextUser();
   void FocusPreviousUser();
+  void ShowSystemInfo();
   void ShowParentAccessDialog();
   void RequestSecurityTokenPin(SecurityTokenPinRequest request);
   void ClearSecurityTokenPinRequest();
@@ -162,6 +163,7 @@ class ASH_EXPORT LockContentsView
                             const EasyUnlockIconOptions& icon) override;
   void OnWarningMessageUpdated(const base::string16& message) override;
   void OnSystemInfoChanged(bool show,
+                           bool enforced,
                            const std::string& os_version_label_text,
                            const std::string& enterprise_info_text,
                            const std::string& bluetooth_name) override;
@@ -357,6 +359,10 @@ class ASH_EXPORT LockContentsView
   // Performs the specified accelerator action.
   void PerformAction(AcceleratorAction action);
 
+  // Check whether the view should display the system information based on all
+  // factors including policy settings, channel and Alt-V accelerator.
+  bool GetSystemInfoVisibility() const;
+
   const LockScreen::ScreenType screen_type_;
 
   std::vector<UserState> users_;
@@ -419,6 +425,14 @@ class ASH_EXPORT LockContentsView
   // Whether the lock screen note is disabled. Used to override the actual lock
   // screen note state.
   bool disable_lock_screen_note_ = false;
+
+  // Whether the system information should be displayed or not be displayed
+  // forcedly according to policy settings.
+  base::Optional<bool> enable_system_info_enforced_ = base::nullopt;
+
+  // Whether the system information is intended to be displayed if possible.
+  // (e.g., Alt-V is pressed, particular OS channels)
+  bool enable_system_info_if_possible_ = false;
 
   // Expanded view for public account user to select language and keyboard.
   LoginExpandedPublicAccountView* expanded_view_ = nullptr;

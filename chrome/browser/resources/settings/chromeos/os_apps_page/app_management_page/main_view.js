@@ -11,20 +11,27 @@ Polymer({
 
   properties: {
     /**
+     * @type {string}
+     */
+    searchTerm: {
+      type: String,
+    },
+
+    /**
      * @private {AppMap}
      */
     apps_: {
       type: Object,
-      observer: 'onAppsChanged_',
     },
 
     /**
-     * List of apps displayed before expanding the app list.
+     * List of apps displayed.
      * @private {Array<App>}
      */
-    appsList: {
+    appList_: {
       type: Array,
       value: () => [],
+      computed: 'computeAppList_(apps_, searchTerm)'
     },
 
     /**
@@ -41,17 +48,48 @@ Polymer({
     this.watch('apps_', state => state.apps);
     this.watch('notificationAppIds_', state => state.notifications.allowedIds);
     this.updateFromStore();
-    this.onAppsChanged_();
   },
 
   /**
    * @private
+   * @param {Array<App>} appList
+   * @return {boolean}
    */
-  onAppsChanged_: function() {
-    this.appsList = Object.values(this.apps_)
-                        .sort(
-                            (a, b) => app_management.util.alphabeticalSort(
-                                assert(a.title), assert(b.title)));
+  isAppListEmpty_: function(appList) {
+    return appList.length === 0;
+  },
+
+  /**
+   * @private
+   * @param {AppMap} apps
+   * @param {String} searchTerm
+   * @return {Array<App>}
+   */
+  computeAppList_: function(apps, searchTerm) {
+    if (!apps) {
+      return [];
+    }
+
+    // This is calculated locally as once the user leaves this page the state
+    // should reset.
+    const appArray = Object.values(apps);
+
+    let filteredApps;
+    if (searchTerm) {
+      const lowerCaseSearchTerm = searchTerm.toLowerCase();
+      filteredApps = appArray.filter(app => {
+        assert(app.title);
+        return app.title.toLowerCase().includes(lowerCaseSearchTerm);
+      });
+    } else {
+      filteredApps = appArray;
+    }
+
+    filteredApps.sort(
+        (a, b) => app_management.util.alphabeticalSort(
+            /** @type {string} */ (a.title), /** @type {string} */ (b.title)));
+
+    return filteredApps;
   },
 
   /** @private */

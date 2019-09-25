@@ -3037,7 +3037,7 @@ class AddOneFunction : public ScriptFunction {
     int32_t int_value =
         static_cast<int32_t>(v8_value.As<v8::Integer>()->Value());
     return ScriptValue(
-        GetScriptState(),
+        GetScriptState()->GetIsolate(),
         v8::Integer::New(GetScriptState()->GetIsolate(), int_value + 1));
   }
 };

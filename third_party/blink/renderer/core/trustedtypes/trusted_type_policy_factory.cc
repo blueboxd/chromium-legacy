@@ -318,7 +318,7 @@ ScriptValue TrustedTypePolicyFactory::getTypeMapping(ScriptState* script_state,
     }
   }
 
-  return ScriptValue(script_state, top);
+  return ScriptValue(script_state->GetIsolate(), top);
 }
 
 void TrustedTypePolicyFactory::CountTrustedTypeAssignmentError() {

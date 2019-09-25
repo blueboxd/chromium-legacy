@@ -38,7 +38,7 @@ TEST(AnimationEffectInputTest, SortedOffsets) {
                                                  .GetScriptValue()};
 
   ScriptValue js_keyframes(
-      script_state,
+      scope.GetIsolate(),
       ToV8(blink_keyframes, scope.GetContext()->Global(), scope.GetIsolate()));
 
   Element* element = AppendElement(scope.GetDocument());
@@ -63,7 +63,7 @@ TEST(AnimationEffectInputTest, UnsortedOffsets) {
                                                  .GetScriptValue()};
 
   ScriptValue js_keyframes(
-      script_state,
+      scope.GetIsolate(),
       ToV8(blink_keyframes, scope.GetContext()->Global(), scope.GetIsolate()));
 
   Element* element = AppendElement(scope.GetDocument());
@@ -91,7 +91,7 @@ TEST(AnimationEffectInputTest, LooslySorted) {
                                                  .GetScriptValue()};
 
   ScriptValue js_keyframes(
-      script_state,
+      scope.GetIsolate(),
       ToV8(blink_keyframes, scope.GetContext()->Global(), scope.GetIsolate()));
 
   Element* element = AppendElement(scope.GetDocument());
@@ -123,7 +123,7 @@ TEST(AnimationEffectInputTest, OutOfOrderWithNullOffsets) {
                                                  .GetScriptValue()};
 
   ScriptValue js_keyframes(
-      script_state,
+      scope.GetIsolate(),
       ToV8(blink_keyframes, scope.GetContext()->Global(), scope.GetIsolate()));
 
   Element* element = AppendElement(scope.GetDocument());
@@ -150,7 +150,7 @@ TEST(AnimationEffectInputTest, Invalid) {
                                                  .GetScriptValue()};
 
   ScriptValue js_keyframes(
-      script_state,
+      scope.GetIsolate(),
       ToV8(blink_keyframes, scope.GetContext()->Global(), scope.GetIsolate()));
 
   Element* element = AppendElement(scope.GetDocument());

@@ -20,6 +20,8 @@ results/*` to find the tests that failed or otherwise process the log files.
 See //docs/workflow/debugging-with-swarming.md for more details.
 """
 
+from __future__ import print_function
+
 import argparse
 import multiprocessing
 import os
@@ -178,10 +180,12 @@ def main():
   subprocess.check_call(
       ['tools/mb/mb.py', 'isolate', '//' + args.out_dir, args.target_name])
 
-  print 'If you get authentication errors, follow:'
-  print '  https://www.chromium.org/developers/testing/isolated-testing/for-swes#TOC-Login-on-the-services'
+  print('If you get authentication errors, follow:')
+  print(
+      '  https://www.chromium.org/developers/testing/isolated-testing/for-swes#TOC-Login-on-the-services'
+  )
 
-  print 'Uploading to isolate server, this can take a while...'
+  print('Uploading to isolate server, this can take a while...')
   archive_output = subprocess.check_output(
       ['tools/swarming_client/isolate.py', 'archive',
        '-I', 'https://isolateserver.appspot.com',
@@ -194,7 +198,7 @@ def main():
   os.makedirs(args.results)
 
   try:
-    print 'Triggering %d tasks...' % args.copies
+    print('Triggering %d tasks...' % args.copies)
     pool = multiprocessing.Pool()
     spawn_args = map(lambda i: (i, args, isolated_hash), range(args.copies))
     spawn_results = pool.imap_unordered(_Spawn, spawn_args)
@@ -207,13 +211,16 @@ def main():
       errors = sum(1 for x in exit_codes if x == INTERNAL_ERROR_EXIT_CODE)
       failures = len(exit_codes) - successes - errors
       clear_to_eol = '\033[K'
-      print('\r[%d/%d] collected: '
-            '%d successes, %d failures, %d bot errors...%s' % (len(exit_codes),
-                args.copies, successes, failures, errors, clear_to_eol)),
+      print(
+          '\r[%d/%d] collected: '
+          '%d successes, %d failures, %d bot errors...%s' %
+          (len(exit_codes), args.copies, successes, failures, errors,
+           clear_to_eol),
+          end=' ')
       sys.stdout.flush()
 
-    print
-    print 'Results logs collected into', os.path.abspath(args.results) + '.'
+    print()
+    print('Results logs collected into', os.path.abspath(args.results) + '.')
   finally:
     pool.close()
     pool.join()

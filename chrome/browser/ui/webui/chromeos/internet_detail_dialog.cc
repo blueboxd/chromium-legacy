@@ -161,8 +161,9 @@ InternetDetailDialogUI::InternetDetailDialogUI(content::WebUI* web_ui)
 InternetDetailDialogUI::~InternetDetailDialogUI() {}
 
 void InternetDetailDialogUI::BindCrosNetworkConfig(
-    chromeos::network_config::mojom::CrosNetworkConfigRequest request) {
-  ash::GetNetworkConfigService(std::move(request));
+    mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+        receiver) {
+  ash::GetNetworkConfigService(std::move(receiver));
 }
 
 }  // namespace chromeos

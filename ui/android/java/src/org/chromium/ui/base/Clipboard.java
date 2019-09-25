@@ -23,6 +23,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
+import org.chromium.base.compat.ApiHelperForO;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.ui.R;
 import org.chromium.ui.widget.Toast;
@@ -226,7 +227,7 @@ public class Clipboard implements ClipboardManager.OnPrimaryClipChangedListener 
         ClipDescription clipDescription = mClipboardManager.getPrimaryClipDescription();
         if (clipDescription == null) return;
 
-        long timestamp = clipDescription.getTimestamp();
+        long timestamp = ApiHelperForO.getTimestamp(clipDescription);
         ClipboardJni.get().onPrimaryClipTimestampInvalidated(
                 mNativeClipboard, Clipboard.this, timestamp);
     }

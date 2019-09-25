@@ -21,6 +21,8 @@ changed, a window will be prompted asking for user's consent. The old version
 will also be saved in a backup file.
 """
 
+from __future__ import print_function
+
 __author__ = 'evanm (Evan Martin)'
 
 from HTMLParser import HTMLParser
@@ -438,7 +440,7 @@ def GrepForWebUIActions(path, actions):
     close_called = True
     parser.close()
   except Exception, e:
-    print "Error encountered for path %s" % path
+    print("Error encountered for path %s" % path)
     raise e
   finally:
     if not close_called:
@@ -771,8 +773,8 @@ def UpdateXml(original_xml):
 
   AddLiteralActions(actions)
 
-  # print "Scanned {0} number of files".format(number_of_files_total)
-  # print "Found {0} entries".format(len(actions))
+  # print("Scanned {0} number of files".format(number_of_files_total))
+  # print("Found {0} entries".format(len(actions)))
 
   AddAutomaticResetBannerActions(actions)
   AddBookmarkManagerActions(actions)

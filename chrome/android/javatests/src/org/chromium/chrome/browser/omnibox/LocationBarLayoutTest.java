@@ -4,6 +4,11 @@
 
 package org.chromium.chrome.browser.omnibox;
 
+import static android.support.test.espresso.Espresso.onView;
+import static android.support.test.espresso.matcher.ViewMatchers.withId;
+import static android.view.View.GONE;
+import static android.view.View.VISIBLE;
+
 import android.support.test.filters.SmallTest;
 import android.view.View;
 import android.widget.ImageButton;
@@ -23,6 +28,7 @@ import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.toolbar.LocationBarModel;
+import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features.EnableFeatures;
@@ -112,8 +118,13 @@ public class LocationBarLayoutTest {
     @Before
     public void setUp() throws InterruptedException {
         mActivityTestRule.startMainActivityOnBlankPage();
+        setupTabForTests(false);
+    }
+
+    private void setupTabForTests(boolean isIncognito) throws InterruptedException {
+        if (isIncognito) mActivityTestRule.loadUrlInNewTab(UrlConstants.NTP_URL, isIncognito);
         mTestLocationBarModel = new TestLocationBarModel();
-        mTestLocationBarModel.setTab(mActivityTestRule.getActivity().getActivityTab(), false);
+        mTestLocationBarModel.setTab(mActivityTestRule.getActivity().getActivityTab(), isIncognito);
 
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> getLocationBar().setToolbarDataProvider(mTestLocationBarModel));
@@ -170,8 +181,8 @@ public class LocationBarLayoutTest {
             throws ExecutionException, InterruptedException {
         setUrlBarTextAndFocus("testing");
 
-        Assert.assertEquals(getDeleteButton().getVisibility(), View.VISIBLE);
-        Assert.assertNotEquals(getMicButton().getVisibility(), View.VISIBLE);
+        Assert.assertEquals(getDeleteButton().getVisibility(), VISIBLE);
+        Assert.assertNotEquals(getMicButton().getVisibility(), VISIBLE);
     }
 
     @Test
@@ -181,8 +192,8 @@ public class LocationBarLayoutTest {
             throws ExecutionException, InterruptedException {
         setUrlBarTextAndFocus("");
 
-        Assert.assertNotEquals(getDeleteButton().getVisibility(), View.VISIBLE);
-        Assert.assertEquals(getMicButton().getVisibility(), View.VISIBLE);
+        Assert.assertNotEquals(getDeleteButton().getVisibility(), VISIBLE);
+        Assert.assertEquals(getMicButton().getVisibility(), VISIBLE);
     }
 
     @Test
@@ -226,5 +237,19 @@ public class LocationBarLayoutTest {
             Assert.assertEquals(0, urlBar.getSelectionStart());
             Assert.assertEquals(VERBOSE_URL.length(), urlBar.getSelectionEnd());
         });
+    }
+
+    @Test
+    @SmallTest
+    @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    @Feature({"OmniboxSearchEngineLogo"})
+    public void testOmniboxSearchEngineLogo_goneWhenIncognito() throws Exception {
+        final LocationBarLayout locationBar = getLocationBar();
+        final View iconView = locationBar.getSecurityIconView();
+        onView(withId(R.id.location_bar_status))
+                .check((view, e) -> Assert.assertEquals(iconView.getVisibility(), VISIBLE));
+        setupTabForTests(true);
+        onView(withId(R.id.location_bar_status))
+                .check((view, e) -> Assert.assertEquals(iconView.getVisibility(), GONE));
     }
 }

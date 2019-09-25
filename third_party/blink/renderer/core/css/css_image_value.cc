@@ -80,11 +80,6 @@ StyleImage* CSSImageValue::CacheImage(
                                          cross_origin);
     }
 
-    if (document.GetFrame() &&
-        image_request_optimization == FetchParameters::kAllowPlaceholder &&
-        document.GetFrame()->IsClientLoFiAllowed(params.GetResourceRequest())) {
-      params.SetClientLoFiPlaceholder();
-    }
     bool is_lazily_loaded =
         image_request_optimization == FetchParameters::kDeferImageLoad &&
         // Only http/https images are eligible to be lazily loaded.

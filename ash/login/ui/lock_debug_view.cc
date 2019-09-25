@@ -432,8 +432,9 @@ class LockDebugView::DebugDataDispatcherTransformer
   void AddSystemInfo(const std::string& os_version,
                      const std::string& enterprise_info,
                      const std::string& bluetooth_name) {
-    debug_dispatcher_.SetSystemInfo(true /*show_if_hidden*/, os_version,
-                                    enterprise_info, bluetooth_name);
+    debug_dispatcher_.SetSystemInfo(true /*show*/, false /*enforced*/,
+                                    os_version, enterprise_info,
+                                    bluetooth_name);
   }
 
   void UpdateWarningMessage(const base::string16& message) {

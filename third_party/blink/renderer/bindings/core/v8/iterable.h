@@ -79,8 +79,9 @@ class Iterable {
 
       if (callback
               ->Invoke(v8_callback_this_value,
-                       ScriptValue(script_state, v8_value),
-                       ScriptValue(script_state, v8_key), this_value)
+                       ScriptValue(script_state->GetIsolate(), v8_value),
+                       ScriptValue(script_state->GetIsolate(), v8_key),
+                       this_value)
               .IsNothing()) {
         exception_state.RethrowV8Exception(try_catch.Exception());
         return;
@@ -129,9 +130,9 @@ class Iterable {
 
       HeapVector<ScriptValue, 2> entry;
       entry.push_back(
-          ScriptValue(script_state, ToV8(key, creation_context, isolate)));
+          ScriptValue(isolate, ToV8(key, creation_context, isolate)));
       entry.push_back(
-          ScriptValue(script_state, ToV8(value, creation_context, isolate)));
+          ScriptValue(isolate, ToV8(value, creation_context, isolate)));
       return entry;
     }
   };

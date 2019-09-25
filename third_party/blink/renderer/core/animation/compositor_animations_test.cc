@@ -47,7 +47,11 @@
 #include "third_party/blink/renderer/core/animation/element_animations.h"
 #include "third_party/blink/renderer/core/animation/keyframe_effect.h"
 #include "third_party/blink/renderer/core/animation/pending_animations.h"
+#include "third_party/blink/renderer/core/css/css_custom_ident_value.h"
+#include "third_party/blink/renderer/core/css/css_paint_value.h"
+#include "third_party/blink/renderer/core/css/css_syntax_definition.h"
 #include "third_party/blink/renderer/core/css/css_test_helpers.h"
+#include "third_party/blink/renderer/core/css/mock_css_paint_image_generator.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -58,6 +62,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/style/computed_style.h"
 #include "third_party/blink/renderer/core/style/filter_operations.h"
+#include "third_party/blink/renderer/core/style/style_generated_image.h"
 #include "third_party/blink/renderer/core/testing/core_unit_test_helper.h"
 #include "third_party/blink/renderer/core/testing/dummy_page_holder.h"
 #include "third_party/blink/renderer/platform/animation/compositor_color_animation_curve.h"
@@ -77,7 +82,26 @@
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
 #include "third_party/skia/include/core/SkColor.h"
 
+using testing::_;
+using testing::NiceMock;
+using testing::Return;
+using testing::ReturnRef;
+using testing::Values;
+
 namespace blink {
+
+namespace {
+// CSSPaintImageGenerator requires that CSSPaintImageGeneratorCreateFunction be
+// a static method. As such, it cannot access a class member and so instead we
+// store a pointer to the overriding generator globally.
+MockCSSPaintImageGenerator* g_override_generator = nullptr;
+CSSPaintImageGenerator* ProvideOverrideGenerator(
+    const String&,
+    const Document&,
+    CSSPaintImageGenerator::Observer*) {
+  return g_override_generator;
+}
+}  // namespace
 
 using namespace css_test_helpers;
 
@@ -588,9 +612,11 @@ TEST_P(AnimationCompositorAnimationsTest,
   RegisterProperty(GetDocument(), "--foo", "<number>", "0", false);
   RegisterProperty(GetDocument(), "--bar", "<length>", "10px", false);
   RegisterProperty(GetDocument(), "--loo", "<color>", "rgb(0, 0, 0)", false);
+  RegisterProperty(GetDocument(), "--x", "<number>", "0", false);
   SetCustomProperty("--foo", "10");
   SetCustomProperty("--bar", "10px");
   SetCustomProperty("--loo", "rgb(0, 255, 0)");
+  SetCustomProperty("--x", "5");
 
   auto style = GetDocument().EnsureStyleResolver().StyleForElement(element_);
   EXPECT_TRUE(style->NonInheritedVariables());
@@ -603,7 +629,41 @@ TEST_P(AnimationCompositorAnimationsTest,
   EXPECT_TRUE(style->NonInheritedVariables()
                   ->GetData(AtomicString("--loo"))
                   .value_or(nullptr));
+  EXPECT_TRUE(style->NonInheritedVariables()
+                  ->GetData(AtomicString("--x"))
+                  .value_or(nullptr));
 
+  NiceMock<MockCSSPaintImageGenerator>* mock_generator =
+      MakeGarbageCollected<NiceMock<MockCSSPaintImageGenerator>>();
+  base::AutoReset<MockCSSPaintImageGenerator*> scoped_override_generator(
+      &g_override_generator, mock_generator);
+  base::AutoReset<CSSPaintImageGenerator::CSSPaintImageGeneratorCreateFunction>
+      scoped_create_function(
+          CSSPaintImageGenerator::GetCreateFunctionForTesting(),
+          ProvideOverrideGenerator);
+
+  mock_generator->AddCustomProperty("--foo");
+  mock_generator->AddCustomProperty("--bar");
+  mock_generator->AddCustomProperty("--loo");
+  auto* ident = MakeGarbageCollected<CSSCustomIdentValue>("foopainter");
+  CSSPaintValue* paint_value = MakeGarbageCollected<CSSPaintValue>(ident);
+  paint_value->CreateGeneratorForTesting(GetDocument());
+  StyleGeneratedImage* style_image =
+      MakeGarbageCollected<StyleGeneratedImage>(*paint_value);
+  style->AddPaintImage(style_image);
+  element_->GetLayoutObject()->SetStyle(style);
+  // The image is added for testing off-thread paint worklet supporting
+  // custom property animation case. The style doesn't have a real
+  // PaintImage, so we cannot call UpdateAllLifecyclePhasesForTest. But the
+  // PaintArtifactCompositor requires NeedsUpdate to be false.
+  // In the real world when a PaintImage does exist in the style, the life
+  // cycle will be updated automatically and we don't have to worry about
+  // this.
+  auto* paint_artifact_compositor =
+      GetDocument().View()->GetPaintArtifactCompositor();
+  paint_artifact_compositor->ClearNeedsUpdateForTesting();
+
+  ON_CALL(*mock_generator, IsImageGeneratorReady()).WillByDefault(Return(true));
   StringKeyframe* keyframe = CreateReplaceOpKeyframe("--foo", "10");
   EXPECT_EQ(DuplicateSingleKeyframeAndTestIsCandidateOnResult(keyframe),
             CompositorAnimations::kNoFailure);
@@ -625,6 +685,12 @@ TEST_P(AnimationCompositorAnimationsTest,
   SetCustomProperty("opacity", "var(--foo)");
   EXPECT_TRUE(DuplicateSingleKeyframeAndTestIsCandidateOnResult(keyframe) &
               CompositorAnimations::kUnsupportedCSSProperty);
+
+  // Cannot composite because "--x" is not used by the paint worklet.
+  StringKeyframe* non_used_keyframe = CreateReplaceOpKeyframe("--x", "5");
+  EXPECT_EQ(
+      DuplicateSingleKeyframeAndTestIsCandidateOnResult(non_used_keyframe),
+      CompositorAnimations::kUnsupportedCSSProperty);
 }
 
 TEST_P(AnimationCompositorAnimationsTest,

@@ -104,13 +104,23 @@ class PasswordManager : public FormSubmissionObserver {
                                const autofill::PasswordForm& password_form);
 
   // Handles a password form being submitted, assumes that submission is
-  // successful and does not do any checks on success of submission.
-  // For example, this is called if |password_form| was filled
-  // upon in-page navigation. This often means history.pushState being
-  // called from JavaScript.
+  // successful and does not do any checks on success of submission. For
+  // example, this is called if |password_form| was filled upon in-page
+  // navigation. This often means history.pushState being called from
+  // JavaScript.
+  // TODO(crbug.com/949519): Rename this method together with
+  // SameDocumentNavigation in autofill::mojom::PasswordManagerDriver
   void OnPasswordFormSubmittedNoChecks(
       PasswordManagerDriver* driver,
+      autofill::mojom::SubmissionIndicatorEvent event);
+
+#if defined(OS_IOS)
+  // Similar to OnPasswordFormSubmittedNoChecks() but for iOS which is using a
+  // different signature for now.
+  void OnPasswordFormSubmittedNoChecksForiOS(
+      PasswordManagerDriver* driver,
       const autofill::PasswordForm& password_form);
+#endif
 
   // Called when a user changed a value in a non-password field. The field is in
   // a frame corresponding to |driver| and has a renderer id |renderer_id|.

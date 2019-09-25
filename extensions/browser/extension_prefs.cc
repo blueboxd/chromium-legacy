@@ -31,6 +31,7 @@
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/install_flag.h"
 #include "extensions/browser/pref_names.h"
+#include "extensions/common/constants.h"
 #include "extensions/common/manifest.h"
 #include "extensions/common/permissions/permission_set.h"
 #include "extensions/common/permissions/permissions_info.h"
@@ -804,12 +805,20 @@ void ExtensionPrefs::ClearInapplicableDisableReasonsForComponentExtension(
       disable_reason::DISABLE_UNSUPPORTED_REQUIREMENT |
       disable_reason::DISABLE_CORRUPTED;
 
+  // Allow the camera app to be disabled by extension policy. This is a
+  // temporary solution until there's a dedicated policy to disable the
+  // camera, at which point this should be removed.
+  // TODO(http://crbug.com/1002935)
+  int allowed_disable_reasons = kAllowDisableReasons;
+  if (component_extension_id == extension_misc::kCameraAppId)
+    allowed_disable_reasons |= disable_reason::DISABLE_BLOCKED_BY_POLICY;
+
   // Some disable reasons incorrectly cause component extensions to never
   // activate on load. See https://crbug.com/946839 for more details on why we
   // do this.
   ModifyDisableReasons(
       component_extension_id,
-      kAllowDisableReasons & GetDisableReasons(component_extension_id),
+      allowed_disable_reasons & GetDisableReasons(component_extension_id),
       DISABLE_REASON_REPLACE);
 }
 

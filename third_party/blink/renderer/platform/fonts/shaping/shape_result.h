@@ -263,8 +263,9 @@ class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
   void CopyRange(unsigned start, unsigned end, ShapeResult*) const;
 
   struct ShapeRange {
-    // ShapeRange(unsigned start, unsigned end, ShapeResult* target)
-    //    : start(start), end(end), target(target){};
+    ShapeRange(unsigned start, unsigned end, ShapeResult* target)
+        : start(start), end(end), target(target) {}
+
     unsigned start;
     unsigned end;
     ShapeResult* target;

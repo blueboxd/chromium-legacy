@@ -239,15 +239,17 @@ KURL ModulatorImplBase::ResolveModuleSpecifier(const String& specifier,
 
 ScriptValue ModulatorImplBase::CreateTypeError(const String& message) const {
   ScriptState::Scope scope(script_state_);
-  ScriptValue error(script_state_, V8ThrowException::CreateTypeError(
-                                       script_state_->GetIsolate(), message));
+  ScriptValue error(
+      script_state_->GetIsolate(),
+      V8ThrowException::CreateTypeError(script_state_->GetIsolate(), message));
   return error;
 }
 
 ScriptValue ModulatorImplBase::CreateSyntaxError(const String& message) const {
   ScriptState::Scope scope(script_state_);
-  ScriptValue error(script_state_, V8ThrowException::CreateSyntaxError(
-                                       script_state_->GetIsolate(), message));
+  ScriptValue error(script_state_->GetIsolate(),
+                    V8ThrowException::CreateSyntaxError(
+                        script_state_->GetIsolate(), message));
   return error;
 }
 

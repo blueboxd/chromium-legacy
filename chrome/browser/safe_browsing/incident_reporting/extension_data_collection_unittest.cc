@@ -176,7 +176,10 @@ class ExtensionDataCollectionTest : public testing::Test {
         std::string(),                    // supervised_user_id
         TestingProfile::TestingFactories());
 
-    return std::make_unique<ExtensionTestingProfile>(profile);
+    auto testing_profile = std::make_unique<ExtensionTestingProfile>(profile);
+    task_environment_.RunUntilIdle();
+
+    return testing_profile;
   }
 
   content::BrowserTaskEnvironment task_environment_;

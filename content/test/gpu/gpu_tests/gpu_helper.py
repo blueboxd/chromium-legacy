@@ -134,6 +134,16 @@ def GetSkiaRenderer(extra_browser_args):
 
 
 # Used to parse additional options sent to the browser instance via
+# '--extra-browser-args', looking for '--use-gl='.
+def GetGL(extra_browser_args):
+  if extra_browser_args:
+    for o in extra_browser_args:
+      if "--use-gl=" in o:
+        return 'use-gl'
+  return 'no-use-gl'
+
+
+# Used to parse additional options sent to the browser instance via
 # '--extra-browser-args', looking for '--use-vulkan='.
 def GetVulkan(extra_browser_args):
   if extra_browser_args:

@@ -10,8 +10,9 @@
 #include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 
 namespace base {
 class DictionaryValue;
@@ -44,7 +45,7 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       NetworkCertificateHandler* network_certificate_handler);
   ~CrosNetworkConfig() override;
 
-  void BindRequest(mojom::CrosNetworkConfigRequest request);
+  void BindReceiver(mojo::PendingReceiver<mojom::CrosNetworkConfig> receiver);
 
   // mojom::CrosNetworkConfig
   void AddObserver(mojom::CrosNetworkConfigObserverPtr observer) override;
@@ -163,7 +164,7 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   NetworkCertificateHandler* network_certificate_handler_;  // Unowned
 
   mojo::InterfacePtrSet<mojom::CrosNetworkConfigObserver> observers_;
-  mojo::BindingSet<mojom::CrosNetworkConfig> bindings_;
+  mojo::ReceiverSet<mojom::CrosNetworkConfig> receivers_;
 
   int callback_id_ = 1;
   base::flat_map<int, GetManagedPropertiesCallback>

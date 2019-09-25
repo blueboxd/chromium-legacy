@@ -34,7 +34,6 @@
 #import "ios/chrome/browser/ui/settings/import_data_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/privacy_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/sync/sync_settings_table_view_controller.h"
 #import "ios/chrome/browser/ui/static_content/static_html_view_controller.h"
 #import "ios/chrome/browser/ui/tab_grid/grid/grid_constants.h"
 #import "ios/chrome/browser/ui/tab_grid/tab_grid_constants.h"
@@ -495,10 +494,6 @@ UIView* SubviewWithAccessibilityIdentifier(NSString* accessibility_id,
 
 + (id<GREYMatcher>)settingsPrivacyTableView {
   return grey_accessibilityID(kPrivacyTableViewId);
-}
-
-+ (id<GREYMatcher>)settingsSyncManageSyncedDataButton {
-  return grey_accessibilityID(kSettingsSyncId);
 }
 
 + (id<GREYMatcher>)accountsSyncButton {

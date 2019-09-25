@@ -40,8 +40,8 @@ class SecureChannelClientChannelImplTest : public testing::Test {
     fake_channel_ = std::make_unique<FakeChannel>();
 
     client_channel_ = ClientChannelImpl::Factory::Get()->BuildInstance(
-        fake_channel_->GenerateInterfacePtr(),
-        mojo::MakeRequest(&message_receiver_ptr_));
+        fake_channel_->GenerateRemote(),
+        message_receiver_remote_.BindNewPipeAndPassReceiver());
 
     fake_observer_ = std::make_unique<FakeClientChannelObserver>();
     client_channel_->AddObserver(fake_observer_.get());
@@ -99,7 +99,7 @@ class SecureChannelClientChannelImplTest : public testing::Test {
   base::test::TaskEnvironment task_environment_;
 
   std::unique_ptr<FakeChannel> fake_channel_;
-  mojom::MessageReceiverPtr message_receiver_ptr_;
+  mojo::Remote<mojom::MessageReceiver> message_receiver_remote_;
   std::unique_ptr<FakeClientChannelObserver> fake_observer_;
 
   mojom::ConnectionMetadataPtr connection_metadata_;
@@ -159,15 +159,15 @@ TEST_F(SecureChannelClientChannelImplTest, TestSendMessage) {
 }
 
 TEST_F(SecureChannelClientChannelImplTest, TestReceiveMessage) {
-  message_receiver_ptr_->OnMessageReceived("payload");
-  message_receiver_ptr_.FlushForTesting();
+  message_receiver_remote_->OnMessageReceived("payload");
+  message_receiver_remote_.FlushForTesting();
 
   EXPECT_EQ(1u, fake_observer_->received_messages().size());
   EXPECT_EQ("payload", fake_observer_->received_messages()[0]);
 }
 
 TEST_F(SecureChannelClientChannelImplTest, TestDisconnectRemotely) {
-  fake_channel_->DisconnectGeneratedPtr();
+  fake_channel_->DisconnectGeneratedRemote();
 
   SendPendingMojoMessages();
 

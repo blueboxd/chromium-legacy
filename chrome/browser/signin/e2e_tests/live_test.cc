@@ -21,6 +21,8 @@ void LiveTest::SetUpInProcessBrowserTestFixture() {
   host_resolver()->AllowDirectLookup("*.geotrust.com");
   host_resolver()->AllowDirectLookup("*.gstatic.com");
   host_resolver()->AllowDirectLookup("*.googleapis.com");
+  // Allows country-specific TLDs.
+  host_resolver()->AllowDirectLookup("accounts.google.*");
 
   InProcessBrowserTest::SetUpInProcessBrowserTestFixture();
 }

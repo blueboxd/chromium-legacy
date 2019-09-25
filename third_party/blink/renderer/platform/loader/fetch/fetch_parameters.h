@@ -176,10 +176,6 @@ class PLATFORM_EXPORT FetchParameters {
     return image_request_optimization_;
   }
 
-  // Configures the request to load an image as a placeholder and sets the
-  // Client LoFi preview bit.
-  void SetClientLoFiPlaceholder();
-
   // Configures the request to load an image as a placeholder or defers the
   // image and sets the lazy image load bit.
   void SetLazyImagePlaceholder();

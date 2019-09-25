@@ -645,30 +645,28 @@ showUnmaskPromptForCard:(const autofill::CreditCard&)creditCard
 #pragma mark - CWVPasswordControllerDelegate
 
 - (void)passwordController:(CWVPasswordController*)passwordController
-    decidePasswordSavingPolicyForUsername:(NSString*)username
-                          decisionHandler:
-                              (void (^)(CWVPasswordUserDecision decision))
-                                  decisionHandler {
+    decideSavePolicyForPassword:(CWVPassword*)password
+                decisionHandler:(void (^)(CWVPasswordUserDecision decision))
+                                    decisionHandler {
   if ([self.delegate respondsToSelector:@selector
-                     (autofillController:decidePasswordSavingPolicyForUsername
-                                           :decisionHandler:)]) {
+                     (autofillController:
+                         decideSavePolicyForPassword:decisionHandler:)]) {
     [self.delegate autofillController:self
-        decidePasswordSavingPolicyForUsername:username
-                              decisionHandler:decisionHandler];
+          decideSavePolicyForPassword:password
+                      decisionHandler:decisionHandler];
   }
 }
 
 - (void)passwordController:(CWVPasswordController*)passwordController
-    decidePasswordUpdatingPolicyForUsername:(NSString*)username
-                            decisionHandler:
-                                (void (^)(CWVPasswordUserDecision decision))
-                                    decisionHandler {
+    decideUpdatePolicyForPassword:(CWVPassword*)password
+                  decisionHandler:(void (^)(CWVPasswordUserDecision decision))
+                                      decisionHandler {
   if ([self.delegate respondsToSelector:@selector
-                     (autofillController:decidePasswordUpdatingPolicyForUsername
-                                           :decisionHandler:)]) {
+                     (autofillController:
+                         decideUpdatePolicyForPassword:decisionHandler:)]) {
     [self.delegate autofillController:self
-        decidePasswordUpdatingPolicyForUsername:username
-                                decisionHandler:decisionHandler];
+        decideUpdatePolicyForPassword:password
+                      decisionHandler:decisionHandler];
   }
 }
 

@@ -609,7 +609,7 @@ CORE_EXPORT void PipeThroughExtractReadableWritable(
     return;
   }
   *writable_stream = dom_writable;
-  *readable_stream = ScriptValue(script_state, readable);
+  *readable_stream = ScriptValue(script_state->GetIsolate(), readable);
 }
 
 CORE_EXPORT WritableStream* PipeToCheckSourceAndDestination(
@@ -699,7 +699,7 @@ ScriptValue CallTeeAndReturnBranchArray(ScriptState* script_state,
     exception_state.RethrowV8Exception(block.Exception());
     return ScriptValue();
   }
-  return ScriptValue(script_state, array);
+  return ScriptValue(script_state->GetIsolate(), array);
 }
 
 void ScriptValueToObject(ScriptState* script_state,

@@ -151,6 +151,22 @@ TEST(SizesCalcParserTest, Basic) {
       {"calc(min(100px, 200px) / max(3, 4, 5))", 20, true, false},
       {"max(10px, min(20px, 1em))", 16, true, false},
       {"min(20px, max(10px, 1em))", 16, true, false},
+      {"clamp(10px, 20px, 30px)", 20, true, false},
+      {"clamp(10px, 5px, 30px)", 10, true, false},
+      {"clamp(10px, 35px, 30px)", 30, true, false},
+      {"clamp(30px, 20px, 10px)", 30, true, false},
+      {"clamp(10px, 20px, clamp(20px, 30px, 40px))", 20, true, false},
+      {"clamp()", 0, false, false},
+      {"clamp( )", 0, false, false},
+      {"clamp(,)", 0, false, false},
+      {"clamp(1px, )", 0, false, false},
+      {"clamp(, 1px)", 0, false, false},
+      {"clamp(1px, 1px)", 0, false, false},
+      {"clamp(1px, , 1px)", 0, false, false},
+      {"clamp(, 1px, 1px)", 0, false, false},
+      {"clamp(1px, 1px, )", 0, false, false},
+      {"clamp(1px, 1px, 1px, )", 0, false, false},
+      {"clamp(1px 1px 1px)", 0, false, false},
       {nullptr, 0, true, false}  // Do not remove the terminator line.
   };
 

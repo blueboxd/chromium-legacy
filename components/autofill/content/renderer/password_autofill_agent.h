@@ -209,15 +209,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // JavaScript.
   void UserGestureObserved();
 
-  // Given password form data |form_data| returns a set of WebInputElements in
-  // |elements|, which must be non-null, that the password manager has values
-  // for filling. Also takes an optional logger |logger| for logging password
-  // autofill behavior.
-  void GetFillableElementFromFormData(
-      const PasswordFormFillData& form_data,
-      RendererSavePasswordProgressLogger* logger,
-      std::vector<blink::WebInputElement>* elements);
-
   // Called when the focused node has changed. This is not called if the focus
   // moves outside the frame.
   void FocusedNodeHasChanged(const blink::WebNode& node);
@@ -462,6 +453,9 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // non-null.
   void AutofillField(const base::string16& value, blink::WebInputElement field);
 
+  void SetLastUpdatedFormAndField(const blink::WebFormElement& form,
+                                  const blink::WebFormControlElement& input);
+
   // The logins we have filled so far with their associated info.
   WebInputToPasswordInfoMap web_input_to_password_info_;
   // A (sort-of) reverse map to |web_input_to_password_info_|.
@@ -545,6 +539,11 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // UMA metrics are recorded per page load. This is reset on
   // DidCommitProvisionalLoad() but only for non-same-document-navigations.
   bool recorded_first_filling_result_ = false;
+
+  // Contains renderer id of last updated input element.
+  uint32_t last_updated_field_renderer_id_ = FormData::kNotSetFormRendererId;
+  // Contains renderer id of the form of the last updated input element.
+  uint32_t last_updated_form_renderer_id_ = FormData::kNotSetFormRendererId;
 
   DISALLOW_COPY_AND_ASSIGN(PasswordAutofillAgent);
 };

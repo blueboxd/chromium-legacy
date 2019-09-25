@@ -71,8 +71,6 @@ class InProcessTraceController {
 
   bool EndTracing(std::string* json_trace_output) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
-    using namespace base::debug;
-
     if (!content::TracingController::GetInstance()->StopTracing(
             new StringTraceEndpoint(
                 json_trace_output,

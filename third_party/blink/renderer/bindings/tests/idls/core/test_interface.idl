@@ -74,6 +74,7 @@
     void voidMethodNullableAndOptionalObjectArgs(object objectArg, object? nullableObjectArg, optional object optionalObjectArg);
     void voidMethodUnrestrictedDoubleArgUnrestrictedFloatArg(unrestricted double unrestrictedDoubleArg, unrestricted float unrestrictedFloatArg);
     void voidMethodTestEnumArg(TestEnum testEnumArg);
+    void voidOptionalDictArgWithEmptyDefault(optional TestDictionary testDict={});
     [PerWorldBindings] void voidMethod();
 
     // Anonymous indexed property operations

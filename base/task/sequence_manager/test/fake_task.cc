@@ -10,7 +10,8 @@ namespace sequence_manager {
 FakeTask::FakeTask() : FakeTask(0 /* task_type */) {}
 
 FakeTask::FakeTask(TaskType task_type)
-    : Task(internal::PostedTask(OnceClosure(),
+    : Task(internal::PostedTask(nullptr,
+                                OnceClosure(),
                                 FROM_HERE,
                                 TimeDelta(),
                                 Nestable::kNestable,

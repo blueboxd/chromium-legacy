@@ -563,31 +563,6 @@ void AutofillAgent::PreviewPasswordSuggestion(const base::string16& username,
   DCHECK(handled);
 }
 
-void AutofillAgent::ShowInitialPasswordAccountSuggestions(
-    const PasswordFormFillData& form_data) {
-  std::vector<blink::WebInputElement> elements;
-  std::unique_ptr<RendererSavePasswordProgressLogger> logger;
-  if (password_autofill_agent_->logging_state_active()) {
-    logger.reset(new RendererSavePasswordProgressLogger(
-        GetPasswordManagerDriver().get()));
-    logger->LogMessage(SavePasswordProgressLogger::
-                           STRING_ON_SHOW_INITIAL_PASSWORD_ACCOUNT_SUGGESTIONS);
-  }
-  password_autofill_agent_->GetFillableElementFromFormData(
-      form_data, logger.get(), &elements);
-
-  // If wait_for_username is true, we don't want to initially show form options
-  // until the user types in a valid username.
-  if (form_data.wait_for_username)
-    return;
-
-  ShowSuggestionsOptions options;
-  options.autofill_on_empty_values = true;
-  options.show_full_suggestion_list = true;
-  for (auto element : elements)
-    ShowSuggestions(element, options);
-}
-
 bool AutofillAgent::CollectFormlessElements(FormData* output) {
   if (render_frame() == nullptr || render_frame()->GetWebFrame() == nullptr)
     return false;

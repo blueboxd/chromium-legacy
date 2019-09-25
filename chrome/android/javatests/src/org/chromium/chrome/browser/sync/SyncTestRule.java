@@ -159,7 +159,7 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
     public void signinAndEnableSync(final Account account) {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             IdentityServicesProvider.getSigninManager().signIn(
-                    account, null, new SigninManager.SignInCallback() {
+                    account, new SigninManager.SignInCallback() {
                         @Override
                         public void onSignInComplete() {
                             if (ChromeFeatureList.isEnabled(

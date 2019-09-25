@@ -220,6 +220,13 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
   }
 
   void TearDown() override {
+    // Drain queued tasks posted from the worker thread in order to avoid tasks
+    // bound with unretained objects from running after tear down. Worker
+    // termination may post such tasks (see https://crbug,com/1007616).
+    // TODO(nhiroki): Stop using synchronous WaitableEvent, and instead use
+    // QuitClosure to wait until all the tasks run before test completion.
+    test::RunPendingTasks();
+
     Platform::Current()
         ->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
@@ -240,8 +247,8 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
+  // Terminate the worker immediately after start.
   worker_->TerminateWorkerContext();
-  // The worker thread was started. Wait for shutdown tasks to finish.
   worker_->WaitForShutdownForTesting();
 }
 
@@ -256,12 +263,15 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
+  // Terminate the worker while waiting for the debugger.
   worker_->TerminateWorkerContext();
   worker_->WaitForShutdownForTesting();
 }
 
+// TODO(nhiroki): Remove this. This test is the same with
+// TerminateSoonAfterStart() because off-the-main-thread worker script loading
+// got enabled by default.
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
-  // Load the shadow page.
   worker_->StartWorkerContext(
       CreateStartData(),
       /*installed_scripts_manager_params=*/nullptr,
@@ -271,12 +281,10 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
 
   // Terminate before finishing the script load.
   worker_->TerminateWorkerContext();
-  // The worker thread was started. Wait for shutdown tasks to finish.
   worker_->WaitForShutdownForTesting();
 }
 
 TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
-  // Load the shadow page.
   WebURL script_url = url_test_helpers::ToKURL(kNotFoundScriptURL);
   WebURLResponse response;
   response.SetMimeType("text/javascript");
@@ -297,8 +305,7 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
 
   mock_client_->WaitUntilFailedToLoadClassicScript();
 
-  // The worker thread was started. Ask to shutdown and wait for shutdown
-  // tasks to finish.
+  // Terminate the worker for cleanup.
   worker_->TerminateWorkerContext();
   worker_->WaitForShutdownForTesting();
 }

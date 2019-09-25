@@ -88,6 +88,9 @@ class KeywordWebDataService : public WebDataServiceBase {
   // Sets the version of the builtin keywords.
   void SetBuiltinKeywordVersion(int version);
 
+  // WebDataServiceBase:
+  void ShutdownOnUISequence() override;
+
  protected:
   ~KeywordWebDataService() override;
 

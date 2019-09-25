@@ -32,11 +32,9 @@ namespace chromeos {
 namespace {
 
 const char* const kReportingFlags[] = {
-  chromeos::kReportDeviceVersionInfo,
-  chromeos::kReportDeviceActivityTimes,
-  chromeos::kReportDeviceBootMode,
-  chromeos::kReportDeviceLocation,
-};
+    chromeos::kReportDeviceVersionInfo, chromeos::kReportDeviceActivityTimes,
+    chromeos::kReportDeviceBootMode, chromeos::kReportDeviceLocation,
+    chromeos::kDeviceLoginScreenSystemInfoEnforced};
 
 // Strings used to generate the serial number part of the version string.
 const char kSerialNumberPrefix[] = "SN:";
@@ -98,6 +96,15 @@ void VersionInfoUpdater::StartUpdate(bool is_official_build) {
   // Update device bluetooth info.
   device::BluetoothAdapterFactory::GetAdapter(base::BindOnce(
       &VersionInfoUpdater::OnGetAdapter, weak_pointer_factory_.GetWeakPtr()));
+}
+
+base::Optional<bool> VersionInfoUpdater::IsSystemInfoEnforced() const {
+  bool is_system_info_enforced = false;
+  if (cros_settings_->GetBoolean(chromeos::kDeviceLoginScreenSystemInfoEnforced,
+                                 &is_system_info_enforced)) {
+    return is_system_info_enforced;
+  }
+  return base::nullopt;
 }
 
 void VersionInfoUpdater::UpdateVersionLabel() {

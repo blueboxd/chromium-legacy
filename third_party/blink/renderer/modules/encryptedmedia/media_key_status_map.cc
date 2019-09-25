@@ -137,8 +137,10 @@ bool MediaKeyStatusMap::has(const ArrayBufferOrArrayBufferView& key_id) {
 ScriptValue MediaKeyStatusMap::get(ScriptState* script_state,
                                    const ArrayBufferOrArrayBufferView& key_id) {
   uint32_t index = IndexOf(key_id);
-  if (index >= entries_.size())
-    return ScriptValue(script_state, v8::Undefined(script_state->GetIsolate()));
+  if (index >= entries_.size()) {
+    return ScriptValue(script_state->GetIsolate(),
+                       v8::Undefined(script_state->GetIsolate()));
+  }
   return ScriptValue::From(script_state, at(index).Status());
 }
 

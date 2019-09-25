@@ -11,6 +11,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "ui/webui/mojo_web_ui_controller.h"
 #else
 #include "content/public/browser/web_ui_controller.h"
@@ -55,7 +56,8 @@ class SettingsUI
       std::unique_ptr<content::WebUIMessageHandler> handler);
 #if defined(OS_CHROMEOS)
   void BindCrosNetworkConfig(
-      chromeos::network_config::mojom::CrosNetworkConfigRequest request);
+      mojo::PendingReceiver<chromeos::network_config::mojom::CrosNetworkConfig>
+          receiver);
 #endif
 
   WebuiLoadTimer webui_load_timer_;

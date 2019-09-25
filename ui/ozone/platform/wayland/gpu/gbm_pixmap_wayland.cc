@@ -71,8 +71,9 @@ bool GbmPixmapWayland::InitializeBuffer(gfx::Size size,
   }
 
   const uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
-  gbm_bo_ =
-      buffer_manager_->gbm_device()->CreateBuffer(fourcc_format, size, flags);
+  auto modifiers = buffer_manager_->GetModifiersForBufferFormat(format);
+  gbm_bo_ = buffer_manager_->gbm_device()->CreateBufferWithModifiers(
+      fourcc_format, size, flags, modifiers);
   if (!gbm_bo_) {
     LOG(ERROR) << "Cannot create bo with format= "
                << gfx::BufferFormatToString(format) << " and usage "

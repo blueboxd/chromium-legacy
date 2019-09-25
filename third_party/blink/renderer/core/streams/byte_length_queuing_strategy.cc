@@ -81,7 +81,7 @@ ByteLengthQueuingStrategy::~ByteLengthQueuingStrategy() = default;
 
 ScriptValue ByteLengthQueuingStrategy::highWaterMark(
     ScriptState* script_state) const {
-  return ScriptValue(script_state,
+  return ScriptValue(script_state->GetIsolate(),
                      high_water_mark_.NewLocal(script_state->GetIsolate()));
 }
 
@@ -89,7 +89,7 @@ ScriptValue ByteLengthQueuingStrategy::size(ScriptState* script_state) const {
   // We don't cache the result because normally this method will only be called
   // once anyway.
   return ScriptValue(
-      script_state,
+      script_state->GetIsolate(),
       ByteLengthQueuingStrategySizeFunction::CreateFunction(script_state));
 }
 

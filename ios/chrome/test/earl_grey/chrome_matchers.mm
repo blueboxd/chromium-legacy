@@ -283,10 +283,6 @@ id<GREYMatcher> SettingsPrivacyTableView() {
   return [ChromeMatchersAppInterface settingsPrivacyTableView];
 }
 
-id<GREYMatcher> SettingsSyncManageSyncedDataButton() {
-  return [ChromeMatchersAppInterface settingsSyncManageSyncedDataButton];
-}
-
 id<GREYMatcher> AccountsSyncButton() {
   return [ChromeMatchersAppInterface accountsSyncButton];
 }

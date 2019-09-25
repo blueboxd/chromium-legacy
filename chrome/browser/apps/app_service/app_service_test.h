@@ -10,12 +10,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "services/service_manager/public/cpp/test/test_connector_factory.h"
-
-namespace service_manager {
-class Connector;
-class Service;
-}  // namespace service_manager
 
 class Profile;
 
@@ -31,20 +25,16 @@ class AppServiceTest {
 
   void SetUp(Profile* profile);
 
-  const std::string GetAppName(const std::string& app_id);
+  std::string GetAppName(const std::string& app_id) const;
 
   // Allow AppService async callbacks to run.
   void WaitForAppService();
 
   // Flush mojo calls to allow AppService async callbacks to run.
-  void FlushMojoCallsForAppService();
+  void FlushMojoCalls();
 
  private:
-  service_manager::Connector* app_service_proxy_connector_ = nullptr;
   AppServiceProxy* app_service_proxy_ = nullptr;
-
-  service_manager::TestConnectorFactory test_connector_factory_;
-  std::unique_ptr<service_manager::Service> app_service_;
 
   DISALLOW_COPY_AND_ASSIGN(AppServiceTest);
 };

@@ -7,6 +7,7 @@
 #include <jni.h>
 
 #include "base/android/jni_string.h"
+#include "base/numerics/ranges.h"
 #include "chrome/android/chrome_jni_headers/WebApkUkmRecorder_jni.h"
 #include "chrome/browser/android/webapk/webapk_types.h"
 #include "services/metrics/public/cpp/metrics_utils.h"
@@ -79,7 +80,28 @@ void WebApkUkmRecorder::RecordVisit(const GURL& manifest_url,
       .SetDistributor(distributor)
       .SetAppVersion(version_code)
       .SetLaunchSource(source)
-      .SetLaunch(true)
+      .SetLaunch(1)
+      .Record(ukm_recorder);
+}
+
+// static
+void WebApkUkmRecorder::RecordUninstall(const GURL& manifest_url,
+                                        int64_t distributor,
+                                        int64_t version_code,
+                                        int64_t launch_count,
+                                        int64_t installed_duration_ms) {
+  // UKM metric |launch_count| parameter is enum. '2' indicates >= 2 launches.
+  launch_count = base::ClampToRange<int64_t>(launch_count, 0, 2);
+  ukm::SourceId source_id = ukm::UkmRecorder::GetNewSourceID();
+  ukm::UkmRecorder* ukm_recorder = ukm::UkmRecorder::Get();
+  ukm_recorder->UpdateSourceURL(source_id, manifest_url);
+  ukm::builders::WebAPK_Uninstall(source_id)
+      .SetDistributor(distributor)
+      .SetAppVersion(version_code)
+      .SetLifetimeLaunches(launch_count)
+      .SetInstalledDuration(
+          ukm::GetExponentialBucketMinForUserTiming(installed_duration_ms))
+      .SetUninstall(1)
       .Record(ukm_recorder);
 }
 
@@ -105,4 +127,17 @@ void JNI_WebApkUkmRecorder_RecordVisit(
   WebApkUkmRecorder::RecordVisit(
       ConvertNullableJavaStringToGURL(env, manifest_url), distributor,
       version_code, source);
+}
+
+// Called by the Java counterpart to record the Uninstall UKM metrics.
+void JNI_WebApkUkmRecorder_RecordUninstall(
+    JNIEnv* env,
+    const JavaParamRef<jstring>& manifest_url,
+    jint distributor,
+    jint version_code,
+    jint launch_count,
+    jlong installed_duration_ms) {
+  WebApkUkmRecorder::RecordUninstall(
+      ConvertNullableJavaStringToGURL(env, manifest_url), distributor,
+      version_code, launch_count, installed_duration_ms);
 }

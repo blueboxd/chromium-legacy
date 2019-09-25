@@ -5002,6 +5002,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OMNIBOX_REMOVE_SUGGESTION_BUBBLE_DESCRIPTION" desc="The description of a bubble to delete an omnibox suggestion.">
         This page will also be removed from your history and <ph name="SEARCH_ENGINE">$1<ex>Google</ex></ph> activity.
       </message>
+      <if expr="is_android">
+      <message name="IDS_OMNIBOX_CONFIRM_DELETE_FROM_CLIPBOARD" desc="A message within a modal dialog that confirms the user wants to delete a clipboard suggestion from the list dropdown in the omnibox." formatter_data="android_java">
+        Remove suggestion from clipboard?
+      </message>
+      </if>
 
       <!-- NTP -->
       <message name="IDS_GOOGLE_SEARCH_BOX_EMPTY_HINT" desc="The text displayed in the fakebox (on the New Tab page) when it is empty, and Google is the default search engine.">

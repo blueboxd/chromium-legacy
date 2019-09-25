@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/home_screen/home_screen_controller.h"
 #include "ash/public/cpp/wallpaper_types.h"
 #include "ash/root_window_controller.h"

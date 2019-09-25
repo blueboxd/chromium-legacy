@@ -1201,8 +1201,6 @@ void ShapeResult::CopyRange(unsigned start_offset,
 void ShapeResult::CopyRanges(const ShapeRange* ranges,
                              unsigned num_ranges) const {
   DCHECK_GT(num_ranges, 0u);
-  if (!runs_.size())
-    return;
 
   // Ranges are in logical order so for RTL the ranges are proccessed back to
   // front to ensure that they're in a sequential visual order with regards to

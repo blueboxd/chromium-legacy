@@ -1049,13 +1049,6 @@ void TabletModeController::TakeScreenshot(aura::Window* top_window) {
 
   auto* screenshot_window = top_window->GetRootWindow()->GetChildById(
       kShellWindowId_ScreenRotationContainer);
-
-  // Pause the compositor and hide the top window before taking a screenshot.
-  // Use opacity zero instead of show/hide to preserve MRU ordering.
-  const auto roots = Shell::GetAllRootWindows();
-  for (auto* root : roots)
-    root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(true);
-  top_window->layer()->SetOpacity(0.f);
   base::OnceClosure callback = screenshot_set_callback_.callback();
 
   // Request a screenshot.
@@ -1071,9 +1064,6 @@ void TabletModeController::TakeScreenshot(aura::Window* top_window) {
   screenshot_request->set_result_selection(request_bounds);
   screenshot_window->layer()->RequestCopyOfOutput(
       std::move(screenshot_request));
-
-  for (auto* root : roots)
-    root->GetHost()->compositor()->SetAllowLocksToExtendTimeout(false);
 }
 
 void TabletModeController::OnScreenshotTaken(
@@ -1081,8 +1071,6 @@ void TabletModeController::OnScreenshotTaken(
     std::unique_ptr<viz::CopyOutputResult> copy_result) {
   aura::Window* top_window =
       destroy_observer_ ? destroy_observer_->window() : nullptr;
-  if (top_window)
-    top_window->layer()->SetOpacity(1.f);
   ResetDestroyObserver();
 
   if (!copy_result || copy_result->IsEmpty() || !top_window) {

@@ -21,6 +21,7 @@ enum class CSSValueID;
 enum class ColorSpaceGamut;
 enum class PreferredColorScheme;
 enum class ForcedColors;
+enum class NavigationControls;
 
 PreferredColorScheme CSSValueIDToPreferredColorScheme(CSSValueID id);
 
@@ -84,6 +85,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   virtual PreferredColorScheme GetPreferredColorScheme() const = 0;
   virtual bool PrefersReducedMotion() const = 0;
   virtual ForcedColors GetForcedColors() const = 0;
+  virtual NavigationControls GetNavigationControls() const = 0;
 
  protected:
   static double CalculateViewportWidth(LocalFrame*);
@@ -108,6 +110,7 @@ class CORE_EXPORT MediaValues : public GarbageCollected<MediaValues> {
   static PreferredColorScheme CalculatePreferredColorScheme(LocalFrame*);
   static bool CalculatePrefersReducedMotion(LocalFrame*);
   static ForcedColors CalculateForcedColors(LocalFrame*);
+  static NavigationControls CalculateNavigationControls(LocalFrame*);
 };
 
 }  // namespace blink

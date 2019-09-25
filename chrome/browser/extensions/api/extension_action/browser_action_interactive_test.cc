@@ -26,7 +26,6 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/notification_types.h"
-#include "content/public/common/page_zoom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
@@ -34,6 +33,7 @@
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/base/buildflags.h"
 
 #if defined(OS_WIN)
@@ -465,13 +465,13 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, PopupZoomsIndependently) {
       content::HostZoomMap::GetForWebContents(popup_contents)
           ->GetDefaultZoomLevel();
   double popup_zoom_level = content::HostZoomMap::GetZoomLevel(popup_contents);
-  EXPECT_TRUE(content::ZoomValuesEqual(popup_zoom_level, default_zoom_level))
+  EXPECT_TRUE(blink::PageZoomValuesEqual(popup_zoom_level, default_zoom_level))
       << popup_zoom_level << " vs " << default_zoom_level;
 
   // Preventing the use of the per-origin zoom level in the popup should not
   // affect the zoom of the tab.
-  EXPECT_TRUE(content::ZoomValuesEqual(zoom_controller->GetZoomLevel(),
-                                       tab_new_zoom_level))
+  EXPECT_TRUE(blink::PageZoomValuesEqual(zoom_controller->GetZoomLevel(),
+                                         tab_new_zoom_level))
       << zoom_controller->GetZoomLevel() << " vs " << tab_new_zoom_level;
 
   // Subsequent zooming in the tab should also be done independently of the
@@ -487,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionInteractiveTest, PopupZoomsIndependently) {
   zoom_change_watcher2.Wait();
 
   popup_zoom_level = content::HostZoomMap::GetZoomLevel(popup_contents);
-  EXPECT_TRUE(content::ZoomValuesEqual(popup_zoom_level, default_zoom_level))
+  EXPECT_TRUE(blink::PageZoomValuesEqual(popup_zoom_level, default_zoom_level))
       << popup_zoom_level << " vs " << default_zoom_level;
 
   ClosePopup();

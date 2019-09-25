@@ -12,12 +12,6 @@ import("//ui/ozone/ozone.gni")
 
 jumbo_component("libgtkui") {
   sources = [
-    "app_indicator_icon.cc",
-    "app_indicator_icon.h",
-    "app_indicator_icon_menu.cc",
-    "app_indicator_icon_menu.h",
-    "gtk_background_painter.cc",
-    "gtk_background_painter.h",
     "gtk_key_bindings_handler.cc",
     "gtk_key_bindings_handler.h",
     "gtk_ui.cc",
@@ -27,8 +21,6 @@ jumbo_component("libgtkui") {
     "input_method_context_impl_gtk.cc",
     "input_method_context_impl_gtk.h",
     "libgtkui_export.h",
-    "menu_util.cc",
-    "menu_util.h",
     "native_theme_gtk.cc",
     "native_theme_gtk.h",
     "nav_button_provider_gtk.cc",
@@ -50,13 +42,6 @@ jumbo_component("libgtkui") {
     "unity_service.cc",
     "unity_service.h",
   ]
-
-  if (gtk_version <= 3) {
-    sources += [
-      "gtk_status_icon.cc",
-      "gtk_status_icon.h",
-    ]
-  }
 
   configs += [
     "//build/config/linux/pangocairo",

@@ -130,7 +130,7 @@ uint32_t MediaPermissionDispatcher::RegisterCallback(
 blink::mojom::PermissionService*
 MediaPermissionDispatcher::GetPermissionService() {
   if (!permission_service_) {
-    render_frame_->GetRemoteInterfaces()->GetInterface(
+    render_frame_->GetBrowserInterfaceBroker()->GetInterface(
         permission_service_.BindNewPipeAndPassReceiver());
     permission_service_.set_disconnect_handler(base::BindOnce(
         &MediaPermissionDispatcher::OnConnectionError, base::Unretained(this)));

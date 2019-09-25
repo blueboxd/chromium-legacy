@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/css/media_values_dynamic.h"
 
 #include "third_party/blink/public/common/css/forced_colors.h"
+#include "third_party/blink/public/common/css/navigation_controls.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/css_resolution_units.h"
@@ -153,6 +154,10 @@ bool MediaValuesDynamic::PrefersReducedMotion() const {
 
 ForcedColors MediaValuesDynamic::GetForcedColors() const {
   return CalculateForcedColors(frame_);
+}
+
+NavigationControls MediaValuesDynamic::GetNavigationControls() const {
+  return CalculateNavigationControls(frame_);
 }
 
 Document* MediaValuesDynamic::GetDocument() const {

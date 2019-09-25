@@ -42,6 +42,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StreamUtil;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
@@ -332,8 +333,6 @@ public class ShareHelper {
      * sharing.
      * @param activity The activity used to trigger the share action.
      * @param jpegImageData The image data to be shared in jpeg format.
-     * @param name When this is not null, it will share the image directly with the
-     *             {@link ComponentName}
      * @param callback A provided callback function which will act on the generated URI.
      */
     public static void generateUriFromData(
@@ -497,7 +496,7 @@ public class ShareHelper {
         final TargetChosenCallback callback = params.getCallback();
         Intent intent = getShareLinkAppCompatibilityIntent();
         PackageManager manager = activity.getPackageManager();
-        List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(intent, 0);
+        List<ResolveInfo> resolveInfoList = PackageManagerUtils.queryIntentActivities(intent, 0);
         assert resolveInfoList.size() > 0;
         if (resolveInfoList.size() == 0) return;
         Collections.sort(resolveInfoList, new ResolveInfo.DisplayNameComparator(manager));
@@ -599,8 +598,8 @@ public class ShareHelper {
         boolean isComponentValid = false;
         if (component != null) {
             shareIntent.setPackage(component.getPackageName());
-            PackageManager manager = ContextUtils.getApplicationContext().getPackageManager();
-            List<ResolveInfo> resolveInfoList = manager.queryIntentActivities(shareIntent, 0);
+            List<ResolveInfo> resolveInfoList =
+                    PackageManagerUtils.queryIntentActivities(shareIntent, 0);
             for (ResolveInfo info : resolveInfoList) {
                 ActivityInfo ai = info.activityInfo;
                 if (component.equals(new ComponentName(ai.applicationInfo.packageName, ai.name))) {

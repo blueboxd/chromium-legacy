@@ -64,6 +64,8 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
     base::TimeTicks time_origin) {
   std::unique_ptr<Vector<String>> outside_origin_trial_tokens =
       std::move(creation_params->origin_trial_tokens);
+  BeginFrameProviderParams begin_frame_provider_params =
+      creation_params->begin_frame_provider_params;
 
   // Off-the-main-thread worker script fetch:
   // Initialize() is called after script fetch.
@@ -71,7 +73,7 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
       OffMainThreadWorkerScriptFetchOption::kEnabled) {
     return MakeGarbageCollected<DedicatedWorkerGlobalScope>(
         std::move(creation_params), thread, time_origin,
-        std::move(outside_origin_trial_tokens));
+        std::move(outside_origin_trial_tokens), begin_frame_provider_params);
   }
 
   // Legacy on-the-main-thread worker script fetch (to be removed):
@@ -82,7 +84,7 @@ DedicatedWorkerGlobalScope* DedicatedWorkerGlobalScope::Create(
       *creation_params->response_address_space;
   auto* global_scope = MakeGarbageCollected<DedicatedWorkerGlobalScope>(
       std::move(creation_params), thread, time_origin,
-      std::move(outside_origin_trial_tokens));
+      std::move(outside_origin_trial_tokens), begin_frame_provider_params);
   // Pass dummy CSP headers here as it is superseded by outside's CSP headers in
   // Initialize().
   // Pass dummy origin trial tokens here as it is already set to outside's
@@ -100,8 +102,13 @@ DedicatedWorkerGlobalScope::DedicatedWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     DedicatedWorkerThread* thread,
     base::TimeTicks time_origin,
-    std::unique_ptr<Vector<String>> outside_origin_trial_tokens)
-    : WorkerGlobalScope(std::move(creation_params), thread, time_origin) {
+    std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
+    const BeginFrameProviderParams& begin_frame_provider_params)
+    : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
+      animation_frame_provider_(
+          MakeGarbageCollected<WorkerAnimationFrameProvider>(
+              this,
+              begin_frame_provider_params)) {
   // Dedicated workers don't need to pause after script fetch.
   ReadyToRunWorkerScript();
   // Inherit the outside's origin trial tokens.
@@ -304,12 +311,36 @@ void DedicatedWorkerGlobalScope::DidFetchClassicScript(
       classic_script_loader->ReleaseCachedMetadata(), stack_id);
 }
 
+int DedicatedWorkerGlobalScope::requestAnimationFrame(
+    V8FrameRequestCallback* callback,
+    ExceptionState& exception_state) {
+  auto* frame_callback =
+      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
+          callback);
+  frame_callback->SetUseLegacyTimeBase(false);
+
+  int ret = animation_frame_provider_->RegisterCallback(frame_callback);
+
+  if (ret == WorkerAnimationFrameProvider::kInvalidCallbackId) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kNotSupportedError,
+        "requestAnimationFrame not supported in this Worker.");
+  }
+
+  return ret;
+}
+
+void DedicatedWorkerGlobalScope::cancelAnimationFrame(int id) {
+  animation_frame_provider_->CancelCallback(id);
+}
+
 DedicatedWorkerObjectProxy& DedicatedWorkerGlobalScope::WorkerObjectProxy()
     const {
   return static_cast<DedicatedWorkerThread*>(GetThread())->WorkerObjectProxy();
 }
 
 void DedicatedWorkerGlobalScope::Trace(blink::Visitor* visitor) {
+  visitor->Trace(animation_frame_provider_);
   WorkerGlobalScope::Trace(visitor);
 }
 

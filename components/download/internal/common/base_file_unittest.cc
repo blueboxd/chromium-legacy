@@ -140,13 +140,17 @@ class BaseFileTest : public testing::Test {
   void CreateFileWithName(const base::FilePath& file_name) {
     EXPECT_NE(base::FilePath::StringType(), file_name.value());
     BaseFile duplicate_file(download::DownloadItem::kInvalidId);
-    EXPECT_EQ(DOWNLOAD_INTERRUPT_REASON_NONE,
-              duplicate_file.Initialize(file_name, temp_dir_.GetPath(),
-                                        base::File(), 0, std::string(),
-                                        std::unique_ptr<crypto::SecureHash>(),
-                                        false, &kTestDataBytesWasted));
+    DownloadInterruptReason reason = duplicate_file.Initialize(
+        file_name, temp_dir_.GetPath(), base::File(), 0, std::string(),
+        std::unique_ptr<crypto::SecureHash>(), false, &kTestDataBytesWasted);
+#if defined(OS_WIN)
+    EXPECT_EQ(reason, DOWNLOAD_INTERRUPT_REASON_FILE_FAILED);
+#else
+    EXPECT_EQ(reason, DOWNLOAD_INTERRUPT_REASON_NONE);
     // Write something into it.
     duplicate_file.AppendDataToFile(kTestData4, kTestDataLength4);
+#endif  // defined(OS_WIN)
+
     // Detach the file so it isn't deleted on destruction of |duplicate_file|.
     duplicate_file.Detach();
   }

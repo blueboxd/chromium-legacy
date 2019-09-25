@@ -403,10 +403,10 @@ void HTMLCanvasElement::FinalizeFrame() {
   if (resource_provider)
     resource_provider->ReleaseLockedImages();
 
-  if (canvas2d_bridge_) {
-    if (!LowLatencyEnabled())
-      canvas2d_bridge_->FinalizeFrame();
-  }
+  // Low-latency 2d canvases will produce their frames after the resource gets
+  // single buffered
+  if (context_ && !(Is2d() && LowLatencyEnabled()))
+    context_->FinalizeFrame();
 
   if (LowLatencyEnabled() && !dirty_rect_.IsEmpty()) {
     if (GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
@@ -420,6 +420,8 @@ void HTMLCanvasElement::FinalizeFrame() {
           context_->ProvideBackBufferToResourceProvider();
       }
 
+      // TODO(aaronhk) This should just be a generic call to finalize frame
+      // but the pixel 2 bot hanging prevents it (crbug.com/1002946)
       if (canvas2d_bridge_) {
         canvas2d_bridge_->FlushRecording();
       } else {

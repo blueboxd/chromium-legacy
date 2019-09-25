@@ -1082,5 +1082,13 @@
       invalidate: "ColorScheme",
       type: "ForcedColors",
     },
+    // Navigation controls from the application passed to the renderer for
+    // evaluating the navigation-controls media query.
+    {
+      name: "navigationControls",
+      initial: "NavigationControls::kNone",
+      invalidate: "MediaQuery",
+      type: "NavigationControls",
+    },
   ],
 }

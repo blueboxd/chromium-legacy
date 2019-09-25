@@ -18,5 +18,8 @@ interface IBrowserController {
 
   IObjectWrapper onCreateView() = 4;
 
-  void setSupportsEmbedding(in boolean enable) = 5;
+  // |valueCallback| is a wrapped ValueCallback<Boolean> instead. The bool value in |valueCallback|
+  // indicates is whether the request was successful. Request might fail if it is subsumed by a
+  // following request, or if this object is destroyed.
+  void setSupportsEmbedding(in boolean enable, in IObjectWrapper valueCallback) = 5;
 }

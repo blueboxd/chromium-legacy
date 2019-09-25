@@ -158,6 +158,7 @@ test("remoting_unittests") {
     "//remoting/client:unit_tests",
     "//remoting/client/audio:unit_tests",
     "//remoting/client/input:unit_tests",
+    "//remoting/client/notification:unit_tests",
     "//remoting/client/ui:unit_tests",
     "//remoting/protocol:unit_tests",
     "//remoting/signaling:unit_tests",

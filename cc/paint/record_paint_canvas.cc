@@ -296,11 +296,6 @@ bool RecordPaintCanvas::isClipEmpty() const {
   return GetCanvas()->isClipEmpty();
 }
 
-bool RecordPaintCanvas::isClipRect() const {
-  DCHECK(InitializedWithRecordingBounds());
-  return GetCanvas()->isClipRect();
-}
-
 const SkMatrix& RecordPaintCanvas::getTotalMatrix() const {
   return GetCanvas()->getTotalMatrix();
 }

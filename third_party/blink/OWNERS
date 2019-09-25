@@ -10,7 +10,6 @@ tkent@chromium.org
 yoavweiss@chromium.org
 
 # For *.gn* changes only.
-dpranke@chromium.org
 thakis@chromium.org
 
 per-file PRESUBMIT*.py=dcheng@chromium.org

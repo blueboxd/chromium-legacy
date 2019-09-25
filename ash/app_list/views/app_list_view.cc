@@ -188,10 +188,10 @@ DEFINE_UI_CLASS_PROPERTY_KEY(bool, kExcludeWindowFromEventHandling, false)
 // state).
 // |height|: App list view height, relative to the shelf top (i.e. distance
 //           between app list top and shelf top edge).
-double GetBackgroundRadiusForAppListHeight(double height) {
-  return std::min(
-      static_cast<double>(AppListConfig::instance().background_radius()),
-      std::max(height, 0.));
+double GetBackgroundRadiusForAppListHeight(double height,
+                                           int shelf_background_corner_radius) {
+  return std::min(static_cast<double>(shelf_background_corner_radius),
+                  std::max(height, 0.));
 }
 
 // This targeter prevents routing events to sub-windows, such as
@@ -422,10 +422,12 @@ class BoundsAnimationObserver : public ui::ImplicitAnimationObserver {
 // The view for the app list background shield which changes color and radius.
 class AppListBackgroundShieldView : public views::View {
  public:
-  AppListBackgroundShieldView() : color_(AppListView::kDefaultBackgroundColor) {
+  explicit AppListBackgroundShieldView(int shelf_background_corner_radius)
+      : color_(AppListView::kDefaultBackgroundColor),
+        shelf_background_corner_radius_(shelf_background_corner_radius) {
     SetPaintToLayer(ui::LAYER_SOLID_COLOR);
     layer()->SetFillsBoundsOpaquely(false);
-    SetBackgroundRadius(AppListConfig::instance().background_radius());
+    SetBackgroundRadius(shelf_background_corner_radius_);
     layer()->SetColor(color_);
   }
 
@@ -451,7 +453,7 @@ class AppListBackgroundShieldView : public views::View {
     const double target_corner_radius =
         (state == ash::AppListViewState::kClosed && !shelf_has_rounded_corners)
             ? 0
-            : AppListConfig::instance().background_radius();
+            : shelf_background_corner_radius_;
     if (radius_ == target_corner_radius)
       return;
 
@@ -490,8 +492,7 @@ class AppListBackgroundShieldView : public views::View {
     // add the inset to the bottom to keep padding at the top of the AppList the
     // same.
     gfx::Rect new_bounds = bounds;
-    new_bounds.Inset(0, 0, 0,
-                     -AppListConfig::instance().background_radius() * 2);
+    new_bounds.Inset(0, 0, 0, -shelf_background_corner_radius_ * 2);
     SetBoundsRect(new_bounds);
   }
 
@@ -508,6 +509,8 @@ class AppListBackgroundShieldView : public views::View {
   double radius_ = 0.f;
 
   SkColor color_;
+
+  int shelf_background_corner_radius_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(AppListBackgroundShieldView);
 };
@@ -592,7 +595,8 @@ void AppListView::InitContents(bool is_tablet_mode) {
   DCHECK(!search_box_view_);
   DCHECK(!announcement_view_);
 
-  app_list_background_shield_ = new AppListBackgroundShieldView();
+  app_list_background_shield_ =
+      new AppListBackgroundShieldView(delegate_->GetShelfHeight() / 2);
   app_list_background_shield_->UpdateBackground(/*use_blur*/ !is_tablet_mode &&
                                                 is_background_blur_enabled_);
   AddChildView(app_list_background_shield_);
@@ -778,7 +782,7 @@ void AppListView::Layout() {
   // Exclude the shelf height from the contents bounds to avoid apps grid from
   // overlapping with shelf.
   gfx::Rect main_bounds = contents_bounds;
-  main_bounds.Inset(0, 0, 0, AppListConfig::instance().shelf_height());
+  main_bounds.Inset(0, 0, 0, delegate_->GetShelfHeight());
 
   app_list_main_view_->SetBoundsRect(main_bounds);
 
@@ -811,7 +815,7 @@ void AppListView::UpdateAppListConfig(aura::Window* parent_window) {
   gfx::Size available_apps_grid_size = parent_window->bounds().size();
   available_apps_grid_size.Enlarge(
       -non_apps_grid_size.width(),
-      -non_apps_grid_size.height() - AppListConfig::instance().shelf_height());
+      -non_apps_grid_size.height() - delegate_->GetShelfHeight());
 
   // Create the app list configuration override if it's needed for the current
   // display bounds and the available apps grid size.
@@ -1663,8 +1667,7 @@ void AppListView::ApplyBoundsAnimation(ash::AppListViewState target_state,
 
   gfx::Transform shield_transform;
   if (ShouldHideRoundedCorners(target_state, target_bounds)) {
-    shield_transform.Translate(0,
-                               -AppListConfig::instance().background_radius());
+    shield_transform.Translate(0, -(delegate_->GetShelfHeight() / 2));
   }
   app_list_background_shield_->SetTransform(shield_transform);
 
@@ -1747,7 +1750,7 @@ void AppListView::UpdateYPositionAndOpacity(int y_position_in_screen,
   gfx::Rect new_widget_bounds = GetWidget()->GetWindowBoundsInScreen();
   app_list_y_position_in_screen_ = std::min(
       std::max(y_position_in_screen, GetDisplayNearestView().work_area().y()),
-      GetScreenBottom() - AppListConfig::instance().shelf_height());
+      GetScreenBottom() - delegate_->GetShelfHeight());
   new_widget_bounds.set_y(app_list_y_position_in_screen_);
   gfx::NativeView native_view = GetWidget()->GetNativeView();
   ::wm::ConvertRectFromScreen(native_view->parent(), &new_widget_bounds);
@@ -1817,7 +1820,7 @@ int AppListView::GetScreenBottom() const {
 
 int AppListView::GetCurrentAppListHeight() const {
   if (!GetWidget())
-    return AppListConfig::instance().shelf_height();
+    return delegate_->GetShelfHeight();
   return GetScreenBottom() - GetWidget()->GetWindowBoundsInScreen().y();
 }
 
@@ -1958,7 +1961,7 @@ void AppListView::OnWindowBoundsChanged(aura::Window* window,
 
   gfx::Transform transform;
   if (ShouldHideRoundedCorners(app_list_state_, new_bounds))
-    transform.Translate(0, -AppListConfig::instance().background_radius());
+    transform.Translate(0, -(delegate_->GetShelfHeight() / 2));
 
   // Avoid setting new transform if the shield is animating to (or already has)
   // the target value.
@@ -2116,7 +2119,7 @@ void AppListView::OnParentWindowBoundsChanged() {
 
 float AppListView::GetAppListBackgroundOpacityDuringDragging() {
   float top_of_applist = GetWidget()->GetWindowBoundsInScreen().y();
-  const int shelf_height = AppListConfig::instance().shelf_height();
+  const int shelf_height = delegate_->GetShelfHeight();
   float dragging_height =
       std::max((GetScreenBottom() - shelf_height - top_of_applist), 0.f);
   float coefficient =
@@ -2225,6 +2228,8 @@ gfx::Rect AppListView::GetPreferredWidgetBoundsForState(
 
 void AppListView::UpdateAppListBackgroundYPosition(
     ash::AppListViewState state) {
+  const int app_list_background_corner_radius = delegate_->GetShelfHeight() / 2;
+
   // Update the y position of the background shield.
   gfx::Transform transform;
   if (is_in_drag_) {
@@ -2234,17 +2239,18 @@ void AppListView::UpdateAppListBackgroundYPosition(
       const float shelf_height =
           GetScreenBottom() - GetDisplayNearestView().work_area().bottom();
       app_list_background_shield_->SetBackgroundRadius(
-          GetBackgroundRadiusForAppListHeight(GetCurrentAppListHeight() -
-                                              shelf_height));
+          GetBackgroundRadiusForAppListHeight(
+              GetCurrentAppListHeight() - shelf_height,
+              app_list_background_corner_radius));
     } else if (app_list_transition_progress >= 1 &&
                app_list_transition_progress <= 2) {
       // Translate background shield so that it ends drag at a y position
       // according to the background radius in peeking and fullscreen.
-      transform.Translate(0, -AppListConfig::instance().background_radius() *
+      transform.Translate(0, -app_list_background_corner_radius *
                                  (app_list_transition_progress - 1));
     }
   } else if (ShouldHideRoundedCorners(state, GetBoundsInScreen())) {
-    transform.Translate(0, -AppListConfig::instance().background_radius());
+    transform.Translate(0, -app_list_background_corner_radius);
   }
 
   // Avoid setting new transform if the shield is animating to (or already has)

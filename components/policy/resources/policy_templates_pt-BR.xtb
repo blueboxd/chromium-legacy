@@ -106,6 +106,17 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Os gerenciadores de protocolo definidos por esta política não são usados na manipulação de intents do Android.</translation>
 <translation id="1118093128235245168">Permitir que os sites peçam ao usuário para conceder acesso a um dispositivo USB conectado</translation>
+<translation id="1123594119609921068">Definir o estado padrão do recurso de acessibilidade de feedback falado na tela de login.
+
+          Se esta política for definida como verdadeira, o feedback falado ficará ativado quando a tela de login for exibida.
+
+          Se esta política for definida como falsa, o feedback falado ficará desativado quando a tela de login for exibida.
+
+          Se você definir esta política, os usuários poderão modificá-la temporariamente ativando ou desativando o feedback falado. No entanto, a escolha do usuário não é persistente, e o padrão será restaurado sempre que a tela de login for mostrada de novo ou o usuário ficar inativo na tela de login por um minuto.
+
+          Se esta política não for definida, o feedback falado ficará desativado quando a tela de login for exibida pela primeira vez. Os usuários poderão ativar ou desativar o feedback falado a qualquer momento, e o estado dele na tela de login será persistente entre eles.
+
+          Observação: se <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> for especificada, ela substituirá esta política.</translation>
 <translation id="1128903365609589950">Configura o diretório que o <ph name="PRODUCT_NAME" /> usará para armazenar arquivos em cache no disco.
 
       Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o diretório fornecido, independentemente de o usuário ter especificado a sinalização "--disk-cache-dir" ou não. Para evitar perda de dados ou erros inesperados, esta política não deve ser definida para um diretório raiz de volume ou um diretório usado para outros fins, pois o <ph name="PRODUCT_NAME" /> gerencia seus conteúdos.
@@ -1659,6 +1670,15 @@ Se você desativar esta configuração ou deixá-la sem definição, todas as p�
 
       Consulte http://www.chromium.org/administrators/policy-list-3/user-data-directory-variables (link em inglês) para ver uma lista de variáveis que podem ser usadas.</translation>
 <translation id="3911737181201537215">Esta política não tem nenhum efeito sobre o registro feito pelo Android.</translation>
+<translation id="3912092044353890761">Ativar o recurso de acessibilidade de teclado virtual na tela de login.
+
+          Se esta política for definida como verdadeira, o teclado virtual sempre ficará ativado na tela de login.
+
+          Se esta política for definida como falsa, o teclado virtual sempre ficará desativado na tela de login.
+
+          Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
+
+          Se esta política não for definida, o teclado virtual ficará inicialmente desativado na tela de login, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
 <translation id="391531815696899618">Desativa a sincronização do Google Drive no aplicativo Files do <ph name="PRODUCT_OS_NAME" /> quando definida como "true". Nesse caso, nenhum dado é transferido por upload para o Google Drive.
 
          Se não está definida como "false", os usuários podem transferir arquivos para o Google Drive.</translation>
@@ -1799,7 +1819,7 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
 <translation id="4150201353443180367">Exibição</translation>
 <translation id="4157003184375321727">Informar a versão do sistema operacional e do firmware</translation>
 <translation id="4157594634940419685">Permitir acesso a impressoras CUPS nativas</translation>
-<translation id="4160962198980004898">Fonte de endereço MAC do dispositivo quando ancorado</translation>
+<translation id="4160962198980004898">Fonte de endereço MAC do dispositivo quando encaixado na base</translation>
 <translation id="4163705126749612234">Configura os nomes de domínio de cliente necessários que serão impostos aos clientes de acesso remoto e impede os usuários de alterá-los.
 
           Se esta configuração for ativada, apenas clientes de um dos domínios especificados poderão se conectar ao host.
@@ -1818,11 +1838,31 @@ Quando a |IdleAction| não for definida, a ação padrão de suspensão será re
           Se você definir esta política, o usuário não poderá alterá-la ou modificá-la.
 
           Se esta política não for definida, as teclas aderentes serão desativadas inicialmente, mas poderão ser ativadas pelo usuário a qualquer momento.</translation>
+<translation id="4169692397912242417">Ativar o recurso de acessibilidade de feedback falado na tela de login.
+
+          Se esta política for definida como verdadeira, o feedback falado sempre ficará ativado na tela de login.
+
+          Se esta política for definida como falsa, o feedback falado sempre ficará desativado na tela de login.
+
+          Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
+
+          Se esta política não for definida, o feedback falado ficará inicialmente desativado na tela de login, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
 <translation id="4171331498167688968">Se a política for definida como falsa, o software de terceiros terá permissão para injetar um código executável nos processos do Chrome. Se a política não for definida ou for definida como verdadeira, o software de terceiros será impedido de injetar o código executável nos processos do Chrome.
 
       No momento, independentemente do valor desta política, o navegador não bloqueará a injeção de código executável por software de terceiros nos próprios processos em uma máquina conectada a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Configuração padrão de <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para validação do token de autenticação do cliente de acesso remoto</translation>
+<translation id="420007931282384740">Definir o estado padrão do recurso de acessibilidade de teclado na tela de login.
+
+          Se esta política for definida como verdadeira, o teclado na tela ficará ativado quando a tela de login for exibida.
+
+          Se esta política for definida como falsa, o teclado na tela ficará desativado quando a tela de login for exibida.
+
+          Se você definir esta política, os usuários poderão modificá-la temporariamente ativando ou desativando o teclado na tela. No entanto, a escolha do usuário não é persistente, e o padrão será restaurado sempre que a tela de login for mostrada de novo ou o usuário ficar inativo na tela de login por um minuto.
+
+          Se esta política não for definida, o teclado na tela ficará desativado quando a tela de login for exibida pela primeira vez. Os usuários poderão ativar ou desativar o teclado na tela sempre que quiserem, e o estado dele na tela de login será persistente entre eles.
+
+          Observação: se <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> for especificada, ela substituirá esta política.</translation>
 <translation id="4203389617541558220">Limitar tempo de execução do dispositivo agendando reinicializações automáticas.
 
       Quando esta política é definida, especifica o tempo de atividade do dispositivo, após o qual uma reinicialização automática é agendada.
@@ -2395,6 +2435,7 @@ O campo <ph name="PROXY_MODE_PROXY_SETTINGS_FIELD" /> permite que você especifi
 <translation id="5323128137188992869">Permite que o conteúdo seja transmitido usando o <ph name="PRODUCT_NAME" />.
 
           Se essa política for definida como falso, os usuários não poderão transmitir conteúdo para o dispositivo deles. Se essa política for definida como verdadeiro, os usuários poderão transmitir conteúdo. Se essa política não for definida, os usuários não poderão transmitir conteúdo para dispositivos Chrome OS inscritos, mas poderão transmitir para dispositivos não inscritos.</translation>
+<translation id="5323200200131319468">Ativar o feedback falado na tela de login.</translation>
 <translation id="5325625566921364045">Controla como o <ph name="PRODUCT_NAME" /> verifica a conformidade com as regras da empresa de dados enviados, transferidos por download, colados da área de transferência ou arrastados e soltos.
 
       Se esta política não for definida ou for definida como "Nenhum", o <ph name="PRODUCT_NAME" /> não verificará a conformidade de nenhum dado.
@@ -2580,6 +2621,7 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 <translation id="5530347722229944744">Bloquear downloads potencialmente perigosos</translation>
 <translation id="5535973522252703021">Lista branca do servidor de delegação Kerberos</translation>
 <translation id="554903022911579950">Kerberos</translation>
+<translation id="555022085242359084">Ativar o alto contraste na tela de login</translation>
 <translation id="555077880566103058">Permitir que todos os sites executem o plug-in <ph name="FLASH_PLUGIN_NAME" /> automaticamente</translation>
 <translation id="5559079916187891399">Esta política não tem nenhum efeito sobre apps Android.</translation>
 <translation id="5560039246134246593">Adicionar um parâmetro para buscar o termo-semente "Variações" no <ph name="PRODUCT_NAME" />.
@@ -2835,6 +2877,7 @@ Se esta política não for definida, qualquer plug-in que corresponder aos padr�
 <translation id="6089679180657323464">Controla as configurações do controlador de telemetria e diagnósticos wilco.</translation>
 <translation id="6091233616732024397">Forçar o usuário a fazer login para usar o navegador</translation>
 <translation id="6093156968240188330">Permitir que usuários remotos interajam com janelas elevadas em sessões de assistência remota</translation>
+<translation id="6095048925836115505">Ativar o teclado virtual na tela de login.</translation>
 <translation id="6095999036251797924">Especifica o período de tempo de inatividade após o qual a tela deve ser bloqueada, quando o dispositivo é executado em energia AC ou bateria.
 
           Quando o período de tempo é definido para um valor maior que zero representa o período de tempo que o usuário precisa ficar inativo antes que o <ph name="PRODUCT_OS_NAME" /> bloqueie a tela.
@@ -3828,11 +3871,31 @@ Se esta política não for definida, o renderizador padrão será usado para tod
 
       Se esta política não estiver definida, o <ph name="PRODUCT_NAME" /> usa o valor padrão de 5.000 milissegundos.</translation>
 <translation id="7841880500990419427">Versão TLS mínima para substituição</translation>
+<translation id="7842317008224536842">Definir o estado padrão do recurso de acessibilidade do modo de alto contraste na tela de login.
+
+          Se esta política for definida como verdadeira, o modo de alto contraste ficará ativado quando a tela de login for exibida.
+
+          Se esta política for definida como falsa, o modo de alto contraste ficará desativado quando a tela de login for exibida.
+
+          Se você definir esta política, os usuários poderão modificá-la temporariamente ativando ou desativando o modo de alto contraste. No entanto, a escolha do usuário não é persistente, e o padrão será restaurado sempre que a tela de login for mostrada de novo ou o usuário ficar inativo na tela de login por um minuto.
+
+          Se esta política não for definida, o modo de alto contraste será desativado quando a tela de login aparecer pela primeira vez. Os usuários poderão ativar ou desativar o modo de alto contraste a qualquer momento, e o estado dele na tela de login será persistente entre eles.
+
+          Observação: se <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> for especificada, ela substituirá esta política.</translation>
 <translation id="7858404742201086014">Se você ativar esta configuração, plug-ins desatualizados serão utilizados como plug-ins normais.
 
       Se você desativar esta configuração, plug-ins desatualizados não serão utilizados, e não será solicitada a permissão dos usuários para executá-los.
 
       Se esta configuração não for definida, a permissão dos usuários para executar plug-ins desatualizados será solicitada.</translation>
+<translation id="7863947545897944083">Ativar o recurso de acessibilidade de alto contraste na tela de login.
+
+          Se esta política for definida como verdadeira, o alto contraste sempre ficará ativado na tela de login.
+
+          Se esta política for definida como falsa, o alto contraste sempre ficará desativado na tela de login.
+
+          Se você definir esta política, os usuários não poderão alterá-la ou substituí-la.
+
+          Se esta política não for definida, o alto contraste ficará inicialmente desativado na tela de login, mas poderá ser ativado pelo usuário a qualquer momento.</translation>
 <translation id="787125417158068494">Se ela for definida para SyncDisabled ou não for configurada, os certificados do <ph name="PRODUCT_OS_NAME" /> não ficarão disponíveis para apps ARC.
 
       Se ela for definida para CopyCaCerts, todos os certificados CA instalados por ONC com <ph name="WEB_TRUSTED_BIT" /> ficarão disponíveis para apps ARC.</translation>
@@ -4309,7 +4372,6 @@ O modo recomendado para configurar políticas no Windows é por meio de GPO, emb
 <translation id="8798099450830957504">Padrão</translation>
 <translation id="8800453707696044281">Configurar a parada personalizada do carregamento da bateria, em porcentagem</translation>
 <translation id="8801680448782904838">Notifica um usuário de que a reinicialização do navegador ou do dispositivo é recomendada ou obrigatória</translation>
-<translation id="8802816494059596691">Os nomes de host especificados nesta lista estarão isentos da verificação de política HSTS que poderia fazer upgrade de solicitações de http para https. Apenas nomes de host de etiqueta única são permitidos nesta política. Nomes de host precisam ser canonizados: todo IDN precisa ser convertido para o formato de etiqueta A, e todas as letras ASCII precisam estar em caixa-baixa. Esta política se aplica apenas aos nomes de host especificados. Ela não se aplica a subdomínios dos nomes especificados.</translation>
 <translation id="8818173863808665831">Informar a localização geográfica do dispositivo. 
 
       Se a política não for configurada, ou for configurada como falsa, o local não será informado.</translation>

@@ -280,6 +280,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
     private ContextualSearchManager mContextualSearchManager;
     protected ReaderModeManager mReaderModeManager;
     private SnackbarManager mSnackbarManager;
+    private SnackbarManager mBottomSheetSnackbarManager;
     @Nullable
     private ToolbarManager mToolbarManager;
     private BottomSheetController mBottomSheetController;
@@ -1344,8 +1345,7 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         boolean useBottomSheetContainer = mBottomSheetController != null
                 && mBottomSheetController.getBottomSheet().isSheetOpen()
                 && !mBottomSheetController.getBottomSheet().isHiding();
-        return useBottomSheetContainer ? mBottomSheetController.getSnackbarManager()
-                                       : mSnackbarManager;
+        return useBottomSheetContainer ? mBottomSheetSnackbarManager : mSnackbarManager;
     }
 
     @Override
@@ -1461,6 +1461,9 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
         mBottomSheet.init(coordinator, getActivityTabProvider(), getFullscreenManager(),
                 getWindow(), getWindowAndroid().getKeyboardDelegate());
 
+        mBottomSheetSnackbarManager = new SnackbarManager(
+                this, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
+
         mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
             @Override
             public void onSheetOpened(int reason) {
@@ -1471,11 +1474,16 @@ public abstract class ChromeActivity<C extends ChromeActivityComponent>
             public void onSheetClosed(int reason) {
                 removeViewObscuringAllTabs(mBottomSheet);
             }
+
+            @Override
+            public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
+                mBottomSheetSnackbarManager.dismissAllSnackbars();
+            }
         });
 
         ((BottomContainer) findViewById(R.id.bottom_container)).setBottomSheet(mBottomSheet);
 
-        mBottomSheetController = new BottomSheetController(this, getLifecycleDispatcher(),
+        mBottomSheetController = new BottomSheetController(getLifecycleDispatcher(),
                 mActivityTabProvider, mScrimView, mBottomSheet,
                 getCompositorViewHolder().getLayoutManager().getOverlayPanelManager());
     }

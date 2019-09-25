@@ -513,6 +513,11 @@ const base::Feature kNewNetErrorPageUI{"NewNetErrorPageUI",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // OS_ANDROID
 
+// When kNoReferrers is enabled, most HTTP requests will provide empty
+// referrers instead of their ordinary behavior.
+const base::Feature kNoReferrers{"NoReferrers",
+                                 base::FEATURE_DISABLED_BY_DEFAULT};
+
 #if defined(OS_POSIX)
 // Enables NTLMv2, which implicitly disables NTLMv1.
 const base::Feature kNtlmV2Enabled{"NtlmV2Enabled",

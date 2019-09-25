@@ -259,6 +259,12 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   // Returns true if the specified child_id has been granted ReadRawCookies.
   bool CanReadRawCookies(int child_id);
 
+  // Notifies security state of |child_id| about the IsolationContext it will
+  // host.  The main side effect is proper setting of the lowest
+  // BrowsingInstanceId associated with the security state.
+  void IncludeIsolationContext(int child_id,
+                               const IsolationContext& isolation_context);
+
   // Sets the process identified by |child_id| as only permitted to access data
   // for the origin specified by |lock_url|. Most callers should use
   // RenderProcessHostImpl::LockToOrigin instead of calling this directly.

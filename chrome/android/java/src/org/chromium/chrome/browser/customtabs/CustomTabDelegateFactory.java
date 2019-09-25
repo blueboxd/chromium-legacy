@@ -12,6 +12,7 @@ import android.content.pm.ResolveInfo;
 import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -121,20 +122,12 @@ public class CustomTabDelegateFactory implements TabDelegateFactory {
          *         default handler, this method will return false.
          */
         private boolean hasDefaultHandler(Intent intent) {
-            try {
-                ResolveInfo info =
-                        mApplicationContext.getPackageManager().resolveActivity(intent, 0);
-                if (info != null) {
-                    final String chromePackage = mApplicationContext.getPackageName();
-                    // If a default handler is found and it is not chrome itself, fire the intent.
-                    if (info.match != 0 && !chromePackage.equals(info.activityInfo.packageName)) {
-                        return true;
-                    }
-                }
-            } catch (RuntimeException e) {
-                IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
-            }
-            return false;
+            ResolveInfo info = PackageManagerUtils.resolveActivity(intent, 0);
+            if (info == null) return false;
+
+            final String chromePackage = mApplicationContext.getPackageName();
+            // If a default handler is found and it is not chrome itself, fire the intent.
+            return info.match != 0 && !chromePackage.equals(info.activityInfo.packageName);
         }
 
         @Override

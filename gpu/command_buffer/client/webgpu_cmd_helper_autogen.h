@@ -43,4 +43,11 @@ void DissociateMailbox(GLuint texture_id, GLuint texture_generation) {
   }
 }
 
+void RequestAdapter(uint32_t power_preference) {
+  webgpu::cmds::RequestAdapter* c = GetCmdSpace<webgpu::cmds::RequestAdapter>();
+  if (c) {
+    c->Init(power_preference);
+  }
+}
+
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_CMD_HELPER_AUTOGEN_H_

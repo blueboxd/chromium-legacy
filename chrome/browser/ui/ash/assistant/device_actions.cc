@@ -241,6 +241,16 @@ void DeviceActions::AddAppListEventSubscriber(
     scoped_prefs_observer_.Add(prefs);
 }
 
+base::Optional<std::string> DeviceActions::GetAndroidAppLaunchIntent(
+    chromeos::assistant::mojom::AndroidAppInfoPtr app_info) {
+  app_info->status = GetAndroidAppStatus(app_info->package_name);
+
+  if (app_info->status != AppStatus::AVAILABLE)
+    return base::nullopt;
+
+  return GetLaunchIntent(std::move(app_info));
+}
+
 void DeviceActions::OnPackageListInitialRefreshed() {
   NotifyAndroidAppListRefreshed(app_list_subscribers_);
 }

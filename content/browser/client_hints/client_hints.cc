@@ -20,13 +20,13 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/page_zoom.h"
 #include "net/base/url_util.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "third_party/blink/public/common/client_hints/client_hints.h"
 #include "third_party/blink/public/common/device_memory/approximated_device_memory.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/common/user_agent/user_agent_metadata.h"
 #include "third_party/blink/public/platform/web_client_hints_type.h"
 #include "ui/display/display.h"
@@ -137,7 +137,7 @@ double GetZoomFactor(content::BrowserContext* context, const GURL& url) {
                      ->GetDefaultZoomLevel();
   }
 
-  return content::ZoomLevelToZoomFactor(zoom_level);
+  return blink::PageZoomLevelToZoomFactor(zoom_level);
 #endif
 }
 

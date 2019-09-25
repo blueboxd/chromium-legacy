@@ -138,7 +138,11 @@ class DirectOutputSurface : public viz::OutputSurface {
 
  private:
   void OnSwapBuffersComplete() {
-    client_->DidReceiveSwapBuffersAck(gfx::SwapTimings());
+    // Metrics tracking in OutputSurfaceClient expects non-null SwapTimings
+    // so we provide dummy values here.
+    base::TimeTicks now = base::TimeTicks::Now();
+    gfx::SwapTimings timings = {now, now};
+    client_->DidReceiveSwapBuffersAck(timings);
     client_->DidReceivePresentationFeedback(gfx::PresentationFeedback());
   }
 

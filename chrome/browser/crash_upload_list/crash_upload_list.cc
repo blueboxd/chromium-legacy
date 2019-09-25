@@ -34,9 +34,16 @@ scoped_refptr<UploadList> CreateCrashUploadList() {
           .AppendASCII(CrashUploadList::kReporterLogFilename);
   return new CrashUploadListAndroid(upload_log_path);
 #else
+
+// ChromeOS uses crash_sender as its uploader even when Crashpad is enabled,
+// which isn't compatible with CrashUploadListCrashpad. crash_sender continues
+// to log uploads in CrashUploadList::kReporterLogFilename.
+#if !defined(OS_CHROMEOS)
   if (crash_reporter::IsCrashpadEnabled()) {
     return new CrashUploadListCrashpad();
   }
+#endif
+
   base::FilePath crash_dir_path;
   base::PathService::Get(chrome::DIR_CRASH_DUMPS, &crash_dir_path);
   base::FilePath upload_log_path =

@@ -284,12 +284,6 @@ net::URLRequestContextGetter* TestChromeBrowserState::CreateRequestContext(
       base::CreateSingleThreadTaskRunner({web::WebThread::IO}));
 }
 
-net::URLRequestContextGetter*
-TestChromeBrowserState::CreateIsolatedRequestContext(
-    const base::FilePath& partition_path) {
-  return nullptr;
-}
-
 void TestChromeBrowserState::CreateWebDataService() {
   ignore_result(
       ios::WebDataServiceFactory::GetInstance()->SetTestingFactoryAndUse(

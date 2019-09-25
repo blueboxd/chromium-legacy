@@ -3307,7 +3307,8 @@ def _CheckAndroidNewMdpiAssetLocation(input_api, output_api):
 
 def _CheckAndroidWebkitImports(input_api, output_api):
   """Checks that code uses org.chromium.base.Callback instead of
-     android.widget.ValueCallback except in the WebView glue layer.
+     android.webview.ValueCallback except in the WebView glue layer
+     and WebLayer.
   """
   valuecallback_import_pattern = input_api.re.compile(
       r'^import android\.webkit\.ValueCallback;$')
@@ -3319,7 +3320,8 @@ def _CheckAndroidWebkitImports(input_api, output_api):
       black_list=(_EXCLUDED_PATHS +
                   _TEST_CODE_EXCLUDED_PATHS +
                   input_api.DEFAULT_BLACK_LIST +
-                  (r'^android_webview[\\/]glue[\\/].*',)),
+                  (r'^android_webview[\\/]glue[\\/].*',
+                   r'^weblayer[\\/].*',)),
       white_list=[r'.*\.java$'])
 
   for f in input_api.AffectedSourceFiles(sources):

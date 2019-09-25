@@ -20,21 +20,6 @@
 #include "url/third_party/mozilla/url_parse.h"
 #include "url/url_canon.h"
 
-namespace {
-
-static const base::NoDestructor<base::flat_map<int, std::string>> g_commands({
-    // Opens settings page.
-    {IDC_OPTIONS, "options"},
-    // Split the currently selected pane vertically.
-    {IDC_TERMINAL_SPLIT_VERTICAL, "splitv"},
-    // Split the currently selected pane horizontally.
-    {IDC_TERMINAL_SPLIT_HORIZONTAL, "splith"},
-    // Open the find dialog.
-    {IDC_FIND, "find"},
-});
-
-}  // namespace
-
 TerminalSystemAppMenuModel::TerminalSystemAppMenuModel(
     ui::AcceleratorProvider* provider,
     Browser* browser)
@@ -57,12 +42,23 @@ bool TerminalSystemAppMenuModel::IsCommandIdEnabled(int command_id) const {
 
 void TerminalSystemAppMenuModel::ExecuteCommand(int command_id,
                                                 int event_flags) {
-  auto it = g_commands->find(command_id);
-  if (it == g_commands->end()) {
+  static const base::NoDestructor<base::flat_map<int, std::string>> kCommands({
+      // Opens settings page.
+      {IDC_OPTIONS, "options"},
+      // Split the currently selected pane vertically.
+      {IDC_TERMINAL_SPLIT_VERTICAL, "splitv"},
+      // Split the currently selected pane horizontally.
+      {IDC_TERMINAL_SPLIT_HORIZONTAL, "splith"},
+      // Open the find dialog.
+      {IDC_FIND, "find"},
+  });
+
+  auto it = kCommands->find(command_id);
+  if (it == kCommands->end()) {
     NOTREACHED() << "Unknown command " << command_id;
     return;
   }
-  std::string fragment = it->second;
+  const std::string& fragment = it->second;
   url::Replacements<char> replacements;
   replacements.SetRef(fragment.c_str(), url::Component(0, fragment.size()));
   NavigateParams params(

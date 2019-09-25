@@ -64,7 +64,8 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
                "EmbeddedWorkerInstanceClientImpl::StartWorker");
   auto start_timing = blink::mojom::EmbeddedWorkerStartTiming::New();
   start_timing->start_worker_received_time = base::TimeTicks::Now();
-  auto start_data = BuildStartData(*params);
+  std::unique_ptr<blink::WebEmbeddedWorkerStartData> start_data =
+      BuildStartData(*params);
 
   DCHECK(!params->provider_info->cache_storage ||
          base::FeatureList::IsEnabled(
@@ -119,7 +120,7 @@ void EmbeddedWorkerInstanceClientImpl::StartWorker(
       service_worker_context_client_.get(), cache_storage.PassPipe(),
       interface_provider.PassHandle(), browser_interface_broker.PassPipe());
   service_worker_context_client_->StartWorkerContextOnInitiatorThread(
-      std::move(worker), start_data,
+      std::move(worker), std::move(start_data),
       std::move(installed_scripts_manager_params),
       params->content_settings_proxy.PassHandle());
 }
@@ -165,25 +166,24 @@ void EmbeddedWorkerInstanceClientImpl::OnError() {
   delete this;
 }
 
-blink::WebEmbeddedWorkerStartData
+std::unique_ptr<blink::WebEmbeddedWorkerStartData>
 EmbeddedWorkerInstanceClientImpl::BuildStartData(
     const blink::mojom::EmbeddedWorkerStartParams& params) {
   DCHECK(initiator_thread_task_runner_->BelongsToCurrentThread());
-  blink::WebEmbeddedWorkerStartData start_data;
-  start_data.script_url = params.script_url;
-  start_data.user_agent = blink::WebString::FromUTF8(params.user_agent);
-  start_data.script_type = params.script_type;
-  start_data.wait_for_debugger_mode =
+  auto start_data = std::make_unique<blink::WebEmbeddedWorkerStartData>();
+  start_data->script_url = params.script_url;
+  start_data->user_agent = blink::WebString::FromUTF8(params.user_agent);
+  start_data->script_type = params.script_type;
+  start_data->wait_for_debugger_mode =
       params.wait_for_debugger
           ? blink::WebEmbeddedWorkerStartData::kWaitForDebugger
           : blink::WebEmbeddedWorkerStartData::kDontWaitForDebugger;
-  start_data.devtools_worker_token = params.devtools_worker_token;
-  start_data.v8_cache_options =
+  start_data->devtools_worker_token = params.devtools_worker_token;
+  start_data->v8_cache_options =
       static_cast<blink::WebSettings::V8CacheOptions>(params.v8_cache_options);
-  start_data.privacy_preferences = blink::PrivacyPreferences(
+  start_data->privacy_preferences = blink::PrivacyPreferences(
       params.renderer_preferences->enable_do_not_track,
       params.renderer_preferences->enable_referrers);
-
   return start_data;
 }
 

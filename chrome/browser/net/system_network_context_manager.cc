@@ -476,6 +476,9 @@ SystemNetworkContextManager::SystemNetworkContextManager(
   pref_change_registrar_.Add(prefs::kKerberosEnabled, auth_pref_callback);
 #endif  // defined(OS_CHROMEOS)
 
+  local_state_->SetDefaultPrefValue(
+      prefs::kEnableReferrers,
+      base::Value(!base::FeatureList::IsEnabled(features::kNoReferrers)));
   enable_referrers_.Init(
       prefs::kEnableReferrers, local_state_,
       base::BindRepeating(&SystemNetworkContextManager::UpdateReferrersEnabled,

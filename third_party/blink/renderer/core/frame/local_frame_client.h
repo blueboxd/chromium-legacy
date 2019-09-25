@@ -219,10 +219,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // The frame ran content with certificate errors with the given URL.
   virtual void DidRunContentWithCertificateErrors() = 0;
 
-  // The frame loaded a resource with a legacy TLS version that will be removed
-  // in the future. Prints a console message to warn about this.
-  virtual void ReportLegacyTLSVersion(const KURL&) {}
-
   // Will be called when |PerformanceTiming| events are updated
   virtual void DidChangePerformanceTiming() {}
 

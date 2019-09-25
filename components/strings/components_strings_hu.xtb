@@ -210,7 +210,7 @@
 <translation id="1927235823738766038">Elfogadott hitel- és bankkártyák</translation>
 <translation id="194030505837763158">Ugrás ide: <ph name="LINK" /></translation>
 <translation id="1945968466830820669">Elveszítheti a hozzáférést szervezete fiókjához, vagy visszaélhetnek személyes adataival. A Chromium azt javasolja, hogy azonnal módosítsa jelszavát.</translation>
-<translation id="1947454675006758438">Kapocs jobb felül</translation>
+<translation id="1947454675006758438">Kapocs jobbra fent</translation>
 <translation id="1948773908305951926">Elfogadott feltöltőkártyák</translation>
 <translation id="1962204205936693436">A(z) <ph name="DOMAIN" /> könyvjelzői</translation>
 <translation id="1973335181906896915">Szerializálási hiba</translation>
@@ -242,7 +242,7 @@
 <translation id="2113977810652731515">Kártya</translation>
 <translation id="2114841414352855701">A rendszer figyelmen kívül hagyja, mivel a(z) <ph name="POLICY_NAME" /> felülírta.</translation>
 <translation id="2119505898009119320">Tulajdonos: <ph name="ORGANIZATION" /> [<ph name="JURISDICTION" />]</translation>
-<translation id="2119867082804433120">Lyuk jobb alul</translation>
+<translation id="2119867082804433120">Lyuk jobbra lent</translation>
 <translation id="2129079103035905234">Mozgásérzékelők</translation>
 <translation id="213826338245044447">Mobilos könyvjelzők</translation>
 <translation id="214556005048008348">Fizetés visszavonása</translation>
@@ -325,7 +325,7 @@
 <translation id="2505268675989099013">Fiók védelme</translation>
 <translation id="2515335152965840738">MELLŐZÉS</translation>
 <translation id="2515629240566999685">A térerő ellenőrzése tartózkodási helyén</translation>
-<translation id="2521385132275182522">Kapocs jobb lent</translation>
+<translation id="2521385132275182522">Kapocs jobbra lent</translation>
 <translation id="2523886232349826891">Csak erre az eszközre mentve</translation>
 <translation id="2524461107774643265">További adatok hozzáadása</translation>
 <translation id="2535659140340599600">{COUNT,plural, =1{és 1 további}other{és # további}}</translation>
@@ -740,7 +740,7 @@
     alkalmazását kérte az összes kérésére, de ez a házirend jelenleg nem alkalmazható.</translation>
 <translation id="464342062220857295">Funkciók keresése</translation>
 <translation id="4646534391647090355">Megnézem most</translation>
-<translation id="4658638640878098064">Kapocs bal felül</translation>
+<translation id="4658638640878098064">Kapocs balra fent</translation>
 <translation id="4668929960204016307">,</translation>
 <translation id="467662567472608290">A szerver nem tudta bizonyítani, hogy valóban a(z) <ph name="DOMAIN" /> domainbe tartozik; biztonsági tanúsítványa hibákat tartalmaz. Ennek oka lehet konfigurációs hiba, vagy hogy egy támadó eltérítette az Ön kapcsolódását.</translation>
 <translation id="467809019005607715">Google Diák</translation>
@@ -785,7 +785,7 @@
 <translation id="4880827082731008257">Keresés az előzmények között</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
 <translation id="4895877746940133817"><ph name="TYPE_1" />, <ph name="TYPE_2" /> és <ph name="TYPE_3" /></translation>
-<translation id="4913987521957242411">Lyuk bal felül</translation>
+<translation id="4913987521957242411">Lyuk balra fent</translation>
 <translation id="4914479371620770914">{URL_count,plural, =1{és egy további weboldal}other{és # további weboldal}}</translation>
 <translation id="4923417429809017348">Ezt az oldalt lefordították egy ismeretlen nyelvről <ph name="LANGUAGE_LANGUAGE" /> nyelvre</translation>
 <translation id="4923459931733593730">Fizetés</translation>
@@ -1030,6 +1030,7 @@
 <translation id="6058977677006700226">Minden eszközén szeretné használni a kártyákat?</translation>
 <translation id="6059925163896151826">USB-eszközök</translation>
 <translation id="6060009363608157444">Érvénytelen DnsOverHttps-mód.</translation>
+<translation id="6064217302520318294">Képernyőzárolás</translation>
 <translation id="6080696365213338172">A tartalmat egy rendszergazda által biztosított tanúsítványon keresztül érte el. A(z) <ph name="DOMAIN" /> számára megadott adatok a rendszergazda számára is elérhetők.</translation>
 <translation id="6094273045989040137">Jegyzetelés</translation>
 <translation id="610911394827799129">Előfordulhat, hogy a böngészési előzmények más formái még megtalálhatók Google-fiókjában a <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> webhelyen</translation>
@@ -1489,7 +1490,7 @@ További részletek:
 <translation id="8461694314515752532">A szinkronizált adatok titkosítása saját összetett szinkronizálási jelszóval</translation>
 <translation id="8466379296835108687">{COUNT,plural, =1{1 hitelkártya}other{# hitelkártya}}</translation>
 <translation id="8473863474539038330">Címek és egyebek</translation>
-<translation id="8479754468255770962">Kapocs bal alul</translation>
+<translation id="8479754468255770962">Kapocs balra lent</translation>
 <translation id="8483780878231876732">Jelentkezzen be a Chrome-ba, hogy használhassa a kártyákat Google-fiókjából.</translation>
 <translation id="8488350697529856933">A következőre érvényes</translation>
 <translation id="8498891568109133222">A(z) <ph name="HOST_NAME" /> túl hosszú ideje nem válaszol.</translation>
@@ -1555,7 +1556,7 @@ További részletek:
 <translation id="8903921497873541725">Nagyítás</translation>
 <translation id="890485472659500557">Engineering-C</translation>
 <translation id="8912362522468806198">Google Fiókjába</translation>
-<translation id="892588693504540538">Lyuk jobb felül</translation>
+<translation id="892588693504540538">Lyuk jobbra fent</translation>
 <translation id="8931333241327730545">Menti ezt a kártyát a Google-fiókjába?</translation>
 <translation id="8932102934695377596">Késik az órája</translation>
 <translation id="893332455753468063">Név hozzáadása</translation>
@@ -1617,7 +1618,7 @@ További részletek:
 <translation id="9174917557437862841">Lapváltó gomb. Az Enter billentyűvel erre a lapra válthat.</translation>
 <translation id="9183302530794969518">Google Dokumentumok</translation>
 <translation id="9183425211371246419">A(z) <ph name="HOST_NAME" /> egy nem támogatott protokollt használ.</translation>
-<translation id="9191834167571392248">Lyuk bal alul</translation>
+<translation id="9191834167571392248">Lyuk balra lent</translation>
 <translation id="9205078245616868884">Adatai az összetett szinkronizálási jelszavával vannak titkosítva. Adja meg a jelszót a szinkronizálás megkezdéséhez.</translation>
 <translation id="9207861905230894330">A cikk hozzáadása sikertelen.</translation>
 <translation id="9215416866750762878">Valamelyik alkalmazás megakadályozza a Chrome-ot abban, hogy biztonságosan csatlakozzon a webhelyhez</translation>

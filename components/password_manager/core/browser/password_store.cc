@@ -24,6 +24,8 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
+#include "components/password_manager/core/browser/leaked_credentials_table.h"
+#include "components/password_manager/core/browser/password_leak_history_consumer.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/password_manager_util.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -338,6 +340,28 @@ void PasswordStore::GetSiteStats(const GURL& origin_domain,
   PostStatsTaskAndReplyToConsumerWithResult(
       consumer,
       base::BindOnce(&PasswordStore::GetSiteStatsImpl, this, origin_domain));
+}
+
+void PasswordStore::AddLeakedCredentials(
+    const LeakedCredentials& leaked_credentials) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  ScheduleTask(base::BindOnce(&PasswordStore::AddLeakedCredentialsImpl, this,
+                              leaked_credentials));
+}
+
+void PasswordStore::RemoveLeakedCredentials(const GURL& url,
+                                            const base::string16& username) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  ScheduleTask(base::BindOnce(&PasswordStore::RemoveLeakedCredentialsImpl, this,
+                              url, username));
+}
+
+void PasswordStore::GetAllLeakedCredentials(
+    PasswordLeakHistoryConsumer* consumer) {
+  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
+  PostLeakedCredentialsTaskAndReplyToConsumerWithResult(
+      consumer,
+      base::BindOnce(&PasswordStore::GetAllLeakedCredentialsImpl, this));
 }
 
 void PasswordStore::AddObserver(Observer* observer) {
@@ -697,6 +721,15 @@ void PasswordStore::PostStatsTaskAndReplyToConsumerWithResult(
   consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
       background_task_runner_.get(), FROM_HERE, std::move(task),
       base::BindOnce(&PasswordStoreConsumer::OnGetSiteStatistics,
+                     consumer->GetWeakPtr()));
+}
+
+void PasswordStore::PostLeakedCredentialsTaskAndReplyToConsumerWithResult(
+    PasswordLeakHistoryConsumer* consumer,
+    LeakedCredentialsTask task) {
+  consumer->cancelable_task_tracker()->PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE, std::move(task),
+      base::BindOnce(&PasswordLeakHistoryConsumer::OnGetLeakedCredentials,
                      consumer->GetWeakPtr()));
 }
 

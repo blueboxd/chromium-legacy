@@ -215,7 +215,6 @@ class CORE_EXPORT VisualViewport final
   // correct cc Layer sizing.
   IntSize ContentsSize() const override;
   bool ScrollbarsCanBeActive() const override { return false; }
-  IntRect ScrollableAreaBoundingBox() const override;
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override { return false; }
   CompositorElementId GetCompositorElementId() const override;

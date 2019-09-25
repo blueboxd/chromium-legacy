@@ -15,7 +15,7 @@
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service.h"
 #include "chrome/browser/optimization_guide/optimization_guide_keyed_service_factory.h"
 #include "chrome/browser/optimization_guide/optimization_guide_top_host_provider.h"
-#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_constants.h"
@@ -167,8 +167,8 @@ PreviewsService::PreviewsService(content::BrowserContext* browser_context)
     : top_host_provider_(std::make_unique<OptimizationGuideTopHostProvider>(
           browser_context,
           base::DefaultClock::GetInstance())),
-      previews_lite_page_decider_(
-          std::make_unique<PreviewsLitePageDecider>(browser_context)),
+      previews_lite_page_redirect_decider_(
+          std::make_unique<PreviewsLitePageRedirectDecider>(browser_context)),
       previews_offline_helper_(
           std::make_unique<PreviewsOfflineHelper>(browser_context)),
       browser_context_(browser_context),
@@ -234,8 +234,8 @@ void PreviewsService::Initialize(
 }
 
 void PreviewsService::Shutdown() {
-  if (previews_lite_page_decider_)
-    previews_lite_page_decider_->Shutdown();
+  if (previews_lite_page_redirect_decider_)
+    previews_lite_page_redirect_decider_->Shutdown();
 
   if (previews_offline_helper_)
     previews_offline_helper_->Shutdown();
@@ -246,8 +246,8 @@ void PreviewsService::ClearBlackList(base::Time begin_time,
   if (previews_ui_service_)
     previews_ui_service_->ClearBlackList(begin_time, end_time);
 
-  if (previews_lite_page_decider_)
-    previews_lite_page_decider_->ClearBlacklist();
+  if (previews_lite_page_redirect_decider_)
+    previews_lite_page_redirect_decider_->ClearBlacklist();
 }
 
 void PreviewsService::ReportObservedRedirectWithDeferAllScriptPreview(

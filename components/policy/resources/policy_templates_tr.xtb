@@ -3221,7 +3221,7 @@ Bu ayar devre dışı bırakılır veya herhangi bir değer belirlenmezse <ph na
 <translation id="6689792153960219308">Donanım durumunu bildir</translation>
 <translation id="6698632841807204978">Tek renk yazdırmayı etkinleştir</translation>
 <translation id="6699880231565102694">Uzaktan erişim ana makineleri için iki öğeli kimlik doğrulamayı etkinleştir</translation>
-<translation id="670597451099978576">Bu sitelere, giriş ekranında sağlanan tedarikçi ve ürün kimlikleriyle otomatik olarak USB cihazlarına bağlanma izni verir.</translation>
+<translation id="670597451099978576">Bu sitelere, giriş ekranında sağlanan tedarikçi ve ürün kimliklerine sahip USB cihazlarına otomatik olarak bağlanma izni verir.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" />, uzantıların güvenli bir şekilde güncellenmesini ve yüklenmesini sağlar. Ancak Chrome Web Mağazası'nın dışında barındırılan bazı uzantıların içeriği yalnızca SHA1 gibi güvenli olmayan imzalama veya karma oluşturma algoritmaları ile korunabilir. Bu politika devre dışı bırakılırsa, Chrome bu tür uzantıların sıfırdan yüklenmesine veya güncellenmesine izin vermez (uzantının geliştiricileri uzantıyı daha güçlü algoritmalarla yeniden oluşturana kadar). Bu politika etkinleştirilirse bu tür uzantıların yüklenmesine ve güncellenmesine izin verilir.
 
           Bu politika ayarlanmadan bırakılırsa varsayılan etkin davranış olarak ayarlanır.
@@ -4341,7 +4341,7 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
       olur. Ayrıntılı bilgi için https://support.google.com/a/answer/1668854 adresine bakabilirsiniz.
 
       Kullanıcılar bu ayarı değiştiremez veya geçersiz kılamaz.</translation>
-<translation id="8625234016727663537">Giriş ekranında sağlanan tedarikçi ve ürün kimliklerine sahip USB cihazlarına erişmesine otomatik olarak izin verilecek siteleri belirten URL listesi ayarlamanıza olanak tanır. Politikanın geçerli olabilmesi için listedeki her öğenin hem cihazları hem de URL'leri içermesi gerekir. Cihazlardaki her öğe tedarikçi kimliği ve ürün kimliği alanı içerebilir. Dahil edilmeyen her kimlik bir istisnayla joker olarak değerlendirilir. Bu istisnaya göre tedarikçi kimliği belirtilmeden ürün kimliği de belirtilemez. Aksi halde politika geçerli olmaz ve yok sayılır.
+<translation id="8625234016727663537">Giriş ekranında sağlanan tedarikçi ve ürün kimliklerine sahip USB cihazlarına otomatik olarak erişmesine izin verilecek sitelerin sıralandığı bir URL listesi ayarlamanıza olanak tanır. Politikanın geçerli olabilmesi için listedeki her öğenin hem cihazları hem de URL'leri içermesi gerekir. Cihazlardaki her öğe tedarikçi kimliği ve ürün kimliği alanı içerebilir. Dahil edilmeyen her kimlik, bir istisna dışında (aynı anda tedarikçi kimliği de belirtilmeden bir ürün kimliği belirtilemez) özel bir durum olarak değerlendirilir. Aksi halde politika geçerli olmaz ve yok sayılır.
 
         USB izin modeli, istekte bulunan sitenin URL'sini ("istekte bulunan URL") ve üst düzey çerçeve sitesinin URL'sini ("yerleştirme URL'si") kullanarak istekte bulunan URL'ye USB cihazına erişmesi için izin verir. İstekte bulunan site bir iFrame içinde yüklendiğinde, istekte bulunan URL yerleştirme URL'sinden farklı olabilir. Bu nedenle, "URL'ler" alanı, sırasıyla istekte bulunan URL'yi ve yerleştirme URL'sini belirtmek için virgülle sınırlandırılmış en fazla iki URL dizesi içerebilir. Yalnızca bir URL belirtilirse yerleştirme durumundan bağımsız olarak bu URL ile eşleşen istekte bulunan sitenin URL'sine karşılık gelen USB cihazlarına erişim izni verilir. "URL'ler" alanındaki URL'lerin geçerli URL'ler olmaları gerekir; aksi halde, politika yok sayılır.
 
@@ -4418,7 +4418,6 @@ Bu politika "true" (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı ku
 <translation id="8798099450830957504">Varsayılan</translation>
 <translation id="8800453707696044281">Pil şarjı için özel şarj durdurma değerini yüzde olarak ayarla</translation>
 <translation id="8801680448782904838">Kullanıcıya tarayıcının veya cihazın yeniden başlatılmasının önerildiğini ya da gerektiğini bildir</translation>
-<translation id="8802816494059596691">Bu listede belirtilen ana makine adları, istekleri http'den https'ye yükseltebilecek HSTS politika kontrolünden muaf tutulur. Bu politikada yalnızca tek etiketli ana makine adlarına izin verilir. Ana makine adları standartlaştırılmalıdır: Tüm IDN'ler A-etiket biçimine dönüştürülmeli ve tüm ASCII harfleri küçük harf olmalıdır. Bu politika yalnızca belirtilen spesifik ana makine adları için geçerlidir; belirtilen adların alt alanları için geçerli değildir</translation>
 <translation id="8818173863808665831">Cihazın coğrafi konumunu bildirin.
 
       Bu politika ayarlanmazsa veya yanlış seçeneğine ayarlanırsa konum bildirilmez.</translation>

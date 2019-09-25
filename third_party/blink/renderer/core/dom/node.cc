@@ -615,6 +615,7 @@ void Node::CallApplyScroll(ScrollState& scroll_state) {
   if (!GetDocument().GetPage()) {
     // We should always have a Page if we're scrolling. See
     // crbug.com/689074 for details.
+    NOTREACHED();
     return;
   }
 

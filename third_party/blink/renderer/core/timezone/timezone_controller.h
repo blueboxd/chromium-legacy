@@ -41,6 +41,8 @@ class CORE_EXPORT TimeZoneController final
   static std::unique_ptr<TimeZoneOverride> SetTimeZoneOverride(
       const String& timezone_id);
 
+  static bool HasTimeZoneOverride();
+
  private:
   TimeZoneController();
   static TimeZoneController& instance();

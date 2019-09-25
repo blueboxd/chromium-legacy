@@ -83,9 +83,9 @@ class FakeNetLogExporter : public network::mojom::NetLogExporter {
 class FakeNetworkContext : public network::TestNetworkContext {
  public:
   void CreateNetLogExporter(
-      network::mojom::NetLogExporterRequest request) override {
+      mojo::PendingReceiver<network::mojom::NetLogExporter> receiver) override {
     binding_ = mojo::StrongBinding<network::mojom::NetLogExporter>::Create(
-        std::make_unique<FakeNetLogExporter>(), std::move(request));
+        std::make_unique<FakeNetLogExporter>(), std::move(receiver));
   }
 
   void Disconnect() { binding_->Close(); }

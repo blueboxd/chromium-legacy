@@ -617,23 +617,25 @@ OverviewSession::UpdateGridAtLocationYPositionAndOpacity(
   if (!grid)
     return nullptr;
 
+  std::unique_ptr<ui::ScopedLayerAnimationSettings> settings =
+      grid->UpdateYPositionAndOpacity(new_y, opacity, callback);
   if (no_windows_widget_) {
-    // Translate and fade |no_windows_widget_| if it is visible.
     DCHECK(grid->empty());
+
+    // Translate and fade |no_windows_widget_| if it is visible. Overwrite
+    // |settings| to observe |no_windows_widget| if necessary.
     aura::Window* window = no_windows_widget_->GetNativeWindow();
-    std::unique_ptr<ui::ScopedLayerAnimationSettings> settings;
+    ui::Layer* layer = window->layer();
     if (!callback.is_null()) {
       settings = std::make_unique<ui::ScopedLayerAnimationSettings>(
-          window->layer()->GetAnimator());
+          layer->GetAnimator());
       callback.Run(settings.get());
     }
-    window->SetTransform(
-        gfx::Transform(1.f, 0.f, 0.f, 1.f, 0.f, static_cast<float>(-new_y)));
-    window->layer()->SetOpacity(opacity);
-    return settings;
+    window->SetTransform(gfx::Transform(1.f, 0.f, 0.f, 1.f, 0.f, -new_y));
+    layer->SetOpacity(opacity);
   }
 
-  return grid->UpdateYPositionAndOpacity(new_y, opacity, callback);
+  return settings;
 }
 
 void OverviewSession::UpdateRoundedCornersAndShadow() {

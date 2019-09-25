@@ -218,21 +218,17 @@ class AwContents : public FindHelper::Listener,
 
   JsJavaConfiguratorHost* GetJsJavaConfiguratorHost();
 
-  base::android::ScopedJavaLocalRef<jstring> SetJsApiService(
+  base::android::ScopedJavaLocalRef<jstring> AddWebMessageListener(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
-      jboolean need_to_inject_js_object,
+      const base::android::JavaParamRef<jobject>& listener,
       const base::android::JavaParamRef<jstring>& js_object_name,
       const base::android::JavaParamRef<jobjectArray>& allowed_origins);
 
-  bool IsOriginAllowedForOnPostMessage(url::Origin& origin);
-
-  void OnPostMessage(JNIEnv* env,
-                     const base::android::JavaRef<jstring>& message,
-                     const base::android::JavaRef<jstring>& origin,
-                     jboolean is_main_frame,
-                     const base::android::JavaRef<jintArray>& ports,
-                     const base::android::JavaRef<jobject>& reply_proxy);
+  void RemoveWebMessageListener(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& js_object_name);
 
   bool GetViewTreeForceDarkState() { return view_tree_force_dark_state_; }
 

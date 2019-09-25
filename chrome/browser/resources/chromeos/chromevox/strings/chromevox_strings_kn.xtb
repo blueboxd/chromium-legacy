@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">ಸಮಸ್ಯೆ ವರದಿಮಾಡಿ</translation>
 <translation id="2223693656926968778">ಪ್ರಸ್ತುತ ಐಟಂ ಕುರಿತು ಕ್ರಮ ಕೈಗೊಳ್ಳಿ</translation>
 <translation id="225732394367814946">ಮಾತಿನ ಪ್ರಮಾಣವನ್ನು ಹೆಚ್ಚಿಸಿ</translation>
+<translation id="2267538686624070261">ತಪ್ಪಾಗಿ ಬರೆದಿರುವ ಪದವನ್ನು ಬಿಟ್ಟುಬಿಡಲಾಗುತ್ತಿದೆ</translation>
 <translation id="2267945578749931355">ಮುಂದಿನ ಅಕ್ಷರ</translation>
 <translation id="2278490101488436824">ಮೂರು ಬೆರಳುಗಳಿಂದ ಎಡಕ್ಕೆ ಸ್ವೈಪ್‌ ಮಾಡಿ</translation>
 <translation id="2281234842553884450">ಹಿಂದಿನ ಸ್ಲೈಡರ್</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">ಗುಂಪು</translation>
 <translation id="2582407057977008361">ಹೊರತಾಗಿ</translation>
 <translation id="2592212930811759050">ಎಡಿಟಿಂಗ್ ಪ್ರಾರಂಭಿಸಲು ಡಬಲ್ ಟ್ಯಾಪ್ ಮಾಡಿ</translation>
+<translation id="2598495320872286378">ವ್ಯಾಕರಣ ದೋಷ</translation>
 <translation id="2614981083756825552">ಗಣಿತ ML ಲೇಔಟ್</translation>
 <translation id="2624431853467395961">ಕಲಿಕೆ ಮೋಡ್‌ ತೆರೆಯಿರಿ</translation>
 <translation id="2626530649491650971">ಕ್ಲಿಕ್ ಮಾಡಬಹುದಾದ</translation>
@@ -821,6 +823,7 @@
 <translation id="6833103209700200188">ಅಡಿಟಿಪ್ಪಣಿ</translation>
 <translation id="6858047746862060282">ಪೀಠಿಕೆ</translation>
 <translation id="6859876496651143278">ಒಂದು ಬೆರಳಿನಿಂದ ಎಡಕ್ಕೆ ಸ್ವೈಪ್‌ ಮಾಡಿ</translation>
+<translation id="6865519907510167493">ತಪ್ಪಾಗಿ ಬರೆದಿರುವ ಪದ</translation>
 <translation id="6871161210040114857">ಕೇಸ್ ನಿರ್ಲಕ್ಷಿಸಲಾಗಿದೆ.</translation>
 <translation id="6877435256196695200">ಮುಂದಿನ ಗ್ರಾಫಿಕ್‌ಯಿಲ್ಲ.</translation>
 <translation id="6897341342232909480">ಎಡಕ್ಕೆ ಸೇರಿಸಿ</translation>
@@ -1111,6 +1114,7 @@ Chrome ಬ್ರೌಸರ್ ಮೆನು ತೆರೆಯಲು, Alt+F ಒತ್
 <translation id="8446884382197647889">ಇನ್ನಷ್ಟು ತಿಳಿಯಿರಿ</translation>
 <translation id="8455868257606149352">ಗರಿಷ್ಟ <ph name="X" /></translation>
 <translation id="84575901236241018">ಪ್ರವೇಶ ಕೀ ಹೊಂದಿದೆ, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">ವ್ಯಾಕರಣ ದೋಷವನ್ನು ತೊರೆಯಲಾಗುತ್ತಿದೆ</translation>
 <translation id="847154984256717791">ಕಾರ್ಯನಿರತ</translation>
 <translation id="8476408756881832830">ChromeVox ಮಾತನಾಡುತ್ತಿರುವಾಗ ಪ್ಲೇಬ್ಯಾಕ್ ಅನ್ನು ವಿರಾಮಗೊಳಿಸಿ</translation>
 <translation id="8476508772960940536">ವಿಂಡೋ ಸಮಗ್ರ ನೋಟ</translation>

@@ -7,8 +7,9 @@
  *
  * The bookmark may point at a location in the PDF or a URI.
  * If it points at a location, |page| indicates which 0-based page it leads to.
- * Optionally, |y| is the y position in that page, in pixel coordinates.
- * If it points at an URI, |uri| is the target for that bookmark.
+ * Optionally, |x| is the x position in that page, |y| is the y position in that
+ * page, in pixel coordinates. If it points at an URI, |uri| is the target for
+ * that bookmark.
  *
  * |children| is an array of the |Bookmark|s that are below this in a table of
  * contents tree
@@ -16,6 +17,7 @@
  * @typedef {{
  *   title: string,
  *   page: (number | undefined),
+ *   x: (number | undefined),
  *   y: (number | undefined),
  *   uri: (string | undefined),
  *   children: !Array<!Bookmark>
@@ -81,10 +83,11 @@ Polymer({
   /** @private */
   onClick_: function() {
     if (this.bookmark.hasOwnProperty('page')) {
-      if (this.bookmark.hasOwnProperty('y')) {
+      if (this.bookmark.hasOwnProperty('x') &&
+          this.bookmark.hasOwnProperty('y')) {
         this.fire('change-page-and-xy', {
           page: this.bookmark.page,
-          x: 0,
+          x: this.bookmark.x,
           y: this.bookmark.y,
           origin: 'bookmark'
         });

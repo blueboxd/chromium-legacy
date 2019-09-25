@@ -7,6 +7,7 @@
 
 #include "base/macros.h"
 #include "chrome/browser/ui/browser_list_observer.h"
+#include "chrome/browser/ui/global_media_controls/media_toolbar_button_observer.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/keyed_service/core/keyed_service.h"
 
@@ -24,7 +25,8 @@ class Tracker;
 // interesting user actions.
 class GlobalMediaControlsInProductHelp : public KeyedService,
                                          public TabStripModelObserver,
-                                         public BrowserListObserver {
+                                         public BrowserListObserver,
+                                         public MediaToolbarButtonObserver {
  public:
   explicit GlobalMediaControlsInProductHelp(Profile* profile);
   ~GlobalMediaControlsInProductHelp() override;
@@ -39,14 +41,12 @@ class GlobalMediaControlsInProductHelp : public KeyedService,
   void OnBrowserClosing(Browser* browser) override;
   void OnBrowserSetLastActive(Browser* browser) override;
 
-  // Called when the Global Media Controls toolbar icon is enabled and shown.
-  void ToolbarIconEnabled();
-
-  // Called when the Global Media Controls toolbar icon is disabled or hidden.
-  void ToolbarIconDisabled();
-
-  // Called when the Global Media Controls dialog is opened.
-  void GlobalMediaControlsOpened();
+  // MediaToolbarButtonObserver implementation.
+  void OnMediaDialogOpened() override;
+  void OnMediaButtonShown() override {}
+  void OnMediaButtonHidden() override;
+  void OnMediaButtonEnabled() override;
+  void OnMediaButtonDisabled() override;
 
   // Must be called when IPH promo finishes showing, whether by use of the
   // feature or by timing out.

@@ -321,6 +321,12 @@ bool ShouldQuicMigrateSessionsEarlyV2(
       "true");
 }
 
+bool ShouldQuicAllowPortMigration(
+    const VariationParameters& quic_trial_params) {
+  return base::LowerCaseEqualsASCII(
+      GetVariationParam(quic_trial_params, "allow_port_migration"), "true");
+}
+
 bool ShouldQuicRetryOnAlternateNetworkBeforeHandshake(
     const VariationParameters& quic_trial_params) {
   return base::LowerCaseEqualsASCII(
@@ -402,12 +408,6 @@ int GetQuicMaxNumMigrationsToNonDefaultNetworkOnPathDegrading(
     return value;
   }
   return 0;
-}
-
-bool ShouldQuicAllowServerMigration(
-    const VariationParameters& quic_trial_params) {
-  return base::LowerCaseEqualsASCII(
-      GetVariationParam(quic_trial_params, "allow_server_migration"), "true");
 }
 
 int GetQuicInitialRttForHandshakeMilliseconds(
@@ -533,6 +533,8 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicMigrateSessionsOnNetworkChangeV2(quic_trial_params);
     params->quic_params.migrate_sessions_early_v2 =
         ShouldQuicMigrateSessionsEarlyV2(quic_trial_params);
+    params->quic_params.allow_port_migration =
+        ShouldQuicAllowPortMigration(quic_trial_params);
     params->quic_params.retry_on_alternate_network_before_handshake =
         ShouldQuicRetryOnAlternateNetworkBeforeHandshake(quic_trial_params);
     params->quic_params.go_away_on_path_degrading =
@@ -580,8 +582,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
           .max_migrations_to_non_default_network_on_path_degrading =
           max_migrations_to_non_default_network_on_path_degrading;
     }
-    params->quic_params.allow_server_migration =
-        ShouldQuicAllowServerMigration(quic_trial_params);
     params->quic_host_allowlist = GetQuicHostAllowlist(quic_trial_params);
 
     SetQuicFlags(quic_trial_params);

@@ -86,7 +86,9 @@ suite('cr-toolbar-search-field', function() {
     const clearSearch = field.$$('#clearSearch');
     clearSearch.focus();
     clearSearch.click();
-    assertTrue(field.showingSearch);
+    Polymer.dom.flush();
+
+    assertFalse(field.showingSearch);
     assertEquals('', field.getValue());
     assertEquals(field.$.searchInput, field.root.activeElement);
     assertFalse(field.hasSearchText);
@@ -99,7 +101,8 @@ suite('cr-toolbar-search-field', function() {
     assertEquals('query1', field.getValue());
 
     field.$$('#clearSearch').click();
-    assertTrue(field.showingSearch);
+    Polymer.dom.flush();
+    assertFalse(field.showingSearch);
     assertEquals('', field.getValue());
 
     simulateSearch('query2');

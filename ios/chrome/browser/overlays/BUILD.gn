@@ -13,14 +13,18 @@ source_set("overlays") {
     "public/overlay_presenter_observer.h",
     "public/overlay_presenter_observer_bridge.h",
     "public/overlay_request.h",
+    "public/overlay_request_cancel_handler.h",
     "public/overlay_request_queue.h",
     "public/overlay_response.h",
     "public/overlay_user_data.h",
   ]
   sources = [
+    "default_overlay_request_cancel_handler.h",
+    "default_overlay_request_cancel_handler.mm",
     "overlay_presenter_impl.h",
     "overlay_presenter_impl.mm",
     "overlay_presenter_observer_bridge.mm",
+    "overlay_request_cancel_handler.mm",
     "overlay_request_impl.cc",
     "overlay_request_impl.h",
     "overlay_request_queue_impl.h",
@@ -44,6 +48,7 @@ source_set("overlays") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "default_overlay_request_cancel_handler_unittest.mm",
     "overlay_presenter_impl_unittest.mm",
     "overlay_presenter_observer_bridge_unittest.mm",
     "overlay_request_impl_unittest.cc",

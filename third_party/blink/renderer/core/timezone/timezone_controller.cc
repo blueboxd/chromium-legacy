@@ -35,31 +35,41 @@ void NotifyTimezoneChangeOnWorkerThread(WorkerThread* worker_thread) {
   NotifyTimezoneChangeToV8(worker_thread->GlobalScope()->GetIsolate());
 }
 
-void SetIcuTimeZoneAndNotifyV8(const String& timezone_id) {
+String GetTimezoneId(const icu::TimeZone& timezone) {
+  icu::UnicodeString unicode_timezone_id;
+  timezone.getID(unicode_timezone_id);
+  return String(icu::toUCharPtr(unicode_timezone_id.getBuffer()),
+                static_cast<unsigned>(unicode_timezone_id.length()));
+}
+
+String GetCurrentTimezoneId() {
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createDefault());
+  CHECK(timezone);
+  return GetTimezoneId(*timezone.get());
+}
+
+bool SetIcuTimeZoneAndNotifyV8(const String& timezone_id) {
   DCHECK(!timezone_id.IsEmpty());
-  DCHECK(timezone_id.ContainsOnlyASCIIOrEmpty());
-  icu::TimeZone* timezone = icu::TimeZone::createTimeZone(
-      icu::UnicodeString(timezone_id.Ascii().data(), -1, US_INV));
-  icu::TimeZone::adoptDefault(timezone);
+  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createTimeZone(
+      icu::UnicodeString(timezone_id.Ascii().data(), -1, US_INV)));
+  CHECK(timezone);
+
+  if (*timezone == icu::TimeZone::getUnknown())
+    return false;
+
+  icu::TimeZone::adoptDefault(timezone.release());
 
   NotifyTimezoneChangeToV8(V8PerIsolateData::MainThreadIsolate());
   WorkerThread::CallOnAllWorkerThreads(&NotifyTimezoneChangeOnWorkerThread,
                                        TaskType::kInternalDefault);
-}
-
-String GetCurrentTimezone() {
-  std::unique_ptr<icu::TimeZone> timezone(icu::TimeZone::createDefault());
-  icu::UnicodeString unicode_timezone_id;
-  timezone->getID(unicode_timezone_id);
-  return String(icu::toUCharPtr(unicode_timezone_id.getBuffer()),
-                static_cast<unsigned>(unicode_timezone_id.length()));
+  return true;
 }
 
 }  // namespace
 
 TimeZoneController::TimeZoneController() {
   DCHECK(IsMainThread());
-  host_timezone_id_ = GetCurrentTimezone();
+  host_timezone_id_ = GetCurrentTimezoneId();
 }
 
 TimeZoneController::~TimeZoneController() = default;
@@ -93,11 +103,19 @@ TimeZoneController::SetTimeZoneOverride(const String& timezone_id) {
     return nullptr;
   }
 
-  SetIcuTimeZoneAndNotifyV8(timezone_id);
+  if (!SetIcuTimeZoneAndNotifyV8(timezone_id)) {
+    VLOG(1) << "Invalid override timezone id: " << timezone_id;
+    return nullptr;
+  }
 
   instance().has_timezone_id_override_ = true;
 
   return std::unique_ptr<TimeZoneOverride>(new TimeZoneOverride());
+}
+
+// static
+bool TimeZoneController::HasTimeZoneOverride() {
+  return instance().has_timezone_id_override_;
 }
 
 // static

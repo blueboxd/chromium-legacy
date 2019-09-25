@@ -133,7 +133,6 @@ class CORE_EXPORT CanvasRenderingContext : public ScriptWrappable,
   // the contents of the canvas (called didDraw). It marks the completion
   // of a presentable frame.
   virtual void FinalizeFrame() {}
-
   void NeedsFinalizeFrame();
 
   // Thread::TaskObserver implementation

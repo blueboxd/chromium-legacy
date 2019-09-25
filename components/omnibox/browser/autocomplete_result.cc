@@ -14,6 +14,7 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
@@ -56,6 +57,10 @@ void RotateMatchToFront(ACMatches::iterator it, ACMatches* matches) {
   std::rotate(matches->begin(), it, next);
 }
 
+// This value should be comfortably larger than any max-autocomplete-matches
+// under consideration.
+constexpr size_t kMaxAutocompletePositionValue = 30;
+
 }  // namespace
 
 struct MatchGURLHash {
@@ -75,11 +80,16 @@ size_t AutocompleteResult::GetMaxMatches(bool is_zero_suggest) {
 #else
   constexpr size_t kDefaultMaxAutocompleteMatches = 6;
 #endif  // defined(OS_ANDROID)
+  static_assert(kMaxAutocompletePositionValue > kDefaultMaxAutocompleteMatches,
+                "kMaxAutocompletePositionValue must be larger than the largest "
+                "possible autocomplete result size.");
 
-  return base::GetFieldTrialParamByFeatureAsInt(
+  size_t field_trial_value = base::GetFieldTrialParamByFeatureAsInt(
       omnibox::kUIExperimentMaxAutocompleteMatches,
       OmniboxFieldTrial::kUIMaxAutocompleteMatchesParam,
       kDefaultMaxAutocompleteMatches);
+  DCHECK(kMaxAutocompletePositionValue > field_trial_value);
+  return field_trial_value;
 }
 
 AutocompleteResult::AutocompleteResult() {
@@ -712,6 +722,30 @@ size_t AutocompleteResult::EstimateMemoryUsage() const {
   res += base::trace_event::EstimateMemoryUsage(alternate_nav_url_);
 
   return res;
+}
+
+// static
+void AutocompleteResult::LogAsynchronousUpdateMetrics(
+    const AutocompleteResult& old_result,
+    const AutocompleteResult& new_result) {
+  constexpr char kAsyncMatchChangeHistogramName[] =
+      "Omnibox.MatchStability.AsyncMatchChange";
+
+  size_t min_size = std::min(old_result.size(), new_result.size());
+  for (size_t i = 0; i < min_size; ++i) {
+    if (GetMatchComparisonFields(old_result.match_at(i)) !=
+        GetMatchComparisonFields(new_result.match_at(i))) {
+      base::UmaHistogramExactLinear(kAsyncMatchChangeHistogramName, i,
+                                    kMaxAutocompletePositionValue);
+    }
+  }
+
+  // Also log a change for when the match count decreases. But don't make a log
+  // for appending new matches on the bottom, since that's less disruptive.
+  for (size_t i = new_result.size(); i < old_result.size(); ++i) {
+    base::UmaHistogramExactLinear(kAsyncMatchChangeHistogramName, i,
+                                  kMaxAutocompletePositionValue);
+  }
 }
 
 // static

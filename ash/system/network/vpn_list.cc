@@ -58,6 +58,8 @@ void VpnList::OnVpnProvidersChanged() {
       base::BindOnce(&VpnList::OnGetVpnProviders, base::Unretained(this)));
 }
 
+void VpnList::OnNetworkCertificatesChanged() {}
+
 void VpnList::SetVpnProvidersForTest(std::vector<VpnProviderPtr> providers) {
   OnGetVpnProviders(std::move(providers));
 }

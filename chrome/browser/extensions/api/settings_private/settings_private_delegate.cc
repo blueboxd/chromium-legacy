@@ -15,9 +15,9 @@
 #include "chrome/browser/ui/zoom/chrome_zoom_level_prefs.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/common/page_zoom.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "url/gurl.h"
 
 namespace extensions {
@@ -64,7 +64,7 @@ std::unique_ptr<base::Value> SettingsPrivateDelegate::GetDefaultZoom() {
   // default value.
   if (profile_->IsOffTheRecord())
     return std::make_unique<base::Value>(0.0);
-  double zoom = content::ZoomLevelToZoomFactor(
+  double zoom = blink::PageZoomLevelToZoomFactor(
       profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref());
   return std::make_unique<base::Value>(zoom);
 }
@@ -74,7 +74,7 @@ settings_private::SetPrefResult SettingsPrivateDelegate::SetDefaultZoom(
   // See comment in GetDefaultZoom().
   if (profile_->IsOffTheRecord())
     return settings_private::SetPrefResult::PREF_NOT_MODIFIABLE;
-  double zoom_factor = content::ZoomFactorToZoomLevel(zoom);
+  double zoom_factor = blink::PageZoomFactorToZoomLevel(zoom);
   profile_->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(zoom_factor);
   return settings_private::SetPrefResult::SUCCESS;
 }

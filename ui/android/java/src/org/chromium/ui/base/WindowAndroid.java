@@ -33,6 +33,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -676,11 +677,7 @@ public class WindowAndroid implements AndroidPermissionDelegate, DisplayAndroidO
      *         Context.startActivity will not throw ActivityNotFoundException.
      */
     public boolean canResolveActivity(Intent intent) {
-        return ContextUtils.getApplicationContext()
-                       .getPackageManager()
-                       .queryIntentActivities(intent, 0)
-                       .size()
-                > 0;
+        return !PackageManagerUtils.queryIntentActivities(intent, 0).isEmpty();
     }
 
     /**

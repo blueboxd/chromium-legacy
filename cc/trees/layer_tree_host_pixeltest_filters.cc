@@ -138,6 +138,26 @@ TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRect) {
           : base::FilePath(FILE_PATH_LITERAL("backdrop_filter_blur.png")));
 }
 
+TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterInvalid) {
+  scoped_refptr<SolidColorLayer> background =
+      CreateSolidColorLayer(gfx::Rect(200, 200), SK_ColorWHITE);
+  scoped_refptr<SolidColorLayer> green =
+      CreateSolidColorLayer(gfx::Rect(50, 50, 100, 100), kCSSGreen);
+  scoped_refptr<SolidColorLayer> blur =
+      CreateSolidColorLayer(gfx::Rect(30, 30, 140, 140), SK_ColorTRANSPARENT);
+  background->AddChild(green);
+  background->AddChild(blur);
+
+  // This should be an invalid filter, and result in just the original green.
+  FilterOperations filters;
+  filters.Append(FilterOperation::CreateHueRotateFilter(9e99));
+  blur->SetBackdropFilters(filters);
+
+  RunPixelTest(
+      renderer_type(), background,
+      base::FilePath(FILE_PATH_LITERAL("backdrop_filter_invalid.png")));
+}
+
 TEST_P(LayerTreeHostFiltersPixelTest, BackdropFilterBlurRadius) {
   if (renderer_type() == RENDERER_SOFTWARE) {
     // TODO(989238): Software renderer does not support/implement

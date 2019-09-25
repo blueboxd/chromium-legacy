@@ -17,7 +17,7 @@ def parseEvents(z):
         e['eventtype'] == 'EVENT_TYPE_TRYENTER_CS' or
         e['eventtype'] == 'EVENT_TYPE_LEAVE_CS'):
       cs = e['critical_section']
-      if not crits.has_key(cs):
+      if cs not in crits:
         crits[cs] = [ ]
       crits[cs].append(e)
 

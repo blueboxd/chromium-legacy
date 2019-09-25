@@ -26,9 +26,8 @@ import android.webkit.MimeTypeMap;
 import org.chromium.base.ApplicationState;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.StrictModeContext;
-import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
@@ -132,51 +131,38 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
      * @return true if the intent can be resolved, or false otherwise.
      */
     public static boolean resolveIntent(Intent intent, boolean allowSelfOpen) {
-        try {
-            boolean activityResolved = false;
-            Context context = ContextUtils.getApplicationContext();
-            ResolveInfo info = context.getPackageManager().resolveActivity(intent, 0);
-            if (info != null) {
-                final String packageName = context.getPackageName();
-                if (info.match != 0) {
-                    // There is a default activity for this intent, use that.
-                    if (allowSelfOpen || !packageName.equals(info.activityInfo.packageName)) {
-                        activityResolved = true;
-                    }
-                } else {
-                    List<ResolveInfo> handlers = context.getPackageManager().queryIntentActivities(
-                            intent, PackageManager.MATCH_DEFAULT_ONLY);
-                    if (handlers != null && !handlers.isEmpty()) {
-                        activityResolved = true;
-                        boolean canSelfOpen = false;
-                        boolean hasPdfViewer = false;
-                        for (ResolveInfo resolveInfo : handlers) {
-                            String pName = resolveInfo.activityInfo.packageName;
-                            if (packageName.equals(pName)) {
-                                canSelfOpen = true;
-                            } else if (PDF_VIEWER.equals(pName)) {
-                                if (isPdfIntent(intent)) {
-                                    intent.setClassName(pName, resolveInfo.activityInfo.name);
-                                    Uri referrer = new Uri.Builder().scheme(
-                                            IntentHandler.ANDROID_APP_REFERRER_SCHEME).authority(
-                                                    packageName).build();
-                                    intent.putExtra(Intent.EXTRA_REFERRER, referrer);
-                                    hasPdfViewer = true;
-                                    break;
-                                }
-                            }
-                        }
-                        if ((canSelfOpen && !allowSelfOpen) && !hasPdfViewer) {
-                            activityResolved = false;
-                        }
-                    }
+        Context context = ContextUtils.getApplicationContext();
+        ResolveInfo info = PackageManagerUtils.resolveActivity(intent, 0);
+        if (info == null) return false;
+
+        final String packageName = context.getPackageName();
+        if (info.match != 0) {
+            // There is a default activity for this intent, use that.
+            return allowSelfOpen || !packageName.equals(info.activityInfo.packageName);
+        }
+        List<ResolveInfo> handlers = PackageManagerUtils.queryIntentActivities(
+                intent, PackageManager.MATCH_DEFAULT_ONLY);
+        if (handlers == null || handlers.isEmpty()) return false;
+        boolean canSelfOpen = false;
+        boolean hasPdfViewer = false;
+        for (ResolveInfo resolveInfo : handlers) {
+            String pName = resolveInfo.activityInfo.packageName;
+            if (packageName.equals(pName)) {
+                canSelfOpen = true;
+            } else if (PDF_VIEWER.equals(pName)) {
+                if (isPdfIntent(intent)) {
+                    intent.setClassName(pName, resolveInfo.activityInfo.name);
+                    Uri referrer = new Uri.Builder()
+                                           .scheme(IntentHandler.ANDROID_APP_REFERRER_SCHEME)
+                                           .authority(packageName)
+                                           .build();
+                    intent.putExtra(Intent.EXTRA_REFERRER, referrer);
+                    hasPdfViewer = true;
+                    break;
                 }
             }
-            return activityResolved;
-        } catch (RuntimeException e) {
-            IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
         }
-        return false;
+        return !canSelfOpen || allowSelfOpen || hasPdfViewer;
     }
 
     private static boolean isPdfIntent(Intent intent) {
@@ -184,28 +170,6 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
         String filename = intent.getData().getLastPathSegment();
         return (filename != null && filename.endsWith(PDF_SUFFIX))
                 || PDF_MIME.equals(intent.getType());
-    }
-
-    /**
-     * Retrieve information about the Activity that will handle the given Intent.
-     *
-     * Note this function is slow on Android versions less than Lollipop.
-     *
-     * @param intent Intent to resolve.
-     * @return       ResolveInfo of the Activity that will handle the Intent, or null if it failed.
-     */
-    public static ResolveInfo resolveActivity(Intent intent) {
-        // This function is expensive on KK and below and should not be called from main thread.
-        assert Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP
-                || !ThreadUtils.runningOnUiThread();
-        try {
-            Context context = ContextUtils.getApplicationContext();
-            PackageManager pm = context.getPackageManager();
-            return pm.resolveActivity(intent, 0);
-        } catch (RuntimeException e) {
-            IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
-        }
-        return null;
     }
 
     /**
@@ -219,39 +183,25 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
      */
     public static boolean willChromeHandleIntent(Intent intent, boolean matchDefaultOnly) {
         Context context = ContextUtils.getApplicationContext();
-        try {
-            // Early-out if the intent targets Chrome.
-            if (context.getPackageName().equals(intent.getPackage())
-                    || (intent.getComponent() != null
-                               && context.getPackageName().equals(
-                                          intent.getComponent().getPackageName()))) {
-                return true;
-            }
-
-            // Fall back to the more expensive querying of Android when the intent doesn't target
-            // Chrome.
-            ResolveInfo info = context.getPackageManager().resolveActivity(
-                    intent, matchDefaultOnly ? PackageManager.MATCH_DEFAULT_ONLY : 0);
-            return info != null && info.activityInfo.packageName.equals(context.getPackageName());
-        } catch (RuntimeException e) {
-            IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
-            return false;
+        // Early-out if the intent targets Chrome.
+        if (context.getPackageName().equals(intent.getPackage())
+                || (intent.getComponent() != null
+                        && context.getPackageName().equals(
+                                intent.getComponent().getPackageName()))) {
+            return true;
         }
+
+        // Fall back to the more expensive querying of Android when the intent doesn't target
+        // Chrome.
+        ResolveInfo info = PackageManagerUtils.resolveActivity(
+                intent, matchDefaultOnly ? PackageManager.MATCH_DEFAULT_ONLY : 0);
+        return info != null && info.activityInfo.packageName.equals(context.getPackageName());
     }
 
     @Override
     public List<ResolveInfo> queryIntentActivities(Intent intent) {
-        // White-list for Samsung. See http://crbug.com/613977 for more context.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            return mApplicationContext.getPackageManager()
-                    .queryIntentActivities(intent, PackageManager.GET_RESOLVED_FILTER);
-        } catch (RuntimeException e) {
-            IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
-            return null;
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        return PackageManagerUtils.queryIntentActivities(
+                intent, PackageManager.GET_RESOLVED_FILTER);
     }
 
     @Override
@@ -342,17 +292,9 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
      *         no package name given checks whether there is any specialized handler.
      */
     public static boolean isPackageSpecializedHandler(String packageName, Intent intent) {
-        Context context = ContextUtils.getApplicationContext();
-        // On certain Samsung devices, queryIntentActivities can trigger a
-        // StrictModeDiskReadViolation (https://crbug.com/894160).
-        try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
-            List<ResolveInfo> handlers = context.getPackageManager().queryIntentActivities(
-                    intent, PackageManager.GET_RESOLVED_FILTER);
-            return getSpecializedHandlersWithFilter(handlers, packageName).size() > 0;
-        } catch (RuntimeException e) {
-            IntentUtils.logTransactionTooLargeOrRethrow(e, intent);
-        }
-        return false;
+        List<ResolveInfo> handlers = PackageManagerUtils.queryIntentActivities(
+                intent, PackageManager.GET_RESOLVED_FILTER);
+        return !getSpecializedHandlersWithFilter(handlers, packageName).isEmpty();
     }
 
     @Override

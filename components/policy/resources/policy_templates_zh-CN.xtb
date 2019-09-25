@@ -3640,9 +3640,9 @@
 <translation id="7625498350540361483">
       如果此政策设为 true，<ph name="PRODUCT_NAME" /> 便可以从 Google 服务（例如 Google Meet）收集 WebRTC 事件日志，并将这些日志上传到 Google。
 
-      如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将不得收集或上传此类日志。
+      如果此政策设为 false，<ph name="PRODUCT_NAME" /> 将不会收集或上传此类日志。
 
-      如果此政策未设置（在 M76 及较早版本中），<ph name="PRODUCT_NAME" /> 将不得收集或上传此类日志。
+      如果此政策未设置（在 M76 及较早版本中），<ph name="PRODUCT_NAME" /> 将不会收集或上传此类日志。
 
       如果此政策未设置（从 M77 开始），在默认情况下，<ph name="PRODUCT_NAME" /> 可以收集或上传此类日志，但需满足以下条件：浏览器个人资料被视为托管（即，该个人资料能接收云端或计算机级别政策），并且不是孩子个人资料、临时个人资料、登录个人资料和无痕个人资料中的任一种。
 
@@ -4230,7 +4230,6 @@
 <translation id="8798099450830957504">默认</translation>
 <translation id="8800453707696044281">设置电池充电自定义停止充电值（以百分比表示）</translation>
 <translation id="8801680448782904838">系统建议或要求重新启动浏览器或重启设备时，通知用户</translation>
-<translation id="8802816494059596691">此列表中指定的主机名将免受 HSTS 政策检查，该检查可能会将请求从 HTTP 升级到 HTTPS。此政策只允许使用单标签主机名。必须使用规范化主机名：任何 IDN 都必须被转换为对应的 A 标签格式，并且所有 ASCII 字母都必须小写。此政策只适用于指定的特定主机名，不适用于指定名称的子网域。</translation>
 <translation id="8818173863808665831">报告设备的地理位置。
 
       如果未设置此政策或将其设为 false，系统将不会报告相关位置。</translation>

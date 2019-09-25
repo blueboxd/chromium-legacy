@@ -127,8 +127,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
   int grid_tile_spacing_in_folder() const {
     return grid_tile_spacing_in_folder_;
   }
-  int shelf_height() const { return shelf_height_; }
-  int background_radius() const { return background_radius_; }
   int blur_radius() const { return blur_radius_; }
   SkColor contents_background_color() const {
     return contents_background_color_;
@@ -365,12 +363,6 @@ class ASH_PUBLIC_EXPORT AppListConfig {
 
   // The spacing between tile views in folder.
   const int grid_tile_spacing_in_folder_;
-
-  // The height/width of the shelf from the bottom/side of the screen.
-  const int shelf_height_;
-
-  // The background corner radius used for the app list.
-  const int background_radius_;
 
   // The blur radius used in the app list.
   const int blur_radius_;

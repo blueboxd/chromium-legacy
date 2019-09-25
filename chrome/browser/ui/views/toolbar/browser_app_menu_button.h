@@ -22,8 +22,8 @@
 class ToolbarView;
 enum class InProductHelpFeature;
 
-// The app menu button in the main browser window (as opposed to hosted app
-// windows, which is implemented in HostedAppMenuButton).
+// The app menu button in the main browser window (as opposed to web app
+// windows, which is implemented in WebAppMenuButton).
 class BrowserAppMenuButton : public AppMenuButton,
                              public ui::MaterialDesignControllerObserver {
  public:

@@ -72,7 +72,7 @@ cr.define('accessibility', function() {
     const deny = improvementsEnabled ? $('filter-deny').value : '';
 
     // The calling |element| is a button with an id of the format
-    // <treeId>:<requestType>, where requestType is one of 'showTree',
+    // <treeId>:<requestType>, where requestType is one of 'showOrRefreshTree',
     // 'copyTree'. Send the request type to C++ so is calls the corresponding
     // function with the result.
     const requestType = element.id.split(':')[1];
@@ -80,8 +80,12 @@ cr.define('accessibility', function() {
       const delay = $('native_ui_delay').value;
       setTimeout(() => {
         chrome.send(
-            'requestNativeUITree',
-            [{'sessionId': data.sessionId, 'requestType': requestType}]);
+            'requestNativeUITree', [{
+              'sessionId': data.sessionId,
+              'requestType': requestType,
+              'filters':
+                  {'allow': allow, 'allowEmpty': allowEmpty, 'deny': deny}
+            }]);
       }, delay);
     } else {
       chrome.send(
@@ -301,7 +305,7 @@ cr.define('accessibility', function() {
     } else {
       show.textContent = 'Show accessibility tree';
     }
-    show.id = id + ':showTree';
+    show.id = id + ':showOrRefreshTree';
     show.setAttribute('aria-expanded', String(opt_refresh));
     show.addEventListener('click', requestTree.bind(this, data, show));
     return show;
@@ -312,7 +316,7 @@ cr.define('accessibility', function() {
     hide.textContent = 'Hide accessibility tree';
     hide.id = id + ':hideTree';
     hide.addEventListener('click', function() {
-      const show = $(id + ':showTree');
+      const show = $(id + ':showOrRefreshTree');
       show.textContent = 'Show accessibility tree';
       show.setAttribute('aria-expanded', 'false');
       show.focus();
@@ -354,7 +358,7 @@ cr.define('accessibility', function() {
   }
 
   // Called from C++
-  function showTree(data) {
+  function showOrRefreshTree(data) {
     const id = getIdFromData(data);
     const row = $(id);
     if (!row) {
@@ -363,7 +367,7 @@ cr.define('accessibility', function() {
 
     row.textContent = '';
     formatRow(row, data);
-    $(id + ':hideTree').focus();
+    $(id + ':showOrRefreshTree').focus();
   }
 
   // Called from C++
@@ -390,11 +394,11 @@ cr.define('accessibility', function() {
       console.error('Unable to copy accessibility tree.', data.error);
     }
 
-
     const tree = $(id + ':tree');
     // If the tree is currently shown, update it since it may have changed.
     if (tree && tree.style.display != 'none') {
-      showTree(data);
+      showOrRefreshTree(data);
+      $(id + ':copyTree').focus();
     }
   }
 
@@ -420,7 +424,11 @@ cr.define('accessibility', function() {
   }
 
   // These are the functions we export so they can be called from C++.
-  return {copyTree: copyTree, initialize: initialize, showTree: showTree};
+  return {
+    copyTree: copyTree,
+    initialize: initialize,
+    showOrRefreshTree: showOrRefreshTree
+  };
 });
 
 document.addEventListener('DOMContentLoaded', accessibility.initialize);

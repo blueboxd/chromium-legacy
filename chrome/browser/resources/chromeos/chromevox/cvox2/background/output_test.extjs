@@ -525,6 +525,11 @@ TEST_F('ChromeVoxOutputE2ETest', 'ListBox', function() {
 
 SYNC_TEST_F('ChromeVoxOutputE2ETest', 'MessageIdAndEarconValidity', function() {
   const kNoBrailleMessageRequired = new Set([
+    'annotationAttribution',
+    'annotationCommentary',
+    'annotationPresence',
+    'annotationRevision',
+    'annotationSuggestion',
     'contentDeletion',
     'contentInsertion',
     'docAbstract',

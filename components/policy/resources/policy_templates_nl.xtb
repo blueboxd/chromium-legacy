@@ -108,6 +108,17 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">De protocolhandlers die via dit beleid zijn ingesteld, worden niet gebruikt bij de verwerking van Android-intenties.</translation>
 <translation id="1118093128235245168">Toestaan dat sites de gebruiker vragen om toegang te verlenen tot een aangesloten USB-apparaat</translation>
+<translation id="1123594119609921068">De standaardstatus van de toegankelijkheidsfunctie voor gesproken feedback op het inlogscherm instellen.
+
+          Als dit beleid is ingesteld op True, wordt gesproken feedback ingeschakeld als het inlogscherm wordt weergegeven.
+
+          Als dit beleid is ingesteld op False, wordt gesproken feedback uitgeschakeld als het inlogscherm wordt weergegeven.
+
+          Als je dit beleid instelt, kunnen gebruikers het tijdelijk overschrijven door gesproken feedback in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven of de gebruiker gedurende een minuut niet actief is op het inlogscherm.
+
+          Als dit beleid niet is ingesteld, wordt gesproken feedback uitgeschakeld als het inlogscherm voor het eerst wordt weergegeven. Gebruikers kunnen gesproken feedback op elk gewenst moment in- of uitschakelen. De status op het inlogscherm is van toepassing op alle gebruikers.
+
+          Opmerking: <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> overschrijft dit beleid als het is opgegeven.</translation>
 <translation id="1128903365609589950">Hiermee wordt de directory geconfigureerd die <ph name="PRODUCT_NAME" /> gebruikt om gecachte bestanden op schijf op te slaan.
 
       Als je dit beleid instelt, gebruikt <ph name="PRODUCT_NAME" /> de opgegeven directory, ongeacht of de gebruiker de optie '--disk-cache-dir' heeft ingesteld. Als je gegevensverlies of andere onverwachte fouten wilt voorkomen, moet dit beleid niet worden ingesteld op de hoofddirectory van een volume of op een directory die wordt gebruikt voor andere doeleinden, omdat <ph name="PRODUCT_NAME" /> de content ervan beheert.
@@ -803,7 +814,7 @@
 
       Als het beleid is ingesteld op 'True', worden gebeurtenissen geregistreerd.
       Als het beleid is ingesteld op 'False' of niet is ingesteld, worden gebeurtenissen niet geregistreerd.</translation>
-<translation id="2440773021691931148">Hiermee worden hardwarestatistieken en -ID's met betrekking tot de stroomstatus gerapporteerd.
+<translation id="2440773021691931148">Hiermee worden hardwarestatistieken en -ID's over de stroomstatus gerapporteerd.
 
       Als het beleid is ingesteld op False of niet is ingesteld, worden de statistieken niet gerapporteerd.
       Als het beleid is ingesteld op True, worden de statistieken gerapporteerd.</translation>
@@ -1077,7 +1088,7 @@
       Wanneer dit beleid is uitgeschakeld of geen perioden bevat, geldt het volgende:
       Er worden geen automatische updatecontroles geblokkeerd door dit beleid, maar deze kunnen wel worden geblokkeerd door andere beleidsregels. Deze functie is alleen ingeschakeld op Chrome-apparaten die zijn geconfigureerd als kiosken die automatisch worden gestart. Andere apparaten worden niet beperkt door dit beleid.</translation>
 <translation id="2823870601012066791">Locatie van Windows-register voor <ph name="PRODUCT_OS_NAME" />-clients:</translation>
-<translation id="2824715612115726353">Incognitomodus inschakelen</translation>
+<translation id="2824715612115726353">Incognito aanzetten</translation>
 <translation id="2836621397261130126">Regelt of goedkeuring op basis van KDC-beleid wordt gerespecteerd om te bepalen of <ph name="KERBEROS" />-tickets worden gedelegeerd.
 
           Als dit beleid is ingesteld op True, respecteert de HTTP-verificatie de goedkeuring op basis van KDC-beleid. Chrome delegeert gegevens alleen als het KDC-beleid <ph name="OK_AS_DELEGATE" /> instelt op een serviceticket. Zie https://tools.ietf.org/html/rfc5896.html voor meer informatie. De service moet ook overeenkomen met het beleid 'AuthNegotiateDelegateWhitelist'.
@@ -1702,6 +1713,15 @@
 
       Raadpleeg https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables voor een lijst met variabelen die kunnen worden gebruikt.</translation>
 <translation id="3911737181201537215">Dit beleid is niet van invloed op de logboekregistratie van Android.</translation>
+<translation id="3912092044353890761">De toegankelijkheidsfunctie voor het virtuele toetsenbord op het inlogscherm inschakelen.
+
+          Als dit beleid is ingesteld op True, is het virtuele toetsenbord altijd ingeschakeld op het inlogscherm.
+
+          Als dit beleid is ingesteld op False, is het virtuele toetsenbord altijd uitgeschakeld op het inlogscherm.
+
+          Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
+
+          Als dit beleid niet is ingesteld, is het virtuele toetsenbord in eerste instantie uitgeschakeld op het inlogscherm. De gebruiker kan deze functie op elk gewenst moment inschakelen.</translation>
 <translation id="391531815696899618">Hiermee wordt synchronisatie van Google Drive in de app Bestanden van <ph name="PRODUCT_OS_NAME" /> uitgeschakeld wanneer de optie is ingesteld op 'True'. In dat geval worden geen gegevens naar Google Drive geüpload.
 
           Als de optie niet is ingesteld of is ingesteld op 'False', kunnen gebruikers bestanden naar Google Drive overzetten.</translation>
@@ -1862,11 +1882,31 @@
           Als je dit beleid instelt, kunnen gebruikers dit niet wijzigen of overschrijven.
 
           Als het beleid niet wordt ingesteld, worden de plaktoetsen eerst uitgeschakeld, maar kunnen deze op elk moment worden ingeschakeld door de gebruiker.</translation>
+<translation id="4169692397912242417">De toegankelijkheidsfunctie voor gesproken feedback op het inlogscherm inschakelen.
+
+          Als dit beleid is ingesteld op True, is gesproken feedback altijd ingeschakeld op het inlogscherm.
+
+          Als dit beleid is ingesteld op False, is gesproken feedback altijd uitgeschakeld op het inlogscherm.
+
+          Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
+
+          Als dit beleid niet is ingesteld, is gesproken feedback in eerste instantie uitgeschakeld op het inlogscherm. De gebruiker kan deze functie op elk gewenst moment inschakelen.</translation>
 <translation id="4171331498167688968">Als het beleid is ingesteld op False, is het mogelijk om via software van derden uitvoerbare code in te voegen in de processen van Chrome. Als het beleid niet is ingesteld of is ingesteld op True, kan er geen uitvoerbare code via software van derden worden ingevoegd in de processen van Chrome.
 
       Ongeacht de waarde van dit beleid voorkomt de browser momenteel niet dat software van derden uitvoerbare code invoegt in zijn processen op een computer die deel uitmaakt van een <ph name="MS_AD_NAME" />-domein.</translation>
 <translation id="4183229833636799228">Standaardinstelling voor <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL voor het valideren van verificatietoken voor client voor externe toegang</translation>
+<translation id="420007931282384740">De standaardstatus van de toegankelijkheidsfunctie voor het schermtoetsenbord op het inlogscherm instellen.
+
+          Als dit beleid is ingesteld op True, wordt het schermtoetsenbord ingeschakeld als het inlogscherm wordt weergegeven.
+
+         Als dit beleid is ingesteld op False, wordt het schermtoetsenbord uitgeschakeld als het inlogscherm wordt weergegeven.
+
+          Als je dit beleid instelt, kunnen gebruikers het tijdelijk overschrijven door het schermtoetsenbord in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven of de gebruiker gedurende een minuut niet actief is op het inlogscherm.
+
+          Als dit beleid niet is ingesteld, wordt het schermtoetsenbord uitgeschakeld als het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen het schermtoetsenbord op elk gewenst moment in- of uitschakelen. De status op het inlogscherm is van toepassing op alle gebruikers.
+
+          Opmerking: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> overschrijdt dit beleid als het is opgegeven.</translation>
 <translation id="4203389617541558220">De bedrijfstijd van het apparaat beperken door automatisch opnieuw opstarten te plannen.
 
       Wanneer dit beleid is ingesteld, bepaalt het de duur van de bedrijfstijd van het apparaat waarna het automatisch opnieuw opstarten is gepland.
@@ -2467,6 +2507,7 @@
 <translation id="5323128137188992869">Toestaan dat content wordt gecast naar het apparaat via <ph name="PRODUCT_NAME" />.
 
           Als dit beleid is ingesteld op 'False', kunnen gebruikers geen content casten naar hun apparaat. Als dit beleid is ingesteld op 'True', mogen gebruikers content casten. Als dit beleid niet is ingesteld, mogen gebruikers geen content naar geregistreerde Chrome OS-apparaten casten, maar wel naar niet-geregistreerde apparaten.</translation>
+<translation id="5323200200131319468">Gesproken feedback op het inlogscherm inschakelen</translation>
 <translation id="5325625566921364045">Hiermee wordt bepaald hoe <ph name="PRODUCT_NAME" /> gegevens die worden geüpload, gedownload, geplakt vanaf het klembord of gesleept en neergezet, controleert op naleving van bedrijfsregels.
 
       Als dit beleid niet is ingesteld of is ingesteld op 'Geen', controleert <ph name="PRODUCT_NAME" /> gegevens niet op naleving.
@@ -2665,6 +2706,7 @@
 <translation id="5530347722229944744">Potentieel gevaarlijke downloads blokkeren</translation>
 <translation id="5535973522252703021">Witte lijst voor Kerberos-delegatieserver</translation>
 <translation id="554903022911579950">Kerberos</translation>
+<translation id="555022085242359084">Hoog contrast op het inlogscherm inschakelen</translation>
 <translation id="555077880566103058">Alle sites toestaan om de <ph name="FLASH_PLUGIN_NAME" />-plug-in automatisch uit te voeren</translation>
 <translation id="5559079916187891399">Dit beleid is niet van invloed op Android-apps.</translation>
 <translation id="5560039246134246593">Een parameter toevoegen aan het ophalen van de seed voor varianten in <ph name="PRODUCT_NAME" />.
@@ -2931,6 +2973,7 @@
 <translation id="6089679180657323464">Hiermee beheer je de instellingen voor wilco DTC.</translation>
 <translation id="6091233616732024397">Gebruikers dwingen in te loggen om de browser te gebruiken</translation>
 <translation id="6093156968240188330">Externe gebruikers toestaan om een vensters met verhoogde bevoegdheid te gebruiken tijdens een sessie voor ondersteuning op afstand</translation>
+<translation id="6095048925836115505">Het virtuele toetsenbord op het inlogscherm inschakelen</translation>
 <translation id="6095999036251797924">Specificeert de periode zonder gebruikersinvoer waarna het scherm wordt vergrendeld wanneer het apparaat op netstroom of op de batterij werkt.
 
           Wanneer de periode is ingesteld op een waarde groter dan nul, is dit de tijd dat de gebruiker inactief moet zijn voordat <ph name="PRODUCT_OS_NAME" /> het scherm vergrendelt.
@@ -3935,11 +3978,31 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 
       Als je dit beleid niet instelt, gebruikt <ph name="PRODUCT_NAME" /> de standaardwaarde van 5000 milliseconden.</translation>
 <translation id="7841880500990419427">Minimale TLS-versie om op terug te vallen</translation>
+<translation id="7842317008224536842">De standaardstatus van de toegankelijkheidsfunctie 'Modus voor hoog contrast' op het inlogscherm instellen.
+
+          Als dit beleid is ingesteld op True, wordt de modus voor hoog contrast ingeschakeld als het inlogscherm wordt weergegeven.
+
+          Als dit beleid is ingesteld op False, wordt de modus voor hoog contrast uitgeschakeld als het inlogscherm wordt weergegeven.
+
+          Als je dit beleid instelt, kunnen gebruikers het tijdelijk overschrijven door de modus voor hoog contrast in of uit te schakelen. De keuze van de gebruiker is echter niet permanent en de standaardinstelling wordt hersteld als het inlogscherm opnieuw wordt weergegeven of de gebruiker gedurende een minuut niet actief is op het inlogscherm.
+
+          Als dit beleid niet is ingesteld, wordt de modus voor hoog contrast uitgeschakeld als het inlogscherm voor de eerste keer wordt weergegeven. Gebruikers kunnen de modus voor hoog contrast op elk gewenst moment in- of uitschakelen. De status op het inlogscherm is van toepassing op alle gebruikers.
+
+          Opmerking: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> overschrijft dit beleid als het is opgegeven.</translation>
 <translation id="7858404742201086014">Als je deze instelling inschakelt, worden verouderde plug-ins gebruikt als normale plug-ins.
 
       Als je deze instelling uitschakelt, worden verouderde plug-ins niet gebruikt en wordt gebruikers niet gevraagd of ze deze willen uitvoeren.
 
       Als deze instelling niet is ingesteld, wordt gebruikers gevraagd of ze verouderde plug-ins willen uitvoeren.</translation>
+<translation id="7863947545897944083">De toegankelijkheidsfunctie voor hoog contrast op het inlogscherm inschakelen.
+
+          Als dit beleid is ingesteld op True, is hoog contrast altijd ingeschakeld op het inlogscherm.
+
+          Als dit beleid is ingesteld op False, is hoog contrast altijd uitgeschakeld op het inlogscherm.
+
+          Als je dit beleid instelt, kunnen gebruikers het niet wijzigen of overschrijven.
+
+          Als dit beleid niet is ingesteld, is hoog contrast in eerste instantie uitgeschakeld op het inlogscherm. De gebruiker kan deze functie op elk gewenst moment inschakelen.</translation>
 <translation id="787125417158068494">Als dit is ingesteld op SyncDisabled of niet is geconfigureerd, zijn certificaten van <ph name="PRODUCT_OS_NAME" /> niet beschikbaar voor ARC-apps.
 
       Als dit is ingesteld op CopyCaCerts, zijn alle door ONC geïnstalleerde CA-certificaten met <ph name="WEB_TRUSTED_BIT" /> beschikbaar voor ARC-apps.</translation>
@@ -4341,7 +4404,7 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
       Gebruikers kunnen deze instelling niet wijzigen of overschrijven.</translation>
 <translation id="8625234016727663537">Hiermee kun je een lijst met URL's instellen die aangeven welke sites automatisch toegang krijgen tot een USB-apparaat met de opgegeven leverancier- en product-ID's op het inlogscherm. Het beleid is alleen geldig als elk item in de lijst zowel apparaten als URL's bevat. Elk item in apparaten kan een veld voor leverancier-ID en een veld voor product-ID bevatten. Een ID die is weggelaten, wordt als jokerteken behandeld, met één uitzondering: er mag geen product-ID worden opgegeven zonder dat er ook een leverancier-ID is opgegeven. Anders is het beleid niet geldig. Ongeldige beleidswaarden worden genegeerd.
 
-        Het USB-rechtenmodel gebruikt de URL van de site die de aanvraag indient ('aanvragende URL') en de URL van de framesite op hoofdniveau ('insluitings-URL') om de aanvragende URL toegang te geven tot het USB-apparaat. Als de aanvragende site in een iframe wordt geladen, is het mogelijk dat de aanvragende URL en de insluitings-URL niet hetzelfde zijn. Daarom kan het veld voor URL's maximaal twee, door een komma gescheiden URL-tekenreeksen bevatten om respectievelijk de aanvragende URL en insluitings-URL op te geven. Als er slechts één URL wordt opgegeven, wordt toegang tot de bijbehorende USB-apparaten gegeven wanneer de URL van de aanvragende site overeenkomt met deze URL, ongeacht de insluitingsstatus. De URL's in het veld voor URL's moeten geldig zijn. Als dit niet het geval is, wordt het beleid genegeerd.
+        Het USB-rechtenmodel gebruikt de URL van de site die de aanvraag indient ('aanvragende URL') en de URL van de framesite op hoofdniveau ('insluitings-URL') om de aanvragende URL toegang te geven tot het USB-apparaat. Als de aanvragende site in een iframe wordt geladen, is het mogelijk dat de aanvragende URL en de insluitings-URL niet hetzelfde zijn. Daarom kan het veld voor URL's maximaal twee, door een komma gescheiden URL-tekenreeksen bevatten om respectievelijk de aanvragende URL en insluitings-URL op te geven. Als er slechts één URL wordt opgegeven, wordt toegang tot de bijbehorende USB-apparaten gegeven als de URL van de aanvragende site overeenkomt met deze URL, ongeacht de insluitingsstatus. De URL's in het veld voor URL's moeten geldig zijn. Als dit niet het geval is, wordt het beleid genegeerd.
 
         Als dit beleid niet is ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites (geen automatische toegang).</translation>
 <translation id="8631434304112909927">tot versie <ph name="UNTIL_VERSION" /></translation>
@@ -4416,7 +4479,6 @@ Als dit beleid niet is ingesteld, worden er geen beperkingen toegepast en kan de
 <translation id="8798099450830957504">Standaard</translation>
 <translation id="8800453707696044281">Een custom batterijoplaadstop opgeven in procenten</translation>
 <translation id="8801680448782904838">Een gebruiker laten weten dat het aanbevolen of vereist is om de browser of het apparaat opnieuw op te starten</translation>
-<translation id="8802816494059596691">De op deze lijst vermelde hostnamen zijn vrijgesteld van de controle van het HSTS-beleid die verzoeken kan upgraden van HTTP naar HTTPS. In dit beleid zijn alleen hostnamen met één label toegestaan. Hostnamen moeten een canonieke URL hebben: Eventuele IDN's moeten worden geconverteerd naar de A-labelindeling en alle ASCII-letters moeten kleine letters zijn. Dit beleid is alleen van toepassing op de vermelde specifieke hostnamen en is niet van toepassing op de subdomeinen van de vermelde namen.</translation>
 <translation id="8818173863808665831">De geografische locatie van het apparaat rapporteren.
 
       Als het beleid niet is ingesteld of is ingesteld op 'false', wordt de locatie niet gerapporteerd.</translation>

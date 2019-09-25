@@ -635,10 +635,6 @@ class BLINK_EXPORT WebLocalFrameClient {
   // connection with certificate errors.
   virtual void DidRunContentWithCertificateErrors() {}
 
-  // The frame loaded a resource with a legacy TLS version that will be removed
-  // in the future. Prints a console message to warn about this.
-  virtual void ReportLegacyTLSVersion(const WebURL&) {}
-
   // A performance timing event (e.g. first paint) occurred
   virtual void DidChangePerformanceTiming() {}
 

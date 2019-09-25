@@ -9,11 +9,17 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "content/public/common/cdm_info.h"
+#include "extensions/common/manifest_constants.h"
 #include "media/cdm/api/content_decryption_module.h"
 #include "media/cdm/supported_cdm_versions.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -72,7 +78,7 @@ base::Value MakeListValue(const std::string& item1, const std::string& item2) {
 // Create a default manifest with valid values for all entries.
 base::Value DefaultManifest() {
   base::Value dict(base::Value::Type::DICTIONARY);
-  dict.SetStringKey(kCdmCodecsListName, "vp8,vp9.0,avc1");
+  dict.SetStringKey(kCdmCodecsListName, "vp8,vp9.0,av01");
   dict.SetBoolKey(kCdmPersistentLicenseSupportName, true);
   dict.SetKey(kCdmSupportedEncryptionSchemesName,
               MakeListValue("cenc", "cbcs"));
@@ -98,6 +104,40 @@ void CheckCodecs(const std::vector<media::VideoCodec>& actual,
   for (const auto& codec : expected) {
     EXPECT_TRUE(base::Contains(actual, codec));
   }
+}
+
+void CheckEncryptionSchemes(
+    const base::flat_set<media::EncryptionMode>& actual,
+    const std::vector<media::EncryptionMode>& expected) {
+  EXPECT_EQ(expected.size(), actual.size());
+  for (const auto& encryption_scheme : expected) {
+    EXPECT_TRUE(base::Contains(actual, encryption_scheme));
+  }
+}
+
+void CheckSessionTypes(const base::flat_set<media::CdmSessionType>& actual,
+                       const std::vector<media::CdmSessionType>& expected) {
+  EXPECT_EQ(expected.size(), actual.size());
+  for (const auto& session_type : expected) {
+    EXPECT_TRUE(base::Contains(actual, session_type));
+  }
+}
+
+void CheckProxyProtocols(
+    const base::flat_set<media::CdmProxy::Protocol>& actual,
+    const std::vector<media::CdmProxy::Protocol>& expected) {
+  EXPECT_EQ(expected.size(), actual.size());
+  for (const auto& proxy_protocol : expected) {
+    EXPECT_TRUE(base::Contains(actual, proxy_protocol));
+  }
+}
+
+void WriteManifestToFile(const base::Value& manifest,
+                         const base::FilePath& file_path) {
+  EXPECT_FALSE(base::PathExists(file_path));
+  JSONFileValueSerializer serializer(file_path);
+  EXPECT_TRUE(serializer.Serialize(manifest));
+  EXPECT_TRUE(base::PathExists(file_path));
 }
 
 }  // namespace
@@ -153,6 +193,29 @@ TEST(CdmManifestTest, ValidManifest) {
   auto manifest = DefaultManifest();
   CdmCapability capability;
   EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
+  CheckCodecs(capability.video_codecs,
+              {media::VideoCodec::kCodecVP8, media::VideoCodec::kCodecVP9,
+               media::VideoCodec::kCodecAV1});
+  CheckEncryptionSchemes(
+      capability.encryption_schemes,
+      {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs});
+  CheckSessionTypes(capability.session_types,
+                    {media::CdmSessionType::kTemporary,
+                     media::CdmSessionType::kPersistentLicense});
+  CheckProxyProtocols(capability.cdm_proxy_protocols,
+                      {media::CdmProxy::Protocol::kIntel});
+}
+
+TEST(CdmManifestTest, EmptyManifest) {
+  base::Value manifest(base::Value::Type::DICTIONARY);
+  CdmCapability capability;
+  EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
+  CheckCodecs(capability.video_codecs, {});
+  CheckEncryptionSchemes(capability.encryption_schemes,
+                         {media::EncryptionMode::kCenc});
+  CheckSessionTypes(capability.session_types,
+                    {media::CdmSessionType::kTemporary});
+  CheckProxyProtocols(capability.cdm_proxy_protocols, {});
 }
 
 TEST(CdmManifestTest, ManifestCodecs) {
@@ -185,30 +248,31 @@ TEST(CdmManifestTest, ManifestCodecs) {
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
     CheckCodecs(capability.video_codecs, {media::VideoCodec::kCodecAV1});
   }
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
   {
     CdmCapability capability;
     manifest.SetStringKey(kCdmCodecsListName, "avc1");
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
     CheckCodecs(capability.video_codecs, {media::VideoCodec::kCodecH264});
   }
+#endif
   {
-    // Try list of everything.
+    // Try list of everything (except proprietary codecs).
     CdmCapability capability;
-    manifest.SetStringKey(kCdmCodecsListName, "vp8,vp9.0,vp09,av01,avc1");
+    manifest.SetStringKey(kCdmCodecsListName, "vp8,vp9.0,vp09,av01");
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
     // Note that kCodecVP9 is returned twice in the list.
     CheckCodecs(capability.video_codecs,
                 {media::VideoCodec::kCodecVP8, media::VideoCodec::kCodecVP9,
-                 media::VideoCodec::kCodecVP9, media::VideoCodec::kCodecAV1,
-                 media::VideoCodec::kCodecH264});
+                 media::VideoCodec::kCodecVP9, media::VideoCodec::kCodecAV1});
     EXPECT_TRUE(capability.supports_vp9_profile2);
   }
   {
     // Note that invalid codec values are simply skipped.
     CdmCapability capability;
-    manifest.SetStringKey(kCdmCodecsListName, "invalid,avc1");
+    manifest.SetStringKey(kCdmCodecsListName, "invalid,av01");
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    CheckCodecs(capability.video_codecs, {media::VideoCodec::kCodecH264});
+    CheckCodecs(capability.video_codecs, {media::VideoCodec::kCodecAV1});
   }
   {
     // Wrong types are an error.
@@ -233,21 +297,15 @@ TEST(CdmManifestTest, ManifestEncryptionSchemes) {
     CdmCapability capability;
     manifest.SetKey(kCdmSupportedEncryptionSchemesName, MakeListValue("cenc"));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    EXPECT_EQ(capability.encryption_schemes.size(), 1u);
-    EXPECT_TRUE(base::Contains(capability.encryption_schemes,
-                               media::EncryptionMode::kCenc));
-    EXPECT_FALSE(base::Contains(capability.encryption_schemes,
-                                media::EncryptionMode::kCbcs));
+    CheckEncryptionSchemes(capability.encryption_schemes,
+                           {media::EncryptionMode::kCenc});
   }
   {
     CdmCapability capability;
     manifest.SetKey(kCdmSupportedEncryptionSchemesName, MakeListValue("cbcs"));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    EXPECT_EQ(capability.encryption_schemes.size(), 1u);
-    EXPECT_FALSE(base::Contains(capability.encryption_schemes,
-                                media::EncryptionMode::kCenc));
-    EXPECT_TRUE(base::Contains(capability.encryption_schemes,
-                               media::EncryptionMode::kCbcs));
+    CheckEncryptionSchemes(capability.encryption_schemes,
+                           {media::EncryptionMode::kCbcs});
   }
   {
     // Try multiple valid entries.
@@ -255,11 +313,9 @@ TEST(CdmManifestTest, ManifestEncryptionSchemes) {
     manifest.SetKey(kCdmSupportedEncryptionSchemesName,
                     MakeListValue("cenc", "cbcs"));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    EXPECT_EQ(capability.encryption_schemes.size(), 2u);
-    EXPECT_TRUE(base::Contains(capability.encryption_schemes,
-                               media::EncryptionMode::kCenc));
-    EXPECT_TRUE(base::Contains(capability.encryption_schemes,
-                               media::EncryptionMode::kCbcs));
+    CheckEncryptionSchemes(
+        capability.encryption_schemes,
+        {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs});
   }
   {
     // Invalid encryption schemes are ignored. However, if value specified then
@@ -274,10 +330,8 @@ TEST(CdmManifestTest, ManifestEncryptionSchemes) {
     manifest.SetKey(kCdmSupportedEncryptionSchemesName,
                     MakeListValue("invalid", "cenc"));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    EXPECT_TRUE(base::Contains(capability.encryption_schemes,
-                               media::EncryptionMode::kCenc));
-    EXPECT_FALSE(base::Contains(capability.encryption_schemes,
-                                media::EncryptionMode::kCbcs));
+    CheckEncryptionSchemes(capability.encryption_schemes,
+                           {media::EncryptionMode::kCenc});
   }
   {
     // Wrong types are an error.
@@ -290,10 +344,8 @@ TEST(CdmManifestTest, ManifestEncryptionSchemes) {
     CdmCapability capability;
     EXPECT_TRUE(manifest.RemoveKey(kCdmSupportedEncryptionSchemesName));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    EXPECT_TRUE(base::Contains(capability.encryption_schemes,
-                               media::EncryptionMode::kCenc));
-    EXPECT_FALSE(base::Contains(capability.encryption_schemes,
-                                media::EncryptionMode::kCbcs));
+    CheckEncryptionSchemes(capability.encryption_schemes,
+                           {media::EncryptionMode::kCenc});
   }
 }
 
@@ -305,22 +357,17 @@ TEST(CdmManifestTest, ManifestSessionTypes) {
     CdmCapability capability;
     manifest.SetBoolKey(kCdmPersistentLicenseSupportName, false);
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    EXPECT_EQ(capability.session_types.size(), 1u);
-    EXPECT_TRUE(base::Contains(capability.session_types,
-                               media::CdmSessionType::kTemporary));
-    EXPECT_FALSE(base::Contains(capability.session_types,
-                                media::CdmSessionType::kPersistentLicense));
+    CheckSessionTypes(capability.session_types,
+                      {media::CdmSessionType::kTemporary});
   }
   {
     // Try true (persistent license is supported).
     CdmCapability capability;
     manifest.SetBoolKey(kCdmPersistentLicenseSupportName, true);
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    EXPECT_EQ(capability.session_types.size(), 2u);
-    EXPECT_TRUE(base::Contains(capability.session_types,
-                               media::CdmSessionType::kTemporary));
-    EXPECT_TRUE(base::Contains(capability.session_types,
-                               media::CdmSessionType::kPersistentLicense));
+    CheckSessionTypes(capability.session_types,
+                      {media::CdmSessionType::kTemporary,
+                       media::CdmSessionType::kPersistentLicense});
   }
   {
     // Wrong types are an error.
@@ -333,10 +380,8 @@ TEST(CdmManifestTest, ManifestSessionTypes) {
     CdmCapability capability;
     EXPECT_TRUE(manifest.RemoveKey(kCdmPersistentLicenseSupportName));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    EXPECT_TRUE(base::Contains(capability.session_types,
-                               media::CdmSessionType::kTemporary));
-    EXPECT_FALSE(base::Contains(capability.session_types,
-                                media::CdmSessionType::kPersistentLicense));
+    CheckSessionTypes(capability.session_types,
+                      {media::CdmSessionType::kTemporary});
   }
 }
 
@@ -348,9 +393,8 @@ TEST(CdmManifestTest, ManifestProxyProtocols) {
     CdmCapability capability;
     manifest.SetKey(kCdmSupportedCdmProxyProtocolsName, MakeListValue("intel"));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    EXPECT_EQ(capability.cdm_proxy_protocols.size(), 1u);
-    EXPECT_TRUE(base::Contains(capability.cdm_proxy_protocols,
-                               media::CdmProxy::Protocol::kIntel));
+    CheckProxyProtocols(capability.cdm_proxy_protocols,
+                        {media::CdmProxy::Protocol::kIntel});
   }
   {
     // Unrecognized values are ignored.
@@ -358,9 +402,8 @@ TEST(CdmManifestTest, ManifestProxyProtocols) {
     manifest.SetKey(kCdmSupportedCdmProxyProtocolsName,
                     MakeListValue("unknown", "intel"));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    EXPECT_EQ(capability.cdm_proxy_protocols.size(), 1u);
-    EXPECT_TRUE(base::Contains(capability.cdm_proxy_protocols,
-                               media::CdmProxy::Protocol::kIntel));
+    CheckProxyProtocols(capability.cdm_proxy_protocols,
+                        {media::CdmProxy::Protocol::kIntel});
   }
   {
     // Wrong types are an error.
@@ -373,6 +416,120 @@ TEST(CdmManifestTest, ManifestProxyProtocols) {
     CdmCapability capability;
     EXPECT_TRUE(manifest.RemoveKey(kCdmSupportedCdmProxyProtocolsName));
     EXPECT_TRUE(ParseCdmManifest(manifest, &capability));
-    EXPECT_EQ(capability.cdm_proxy_protocols.size(), 0u);
+    CheckProxyProtocols(capability.cdm_proxy_protocols, {});
   }
+}
+
+TEST(CdmManifestTest, FileManifest) {
+  const char kVersion[] = "1.2.3.4";
+
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  auto manifest_path = temp_dir.GetPath().AppendASCII("manifest.json");
+
+  // Manifests read from a file also need a version.
+  auto manifest = DefaultManifest();
+  manifest.SetStringKey(extensions::manifest_keys::kVersion, kVersion);
+  WriteManifestToFile(manifest, manifest_path);
+
+  base::Version version;
+  CdmCapability capability;
+  EXPECT_TRUE(ParseCdmManifestFromPath(manifest_path, &version, &capability));
+  EXPECT_TRUE(version.IsValid());
+  EXPECT_EQ(version.GetString(), kVersion);
+  CheckCodecs(capability.video_codecs,
+              {media::VideoCodec::kCodecVP8, media::VideoCodec::kCodecVP9,
+               media::VideoCodec::kCodecAV1});
+  CheckEncryptionSchemes(
+      capability.encryption_schemes,
+      {media::EncryptionMode::kCenc, media::EncryptionMode::kCbcs});
+  CheckSessionTypes(capability.session_types,
+                    {media::CdmSessionType::kTemporary,
+                     media::CdmSessionType::kPersistentLicense});
+  CheckProxyProtocols(capability.cdm_proxy_protocols,
+                      {media::CdmProxy::Protocol::kIntel});
+}
+
+TEST(CdmManifestTest, FileManifestNoVersion) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  auto manifest_path = temp_dir.GetPath().AppendASCII("manifest.json");
+
+  auto manifest = DefaultManifest();
+  WriteManifestToFile(manifest, manifest_path);
+
+  base::Version version;
+  CdmCapability capability;
+  EXPECT_FALSE(ParseCdmManifestFromPath(manifest_path, &version, &capability));
+}
+
+TEST(CdmManifestTest, FileManifestBadVersion) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  auto manifest_path = temp_dir.GetPath().AppendASCII("manifest.json");
+
+  auto manifest = DefaultManifest();
+  manifest.SetStringKey(extensions::manifest_keys::kVersion, "bad version");
+  WriteManifestToFile(manifest, manifest_path);
+
+  base::Version version;
+  CdmCapability capability;
+  EXPECT_FALSE(ParseCdmManifestFromPath(manifest_path, &version, &capability));
+}
+
+TEST(CdmManifestTest, FileManifestDoesNotExist) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  auto manifest_path = temp_dir.GetPath().AppendASCII("manifest.json");
+
+  base::Version version;
+  CdmCapability capability;
+  EXPECT_FALSE(ParseCdmManifestFromPath(manifest_path, &version, &capability));
+}
+
+TEST(CdmManifestTest, FileManifestEmpty) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  auto manifest_path = temp_dir.GetPath().AppendASCII("manifest.json");
+
+  base::Value manifest(base::Value::Type::DICTIONARY);
+  WriteManifestToFile(manifest, manifest_path);
+
+  base::Version version;
+  CdmCapability capability;
+  EXPECT_FALSE(ParseCdmManifestFromPath(manifest_path, &version, &capability));
+}
+
+TEST(CdmManifestTest, FileManifestLite) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  auto manifest_path = temp_dir.GetPath().AppendASCII("manifest.json");
+
+  // Only a version is required in the manifest to parse correctly.
+  base::Value manifest(base::Value::Type::DICTIONARY);
+  manifest.SetStringKey(extensions::manifest_keys::kVersion, "1.2.3.4");
+  WriteManifestToFile(manifest, manifest_path);
+
+  base::Version version;
+  CdmCapability capability;
+  EXPECT_TRUE(ParseCdmManifestFromPath(manifest_path, &version, &capability));
+  CheckCodecs(capability.video_codecs, {});
+  CheckEncryptionSchemes(capability.encryption_schemes,
+                         {media::EncryptionMode::kCenc});
+  CheckSessionTypes(capability.session_types,
+                    {media::CdmSessionType::kTemporary});
+  CheckProxyProtocols(capability.cdm_proxy_protocols, {});
+}
+
+TEST(CdmManifestTest, FileManifestNotDictionary) {
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  auto manifest_path = temp_dir.GetPath().AppendASCII("manifest.json");
+
+  base::Value manifest("not a dictionary");
+  WriteManifestToFile(manifest, manifest_path);
+
+  base::Version version;
+  CdmCapability capability;
+  EXPECT_FALSE(ParseCdmManifestFromPath(manifest_path, &version, &capability));
 }

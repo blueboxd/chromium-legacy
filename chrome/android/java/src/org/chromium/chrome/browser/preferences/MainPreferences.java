@@ -272,7 +272,7 @@ public class MainPreferences extends PreferenceFragmentCompat
     }
 
     private void setOnOffSummary(Preference pref, boolean isOn) {
-        pref.setSummary(getResources().getString(isOn ? R.string.text_on : R.string.text_off));
+        pref.setSummary(isOn ? R.string.text_on : R.string.text_off);
     }
 
     // SigninManager.SignInStateObserver implementation.

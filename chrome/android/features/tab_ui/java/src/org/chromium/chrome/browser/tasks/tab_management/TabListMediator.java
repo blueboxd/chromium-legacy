@@ -739,7 +739,13 @@ class TabListMediator {
      * The selected border should re-appear in the final fading-in stage.
      */
     void prepareOverview() {
-        if (!FeatureUtilities.isTabToGtsAnimationEnabled()) return;
+        if (!FeatureUtilities.isTabToGtsAnimationEnabled()
+                || !mTabModelSelector.getTabModelFilterProvider()
+                            .getCurrentTabModelFilter()
+                            .isTabModelRestored()) {
+            return;
+        }
+
         assert mVisible;
         int count = 0;
         for (int i = 0; i < mModel.size(); i++) {
@@ -816,7 +822,7 @@ class TabListMediator {
     }
 
     /**
-     * @see GridTabSwitcherMediator.ResetHandler#softCleanup
+     * @see TabSwitcherMediator.ResetHandler#softCleanup
      */
     void softCleanup() {
         assert !mVisible;

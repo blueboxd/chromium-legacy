@@ -15,6 +15,11 @@
 
 namespace android_webview {
 
+struct JsJavaConfigurator::JsObjectInfo {
+  net::ProxyBypassRules allowed_origin_rules;
+  mojo::AssociatedRemote<mojom::JsToJavaMessaging> js_to_java_messaging;
+};
+
 JsJavaConfigurator::JsJavaConfigurator(content::RenderFrame* render_frame)
     : RenderFrameObserver(render_frame) {
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
@@ -24,24 +29,38 @@ JsJavaConfigurator::JsJavaConfigurator(content::RenderFrame* render_frame)
 
 JsJavaConfigurator::~JsJavaConfigurator() = default;
 
-void JsJavaConfigurator::SetJsApiService(
-    bool need_to_inject_js_object,
-    const base::string16& js_object_name,
-    const net::ProxyBypassRules& allowed_origin_rules) {
-  need_to_inject_js_object_ = need_to_inject_js_object;
-  js_object_name_ = js_object_name;
-  js_object_allowed_origin_rules_ = allowed_origin_rules;
+void JsJavaConfigurator::SetJsObjects(
+    std::vector<mojom::JsObjectPtr> js_object_ptrs) {
+  JsObjectMap js_objects;
+  for (const auto& js_object : js_object_ptrs) {
+    const auto& js_object_info_pair = js_objects.insert(
+        {js_object->js_object_name, std::make_unique<JsObjectInfo>()});
+    JsObjectInfo* js_object_info = js_object_info_pair.first->second.get();
+    js_object_info->allowed_origin_rules = js_object->allowed_origin_rules;
+    js_object_info->js_to_java_messaging =
+        std::move(mojo::AssociatedRemote<mojom::JsToJavaMessaging>(
+            std::move(js_object->js_to_java_messaging)));
+  }
+  js_objects_.swap(js_objects);
 }
 
 void JsJavaConfigurator::DidClearWindowObject() {
-  if (!need_to_inject_js_object_ || !IsOriginMatch())
-    return;
-
   if (inside_did_clear_window_object_)
     return;
 
   base::AutoReset<bool> flag_entry(&inside_did_clear_window_object_, true);
-  js_binding_ = JsBinding::Install(render_frame(), js_object_name_);
+
+  url::Origin frame_origin =
+      url::Origin(render_frame()->GetWebFrame()->GetSecurityOrigin());
+  std::vector<std::unique_ptr<JsBinding>> js_bindings;
+  js_bindings.reserve(js_objects_.size());
+  for (const auto& js_object : js_objects_) {
+    if (!js_object.second->allowed_origin_rules.Matches(frame_origin.GetURL()))
+      continue;
+    js_bindings.push_back(
+        JsBinding::Install(render_frame(), js_object.first, this));
+  }
+  js_bindings_.swap(js_bindings);
 }
 
 void JsJavaConfigurator::WillReleaseScriptContext(
@@ -52,18 +71,12 @@ void JsJavaConfigurator::WillReleaseScriptContext(
   if (world_id != content::ISOLATED_WORLD_ID_GLOBAL)
     return;
 
-  if (js_binding_)
-    js_binding_->ReleaseV8GlobalObjects();
+  for (const auto& js_binding : js_bindings_)
+    js_binding->ReleaseV8GlobalObjects();
 }
 
 void JsJavaConfigurator::OnDestruct() {
   delete this;
-}
-
-inline bool JsJavaConfigurator::IsOriginMatch() {
-  url::Origin frame_origin =
-      url::Origin(render_frame()->GetWebFrame()->GetSecurityOrigin());
-  return js_object_allowed_origin_rules_.Matches(frame_origin.GetURL());
 }
 
 void JsJavaConfigurator::BindPendingReceiver(
@@ -71,6 +84,14 @@ void JsJavaConfigurator::BindPendingReceiver(
         pending_receiver) {
   receiver_.Bind(std::move(pending_receiver),
                  render_frame()->GetTaskRunner(blink::TaskType::kInternalIPC));
+}
+
+mojom::JsToJavaMessaging* JsJavaConfigurator::GetJsToJavaMessage(
+    const base::string16& js_object_name) {
+  auto iterator = js_objects_.find(js_object_name);
+  if (iterator == js_objects_.end())
+    return nullptr;
+  return iterator->second->js_to_java_messaging.get();
 }
 
 }  // namespace android_webview

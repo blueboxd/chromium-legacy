@@ -291,7 +291,7 @@ DCLayerOverlay::~DCLayerOverlay() = default;
 DCLayerOverlayProcessor::DCLayerOverlayProcessor(
     const OutputSurface::Capabilities& capabilities,
     const RendererSettings& settings)
-    : has_hw_overlay_support_(capabilities.supports_dc_layers),
+    : has_hw_overlay_support_(capabilities.supports_dc_video_overlays),
       show_debug_borders_(settings.show_dc_layer_debug_borders) {}
 
 DCLayerOverlayProcessor::DCLayerOverlayProcessor()

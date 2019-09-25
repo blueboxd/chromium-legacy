@@ -15552,6 +15552,30 @@
       This policy is only effective when the <ph name="CHROME_REPORTING_EXTENSION_NAME">Chrome Reporting Extension</ph> is enabled, and the machine is enrolled with <ph name="MACHINE_LEVEL_USER_CLOUD_POLICY_ENROLLMENT_TOKEN_POLICY_NAME">MachineLevelUserCloudPolicyEnrollmentToken</ph>.'''
     },
     {
+      'id': 608,
+      'name': 'CloudExtensionRequestEnabled',
+      'owners': ['zmin@chromium.org'],
+      'type': 'main',
+      'schema': {'type': 'boolean' },
+      'tags': ['admin-sharing', 'google-sharing'],
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': True,
+      },
+      'supported_on': ['chrome.*:79-', 'chrome_os:79-'],
+      'future': True,
+      'caption': '''Enables <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extension installation requests''',
+      'example_value': True,
+      'desc': '''This policy controls <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> extension installation requests which allows users to send the requests to the Google Admin console for approval.
+
+      When this policy is left unset or set to disabled, extension installation requests are not created or uploaded.
+      When this policy is set to enabled, extension installation requests are created and uploaded to Google Admin console.
+
+      Extension installation requests are created when users try to install an extension that is not whitelisted by <ph name="EXTENSION_INSTALL_WHITELIST">ExtesionInstallWhitelist</ph> or <ph name="EXTENSION_SETTINGS">ExtensionSettings</ph>.
+
+      This policy is only effective when the machine is enrolled with <ph name="CLOUD_MANAGEMENT_ENROLLMENT_TOKEN">CloudManagementEnrollmentToken</ph> and <ph name="CLOUD_REPORTING_ENABLED">CloudReportingEnabled</ph> is enabled.'''
+    },
+    {
       'id': 493,
       'name': 'CloudReportingEnabled',
       'owners': ['zmin@chromium.org', 'pastarmovj@chromium.org'],
@@ -18582,6 +18606,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 607,
+  'highest_id_currently_used': 608,
   'highest_atomic_group_id_currently_used': 37
 }

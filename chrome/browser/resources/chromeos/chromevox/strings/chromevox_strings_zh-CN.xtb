@@ -168,6 +168,7 @@
 <translation id="2220529011494928058">报告问题</translation>
 <translation id="2223693656926968778">对当前项执行操作</translation>
 <translation id="225732394367814946">加快语速</translation>
+<translation id="2267538686624070261">您要退出的部分含有拼写错误</translation>
 <translation id="2267945578749931355">下一个字符</translation>
 <translation id="2278490101488436824">向左滑动三根手指</translation>
 <translation id="2281234842553884450">上一个滑块</translation>
@@ -206,6 +207,7 @@
 <translation id="257674075312929031">群组</translation>
 <translation id="2582407057977008361">边栏内容</translation>
 <translation id="2592212930811759050">点按两次即可开始修改</translation>
+<translation id="2598495320872286378">语法错误</translation>
 <translation id="2614981083756825552">数学标记语言布局</translation>
 <translation id="2624431853467395961">打开学习模式</translation>
 <translation id="2626530649491650971">可点击</translation>
@@ -820,6 +822,7 @@
 <translation id="6833103209700200188">页脚标记</translation>
 <translation id="6858047746862060282">序言</translation>
 <translation id="6859876496651143278">向左滑动一根手指</translation>
+<translation id="6865519907510167493">拼写错误</translation>
 <translation id="6871161210040114857">不区分大小写。</translation>
 <translation id="6877435256196695200">不存在下一个图形。</translation>
 <translation id="6897341342232909480">向左移动</translation>
@@ -1110,6 +1113,7 @@
 <translation id="8446884382197647889">了解详情</translation>
 <translation id="8455868257606149352">最大值为<ph name="X" /></translation>
 <translation id="84575901236241018">有快捷键，<ph name="KEY" /></translation>
+<translation id="8463645336674919227">您要退出的部分含有语法错误</translation>
 <translation id="847154984256717791">忙碌</translation>
 <translation id="8476408756881832830">在 ChromeVox 朗读时暂停播放音频</translation>
 <translation id="8476508772960940536">窗口概览</translation>

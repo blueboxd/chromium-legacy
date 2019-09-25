@@ -1072,6 +1072,21 @@
       <message desc="This is an abbreviated ARIA widget role name shown on a braille display. When translating, try to find a contracted form of the translation for 'alert dialog' according to local conventions. If reasonable, use all lowercase and avoid punctuation to keep the number of characters as low as possible." name="IDS_CHROMEVOX_ROLE_ALERTDIALOG_BRL">
         alrt dlg
       </message>
+      <message  desc="Accessibility role description for attribution, meaning authoring information tied to specific content" name="IDS_CHROMEVOX_ROLE_ANNOTATION_ATTRIBUTION">
+        Authoring info
+      </message>
+      <message desc="Accessibility role description for commentary" name="IDS_CHROMEVOX_ROLE_ANNOTATION_COMMENTARY">
+        Comments
+      </message>
+      <message desc="Accessibility role description for presence, meaning information about another collaborator who is currently reviewing or editing this content" name="IDS_CHROMEVOX_ROLE_ANNOTATION_PRESENCE">
+        Live presence
+      </message>
+      <message desc="Accessibility role description for revision, meaining historical change info tied to this content" name="IDS_CHROMEVOX_ROLE_ANNOTATION_REVISION">
+        Revision
+      </message>
+      <message desc="Accessibility role description for suggestion, meaning a suggested change to some content" name="IDS_CHROMEVOX_ROLE_ANNOTATION_SUGGESTION" >
+        Suggestion
+      </message>
       <message desc="Describes an element with the ARIA role button." name="IDS_CHROMEVOX_ROLE_BUTTON">
         Button
       </message>
@@ -3714,6 +3729,12 @@ If you're done with the tutorial, use ChromeVox to navigate to the Close button 
       </message>
       <message desc="Spoken to inform the user that the node's name is empty" name="IDS_CHROMEVOX_EMPTY_NAME">
         No available text for this item
+      </message>
+      <message desc="The description of the announceBatteryDescription key. Displayed in the ChromeVox menu." name="IDS_CHROMEVOX_ANNOUNCE_BATTERY_DESCRIPTION">
+        Announce current battery status
+      </message>
+      <message desc="The description of the announceRichTextDescription key. Displayed in the ChromeVox menu." name="IDS_CHROMEVOX_ANNOUNCE_RICH_TEXT_DESCRIPTION">
+        Announce formatting for current item
       </message>
     </messages>
   </release>

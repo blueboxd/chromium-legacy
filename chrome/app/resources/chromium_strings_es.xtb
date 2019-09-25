@@ -119,7 +119,6 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="5416696090975899932">Chromium no puede mostrar la vista previa de impresión si falta el visor de PDF integrado.</translation>
 <translation id="5427571867875391349">Establecer Chromium como navegador predeterminado</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> ‑ Chromium Beta</translation>
-<translation id="5466153949126434691">Chromium se actualiza automáticamente para que siempre dispongas de la última versión. Cuando se complete la descarga, Chromium se reiniciará automáticamente.</translation>
 <translation id="5479196819031988440">Chromium OS no puede abrir esta página.</translation>
 <translation id="5480860683791598150">Chromium necesita acceder a tu ubicación para compartirla con este sitio web</translation>
 <translation id="549669000822060376">Espera mientras Chromium instala las últimas actualizaciones del sistema.</translation>
@@ -215,7 +214,6 @@ Chromium no puede recuperar tu configuración.</translation>
 <translation id="7867198900892795913">No se ha podido actualizar Chromium a la versión más reciente, por lo que no disfrutas de las últimas funciones y correcciones de seguridad.</translation>
 <translation id="7901117350626490574">Hay una nueva actualización de Chromium disponible que se aplicará cuando reinicies el dispositivo.</translation>
 <translation id="7937630085815544518">Habías iniciado sesión en Chromium como <ph name="USER_EMAIL_ADDRESS" />. Utiliza la misma cuenta para volver a iniciar sesión.</translation>
-<translation id="7962572577636132072">Chromium se actualiza automáticamente para que siempre dispongas de la última versión.</translation>
 <translation id="7975919845073681630">Esta instalación de Chromium es secundaria, por lo que no se puede establecer como navegador predeterminado.</translation>
 <translation id="7979877361127045932">Ocultar en el menú de Chromium</translation>
 <translation id="8013436988911883588">Una vez que Chromium tenga acceso, los sitios web podrán solicitarlo también.</translation>

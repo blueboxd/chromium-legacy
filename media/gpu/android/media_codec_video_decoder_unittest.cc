@@ -18,6 +18,7 @@
 #include "media/base/android/mock_android_overlay.h"
 #include "media/base/android/mock_media_crypto_context.h"
 #include "media/base/decoder_buffer.h"
+#include "media/base/media_util.h"
 #include "media/base/test_helpers.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/android/android_video_surface_chooser_impl.h"
@@ -149,8 +150,8 @@ class MediaCodecVideoDecoderTest : public testing::TestWithParam<VideoCodec> {
         .WillByDefault(RunCallback<1>(texture_owner));
 
     auto* observable_mcvd = new DestructionObservableMCVD(
-        gpu_preferences_, gpu_feature_info_, device_info_.get(),
-        codec_allocator_.get(), std::move(surface_chooser),
+        gpu_preferences_, gpu_feature_info_, std::make_unique<NullMediaLog>(),
+        device_info_.get(), codec_allocator_.get(), std::move(surface_chooser),
         base::BindRepeating(&CreateAndroidOverlayCb),
         base::Bind(&MediaCodecVideoDecoderTest::RequestOverlayInfoCb,
                    base::Unretained(this)),

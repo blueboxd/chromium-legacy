@@ -1515,7 +1515,9 @@ if (enable_java_templates) {
     if (defined(invoker.enable_bytecode_rewriter)) {
       not_needed([
                    "_enable_assert",
+                   "_enable_class_deps_output",
                    "_enable_custom_resources",
+                   "_enable_split_compat",
                    "_enable_thread_annotations",
                  ])
       _enable_bytecode_rewriter = invoker.enable_bytecode_rewriter

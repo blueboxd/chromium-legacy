@@ -45,7 +45,6 @@ bool IsSupportedPlaybackToMemoryFormat(viz::ResourceFormat format) {
     case viz::BGRX_1010102:
     case viz::YVU_420:
     case viz::YUV_420_BIPLANAR:
-    case viz::UYVY_422:
     case viz::P010:
       return false;
   }
@@ -145,7 +144,6 @@ void RasterBufferProvider::PlaybackToMemory(
     case viz::BGRX_1010102:
     case viz::YVU_420:
     case viz::YUV_420_BIPLANAR:
-    case viz::UYVY_422:
     case viz::P010:
       NOTREACHED();
       return;

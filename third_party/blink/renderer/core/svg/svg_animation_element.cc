@@ -71,6 +71,10 @@ fail:
   return false;
 }
 
+static bool IsInZeroToOneRange(float value) {
+  return value >= 0 && value <= 1;
+}
+
 static bool ParseKeyTimes(const String& string,
                           Vector<float>& result,
                           bool verify_order) {
@@ -81,7 +85,7 @@ static bool ParseKeyTimes(const String& string,
     String time_string = parse_list[n].StripWhiteSpace();
     bool ok;
     float time = time_string.ToFloat(&ok);
-    if (!ok || time < 0 || time > 1)
+    if (!ok || !IsInZeroToOneRange(time))
       goto fail;
     if (verify_order) {
       if (!n) {
@@ -108,20 +112,20 @@ static bool ParseKeySplinesInternal(const String& string,
   SkipOptionalSVGSpaces(ptr, end);
 
   while (ptr < end) {
-    float pos_a = 0;
-    if (!ParseNumber(ptr, end, pos_a))
+    float cp1x = 0;
+    if (!ParseNumber(ptr, end, cp1x))
       return false;
 
-    float pos_b = 0;
-    if (!ParseNumber(ptr, end, pos_b))
+    float cp1y = 0;
+    if (!ParseNumber(ptr, end, cp1y))
       return false;
 
-    float pos_c = 0;
-    if (!ParseNumber(ptr, end, pos_c))
+    float cp2x = 0;
+    if (!ParseNumber(ptr, end, cp2x))
       return false;
 
-    float pos_d = 0;
-    if (!ParseNumber(ptr, end, pos_d, kDisallowWhitespace))
+    float cp2y = 0;
+    if (!ParseNumber(ptr, end, cp2y, kDisallowWhitespace))
       return false;
 
     SkipOptionalSVGSpaces(ptr, end);
@@ -130,7 +134,11 @@ static bool ParseKeySplinesInternal(const String& string,
       ptr++;
     SkipOptionalSVGSpaces(ptr, end);
 
-    result.push_back(gfx::CubicBezier(pos_a, pos_b, pos_c, pos_d));
+    // Require that the x values are within the [0, 1] range.
+    if (!IsInZeroToOneRange(cp1x) || !IsInZeroToOneRange(cp2x))
+      return false;
+
+    result.push_back(gfx::CubicBezier(cp1x, cp1y, cp2x, cp2y));
   }
 
   return ptr == end;
@@ -322,7 +330,7 @@ String SVGAnimationElement::FromValue() const {
   return FastGetAttribute(svg_names::kFromAttr);
 }
 
-bool SVGAnimationElement::IsAdditive() {
+bool SVGAnimationElement::IsAdditive() const {
   DEFINE_STATIC_LOCAL(const AtomicString, sum, ("sum"));
   const AtomicString& value = FastGetAttribute(svg_names::kAdditiveAttr);
   return value == sum || GetAnimationMode() == kByAnimation;
@@ -633,7 +641,7 @@ void SVGAnimationElement::UpdateAnimation(float percent,
   CalculateAnimatedValue(effective_percent, repeat_count, result_element);
 }
 
-bool SVGAnimationElement::OverwritesUnderlyingAnimationValue() {
+bool SVGAnimationElement::OverwritesUnderlyingAnimationValue() const {
   return !IsAdditive() && !IsAccumulated() &&
          GetAnimationMode() != kToAnimation &&
          GetAnimationMode() != kByAnimation &&

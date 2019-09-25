@@ -15,7 +15,14 @@ namespace chrome_pdf {
 class TestClient : public PDFEngine::Client {
  public:
   TestClient();
+
+  TestClient(const TestClient& other) = delete;
+  TestClient& operator=(const TestClient& other) = delete;
+
   ~TestClient() override;
+
+  PDFEngine* engine() const { return engine_; }
+  void set_engine(PDFEngine* engine) { engine_ = engine; }
 
   // PDFEngine::Client:
   bool Confirm(const std::string& message) override;
@@ -32,7 +39,9 @@ class TestClient : public PDFEngine::Client {
   float GetToolbarHeightInScreenCoords() override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(TestClient);
+  // Not owned. Expected to dangle briefly, as the engine usually is destroyed
+  // before the client.
+  PDFEngine* engine_ = nullptr;
 };
 
 }  // namespace chrome_pdf

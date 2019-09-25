@@ -19,6 +19,7 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.TimeUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
@@ -250,14 +251,14 @@ public class ContextualSearchManager
      * @param parentView The parent view to attach Contextual Search UX to.
      */
     public void initialize(ViewGroup parentView) {
-        mNativeContextualSearchManagerPtr = nativeInit();
+        mNativeContextualSearchManagerPtr = ContextualSearchManagerJni.get().init(this);
 
         mParentView = parentView;
         mParentView.getViewTreeObserver().addOnGlobalFocusChangeListener(mOnFocusChangeListener);
 
         mInProductHelp.setParentView(parentView);
 
-        mTabRedirectHandler = TabRedirectHandler.create(mActivity);
+        mTabRedirectHandler = TabRedirectHandler.create();
 
         mIsShowingPromo = false;
         mDidLogPromoOutcome = false;
@@ -279,7 +280,7 @@ public class ContextualSearchManager
 
         hideContextualSearch(StateChangeReason.UNKNOWN);
         mParentView.getViewTreeObserver().removeOnGlobalFocusChangeListener(mOnFocusChangeListener);
-        nativeDestroy(mNativeContextualSearchManagerPtr);
+        ContextualSearchManagerJni.get().destroy(mNativeContextualSearchManagerPtr, this);
         stopListeningForHideNotifications();
         mTabRedirectHandler.clear();
         mInternalStateController.enter(InternalState.UNDEFINED);
@@ -488,8 +489,8 @@ public class ContextualSearchManager
         WebContents baseWebContents = getBaseWebContents();
         if (baseWebContents != null && mContext != null && mContext.canResolve()) {
             if (isRestrictedResolve) mContext.setRestrictedResolve();
-            nativeStartSearchTermResolutionRequest(
-                    mNativeContextualSearchManagerPtr, mContext, getBaseWebContents());
+            ContextualSearchManagerJni.get().startSearchTermResolutionRequest(
+                    mNativeContextualSearchManagerPtr, this, mContext, getBaseWebContents());
         } else {
             // Something went wrong and we couldn't resolve.
             hideContextualSearch(StateChangeReason.UNKNOWN);
@@ -609,11 +610,10 @@ public class ContextualSearchManager
     }
 
     /**
-     * Called in response to the
-     * {@link ContextualSearchManager#nativeStartSearchTermResolutionRequest} method.
-     * If {@code nativeStartSearchTermResolutionRequest} is called with a previous request sill
-     * pending our native delegate is supposed to cancel all previous requests.  So this code
-     * should only be called with data corresponding to the most recent request.
+     * Called in response to the {@link ContextualSearchManagerJni#startSearchTermResolutionRequest}
+     * method. If {@code startSearchTermResolutionRequest} is called with a previous request sill
+     * pending our native delegate is supposed to cancel all previous requests.  So this code should
+     * only be called with data corresponding to the most recent request.
      * @param isNetworkUnavailable Indicates if the network is unavailable, in which case all other
      *        parameters should be ignored.
      * @param responseCode The HTTP response code. If the code is not OK, the query should be
@@ -787,7 +787,8 @@ public class ContextualSearchManager
         mLoadedSearchUrlTimeMs = System.currentTimeMillis();
         mLastSearchRequestLoaded = mSearchRequest;
         String searchUrl = mSearchRequest.getSearchUrl();
-        nativeWhitelistContextualSearchJsApiUrl(mNativeContextualSearchManagerPtr, searchUrl);
+        ContextualSearchManagerJni.get().whitelistContextualSearchJsApiUrl(
+                mNativeContextualSearchManagerPtr, this, searchUrl);
         mSearchPanel.loadUrlInPanel(searchUrl);
         mDidStartLoadingResolvedSearchRequest = true;
 
@@ -948,12 +949,14 @@ public class ContextualSearchManager
 
     @Override
     public String getAcceptLanguages() {
-        return nativeGetAcceptLanguages(mNativeContextualSearchManagerPtr);
+        return ContextualSearchManagerJni.get().getAcceptLanguages(
+                mNativeContextualSearchManagerPtr, this);
     }
 
     @Override
     public String getTranslateServiceTargetLanguage() {
-        return nativeGetTargetLanguage(mNativeContextualSearchManagerPtr);
+        return ContextualSearchManagerJni.get().getTargetLanguage(
+                mNativeContextualSearchManagerPtr, this);
     }
 
     // ============================================================================================
@@ -1036,8 +1039,9 @@ public class ContextualSearchManager
 
         @Override
         public void onContentViewCreated() {
-            nativeEnableContextualSearchJsApiForWebContents(
-                    mNativeContextualSearchManagerPtr, getSearchPanelWebContents());
+            ContextualSearchManagerJni.get().enableContextualSearchJsApiForWebContents(
+                    mNativeContextualSearchManagerPtr, ContextualSearchManager.this,
+                    getSearchPanelWebContents());
         }
 
         @Override
@@ -1575,8 +1579,9 @@ public class ContextualSearchManager
                 if (webContents != null) {
                     mInternalStateController.notifyStartingWorkOn(
                             InternalState.GATHERING_SURROUNDINGS);
-                    nativeGatherSurroundingText(
-                            mNativeContextualSearchManagerPtr, mContext, webContents);
+                    ContextualSearchManagerJni.get().gatherSurroundingText(
+                            mNativeContextualSearchManagerPtr, ContextualSearchManager.this,
+                            mContext, webContents);
                 } else {
                     mInternalStateController.reset(StateChangeReason.UNKNOWN);
                 }
@@ -1818,21 +1823,26 @@ public class ContextualSearchManager
         return mContext;
     }
 
-    // ============================================================================================
-    // Native calls
-    // ============================================================================================
+    @NativeMethods
+    interface Natives {
+        long init(ContextualSearchManager caller);
 
-    private native long nativeInit();
-    private native void nativeDestroy(long nativeContextualSearchManager);
-    private native void nativeStartSearchTermResolutionRequest(long nativeContextualSearchManager,
-            ContextualSearchContext contextualSearchContext, WebContents baseWebContents);
-    protected native void nativeGatherSurroundingText(long nativeContextualSearchManager,
-            ContextualSearchContext contextualSearchContext, WebContents baseWebContents);
-    private native void nativeWhitelistContextualSearchJsApiUrl(
-            long nativeContextualSearchManager, String url);
-    private native void nativeEnableContextualSearchJsApiForWebContents(
-            long nativeContextualSearchManager, WebContents overlayWebContents);
-    // Don't call these directly, instead call the private methods that cache the results.
-    private native String nativeGetTargetLanguage(long nativeContextualSearchManager);
-    private native String nativeGetAcceptLanguages(long nativeContextualSearchManager);
+        void destroy(long nativeContextualSearchManager, ContextualSearchManager caller);
+        void startSearchTermResolutionRequest(long nativeContextualSearchManager,
+                ContextualSearchManager caller, ContextualSearchContext contextualSearchContext,
+                WebContents baseWebContents);
+        void gatherSurroundingText(long nativeContextualSearchManager,
+                ContextualSearchManager caller, ContextualSearchContext contextualSearchContext,
+                WebContents baseWebContents);
+        void whitelistContextualSearchJsApiUrl(
+                long nativeContextualSearchManager, ContextualSearchManager caller, String url);
+        void enableContextualSearchJsApiForWebContents(long nativeContextualSearchManager,
+                ContextualSearchManager caller, WebContents overlayWebContents);
+        // Don't call these directly, instead call the private methods that cache the results.
+        String getTargetLanguage(
+                long nativeContextualSearchManager, ContextualSearchManager caller);
+
+        String getAcceptLanguages(
+                long nativeContextualSearchManager, ContextualSearchManager caller);
+    }
 }

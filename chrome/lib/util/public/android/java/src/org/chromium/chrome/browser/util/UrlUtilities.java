@@ -360,11 +360,6 @@ public class UrlUtilities {
         return noScheme;
     }
 
-    // TODO(estevenson): Remove this after downstream usages are removed.
-    public static boolean nativeIsGoogleSearchUrl(String url) {
-        return UrlUtilitiesJni.get().isGoogleSearchUrl(url);
-    }
-
     @NativeMethods
     public interface Natives {
         boolean isDownloadable(String url);

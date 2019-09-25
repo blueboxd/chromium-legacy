@@ -21,6 +21,7 @@
 #include "components/password_manager/core/browser/android_affiliation/affiliated_match_helper.h"
 #include "components/password_manager/core/browser/android_affiliation/affiliation_service.h"
 #include "components/password_manager/core/browser/android_affiliation/mock_affiliated_match_helper.h"
+#include "components/password_manager/core/browser/password_leak_history_consumer.h"
 #include "components/password_manager/core/browser/password_manager_test_utils.h"
 #include "components/password_manager/core/browser/password_reuse_detector.h"
 #include "components/password_manager/core/browser/password_store_consumer.h"
@@ -37,6 +38,7 @@ using autofill::PasswordForm;
 using base::WaitableEvent;
 using testing::_;
 using testing::DoAll;
+using testing::UnorderedElementsAre;
 using testing::WithArg;
 
 namespace password_manager {
@@ -73,6 +75,16 @@ constexpr const char kTestAndroidName1[] = "Example Android App 1";
 constexpr const char kTestAndroidIconURL1[] = "https://example.com/icon_1.png";
 constexpr const char kTestAndroidName2[] = "Example Android App 2";
 constexpr const char kTestAndroidIconURL2[] = "https://example.com/icon_2.png";
+
+class MockPasswordLeakHistoryConsumer : public PasswordLeakHistoryConsumer {
+ public:
+  MockPasswordLeakHistoryConsumer() = default;
+
+  MOCK_METHOD1(OnGetLeakedCredentials, void(std::vector<LeakedCredentials>));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockPasswordLeakHistoryConsumer);
+};
 
 class MockPasswordStoreConsumer : public PasswordStoreConsumer {
  public:
@@ -1232,6 +1244,39 @@ TEST_F(PasswordStoreTest, ReportMetricsForNonSyncPassword) {
   histogram_tester.ExpectBucketCount(
       "PasswordManager.NonSyncPasswordHashChange",
       GaiaPasswordHashChange::NOT_SYNC_PASSWORD_CHANGE, 1);
+  store->ShutdownOnUIThread();
+}
+
+TEST_F(PasswordStoreTest, GetAllLeakedCredentials) {
+  LeakedCredentials leaked_credentials;
+  leaked_credentials.url = GURL("https://example.com");
+  leaked_credentials.username = base::ASCIIToUTF16("username");
+  leaked_credentials.create_time = base::Time::FromTimeT(1);
+
+  LeakedCredentials leaked_credentials2;
+  leaked_credentials2.url = GURL("https://example2.com");
+  leaked_credentials2.username = base::ASCIIToUTF16("username2");
+  leaked_credentials2.create_time = base::Time::FromTimeT(2);
+
+  scoped_refptr<PasswordStoreDefault> store = CreatePasswordStore();
+  store->Init(syncer::SyncableService::StartSyncFlare(), nullptr);
+
+  store->AddLeakedCredentials(leaked_credentials);
+  store->AddLeakedCredentials(leaked_credentials2);
+  MockPasswordLeakHistoryConsumer consumer;
+  EXPECT_CALL(consumer, OnGetLeakedCredentials(UnorderedElementsAre(
+                            leaked_credentials, leaked_credentials2)));
+  store->GetAllLeakedCredentials(&consumer);
+  WaitForPasswordStore();
+  testing::Mock::VerifyAndClearExpectations(&consumer);
+
+  store->RemoveLeakedCredentials(leaked_credentials.url,
+                                 leaked_credentials.username);
+  EXPECT_CALL(consumer, OnGetLeakedCredentials(
+                            UnorderedElementsAre(leaked_credentials2)));
+  store->GetAllLeakedCredentials(&consumer);
+  WaitForPasswordStore();
+
   store->ShutdownOnUIThread();
 }
 

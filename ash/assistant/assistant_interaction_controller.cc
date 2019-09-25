@@ -19,6 +19,7 @@
 #include "ash/assistant/util/assistant_util.h"
 #include "ash/assistant/util/deep_link_util.h"
 #include "ash/assistant/util/histogram_util.h"
+#include "ash/public/cpp/android_intent_helper.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
 #include "ash/public/cpp/ash_pref_names.h"
 #include "ash/public/cpp/assistant/assistant_setup.h"
@@ -29,6 +30,7 @@
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/bind.h"
 #include "base/optional.h"
+#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chromeos/services/assistant/public/features.h"
 #include "components/prefs/pref_service.h"
@@ -41,6 +43,8 @@ namespace ash {
 namespace {
 
 constexpr int kWarmerWelcomesMaxTimesTriggered = 3;
+constexpr char kAndroidIntentScheme[] = "intent://";
+constexpr char kAndroidIntentPrefix[] = "#Intent";
 
 // Helpers ---------------------------------------------------------------------
 
@@ -655,6 +659,40 @@ void AssistantInteractionController::OnOpenUrlResponse(const GURL& url,
   // a server response so that we can differentiate from navigation attempts
   // initiated by direct user interaction.
   assistant_controller_->OpenUrl(url, in_background, /*from_server=*/true);
+}
+
+void AssistantInteractionController::OnOpenAppResponse(
+    chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
+    OnOpenAppResponseCallback callback) {
+  if (model_.interaction_state() != InteractionState::kActive)
+    return;
+
+  auto* android_helper = AndroidIntentHelper::GetInstance();
+  if (!android_helper) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  auto intent = android_helper->GetAndroidAppLaunchIntent(std::move(app_info));
+  if (!intent.has_value()) {
+    std::move(callback).Run(false);
+    return;
+  }
+
+  // Common Android intent might starts with intent scheme "intent://" or
+  // Android app scheme "android-app://". But it might also only contains
+  // reference starts with "#Intent".
+  // However, GURL requires the URL spec to be non-empty, which invalidate the
+  // intent starts with "#Intent". For this case, we adding the Android intent
+  // scheme to the intent to validate it for GURL constructor.
+  auto intent_str = intent.value();
+  if (base::StartsWith(intent_str, kAndroidIntentPrefix,
+                       base::CompareCase::SENSITIVE)) {
+    intent_str = kAndroidIntentScheme + intent_str;
+  }
+  assistant_controller_->OpenUrl(GURL(intent_str), /*in_background=*/false,
+                                 /*from_server=*/true);
+  std::move(callback).Run(true);
 }
 
 void AssistantInteractionController::OnDialogPlateButtonPressed(

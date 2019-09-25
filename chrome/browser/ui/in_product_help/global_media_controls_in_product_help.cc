@@ -57,7 +57,17 @@ void GlobalMediaControlsInProductHelp::OnBrowserSetLastActive(
     StopListening();
 }
 
-void GlobalMediaControlsInProductHelp::ToolbarIconEnabled() {
+void GlobalMediaControlsInProductHelp::OnMediaDialogOpened() {
+  GetTracker()->NotifyEvent(
+      feature_engagement::events::kGlobalMediaControlsOpened);
+}
+
+void GlobalMediaControlsInProductHelp::OnMediaButtonHidden() {
+  // Media has stopped playing. Stop watching for active tab changes.
+  StopListening();
+}
+
+void GlobalMediaControlsInProductHelp::OnMediaButtonEnabled() {
   // If the current window isn't for our profile, then the playing media that
   // caused the toolbar icon to be enabled is definitely not in the foreground
   // tab (since it can't be in this window). Therefore, we don't assume the
@@ -82,14 +92,9 @@ void GlobalMediaControlsInProductHelp::ToolbarIconEnabled() {
   observed_tab_strip_model_->AddObserver(this);
 }
 
-void GlobalMediaControlsInProductHelp::ToolbarIconDisabled() {
+void GlobalMediaControlsInProductHelp::OnMediaButtonDisabled() {
   // Media has stopped playing. Stop watching for active tab changes.
   StopListening();
-}
-
-void GlobalMediaControlsInProductHelp::GlobalMediaControlsOpened() {
-  GetTracker()->NotifyEvent(
-      feature_engagement::events::kGlobalMediaControlsOpened);
 }
 
 void GlobalMediaControlsInProductHelp::HelpDismissed() {

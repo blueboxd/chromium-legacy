@@ -112,19 +112,14 @@ BrowserAccessibility* BrowserAccessibilityPosition::GetNodeInTree(
 // On some platforms, most objects are represented in the text of their parents
 // with a special (embedded object) character and not with their actual text
 // contents.
-int BrowserAccessibilityPosition::MaxTextOffsetInParent() const {
+bool BrowserAccessibilityPosition::IsEmbeddedObjectInParent() const {
 #if defined(OS_WIN) || BUILDFLAG(USE_ATK)
-  if (IsNullPosition())
-    return INVALID_OFFSET;
-  if (GetAnchor()->IsTextOnlyObject())
-    return MaxTextOffset();
   // Not all objects in the internal accessibility tree are exposed to platform
   // APIs.
-  if (GetAnchor()->PlatformIsChildOfLeaf())
-    return MaxTextOffset();
-  return 1;
+  return !IsNullPosition() && !GetAnchor()->IsTextOnlyObject() &&
+         !GetAnchor()->PlatformIsChildOfLeaf();
 #else
-  return MaxTextOffset();
+  return false;
 #endif
 }
 

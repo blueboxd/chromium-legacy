@@ -53,7 +53,7 @@ VideoTestEnvironment::VideoTestEnvironment() {
   LOG(WARNING) << "Initializing Ozone Platform...\n"
                   "If this hangs indefinitely please call 'stop ui' first!";
   ui::OzonePlatform::InitParams params;
-  params.single_process = false;
+  params.single_process = true;
   ui::OzonePlatform::InitializeForUI(params);
   ui::OzonePlatform::InitializeForGPU(params);
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();

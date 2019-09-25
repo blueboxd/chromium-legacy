@@ -32,8 +32,11 @@ bool operator==(const LeakedCredentials& lhs, const LeakedCredentials& rhs);
 // Represents the 'leaked credentials' table in the Login Database.
 class LeakedCredentialsTable {
  public:
-  explicit LeakedCredentialsTable(sql::Database* db);
+  LeakedCredentialsTable() = default;
   ~LeakedCredentialsTable() = default;
+
+  // Initializes |db_|.
+  void Init(sql::Database* db);
 
   // Creates the leaked credentials table if it doesn't exist.
   bool CreateTableIfNecessary();
@@ -50,7 +53,7 @@ class LeakedCredentialsTable {
   std::vector<LeakedCredentials> GetAllRows();
 
  private:
-  sql::Database* db_;
+  sql::Database* db_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(LeakedCredentialsTable);
 };

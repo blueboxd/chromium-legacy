@@ -688,9 +688,10 @@ void DownloadFileImpl::NotifyObserver(SourceStream* source_stream,
             << "Received slice index out of bound!";
         received_slices_[source_stream->index()].finished = true;
       }
-
-      SetPotentialFileLength(source_stream->offset() +
-                             source_stream->bytes_read());
+      if (!should_terminate) {
+        SetPotentialFileLength(source_stream->offset() +
+                               source_stream->bytes_read());
+      }
     }
     num_active_streams_--;
 

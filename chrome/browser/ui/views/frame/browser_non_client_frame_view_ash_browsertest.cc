@@ -78,6 +78,7 @@
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/base/class_property.h"
@@ -966,7 +967,7 @@ IN_PROC_BROWSER_TEST_P(WebAppNonClientFrameViewAshTest, ShowZoomIcon) {
   EXPECT_FALSE(zoom_icon->GetVisible());
   EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
 
-  zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(1.5));
+  zoom_controller->SetZoomLevel(blink::PageZoomFactorToZoomLevel(1.5));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_TRUE(zoom_icon->GetVisible());

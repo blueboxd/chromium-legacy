@@ -98,6 +98,8 @@ class AssistantInteractionController
       std::vector<AssistantSuggestionPtr> response) override;
   void OnTextResponse(const std::string& response) override;
   void OnOpenUrlResponse(const GURL& url, bool in_background) override;
+  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
+                         OnOpenAppResponseCallback callback) override;
   void OnSpeechRecognitionStarted() override;
   void OnSpeechRecognitionIntermediateResult(
       const std::string& high_confidence_text,

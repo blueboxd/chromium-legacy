@@ -150,7 +150,7 @@ class AutofillAssistantUiTestUtil {
         ((BottomContainer) activity.findViewById(R.id.bottom_container))
                 .setBottomSheet(bottomSheet);
 
-        return new BottomSheetController(activity, activity.getLifecycleDispatcher(),
+        return new BottomSheetController(activity.getLifecycleDispatcher(),
                 activity.getActivityTabProvider(), activity.getScrim(), bottomSheet,
                 activity.getCompositorViewHolder().getLayoutManager().getOverlayPanelManager());
     }

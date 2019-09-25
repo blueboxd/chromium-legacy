@@ -110,6 +110,8 @@ void LogDeviceThermalState(DeviceThermalState thermal_state) {
 }
 }  // namespace
 
+const float kCriticallyLowBatteryLevel = 0.01;
+
 MobileSessionShutdownMetricsProvider::MobileSessionShutdownMetricsProvider(
     metrics::MetricsService* metrics_service)
     : metrics_service_(metrics_service) {
@@ -172,15 +174,15 @@ void MobileSessionShutdownMetricsProvider::ProvidePreviousSessionData(
   bool possible_explanation =
       // Log any of the following cases as a possible explanation for the
       // crash:
+      // - device restarted while the battery was critically low
+      (session_info.deviceBatteryState == DeviceBatteryState::kUnplugged &&
+       session_info.deviceBatteryLevel <= kCriticallyLowBatteryLevel &&
+       session_info.OSRestartedAfterPreviousSession) ||
       // - storage was critically low
       (session_info.availableDeviceStorage >= 0 &&
        session_info.availableDeviceStorage <= kCriticallyLowDeviceStorage) ||
       // - OS version changed
       session_info.isFirstSessionAfterOSUpgrade ||
-      // - OS was restarted
-      session_info.OSRestartedAfterPreviousSession ||
-      // - low power mode enabled
-      session_info.deviceWasInLowPowerMode ||
       // - device in abnormal thermal state
       session_info.deviceThermalState == DeviceThermalState::kCritical ||
       session_info.deviceThermalState == DeviceThermalState::kSerious;

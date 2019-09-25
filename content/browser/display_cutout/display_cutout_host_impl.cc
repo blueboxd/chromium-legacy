@@ -7,6 +7,7 @@
 #include "content/browser/display_cutout/display_cutout_constants.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/navigation_handle.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 
@@ -146,8 +147,8 @@ void DisplayCutoutHostImpl::SendSafeAreaToFrame(RenderFrameHost* rfh,
   if (!provider)
     return;
 
-  blink::mojom::DisplayCutoutClientAssociatedPtr client;
-  provider->GetInterface(&client);
+  mojo::AssociatedRemote<blink::mojom::DisplayCutoutClient> client;
+  provider->GetInterface(client.BindNewEndpointAndPassReceiver());
   client->SetSafeArea(blink::mojom::DisplayCutoutSafeArea::New(
       insets.top(), insets.left(), insets.bottom(), insets.right()));
 }

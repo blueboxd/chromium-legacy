@@ -805,10 +805,10 @@ void BlinkAXTreeSource::SerializeNode(WebAXObject src,
                                     src.AccessKey().Utf8());
     }
 
-    if (src.AriaAutoComplete().length()) {
+    if (src.AutoComplete().length()) {
       TruncateAndAddStringAttribute(dst,
                                     ax::mojom::StringAttribute::kAutoComplete,
-                                    src.AriaAutoComplete().Utf8());
+                                    src.AutoComplete().Utf8());
     }
 
     if (src.Action() != ax::mojom::DefaultActionVerb::kNone) {

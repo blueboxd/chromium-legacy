@@ -115,8 +115,11 @@ bool IsRendererDebugURL(const GURL& url) {
 bool IsSafeRedirectTarget(const GURL& from_url, const GURL& to_url) {
   static const base::NoDestructor<base::flat_set<base::StringPiece>>
       kUnsafeSchemes(base::flat_set<base::StringPiece>({
-        url::kAboutScheme, url::kDataScheme, url::kFileScheme,
+        url::kAboutScheme, url::kFileScheme,
             url::kFileSystemScheme, url::kBlobScheme,
+#if !defined(CHROMECAST_BUILD)
+            url::kDataScheme,
+#endif
 #if defined(OS_ANDROID)
             url::kContentScheme,
 #endif

@@ -39,6 +39,7 @@
 #include "build/build_config.h"
 #include "cc/layers/picture_layer.h"
 #include "third_party/blink/public/common/features.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/platform/web_float_point.h"
 #include "third_party/blink/public/platform/web_image.h"
 #include "third_party/blink/public/platform/web_input_event.h"
@@ -197,17 +198,11 @@ static const float minScaleChangeToTriggerZoom = 1.5f;
 static const float leftBoxRatio = 0.3f;
 static const int caretPadding = 10;
 
-// Mirrored from content/common/page_zoom.cc.
-const double kMinimumPageZoomFactor = 0.25;
-const double kMaximumPageZoomFactor = 5.0;
-
 namespace blink {
 
-// Change the text zoom level by kTextSizeMultiplierRatio each time the user
-// zooms text in or out (ie., change by 20%).  The min and max values limit
-// text zoom to half and 3x the original text size.  These three values match
-// those in Apple's port in WebKit/WebKit/WebView/WebView.mm
-const double WebView::kTextSizeMultiplierRatio = 1.2;
+// Historically, these values came from Webkit in
+// WebKitLegacy/mac/WebView/WebView.mm (named MinimumZoomMultiplier and
+// MaximumZoomMultiplier there).
 const double WebView::kMinTextSizeMultiplier = 0.5;
 const double WebView::kMaxTextSizeMultiplier = 3.0;
 
@@ -280,8 +275,8 @@ WebViewImpl::WebViewImpl(WebViewClient* client,
                          WebViewImpl* opener)
     : as_view_(client),
       chrome_client_(MakeGarbageCollected<ChromeClientImpl>(this)),
-      minimum_zoom_level_(ZoomFactorToZoomLevel(kMinimumPageZoomFactor)),
-      maximum_zoom_level_(ZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
+      minimum_zoom_level_(PageZoomFactorToZoomLevel(kMinimumPageZoomFactor)),
+      maximum_zoom_level_(PageZoomFactorToZoomLevel(kMaximumPageZoomFactor)),
       does_composite_(does_composite),
       fullscreen_controller_(std::make_unique<FullscreenController>(this)) {
   if (!AsView().client) {
@@ -2389,7 +2384,7 @@ double WebViewImpl::SetZoomLevel(double zoom_level) {
   float zoom_factor =
       zoom_factor_override_
           ? zoom_factor_override_
-          : static_cast<float>(ZoomLevelToZoomFactor(zoom_level_));
+          : static_cast<float>(PageZoomLevelToZoomFactor(zoom_level_));
   if (zoom_factor_for_device_scale_factor_) {
     if (compositor_device_scale_factor_override_) {
       // Adjust the page's DSF so that DevicePixelRatio becomes
@@ -2420,15 +2415,6 @@ float WebViewImpl::SetTextZoomFactor(float text_zoom_factor) {
   frame->SetTextZoomFactor(text_zoom_factor);
 
   return text_zoom_factor;
-}
-
-double WebView::ZoomLevelToZoomFactor(double zoom_level) {
-  return pow(kTextSizeMultiplierRatio, zoom_level);
-}
-
-double WebView::ZoomFactorToZoomLevel(double factor) {
-  // Since factor = 1.2^level, level = log(factor) / log(1.2)
-  return log(factor) / log(kTextSizeMultiplierRatio);
 }
 
 float WebViewImpl::PageScaleFactor() const {

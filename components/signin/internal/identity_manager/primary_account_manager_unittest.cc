@@ -41,7 +41,7 @@ class PrimaryAccountManagerTest : public testing::Test,
             std::make_unique<FakeProfileOAuth2TokenServiceDelegate>()),
         account_consistency_(signin::AccountConsistencyMethod::kDisabled),
         num_successful_signins_(0),
-        num_signouts_(0) {
+        num_unconsented_account_changed_(0) {
     AccountFetcherService::RegisterPrefs(user_prefs_.registry());
     AccountTrackerService::RegisterPrefs(user_prefs_.registry());
     ProfileOAuth2TokenService::RegisterProfilePrefs(user_prefs_.registry());
@@ -121,11 +121,9 @@ class PrimaryAccountManagerTest : public testing::Test,
     num_successful_signins_++;
   }
 
-#if !defined(OS_CHROMEOS)
-  void GoogleSignedOut(const CoreAccountInfo& account_info) override {
-    num_signouts_++;
+  void UnconsentedPrimaryAccountChanged(const CoreAccountInfo& info) override {
+    num_unconsented_account_changed_++;
   }
-#endif
 
   base::test::TaskEnvironment task_environment_;
   sync_preferences::TestingPrefServiceSyncable user_prefs_;
@@ -142,7 +140,7 @@ class PrimaryAccountManagerTest : public testing::Test,
   std::vector<std::string> cookies_;
   signin::AccountConsistencyMethod account_consistency_;
   int num_successful_signins_;
-  int num_signouts_;
+  int num_unconsented_account_changed_;
 };
 
 #if !defined(OS_CHROMEOS)
@@ -162,6 +160,7 @@ TEST_F(PrimaryAccountManagerTest, SignOut) {
   EXPECT_FALSE(manager_->IsAuthenticated());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().email.empty());
   EXPECT_TRUE(manager_->GetAuthenticatedAccountId().empty());
+  EXPECT_EQ(CoreAccountInfo(), manager_->GetUnconsentedPrimaryAccountInfo());
 }
 
 TEST_F(PrimaryAccountManagerTest, SignOutRevoke) {
@@ -205,6 +204,8 @@ TEST_F(PrimaryAccountManagerTest, SignOutDiceNoRevoke) {
   std::vector<CoreAccountId> expected_tokens = {main_account_id,
                                                 other_account_id};
   EXPECT_EQ(expected_tokens, token_service_.GetAccounts());
+  EXPECT_EQ(manager_->GetUnconsentedPrimaryAccountInfo(),
+            manager_->GetAuthenticatedAccountInfo());
 }
 
 TEST_F(PrimaryAccountManagerTest, SignOutDiceWithError) {
@@ -280,17 +281,21 @@ TEST_F(PrimaryAccountManagerTest, ProhibitedAfterStartup) {
 }
 #endif
 
-TEST_F(PrimaryAccountManagerTest, ExternalSignIn) {
+TEST_F(PrimaryAccountManagerTest, SignIn) {
   CreatePrimaryAccountManager();
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
   EXPECT_EQ(0, num_successful_signins_);
+  EXPECT_EQ(0, num_unconsented_account_changed_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, num_successful_signins_);
+  EXPECT_EQ(1, num_unconsented_account_changed_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
+  EXPECT_EQ(manager_->GetUnconsentedPrimaryAccountInfo(),
+            manager_->GetAuthenticatedAccountInfo());
 }
 
 TEST_F(PrimaryAccountManagerTest,
@@ -299,15 +304,18 @@ TEST_F(PrimaryAccountManagerTest,
   EXPECT_EQ("", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ("", manager_->GetAuthenticatedAccountId());
   EXPECT_EQ(0, num_successful_signins_);
+  EXPECT_EQ(0, num_unconsented_account_changed_);
 
   std::string account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
   manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, num_successful_signins_);
+  EXPECT_EQ(1, num_unconsented_account_changed_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 
   manager_->SignIn("user@gmail.com");
   EXPECT_EQ(1, num_successful_signins_);
+  EXPECT_EQ(1, num_unconsented_account_changed_);
   EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
   EXPECT_EQ(account_id, manager_->GetAuthenticatedAccountId());
 }
@@ -384,4 +392,87 @@ TEST_F(PrimaryAccountManagerTest, GaiaIdMigrationCrashInTheMiddle) {
     EXPECT_EQ(AccountTrackerService::MIGRATION_DONE,
               account_tracker()->GetMigrationState());
   }
+}
+
+TEST_F(PrimaryAccountManagerTest, RestoreFromPrefsConsented) {
+  CoreAccountId account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
+  user_prefs_.SetString(prefs::kGoogleServicesAccountId, account_id);
+  user_prefs_.SetBoolean(prefs::kGoogleServicesConsentedToSync, true);
+  CreatePrimaryAccountManager();
+  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
+  EXPECT_EQ(account_id.id, manager_->GetAuthenticatedAccountId());
+  EXPECT_EQ(manager_->GetUnconsentedPrimaryAccountInfo(),
+            manager_->GetAuthenticatedAccountInfo());
+}
+
+TEST_F(PrimaryAccountManagerTest, RestoreFromPrefsUnconsented) {
+  CoreAccountId account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
+  user_prefs_.SetString(prefs::kGoogleServicesAccountId, account_id);
+  user_prefs_.SetBoolean(prefs::kGoogleServicesConsentedToSync, false);
+  CreatePrimaryAccountManager();
+  EXPECT_EQ("user@gmail.com",
+            manager_->GetUnconsentedPrimaryAccountInfo().email);
+  EXPECT_EQ(account_id.id,
+            manager_->GetUnconsentedPrimaryAccountInfo().account_id);
+  EXPECT_TRUE(manager_->GetAuthenticatedAccountInfo().IsEmpty());
+}
+
+// If kGoogleServicesConsentedToSync is missing, the account is fully
+// authenticated.
+TEST_F(PrimaryAccountManagerTest, RestoreFromPrefsMissingConsentPref) {
+  CoreAccountId account_id = AddToAccountTracker("gaia_id", "user@gmail.com");
+  user_prefs_.SetString(prefs::kGoogleServicesAccountId, account_id);
+
+  const PrefService::Preference* consented_pref =
+      user_prefs_.FindPreference(prefs::kGoogleServicesConsentedToSync);
+  ASSERT_TRUE(consented_pref);                    // Pref is registered.
+  ASSERT_TRUE(consented_pref->IsDefaultValue());  // Pref is not set.
+
+  CreatePrimaryAccountManager();
+  EXPECT_TRUE(user_prefs_.GetBoolean(prefs::kGoogleServicesConsentedToSync));
+  EXPECT_EQ("user@gmail.com", manager_->GetAuthenticatedAccountInfo().email);
+  EXPECT_EQ(account_id.id, manager_->GetAuthenticatedAccountId());
+  EXPECT_EQ(manager_->GetUnconsentedPrimaryAccountInfo(),
+            manager_->GetAuthenticatedAccountInfo());
+}
+
+TEST_F(PrimaryAccountManagerTest, SetUnconsentedPrimaryAccountInfo) {
+  CreatePrimaryAccountManager();
+  EXPECT_EQ(CoreAccountInfo(), manager_->GetUnconsentedPrimaryAccountInfo());
+  EXPECT_EQ(0, num_unconsented_account_changed_);
+  EXPECT_EQ(0, num_successful_signins_);
+
+  // Set the unconsented primary account.
+  CoreAccountInfo account_info;
+  account_info.account_id = CoreAccountId("gaia_id");
+  account_info.gaia = "gaia_id";
+  account_info.email = "user@gmail.com";
+  manager_->SetUnconsentedPrimaryAccountInfo(account_info);
+  EXPECT_EQ(0, num_successful_signins_);
+  EXPECT_EQ(1, num_unconsented_account_changed_);
+  EXPECT_EQ(account_info, manager_->GetUnconsentedPrimaryAccountInfo());
+  EXPECT_EQ(CoreAccountInfo(), manager_->GetAuthenticatedAccountInfo());
+
+  // Set the same account again.
+  manager_->SetUnconsentedPrimaryAccountInfo(account_info);
+  EXPECT_EQ(0, num_successful_signins_);
+  EXPECT_EQ(1, num_unconsented_account_changed_);
+  EXPECT_EQ(account_info, manager_->GetUnconsentedPrimaryAccountInfo());
+  EXPECT_EQ(CoreAccountInfo(), manager_->GetAuthenticatedAccountInfo());
+
+  // Change the email to another equivalent email. The account is updated but
+  // observers are not notified.
+  account_info.email = "us.er@gmail.com";
+  manager_->SetUnconsentedPrimaryAccountInfo(account_info);
+  EXPECT_EQ(0, num_successful_signins_);
+  EXPECT_EQ(1, num_unconsented_account_changed_);
+  EXPECT_EQ(account_info, manager_->GetUnconsentedPrimaryAccountInfo());
+  EXPECT_EQ(CoreAccountInfo(), manager_->GetAuthenticatedAccountInfo());
+
+  // Clear it.
+  manager_->SetUnconsentedPrimaryAccountInfo(CoreAccountInfo());
+  EXPECT_EQ(0, num_successful_signins_);
+  EXPECT_EQ(2, num_unconsented_account_changed_);
+  EXPECT_EQ(CoreAccountInfo(), manager_->GetUnconsentedPrimaryAccountInfo());
+  EXPECT_EQ(CoreAccountInfo(), manager_->GetAuthenticatedAccountInfo());
 }

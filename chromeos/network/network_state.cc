@@ -411,6 +411,7 @@ std::string NetworkState::connection_state() const {
          connection_state_ == shill::kStateOffline ||
          connection_state_ == shill::kStateOnline ||
          connection_state_ == shill::kStateFailure ||
+         connection_state_ == shill::kStateDisconnect ||
          // TODO(https://crbug.com/552190): Remove kStateActivationFailure from
          // this list when occurrences in chromium code have been eliminated.
          connection_state_ == shill::kStateActivationFailure ||

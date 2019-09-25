@@ -807,7 +807,6 @@ class CONTENT_EXPORT RenderFrameImpl
                              const blink::WebURL& target) override;
   void DidDisplayContentWithCertificateErrors() override;
   void DidRunContentWithCertificateErrors() override;
-  void ReportLegacyTLSVersion(const blink::WebURL& url) override;
   void DidChangePerformanceTiming() override;
   void DidChangeCpuTiming(base::TimeDelta time) override;
   void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) override;
@@ -1760,10 +1759,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // Return the mojo interface for making ClipboardHost calls.
   mojo::Remote<blink::mojom::ClipboardHost> clipboard_host_;
 #endif
-
-  // The origins for which a legacy TLS version warning has been printed. The
-  // size of this set is capped, after which no more warnings are printed.
-  std::set<url::Origin> tls_version_warning_origins_;
 
   std::unique_ptr<WebSocketHandshakeThrottleProvider>
       websocket_handshake_throttle_provider_;

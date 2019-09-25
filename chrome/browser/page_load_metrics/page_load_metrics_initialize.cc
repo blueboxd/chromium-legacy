@@ -8,7 +8,6 @@
 #include <utility>
 
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/page_load_metrics/observers/aborts_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ad_metrics/ads_page_load_metrics_observer.h"
@@ -47,7 +46,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
 #include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
-#include "components/page_load_metrics/browser/page_load_metrics_embedder_interface.h"
+#include "components/page_load_metrics/browser/page_load_metrics_embedder_base.h"
 #include "components/page_load_metrics/browser/page_load_tracker.h"
 #include "components/rappor/rappor_service_impl.h"
 #include "content/public/browser/web_contents.h"
@@ -69,33 +68,33 @@ namespace chrome {
 namespace {
 
 class PageLoadMetricsEmbedder
-    : public page_load_metrics::PageLoadMetricsEmbedderInterface {
+    : public page_load_metrics::PageLoadMetricsEmbedderBase {
  public:
   explicit PageLoadMetricsEmbedder(content::WebContents* web_contents);
   ~PageLoadMetricsEmbedder() override;
 
-  // page_load_metrics::PageLoadMetricsEmbedderInterface:
+  // page_load_metrics::PageLoadMetricsEmbedderBase:
   bool IsNewTabPageUrl(const GURL& url) override;
-  void RegisterObservers(page_load_metrics::PageLoadTracker* tracker) override;
-  std::unique_ptr<base::OneShotTimer> CreateTimer() override;
   bool IsPrerender(content::WebContents* web_contents) override;
   bool IsExtensionUrl(const GURL& url) override;
 
+ protected:
+  // page_load_metrics::PageLoadMetricsEmbedderBase:
+  void RegisterEmbedderObservers(
+      page_load_metrics::PageLoadTracker* tracker) override;
+  bool IsPrerendering() const override;
+
  private:
-  bool IsPrerendering() const;
-
-  content::WebContents* const web_contents_;
-
   DISALLOW_COPY_AND_ASSIGN(PageLoadMetricsEmbedder);
 };
 
 PageLoadMetricsEmbedder::PageLoadMetricsEmbedder(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {}
+    : PageLoadMetricsEmbedderBase(web_contents) {}
 
-PageLoadMetricsEmbedder::~PageLoadMetricsEmbedder() {}
+PageLoadMetricsEmbedder::~PageLoadMetricsEmbedder() = default;
 
-void PageLoadMetricsEmbedder::RegisterObservers(
+void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
     page_load_metrics::PageLoadTracker* tracker) {
   if (!IsPrerendering()) {
     tracker->AddObserver(std::make_unique<AbortsPageLoadMetricsObserver>());
@@ -131,7 +130,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
         std::make_unique<SignedExchangePageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<HttpsEngagementPageLoadMetricsObserver>(
-            web_contents_->GetBrowserContext()));
+            web_contents()->GetBrowserContext()));
     tracker->AddObserver(std::make_unique<ProtocolPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<TabRestorePageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<UseCounterPageLoadMetricsObserver>());
@@ -152,7 +151,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
         no_state_prefetch_observer =
             NoStatePrefetchPageLoadMetricsObserver::CreateIfNeeded(
-                web_contents_);
+                web_contents());
     if (no_state_prefetch_observer)
       tracker->AddObserver(std::move(no_state_prefetch_observer));
 #if defined(OS_ANDROID)
@@ -161,7 +160,7 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     std::unique_ptr<page_load_metrics::PageLoadMetricsObserver>
         loading_predictor_observer =
             LoadingPredictorPageLoadMetricsObserver::CreateIfNeeded(
-                web_contents_);
+                web_contents());
     if (loading_predictor_observer)
       tracker->AddObserver(std::move(loading_predictor_observer));
 #if !defined(OS_ANDROID)
@@ -175,22 +174,18 @@ void PageLoadMetricsEmbedder::RegisterObservers(
       std::make_unique<OmniboxSuggestionUsedMetricsObserver>(IsPrerendering()));
   tracker->AddObserver(
       SecurityStatePageLoadMetricsObserver::MaybeCreateForProfile(
-          web_contents_->GetBrowserContext()));
+          web_contents()->GetBrowserContext()));
   tracker->AddObserver(std::make_unique<DataUseMetricsObserver>());
 }
 
 bool PageLoadMetricsEmbedder::IsPrerendering() const {
-  return prerender::PrerenderContents::FromWebContents(web_contents_) !=
+  return prerender::PrerenderContents::FromWebContents(web_contents()) !=
          nullptr;
-}
-
-std::unique_ptr<base::OneShotTimer> PageLoadMetricsEmbedder::CreateTimer() {
-  return std::make_unique<base::OneShotTimer>();
 }
 
 bool PageLoadMetricsEmbedder::IsNewTabPageUrl(const GURL& url) {
   Profile* profile =
-      Profile::FromBrowserContext(web_contents_->GetBrowserContext());
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext());
   if (!profile)
     return false;
   return search::IsInstantNTPURL(url, profile);

@@ -44,13 +44,11 @@ void AssistantSetupController::OnAssistantControllerDestroying() {
 void AssistantSetupController::OnDeepLinkReceived(
     assistant::util::DeepLinkType type,
     const std::map<std::string, std::string>& params) {
-  using namespace assistant::util;
-
-  if (type != DeepLinkType::kOnboarding)
+  if (type != assistant::util::DeepLinkType::kOnboarding)
     return;
 
-  base::Optional<bool> relaunch =
-      GetDeepLinkParamAsBool(params, DeepLinkParam::kRelaunch);
+  base::Optional<bool> relaunch = assistant::util::GetDeepLinkParamAsBool(
+      params, assistant::util::DeepLinkParam::kRelaunch);
 
   StartOnboarding(relaunch.value_or(false));
 }

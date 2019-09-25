@@ -19,7 +19,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
-#include "content/public/common/page_zoom.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/aura/window.h"
 
 namespace chromeos {
@@ -137,7 +137,7 @@ void SystemWebDialogDelegate::OnDialogShown(
     // Temporary means the lifetime of the WebContents.
     zoom_map->SetTemporaryZoomLevel(rvh->GetProcess()->GetID(),
                                     rvh->GetRoutingID(),
-                                    content::ZoomFactorToZoomLevel(1.0));
+                                    blink::PageZoomFactorToZoomLevel(1.0));
   }
 }
 

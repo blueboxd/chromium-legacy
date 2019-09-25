@@ -195,7 +195,6 @@ source_set("common") {
     "page_messages.h",
     "page_state_serialization.cc",
     "page_state_serialization.h",
-    "page_zoom.cc",
     "pepper_file_util.cc",
     "pepper_file_util.h",
     "pepper_plugin_list.cc",

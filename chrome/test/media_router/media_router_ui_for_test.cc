@@ -5,6 +5,7 @@
 #include "chrome/test/media_router/media_router_ui_for_test.h"
 
 #include "base/bind.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/media/router/media_router_factory.h"
 #include "chrome/browser/media/router/media_routes_observer.h"

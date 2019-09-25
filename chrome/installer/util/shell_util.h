@@ -628,6 +628,8 @@ class ShellUtil {
   // |command_line| is the command to execute when opening a file via this
   // association. It should contain "%1" (to tell Windows to pass the filename
   // as an argument).
+  // |application_name| is the friendly name displayed for this application in
+  // the Open With menu.
   // |file_type_name| and |icon_path| are the friendly name, and the path of the
   // icon, respectively, that will be used for files of these types when
   // associated with this application by default. (They are NOT the name/icon
@@ -638,6 +640,7 @@ class ShellUtil {
   static bool AddFileAssociations(
       const base::string16& prog_id,
       const base::CommandLine& command_line,
+      const base::string16& application_name,
       const base::string16& file_type_name,
       const base::FilePath& icon_path,
       const std::set<base::string16>& file_extensions);

@@ -3,13 +3,11 @@
 <translationbundle lang="zh-CN">
 <translation id="1276998909102132017">图库图片</translation>
 <translation id="1430915738399379752">打印</translation>
-<translation id="1462966117743110941">您的相机现在支持新模式，并且您的照片和视频将出现在“下载内容”文件夹中。</translation>
 <translation id="1620510694547887537">摄像头</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">未记录任何数据</translation>
 <translation id="1862930711583847113">无法导出“<ph name="FILE" />”</translation>
 <translation id="1899697626337024495">照片分辨率</translation>
-<translation id="2008689030244369546">全新面貌</translation>
 <translation id="2036868001356139588">定时器时长</translation>
 <translation id="2050339315714019657">纵向</translation>
 <translation id="2064538373111010176">已切换到<ph name="CAMERA" /></translation>
@@ -44,9 +42,7 @@
 <translation id="5671277269877808209">方形</translation>
 <translation id="5775960006311140197">专家模式</translation>
 <translation id="5869546221129391014">网格</translation>
-<translation id="6040143037577758943">关闭</translation>
 <translation id="6073451960410192870">停止录制</translation>
-<translation id="6165508094623778733">了解详情</translation>
 <translation id="6197807149213783179">保存元数据</translation>
 <translation id="6233780560267770709">3 x 3</translation>
 <translation id="6243827288366940320">黄金比例</translation>

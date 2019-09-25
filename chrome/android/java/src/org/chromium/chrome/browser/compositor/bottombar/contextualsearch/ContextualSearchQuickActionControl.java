@@ -11,13 +11,13 @@ import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.content.res.Resources;
 import android.graphics.drawable.Drawable;
-import android.os.StrictMode;
 import android.provider.Browser;
 import android.support.v4.graphics.drawable.DrawableCompat;
 import android.text.TextUtils;
 import android.widget.ImageView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.ChromeTabbedActivity2;
@@ -232,21 +232,12 @@ public class ContextualSearchQuickActionControl extends ViewResourceInflater {
 
         // If a default is set, PackageManager#resolveActivity() will return the
         // ResolveInfo for the default activity.
-        ResolveInfo possibleDefaultActivity = null;
-
-        // On KitKat, calling PackageManager#resolveActivity() causes disk reads and
-        // writes. Temporarily allow this while resolving the intent.
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
-        try {
-            possibleDefaultActivity = packageManager.resolveActivity(mIntent, 0);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        ResolveInfo possibleDefaultActivity = PackageManagerUtils.resolveActivity(mIntent, 0);
 
         // PackageManager#queryIntentActivities() will return a list of activities that
         // can handle the intent, sorted from best to worst. If there are no matching
         // activities, an empty list is returned.
-        List<ResolveInfo> resolveInfoList = packageManager.queryIntentActivities(mIntent, 0);
+        List<ResolveInfo> resolveInfoList = PackageManagerUtils.queryIntentActivities(mIntent, 0);
 
         int numMatchingActivities = 0;
         ResolveInfo defaultActivityResolveInfo = null;

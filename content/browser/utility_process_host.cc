@@ -392,7 +392,6 @@ bool UtilityProcessHost::StartProcess() {
       network::switches::kIgnoreUrlFetcherCertRequests,
       network::switches::kLogNetLog,
       network::switches::kNetLogCaptureMode,
-      network::switches::kNoReferrers,
       network::switches::kExplicitlyAllowedPorts,
       service_manager::switches::kNoSandbox,
 #if defined(OS_MACOSX)

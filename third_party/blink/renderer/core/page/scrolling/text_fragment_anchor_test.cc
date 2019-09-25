@@ -1562,6 +1562,105 @@ TEST_F(TextFragmentAnchorTest, DismissTextHighlightInView) {
   EXPECT_FALSE(GetDocument().View()->GetFragmentAnchor());
 }
 
+// Test that the fragment directive delimiter :~: works properly and is stripped
+// from the URL.
+TEST_F(TextFragmentAnchorTest, FragmentDirectiveDelimiter) {
+  SimRequest request("https://example.com/test.html#:~:targetText=test",
+                     "text/html");
+  LoadURL("https://example.com/test.html#:~:targetText=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 1200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(1u, GetDocument().Markers().Markers().size());
+
+  EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html");
+}
+
+// Test that a :~: fragment directive is scrolled into view and is stripped from
+// the URL when there's also a valid element fragment.
+TEST_F(TextFragmentAnchorTest, FragmentDirectiveDelimiterWithElementFragment) {
+  SimRequest request("https://example.com/test.html#element:~:targetText=test",
+                     "text/html");
+  LoadURL("https://example.com/test.html#element:~:targetText=test");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      #text {
+        position: absolute;
+        top: 1000px;
+      }
+      #element {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="text">This is a test page</p>
+    <div id="element">Some text</div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  EXPECT_EQ(GetDocument().Url(), "https://example.com/test.html#element");
+
+  Element& p = *GetDocument().getElementById("text");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(p)))
+      << "<p> Element wasn't scrolled into view, viewport's scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+}
+
+// Test that a fragment directive is stripped from the URL even if it is not a
+// targetText.
+TEST_F(TextFragmentAnchorTest, IdFragmentWithFragmentDirective) {
+  SimRequest request("https://example.com/test.html#element:~:id", "text/html");
+  LoadURL("https://example.com/test.html#element:~:id");
+  request.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        height: 2200px;
+      }
+      p {
+        position: absolute;
+        top: 1000px;
+      }
+      div {
+        position: absolute;
+        top: 2000px;
+      }
+    </style>
+    <p id="element">This is a test page</p>
+    <div id="element:~:id">Some text</div>
+  )HTML");
+  Compositor().BeginFrame();
+
+  RunAsyncMatchingTasks();
+
+  Element& div = *GetDocument().getElementById("element");
+
+  EXPECT_TRUE(ViewportRect().Contains(BoundingRectInFrame(div)))
+      << "Should have scrolled <div> into view but didn't, scroll offset: "
+      << LayoutViewport()->GetScrollOffset().ToString();
+}
+
 }  // namespace
 
 }  // namespace blink

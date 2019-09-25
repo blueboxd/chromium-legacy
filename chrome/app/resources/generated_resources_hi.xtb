@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">सुरक्षा कुंजी लॉक कर दी गई है क्योंकि गलत पिन कई बार डाला गया है. सुरक्षा कुंजी को अनलॉक करने के लिए, इसे हटाएं और फिर से लगाएं.</translation>
 <translation id="1137673463384776352"><ph name="APP" /> में लिंक खोलें</translation>
 <translation id="1140351953533677694">अपने ब्लूटूथ और Serial डिवाइस एक्सेस करें</translation>
+<translation id="114036956334641753">ऑडियो और कैप्शन</translation>
 <translation id="1140610710803014750">अपने सभी डिवाइस पर अपने बुकमार्क पाने के लिए साइन इन करें और सिंक चालू करें.</translation>
 <translation id="1140746652461896221">किसी भी पेज पर आपकी देखी गई सामग्री पर रोक लगाएं</translation>
 <translation id="1143142264369994168">प्रमाणपत्र हस्ताक्षरकर्ता</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">ज्ञात नेटवर्क</translation>
 <translation id="123578888592755962">डिस्‍क भरी हुई है</translation>
 <translation id="1238191093934674082">खुला VPN</translation>
+<translation id="1239594683407221485">Files ऐप्लिकेशन में डिवाइस की सामग्री देखें.</translation>
 <translation id="124116460088058876">ज़्यादा भाषाएं</translation>
 <translation id="1241753985463165747">लागू किए जाने पर अभी वाली वेबसाइट पर मौजूद अपना सभी डेटा पढ़ें और बदलें</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> आपकी सेटिंग को रीसेट करना चाहता है.</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">इंटरनेट डिस्‍कनेक्‍ट हो गया है. कृपया अपना इंटरनेट कनेक्‍शन जाँचें और फिर से कोशिश करें.</translation>
 <translation id="1463112138205428654">'बेहतर सुरक्षा' की मदद से <ph name="FILE_NAME" /> पर रोक लगाई गई थी.</translation>
 <translation id="1464258312790801189">आपके खाते</translation>
+<translation id="1464781208867302907">डिवाइस प्राथमिकताओं के लिए, सेटिंग पेज पर जाएं.</translation>
 <translation id="1465176863081977902">ऑडियो के पते को कॉ&amp;पी करें</translation>
 <translation id="1465827627707997754">पिज़्ज़ा का टुकड़ा</translation>
 <translation id="1468571364034902819">इस प्रोफ़ाइल का इस्तेमाल नहीं कर सकते</translation>
@@ -744,6 +747,7 @@
 <translation id="2099686503067610784">सर्वर प्रमाणपत्र "<ph name="CERTIFICATE_NAME" />" मिटाएं?</translation>
 <translation id="2100273922101894616">अपने आप साइन इन करने की सुविधा</translation>
 <translation id="2101225219012730419">वर्शन:</translation>
+<translation id="2111670510994270194">नए टैब के लिए दाईं ओर</translation>
 <translation id="21133533946938348">टैब छोटा करें</translation>
 <translation id="2113479184312716848">&amp;फ़ाइल खोलें...</translation>
 <translation id="2113921862428609753">अथॉरिटी इनफार्मेशन एक्सेस</translation>
@@ -1097,7 +1101,6 @@
 <translation id="2586672484245266891">कृपया थोड़ा छोटा यूआरएल लिखें</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> की ओर से डिवाइस</translation>
 <translation id="2594999711683503743">Google पर खोजें या URL टाइप करें</translation>
-<translation id="2597521610396315071">निगरानी जोड़ें</translation>
 <translation id="2603115962224169880">कंप्यूटर साफ़ करें</translation>
 <translation id="2603463522847370204">&amp;गुप्त विंडो में खोलें</translation>
 <translation id="2604255671529671813">नेटवर्क कनेक्शन गड़बड़ी</translation>
@@ -1790,6 +1793,7 @@
 <translation id="3630995161997703415">इस साइट को अपनी अलमारी में जोड़ें ताकि आप किसी भी समय इसका उपयोग कर सकें</translation>
 <translation id="3636096452488277381">कैसे हैं, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> बाकी</translation>
+<translation id="3637561406135221044">संवेदनशील जानकारी के लिए फ़ाइलें स्कैन की जा रही हैं...</translation>
 <translation id="3637682276779847508">अगर आप सही पिन अनलॉक कुंजी नहीं डाल पाते हैं तो आपका SIM कार्ड हमेशा के लिए अक्षम कर दिया जाएगा.</translation>
 <translation id="3640214691812501263"><ph name="USER_NAME" /> के लिए "<ph name="EXTENSION_NAME" />" को जोड़ें?</translation>
 <translation id="3640613767643722554">अपनी Assistant को आपकी आवाज़ पहचानना सिखाएं</translation>
@@ -2227,6 +2231,7 @@
 <translation id="425573743389990240">बैटरी डिस्चार्ज दर वॉट में (ऋणात्मक मान का अर्थ है कि बैटरी चार्ज हो रही है)</translation>
 <translation id="4256316378292851214">इस रूप में वीडियो स&amp;हेजें...</translation>
 <translation id="4258348331913189841">फ़ाइल सिस्टम</translation>
+<translation id="4263223596040212967">अपना कीबोर्ड लेआउट जांचें और फिर से कोशिश करें.</translation>
 <translation id="4263757076580287579">प्रिंटर पंजीकरण को रद्द कर दिया गया है.</translation>
 <translation id="426564820080660648">अपडेट की जाँच करने के लिए, कृपया Ethernet या वाई-फ़ाई का उपयोग करें.</translation>
 <translation id="4267953847983678297">माेबाइल नेटवर्क से अपने आप कनेक्ट करें</translation>
@@ -2322,6 +2327,7 @@
 <translation id="4416582610654027550">एक मान्य यूआरएल टाइप करें</translation>
 <translation id="4419409365248380979"><ph name="HOST" /> को हमेशा कुकी सेट करने की अनुमति दें</translation>
 <translation id="4419610272958564173">अज्ञात डिवाइस (विक्रेता: <ph name="VENDOR_ID" />, उत्पाद: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">कनेक्ट करने में समस्या है. कृपया सहायता के लिए अपनी <ph name="CARRIER_NAME" /> से संपर्क करें.</translation>
 <translation id="4421932782753506458">फ्लफ़ी</translation>
 <translation id="4423376891418188461">सेटिंग फिर से स्थापित करें</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, आपके व्यवस्थापक के लिए ज़रूरी है कि आप अपना पासवर्ड बदलें.</translation>
@@ -2997,6 +3003,7 @@
 <translation id="5457599981699367932">मेहमान के रूप में ब्राउज़ करें</translation>
 <translation id="5457991019809708398">चालू है, रोमिंग में नहीं है</translation>
 <translation id="5458998536542739734">लॉक स्क्रीन नोट</translation>
+<translation id="546322474339998983">Chrome ब्राउज़र और <ph name="DEVICE_TYPE" /> लॉन्चर इसका इस्तेमाल करते हैं</translation>
 <translation id="5463231940765244860">डालें</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> का इंडेक्स</translation>
 <translation id="5463856536939868464">मेन्यू में बुकमार्क छुपे हुए हैं</translation>
@@ -3294,6 +3301,7 @@
 <translation id="5869948122057593679">'अपनी सभी विंडो बंद करें'</translation>
 <translation id="5870086504539785141">सुलभता मेन्यू बंद करें</translation>
 <translation id="5870155679953074650">हार्ड फ़ॉल्ट</translation>
+<translation id="5876851302954717356">नए टैब के लिए दाईं ओर</translation>
 <translation id="5877064549588274448">चैनल बदल दिया गया है. बदलावों का लागू करने के लिए अपने डिवाइस को फिर से प्रारंभ करें.</translation>
 <translation id="5877584842898320529">चुना गया प्रिंटर उपलब्ध नहीं है या ठीक से इंस्टॉल नहीं किया गया है. <ph name="BR" /> अपना प्रिंटर जाँचें या कोई दूसरा प्रिंटर चुनकर देखें.</translation>
 <translation id="5882919346125742463">ज्ञात नेटवर्क</translation>
@@ -4492,6 +4500,7 @@
 <translation id="7685049629764448582">JavaScript मेमोरी</translation>
 <translation id="7685087414635069102">पिन की ज़रूरत है</translation>
 <translation id="7685301384041462804">वीआर इस्तेमाल करने से पहले पक्का कर लें कि आप इस साइट पर भरोसा करते हैं.</translation>
+<translation id="768549422429443215">भाषाएं जोड़ें या सूची का क्रम बदलें.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">नए पासवर्ड की पुष्टि करें</translation>
 <translation id="7690378713476594306">सूची में से चुनें</translation>
@@ -4553,6 +4562,7 @@
 <translation id="7773726648746946405">सत्र संग्ररण</translation>
 <translation id="7774365994322694683">पक्षी</translation>
 <translation id="7776701556330691704">कोई आवाज़ नहीं मिली</translation>
+<translation id="7780252971640011240">कनेक्ट करने में समस्या है. कृपया सहायता के लिए अपनी मोबाइल और इंटरनेट सेवा देने वाली कंपनी से संपर्क करें.</translation>
 <translation id="7781335840981796660">सभी 'उपयोगकर्ता खातों' और 'स्थानीय डेटा' को हटा दिया जाएगा.</translation>
 <translation id="7782102568078991263">Google की ओर से कोई और सुझाव नहीं</translation>
 <translation id="7782717250816686129">लॉगिन स्क्रीन पर लगातार दिख रहे डेटा को स्टोर करें और सेशन में क्रेडेंशियल डालें.</translation>

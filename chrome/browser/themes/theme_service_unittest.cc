@@ -127,7 +127,6 @@ class ThemeServiceTest : public extensions::ExtensionServiceTestBase {
     bool has_custom_color;
     base::Optional<SkColor> color =
         theme_service->GetOmniboxColor(id, incognito, &has_custom_color);
-    EXPECT_FALSE(has_custom_color);
     EXPECT_TRUE(color);
     return color.value_or(gfx::kPlaceholderColor);
   }
@@ -587,19 +586,12 @@ TEST_F(ThemeServiceTest, OmniboxContrast) {
            TP::COLOR_OMNIBOX_BACKGROUND},
           {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
            TP::COLOR_OMNIBOX_RESULTS_BG},
-          // TODO(thomasanderson): Because colors are computed relative to
-          // non-hovered backgrounds, some colors over hovered backgrounds do
-          // not have sufficient contrast in all configurations.  Computing the
-          // non-contrasty colors here relative to hovered backgrounds should
-          // fix this and not reduce contrast of non-hovered backgrounds.
-          // {TP::COLOR_OMNIBOX_TEXT_DIMMED,
-          //  TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
-          // {TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED,
-          //  TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
-          // {TP::COLOR_OMNIBOX_RESULTS_URL,
-          //  TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
-          // {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
-          //  TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+          {TP::COLOR_OMNIBOX_TEXT_DIMMED, TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
+          {TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED,
+           TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          {TP::COLOR_OMNIBOX_RESULTS_URL, TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED},
+          {TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
+           TP::COLOR_OMNIBOX_BACKGROUND_HOVERED},
       };
       auto check_sufficient_contrast = [&](int id1, int id2) {
         const float contrast = color_utils::GetContrastRatio(
@@ -613,6 +605,64 @@ TEST_F(ThemeServiceTest, OmniboxContrast) {
         check_sufficient_contrast(TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED,
                                   TP::COLOR_OMNIBOX_RESULTS_BG);
     }
+  }
+}
+
+// Ensure nothing DCHECKs if either of COLOR_OMNIBOX_BACKGROUND or
+// COLOR_OMNIBOX_TEXT are translucent (https://crbug.com/1006102).
+TEST_F(ThemeServiceTest, TranslucentOmniboxBackgroundAndText) {
+  using TP = ThemeProperties;
+  ThemeService* theme_service =
+      ThemeServiceFactory::GetForProfile(profile_.get());
+
+  class TranslucentOmniboxThemeSupplier : public CustomThemeSupplier {
+   public:
+    TranslucentOmniboxThemeSupplier()
+        : CustomThemeSupplier(ThemeType::EXTENSION) {}
+    bool GetColor(int id, SkColor* color) const override {
+      switch (id) {
+        case TP::COLOR_OMNIBOX_BACKGROUND:
+          *color = SkColorSetARGB(127, 255, 255, 255);
+          return true;
+        case TP::COLOR_OMNIBOX_TEXT:
+          *color = SkColorSetARGB(127, 0, 0, 0);
+          return true;
+      }
+      return CustomThemeSupplier::GetColor(id, color);
+    }
+
+   private:
+    ~TranslucentOmniboxThemeSupplier() override = default;
+  };
+  set_theme_supplier(theme_service,
+                     base::MakeRefCounted<TranslucentOmniboxThemeSupplier>());
+
+  constexpr int ids[] = {
+      TP::COLOR_OMNIBOX_BACKGROUND,
+      TP::COLOR_OMNIBOX_TEXT,
+      TP::COLOR_OMNIBOX_BACKGROUND_HOVERED,
+      TP::COLOR_OMNIBOX_SELECTED_KEYWORD,
+      TP::COLOR_OMNIBOX_TEXT_DIMMED,
+      TP::COLOR_OMNIBOX_RESULTS_BG,
+      TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED,
+      TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED,
+      TP::COLOR_OMNIBOX_RESULTS_TEXT_SELECTED,
+      TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED,
+      TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED,
+      TP::COLOR_OMNIBOX_RESULTS_ICON,
+      TP::COLOR_OMNIBOX_RESULTS_ICON_SELECTED,
+      TP::COLOR_OMNIBOX_RESULTS_URL,
+      TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED,
+      TP::COLOR_OMNIBOX_BUBBLE_OUTLINE,
+      TP::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE,
+      TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT,
+      TP::COLOR_OMNIBOX_SECURITY_CHIP_SECURE,
+      TP::COLOR_OMNIBOX_SECURITY_CHIP_DANGEROUS,
+  };
+
+  for (int id : ids) {
+    GetOmniboxColor(theme_service, id, false);
+    GetOmniboxColor(theme_service, id, true);
   }
 }
 

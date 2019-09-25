@@ -169,6 +169,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="2220529011494928058">Mag-ulat ng isyu</translation>
 <translation id="2223693656926968778">Magsagawa ng pagkilos sa kasalukuyang item</translation>
 <translation id="225732394367814946">Dagdagan ang rate ng speech</translation>
+<translation id="2267538686624070261">Umaalis sa mali ang spelling</translation>
 <translation id="2267945578749931355">Susunod na Character</translation>
 <translation id="2278490101488436824">Mag-swipe pakaliwa gamit ang tatlong daliri</translation>
 <translation id="2281234842553884450">Nakaraang slider</translation>
@@ -207,6 +208,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="257674075312929031">Pangkat</translation>
 <translation id="2582407057977008361">Kaugnay</translation>
 <translation id="2592212930811759050">I-double tap para simulan ang pag-edit</translation>
+<translation id="2598495320872286378">Error sa grammar</translation>
 <translation id="2614981083756825552">Math ML Layout</translation>
 <translation id="2624431853467395961">Buksan ang learn mode</translation>
 <translation id="2626530649491650971">naki-click</translation>
@@ -821,6 +823,7 @@ Kung tapos ka na sa tutorial, gamitin ang ChromeVox upang mag-navigate sa button
 <translation id="6833103209700200188">Footer</translation>
 <translation id="6858047746862060282">Prologue</translation>
 <translation id="6859876496651143278">Mag-swipe pakaliwa gamit ang isang daliri</translation>
+<translation id="6865519907510167493">Mali ang Spelling</translation>
 <translation id="6871161210040114857">Binabalewala ang case.</translation>
 <translation id="6877435256196695200">Walang susunod na graphic.</translation>
 <translation id="6897341342232909480">Ilipat pakaliwa</translation>
@@ -1111,6 +1114,7 @@ Para buksan ang menu ng Chrome browser, pindutin ang Alt+F.</translation>
 <translation id="8446884382197647889">Matuto Pa</translation>
 <translation id="8455868257606149352">Max <ph name="X" /></translation>
 <translation id="84575901236241018">may access key, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">Umaalis sa error sa grammar</translation>
 <translation id="847154984256717791">busy</translation>
 <translation id="8476408756881832830">I-pause ang pag-playback kapag nagsasalita ang ChromeVox</translation>
 <translation id="8476508772960940536">pangkalahatang-ideya ng window</translation>

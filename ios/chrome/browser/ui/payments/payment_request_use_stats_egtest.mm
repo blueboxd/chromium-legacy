@@ -90,6 +90,11 @@ const char kContactDetailsFreeShippingPage[] =
 // properly updated upon completion. The use stats for the billing address
 // associated with the card is expected not to change.
 - (void)testRecordUseOfCard {
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/1007432): Enable this test.
+    EARL_GREY_TEST_DISABLED(@"The test is flaky on iOS 13");
+  }
+
   autofill::TestAutofillClock testClock;
   testClock.SetNow(kSomeDate);
 
@@ -133,6 +138,11 @@ const char kContactDetailsFreeShippingPage[] =
 // Tests that use stats for the shipping address used in a Payment Request are
 // properly updated upon completion.
 - (void)testRecordUseOfShippingAddress {
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/1007432): Enable this test.
+    EARL_GREY_TEST_DISABLED(@"The test is flaky on iOS 13");
+  }
+
   autofill::TestAutofillClock testClock;
   testClock.SetNow(kSomeDate);
 
@@ -165,6 +175,11 @@ const char kContactDetailsFreeShippingPage[] =
 // Tests that use stats for the contact address used in a Payment Request are
 // properly updated upon completion.
 - (void)testRecordUseOfContactAddress {
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/1007432): Enable this test.
+    EARL_GREY_TEST_DISABLED(@"The test is flaky on iOS 13");
+  }
+
   autofill::TestAutofillClock testClock;
   testClock.SetNow(kSomeDate);
 
@@ -197,6 +212,11 @@ const char kContactDetailsFreeShippingPage[] =
 // Tests that use stats for an address that was used both as a shipping and
 // contact address in a Payment Request are properly updated upon completion.
 - (void)testRecordUseOfContactAndShippingAddress {
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/1007432): Enable this test.
+    EARL_GREY_TEST_DISABLED(@"The test is flaky on iOS 13");
+  }
+
   autofill::TestAutofillClock testClock;
   testClock.SetNow(kSomeDate);
 

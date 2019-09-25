@@ -33,6 +33,7 @@
 #include "ui/gfx/win/window_impl.h"
 #include "ui/views/views_export.h"
 #include "ui/views/win/pen_event_processor.h"
+#include "ui/views/win/scoped_enable_unadjusted_mouse_events_win.h"
 #include "ui/views/window/window_resize_utils.h"
 
 namespace gfx {
@@ -188,6 +189,13 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   }
   bool is_translucent() const { return is_translucent_; }
 
+  std::unique_ptr<aura::ScopedEnableUnadjustedMouseEvents>
+  RegisterUnadjustedMouseEvent();
+  void set_using_wm_input(bool using_wm_input) {
+    using_wm_input_ = using_wm_input;
+  }
+  bool using_wm_input() { return using_wm_input_; }
+
  private:
   friend class ::views::test::DesktopWindowTreeHostWinTestApi;
 
@@ -224,6 +232,10 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
                                WPARAM w_param,
                                LPARAM l_param,
                                bool* handled) override;
+  LRESULT HandleInputMessage(unsigned int message,
+                             WPARAM w_param,
+                             LPARAM l_param,
+                             bool* handled) override;
   LRESULT HandleScrollMessage(unsigned int message,
                               WPARAM w_param,
                               LPARAM l_param,
@@ -382,6 +394,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
     CR_MESSAGE_HANDLER_EX(WM_SYSKEYDOWN, OnKeyEvent)
     CR_MESSAGE_HANDLER_EX(WM_SYSKEYUP, OnKeyEvent)
 
+    CR_MESSAGE_HANDLER_EX(WM_INPUT, OnInputEvent)
     // IME Events.
     CR_MESSAGE_HANDLER_EX(WM_IME_SETCONTEXT, OnImeMessages)
     CR_MESSAGE_HANDLER_EX(WM_IME_STARTCOMPOSITION, OnImeMessages)
@@ -471,6 +484,7 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
   LRESULT OnGetObject(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnImeMessages(UINT message, WPARAM w_param, LPARAM l_param);
   void OnInitMenu(HMENU menu);
+  LRESULT OnInputEvent(UINT message, WPARAM w_param, LPARAM l_param);
   void OnInputLangChange(DWORD character_set, HKL input_language_id);
   LRESULT OnKeyEvent(UINT message, WPARAM w_param, LPARAM l_param);
   void OnKillFocus(HWND focused_window);
@@ -766,6 +780,9 @@ class VIEWS_EXPORT HWNDMessageHandler : public gfx::WindowImpl,
 
   // True if user is in remote session.
   bool is_remote_session_;
+
+  // True if is handling mouse WM_INPUT messages.
+  bool using_wm_input_ = false;
 
   // This is a map of the HMONITOR to full screeen window instance. It is safe
   // to keep a raw pointer to the HWNDMessageHandler instance as we track the

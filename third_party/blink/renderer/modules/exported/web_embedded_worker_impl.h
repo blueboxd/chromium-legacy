@@ -70,7 +70,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
 
   // WebEmbeddedWorker overrides.
   void StartWorkerContext(
-      const WebEmbeddedWorkerStartData&,
+      std::unique_ptr<WebEmbeddedWorkerStartData>,
       std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner)
@@ -82,6 +82,7 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
 
  private:
   void StartWorkerThread(
+      std::unique_ptr<WebEmbeddedWorkerStartData> worker_start_data,
       std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
       std::unique_ptr<ServiceWorkerContentSettingsProxy>,
       scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner);
@@ -89,9 +90,10 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
   // Creates a cross-thread copyable outside settings object for top-level
   // worker script fetch.
   std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
-  CreateFetchClientSettingsObjectData(const SecurityOrigin*, const HttpsState&);
-
-  WebEmbeddedWorkerStartData worker_start_data_;
+  CreateFetchClientSettingsObjectData(const KURL& script_url,
+                                      const SecurityOrigin*,
+                                      const HttpsState&,
+                                      network::mojom::IPAddressSpace);
 
   // Client must remain valid through the entire life time of the worker.
   WebServiceWorkerContextClient* const worker_context_client_;
@@ -99,12 +101,6 @@ class MODULES_EXPORT WebEmbeddedWorkerImpl final : public WebEmbeddedWorker {
   std::unique_ptr<ServiceWorkerThread> worker_thread_;
 
   bool asked_to_terminate_ = false;
-
-  // Unique worker token used by DevTools to attribute different instrumentation
-  // to the same worker.
-  base::UnguessableToken devtools_worker_token_;
-  WebEmbeddedWorkerStartData::WaitForDebuggerMode wait_for_debugger_mode_ =
-      WebEmbeddedWorkerStartData::kDontWaitForDebugger;
 
   mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote_;
 

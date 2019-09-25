@@ -133,6 +133,8 @@ jumbo_static_library("browser") {
     "password_generation_frame_helper.h",
     "password_generation_state.cc",
     "password_generation_state.h",
+    "password_leak_history_consumer.cc",
+    "password_leak_history_consumer.h",
     "password_list_sorter.cc",
     "password_list_sorter.h",
     "password_manager.cc",

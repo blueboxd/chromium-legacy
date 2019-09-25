@@ -41,6 +41,7 @@
 <translation id="1460620680449458626">Đang tắt tiếng.</translation>
 <translation id="1467432559032391204">Trái</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1516740043221086139">Chế độ Không làm phiền đang bật.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Hiển thị tùy chọn cài đặt thông báo. Các thông báo hiện đang tắt cho một ứng dụng}other{Hiển thị tùy chọn cài đặt thông báo. Các thông báo hiện đang tắt cho # ứng dụng}}</translation>
 <translation id="1525508553941733066">LOẠI BỎ</translation>
 <translation id="1537254971476575106">Phóng to toàn bộ màn hình</translation>
@@ -255,6 +256,7 @@
 <translation id="4585337515783392668">Dừng truyền trên bộ thu không xác định</translation>
 <translation id="4628757576491864469">Thiết bị</translation>
 <translation id="4659419629803378708">Đã bật ChromeVox</translation>
+<translation id="4665114317261903604">Bật/tắt chế độ Không làm phiền. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">Mở khóa thiết bị bằng mã dành cho cha mẹ</translation>
 <translation id="4731797938093519117">Quyền truy cập của cha mẹ</translation>
 <translation id="4734965478015604180">Ngang</translation>
@@ -353,6 +355,7 @@
 <translation id="6254629735336163724">Đã khóa theo chiều ngang</translation>
 <translation id="6259254695169772643">Sử dụng bút cảm ứng để chọn</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Đang kích hoạt...</translation>
+<translation id="6283712521836204486">Chế độ Không làm phiền đang tắt.</translation>
 <translation id="6284232397434400372">Đã thay đổi độ phân giải</translation>
 <translation id="6297287540776456956">Sử dụng bút cảm ứng để chọn một vùng</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" /> đã được xoay vòng sang <ph name="ROTATION" /></translation>

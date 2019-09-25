@@ -11,6 +11,7 @@ NS_ASSUME_NONNULL_BEGIN
 
 @class CWVAutofillController;
 @class CWVAutofillFormSuggestion;
+@class CWVAutofillProfile;
 @class CWVCreditCard;
 @class CWVCreditCardSaver;
 @class CWVCreditCardVerifier;
@@ -76,6 +77,14 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision) {
 - (void)autofillControllerDidInsertFormElements:
     (CWVAutofillController*)autofillController;
 
+// Called when it is possible to save a new autofill profile used in filling
+// address forms. This is usually invoked after successfully submitting an
+// address form with a new profile. The profile will only be saved if this
+// method is implemented and |decisionHandler| is called with |YES|.
+- (void)autofillController:(CWVAutofillController*)autofillController
+    decideSavePolicyForAutofillProfile:(CWVAutofillProfile*)autofillProfile
+                       decisionHandler:(void (^)(BOOL save))decisionHandler;
+
 // Called when it is possible to save a new credit card. This is usually called
 // after a new card was entered in a form and submitted.
 // |saver| encapsulates information needed to assist with this save attempt.
@@ -113,6 +122,7 @@ typedef NS_ENUM(NSInteger, CWVPasswordUserDecision) {
                             decisionHandler:
                                 (void (^)(CWVPasswordUserDecision decision))
                                     decisionHandler;
+
 @end
 
 NS_ASSUME_NONNULL_END

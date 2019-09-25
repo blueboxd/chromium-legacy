@@ -29,6 +29,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/task/task_observer.h"
 #include "base/threading/thread.h"
 #include "third_party/blink/public/platform/web_thread_type.h"
 #include "third_party/blink/renderer/platform/platform_export.h"

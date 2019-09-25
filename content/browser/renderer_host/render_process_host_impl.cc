@@ -1920,6 +1920,14 @@ void RenderProcessHostImpl::CreateLockManager(
                                                            std::move(receiver));
 }
 
+void RenderProcessHostImpl::CreatePermissionService(
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  permission_service_context_->CreateServiceForWorker(origin,
+                                                      std::move(receiver));
+}
+
 void RenderProcessHostImpl::CancelProcessShutdownDelayForUnload() {
   if (IsKeepAliveRefCountDisabled())
     return;
@@ -2927,7 +2935,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
   // Propagate the following switches to the renderer command line (along
   // with any associated values) if present in the browser command line.
   static const char* const kSwitchNames[] = {
-    network::switches::kNoReferrers,
     network::switches::kExplicitlyAllowedPorts,
     service_manager::switches::kDisableInProcessStackTraces,
     service_manager::switches::kDisableSeccompFilterSandbox,

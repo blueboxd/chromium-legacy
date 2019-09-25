@@ -318,10 +318,6 @@ const int kBurstDownloadLimit = 10;
 const PreviewsState kDisabledPreviewsBits =
     PREVIEWS_OFF | PREVIEWS_NO_TRANSFORM;
 
-// Print up to |kMaxSecurityWarningMessages| console messages per frame about
-// certificates or TLS versions that will be distrusted in future.
-const uint32_t kMaxSecurityWarningMessages = 10;
-
 typedef std::map<int, RenderFrameImpl*> RoutingIDFrameMap;
 static base::LazyInstance<RoutingIDFrameMap>::DestructorAtExit
     g_routing_id_frame_map = LAZY_INSTANCE_INITIALIZER;
@@ -4887,9 +4883,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
 
   // Check whether we have new encoding name.
   UpdateEncoding(frame_, frame_->View()->PageEncoding().Utf8());
-
-  // Reset warning state that prevents log spam.
-  tls_version_warning_origins_.clear();
 }
 
 void RenderFrameImpl::DidCreateNewDocument() {
@@ -5535,60 +5528,6 @@ void RenderFrameImpl::DidDisplayContentWithCertificateErrors() {
 
 void RenderFrameImpl::DidRunContentWithCertificateErrors() {
   Send(new FrameHostMsg_DidRunContentWithCertificateErrors(routing_id_));
-}
-
-void RenderFrameImpl::ReportLegacyTLSVersion(const blink::WebURL& url) {
-  url::Origin origin = url::Origin::Create(GURL(url));
-  // To prevent log spam, only log the message once per origin.
-  if (base::Contains(tls_version_warning_origins_, origin))
-    return;
-
-  size_t num_warnings = tls_version_warning_origins_.size();
-  // After |kMaxSecurityWarningMessages| warnings, stop printing messages to the
-  // console. At exactly |kMaxSecurityWarningMessages| warnings, print a message
-  // that additional resources on the page use legacy certificates without
-  // specifying which exact resources. Before |kMaxSecurityWarningMessages|
-  // messages, print the exact resource URL in the message to help the developer
-  // pinpoint the problematic resources.
-  if (num_warnings > kMaxSecurityWarningMessages)
-    return;
-
-  // Allow the embedded to suppress these warnings. This is a workaround for an
-  // outdated test server used by Blink tests on macOS. See
-  // https://crbug.com/936515.
-  if (GetContentClient()
-          ->renderer()
-          ->SuppressLegacyTLSVersionConsoleMessage()) {
-    return;
-  }
-
-  std::string console_message;
-  if (num_warnings == kMaxSecurityWarningMessages) {
-    console_message =
-        "Additional resources on this page were loaded with TLS 1.0 or TLS "
-        "1.1, which are deprecated and will be disabled in the future. Once "
-        "disabled, users will be prevented from loading these resources. "
-        "Servers should enable TLS 1.2 or later. See "
-        "https://www.chromestatus.com/feature/5654791610957824 for more "
-        "information.";
-  } else {
-    console_message = base::StringPrintf(
-        "The connection used to load resources from %s used TLS 1.0 or TLS "
-        "1.1, which are deprecated and will be disabled in the future. Once "
-        "disabled, users will be prevented from loading these resources. The "
-        "server should enable TLS 1.2 or later. See "
-        "https://www.chromestatus.com/feature/5654791610957824 for more "
-        "information.",
-        origin.Serialize().c_str());
-  }
-
-  tls_version_warning_origins_.insert(origin);
-  // To avoid spamming the console, use verbose message level for subframe
-  // resources, and only use the warning level for main-frame resources.
-  AddMessageToConsole(frame_->Parent()
-                          ? blink::mojom::ConsoleMessageLevel::kVerbose
-                          : blink::mojom::ConsoleMessageLevel::kWarning,
-                      console_message);
 }
 
 void RenderFrameImpl::DidChangePerformanceTiming() {

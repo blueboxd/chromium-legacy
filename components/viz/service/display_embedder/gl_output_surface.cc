@@ -44,6 +44,8 @@ GLOutputSurface::GLOutputSurface(
       context_capabilities.num_surface_buffers - 1;
   capabilities_.supports_gpu_vsync = context_capabilities.gpu_vsync;
   capabilities_.supports_dc_layers = context_capabilities.dc_layers;
+  capabilities_.supports_dc_video_overlays =
+      context_capabilities.use_dc_overlays_for_video;
 }
 
 GLOutputSurface::~GLOutputSurface() {
@@ -71,8 +73,7 @@ void GLOutputSurface::BindFramebuffer() {
 }
 
 void GLOutputSurface::SetDrawRectangle(const gfx::Rect& rect) {
-  if (!context_provider_->ContextCapabilities().dc_layers)
-    return;
+  DCHECK(capabilities_.supports_dc_layers);
 
   if (set_draw_rectangle_for_frame_)
     return;

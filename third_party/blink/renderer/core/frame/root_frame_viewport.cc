@@ -445,10 +445,6 @@ bool RootFrameViewport::ScrollbarsCanBeActive() const {
   return LayoutViewport().ScrollbarsCanBeActive();
 }
 
-IntRect RootFrameViewport::ScrollableAreaBoundingBox() const {
-  return LayoutViewport().ScrollableAreaBoundingBox();
-}
-
 bool RootFrameViewport::UserInputScrollable(
     ScrollbarOrientation orientation) const {
   return VisualViewport().UserInputScrollable(orientation) ||

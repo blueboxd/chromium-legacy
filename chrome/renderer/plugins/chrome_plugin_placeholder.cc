@@ -33,6 +33,7 @@
 #include "ipc/ipc_sync_channel.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/platform/url_conversion.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 #include "third_party/blink/public/platform/web_mouse_event.h"
@@ -131,7 +132,7 @@ ChromePluginPlaceholder* ChromePluginPlaceholder::CreateBlockedPlugin(
     values.SetString("baseurl", power_saver_info.base_url.spec());
 
     if (!power_saver_info.custom_poster_size.IsEmpty()) {
-      float zoom_factor = blink::WebView::ZoomLevelToZoomFactor(
+      float zoom_factor = blink::PageZoomLevelToZoomFactor(
           render_frame->GetWebFrame()->View()->ZoomLevel());
       int width =
           roundf(power_saver_info.custom_poster_size.width() / zoom_factor);

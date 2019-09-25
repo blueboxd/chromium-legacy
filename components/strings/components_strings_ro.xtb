@@ -98,7 +98,7 @@
 <translation id="1375198122581997741">Despre versiune</translation>
 <translation id="1376836354785490390">Afișează mai puține</translation>
 <translation id="1377321085342047638">Număr card</translation>
-<translation id="1380591466760231819">Îndoire Letter</translation>
+<translation id="1380591466760231819">Îndoire tip scrisoare</translation>
 <translation id="138218114945450791">Albastru deschis</translation>
 <translation id="1382194467192730611">Dispozitiv USB permis de administrator</translation>
 <translation id="139305205187523129"><ph name="HOST_NAME" /> nu a trimis date.</translation>
@@ -395,7 +395,7 @@
 <translation id="2847118875340931228">Deschide o fereastră incognito</translation>
 <translation id="2850739647070081192">Invite (Plic)</translation>
 <translation id="2856444702002559011">Atacatorii pot încerca să îți fure informațiile de pe <ph name="BEGIN_BOLD" /><ph name="SITE" /><ph name="END_BOLD" /> (de exemplu, parole, mesaje sau date despre cardurile de credit). <ph name="BEGIN_LEARN_MORE_LINK" />Află mai multe<ph name="END_LEARN_MORE_LINK" /></translation>
-<translation id="2878197950673342043">Îndoire afiș</translation>
+<translation id="2878197950673342043">Îndoire de tip afiș</translation>
 <translation id="2878424575911748999">A1</translation>
 <translation id="2881276955470682203">Salvezi cardul?</translation>
 <translation id="2882949212241984732">Îndoire tip fereastră dublă</translation>
@@ -879,7 +879,7 @@
 <translation id="5300589172476337783">Afișează</translation>
 <translation id="5308380583665731573">Conectează-te</translation>
 <translation id="5308689395849655368">Raportarea blocărilor este dezactivată.</translation>
-<translation id="5314967030527622926">Dispozitiv pentru crearea broșurilor</translation>
+<translation id="5314967030527622926">Broșator</translation>
 <translation id="5317780077021120954">Salvează</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> din <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Alege informațiile de contact</translation>
@@ -1032,6 +1032,7 @@
 <translation id="6058977677006700226">Folosești cardurile pe toate dispozitivele?</translation>
 <translation id="6059925163896151826">Dispozitive USB</translation>
 <translation id="6060009363608157444">Mod DnsOverHttps nevalid.</translation>
+<translation id="6064217302520318294">Blocarea ecranului</translation>
 <translation id="6080696365213338172">Ați accesat conținut utilizând un certificat oferit de administrator. Datele pe care le transmiteți către <ph name="DOMAIN" /> pot fi interceptate de administratorul dvs.</translation>
 <translation id="6094273045989040137">Adnotează</translation>
 <translation id="610911394827799129">Contul Google poate să ofere alte forme ale istoricului de navigare la <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -1099,7 +1100,7 @@
 <translation id="6446608382365791566">Adaugă mai multe informații</translation>
 <translation id="6447842834002726250">Cookie-uri</translation>
 <translation id="6451458296329894277">Confirmă retrimiterea formularului</translation>
-<translation id="6457206614190510200">Cusătură pe mijloc</translation>
+<translation id="6457206614190510200">Broșare pe mijloc</translation>
 <translation id="6465306955648956876">Gestionează parolele...</translation>
 <translation id="647261751007945333">Politici privind dispozitivele</translation>
 <translation id="6476284679642588870">Gestionează metodele de plată</translation>

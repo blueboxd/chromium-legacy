@@ -16,9 +16,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.StrictMode;
 
+import androidx.annotation.IntDef;
+import androidx.browser.customtabs.CustomTabsIntent;
+import androidx.browser.customtabs.CustomTabsSessionToken;
+import androidx.browser.customtabs.TrustedWebUtils;
+
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.chrome.browser.browserservices.BrowserServicesIntentDataProvider.CustomTabsUiType;
@@ -47,11 +53,6 @@ import org.chromium.ui.widget.Toast;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.util.UUID;
-
-import androidx.annotation.IntDef;
-import androidx.browser.customtabs.CustomTabsIntent;
-import androidx.browser.customtabs.CustomTabsSessionToken;
-import androidx.browser.customtabs.TrustedWebUtils;
 
 /**
  * Dispatches incoming intents to the appropriate activity based on the current configuration and
@@ -211,8 +212,7 @@ public class LaunchIntentDispatcher implements IntentHandler.IntentHandlerDelega
 
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             int resolvers =
-                    ContextUtils.getApplicationContext()
-                            .getPackageManager()
+                    PackageManagerUtils
                             .queryIntentActivities(searchIntent, PackageManager.GET_RESOLVED_FILTER)
                             .size();
             if (resolvers == 0) {

@@ -20,7 +20,6 @@ class GraphicsContext;
 //
 // This serves three purposes:
 // 1. Creating non-fast scrollable regions for non-composited scrollers.
-//   (When PaintNonFastScrollableRegions is enabled).
 //   Scrollable areas create a non-fast scrollable region in the
 //   non-scrolling paint property tree state. Pre-CompositeAfterPaint, we skip
 //   painting these for composited scrollers. With CompositeAfterPaint, we
@@ -28,7 +27,6 @@ class GraphicsContext;
 //   (see: PaintArtifactCompositor::UpdateNonFastScrollableRegions).
 //
 // 2. Creating non-fast scrollable regions for plugins and resize handles.
-//   (When PaintNonFastScrollableRegions is enabled).
 //   Plugins that have blocking event handlers and resize handles both need to
 //   prevent composited scrolling. A different display item type is used
 //   (kPluginScrollHitTest and kResizerScrollHitTest) to disambiguate multiple

@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_input_element.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/media/html_video_element.h"
@@ -44,8 +45,8 @@ class MediaControlInputElementImpl final : public MediaControlInputElement {
                                : "MediaControlInputElementImpl";
   }
 
-  WebLocalizedString::Name GetOverflowStringName() const final {
-    return WebLocalizedString::kOverflowMenuDownload;
+  int GetOverflowStringId() const final {
+    return IDS_MEDIA_OVERFLOW_MENU_DOWNLOAD;
   }
 };
 

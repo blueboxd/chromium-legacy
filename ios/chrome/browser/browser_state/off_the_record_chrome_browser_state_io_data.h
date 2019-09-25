@@ -24,7 +24,6 @@ namespace net {
 class CookieStore;
 class HttpNetworkSession;
 class HttpTransactionFactory;
-class URLRequestContext;
 }  // namespace net
 
 // OffTheRecordChromeBrowserState owns a
@@ -94,10 +93,6 @@ class OffTheRecordChromeBrowserStateIOData : public ChromeBrowserStateIOData {
       std::unique_ptr<IOSChromeNetworkDelegate> chrome_network_delegate,
       ProfileParams* profile_params,
       ProtocolHandlerMap* protocol_handlers) const override;
-  AppRequestContext* InitializeAppRequestContext(
-      net::URLRequestContext* main_context) const override;
-  AppRequestContext* AcquireIsolatedAppRequestContext(
-      net::URLRequestContext* main_context) const override;
 
   mutable std::unique_ptr<IOSChromeNetworkDelegate> network_delegate_;
 

@@ -4942,6 +4942,8 @@
     ]
   },
 
+  "CloudExtensionRequestEnabled": {},
+
   "CloudReportingEnabled": {
     "os": ["win", "linux", "mac"],
     "test_policy": { "CloudReportingEnabled": true },

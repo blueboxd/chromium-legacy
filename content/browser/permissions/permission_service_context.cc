@@ -81,8 +81,8 @@ void PermissionServiceContext::CreateService(
 }
 
 void PermissionServiceContext::CreateServiceForWorker(
-    mojo::PendingReceiver<blink::mojom::PermissionService> receiver,
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
   services_.Add(std::make_unique<PermissionServiceImpl>(this, origin),
                 std::move(receiver));
 }

@@ -1146,6 +1146,10 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
                 .color,
             custom};
   };
+  auto get_resulting_paint_color = [&](OmniboxColor fg, OmniboxColor bg) {
+    return OmniboxColor{GetResultingPaintColor(fg.value, bg.value),
+                        fg.custom || bg.custom};
+  };
 
   auto get_base_color = [&](int id) -> OmniboxColor {
     SkColor color;
@@ -1153,9 +1157,15 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
       return {color, true};
     return {GetDefaultColor(id, incognito), false};
   };
+  // Avoid infinite loop caused by GetColor() below.
+  if (id == TP::COLOR_TOOLBAR)
+    return base::nullopt;
   // These are the only base colors.
-  OmniboxColor fg = get_base_color(TP::COLOR_OMNIBOX_TEXT);
-  OmniboxColor bg = get_base_color(TP::COLOR_OMNIBOX_BACKGROUND);
+  OmniboxColor bg = get_resulting_paint_color(
+      get_base_color(TP::COLOR_OMNIBOX_BACKGROUND),
+      {GetColor(TP::COLOR_TOOLBAR, incognito, nullptr), false});
+  OmniboxColor fg =
+      get_resulting_paint_color(get_base_color(TP::COLOR_OMNIBOX_TEXT), bg);
   if (invert) {
     // Given a color with some contrast against the opposite endpoint, returns a
     // color with that same contrast against the nearby endpoint.
@@ -1171,8 +1181,12 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
   const bool dark = IsDark(bg.value);
 
   auto results_bg_color = [&]() { return get_color_with_max_contrast(fg); };
+  auto bg_hovered_color = [&]() { return blend_toward_max_contrast(bg, 0x0A); };
   auto security_chip_color = [&](OmniboxColor color) {
-    return blend_for_min_contrast(color, bg);
+    return blend_for_min_contrast(color, bg_hovered_color());
+  };
+  auto results_bg_hovered_color = [&]() {
+    return blend_toward_max_contrast(results_bg_color(), 0x1A);
   };
   auto url_color = [&](OmniboxColor bg) {
     return blend_for_min_contrast(
@@ -1194,7 +1208,7 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
       case TP::COLOR_OMNIBOX_BACKGROUND:
         return bg;
       case TP::COLOR_OMNIBOX_BACKGROUND_HOVERED:
-        return blend_toward_max_contrast(bg, 0x0A);
+        return bg_hovered_color();
       case TP::COLOR_OMNIBOX_RESULTS_BG:
         return results_bg_color();
       case TP::COLOR_OMNIBOX_RESULTS_BG_SELECTED:
@@ -1210,9 +1224,9 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
       case TP::COLOR_OMNIBOX_BUBBLE_OUTLINE_EXPERIMENTAL_KEYWORD_MODE:
         return url_color(results_bg_color());
       case TP::COLOR_OMNIBOX_TEXT_DIMMED:
-        return blend_with_clamped_contrast(bg);
+        return blend_with_clamped_contrast(bg_hovered_color());
       case TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED:
-        return blend_with_clamped_contrast(results_bg_color());
+        return blend_with_clamped_contrast(results_bg_hovered_color());
       case TP::COLOR_OMNIBOX_RESULTS_TEXT_DIMMED_SELECTED:
         return blend_with_clamped_contrast(results_bg_selected_color());
       case TP::COLOR_OMNIBOX_RESULTS_ICON:
@@ -1222,9 +1236,9 @@ base::Optional<SkColor> ThemeService::GetOmniboxColor(
         return blend_for_min_contrast(derive_default_icon_color(fg),
                                       results_bg_selected_color());
       case TP::COLOR_OMNIBOX_RESULTS_BG_HOVERED:
-        return blend_toward_max_contrast(results_bg_color(), 0x1A);
+        return results_bg_hovered_color();
       case TP::COLOR_OMNIBOX_RESULTS_URL:
-        return url_color(results_bg_color());
+        return url_color(results_bg_hovered_color());
       case TP::COLOR_OMNIBOX_RESULTS_URL_SELECTED:
         return url_color(results_bg_selected_color());
       case TP::COLOR_OMNIBOX_SECURITY_CHIP_DEFAULT:

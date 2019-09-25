@@ -3,13 +3,11 @@
 <translationbundle lang="sr">
 <translation id="1276998909102132017">Слике у галерији</translation>
 <translation id="1430915738399379752">Штампај</translation>
-<translation id="1462966117743110941">Камера сада подржава нове режиме и слике и видео снимци ће бити доступни у директоријумима Преузимања.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1627744224761163218">4×4</translation>
 <translation id="1664224225747386870">Ништа није снимљено</translation>
 <translation id="1862930711583847113">Извоз датотеке <ph name="FILE" /> није успео</translation>
 <translation id="1899697626337024495">Резолуција слике</translation>
-<translation id="2008689030244369546">Потпуно нови изглед</translation>
 <translation id="2036868001356139588">Трајање тајмера</translation>
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2064538373111010176">Kamera <ph name="CAMERA" /> је активна</translation>
@@ -44,9 +42,7 @@
 <translation id="5671277269877808209">Квадрат</translation>
 <translation id="5775960006311140197">Режим за стручњаке</translation>
 <translation id="5869546221129391014">Мрежа</translation>
-<translation id="6040143037577758943">Затвори</translation>
 <translation id="6073451960410192870">Заустави снимање</translation>
-<translation id="6165508094623778733">Сазнајте више</translation>
 <translation id="6197807149213783179">Сачувај метаподатке</translation>
 <translation id="6233780560267770709">3 са 3</translation>
 <translation id="6243827288366940320">Златни пресек</translation>

@@ -787,6 +787,11 @@ void WebSettingsImpl::SetForcedColors(ForcedColors forced_colors) {
   settings_->SetForcedColors(forced_colors);
 }
 
+void WebSettingsImpl::SetNavigationControls(
+    NavigationControls navigation_controls) {
+  settings_->SetNavigationControls(navigation_controls);
+}
+
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAllowed,
                    kImageAnimationPolicyAllowed);
 STATIC_ASSERT_ENUM(WebSettings::ImageAnimationPolicy::kAnimateOnce,

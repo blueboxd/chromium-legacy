@@ -22,8 +22,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/session_manager_types.h"
 
+using session_manager::SessionState;
 using ::testing::_;
-using namespace session_manager;
 
 namespace ash {
 

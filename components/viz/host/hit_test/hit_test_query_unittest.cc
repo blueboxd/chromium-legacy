@@ -1348,5 +1348,59 @@ TEST_F(HitTestQueryTest, FindTargetForLocationStartingFrom) {
                                HitTestRegionFlags::kHitTestMouse);
 }
 
+// One embedder with nested OOPIFs. When the root view is overlapped we should
+// continue checking its descendants rather than doing async hit test.
+//
+//  +e-------------+
+//  |   +c---------|     Point   maps to
+//  | 1 |    2     |     -----   -------
+//  |   |          |       1        e
+//  |   |          |       2        c
+//  |   |          |
+//  |   |          |
+//  +--------------+
+//
+TEST_F(HitTestQueryTest, OverlappedRootView) {
+  FrameSinkId e_id = FrameSinkId(1, 1);
+  FrameSinkId c_id = FrameSinkId(2, 2);
+  gfx::Rect e_bounds_in_e = gfx::Rect(0, 0, 600, 600);
+  gfx::Rect c_bounds_in_e = gfx::Rect(0, 0, 800, 800);
+  gfx::Transform transform_e_to_e, transform_e_to_c;
+  transform_e_to_c.Translate(-200, -100);
+  active_data_.push_back(AggregatedHitTestRegion(
+      e_id,
+      HitTestRegionFlags::kHitTestMine | HitTestRegionFlags::kHitTestMouse |
+          HitTestRegionFlags::kHitTestAsk,
+      e_bounds_in_e, transform_e_to_e, 1,
+      AsyncHitTestReasons::kOverlappedRegion));  // e
+  active_data_.push_back(AggregatedHitTestRegion(
+      c_id,
+      HitTestRegionFlags::kHitTestChildSurface | kHitTestMine |
+          HitTestRegionFlags::kHitTestMouse,
+      c_bounds_in_e, transform_e_to_c, 0));  // c
+  SendHitTestData();
+
+  // All points are in e's coordinate system when we reach this case.
+  gfx::PointF point1(1, 1);
+  gfx::PointF point2(202, 102);
+
+  Target target1 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point1);
+  EXPECT_EQ(target1.frame_sink_id, e_id);
+  EXPECT_EQ(target1.location_in_target, point1);
+  // kHitTestAsk should be dropped for overlapped root view.
+  EXPECT_EQ(target1.flags, HitTestRegionFlags::kHitTestMine |
+                               HitTestRegionFlags::kHitTestMouse);
+
+  Target target2 =
+      hit_test_query().FindTargetForLocation(EventSource::MOUSE, point2);
+  EXPECT_EQ(target2.frame_sink_id, c_id);
+  // point2 + transform_e_to_c  = (2, 2).
+  EXPECT_EQ(target2.location_in_target, gfx::PointF(2, 2));
+  EXPECT_EQ(target2.flags, HitTestRegionFlags::kHitTestChildSurface |
+                               HitTestRegionFlags::kHitTestMine |
+                               HitTestRegionFlags::kHitTestMouse);
+}
+
 }  // namespace test
 }  // namespace viz

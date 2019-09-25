@@ -24,10 +24,9 @@ struct StructTraits<arc::mojom::IntentFilterDataView, arc::IntentFilter> {
     // Returns an empty array.
     return base::span<std::string>();
   }
-  static const base::span<std::string> data_schemes(
+  static const std::vector<std::string>& data_schemes(
       const arc::IntentFilter& r) {
-    // Returns an empty array.
-    return base::span<std::string>();
+    return r.schemes();
   }
   static const std::vector<arc::IntentFilter::AuthorityEntry>& data_authorities(
       const arc::IntentFilter& r) {

@@ -463,8 +463,11 @@ Response InspectorEmulationAgent::setTimezoneOverride(
   timezone_override_.reset();
   if (!timezone_id.IsEmpty()) {
     timezone_override_ = TimeZoneController::SetTimeZoneOverride(timezone_id);
-    if (!timezone_override_)
-      return Response::Error("Timezone override is already in effect");
+    if (!timezone_override_) {
+      return TimeZoneController::HasTimeZoneOverride()
+                 ? Response::Error("Timezone override is already in effect")
+                 : Response::InvalidParams("Invalid timezone id");
+    }
   }
 
   timezone_id_override_.Set(timezone_id);

@@ -3731,7 +3731,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter self
 [Worker]     method atob
 [Worker]     method btoa
-[Worker]     method cancelAnimationFrame
 [Worker]     method clearInterval
 [Worker]     method clearTimeout
 [Worker]     method constructor
@@ -3739,7 +3738,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method fetch
 [Worker]     method importScripts
 [Worker]     method queueMicrotask
-[Worker]     method requestAnimationFrame
 [Worker]     method setInterval
 [Worker]     method setTimeout
 [Worker]     setter onerror
@@ -3858,9 +3856,11 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter name
 [Worker]     getter onmessage
 [Worker]     getter onmessageerror
+[Worker]     method cancelAnimationFrame
 [Worker]     method close
 [Worker]     method gc
 [Worker]     method postMessage
+[Worker]     method requestAnimationFrame
 [Worker]     method webkitRequestFileSystem
 [Worker]     method webkitRequestFileSystemSync
 [Worker]     method webkitResolveLocalFileSystemSyncURL

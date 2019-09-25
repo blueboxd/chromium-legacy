@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
-#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_lite_page_redirect.h"
@@ -145,9 +145,10 @@ void PreviewsLitePageRedirectURLLoader::StartRedirectToPreview(
     origin_probe_finished_successfully_ = true;
   }
 
-  serving_url_loader_ = std::make_unique<PreviewsLitePageServingURLLoader>(
-      base::BindOnce(&PreviewsLitePageRedirectURLLoader::OnResultDetermined,
-                     weak_ptr_factory_.GetWeakPtr()));
+  serving_url_loader_ =
+      std::make_unique<PreviewsLitePageRedirectServingURLLoader>(
+          base::BindOnce(&PreviewsLitePageRedirectURLLoader::OnResultDetermined,
+                         weak_ptr_factory_.GetWeakPtr()));
   // |serving_url_loader_| can be null after this call.
   serving_url_loader_->StartNetworkRequest(
       modified_resource_request_, network_loader_factory, frame_tree_node_id);

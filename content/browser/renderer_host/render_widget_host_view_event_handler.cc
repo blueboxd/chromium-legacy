@@ -26,6 +26,7 @@
 #include "ui/aura/scoped_keyboard_hook.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_tree_host.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/blink/blink_event_util.h"
 #include "ui/events/blink/web_input_event.h"
@@ -116,7 +117,6 @@ RenderWidgetHostViewEventHandler::RenderWidgetHostViewEventHandler(
     Delegate* delegate)
     : accept_return_character_(false),
       mouse_locked_(false),
-      mouse_locked_unadjusted_movement_(false),
       pinch_zoom_enabled_(content::IsPinchToZoomEnabled()),
       set_focus_on_mouse_down_or_key_event_(false),
       enable_consolidated_movement_(
@@ -132,7 +132,9 @@ RenderWidgetHostViewEventHandler::RenderWidgetHostViewEventHandler(
                           ? std::make_unique<HitTestDebugKeyEventObserver>(host)
                           : nullptr) {}
 
-RenderWidgetHostViewEventHandler::~RenderWidgetHostViewEventHandler() {}
+RenderWidgetHostViewEventHandler::~RenderWidgetHostViewEventHandler() {
+  DCHECK(!mouse_locked_);
+}
 
 void RenderWidgetHostViewEventHandler::SetPopupChild(
     RenderWidgetHostViewBase* popup_child_host_view,
@@ -169,12 +171,15 @@ bool RenderWidgetHostViewEventHandler::LockMouse(
   if (mouse_locked_)
     return true;
 
-  if (request_unadjusted_movement) {
-    NOTIMPLEMENTED();
-    return false;
+  if (request_unadjusted_movement && window_->GetHost()) {
+    mouse_locked_unadjusted_movement_ =
+        window_->GetHost()->RequestUnadjustedMovement();
+    if (!mouse_locked_unadjusted_movement_)
+      return false;
   }
 
   mouse_locked_ = true;
+
 #if !defined(OS_WIN)
   window_->SetCapture();
 #else
@@ -202,7 +207,7 @@ void RenderWidgetHostViewEventHandler::UnlockMouse() {
     return;
 
   mouse_locked_ = false;
-  mouse_locked_unadjusted_movement_ = false;
+  mouse_locked_unadjusted_movement_.reset();
 
   if (window_->HasCapture())
     window_->ReleaseCapture();
@@ -802,10 +807,12 @@ void RenderWidgetHostViewEventHandler::ModifyEventMovementAndCoords(
     // movement_x/y are integer. In order not to lose fractional part, we need
     // to keep the movement calculation as "floor(cur_pos) - floor(last_pos)".
     // Remove the floor here when movement_x/y is changed to double.
-    event->movement_x = gfx::ToFlooredInt(event->PositionInScreen().x) -
-                        gfx::ToFlooredInt(global_mouse_position_.x());
-    event->movement_y = gfx::ToFlooredInt(event->PositionInScreen().y) -
-                        gfx::ToFlooredInt(global_mouse_position_.y());
+    if (!(ui_mouse_event.flags() & ui::EF_UNADJUSTED_MOUSE)) {
+      event->movement_x = gfx::ToFlooredInt(event->PositionInScreen().x) -
+                          gfx::ToFlooredInt(global_mouse_position_.x());
+      event->movement_y = gfx::ToFlooredInt(event->PositionInScreen().y) -
+                          gfx::ToFlooredInt(global_mouse_position_.y());
+    }
 
     global_mouse_position_.SetPoint(event->PositionInScreen().x,
                                     event->PositionInScreen().y);
@@ -913,6 +920,11 @@ void RenderWidgetHostViewEventHandler::SetKeyboardFocus() {
 
 bool RenderWidgetHostViewEventHandler::ShouldMoveToCenter(
     gfx::PointF mouse_screen_position) {
+  // Do not need to move to center in unadjusted movement mode as
+  // the movement value are directly from OS.
+  if (mouse_locked_unadjusted_movement_)
+    return false;
+
   gfx::Rect rect = window_->bounds();
   rect = delegate_->ConvertRectToScreen(rect);
   float border_x = rect.width() * kMouseLockBorderPercentage / 100.0;

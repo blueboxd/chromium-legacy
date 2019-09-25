@@ -27,6 +27,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
+#include "mojo/public/cpp/bindings/unique_receiver_set.h"
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/dns/dns_config_overrides.h"
@@ -278,7 +279,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojo::PendingRemote<mojom::WebSocketHandshakeClient> handshake_client,
       mojo::PendingRemote<mojom::AuthenticationHandler> auth_handler,
       mojo::PendingRemote<mojom::TrustedHeaderClient> header_client) override;
-  void CreateNetLogExporter(mojom::NetLogExporterRequest request) override;
+  void CreateNetLogExporter(
+      mojo::PendingReceiver<mojom::NetLogExporter> receiver) override;
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostParametersPtr optional_parameters,
                    mojom::ResolveHostClientPtr response_client) override;
@@ -527,7 +529,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<MdnsResponderManager> mdns_responder_manager_;
 #endif  // BUILDFLAG(ENABLE_MDNS)
 
-  mojo::StrongBindingSet<mojom::NetLogExporter> net_log_exporter_bindings_;
+  mojo::UniqueReceiverSet<mojom::NetLogExporter> net_log_exporter_receivers_;
 
   // Ordering: this must be after |cookie_manager_| since it points to its
   // CookieSettings object.

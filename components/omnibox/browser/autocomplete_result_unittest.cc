@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "build/build_config.h"
@@ -31,6 +32,7 @@
 #include "components/search_engines/template_url_service.h"
 #include "components/variations/entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/metrics_proto/omnibox_event.pb.h"
 
@@ -788,6 +790,54 @@ TEST_F(AutocompleteResultTest, SortAndCullWithPreserveDefaultMatch) {
       {1, 1, 500, true},
   };
   AssertResultMatches(current_result, result, base::size(result));
+}
+
+// Verify metrics logged for asynchronous result updates.
+TEST_F(AutocompleteResultTest, LogAsynchronousUpdateMetrics) {
+  TestData last[] = {
+      {0, 1, 600, true}, {1, 1, 500, true}, {2, 1, 400, true},
+      {3, 1, 300, true}, {4, 1, 200, true},
+  };
+  // Same as |last|, but with these changes:
+  //  - Last two matches removed.
+  //  - Default match updated to a new URL.
+  //  - Third match updated to a new URL.
+  TestData current[] = {
+      {10, 1, 400, true},
+      {1, 1, 300, true},
+      {11, 1, 200, true},
+  };
+
+  AutocompleteInput input(base::ASCIIToUTF16("a"),
+                          metrics::OmniboxEventProto::OTHER,
+                          TestSchemeClassifier());
+
+  ACMatches last_matches;
+  PopulateAutocompleteMatches(last, base::size(last), &last_matches);
+  AutocompleteResult last_result;
+  last_result.AppendMatches(input, last_matches);
+  for (auto& match : last_result)
+    match.ComputeStrippedDestinationURL(input, template_url_service_.get());
+
+  ACMatches current_matches;
+  PopulateAutocompleteMatches(current, base::size(current), &current_matches);
+  AutocompleteResult current_result;
+  current_result.AppendMatches(input, current_matches);
+  for (auto& match : current_result)
+    match.ComputeStrippedDestinationURL(input, template_url_service_.get());
+
+  // Constructor takes the snapshot of the current histogram state.
+  base::HistogramTester histograms;
+
+  // Do the logging.
+  AutocompleteResult::LogAsynchronousUpdateMetrics(last_result, current_result);
+
+  // Expect the default match, third match, and last two matches to be logged
+  // as changed, and nothing else.
+  EXPECT_THAT(
+      histograms.GetAllSamples("Omnibox.MatchStability.AsyncMatchChange"),
+      testing::ElementsAre(base::Bucket(0, 1), base::Bucket(2, 1),
+                           base::Bucket(3, 1), base::Bucket(4, 1)));
 }
 
 TEST_F(AutocompleteResultTest, DemoteOnDeviceSearchSuggestions) {

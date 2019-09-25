@@ -1522,6 +1522,7 @@ void FileManagerBrowserTestBase::SetUpCommandLine(
   std::vector<base::Feature> disabled_features;
 
   enabled_features.emplace_back(features::kCrostiniAdvancedAccessControls);
+  enabled_features.emplace_back(chromeos::features::kCrostiniBackup);
 
   if (!IsGuestModeTest()) {
     enabled_features.emplace_back(features::kCrostini);
@@ -1616,6 +1617,8 @@ void FileManagerBrowserTestBase::SetUpOnMainThread() {
     profile()->GetPrefs()->SetBoolean(crostini::prefs::kCrostiniEnabled, true);
     profile()->GetPrefs()->SetBoolean(
         crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, true);
+    profile()->GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, true);
     crostini::CrostiniManager* crostini_manager =
         crostini::CrostiniManager::GetForProfile(
             profile()->GetOriginalProfile());
@@ -2101,6 +2104,14 @@ void FileManagerBrowserTestBase::OnCommand(const std::string& name,
     ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
     profile()->GetPrefs()->SetBoolean(
         crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, enabled);
+    return;
+  }
+
+  if (name == "setCrostiniExportImportAllowed") {
+    bool enabled;
+    ASSERT_TRUE(value.GetBoolean("enabled", &enabled));
+    profile()->GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, enabled);
     return;
   }
 

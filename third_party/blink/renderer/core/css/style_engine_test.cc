@@ -8,6 +8,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/css/forced_colors.h"
+#include "third_party/blink/public/common/css/navigation_controls.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/platform/web_float_rect.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_core.h"
@@ -1687,6 +1688,65 @@ TEST_F(StyleEngineTest, MediaQueriesColorSchemeOverride) {
   GetDocument().GetPage()->ClearMediaFeatureOverrides();
   UpdateAllLifecyclePhases();
   EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+}
+
+TEST_F(StyleEngineTest, MediaQueriesReducedMotionOverride) {
+  EXPECT_FALSE(GetDocument().GetSettings()->GetPrefersReducedMotion());
+
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      body { color: red }
+      @media (prefers-reduced-motion: reduce) {
+        body { color: green }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetPage()->SetMediaFeatureOverride("prefers-reduced-motion",
+                                                   "reduce");
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(0, 128, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetPage()->ClearMediaFeatureOverrides();
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+}
+
+TEST_F(StyleEngineTest, MediaQueriesChangeNavigationControls) {
+  ScopedMediaQueryNavigationControlsForTest scoped_feature(true);
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      @media (navigation-controls: none) {
+        body { color: red }
+      }
+      @media (navigation-controls: back-button) {
+        body { color: green }
+      }
+    </style>
+    <body></body>
+  )HTML");
+
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(255, 0, 0),
+            GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
+                GetCSSPropertyColor()));
+
+  GetDocument().GetSettings()->SetNavigationControls(
+      NavigationControls::kBackButton);
+  UpdateAllLifecyclePhases();
+  EXPECT_EQ(MakeRGB(0, 128, 0),
             GetDocument().body()->GetComputedStyle()->VisitedDependentColor(
                 GetCSSPropertyColor()));
 }

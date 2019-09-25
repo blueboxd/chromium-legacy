@@ -50,7 +50,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prefs/origin_trial_prefs.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
-#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/profiles/chrome_version_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -796,7 +796,7 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry,
   policy::URLBlacklistManager::RegisterProfilePrefs(registry);
   PrefProxyConfigTrackerImpl::RegisterProfilePrefs(registry);
   PrefsTabHelper::RegisterProfilePrefs(registry, locale);
-  PreviewsLitePageDecider::RegisterProfilePrefs(registry);
+  PreviewsLitePageRedirectDecider::RegisterProfilePrefs(registry);
   PreviewsOfflineHelper::RegisterProfilePrefs(registry);
   Profile::RegisterProfilePrefs(registry);
   ProfileImpl::RegisterProfilePrefs(registry);

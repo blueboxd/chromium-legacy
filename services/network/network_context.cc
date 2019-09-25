@@ -1088,9 +1088,9 @@ void NetworkContext::CreateWebSocket(
 }
 
 void NetworkContext::CreateNetLogExporter(
-    mojom::NetLogExporterRequest request) {
-  net_log_exporter_bindings_.AddBinding(std::make_unique<NetLogExporter>(this),
-                                        std::move(request));
+    mojo::PendingReceiver<mojom::NetLogExporter> receiver) {
+  net_log_exporter_receivers_.Add(std::make_unique<NetLogExporter>(this),
+                                  std::move(receiver));
 }
 
 void NetworkContext::ResolveHost(

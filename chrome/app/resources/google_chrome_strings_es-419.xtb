@@ -13,7 +13,6 @@
 <translation id="1142745911746664600">No se puede actualizar Chrome</translation>
 <translation id="1154147086299354128">&amp;Abrir en Chrome</translation>
 <translation id="123620459398936149">El Sistema operativo Chrome no pudo sincronizar los datos. Actualiza la frase de contraseña de sincronización.</translation>
-<translation id="127345590676626841">Chrome se actualiza automáticamente para que siempre tengas la versión más reciente. Cuando se complete esta descarga, Chrome se reiniciará y podrás usarlo.</translation>
 <translation id="1302523850133262269">Espera mientras Chrome instala las últimas actualizaciones del sistema.</translation>
 <translation id="137466361146087520">Google Chrome Beta</translation>
 <translation id="1393853151966637042">Obtener ayuda para utilizar Chrome</translation>
@@ -215,14 +214,13 @@ Si accedes de todos modos, se fusionará la información de Google Chrome, como 
 <translation id="7408085963519505752">Condiciones del Sistema operativo Chrome</translation>
 <translation id="7419046106786626209">El Sistema operativo Chrome no pudo sincronizar los datos porque la sincronización no está disponible para el dominio.</translation>
 <translation id="7459554271817304652">Configura la sincronización para guardar las funciones personalizadas de tu navegador en la Web y acceder a ellas desde Google Chrome en cualquier equipo.</translation>
-<translation id="7473136999113284234">Chrome se actualiza automáticamente para que siempre tengas la versión más reciente.</translation>
 <translation id="7486227612705979895">Chrome accederá a tus datos de Drive para hacer sugerencias en la barra de direcciones</translation>
 <translation id="7531671357096394523">Sal de todas las copias de Chrome.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>
 <translation id="7589360514048265910">Esta computadora no recibirá más actualizaciones de Google Chrome porque Mac OS X 10.9 ya no es compatible.</translation>
 <translation id="7592736734348559088">Google Chrome no pudo sincronizar los datos porque los datos de acceso de la cuenta están obsoletos.</translation>
 <translation id="7626032353295482388">Te damos la bienvenida a Chrome</translation>
-<translation id="7629695634924605473">Chrome te informará si tus contraseñas corren se ven comprometidas</translation>
+<translation id="7629695634924605473">Chrome te informará si tus contraseñas se ven comprometidas</translation>
 <translation id="7641148173327520642">El administrador del sistema configuró Google Chrome de manera que se abriera <ph name="ALTERNATIVE_BROWSER_NAME" /> para acceder a <ph name="TARGET_URL_HOSTNAME" />.</translation>
 <translation id="7651907282515937834">Logotipo de Chrome Enterprise</translation>
 <translation id="7747138024166251722">El instalador no pudo crear un directorio temporal. Verifique si hay espacio disponible en el disco y cuenta con permiso para instalar software.</translation>

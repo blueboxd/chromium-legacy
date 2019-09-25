@@ -289,8 +289,9 @@ void Shelf::ProcessMouseEvent(const ui::MouseEvent& event) {
     shelf_layout_manager_->ProcessMouseEventFromShelf(event);
 }
 
-void Shelf::ProcessMouseWheelEvent(const ui::MouseWheelEvent& event) {
-  Shell::Get()->app_list_controller()->ProcessMouseWheelEvent(event);
+void Shelf::ProcessMouseWheelEvent(ui::MouseWheelEvent* event) {
+  event->SetHandled();
+  Shell::Get()->app_list_controller()->ProcessMouseWheelEvent(*event);
 }
 
 void Shelf::AddObserver(ShelfObserver* observer) {

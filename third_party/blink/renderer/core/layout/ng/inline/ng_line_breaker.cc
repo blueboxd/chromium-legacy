@@ -1422,7 +1422,7 @@ void NGLineBreaker::HandleFloat(const NGInlineItem& item,
 
     NGLayoutOpportunity opportunity = exclusion_space_->FindLayoutOpportunity(
         {constraint_space_.BfcOffset().line_offset, bfc_block_offset},
-        constraint_space_.AvailableSize().inline_size, LogicalSize());
+        constraint_space_.AvailableSize().inline_size);
 
     DCHECK_EQ(bfc_block_offset, opportunity.rect.BlockStartOffset());
 

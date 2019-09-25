@@ -15,6 +15,7 @@
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "net/base/auth.h"
 #include "net/base/net_errors.h"
+#include "services/network/public/mojom/cookie_manager.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 
 namespace net {
@@ -24,7 +25,9 @@ class HttpResponseHeaders;
 
 namespace content {
 
+class InterceptionJob;
 class RenderProcessHost;
+struct CreateLoaderParameters;
 
 struct InterceptedRequestInfo {
   InterceptedRequestInfo();
@@ -154,8 +157,6 @@ class DevToolsURLLoaderInterceptor {
     DISALLOW_COPY_AND_ASSIGN(FilterEntry);
   };
 
-  class Impl;
-
   using HandleAuthRequestCallback =
       base::OnceCallback<void(bool use_fallback,
                               const base::Optional<net::AuthCredentials>&)>;
@@ -187,12 +188,49 @@ class DevToolsURLLoaderInterceptor {
       bool is_navigation,
       bool is_download,
       mojo::PendingReceiver<network::mojom::URLLoaderFactory>*
-          target_factory_receiver) const;
+          target_factory_receiver);
 
  private:
-  bool enabled_;
-  std::unique_ptr<Impl, base::OnTaskRunnerDeleter> impl_;
-  base::WeakPtr<Impl> weak_impl_;
+  friend class InterceptionJob;
+  friend class DevToolsURLLoaderFactoryProxy;
+
+  void CreateJob(
+      const base::UnguessableToken& frame_token,
+      int32_t process_id,
+      bool is_download,
+      const base::Optional<std::string>& renderer_request_id,
+      std::unique_ptr<CreateLoaderParameters> create_params,
+      network::mojom::URLLoaderRequest loader_request,
+      network::mojom::URLLoaderClientPtr client,
+      network::mojom::URLLoaderFactoryPtr target_factory,
+      mojo::PendingRemote<network::mojom::CookieManager> cookie_manager);
+
+  InterceptionStage GetInterceptionStage(const GURL& url,
+                                         ResourceType resource_type) const;
+
+  template <typename Callback>
+  InterceptionJob* FindJob(const std::string& id,
+                           std::unique_ptr<Callback>* callback) {
+    auto it = jobs_.find(id);
+    if (it != jobs_.end())
+      return it->second;
+    (*callback)->sendFailure(
+        protocol::Response::InvalidParams("Invalid InterceptionId."));
+    return nullptr;
+  }
+
+  void RemoveJob(const std::string& id) { jobs_.erase(id); }
+  void AddJob(const std::string& id, InterceptionJob* job) {
+    jobs_.emplace(id, job);
+  }
+
+  const RequestInterceptedCallback request_intercepted_callback_;
+
+  std::vector<Pattern> patterns_;
+  bool handle_auth_ = false;
+  std::map<std::string, InterceptionJob*> jobs_;
+
+  base::WeakPtrFactory<DevToolsURLLoaderInterceptor> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DevToolsURLLoaderInterceptor);
 };

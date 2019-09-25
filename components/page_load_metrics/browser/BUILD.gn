@@ -10,6 +10,8 @@ source_set("browser") {
     "metrics_navigation_throttle.h",
     "metrics_web_contents_observer.cc",
     "metrics_web_contents_observer.h",
+    "page_load_metrics_embedder_base.cc",
+    "page_load_metrics_embedder_base.h",
     "page_load_metrics_embedder_interface.h",
     "page_load_metrics_observer.cc",
     "page_load_metrics_observer.h",

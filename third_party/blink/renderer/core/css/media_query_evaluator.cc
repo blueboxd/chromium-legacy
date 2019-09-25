@@ -30,6 +30,7 @@
 #include "third_party/blink/renderer/core/css/media_query_evaluator.h"
 
 #include "third_party/blink/public/common/css/forced_colors.h"
+#include "third_party/blink/public/common/css/navigation_controls.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
@@ -865,6 +866,25 @@ static bool ForcedColorsMediaFeatureEval(const MediaQueryExpValue& value,
           value.id == CSSValueID::kNone) ||
          (forced_colors != ForcedColors::kNone &&
           value.id == CSSValueID::kActive);
+}
+
+static bool NavigationControlsMediaFeatureEval(
+    const MediaQueryExpValue& value,
+    MediaFeaturePrefix,
+    const MediaValues& media_values) {
+  NavigationControls navigation_controls = media_values.GetNavigationControls();
+
+  if (!value.IsValid())
+    return navigation_controls != NavigationControls::kNone;
+
+  if (!value.is_id)
+    return false;
+
+  // Check the navigation controls against value.id.
+  return (navigation_controls == NavigationControls::kNone &&
+          value.id == CSSValueID::kNone) ||
+         (navigation_controls == NavigationControls::kBackButton &&
+          value.id == CSSValueID::kBackButton);
 }
 
 void MediaQueryEvaluator::Init() {

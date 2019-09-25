@@ -550,4 +550,18 @@ TEST(WebInputEventTest, MouseLeaveScreenCoordinate) {
 }
 #endif
 
+TEST(WebInputEventTest, MouseMoveUnadjustedMovement) {
+  gfx::PointF cursor_pos(123, 456);
+  gfx::Vector2dF movement(-12, 34);
+  ui::MouseEvent event(ET_MOUSE_MOVED, cursor_pos, cursor_pos,
+                       base::TimeTicks(), 0, 0);
+  MouseEvent::DispatcherApi(&event).set_movement(movement);
+
+  blink::WebMouseEvent web_event = MakeWebMouseEvent(event);
+
+  ASSERT_TRUE(web_event.is_raw_movement_event);
+  ASSERT_EQ(web_event.movement_x, movement.x());
+  ASSERT_EQ(web_event.movement_y, movement.y());
+}
+
 }  // namespace ui

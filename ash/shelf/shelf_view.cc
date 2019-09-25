@@ -611,8 +611,7 @@ void ShelfView::OnMouseEvent(ui::MouseEvent* event) {
 
   switch (event->type()) {
     case ui::ET_MOUSEWHEEL:
-      event->SetHandled();
-      shelf_->ProcessMouseWheelEvent(*event->AsMouseWheelEvent());
+      // The mouse wheel event is handled by ScrollableShelfView.
       break;
     case ui::ET_MOUSE_PRESSED:
       if (!event->IsOnlyLeftMouseButton()) {

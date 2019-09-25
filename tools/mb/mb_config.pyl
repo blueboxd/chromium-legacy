@@ -1278,23 +1278,23 @@
     ],
 
     'chromeos_with_codecs_debug_bot': [
-      'chromeos_with_codecs', 'debug_bot', 'use_vaapi',
+      'chromeos_with_codecs', 'debug_bot',
     ],
 
     'chromeos_with_codecs_release_bot': [
-      'chromeos_with_codecs', 'release_bot', 'use_vaapi',
+      'chromeos_with_codecs', 'release_bot',
     ],
 
     'chromeos_with_codecs_release_bot_coverage': [
-      'chromeos_with_codecs', 'release_bot', 'use_vaapi', 'use_clang_coverage',
+      'chromeos_with_codecs', 'release_bot', 'use_clang_coverage',
     ],
 
     'chromeos_with_codecs_release_trybot': [
-      'chromeos_with_codecs', 'release_trybot', 'use_vaapi', 'no_symbols',
+      'chromeos_with_codecs', 'release_trybot', 'no_symbols',
     ],
 
     'chromeos_with_codecs_release_trybot_code_coverage': [
-      'chromeos_with_codecs', 'release_trybot', 'use_vaapi', 'no_symbols',
+      'chromeos_with_codecs', 'release_trybot', 'no_symbols',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
     ],
 
@@ -2465,10 +2465,6 @@
     # this feature.
     'use_dummy_lastchange': {
       'gn_args': 'use_dummy_lastchange=true',
-    },
-
-    'use_vaapi': {
-      'gn_args': 'use_vaapi=true',
     },
 
     'v8_simulate_arm': {

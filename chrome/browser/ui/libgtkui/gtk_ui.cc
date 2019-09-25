@@ -24,10 +24,8 @@
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/themes/theme_properties.h"
-#include "chrome/browser/ui/libgtkui/app_indicator_icon.h"
 #include "chrome/browser/ui/libgtkui/gtk_event_loop_x11.h"
 #include "chrome/browser/ui/libgtkui/gtk_key_bindings_handler.h"
-#include "chrome/browser/ui/libgtkui/gtk_status_icon.h"
 #include "chrome/browser/ui/libgtkui/gtk_util.h"
 #include "chrome/browser/ui/libgtkui/input_method_context_impl_gtk.h"
 #include "chrome/browser/ui/libgtkui/native_theme_gtk.h"
@@ -528,40 +526,6 @@ void GtkUi::SetDownloadCount(int count) const {
 void GtkUi::SetProgressFraction(float percentage) const {
   if (unity::IsRunning())
     unity::SetProgressFraction(percentage);
-}
-
-bool GtkUi::IsStatusIconSupported() const {
-#if GTK_CHECK_VERSION(3, 90, 0)
-  // TODO(thomasanderson): Provide some sort of status icon for GTK4.  The GTK3
-  // config has two options.  The first is to use GTK status icons, but these
-  // were removed in GTK4.  The second is to use libappindicator.  However, that
-  // library has a dependency on GTK3, and loading multiple versions of GTK into
-  // the same process is explicitly unsupported.
-  NOTIMPLEMENTED();
-  return false;
-#else
-  return true;
-#endif
-}
-
-std::unique_ptr<views::StatusIconLinux> GtkUi::CreateLinuxStatusIcon(
-    const gfx::ImageSkia& image,
-    const base::string16& tool_tip,
-    const char* id_prefix) const {
-#if GTK_CHECK_VERSION(3, 90, 0)
-  NOTIMPLEMENTED();
-  return nullptr;
-#else
-  if (AppIndicatorIcon::CouldOpen()) {
-    ++indicators_count;
-    return std::unique_ptr<views::StatusIconLinux>(new AppIndicatorIcon(
-        base::StringPrintf("%s%d", id_prefix, indicators_count), image,
-        tool_tip));
-  } else {
-    return std::unique_ptr<views::StatusIconLinux>(
-        new GtkStatusIcon(image, tool_tip));
-  }
-#endif
 }
 
 gfx::Image GtkUi::GetIconForContentType(const std::string& content_type,

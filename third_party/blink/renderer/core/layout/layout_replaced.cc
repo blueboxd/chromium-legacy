@@ -24,6 +24,7 @@
 #include "third_party/blink/renderer/core/layout/layout_replaced.h"
 
 #include "third_party/blink/renderer/core/editing/position_with_affinity.h"
+#include "third_party/blink/renderer/core/html/html_dimension.h"
 #include "third_party/blink/renderer/core/layout/api/line_layout_block_flow.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_offset.h"
 #include "third_party/blink/renderer/core/layout/geometry/logical_size.h"
@@ -39,6 +40,7 @@
 #include "third_party/blink/renderer/core/paint/paint_layer.h"
 #include "third_party/blink/renderer/core/paint/replaced_painter.h"
 #include "third_party/blink/renderer/platform/geometry/length_functions.h"
+#include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 
 namespace blink {
 
@@ -671,10 +673,30 @@ void LayoutReplaced::ComputeIntrinsicSizingInfo(
                                          IntrinsicLogicalHeight().ToFloat());
 
   // Figure out if we need to compute an intrinsic ratio.
-  if (intrinsic_sizing_info.size.IsEmpty() || !LayoutObjectHasAspectRatio(this))
+  if (!LayoutObjectHasAspectRatio(this))
     return;
 
-  intrinsic_sizing_info.aspect_ratio = intrinsic_sizing_info.size;
+  if (!intrinsic_sizing_info.size.IsEmpty())
+    intrinsic_sizing_info.aspect_ratio = intrinsic_sizing_info.size;
+
+  auto* elem = DynamicTo<Element>(GetNode());
+  if (RuntimeEnabledFeatures::AspectRatioFromWidthAndHeightEnabled() && elem &&
+      IsHTMLImageElement(elem) &&
+      intrinsic_sizing_info.aspect_ratio.IsEmpty() &&
+      elem->FastHasAttribute(html_names::kWidthAttr) &&
+      elem->FastHasAttribute(html_names::kHeightAttr)) {
+    const AtomicString& width_str =
+        elem->FastGetAttribute(html_names::kWidthAttr);
+    const AtomicString& height_str =
+        elem->FastGetAttribute(html_names::kHeightAttr);
+    HTMLDimension width_dim, height_dim;
+    if (ParseDimensionValue(width_str, width_dim) &&
+        ParseDimensionValue(height_str, height_dim) && width_dim.IsAbsolute() &&
+        height_dim.IsAbsolute()) {
+      intrinsic_sizing_info.aspect_ratio.SetWidth(width_dim.Value());
+      intrinsic_sizing_info.aspect_ratio.SetHeight(height_dim.Value());
+    }
+  }
 }
 
 static inline LayoutUnit ResolveWidthForRatio(LayoutUnit height,

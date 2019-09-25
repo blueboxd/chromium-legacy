@@ -94,7 +94,7 @@
 <translation id="4407044323746248786">Vols sortir de Chromium igualment?</translation>
 <translation id="4415566066719264597">Permet que Chromium s'executi en segon pla</translation>
 <translation id="4423735387467980091">Personalitza i controla Chromium</translation>
-<translation id="4567424176335768812">Heu iniciat la sessió com a <ph name="USER_EMAIL_ADDRESS" />. Ja podeu accedir a les vostres adreces d'interès, al vostre historial i a altres paràmetres en tots els dispositius en què hàgiu iniciat la sessió.</translation>
+<translation id="4567424176335768812">Heu iniciat la sessió com a <ph name="USER_EMAIL_ADDRESS" />. Ja podeu accedir a les vostres adreces d'interès, al vostre historial i a altres paràmetres en tots els dispositius en què teniu la sessió iniciada.</translation>
 <translation id="459535195905078186">Aplicacions de Chromium</translation>
 <translation id="4621240073146040695">Gairebé heu acabat. Reinicieu Chromium per completar l'actualització.</translation>
 <translation id="4677944499843243528">Sembla que un altre procés de Chromium (<ph name="PROCESS_ID" />) està fent servir el perfil en un altre ordinador (<ph name="HOST_NAME" />). Chromium ha bloquejat el perfil perquè no es malmeti. Si esteu segur que no hi ha cap altre procés que utilitzi el perfil, podeu desbloquejar-lo i tornar a iniciar Chromium.</translation>
@@ -116,7 +116,6 @@
 <translation id="5416696090975899932">Chromium no pot mostrar la previsualització d'impressió perquè falta el lector de PDF integrat.</translation>
 <translation id="5427571867875391349">Defineix Chromium com a navegador predeterminat</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
-<translation id="5466153949126434691">Chromium s'actualitza automàticament perquè en tingueu sempre la versió més recent. Quan es completi aquesta baixada, Chromium es reiniciarà i ja el podreu utilitzar.</translation>
 <translation id="5479196819031988440">Chromium OS no pot obrir aquesta pàgina.</translation>
 <translation id="5480860683791598150">Chromium necessita accedir a la teva ubicació per compartir-la amb aquest lloc web</translation>
 <translation id="549669000822060376">Espereu mentre Chromium instal·la les darreres actualitzacions del sistema.</translation>
@@ -211,7 +210,6 @@ Chromium no pot recuperar la configuració.</translation>
 <translation id="7867198900892795913">Chromium no s'ha pogut actualitzar a la darrera versió, així que no pots gaudir de les noves funcions ni de les correccions de seguretat.</translation>
 <translation id="7901117350626490574">Hi ha una actualització de Chromium disponible i s'aplicarà tan aviat com el tornis a iniciar.</translation>
 <translation id="7937630085815544518">Teníeu la sessió iniciada a Chromium com a <ph name="USER_EMAIL_ADDRESS" />. Utilitzeu el mateix compte per tornar a iniciar-hi la sessió.</translation>
-<translation id="7962572577636132072">Chromium s'actualitza automàticament perquè en tingueu sempre la versió més recent.</translation>
 <translation id="7975919845073681630">Aquesta és una instal·lació secundària de Chromium i no pot definir-se com a navegador predeterminat.</translation>
 <translation id="7979877361127045932">Amaga al menú de Chromium</translation>
 <translation id="8013436988911883588">Un cop Chromium tingui accés, els llocs web et podran demanar accés.</translation>

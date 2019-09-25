@@ -461,7 +461,7 @@ TEST_P(SharedImageBackingFactoryGLTextureTest, InitialDataWrongSize) {
 
 TEST_P(SharedImageBackingFactoryGLTextureTest, InvalidFormat) {
   auto mailbox = Mailbox::GenerateForSharedImage();
-  auto format = viz::ResourceFormat::UYVY_422;
+  auto format = viz::ResourceFormat::YUV_420_BIPLANAR;
   gfx::Size size(256, 256);
   auto color_space = gfx::ColorSpace::CreateSRGB();
   uint32_t usage = SHARED_IMAGE_USAGE_GLES2;

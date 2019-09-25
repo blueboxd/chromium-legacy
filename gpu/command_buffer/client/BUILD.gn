@@ -219,6 +219,7 @@ source_set("webgpu_interface") {
   deps = [
     ":interface_base",
     "//base",
+    "//gpu/command_buffer/common:webgpu",
   ]
 }
 

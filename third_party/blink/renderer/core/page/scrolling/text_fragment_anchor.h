@@ -24,6 +24,12 @@ constexpr char kFragmentDirectivePrefix[] = "##";
 // Subtract 1 because base::size includes the \0 string terminator.
 constexpr size_t kFragmentDirectivePrefixStringLength =
     base::size(kFragmentDirectivePrefix) - 1;
+// TODO(crbug/1007016): Remove support for the old prefix once we confirm the
+// new prefix choice.
+constexpr char kFragmentDirectiveNewPrefix[] = ":~:";
+// Subtract 1 because base::size includes the \0 string terminator.
+constexpr size_t kFragmentDirectiveNewPrefixStringLength =
+    base::size(kFragmentDirectiveNewPrefix) - 1;
 
 enum class TextFragmentFormat { PlainFragment, FragmentDirective };
 

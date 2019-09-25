@@ -339,7 +339,7 @@ Polymer({
   },
 
   /**
-   * @see content::ZoomValuesEqual().
+   * @see blink::PageZoomValuesEqual().
    * @param {number} zoom1
    * @param {number} zoom2
    * @return {boolean}

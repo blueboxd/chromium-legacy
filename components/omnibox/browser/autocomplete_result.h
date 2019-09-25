@@ -141,6 +141,11 @@ class AutocompleteResult {
   // See base/trace_event/memory_usage_estimator.h for more info.
   size_t EstimateMemoryUsage() const;
 
+  // Logs metrics for when |new_result| replaces |old_result| asynchronously.
+  static void LogAsynchronousUpdateMetrics(
+      const AutocompleteResult& old_result,
+      const AutocompleteResult& new_result);
+
  private:
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest, ConvertsOpenTabsCorrectly);
   FRIEND_TEST_ALL_PREFIXES(AutocompleteResultTest,

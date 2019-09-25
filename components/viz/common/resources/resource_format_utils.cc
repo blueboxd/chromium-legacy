@@ -50,7 +50,6 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     case BGRX_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
-    case UYVY_422:
     case P010:
       return kN32_SkColorType;
     case RGBA_F16:
@@ -78,7 +77,6 @@ int BitsPerPixel(ResourceFormat format) {
     case R16_EXT:
     case BGR_565:
     case RG_88:
-    case UYVY_422:
       return 16;
     case YVU_420:
     case YUV_420_BIPLANAR:
@@ -116,7 +114,6 @@ bool HasAlpha(ResourceFormat format) {
     case BGRX_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
-    case UYVY_422:
     case P010:
       return false;
   }
@@ -146,7 +143,6 @@ unsigned int GLDataType(ResourceFormat format) {
       GL_ZERO,                             // BGRX_1010102
       GL_ZERO,                             // YVU_420
       GL_ZERO,                             // YUV_420_BIPLANAR
-      GL_ZERO,                             // UYVY_422
       GL_ZERO,                             // P010
   };
   static_assert(base::size(format_gl_data_type) == (RESOURCE_FORMAT_MAX + 1),
@@ -177,7 +173,6 @@ unsigned int GLDataFormat(ResourceFormat format) {
       GL_ZERO,       // BGRX_1010102
       GL_ZERO,       // YVU_420
       GL_ZERO,       // YUV_420_BIPLANAR
-      GL_ZERO,       // UYVY_422
       GL_ZERO,       // P010
   };
   static_assert(base::size(format_gl_data_format) == (RESOURCE_FORMAT_MAX + 1),
@@ -229,7 +224,6 @@ unsigned int GLCopyTextureInternalFormat(ResourceFormat format) {
       GL_ZERO,       // BGRX_1010102
       GL_ZERO,       // YVU_420
       GL_ZERO,       // YUV_420_BIPLANAR
-      GL_ZERO,       // UYVY_422
       GL_ZERO,       // P010
   };
 
@@ -271,7 +265,6 @@ gfx::BufferFormat BufferFormat(ResourceFormat format) {
       return gfx::BufferFormat::YUV_420_BIPLANAR;
     case P010:
       return gfx::BufferFormat::P010;
-    case UYVY_422:
     case ETC1:
     case ALPHA_8:
     case LUMINANCE_8:
@@ -322,7 +315,6 @@ unsigned int TextureStorageFormat(ResourceFormat format) {
     case BGRX_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
-    case UYVY_422:
     case P010:
       break;
   }
@@ -354,7 +346,6 @@ bool IsGpuMemoryBufferFormatSupported(ResourceFormat format) {
     case BGRX_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
-    case UYVY_422:
     case P010:
       return false;
   }
@@ -384,7 +375,6 @@ bool IsBitmapFormatSupported(ResourceFormat format) {
     case BGRX_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
-    case UYVY_422:
     case P010:
       return false;
   }
@@ -436,7 +426,6 @@ bool GLSupportsFormat(ResourceFormat format) {
     case BGRX_1010102:
     case YVU_420:
     case YUV_420_BIPLANAR:
-    case UYVY_422:
     case P010:
       return false;
     default:
@@ -482,7 +471,6 @@ VkFormat ToVkFormat(ResourceFormat format) {
     case YUV_420_BIPLANAR:
       return VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
     case LUMINANCE_F16:
-    case UYVY_422:
     case ETC1:
     case P010:
       break;

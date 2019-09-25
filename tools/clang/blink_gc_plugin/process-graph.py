@@ -169,7 +169,7 @@ def build_graphs_in_dir(dirname):
 
 def build_graph(filename):
   for decl in parse_file(filename):
-    if decl.has_key('name'):
+    if 'name' in decl:
       # Add/update a node entry
       name = decl['name']
       node = get_node(name)

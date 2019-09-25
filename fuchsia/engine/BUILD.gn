@@ -211,6 +211,8 @@ fuchsia_package("web_engine") {
     "lib/libEGL.so",
     "lib/libGLESv2.so",
     "lib/libfuchsia_egl.so",
+    "lib/libvk_swiftshader.so",
+    "swiftshader/libvk_swiftshader_icd.json",
   ]
 }
 

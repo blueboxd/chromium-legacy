@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/platform/scheduler/public/cooperative_scheduling_manager.h"
 
 #include "base/auto_reset.h"
+#include "base/run_loop.h"
 #include "base/time/default_tick_clock.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/trace_event.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"

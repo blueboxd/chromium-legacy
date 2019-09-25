@@ -48,7 +48,6 @@
 <translation id="1540800554400757039">地址第1行</translation>
 <translation id="1545749641540134597">扫描 QR 码</translation>
 <translation id="1552525382687785070">您的管理员已停用同步功能</translation>
-<translation id="1558704936695638228">按住可查看更多标签选项</translation>
 <translation id="1580783302095112590">邮件已发送。</translation>
 <translation id="1582732959743469162">这会全面停止您正在执行的下载任务。</translation>
 <translation id="1605658421715042784">复制图片</translation>
@@ -109,6 +108,7 @@
 <translation id="2360196772093551345">请求切换到移动版网站</translation>
 <translation id="2381405137052800939">基本</translation>
 <translation id="2386793615875593361">已选择 1 张</translation>
+<translation id="2421044535038393232">继续修改</translation>
 <translation id="2435457462613246316">显示密码</translation>
 <translation id="2481538920734869610">添加帐号</translation>
 <translation id="2497852260688568942">您的管理员已停用同步</translation>
@@ -228,6 +228,7 @@
 <translation id="418156467088430727">在新标签页中查看离线版本</translation>
 <translation id="4181841719683918333">语言</translation>
 <translation id="424315890655130736">请输入密码</translation>
+<translation id="4263576668337963058">显示可用的网页操作</translation>
 <translation id="4272631900155121838">要扫描 QR 码，请从设置中启用相机功能</translation>
 <translation id="4281844954008187215">服务条款</translation>
 <translation id="430793432425771671">同步所有内容</translation>

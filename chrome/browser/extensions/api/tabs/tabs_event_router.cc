@@ -28,6 +28,7 @@
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
 #include "extensions/common/features/feature.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 
 using base::DictionaryValue;
 using base::ListValue;
@@ -272,9 +273,9 @@ void TabsEventRouter::OnZoomChanged(
   api::tabs::OnZoomChange::ZoomChangeInfo zoom_change_info;
   zoom_change_info.tab_id = tab_id;
   zoom_change_info.old_zoom_factor =
-      content::ZoomLevelToZoomFactor(data.old_zoom_level);
+      blink::PageZoomLevelToZoomFactor(data.old_zoom_level);
   zoom_change_info.new_zoom_factor =
-      content::ZoomLevelToZoomFactor(data.new_zoom_level);
+      blink::PageZoomLevelToZoomFactor(data.new_zoom_level);
   ZoomModeToZoomSettings(data.zoom_mode, &zoom_change_info.zoom_settings);
 
   // Dispatch the |onZoomChange| event.

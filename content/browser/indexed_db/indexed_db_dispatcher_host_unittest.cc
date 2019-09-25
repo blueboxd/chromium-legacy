@@ -347,14 +347,8 @@ TEST_F(IndexedDBDispatcherHostTest, DISABLED_CloseAfterUpgrade) {
   loop3.Run();
 }
 
-// TODO(https://crbug.com/995716) Test is flaky on Mac ASan.
-#if defined(OS_MACOSX) && defined(ADDRESS_SANITIZER)
-#define MAYBE_OpenNewConnectionWhileUpgrading \
-  DISABLED_OpenNewConnectionWhileUpgrading
-#else
-#define MAYBE_OpenNewConnectionWhileUpgrading OpenNewConnectionWhileUpgrading
-#endif
-TEST_F(IndexedDBDispatcherHostTest, MAYBE_OpenNewConnectionWhileUpgrading) {
+// TODO(https://crbug.com/995716) Test is flaky on multiple platforms.
+TEST_F(IndexedDBDispatcherHostTest, DISABLED_OpenNewConnectionWhileUpgrading) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
   const int64_t kObjectStoreId = 10;
@@ -454,12 +448,7 @@ MATCHER_P(IsCallbackError, error_code, "") {
 }
 
 // See https://crbug.com/989723 for more context, this test seems to flake.
-#if defined(OS_WIN) || (defined(OS_MACOSX) && defined(ADDRESS_SANITIZER))
-#define MAYBE_PutWithInvalidBlob DISABLED_PutWithInvalidBlob
-#else
-#define MAYBE_PutWithInvalidBlob PutWithInvalidBlob
-#endif
-TEST_F(IndexedDBDispatcherHostTest, MAYBE_PutWithInvalidBlob) {
+TEST_F(IndexedDBDispatcherHostTest, DISABLED_PutWithInvalidBlob) {
   const int64_t kDBVersion = 1;
   const int64_t kTransactionId = 1;
   const int64_t kObjectStoreId = 10;

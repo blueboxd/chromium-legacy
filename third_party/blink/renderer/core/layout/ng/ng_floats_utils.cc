@@ -52,10 +52,9 @@ NGLayoutOpportunity FindLayoutOpportunityForFloat(
 
   AdjustToClearance(clearance_offset, &adjusted_origin_point);
 
-  LogicalSize float_size(inline_size + fragment_margins.InlineSum(),
-                         LayoutUnit());
   return exclusion_space.FindLayoutOpportunity(
-      adjusted_origin_point, float_available_size.inline_size, float_size);
+      adjusted_origin_point, float_available_size.inline_size,
+      inline_size + fragment_margins.InlineSum() /* minimum_inline_size */);
 }
 
 // Creates a constraint space for an unpositioned float. origin_block_offset

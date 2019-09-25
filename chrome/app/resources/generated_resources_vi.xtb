@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">Khóa bảo mật đã bị khóa do bạn nhập sai mã PIN quá nhiều lần. Để mở khóa, hãy rút ra và cắm lại.</translation>
 <translation id="1137673463384776352">Mở liên kết trong <ph name="APP" /></translation>
 <translation id="1140351953533677694">Truy cập thiết bị tuần tự và Bluetooth của bạn</translation>
+<translation id="114036956334641753">Âm thanh và phụ đề</translation>
 <translation id="1140610710803014750">Để sử dụng dấu trang trên tất cả các thiết bị của bạn, hãy đăng nhập và bật đồng bộ hóa.</translation>
 <translation id="1140746652461896221">Chặn nội dung trên bất cứ trang nào mà bạn truy cập</translation>
 <translation id="1143142264369994168">Người ký Chứng chỉ</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">Mạng đã biết</translation>
 <translation id="123578888592755962">Đĩa đầy</translation>
 <translation id="1238191093934674082">Open VPN</translation>
+<translation id="1239594683407221485">Khám phá nội dung của thiết bị trong ứng dụng Files.</translation>
 <translation id="124116460088058876">Ngôn ngữ khác</translation>
 <translation id="1241753985463165747">Đọc và thay đổi tất cả dữ liệu của bạn trên trang web hiện tại khi được gọi ra</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> muốn đặt lại cài đặt của bạn.</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">Internet đã bị ngắt kết nối. Hãy kiểm tra kết nối Internet của bạn và thử lại.</translation>
 <translation id="1463112138205428654">Chương trình Bảo vệ nâng cao đã chặn <ph name="FILE_NAME" />.</translation>
 <translation id="1464258312790801189">Tài khoản của bạn</translation>
+<translation id="1464781208867302907">Để xem các tùy chọn của thiết bị, hãy chuyển đến phần Cài đặt.</translation>
 <translation id="1465176863081977902">S&amp;ao chép địa chỉ âm thanh</translation>
 <translation id="1465827627707997754">Lát pizza</translation>
 <translation id="1468571364034902819">Không thể dùng hồ sơ này</translation>
@@ -744,6 +747,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2099686503067610784">Xóa chứng chỉ máy chủ "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Tự động đăng nhập</translation>
 <translation id="2101225219012730419">Phiên bản:</translation>
+<translation id="2111670510994270194">Tab mới ở bên phải</translation>
 <translation id="21133533946938348">Ghim Tab</translation>
 <translation id="2113479184312716848">Mở &amp;tệp...</translation>
 <translation id="2113921862428609753">Quyền Truy cập Thông tin Tổ chức Cấp Chứng chỉ</translation>
@@ -1097,7 +1101,6 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="2586672484245266891">Vui lòng nhập URL ngắn hơn</translation>
 <translation id="2588636910004461974">Thiết bị của <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">Tìm kiếm trên Google hoặc nhập URL</translation>
-<translation id="2597521610396315071">Thêm tính năng giám sát</translation>
 <translation id="2603115962224169880">Dọn dẹp máy tính</translation>
 <translation id="2603463522847370204">Mở trong cửa sổ ẩ&amp;n danh</translation>
 <translation id="2604255671529671813">Lỗi kết nối mạng</translation>
@@ -1790,6 +1793,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="3630995161997703415">Thêm trang web này vào giá của bạn để sử dụng bất cứ lúc nào</translation>
 <translation id="3636096452488277381">Xin chào <ph name="USER_GIVEN_NAME" />!</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - còn lại <ph name="TIME" /></translation>
+<translation id="3637561406135221044">Đang quét tệp để tìm dữ liệu nhạy cảm...</translation>
 <translation id="3637682276779847508">Thẻ SIM của bạn sẽ bị vô hiệu hóa vĩnh viễn nếu bạn không thể nhập Khóa mở khóa mã PIN chính xác.</translation>
 <translation id="3640214691812501263">Thêm "<ph name="EXTENSION_NAME" />" cho <ph name="USER_NAME" />?</translation>
 <translation id="3640613767643722554">Hướng dẫn Trợ lý nhận dạng giọng nói của bạn</translation>
@@ -2228,6 +2232,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="425573743389990240">Tốc độ phóng điện của pin tính bằng Watt (giá trị âm có nghĩa là đang sạc pin)</translation>
 <translation id="4256316378292851214">Lưu &amp;Video Dưới dạng...</translation>
 <translation id="4258348331913189841">Hệ thống tệp</translation>
+<translation id="4263223596040212967">Kiểm tra bố cục bàn phím rồi thử lại.</translation>
 <translation id="4263757076580287579">Đăng ký máy in đã bị hủy.</translation>
 <translation id="426564820080660648">Để kiểm tra các cập nhật, hãy sử dụng kết nối Ethernet, Wi-Fi hoặc dữ liệu di động.</translation>
 <translation id="4267953847983678297">Tự động kết nối với mạng di động</translation>
@@ -2323,6 +2328,7 @@ Bạn có thể quản lý các tùy chọn cài đặt của tài khoản này 
 <translation id="4416582610654027550">Nhập một URL hợp lệ</translation>
 <translation id="4419409365248380979">Luôn cho phép <ph name="HOST" /> đặt cookie</translation>
 <translation id="4419610272958564173">Thiết bị không xác định (Nhà cung cấp: <ph name="VENDOR_ID" />, Sản phẩm: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">Đã xảy ra lỗi khi kết nối. Vui lòng liên hệ với <ph name="CARRIER_NAME" /> để được trợ giúp.</translation>
 <translation id="4421932782753506458">Mèo con dễ thương</translation>
 <translation id="4423376891418188461">Khôi phục cài đặt</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, quản trị viên của bạn yêu cầu bạn thay đổi mật khẩu của mình.</translation>
@@ -2998,6 +3004,7 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="5457599981699367932">Duyệt với tư cách Khách</translation>
 <translation id="5457991019809708398">Bật, không chuyển vùng</translation>
 <translation id="5458998536542739734">Ghi chú trên màn hình khóa</translation>
+<translation id="546322474339998983">Dùng trong trình duyệt Chrome và Trình chạy <ph name="DEVICE_TYPE" /></translation>
 <translation id="5463231940765244860">Nhập</translation>
 <translation id="5463275305984126951">Chỉ mục của <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu chứa các dấu trang bị ẩn</translation>
@@ -3295,6 +3302,7 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="5869948122057593679">Đóng tất cả các cửa sổ</translation>
 <translation id="5870086504539785141">Đóng menu khả năng truy cập</translation>
 <translation id="5870155679953074650">Lỗi phần cứng</translation>
+<translation id="5876851302954717356">Tab mới ở bên phải</translation>
 <translation id="5877064549588274448">Kênh đã thay đổi. Hãy khởi động lại thiết bị để áp dụng thay đổi.</translation>
 <translation id="5877584842898320529">Máy in đã chọn không sử dụng được hoặc không được cài đặt chính xác. <ph name="BR" /> Hãy kiểm tra máy in hoặc thử chọn một máy in khác.</translation>
 <translation id="5882919346125742463">Mạng đã biết</translation>
@@ -4493,6 +4501,7 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="7685049629764448582">Bộ nhớ cho Javascript</translation>
 <translation id="7685087414635069102">Cần có mã PIN</translation>
 <translation id="7685301384041462804">Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế độ thực tế ảo.</translation>
+<translation id="768549422429443215">Thêm ngôn ngữ hoặc sắp xếp lại danh sách.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Xác nhận mật khẩu mới</translation>
 <translation id="7690378713476594306">Chọn từ danh sách</translation>
@@ -4554,6 +4563,7 @@ Nhớ kiểm tra xem trang web này có tin cậy không trước khi vào chế
 <translation id="7773726648746946405">Bộ nhớ phiên</translation>
 <translation id="7774365994322694683">Chim</translation>
 <translation id="7776701556330691704">Không tìm thấy giọng nói nào</translation>
+<translation id="7780252971640011240">Đã xảy ra lỗi khi kết nối. Vui lòng liên hệ với nhà mạng để được trợ giúp.</translation>
 <translation id="7781335840981796660">Tất cả tài khoản người dùng và dữ liệu trên máy đều sẽ bị xóa.</translation>
 <translation id="7782102568078991263">Không có đề xuất nào khác từ Google</translation>
 <translation id="7782717250816686129">Lưu trữ dữ liệu liên tục trên màn hình đăng nhập và đưa thông tin xác thực vào phiên.</translation>

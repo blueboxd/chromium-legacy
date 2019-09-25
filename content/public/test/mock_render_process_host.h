@@ -181,6 +181,10 @@ class MockRenderProcessHost : public RenderProcessHost {
   void CreateLockManager(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::LockManager> receiver) override {}
+  void CreatePermissionService(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::PermissionService> receiver)
+      override {}
   void CleanupCorbExceptionForPluginUponDestruction() override;
 
   // IPC::Sender via RenderProcessHost.

@@ -37,16 +37,19 @@ constexpr int kMinFramesForThroughputMetric = 4;
 enum class ThreadType {
   kMain,
   kCompositor,
+  kSlowerThread,
 };
 
 constexpr int kBuiltinSequenceNum =
     base::size(FrameSequenceTracker::kFrameSequenceTrackerTypeNames);
-constexpr int kMaximumHistogramIndex = 2 * kBuiltinSequenceNum;
+constexpr int kMaximumHistogramIndex = 3 * kBuiltinSequenceNum;
 
 int GetIndexForMetric(ThreadType thread_type, FrameSequenceTrackerType type) {
-  return thread_type == ThreadType::kMain
-             ? static_cast<int>(type)
-             : static_cast<int>(type + kBuiltinSequenceNum);
+  if (thread_type == ThreadType::kMain)
+    return static_cast<int>(type);
+  if (thread_type == ThreadType::kCompositor)
+    return static_cast<int>(type + kBuiltinSequenceNum);
+  return static_cast<int>(type + 2 * kBuiltinSequenceNum);
 }
 
 std::string GetCheckerboardingHistogramName(FrameSequenceTrackerType type) {
@@ -208,14 +211,35 @@ FrameSequenceTracker::~FrameSequenceTracker() {
       "cc,benchmark", "FrameSequenceTracker", this, "args",
       ThroughputData::ToTracedValue(impl_throughput_, main_throughput_),
       "checkerboard", checkerboarding_.frames_checkerboarded);
+  ReportMetrics();
+}
 
+void FrameSequenceTracker::ReportMetrics() {
   // Report the throughput metrics.
-  ThroughputData::ReportHistogram(
+  base::Optional<int> impl_throughput_percent = ThroughputData::ReportHistogram(
       type_, "CompositorThread",
       GetIndexForMetric(ThreadType::kCompositor, type_), impl_throughput_);
-  ThroughputData::ReportHistogram(type_, "MainThread",
-                                  GetIndexForMetric(ThreadType::kMain, type_),
-                                  main_throughput_);
+  base::Optional<int> main_throughput_percent = ThroughputData::ReportHistogram(
+      type_, "MainThread", GetIndexForMetric(ThreadType::kMain, type_),
+      main_throughput_);
+
+  base::Optional<ThroughputData> slower_throughput;
+  if (impl_throughput_percent &&
+      (!main_throughput_percent ||
+       impl_throughput_percent.value() < main_throughput_percent.value())) {
+    slower_throughput = impl_throughput_;
+  }
+  if (main_throughput_percent &&
+      (!impl_throughput_percent ||
+       main_throughput_percent.value() < impl_throughput_percent.value())) {
+    slower_throughput = main_throughput_;
+  }
+  if (slower_throughput.has_value()) {
+    ThroughputData::ReportHistogram(
+        type_, "SlowerThread",
+        GetIndexForMetric(ThreadType::kSlowerThread, type_),
+        slower_throughput.value());
+  }
 
   // Report the checkerboarding metrics.
   if (impl_throughput_.frames_expected >= kMinFramesForThroughputMetric) {
@@ -462,7 +486,7 @@ FrameSequenceTracker::ThroughputData::ToTracedValue(
   return dict;
 }
 
-void FrameSequenceTracker::ThroughputData::ReportHistogram(
+base::Optional<int> FrameSequenceTracker::ThroughputData::ReportHistogram(
     FrameSequenceTrackerType sequence_type,
     const char* thread_name,
     int metric_index,
@@ -477,7 +501,7 @@ void FrameSequenceTracker::ThroughputData::ReportHistogram(
           base::HistogramBase::kUmaTargetedHistogramFlag));
 
   if (data.frames_expected < kMinFramesForThroughputMetric)
-    return;
+    return base::nullopt;
 
   const int percent =
       static_cast<int>(100 * data.frames_produced / data.frames_expected);
@@ -487,6 +511,7 @@ void FrameSequenceTracker::ThroughputData::ReportHistogram(
       base::LinearHistogram::FactoryGet(
           GetThroughputHistogramName(sequence_type, thread_name), 1, 100, 101,
           base::HistogramBase::kUmaTargetedHistogramFlag));
+  return percent;
 }
 
 FrameSequenceTracker::CheckerboardingData::CheckerboardingData() = default;

@@ -1299,7 +1299,6 @@ void CompositedLayerMapping::UpdateDrawsContentAndPaintsHitTest() {
   bool paints_hit_test =
       has_painted_content || GetLayoutObject().HasEffectiveAllowedTouchAction();
   bool paints_scroll_hit_test =
-      RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled() &&
       ((owning_layer_.GetScrollableArea() &&
         owning_layer_.GetScrollableArea()->ScrollsOverflow()) ||
        (GetPluginContainer(GetLayoutObject()) &&

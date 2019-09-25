@@ -91,12 +91,30 @@ TEST_F(DelayloadsTest, ChromeDllDelayloadsCheck) {
          "target was built, instead of delayloads_unittests.exe";
 
   static const char* const kValidFilePatterns[] = {
-      "KERNEL32.dll",
-      "chrome_elf.dll",
-      // On 64 bit the Version API's like VerQueryValue come from VERSION.dll.
-      // It depends on kernel32, advapi32 and api-ms-win-crt*.dll. This should
-      // be ok.
-      "VERSION.dll",
+    "KERNEL32.dll",
+    "chrome_elf.dll",
+#if !defined(CHROME_MULTIPLE_DLL_BROWSER)
+    "DWrite.dll",
+    "ADVAPI32.dll",
+    "CRYPT32.dll",
+    "dbghelp.dll",
+    "dhcpcsvc.DLL",
+    "IPHLPAPI.DLL",
+    "ntdll.dll",
+    "OLEAUT32.dll",
+    "Secur32.dll",
+    "UIAutomationCore.DLL",
+    "USERENV.dll",
+    "WINHTTP.dll",
+    "WINMM.dll",
+    "WINSPOOL.DRV",
+    "WINTRUST.dll",
+    "WS2_32.dll",
+#endif  //  CHROME_MULTIPLE_DLL_BROWSER
+    // On 64 bit the Version API's like VerQueryValue come from VERSION.dll.
+    // It depends on kernel32, advapi32 and api-ms-win-crt*.dll. This should
+    // be ok.
+    "VERSION.dll",
   };
 
   // Make sure all of chrome.dll's imports are in the valid imports list.
@@ -155,6 +173,8 @@ TEST_F(DelayloadsTest, DISABLED_ChromeDllLoadSanityTestImpl) {
   // Loading chrome.dll should not load user32.dll.
   EXPECT_EQ(nullptr, ::GetModuleHandle(L"user32.dll"));
 }
+
+#if defined(CHROME_MULTIPLE_DLL_BROWSER)
 
 TEST_F(DelayloadsTest, ChromeChildDllDelayloadsCheck) {
   base::FilePath dll;
@@ -254,6 +274,8 @@ TEST_F(DelayloadsTest, DISABLED_ChromeChildDllLoadSanityTestImpl) {
     EXPECT_NE(nullptr, ::GetModuleHandle(L"user32.dll"));
   }
 }
+
+#endif  // CHROME_MULTIPLE_DLL_BROWSER
 
 TEST_F(DelayloadsTest, ChromeElfDllDelayloadsCheck) {
   base::FilePath dll;

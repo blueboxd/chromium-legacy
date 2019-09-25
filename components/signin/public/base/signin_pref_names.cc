@@ -46,6 +46,10 @@ const char kGaiaCookiePeriodicReportTime[] = "gaia_cookie.periodic_report_time";
 // eventually be fixed.
 const char kGoogleServicesAccountId[] = "google.services.account_id";
 
+// Boolean indicating if the user gave consent for Sync.
+const char kGoogleServicesConsentedToSync[] =
+    "google.services.consented_to_sync";
+
 // The profile's hosted domain; empty if unset; kNoHostedDomainFound if there
 // is none.
 const char kGoogleServicesHostedDomain[] = "google.services.hosted_domain";

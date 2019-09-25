@@ -19,6 +19,7 @@
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "base/values.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/log/net_log_capture_mode.h"
 #include "services/network/public/mojom/net_log.mojom.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -214,7 +215,7 @@ class NetExportFileWriter {
   base::FilePath log_path_;  // base::FilePath to the NetLog file.
 
   // Used to ask the network service to do the actual exporting.
-  network::mojom::NetLogExporterPtr net_log_exporter_;
+  mojo::Remote<network::mojom::NetLogExporter> net_log_exporter_;
 
   // List of StateObservers to notify on state changes.
   base::ObserverList<StateObserver, true>::Unchecked state_observer_list_;

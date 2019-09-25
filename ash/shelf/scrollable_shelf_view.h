@@ -188,6 +188,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // consumed.
   bool ProcessGestureEvent(const ui::GestureEvent& event);
 
+  void HandleMouseWheelEvent(ui::MouseWheelEvent* event);
+
   // Scrolls the view by distance of |x_offset| or |y_offset|. |animating|
   // indicates whether the animation displays. |x_offset| or |y_offset| has to
   // be float. Otherwise the slow gesture drag is neglected.
@@ -229,6 +231,12 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
 
   // Returns whether there is available space to accommodate all shelf icons.
   bool CanFitAllAppsWithoutScrolling() const;
+
+  // Returns whether scrolling should be handled. |is_gesture_fling| is true
+  // when the scrolling is triggered by gesture fling event; when it is false,
+  // the scrolling is triggered by touch pad or mouse wheel event.
+  bool ShouldHandleScroll(const gfx::Vector2dF& offset,
+                          bool is_gesture_fling) const;
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 

@@ -13,9 +13,12 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -48,6 +51,12 @@ public class ContextualSearchTapEventTest {
     @Rule
     public ChromeActivityTestRule<ChromeActivity> mActivityTestRule =
             new ChromeActivityTestRule<>(ChromeActivity.class);
+
+    @Rule
+    public JniMocker mocker = new JniMocker();
+
+    @Mock
+    ContextualSearchManager.Natives mContextualSearchManagerJniMock;
 
     private ContextualSearchManagerWrapper mContextualSearchManager;
     private ContextualSearchPanel mPanel;
@@ -104,10 +113,6 @@ public class ContextualSearchTapEventTest {
             onSearchTermResolutionResponse(true, 200, selection, selection, "", "", false, 0, 10,
                     "", "", "", "", QuickActionCategory.NONE, 0, "", "", 0);
         }
-
-        @Override
-        protected void nativeGatherSurroundingText(long nativeContextualSearchManager,
-                ContextualSearchContext contextualSearchContext, WebContents baseWebContents) {}
 
         /**
          * @return A stubbed SelectionPopupController for mocking text selection.
@@ -247,6 +252,8 @@ public class ContextualSearchTapEventTest {
     public void setUp() throws Exception {
         mActivityTestRule.startMainActivityOnBlankPage();
         final ChromeActivity activity = mActivityTestRule.getActivity();
+        MockitoAnnotations.initMocks(this);
+        mocker.mock(ContextualSearchManagerJni.TEST_HOOKS, mContextualSearchManagerJniMock);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mPanelManager = new OverlayPanelManagerWrapper();

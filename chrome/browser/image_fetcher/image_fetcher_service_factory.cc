@@ -84,8 +84,13 @@ ImageFetcherServiceFactory::BuildServiceInstanceFor(
           std::move(data_store), std::move(metadata_store),
           profile_key->GetPrefs(), clock, task_runner);
 
-  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory =
-      SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
+  scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory = nullptr;
+  // Network is null for some tests, may be removable after
+  // https://crbug.com/981057.
+  if (SystemNetworkContextManager::GetInstance()) {
+    url_loader_factory =
+        SystemNetworkContextManager::GetInstance()->GetSharedURLLoaderFactory();
+  }
 
   auto cached_image_fetcher_service =
       std::make_unique<image_fetcher::ImageFetcherService>(

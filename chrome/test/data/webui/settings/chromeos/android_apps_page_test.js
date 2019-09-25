@@ -36,10 +36,6 @@ suite('AndroidAppsPageTests', function() {
     androidAppsPage.remove();
   });
 
-  teardown(function() {
-    androidAppsPage.remove();
-  });
-
   suite('Main Page', function() {
     setup(function() {
       androidAppsPage.havePlayStoreApp = true;

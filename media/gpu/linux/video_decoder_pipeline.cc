@@ -325,6 +325,9 @@ void VideoDecoderPipeline::OnFrameDecoded(scoped_refptr<VideoFrame> frame) {
   DCHECK(frame_converter_);
   DVLOGF(4);
 
+  // Flag that the video frame was decoded in a power efficient way.
+  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
+
   frame_converter_->ConvertFrame(std::move(frame));
 }
 

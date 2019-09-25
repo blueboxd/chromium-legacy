@@ -65,16 +65,14 @@ ScriptPromise GPU::requestAdapter(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  if (options->powerPreference()) {
-    ExecutionContext::From(script_state)
-        ->AddConsoleMessage(ConsoleMessage::Create(
-            mojom::ConsoleMessageSource::kJavaScript,
-            mojom::ConsoleMessageLevel::kWarning,
-            "The powerPreference option is not implemented yet."));
+  // For now we choose kHighPerformance by default.
+  gpu::webgpu::PowerPreference power_preference =
+      gpu::webgpu::PowerPreference::kHighPerformance;
+  if (options->powerPreference() == "low-power") {
+    power_preference = gpu::webgpu::PowerPreference::kLowPower;
   }
-
-  // TODO(enga): Request the adapter from the WebGPUInterface.
-  GPUAdapter* adapter = GPUAdapter::Create("Default", dawn_control_client_);
+  GPUAdapter* adapter =
+      GPUAdapter::Create("Default", power_preference, dawn_control_client_);
 
   resolver->Resolve(adapter);
   return promise;

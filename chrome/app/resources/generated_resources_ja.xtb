@@ -1101,7 +1101,6 @@
 <translation id="2586672484245266891">URL を短くしてください</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> のデバイス</translation>
 <translation id="2594999711683503743">Google で検索、または URL を入力</translation>
-<translation id="2597521610396315071">管理機能を設定する</translation>
 <translation id="2603115962224169880">パソコンのクリーンアップ</translation>
 <translation id="2603463522847370204">シークレット ウィンドウで開く(&amp;I)</translation>
 <translation id="2604255671529671813">ネットワーク接続エラー</translation>
@@ -1581,7 +1580,7 @@
 <translation id="3317459757438853210">両面印刷</translation>
 <translation id="3317678681329786349">カメラとマイクがブロックされています</translation>
 <translation id="3319048459796106952">シークレット ウィンドウを開く(&amp;I)</translation>
-<translation id="3323521181261657960">ボーナス利用時間が増えました</translation>
+<translation id="3323521181261657960">ボーナスタイムが加算されました</translation>
 <translation id="3325910708063135066">Mac のシステム環境設定でカメラとマイクがオフになっています</translation>
 <translation id="3328489342742826322">バックアップから復元すると、Linux ファイル フォルダの既存の Linux アプリケーションとデータは削除されます。</translation>
 <translation id="3331321258768829690">（<ph name="UTCOFFSET" />）<ph name="LONGTZNAME" />（<ph name="EXEMPLARCITY" />）</translation>
@@ -2934,7 +2933,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="5360150013186312835">ツールバーに表示</translation>
 <translation id="5362741141255528695">秘密鍵ファイルを選択します。</translation>
 <translation id="5363109466694494651">Powerwash を実行して以前のバージョンに戻す</translation>
-<translation id="5365716706805792666">Google ではお使いのパスワードがデータ侵害の対象になっていたかを確認できます。これは Google アカウントでログインするとオンになります。</translation>
+<translation id="5365716706805792666">Google ではお使いのパスワードがデータ侵害の対象になっていたかを確認できます。この機能は、Google アカウントでログインするとオンになります。</translation>
 <translation id="5365881113273618889">選択したフォルダには、機密ファイルが含まれています。このフォルダに対する永続的な書き込みアクセス権を「<ph name="APP_NAME" />」に付与してもよろしいですか？</translation>
 <translation id="5367091008316207019">ファイルを読み取っています...</translation>
 <translation id="5368720394188453070">スマートフォンがロックされています。ログインするにはロックを解除してしてください。</translation>
@@ -5356,7 +5355,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8874184842967597500">未接続</translation>
 <translation id="8876307312329369159">この設定はデモセッションでは変更できません。</translation>
 <translation id="8877448029301136595">[親ディレクトリ]</translation>
-<translation id="8879220587046205278">Google Play のアプリで外部ストレージ デバイスのファイルの読み取りと書き込みを行うには、ファイル システムへのフルアクセスが必要となる場合があります。デバイスで作成したファイルとフォルダは、外部ドライブを使用すれば誰でも閲覧できます。</translation>
+<translation id="8879220587046205278">Google Play のアプリで外部ストレージ デバイスのファイルの読み取りと書き込みを行うには、ファイル システムへのフルアクセスが必要となる場合があります。デバイス上に作成されたファイルとフォルダは、外部ドライブを使用する全員に表示されます。</translation>
 <translation id="8879284080359814990">タブで表示(&amp;S)</translation>
 <translation id="8879921471468674457">ログイン情報を保存する</translation>
 <translation id="8881020143150461183">もう一度お試しください。技術的なサポートについては、<ph name="CARRIER_NAME" /> にお問い合わせください。</translation>

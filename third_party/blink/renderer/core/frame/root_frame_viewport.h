@@ -87,7 +87,6 @@ class CORE_EXPORT RootFrameViewport final
   ScrollOffset ClampScrollOffset(const ScrollOffset&) const override;
   IntSize ContentsSize() const override;
   bool ScrollbarsCanBeActive() const override;
-  IntRect ScrollableAreaBoundingBox() const override;
   bool UserInputScrollable(ScrollbarOrientation) const override;
   bool ShouldPlaceVerticalScrollbarOnLeft() const override;
   void ScrollControlWasSetNeedsPaintInvalidation() override;

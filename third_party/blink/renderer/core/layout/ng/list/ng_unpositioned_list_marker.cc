@@ -170,8 +170,8 @@ LayoutUnit NGUnpositionedListMarker::ComputeIntrudedFloatOffset(
                               border_scrollbar_padding.inline_start -
                               border_scrollbar_padding.inline_end;
   NGLayoutOpportunity opportunity =
-      space.ExclusionSpace().FindLayoutOpportunity(
-          origin_offset, available_size, LogicalSize());
+      space.ExclusionSpace().FindLayoutOpportunity(origin_offset,
+                                                   available_size);
   DCHECK(marker_layout_object_);
   const TextDirection direction = marker_layout_object_->StyleRef().Direction();
   if (direction == TextDirection::kLtr) {

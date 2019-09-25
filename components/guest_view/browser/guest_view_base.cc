@@ -27,8 +27,8 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/platform/web_gesture_event.h"
 
 using content::WebContents;
@@ -769,8 +769,8 @@ void GuestViewBase::OnZoomChanged(
     // The embedder's zoom level has changed.
     auto* guest_zoom_controller =
         zoom::ZoomController::FromWebContents(web_contents());
-    if (content::ZoomValuesEqual(data.new_zoom_level,
-                                 guest_zoom_controller->GetZoomLevel())) {
+    if (blink::PageZoomValuesEqual(data.new_zoom_level,
+                                   guest_zoom_controller->GetZoomLevel())) {
       return;
     }
     // When the embedder's zoom level doesn't match the guest's, then update the
@@ -830,7 +830,7 @@ double GuestViewBase::GetEmbedderZoomFactor() const {
   if (!embedder_web_contents())
     return 1.0;
 
-  return content::ZoomLevelToZoomFactor(
+  return blink::PageZoomLevelToZoomFactor(
       zoom::ZoomController::GetZoomLevelForWebContents(
           embedder_web_contents()));
 }

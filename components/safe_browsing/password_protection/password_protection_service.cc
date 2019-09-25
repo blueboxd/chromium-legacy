@@ -31,10 +31,10 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/page_zoom.h"
 #include "google_apis/google_api_keys.h"
 #include "net/base/escape.h"
 #include "net/base/url_util.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 
 using content::BrowserThread;
 using content::WebContents;
@@ -134,7 +134,7 @@ void PasswordProtectionService::MaybeStartProtectedPasswordEntryRequest(
         zoom::ZoomController::GetZoomLevelForWebContents(web_contents);
     UMA_HISTOGRAM_COUNTS_1000(
         "PasswordProtection.PageZoomFactor",
-        static_cast<int>(100 * content::ZoomLevelToZoomFactor(zoom_level)));
+        static_cast<int>(100 * blink::PageZoomLevelToZoomFactor(zoom_level)));
 #endif  // defined(FULL_SAFE_BROWSING)
     if (can_send_ping) {
       StartRequest(web_contents, main_frame_url, GURL(), GURL(), username,

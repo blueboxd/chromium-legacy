@@ -2160,7 +2160,6 @@ crbug.com/983789 [ Win7 ] http/tests/cookies/js-set-null.html [ Pass Failure ]
 crbug.com/983788 http/tests/cookies/http-get-cookie-set-in-js.html [ Pass Failure ]
 crbug.com/983788 http/tests/cookies/same-site/popup-cross-site.https.html [ Pass Timeout ]
 crbug.com/984438 external/wpt/css/css-scroll-snap/snap-at-user-scroll-end-manual.html [ Failure Pass ]
-crbug.com/964239 [ Win7 ] virtual/threaded/external/wpt/css/css-scroll-snap/scroll-margin.html [ Failure ]
 crbug.com/984467 virtual/gpu/fast/canvas/canvas-composite-stroke-alpha.html [ Pass Timeout ]
 
 ### sheriff 2018-05-28
@@ -3227,6 +3226,7 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Win10 ] external/wpt/payment-request/payment-request-hasenrolledinstrument-method.tentative.https.html [ Failure Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-contain-003.html [ Failure ]
 crbug.com/626703 [ Mac ] external/wpt/css/motion/offset-path-ray-contain-003.html [ Failure ]
 crbug.com/626703 [ Win ] external/wpt/css/motion/offset-path-ray-contain-003.html [ Failure ]
@@ -5792,9 +5792,6 @@ crbug.com/938884 http/tests/devtools/elements/styles-3/styles-add-blank-property
 # Sheriff 2019-04-18
 crbug.com/954297 [ Linux Win ] http/tests/devtools/oopif/oopif-presentation-console-messages.js [ Pass Crash Timeout ]
 
-# Sheriff 2019-04-19
-crbug.com/954628 [ Win ] external/wpt/payment-request/payment-request-canmakepayment-method.https.html [ Pass Timeout ]
-
 # Sheriff 2019-04-22
 crbug.com/954319 [ Linux ] http/tests/devtools/sources/debugger-breakpoints/breakpoints-ui-in-multiple-workers.js [ Pass Timeout ]
 crbug.com/954998 [ Mac ] http/tests/devtools/tracing/timeline-js/timeline-js-line-level-profile-end-to-end.js [ Pass Timeout ]
@@ -6106,6 +6103,12 @@ crbug.com/626703 external/wpt/css/css-paint-api/custom-property-animation-on-mai
 crbug.com/919204 external/wpt/scroll-to-text-fragment/scroll-to-text-fragment.html [ Skip ]
 
 crbug.com/999209 virtual/lazyload-image/http/tests/lazyload/style-dimension.html [ Timeout ]
+
+# These tests are missing test automation
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getDirectory.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-getFile.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemDirectoryHandle-removeEntry.tentative.https.manual.window.html [ Skip ]
+crbug.com/998917 external/wpt/native-file-system/native_FileSystemWriter.tentative.https.manual.window.html [ Skip ]
 
 crbug.com/1000051 media/controls/volume-slider.html [ Failure Timeout Pass ]
 crbug.com/1000051 virtual/audio-service/media/controls/volume-slider.html [ Failure Timeout Pass ]

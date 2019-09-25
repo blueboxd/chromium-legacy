@@ -21,9 +21,11 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/page_zoom.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 
 typedef BrowserWithTestWindowTest BrowserCommandsTest;
 
@@ -373,7 +375,7 @@ TEST_F(BrowserCommandsTest, OnDefaultZoomLevelChanged) {
 
   // Set the default zoom level to 125.
   profile()->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(
-        content::ZoomFactorToZoomLevel(1.25));
+      blink::PageZoomFactorToZoomLevel(1.25));
   EXPECT_FLOAT_EQ(125.0f, zoom_controller->GetZoomPercent());
 
   // Actual Size from context menu should be disabled now.

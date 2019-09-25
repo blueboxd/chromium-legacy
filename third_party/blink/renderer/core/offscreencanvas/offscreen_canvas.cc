@@ -19,7 +19,7 @@
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_factory.h"
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
-#include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
@@ -77,9 +77,9 @@ void OffscreenCanvas::Dispose() {
   }
 
   if (HasPlaceholderCanvas() && GetTopExecutionContext() &&
-      GetTopExecutionContext()->IsWorkerGlobalScope()) {
+      GetTopExecutionContext()->IsDedicatedWorkerGlobalScope()) {
     WorkerAnimationFrameProvider* animation_frame_provider =
-        To<WorkerGlobalScope>(GetTopExecutionContext())
+        To<DedicatedWorkerGlobalScope>(GetTopExecutionContext())
             ->GetAnimationFrameProvider();
     if (animation_frame_provider)
       animation_frame_provider->DeregisterOffscreenCanvas(this);
@@ -89,9 +89,9 @@ void OffscreenCanvas::Dispose() {
 void OffscreenCanvas::SetPlaceholderCanvasId(DOMNodeId canvas_id) {
   placeholder_canvas_id_ = canvas_id;
   if (GetTopExecutionContext() &&
-      GetTopExecutionContext()->IsWorkerGlobalScope()) {
+      GetTopExecutionContext()->IsDedicatedWorkerGlobalScope()) {
     WorkerAnimationFrameProvider* animation_frame_provider =
-        To<WorkerGlobalScope>(GetTopExecutionContext())
+        To<DedicatedWorkerGlobalScope>(GetTopExecutionContext())
             ->GetAnimationFrameProvider();
     if (animation_frame_provider)
       animation_frame_provider->RegisterOffscreenCanvas(this);

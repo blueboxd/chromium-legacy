@@ -257,6 +257,11 @@ blink::WebMouseEvent MakeWebMouseEvent(const MouseEvent& event) {
   // Replace the event's coordinate fields with translated position data from
   // |event|.
   webkit_event.SetPositionInWidget(event.x(), event.y());
+  if (event.flags() & ui::EF_UNADJUSTED_MOUSE) {
+    webkit_event.movement_x = event.movement().x();
+    webkit_event.movement_y = event.movement().y();
+    webkit_event.is_raw_movement_event = true;
+  }
 
 #if defined(OS_WIN)
   if (event.native_event().message && event.type() != ET_MOUSE_EXITED)

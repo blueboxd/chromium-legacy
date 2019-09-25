@@ -64,7 +64,7 @@ SVGAnimateMotionElement::SVGAnimateMotionElement(Document& document)
 
 SVGAnimateMotionElement::~SVGAnimateMotionElement() = default;
 
-bool SVGAnimateMotionElement::HasValidTarget() {
+bool SVGAnimateMotionElement::HasValidTarget() const {
   return SVGAnimationElement::HasValidTarget() &&
          TargetCanHaveMotionTransform(*targetElement());
 }

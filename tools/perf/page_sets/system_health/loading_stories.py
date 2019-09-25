@@ -224,6 +224,11 @@ class LoadRedditMobileStory(_LoadingStory):
   SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
   TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2016]
 
+class LoadRedditMobileStory2019(_LoadingStory):
+  NAME = 'load:news:reddit:2019'
+  URL = 'https://www.reddit.com/r/news/top/?sort=top&t=week'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  TAGS = [story_tags.HEALTH_CHECK, story_tags.YEAR_2019]
 
 class LoadWashingtonPostMobileStory(_LoadingStory):
   NAME = 'load:news:washingtonpost'

@@ -533,10 +533,6 @@ WebTimeRanges MediaSource::SeekableInternal() const {
   return ranges;
 }
 
-TimeRanges* MediaSource::Seekable() const {
-  return MakeGarbageCollected<TimeRanges>(SeekableInternal());
-}
-
 void MediaSource::OnTrackChanged(TrackBase* track) {
   DCHECK(HTMLMediaElement::MediaTracksEnabledInternally());
   SourceBuffer* source_buffer =

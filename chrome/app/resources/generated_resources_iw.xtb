@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">מפתח האבטחה נעול כי הזנת קוד אימות שגוי יותר מדי פעמים. כדי לבטל את הנעילה צריך לנתק ולחבר אותו מחדש.</translation>
 <translation id="1137673463384776352">פתח את הקישור ב-<ph name="APP" /></translation>
 <translation id="1140351953533677694">‏גישה ל-Bluetooth ולהתקנים סיריאליים</translation>
+<translation id="114036956334641753">אודיו וכתוביות</translation>
 <translation id="1140610710803014750">כדי לקבל גישה אל הסימניות שלך בכל המכשירים יש להיכנס ולבצע סינכרון.</translation>
 <translation id="1140746652461896221">חסימת תוכן בכל דף שאליו נכנסת</translation>
 <translation id="1143142264369994168">חותם על אישור </translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">רשתות מוכרות</translation>
 <translation id="123578888592755962">הדיסק מלא</translation>
 <translation id="1238191093934674082">‏VPN פתוח</translation>
+<translation id="1239594683407221485">באפליקציה 'קבצים' אפשר לעיין בתוכן של המכשיר.</translation>
 <translation id="124116460088058876">שפות נוספות</translation>
 <translation id="1241753985463165747">קרא ושנה את כל הנתונים שלך באתר הנוכחי בעת הקריאה</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> רוצה לאפס את ההגדרות שלך.</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">האינטרנט מנותק. בדוק את חיבור האינטרנט שלך ונסה שוב.</translation>
 <translation id="1463112138205428654"><ph name="FILE_NAME" /> נחסם על-ידי ההגנה המתקדמת.</translation>
 <translation id="1464258312790801189">החשבונות שלך</translation>
+<translation id="1464781208867302907">דרך ההגדרות אפשר לגשת להעדפות המכשיר.</translation>
 <translation id="1465176863081977902">העתק כתובת &amp;אודיו</translation>
 <translation id="1465827627707997754">משולש פיצה</translation>
 <translation id="1468571364034902819">לא ניתן להשתמש בפרופיל הזה</translation>
@@ -741,6 +744,7 @@
 <translation id="2099686503067610784">למחוק את אישור השרת "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">כניסה אוטומטית</translation>
 <translation id="2101225219012730419">גרסה:</translation>
+<translation id="2111670510994270194">כרטיסייה חדשה מצד ימין</translation>
 <translation id="21133533946938348">הצמד כרטיסייה</translation>
 <translation id="2113479184312716848">פתח &amp;קובץ...</translation>
 <translation id="2113921862428609753">גישה לפרטי רשות</translation>
@@ -1094,7 +1098,6 @@
 <translation id="2586672484245266891">יש להזין כתובת אתר קצרה יותר</translation>
 <translation id="2588636910004461974">מכשירים של <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">זה המקום לחפש את מה שמעניין או להקליד כתובת של אתר ספציפי</translation>
-<translation id="2597521610396315071">הוספת פיקוח</translation>
 <translation id="2603115962224169880">ניקוי המחשב</translation>
 <translation id="2603463522847370204">פתח בחלון &amp;גלישה בסתר</translation>
 <translation id="2604255671529671813">שגיאת חיבור רשת</translation>
@@ -1787,6 +1790,7 @@
 <translation id="3630995161997703415">כדי שניתן יהיה תמיד להשתמש באתר הזה יש להוסיף אותו למדף</translation>
 <translation id="3636096452488277381">אהלן, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684">‏‎‎‎%‎‏‎‎‏‎‏‎<ph name="PERCENTAGE" />‌ - נותרו <ph name="TIME" /></translation>
+<translation id="3637561406135221044">המערכת סורקת את הקבצים לאיתור מידע אישי רגיש...</translation>
 <translation id="3637682276779847508">‏כרטיס ה-SIM שלך יושבת לצמיתות אם לא תזין את המפתח הנכון לביטול נעילת ה-PIN.</translation>
 <translation id="3640214691812501263">האם להוסיף את "<ph name="EXTENSION_NAME" />" בשביל <ph name="USER_NAME" />?</translation>
 <translation id="3640613767643722554">‏ה-Assistant יכול ללמוד לזהות את הקול שלך</translation>
@@ -2225,6 +2229,7 @@
 <translation id="425573743389990240">שיעור פריקת סוללה בוואט (המשמעות של ערך שלילי היא שהסוללה בטעינה)</translation>
 <translation id="4256316378292851214">שמו&amp;ר סרטון וידאו כ...</translation>
 <translation id="4258348331913189841">מערכות קבצים</translation>
+<translation id="4263223596040212967">כדאי לבדוק את פריסת המקלדת ולנסות שוב.</translation>
 <translation id="4263757076580287579">רישום המדפסת בוטל.</translation>
 <translation id="426564820080660648">‏כדי לבדוק אם יש עדכונים, השתמש ב-Ethernet, ב-Wi-Fi או בנתונים לנייד.</translation>
 <translation id="4267953847983678297">התחברות אוטומטית אל רשת סלולרית</translation>
@@ -2320,6 +2325,7 @@
 <translation id="4416582610654027550">יש להקליד כתובת אתר חוקית</translation>
 <translation id="4419409365248380979">‏אפשר תמיד ל-<ph name="HOST" /> להגדיר קובצי Cookie</translation>
 <translation id="4419610272958564173">מכשיר לא ידוע (ספק: <ph name="VENDOR_ID" />, מוצר: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">בעיות בהתחברות? יש לפנות אל <ph name="CARRIER_NAME" /> לקבלת עזרה.</translation>
 <translation id="4421932782753506458">לקיק</translation>
 <translation id="4423376891418188461">שחזר הגדרות</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, מנהל המערכת מבקש ממך לשנות את הסיסמה שלך.</translation>
@@ -2995,6 +3001,7 @@
 <translation id="5457599981699367932">גלוש כאורח</translation>
 <translation id="5457991019809708398">פועל, ללא נדידה</translation>
 <translation id="5458998536542739734">הערות במסך הנעילה</translation>
+<translation id="546322474339998983">‏בשימוש על ידי דפדפן Chrome ומרכז האפליקציות של <ph name="DEVICE_TYPE" /></translation>
 <translation id="5463231940765244860">הזנת הקוד</translation>
 <translation id="5463275305984126951">אינדקס של <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">התפריט מכיל סימניות נסתרות</translation>
@@ -3292,6 +3299,7 @@
 <translation id="5869948122057593679">סגירת כל החלונות</translation>
 <translation id="5870086504539785141">סגור את תפריט הנגישות</translation>
 <translation id="5870155679953074650">שגיאות חמורות</translation>
+<translation id="5876851302954717356">כרטיסייה חדשה מצד ימין</translation>
 <translation id="5877064549588274448">הערוץ שונה. הפעל מחדש את המכשיר להחלת השינויים.</translation>
 <translation id="5877584842898320529">המדפסת שבחרת אינה זמינה או שאינה מותקנת כראוי. <ph name="BR" /> יש לבדוק את המדפסת או לנסות לבחור מדפסת אחרת.</translation>
 <translation id="5882919346125742463">רשתות מוכרות</translation>
@@ -4490,6 +4498,7 @@
 <translation id="7685049629764448582">‏זיכרון JavaScript</translation>
 <translation id="7685087414635069102">נדרש קוד אימות</translation>
 <translation id="7685301384041462804">‏חשוב לוודא שהאתר מהימן לפני תחילת השימוש ב-VR.</translation>
+<translation id="768549422429443215">הוספת שפות או שינוי סדר הרשימה.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">אישור הסיסמה החדשה</translation>
 <translation id="7690378713476594306">בחירה מתוך רשימה</translation>
@@ -4551,6 +4560,7 @@
 <translation id="7773726648746946405">אחסון הפעלה</translation>
 <translation id="7774365994322694683">ציפור</translation>
 <translation id="7776701556330691704">לא נמצאו קולות</translation>
+<translation id="7780252971640011240">בעיות בהתחברות? יש לפנות לספק לקבלת עזרה.</translation>
 <translation id="7781335840981796660">תתבצע הסרה של כל חשבונות המשתמש והנתונים השמורים במכשיר.</translation>
 <translation id="7782102568078991263">‏אין יותר הצעות מ-Google</translation>
 <translation id="7782717250816686129">אחסון נתונים קבועים במסך ההתחברות והזנה אוטומטית של פרטי הכניסה בסשן.</translation>

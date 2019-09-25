@@ -252,6 +252,7 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
   java_files = [
     "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
     "javatests/src/org/chromium/weblayer/test/SmokeTest.java",
+    "javatests/src/org/chromium/weblayer/test/RenderingTest.java",
     "javatests/src/org/chromium/weblayer/test/WebLayerShellActivityTestRule.java",
     "shell_apk/src/org/chromium/weblayer/shell/WebLayerShellActivity.java",
   ]

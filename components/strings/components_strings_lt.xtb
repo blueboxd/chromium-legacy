@@ -557,7 +557,7 @@
     pateikęs politiką, jis peradresavo naršyklę į kitą vietą, todėl
     naršyklė negali vykdyti svetainės (<ph name="SITE" />) užklausos. Pradinę
     politiką gali naudoti svetainių operatoriai, siekdami konfigūruoti svetainės
-    saugą ir kitas nuosavybe.</translation>
+    saugą ir kitas nuosavybes.</translation>
 <translation id="3701427423622901115">Nustatymas iš naujo patvirtintas.</translation>
 <translation id="3704162925118123524">Naudojant šį tinklą gali būti prašoma apsilankyti prisijungimo puslapyje.</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
@@ -1036,6 +1036,7 @@
 <translation id="6058977677006700226">Naudojate korteles visuose įrenginiuose?</translation>
 <translation id="6059925163896151826">USB įrenginiai</translation>
 <translation id="6060009363608157444">Netinkamas „DnsOverHttps“ režimas.</translation>
+<translation id="6064217302520318294">Ekrano užraktas</translation>
 <translation id="6080696365213338172">Pasiekėte turinį naudodami administratoriaus pateiktą sertifikatą. Duomenys, kuriuos pateikiate <ph name="DOMAIN" />, gali būti perimti administratoriaus.</translation>
 <translation id="6094273045989040137">Komentuoti</translation>
 <translation id="610911394827799129">„Google“ paskyroje gali būti kito tipo naršymo istorijos, kuri pasiekiama adresu <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>

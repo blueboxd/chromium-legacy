@@ -119,7 +119,6 @@ Niektoré funkcie nemusia byť k dispozícii a zmeny vykonané v predvoľbách s
 <translation id="5416696090975899932">Keď vstavaný zobrazovač súborov PDF chýba, Google Chrome nemôže zobraziť ukážku pred tlačou.</translation>
 <translation id="5427571867875391349">Nastaviť Chromium ako predvolený prehliadač</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
-<translation id="5466153949126434691">Chromium sa aktualizuje automaticky, aby ste mali vždy k dispozícii najnovšiu verziu. Po dokončení sťahovania sa Chromium reštartujte a začnete používať aktuálnu verziu.</translation>
 <translation id="5479196819031988440">Chromium OS nedokáže túto stránku otvoriť.</translation>
 <translation id="5480860683791598150">Chromium potrebuje prístup k vašej polohe, aby ju mohol zdieľať s týmto webom</translation>
 <translation id="549669000822060376">Počkajte, kým Chromium nainštaluje najnovšie aktualizácie systému.</translation>
@@ -214,7 +213,6 @@ Prehliadač Chromium nedokáže obnoviť vaše nastavenia.</translation>
 <translation id="7867198900892795913">Chromium sa nepodarilo aktualizovať na najnovšiu verziu. K dispozícii tak nie sú niektoré nové funkcie ani bezpečnostné opravy.</translation>
 <translation id="7901117350626490574">K dispozícii je aktualizácia pre Chromium, ktorá bude uplatnená po najbližšom opätovnom spustení.</translation>
 <translation id="7937630085815544518">Do prehliadača Chromium ste boli prihlásený/-á ako <ph name="USER_EMAIL_ADDRESS" />. Ak sa chcete prihlásiť znova, použite rovnaký účet.</translation>
-<translation id="7962572577636132072">Chromium sa aktualizuje automaticky, aby ste mali vždy k dispozícii najnovšiu verziu.</translation>
 <translation id="7975919845073681630">Toto je sekundárna inštalácia prehliadača Chromium – nemôže byť nastavený ako váš predvolený prehliadač.</translation>
 <translation id="7979877361127045932">Skryť v Ponuke Chromium</translation>
 <translation id="8013436988911883588">Keď Chromium získa prístup, weby vás budú môcť žiadať o prístup.</translation>

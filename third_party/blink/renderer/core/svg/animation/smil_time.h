@@ -152,16 +152,11 @@ class SMILTimeWithOrigin {
   DISALLOW_NEW();
 
  public:
-  SMILTimeWithOrigin() : origin_(SMILTimeOrigin::kAttribute) {}
-
   SMILTimeWithOrigin(const SMILTime& time, SMILTimeOrigin origin)
       : time_(time), origin_(origin) {}
 
   const SMILTime& Time() const { return time_; }
-  bool OriginIsScript() const { return origin_ == SMILTimeOrigin::kScript; }
-  bool HasSameOrigin(SMILTimeWithOrigin other) const {
-    return origin_ == other.origin_;
-  }
+  SMILTimeOrigin Origin() const { return origin_; }
 
  private:
   SMILTime time_;
@@ -207,35 +202,6 @@ inline bool operator!=(const SMILInterval& a, const SMILInterval& b) {
   return !(a == b);
 }
 
-struct SMILTimeHash {
-  STATIC_ONLY(SMILTimeHash);
-  static unsigned GetHash(const SMILTime& key) {
-    return WTF::IntHash<int64_t>::GetHash(key.time_.InMicroseconds());
-  }
-  static bool Equal(const SMILTime& a, const SMILTime& b) { return a == b; }
-  static const bool safe_to_compare_to_empty_or_deleted = true;
-};
-
 }  // namespace blink
-
-namespace WTF {
-
-template <>
-struct DefaultHash<blink::SMILTime> {
-  typedef blink::SMILTimeHash Hash;
-};
-
-template <>
-struct HashTraits<blink::SMILTime> : GenericHashTraits<blink::SMILTime> {
-  static blink::SMILTime EmptyValue() { return blink::SMILTime::Unresolved(); }
-  static void ConstructDeletedValue(blink::SMILTime& slot, bool) {
-    slot = blink::SMILTime::Earliest();
-  }
-  static bool IsDeletedValue(blink::SMILTime value) {
-    return value == blink::SMILTime::Earliest();
-  }
-};
-
-}  // namespace WTF
 
 #endif  // THIRD_PARTY_BLINK_RENDERER_CORE_SVG_ANIMATION_SMIL_TIME_H_

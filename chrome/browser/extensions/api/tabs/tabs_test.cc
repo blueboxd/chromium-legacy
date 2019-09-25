@@ -48,7 +48,6 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/mime_handler_view_mode.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
@@ -61,6 +60,7 @@
 #include "extensions/test/extension_test_message_listener.h"
 #include "extensions/test/result_catcher.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
@@ -1846,7 +1846,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, SetAndGetZoom) {
   const double kZoomLevel = 0.8;
   EXPECT_TRUE(RunSetZoom(tab_id, kZoomLevel));
   EXPECT_EQ(kZoomLevel,
-            content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents)));
+            blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents)));
 
   // Test chrome.tabs.getZoom().
   zoom_factor = -1;
@@ -1863,9 +1863,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, GetDefaultZoom) {
       zoom::ZoomController::FromWebContents(web_contents);
   double default_zoom_factor = -1.0;
   EXPECT_TRUE(RunGetDefaultZoom(tab_id, &default_zoom_factor));
-  EXPECT_TRUE(content::ZoomValuesEqual(
+  EXPECT_TRUE(blink::PageZoomValuesEqual(
       zoom_controller->GetDefaultZoomLevel(),
-      content::ZoomFactorToZoomLevel(default_zoom_factor)));
+      blink::PageZoomFactorToZoomLevel(default_zoom_factor)));
 
   // Change the default zoom level and verify GetDefaultZoom returns the
   // correct value.
@@ -1879,9 +1879,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, GetDefaultZoom) {
   zoom_prefs->SetDefaultZoomLevelPref(default_zoom_level + 0.5);
   default_zoom_factor = -1.0;
   EXPECT_TRUE(RunGetDefaultZoom(tab_id, &default_zoom_factor));
-  EXPECT_TRUE(content::ZoomValuesEqual(
+  EXPECT_TRUE(blink::PageZoomValuesEqual(
       default_zoom_level + 0.5,
-      content::ZoomFactorToZoomLevel(default_zoom_factor)));
+      blink::PageZoomFactorToZoomLevel(default_zoom_factor)));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, SetToDefaultZoom) {
@@ -1905,9 +1905,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, SetToDefaultZoom) {
   double observed_zoom_factor = -1.0;
   EXPECT_TRUE(RunSetZoom(tab_id, 0.0));
   EXPECT_TRUE(RunGetZoom(tab_id, &observed_zoom_factor));
-  EXPECT_TRUE(content::ZoomValuesEqual(
+  EXPECT_TRUE(blink::PageZoomValuesEqual(
       new_default_zoom_level,
-      content::ZoomFactorToZoomLevel(observed_zoom_factor)));
+      blink::PageZoomFactorToZoomLevel(observed_zoom_factor)));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, ZoomSettings) {
@@ -1935,48 +1935,48 @@ IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, ZoomSettings) {
   int tab_id_B = ExtensionTabUtil::GetTabId(web_contents_B);
 
   ASSERT_FLOAT_EQ(
-      1.f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
+      1.f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
   ASSERT_FLOAT_EQ(
-      1.f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
+      1.f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
   ASSERT_FLOAT_EQ(
-      1.f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_B)));
+      1.f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_B)));
 
   // Test per-origin automatic zoom settings.
   EXPECT_TRUE(RunSetZoom(tab_id_B, 1.f));
   EXPECT_TRUE(RunSetZoom(tab_id_A2, 1.1f));
   EXPECT_FLOAT_EQ(
-      1.1f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
+      1.1f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
   EXPECT_FLOAT_EQ(
-      1.1f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
-  EXPECT_FLOAT_EQ(1.f,
-                  content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_B)));
+      1.1f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
+  EXPECT_FLOAT_EQ(
+      1.f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_B)));
 
   // Test per-tab automatic zoom settings.
   EXPECT_TRUE(RunSetZoomSettings(tab_id_A1, "automatic", "per-tab"));
   EXPECT_TRUE(RunSetZoom(tab_id_A1, 1.2f));
   EXPECT_FLOAT_EQ(
-      1.2f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
+      1.2f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
   EXPECT_FLOAT_EQ(
-      1.1f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
+      1.1f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
 
   // Test 'manual' mode.
   EXPECT_TRUE(RunSetZoomSettings(tab_id_A1, "manual", nullptr));
   EXPECT_TRUE(RunSetZoom(tab_id_A1, 1.3f));
   EXPECT_FLOAT_EQ(
-      1.3f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
+      1.3f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
   EXPECT_FLOAT_EQ(
-      1.1f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
+      1.1f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
 
   // Test 'disabled' mode, which will reset A1's zoom to 1.f.
   EXPECT_TRUE(RunSetZoomSettings(tab_id_A1, "disabled", nullptr));
   std::string error = RunSetZoomExpectError(tab_id_A1, 1.4f);
   EXPECT_TRUE(base::MatchPattern(error, keys::kCannotZoomDisabledTabError));
   EXPECT_FLOAT_EQ(
-      1.f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
+      1.f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_A1)));
   // We should still be able to zoom A2 though.
   EXPECT_TRUE(RunSetZoom(tab_id_A2, 1.4f));
   EXPECT_FLOAT_EQ(
-      1.4f, content::ZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
+      1.4f, blink::PageZoomLevelToZoomFactor(GetZoomLevel(web_contents_A2)));
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionTabsZoomTest, PerTabResetsOnNavigation) {

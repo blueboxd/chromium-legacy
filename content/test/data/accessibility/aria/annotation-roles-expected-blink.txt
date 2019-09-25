@@ -1,0 +1,7 @@
+rootWebArea
+++genericContainer ignored
+++++annotationAttribution name='annotation-attribution'
+++++annotationCommentary name='annotation-commentary'
+++++annotationPresence name='annotation-presence'
+++++annotationRevision name='annotation-revision'
+++++annotationSuggestion name='annotation-suggestion'

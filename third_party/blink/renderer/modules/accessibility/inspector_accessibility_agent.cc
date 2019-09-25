@@ -212,7 +212,7 @@ bool RoleAllowsSort(ax::mojom::Role role) {
 void FillWidgetProperties(AXObject& ax_object,
                           protocol::Array<AXProperty>& properties) {
   ax::mojom::Role role = ax_object.RoleValue();
-  String autocomplete = ax_object.AriaAutoComplete();
+  String autocomplete = ax_object.AutoComplete();
   if (!autocomplete.IsEmpty())
     properties.emplace_back(
         CreateProperty(AXPropertyNameEnum::Autocomplete,

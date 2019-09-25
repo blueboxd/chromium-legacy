@@ -357,8 +357,11 @@ bool LaunchInstalledApp(NSString* installed_path,
                         const std::string& dmg_bsd_device_name) {
   base::FilePath browser_path([installed_path fileSystemRepresentation]);
 
-  base::FilePath helper_path = browser_path.Append("Contents/Versions");
+  base::FilePath helper_path = browser_path.Append("Contents/Frameworks");
+  helper_path = helper_path.Append(chrome::kFrameworkName);
+  helper_path = helper_path.Append("Versions");
   helper_path = helper_path.Append(chrome::kChromeVersion);
+  helper_path = helper_path.Append("Helpers");
   helper_path = helper_path.Append(chrome::kHelperProcessExecutablePath);
 
   std::vector<std::string> args =

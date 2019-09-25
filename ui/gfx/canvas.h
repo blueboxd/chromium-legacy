@@ -190,9 +190,6 @@ class GFX_EXPORT Canvas {
   // should be antialiased.
   void ClipPath(const SkPath& path, bool do_anti_alias);
 
-  // Returns true if the current clip is empty.
-  bool IsClipEmpty() const;
-
   // Returns the bounds of the current clip (in local coordinates) in the
   // |bounds| parameter, and returns true if it is non empty.
   bool GetClipBounds(Rect* bounds);

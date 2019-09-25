@@ -624,8 +624,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   const uint32_t root_background_color = 1337;
   ui::LatencyInfo latency_info;
   latency_info.set_trace_id(5);
-  latency_info.AddLatencyNumber(
-      ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT);
+  latency_info.AddLatencyNumber(ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT);
   std::vector<ui::LatencyInfo> latency_infos = {latency_info};
   std::vector<SurfaceRange> referenced_surfaces;
   SurfaceId id(FrameSinkId(1234, 4321),
@@ -677,7 +676,7 @@ TEST_F(StructTraitsTest, CompositorFrameMetadata) {
   EXPECT_EQ(root_background_color, output.root_background_color);
   EXPECT_EQ(latency_infos.size(), output.latency_info.size());
   EXPECT_TRUE(output.latency_info[0].FindLatency(
-      ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT, nullptr));
+      ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT, nullptr));
   EXPECT_EQ(referenced_surfaces.size(), output.referenced_surfaces.size());
   for (uint32_t i = 0; i < referenced_surfaces.size(); ++i)
     EXPECT_EQ(referenced_surfaces[i], output.referenced_surfaces[i]);

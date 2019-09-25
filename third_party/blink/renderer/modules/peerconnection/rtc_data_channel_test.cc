@@ -10,6 +10,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"

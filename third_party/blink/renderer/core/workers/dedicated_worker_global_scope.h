@@ -32,6 +32,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_CORE_WORKERS_DEDICATED_WORKER_GLOBAL_SCOPE_H_
 
 #include <memory>
+#include "third_party/blink/renderer/core/animation_frame/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/messaging/message_port.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
@@ -64,7 +65,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
       std::unique_ptr<GlobalScopeCreationParams>,
       DedicatedWorkerThread*,
       base::TimeTicks time_origin,
-      std::unique_ptr<Vector<String>> outside_origin_trial_tokens);
+      std::unique_ptr<Vector<String>> outside_origin_trial_tokens,
+      const BeginFrameProviderParams& begin_frame_provider_params);
 
   ~DedicatedWorkerGlobalScope() override;
 
@@ -74,6 +76,13 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
   // Implements EventTarget
   // (via WorkerOrWorkletGlobalScope -> EventTargetWithInlineData).
   const AtomicString& InterfaceName() const override;
+
+  // RequestAnimationFrame
+  int requestAnimationFrame(V8FrameRequestCallback* callback, ExceptionState&);
+  void cancelAnimationFrame(int id);
+  WorkerAnimationFrameProvider* GetAnimationFrameProvider() {
+    return animation_frame_provider_;
+  }
 
   // Implements WorkerGlobalScope.
   void Initialize(const KURL& response_url,
@@ -116,6 +125,8 @@ class CORE_EXPORT DedicatedWorkerGlobalScope final : public WorkerGlobalScope {
                              const v8_inspector::V8StackTraceId& stack_id);
 
   DedicatedWorkerObjectProxy& WorkerObjectProxy() const;
+
+  Member<WorkerAnimationFrameProvider> animation_frame_provider_;
 };
 
 template <>

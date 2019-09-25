@@ -33,13 +33,25 @@ base::Value BytesTransferredParams(int byte_count,
 
 }  // namespace
 
+NetLogWithSource::NetLogWithSource() {
+  // Conceptually, default NetLogWithSource have no NetLog*, and will return
+  // nullptr when calling |net_log()|. However for performance reasons, we
+  // always store a non-null member to the NetLog in order to avoid needing
+  // null checks for critical codepaths.
+  //
+  // The "dummy" net log used here will always return false for IsCapturing(),
+  // and have no sideffects should its method be called. In practice the only
+  // method that will get called on it is IsCapturing().
+  static NetLog* dummy = new NetLog();
+  DCHECK(!dummy->IsCapturing());
+  non_null_net_log_ = dummy;
+}
+
 NetLogWithSource::~NetLogWithSource() {}
 
 void NetLogWithSource::AddEntry(NetLogEventType type,
                                 NetLogEventPhase phase) const {
-  if (!net_log_)
-    return;
-  net_log_->AddEntry(type, source_, phase);
+  non_null_net_log_->AddEntry(type, source_, phase);
 }
 
 void NetLogWithSource::AddEvent(NetLogEventType type) const {
@@ -138,10 +150,6 @@ void NetLogWithSource::AddByteTransferEvent(NetLogEventType event_type,
   });
 }
 
-bool NetLogWithSource::IsCapturing() const {
-  return net_log_ && net_log_->IsCapturing();
-}
-
 // static
 NetLogWithSource NetLogWithSource::Make(NetLog* net_log,
                                         NetLogSourceType source_type) {
@@ -150,6 +158,12 @@ NetLogWithSource NetLogWithSource::Make(NetLog* net_log,
 
   NetLogSource source(source_type, net_log->NextID());
   return NetLogWithSource(source, net_log);
+}
+
+NetLog* NetLogWithSource::net_log() const {
+  if (source_.IsValid())
+    return non_null_net_log_;
+  return nullptr;
 }
 
 }  // namespace net

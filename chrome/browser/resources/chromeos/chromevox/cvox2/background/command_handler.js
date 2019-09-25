@@ -866,7 +866,7 @@ CommandHandler.onCommand = function(command) {
       }
       cvox.ChromeVox.tts.speak(announce, cvox.QueueMode.FLUSH);
       return false;
-    case 'getBatteryDescription':
+    case 'announceBatteryDescription':
       chrome.accessibilityPrivate.getBatteryDescription(function(
           batteryDescription) {
         new Output()
@@ -875,7 +875,7 @@ CommandHandler.onCommand = function(command) {
             .go();
       });
       break;
-    case 'getRichTextDescription':
+    case 'announceRichTextDescription':
       var node = ChromeVoxState.instance.currentRange.start.node;
       var optSubs = [];
       node.fontSize ? optSubs.push('font size: ' + node.fontSize) :

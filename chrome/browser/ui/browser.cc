@@ -2297,8 +2297,14 @@ void Browser::UpdateToolbar(bool should_restore_state) {
 
 void Browser::ScheduleUIUpdate(WebContents* source, unsigned changed_flags) {
   DCHECK(source);
-  int index = tab_strip_model_->GetIndexOfWebContents(source);
-  DCHECK_NE(TabStripModel::kNoTab, index);
+  // WebContents may in some rare cases send updates after they've been detached
+  // from the tabstrip but before they are deleted, causing a potential crash if
+  // we proceed. For now bail out.
+  // TODO(crbug.com/1007379) Figure out a safe way to detach browser delegate
+  // from WebContents when it's removed so this doesn't happen - then put a
+  // DCHECK back here.
+  if (tab_strip_model_->GetIndexOfWebContents(source) == TabStripModel::kNoTab)
+    return;
 
   // Do some synchronous updates.
   if (changed_flags & content::INVALIDATE_TYPE_URL) {

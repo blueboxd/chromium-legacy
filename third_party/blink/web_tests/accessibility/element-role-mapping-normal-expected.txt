@@ -64,7 +64,7 @@ AXRole: AXWebArea
             AXRole: AXStaticText "Paragraph"
                 AXRole: AXInlineTextBox "Paragraph"
         AXRole: AXRuby
-            AXRole: AXAnnotation
+            AXRole: AXRubyAnnotation
                 AXRole: AXStaticText "한국"
                     AXRole: AXInlineTextBox "한국"
             AXRole: AXStaticText "韓國"

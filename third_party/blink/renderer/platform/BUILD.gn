@@ -1698,6 +1698,7 @@ jumbo_source_set("blink_platform_unittests_sources") {
     "exported/mediastream/media_stream_audio_processor_options_test.cc",
     "exported/mediastream/media_stream_audio_test.cc",
     "exported/mediastream/webrtc_uma_histograms_test.cc",
+    "exported/page_zoom_test.cc",
     "exported/video_capture/web_video_capture_impl_manager_test.cc",
     "exported/web_canonical_cookie_test.cc",
     "exported/web_icon_sizes_parser_test.cc",

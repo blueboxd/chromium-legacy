@@ -329,16 +329,20 @@ class ChildProcessSecurityPolicyImpl::SecurityState {
     return false;
   }
 
-  bool CanAccessDataForOrigin(const GURL& site_url) {
-    if (origin_lock_.is_empty())
-      return true;
-    return origin_lock_ == site_url;
-  }
-
   void LockToOrigin(const GURL& gurl, BrowsingInstanceId browsing_instance_id) {
     DCHECK(origin_lock_.is_empty());
+    DCHECK_NE(SiteInstanceImpl::GetDefaultSiteURL(), gurl);
     origin_lock_ = gurl;
     lowest_browsing_instance_id_ = browsing_instance_id;
+  }
+
+  void SetLowestBrowsingInstanceId(
+      BrowsingInstanceId new_browsing_instance_id_to_include) {
+    DCHECK(!new_browsing_instance_id_to_include.is_null());
+    if (lowest_browsing_instance_id_.is_null() ||
+        (new_browsing_instance_id_to_include < lowest_browsing_instance_id_)) {
+      lowest_browsing_instance_id_ = new_browsing_instance_id_to_include;
+    }
   }
 
   const GURL& origin_lock() { return origin_lock_; }
@@ -1320,43 +1324,99 @@ bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(
 bool ChildProcessSecurityPolicyImpl::CanAccessDataForOrigin(int child_id,
                                                             const GURL& url) {
   DCHECK(IsRunningOnExpectedThread());
-
   base::AutoLock lock(lock_);
+
   SecurityState* security_state = GetSecurityState(child_id);
+  BrowserOrResourceContext browser_or_resource_context;
+  if (security_state)
+    browser_or_resource_context = security_state->GetBrowserOrResourceContext();
 
-  // Determine the BrowsingInstance ID for calculating the expected process
-  // lock URL.
   GURL expected_process_lock;
-  BrowserOrResourceContext context;
-  if (security_state) {
-    context = security_state->GetBrowserOrResourceContext();
-    if (context) {
-      BrowsingInstanceId browsing_instance_id =
-          security_state->lowest_browsing_instance_id();
-      expected_process_lock = SiteInstanceImpl::DetermineProcessLockURL(
-          IsolationContext(browsing_instance_id, context), url);
+  if (security_state && browser_or_resource_context) {
+    IsolationContext isolation_context(
+        security_state->lowest_browsing_instance_id(),
+        browser_or_resource_context);
+    expected_process_lock =
+        SiteInstanceImpl::DetermineProcessLockURL(isolation_context, url);
+
+    GURL actual_process_lock = security_state->origin_lock();
+    if (!actual_process_lock.is_empty()) {
+      // Jail-style enforcement - a process with a lock can only access data
+      // from origins that require exactly the same lock.
+      if (actual_process_lock == expected_process_lock)
+        return true;
+    } else {
+      // Citadel-style enforcement - an unlocked process should not be able to
+      // access data from origins that require a lock.
+#if !defined(OS_ANDROID)
+      // TODO(lukasza): https://crbug.com/566091: Once remote NTP is capable of
+      // embedding OOPIFs, start enforcing citadel-style checks on desktop
+      // platforms.
+      // TODO(lukasza): https://crbug.com/614463: Enforce isolation within
+      // GuestView (once OOPIFs are supported within GuestView).
+      return true;
+#else
+      // TODO(acolwell, lukasza): https://crbug.com/764958: Make it possible to
+      // call ShouldLockToOrigin (and GetSiteForURL?) on the IO thread.
+      if (BrowserThread::CurrentlyOn(BrowserThread::IO))
+        return true;
+      DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+      // TODO(lukasza): Consider making the checks below IO-thread-friendly, by
+      // storing |is_unused| inside SecurityState.
+      RenderProcessHost* process = RenderProcessHostImpl::FromID(child_id);
+      if (process) {  // |process| can be null in unittests
+        // Unlocked process can be legitimately used when navigating from an
+        // unused process (about:blank, NTP on Android) to an isolated origin.
+        // See also https://crbug.com/945399.  Returning |true| below will allow
+        // such navigations to succeed (i.e. pass CanCommitOriginAndUrl checks).
+        // We don't expect unused processes to be used outside of navigations
+        // (e.g. when checking CanAccessDataForOrigin for localStorage, etc.).
+        if (process->IsUnused())
+          return true;
+      }
+
+      // TODO(alexmos, lukasza): https://crbug.com/764958: Consider making
+      // ShouldLockToOrigin work with |expected_process_lock| instead of
+      // |site_url|.
+      GURL site_url = SiteInstanceImpl::GetSiteForURL(isolation_context, url);
+
+      // A process with no lock can only access data from origins that do not
+      // require a locked process.
+      bool should_lock_target =
+          SiteInstanceImpl::ShouldLockToOrigin(isolation_context, site_url);
+      if (!should_lock_target)
+        return true;
+#endif
     }
   }
 
-  bool can_access =
-      context && security_state &&
-      security_state->CanAccessDataForOrigin(expected_process_lock);
-  if (!can_access) {
-    // Returning false here will result in a renderer kill.  Set some crash
-    // keys that will help understand the circumstances of that kill.
-    std::string killed_process_origin_lock;
-    if (!security_state) {
-      killed_process_origin_lock = "(child id not found)";
-    } else if (!context) {
-      killed_process_origin_lock = "(context is null)";
-    } else {
-      killed_process_origin_lock = security_state->origin_lock().spec();
-    }
-    LogCanAccessDataForOriginCrashKeys(expected_process_lock.spec(),
-                                       killed_process_origin_lock,
-                                       url.GetOrigin().spec());
+  // Returning false here will result in a renderer kill.  Set some crash
+  // keys that will help understand the circumstances of that kill.
+  std::string killed_process_origin_lock;
+  if (!security_state) {
+    killed_process_origin_lock = "(child id not found)";
+  } else if (!browser_or_resource_context) {
+    killed_process_origin_lock = "(context is null)";
+  } else if (security_state->origin_lock().is_empty()) {
+    killed_process_origin_lock = "(no lock - citadel-enforcement)";
+  } else {
+    killed_process_origin_lock = security_state->origin_lock().spec();
   }
-  return can_access;
+  LogCanAccessDataForOriginCrashKeys(expected_process_lock.spec(),
+                                     killed_process_origin_lock,
+                                     url.GetOrigin().spec());
+  return false;
+}
+
+void ChildProcessSecurityPolicyImpl::IncludeIsolationContext(
+    int child_id,
+    const IsolationContext& isolation_context) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  base::AutoLock lock(lock_);
+  auto* state = GetSecurityState(child_id);
+  DCHECK(state);
+  state->SetLowestBrowsingInstanceId(isolation_context.browsing_instance_id());
 }
 
 void ChildProcessSecurityPolicyImpl::LockToOrigin(

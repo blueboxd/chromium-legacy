@@ -3848,17 +3848,6 @@ extern const char kWebrtcPipeWireCapturerDescription[] =
 
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
-const char kEnableDbusAndX11StatusIconsName[] =
-    "Enable DBus and X11 status icons";
-const char kEnableDbusAndX11StatusIconsDescription[] =
-    "If enabled, uses Chromium's StatusNotifierItem (DBus) and system tray "
-    "(X11) implementations of status icons.  Otherwise, uses libappindicator's "
-    "and GTK's implementations.";
-
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
 const char kAvoidFlashBetweenNavigationName[] =
     "Enable flash avoidance between same-origin navigations";
 const char kAvoidFlahsBetweenNavigationDescription[] =

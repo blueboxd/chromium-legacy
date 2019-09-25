@@ -816,6 +816,16 @@ cvox.CommandStore.CMD_WHITELIST = {
   'pauseAllMedia':
       {announce: false, msgId: 'pause_all_media', category: 'information'},
 
+  'announceBatteryDescription': {
+    announce: true,
+    msgId: 'announce_battery_description',
+    category: 'information'
+  },
+  'announceRichTextDescription': {
+    announce: true,
+    msgId: 'announce_rich_text_description',
+    category: 'information'
+  },
   'readPhoneticPronunciation': {
     announce: true,
     msgId: 'read_phonetic_pronunciation',

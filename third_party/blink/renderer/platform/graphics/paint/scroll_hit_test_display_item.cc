@@ -18,7 +18,6 @@ ScrollHitTestDisplayItem::ScrollHitTestDisplayItem(
     : DisplayItem(client, type, sizeof(*this)),
       scroll_offset_node_(scroll_offset_node),
       scroll_container_bounds_(scroll_container_bounds) {
-  DCHECK(RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
 #if DCHECK_IS_ON()
   if (type == DisplayItem::Type::kResizerScrollHitTest ||
       type == DisplayItem::Type::kPluginScrollHitTest) {

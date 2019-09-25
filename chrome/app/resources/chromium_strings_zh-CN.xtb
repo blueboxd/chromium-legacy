@@ -117,7 +117,6 @@ Chromium 操作系统简介<ph name="LINK_END" /></translation>
 <translation id="5416696090975899932">在缺少内置 PDF 查看器的情况下，Chromium 无法显示打印预览。</translation>
 <translation id="5427571867875391349">将Chromium设为默认浏览器</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium 测试版</translation>
-<translation id="5466153949126434691">Chromium会自动更新，因此您使用的始终都是最新版本。更新内容下载完毕后，Chromium会重新启动，然后您就可以开始使用了。</translation>
 <translation id="5479196819031988440">Chromium 操作系统无法打开此网页。</translation>
 <translation id="5480860683791598150">Chromium 需要获得位置权限，才能将您的位置信息共享给此网站</translation>
 <translation id="549669000822060376">Chromium正在安装最新的系统更新，请稍候。</translation>
@@ -213,7 +212,6 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="7867198900892795913">Chromium 无法更新至最新版本，因此您未能获得最新的功能和安全修复程序。</translation>
 <translation id="7901117350626490574">Chromium 有一项新的可用更新；一旦您重新启动，系统即会应用这项更新。</translation>
 <translation id="7937630085815544518">您之前登录 Chromium 时使用的帐号为 <ph name="USER_EMAIL_ADDRESS" />，请使用同一帐号再次登录。</translation>
-<translation id="7962572577636132072">Chromium会自动更新，因此您使用的始终都是最新版本。</translation>
 <translation id="7975919845073681630">这是 Chromium 的并行安装，您无法将此浏览器设为默认浏览器。</translation>
 <translation id="7979877361127045932">在 Chromium 菜单中隐藏</translation>
 <translation id="8013436988911883588">一旦 Chromium 获得了使用权限，网站便能请求您向其授予使用权限。</translation>

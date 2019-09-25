@@ -37,8 +37,8 @@ class CONTENT_EXPORT PermissionServiceContext : public WebContentsObserver {
   void CreateService(
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver);
   void CreateServiceForWorker(
-      mojo::PendingReceiver<blink::mojom::PermissionService> receiver,
-      const url::Origin& origin);
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::PermissionService> receiver);
 
   void CreateSubscription(
       PermissionType permission_type,

@@ -29,8 +29,6 @@ class ScopedWindowTargeter;
 
 namespace ash {
 
-enum class OrientationLockType;
-
 class SplitViewController;
 
 // Split view divider. It passes the mouse/gesture events to SplitViewController
@@ -43,16 +41,10 @@ class ASH_EXPORT SplitViewDivider : public aura::WindowObserver,
   SplitViewDivider(SplitViewController* controller, aura::Window* root_window);
   ~SplitViewDivider() override;
 
-  // Gets the size of the divider widget. The divider widget is enlarged during
-  // dragging. For now, it's a vertical rectangle.
-  static gfx::Size GetDividerSize(const gfx::Rect& work_area_bounds,
-                                  OrientationLockType screen_orientation,
-                                  bool is_dragging);
-
   // static version of GetDividerBoundsInScreen(bool is_dragging) function.
   static gfx::Rect GetDividerBoundsInScreen(
       const gfx::Rect& work_area_bounds_in_screen,
-      OrientationLockType screen_orientation,
+      bool landscape,
       int divider_position,
       bool is_dragging);
 

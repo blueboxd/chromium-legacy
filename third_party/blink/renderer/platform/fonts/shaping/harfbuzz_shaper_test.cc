@@ -1570,6 +1570,35 @@ TEST_P(ShapeParameterTest, CopyRangeMissingRun) {
   EXPECT_EQ(sub->NumCharacters(), 2u);
 }
 
+TEST_P(ShapeParameterTest, CopyRangeNoRuns) {
+  TextDirection direction = GetParam();
+  scoped_refptr<ShapeResult> result =
+      ShapeResult::Create(&font, 0, 2, direction);
+
+  scoped_refptr<ShapeResult> sub0 = result->SubRange(0, 1);
+  EXPECT_EQ(sub0->StartIndex(), 0u);
+  EXPECT_EQ(sub0->EndIndex(), 1u);
+  EXPECT_EQ(sub0->NumCharacters(), 1u);
+
+  scoped_refptr<ShapeResult> sub1 = result->SubRange(1, 2);
+  EXPECT_EQ(sub1->StartIndex(), 1u);
+  EXPECT_EQ(sub1->EndIndex(), 2u);
+  EXPECT_EQ(sub1->NumCharacters(), 1u);
+
+  Vector<scoped_refptr<ShapeResult>> range_results;
+  Vector<ShapeResult::ShapeRange> ranges;
+  range_results.push_back(ShapeResult::CreateEmpty(*result));
+  ranges.push_back(ShapeResult::ShapeRange{0, 1, range_results[0].get()});
+  result->CopyRanges(ranges.data(), ranges.size());
+  for (unsigned i = 0; i < ranges.size(); i++) {
+    const ShapeResult::ShapeRange& range = ranges[i];
+    const ShapeResult& result = *range_results[i];
+    EXPECT_EQ(result.StartIndex(), range.start);
+    EXPECT_EQ(result.EndIndex(), range.end);
+    EXPECT_EQ(result.NumCharacters(), range.end - range.start);
+  }
+}
+
 TEST_P(ShapeParameterTest, ShapeResultViewMissingRun) {
   TextDirection direction = GetParam();
   scoped_refptr<ShapeResult> result = CreateMissingRunResult(direction);

@@ -209,6 +209,9 @@ class ASH_PUBLIC_EXPORT AppListViewDelegate {
   // Adjusts the bounds by snapping it to the edge of the display in pixel
   // space. This prevents 1px gaps on displays with non-integer scale factors.
   virtual gfx::Rect SnapBoundsToDisplayEdge(const gfx::Rect& bounds) = 0;
+
+  // Gets the current shelf height from the ShelfConfig.
+  virtual int GetShelfHeight() = 0;
 };
 
 }  // namespace app_list

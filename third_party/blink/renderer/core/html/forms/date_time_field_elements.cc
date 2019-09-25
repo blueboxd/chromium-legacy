@@ -46,7 +46,7 @@ DateTimeAMPMFieldElement::DateTimeAMPMFieldElement(
     : DateTimeSymbolicFieldElement(document, field_owner, ampm_labels, 0, 1) {
   DEFINE_STATIC_LOCAL(AtomicString, ampm_pseudo_id,
                       ("-webkit-datetime-edit-ampm-field"));
-  Initialize(ampm_pseudo_id, QueryString(WebLocalizedString::kAXAMPMFieldText));
+  Initialize(ampm_pseudo_id, QueryString(IDS_AX_AM_PM_FIELD_TEXT));
 }
 
 void DateTimeAMPMFieldElement::PopulateDateTimeFieldsState(

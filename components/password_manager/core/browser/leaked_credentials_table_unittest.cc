@@ -34,10 +34,11 @@ class LeakedCredentialsTableTest : public testing::Test {
 
   void ReloadDatabase() {
     base::FilePath file = temp_dir_.GetPath().AppendASCII("TestDatabase");
+    db_.reset(new LeakedCredentialsTable);
     connection_.reset(new sql::Database);
     connection_->set_exclusive_locking();
     ASSERT_TRUE(connection_->Open(file));
-    db_.reset(new LeakedCredentialsTable(connection_.get()));
+    db_->Init(connection_.get());
     ASSERT_TRUE(db_->CreateTableIfNecessary());
   }
 

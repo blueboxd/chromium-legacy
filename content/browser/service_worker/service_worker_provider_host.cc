@@ -99,6 +99,18 @@ void CreateLockManagerImpl(
   process->CreateLockManager(origin, std::move(receiver));
 }
 
+void CreatePermissionServiceImpl(
+    const url::Origin& origin,
+    int process_id,
+    mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* process = RenderProcessHost::FromID(process_id);
+  if (!process)
+    return;
+
+  process->CreatePermissionService(origin, std::move(receiver));
+}
+
 ServiceWorkerMetrics::EventType PurposeToEventType(
     blink::mojom::ControllerServiceWorkerPurpose purpose) {
   switch (purpose) {
@@ -1386,6 +1398,17 @@ void ServiceWorkerProviderHost::CreateLockManager(
   RunOrPostTaskOnThread(
       FROM_HERE, BrowserThread::UI,
       base::BindOnce(&CreateLockManagerImpl,
+                     running_hosted_version_->script_origin(),
+                     render_process_id_, std::move(receiver)));
+}
+
+void ServiceWorkerProviderHost::CreatePermissionService(
+    mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsProviderForServiceWorker());
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&CreatePermissionServiceImpl,
                      running_hosted_version_->script_origin(),
                      render_process_id_, std::move(receiver)));
 }

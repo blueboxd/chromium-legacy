@@ -78,6 +78,8 @@ void WebGPUTest::Initialize(const Options& options) {
     return;
   }
 
+  webgpu()->RequestAdapter(webgpu::PowerPreference::kHighPerformance);
+
   DawnProcTable procs = webgpu()->GetProcs();
   dawnSetProcs(&procs);
 }

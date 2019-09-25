@@ -241,6 +241,9 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   std::unique_ptr<SkiaOutputDevice> output_device_;
   base::Optional<SkiaOutputDevice::ScopedPaint> scoped_output_device_paint_;
 
+  base::Optional<OverlayProcessor::OutputSurfaceOverlayPlane>
+      output_surface_plane_;
+
   // Offscreen surfaces for render passes. It can only be accessed on GPU
   // thread.
   class OffscreenSurface {

@@ -358,6 +358,10 @@ class NavigationEnabledTestClient : public TestClient {
     disposition_ = disposition;
   }
 
+  void ScrollToX(int x_in_screen_coords) override {
+    x_scroll_offset_ = x_in_screen_coords;
+  }
+
   void ScrollToY(int y_in_screen_coords, bool compensate_for_toolbar) override {
     y_scroll_offset_ = y_in_screen_coords;
     compensate_for_toolbar_ = compensate_for_toolbar;
@@ -365,12 +369,14 @@ class NavigationEnabledTestClient : public TestClient {
 
   const std::string& url() const { return url_; }
   WindowOpenDisposition disposition() const { return disposition_; }
+  int x_scroll_offset() const { return x_scroll_offset_; }
   int y_scroll_offset() const { return y_scroll_offset_; }
   bool compensate_for_toolbar() const { return compensate_for_toolbar_; }
 
  private:
   std::string url_;
   WindowOpenDisposition disposition_ = WindowOpenDisposition::UNKNOWN;
+  int x_scroll_offset_ = 0;
   int y_scroll_offset_ = 0;
   bool compensate_for_toolbar_ = false;
 };
@@ -401,6 +407,7 @@ TEST_F(AccessibilityTest, TestInternalLinkClickActionHandling) {
   action_data.page_index = 0;
   action_data.link_index = 1;
   engine->HandleAccessibilityAction(action_data);
+  EXPECT_EQ(266, client.x_scroll_offset());
   EXPECT_EQ(1159, client.y_scroll_offset());
   EXPECT_TRUE(client.compensate_for_toolbar());
   EXPECT_TRUE(client.url().empty());

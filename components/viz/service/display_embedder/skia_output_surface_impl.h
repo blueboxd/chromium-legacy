@@ -84,6 +84,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   unsigned UpdateGpuFence() override;
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
+  base::ScopedClosureRunner GetCacheBackBufferCb() override;
 
   // SkiaOutputSurface implementation:
   SkCanvas* BeginPaintCurrentFrame() override;

@@ -17,11 +17,8 @@
 
 namespace device {
 
-// TODO(crbug.com/941546): Remove namespaces to comply with coding standard.
-using namespace ABI::Windows::Graphics::Holographic;
-using namespace Microsoft::WRL;
-using namespace Microsoft::WRL::Wrappers;
-using namespace Windows::Foundation;
+namespace Holographic = ABI::Windows::Graphics::Holographic;
+using Microsoft::WRL::ComPtr;
 
 class DEVICE_VR_EXPORT MixedRealityDeviceStaticsImpl
     : public MixedRealityDeviceStatics {
@@ -34,7 +31,7 @@ class DEVICE_VR_EXPORT MixedRealityDeviceStaticsImpl
 
  private:
   // Adds get_IsAvailable and get_IsSupported to HolographicSpaceStatics.
-  ComPtr<IHolographicSpaceStatics2> holographic_space_statics_;
+  ComPtr<Holographic::IHolographicSpaceStatics2> holographic_space_statics_;
 };
 
 VRTestHook* MixedRealityDeviceStatics::test_hook_ = nullptr;
@@ -73,7 +70,7 @@ MixedRealityDeviceStaticsImpl::MixedRealityDeviceStaticsImpl() {
   base::win::ScopedHString holographic_space_string =
       base::win::ScopedHString::Create(
           RuntimeClass_Windows_Graphics_Holographic_HolographicSpace);
-  ComPtr<IHolographicSpaceStatics> holographic_space_statics;
+  ComPtr<Holographic::IHolographicSpaceStatics> holographic_space_statics;
   HRESULT hr = base::win::RoGetActivationFactory(
       holographic_space_string.get(), IID_PPV_ARGS(&holographic_space_statics));
   if (FAILED(hr))

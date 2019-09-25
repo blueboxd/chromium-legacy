@@ -121,6 +121,9 @@ class BASE_EXPORT TimeDelta {
   constexpr TimeDelta() : delta_(0) {}
 
   // Converts units of time to TimeDeltas.
+  // WARNING: Floating point arithmetic is such that FromXXXD(t.InXXXF()) may
+  // not precisely equal |t|. Hence, floating point values should not be used
+  // for storage.
   static constexpr TimeDelta FromDays(int days);
   static constexpr TimeDelta FromHours(int hours);
   static constexpr TimeDelta FromMinutes(int minutes);
@@ -208,6 +211,9 @@ class BASE_EXPORT TimeDelta {
   // towards zero, std::trunc() behavior). The InXYZFloored() versions round to
   // lesser integers (std::floor() behavior). The XYZRoundedUp() versions round
   // up to greater integers (std::ceil() behavior).
+  // WARNING: Floating point arithmetic is such that FromXXXD(t.InXXXF()) may
+  // not precisely equal |t|. Hence, floating point values should not be used
+  // for storage.
   int InDays() const;
   int InDaysFloored() const;
   int InHours() const;

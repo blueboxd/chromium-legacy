@@ -195,7 +195,7 @@ def main():
 
   # Extract the required fields
   for field in ["origin", "feature", "expiry"]:
-    if not token_data.has_key(field):
+    if field not in token_data:
       print "Token is missing required field: %s" % field
       sys.exit(1)
 

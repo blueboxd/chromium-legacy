@@ -2,7 +2,7 @@
  * Use of this source code is governed by a BSD-style license that can be
  * found in the LICENSE file. */
 
-:root {
+:host {
   --oobe-button-font-family: "Google Sans", Roboto, sans-serif;
   --oobe-default-font-family: Roboto, sans-serif;
   --oobe-title-font-family: "Google Sans", Roboto, sans-serif;

@@ -4533,23 +4533,40 @@ void Document::SetURL(const KURL& url) {
 
   // If text fragment identifiers are enabled, we strip the fragment directive
   // from the URL fragment.
-  // E.g. "#id##targetText=a" --> "#id"
+  // E.g. "#id:~:targetText=a" --> "#id"
   if (RuntimeEnabledFeatures::TextFragmentIdentifiersEnabled(this)) {
-    // Add a hash to the beginning of the fragment as it is part of parsing the
-    // ## fragment directive prefix but is not included in FragmentIdentifier().
-    String fragment = "#" + new_url.FragmentIdentifier();
-    wtf_size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
+    String fragment = new_url.FragmentIdentifier();
+    wtf_size_t start_pos = fragment.Find(kFragmentDirectiveNewPrefix);
     if (start_pos != kNotFound) {
-      fragment_directive_ =
-          fragment.Substring(start_pos + kFragmentDirectivePrefixStringLength);
-      if (start_pos == 0) {
-        // Remove the URL fragment if it is entirely a fragment directive.
+      fragment_directive_ = fragment.Substring(
+          start_pos + kFragmentDirectiveNewPrefixStringLength);
+
+      if (start_pos == 0)
         new_url.RemoveFragmentIdentifier();
-      } else {
-        // The stripped fragment starts at position 1 and has length start_pos-1
-        // due to the added hash.
-        String stripped_fragment = fragment.Substring(1, start_pos - 1);
-        new_url.SetFragmentIdentifier(stripped_fragment);
+      else
+        new_url.SetFragmentIdentifier(fragment.Substring(0, start_pos));
+    } else {
+      // TODO(crbug/1007016): Remove support for the old prefix, we currently
+      // fall back to checking ## if we did not find the new delimiter :~:.
+
+      // Add a hash to the beginning of the fragment as it is part of parsing
+      // the ## fragment directive prefix but is not included in
+      // FragmentIdentifier().
+      fragment = "#" + fragment;
+      wtf_size_t start_pos = fragment.Find(kFragmentDirectivePrefix);
+      if (start_pos != kNotFound) {
+        fragment_directive_ = fragment.Substring(
+            start_pos + kFragmentDirectivePrefixStringLength);
+
+        if (start_pos == 0) {
+          // Remove the URL fragment if it is entirely a fragment directive.
+          new_url.RemoveFragmentIdentifier();
+        } else {
+          // The stripped fragment starts at position 1 and has length
+          // start_pos-1 due to the added hash.
+          String stripped_fragment = fragment.Substring(1, start_pos - 1);
+          new_url.SetFragmentIdentifier(stripped_fragment);
+        }
       }
     }
   }
@@ -6119,6 +6136,7 @@ const KURL Document::SiteForCookies() const {
 
 ScriptPromise Document::hasStorageAccess(ScriptState* script_state) const {
   const bool has_access =
+      TopFrameOrigin() &&
       GetSecurityOrigin()->IsSameSchemeHostPort(TopFrameOrigin().get());
   ScriptPromiseResolver* resolver =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);

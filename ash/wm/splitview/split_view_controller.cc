@@ -517,10 +517,8 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreen(
   // desired bound is smaller than the minimum bounds of the window.
   AdjustSnappedWindowBounds(&left_or_top_rect, &right_or_bottom_rect);
 
-  if (IsCurrentScreenOrientationPrimary())
-    return (snap_position == LEFT) ? left_or_top_rect : right_or_bottom_rect;
-  else
-    return (snap_position == LEFT) ? right_or_bottom_rect : left_or_top_rect;
+  return IsPhysicalLeftOrTop(snap_position) ? left_or_top_rect
+                                            : right_or_bottom_rect;
 }
 
 gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreenUnadjusted(
@@ -536,27 +534,21 @@ gfx::Rect SplitViewController::GetSnappedWindowBoundsInScreenUnadjusted(
   GetSnappedWindowBoundsInScreenInternal(window, &left_or_top_rect,
                                          &right_or_bottom_rect);
 
-  if (IsCurrentScreenOrientationPrimary())
-    return (snap_position == LEFT) ? left_or_top_rect : right_or_bottom_rect;
-  else
-    return (snap_position == LEFT) ? right_or_bottom_rect : left_or_top_rect;
+  return IsPhysicalLeftOrTop(snap_position) ? left_or_top_rect
+                                            : right_or_bottom_rect;
 }
 
 int SplitViewController::GetDefaultDividerPosition(aura::Window* window) const {
   const gfx::Rect work_area_bounds_in_screen =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window);
-  gfx::Size divider_size;
-  // In clamshell mode, there is no divider bar, thus divider_size is empty.
-  if (split_view_type_ == SplitViewType::kTabletType) {
-    divider_size = SplitViewDivider::GetDividerSize(
-        work_area_bounds_in_screen, GetCurrentScreenOrientation(),
-        false /* is_dragging */);
-  }
-  if (IsCurrentScreenOrientationLandscape())
-    return (work_area_bounds_in_screen.width() - divider_size.width()) * 0.5f;
-  else
-    return (work_area_bounds_in_screen.height() - divider_size.height()) * 0.5f;
+  int default_divider_position = (IsCurrentScreenOrientationLandscape()
+                                      ? work_area_bounds_in_screen.width()
+                                      : work_area_bounds_in_screen.height()) /
+                                 2;
+  if (split_view_type_ == SplitViewType::kTabletType)
+    default_divider_position -= kSplitviewDividerShortSideLength / 2;
+  return default_divider_position;
 }
 
 bool SplitViewController::IsDividerAnimating() const {
@@ -703,7 +695,7 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
   black_scrim_layer_.reset();
   default_snap_position_ = NONE;
   divider_position_ = -1;
-  divider_closest_ratio_ = 0.f;
+  divider_closest_ratio_ = std::numeric_limits<float>::quiet_NaN();
   snapping_window_transformed_bounds_map_.clear();
 
   UpdateSplitViewStateAndNotifyObservers();
@@ -806,16 +798,12 @@ void SplitViewController::OnWindowBoundsChanged(
   const gfx::Rect work_area =
       screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
           window);
-  const bool is_left_or_top_window =
-      IsCurrentScreenOrientationPrimary()
-          ? (window == left_window_ ? true : false)
-          : (window == left_window_ ? false : true);
   if (IsCurrentScreenOrientationLandscape()) {
-    divider_position_ = is_left_or_top_window
+    divider_position_ = window == GetPhysicalLeftOrTopWindow()
                             ? new_bounds.width()
                             : work_area.width() - new_bounds.width();
   } else {
-    divider_position_ = is_left_or_top_window
+    divider_position_ = window == GetPhysicalLeftOrTopWindow()
                             ? new_bounds.height()
                             : work_area.height() - new_bounds.height();
   }
@@ -1070,11 +1058,11 @@ void SplitViewController::OnDisplayMetricsChanged(
   if (!display.IsInternal())
     return;
 
-  // We need update |previous_screen_orientation_| even though split view mode
-  // is not active at the moment.
-  OrientationLockType previous_screen_orientation =
-      previous_screen_orientation_;
-  previous_screen_orientation_ = GetCurrentScreenOrientation();
+  // We need to update |is_previous_screen_orientation_primary_| even if split
+  // view mode is not active.
+  const bool is_previous_screen_orientation_primary =
+      is_previous_screen_orientation_primary_;
+  is_previous_screen_orientation_primary_ = IsCurrentScreenOrientationPrimary();
 
   if (!InSplitViewMode())
     return;
@@ -1106,22 +1094,18 @@ void SplitViewController::OnDisplayMetricsChanged(
 
   if ((metrics & display::DisplayObserver::DISPLAY_METRIC_ROTATION) ||
       (metrics & display::DisplayObserver::DISPLAY_METRIC_WORK_AREA)) {
-    const gfx::Size divider_size = SplitViewDivider::GetDividerSize(
-        display.work_area(), GetCurrentScreenOrientation(), false);
-    const int divider_thickness =
-        std::min(divider_size.width(), divider_size.height());
     // Set default |divider_closest_ratio_| to kFixedPositionRatios[1].
-    if (!divider_closest_ratio_)
+    if (std::isnan(divider_closest_ratio_))
       divider_closest_ratio_ = kFixedPositionRatios[1];
 
     // Reverse the position ratio if top/left window changes.
-    if (IsPrimaryOrientation(previous_screen_orientation) !=
+    if (is_previous_screen_orientation_primary !=
         IsCurrentScreenOrientationPrimary()) {
       divider_closest_ratio_ = 1.f - divider_closest_ratio_;
     }
     divider_position_ =
-        std::floor(divider_closest_ratio_ * GetDividerEndPosition()) -
-        std::floor(divider_thickness / 2.f);
+        static_cast<int>(divider_closest_ratio_ * GetDividerEndPosition()) -
+        kSplitviewDividerShortSideLength / 2;
   }
 
   // For other display configuration changes, we only move the divider to the
@@ -1186,6 +1170,14 @@ void SplitViewController::OnAccessibilityStatusChanged() {
 
 void SplitViewController::OnAccessibilityControllerShutdown() {
   Shell::Get()->accessibility_controller()->RemoveObserver(this);
+}
+
+aura::Window* SplitViewController::GetPhysicalLeftOrTopWindow() {
+  return IsCurrentScreenOrientationPrimary() ? left_window_ : right_window_;
+}
+
+aura::Window* SplitViewController::GetPhysicalRightOrBottomWindow() {
+  return IsCurrentScreenOrientationPrimary() ? right_window_ : left_window_;
 }
 
 void SplitViewController::StartObserving(aura::Window* window) {
@@ -1391,7 +1383,7 @@ void SplitViewController::GetSnappedWindowBoundsInScreenInternal(
   gfx::Rect divider_bounds;
   if (split_view_type_ == SplitViewType::kTabletType) {
     divider_bounds = SplitViewDivider::GetDividerBoundsInScreen(
-        work_area_bounds_in_screen, GetCurrentScreenOrientation(),
+        work_area_bounds_in_screen, IsCurrentScreenOrientationLandscape(),
         divider_position, false /* is_dragging */);
   } else {
     if (IsCurrentScreenOrientationLandscape())
@@ -1433,15 +1425,6 @@ void SplitViewController::SplitRect(const gfx::Rect& work_area_rect,
 int SplitViewController::GetClosestFixedDividerPosition() {
   DCHECK(InSplitViewMode());
 
-  const gfx::Rect work_area_bounds_in_screen =
-      screen_util::GetDisplayWorkAreaBoundsInScreenForActiveDeskContainer(
-          GetDefaultSnappedWindow());
-  const gfx::Size divider_size = SplitViewDivider::GetDividerSize(
-      work_area_bounds_in_screen, GetCurrentScreenOrientation(),
-      false /* is_dragging */);
-  const int divider_thickness =
-      std::min(divider_size.width(), divider_size.height());
-
   // The values in |kFixedPositionRatios| represent the fixed position of the
   // center of the divider while |divider_position_| represent the origin of the
   // divider rectangle. So, before calling FindClosestFixedPositionRatio,
@@ -1450,11 +1433,11 @@ int SplitViewController::GetClosestFixedDividerPosition() {
   // the endpoints.
   int divider_end_position = GetDividerEndPosition();
   divider_closest_ratio_ = FindClosestPositionRatio(
-      divider_position_ + std::floor(divider_thickness / 2.f),
+      divider_position_ + kSplitviewDividerShortSideLength / 2,
       divider_end_position);
-  int fix_position = std::floor(divider_end_position * divider_closest_ratio_);
+  int fix_position = divider_end_position * divider_closest_ratio_;
   if (divider_closest_ratio_ > 0.f && divider_closest_ratio_ < 1.f)
-    fix_position -= std::floor(divider_thickness / 2.f);
+    fix_position -= kSplitviewDividerShortSideLength / 2;
   return fix_position;
 }
 
@@ -1561,16 +1544,11 @@ void SplitViewController::OnSnappedWindowDetached(aura::Window* window,
 void SplitViewController::AdjustSnappedWindowBounds(
     gfx::Rect* left_or_top_rect,
     gfx::Rect* right_or_bottom_rect) {
-  aura::Window* left_or_top_window =
-      IsCurrentScreenOrientationPrimary() ? left_window_ : right_window_;
-  aura::Window* right_or_bottom_window =
-      IsCurrentScreenOrientationPrimary() ? right_window_ : left_window_;
-
   const bool is_landscape = IsCurrentScreenOrientationLandscape();
   const int left_minimum_width =
-      GetMinimumWindowSize(left_or_top_window, is_landscape);
+      GetMinimumWindowSize(GetPhysicalLeftOrTopWindow(), is_landscape);
   const int right_minimum_width =
-      GetMinimumWindowSize(right_or_bottom_window, is_landscape);
+      GetMinimumWindowSize(GetPhysicalRightOrBottomWindow(), is_landscape);
 
   if (!is_landscape) {
     left_or_top_rect->Transpose();

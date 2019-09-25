@@ -66,22 +66,6 @@ public class ConfirmManagedSyncDataDialog extends DialogFragment
         String desc = resources.getString(R.string.sign_in_managed_account_description, domain);
         showNewInstance(title, desc, positive, negative, fragmentManager, callback);
     }
-    /**
-     * Create the dialog to show when signing out of a managed account (but not switching from a
-     * managed account).
-     * @param callback Callback for result.
-     * @param fragmentManager FragmentManaged to display the dialog.
-     * @param resources Resources to load the strings.
-     * @param domain The domain of the managed account.
-     */
-    public static void showSignOutFromManagedAccountDialog(Listener callback,
-            FragmentManager fragmentManager, Resources resources, String domain) {
-        String title = resources.getString(R.string.sign_out_managed_account);
-        String positive = resources.getString(R.string.accept_and_sign_out);
-        String negative = resources.getString(R.string.cancel);
-        String desc = resources.getString(R.string.sign_out_managed_account_description, domain);
-        showNewInstance(title, desc, positive, negative, fragmentManager, callback);
-    }
 
     /**
      * Create the dialog to show when switching from a managed account.

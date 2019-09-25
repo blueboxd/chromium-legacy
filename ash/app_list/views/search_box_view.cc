@@ -380,7 +380,7 @@ void SearchBoxView::UpdateOpacity() {
            ->ShouldShowSearchBox()) {
     return;
   }
-  const int shelf_height = AppListConfig::instance().shelf_height();
+  const int shelf_height = view_delegate_->GetShelfHeight();
   float fraction =
       std::max<float>(
           0, contents_view_->app_list_view()->GetCurrentAppListHeight() -

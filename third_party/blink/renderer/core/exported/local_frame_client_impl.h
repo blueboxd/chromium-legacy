@@ -152,7 +152,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void DidDispatchPingLoader(const KURL&) override;
   void DidDisplayContentWithCertificateErrors() override;
   void DidRunContentWithCertificateErrors() override;
-  void ReportLegacyTLSVersion(const KURL&) override;
   void DidChangePerformanceTiming() override;
   void DidChangeCpuTiming(base::TimeDelta) override;
   void DidChangeActiveSchedulerTrackedFeatures(uint64_t features_mask) override;

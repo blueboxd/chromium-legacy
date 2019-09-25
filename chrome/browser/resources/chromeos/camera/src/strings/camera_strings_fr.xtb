@@ -3,13 +3,11 @@
 <translationbundle lang="fr">
 <translation id="1276998909102132017">Images de la galerie</translation>
 <translation id="1430915738399379752">Imprimer</translation>
-<translation id="1462966117743110941">Votre caméra est à présent compatible avec les nouveaux modes, et vos photos et vidéos seront disponibles dans les dossiers Téléchargements.</translation>
 <translation id="1620510694547887537">Appareil photo</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Aucune donnée enregistrée</translation>
 <translation id="1862930711583847113">Impossible d'exporter <ph name="FILE" /></translation>
 <translation id="1899697626337024495">Résolution photo</translation>
-<translation id="2008689030244369546">Une apparence entièrement repensée</translation>
 <translation id="2036868001356139588">Durée du minuteur</translation>
 <translation id="2050339315714019657">Portrait</translation>
 <translation id="2064538373111010176">Option <ph name="CAMERA" /> activée</translation>
@@ -44,9 +42,7 @@
 <translation id="5671277269877808209">Carré</translation>
 <translation id="5775960006311140197">Mode Expert</translation>
 <translation id="5869546221129391014">Grille</translation>
-<translation id="6040143037577758943">Fermer</translation>
 <translation id="6073451960410192870">Arrêter l'enregistrement</translation>
-<translation id="6165508094623778733">En savoir plus</translation>
 <translation id="6197807149213783179">Enregistrer les métadonnées</translation>
 <translation id="6233780560267770709">3 par 3</translation>
 <translation id="6243827288366940320">Ratio optimal</translation>

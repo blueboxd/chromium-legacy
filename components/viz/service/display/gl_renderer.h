@@ -213,7 +213,8 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
                               GLenum* internal_format);
 
   static bool ShouldApplyBackdropFilters(
-      const cc::FilterOperations* backdrop_filters);
+      const DrawRenderPassDrawQuadParams* params);
+
   // Applies the backdrop filters to the backdrop that has been painted to this
   // point, and returns it as an SkImage. Any opacity and/or "regular"
   // (non-backdrop) filters will also be applied directly to the backdrop-

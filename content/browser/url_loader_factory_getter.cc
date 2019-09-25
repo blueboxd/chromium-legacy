@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/lazy_instance.h"
+#include "base/run_loop.h"
 #include "base/task/post_task.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/common/service_worker/service_worker_utils.h"

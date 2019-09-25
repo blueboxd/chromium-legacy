@@ -116,7 +116,6 @@
 <translation id="5416696090975899932">組み込みの PDF ビューアがない場合、Chromium では印刷プレビューを表示できません。</translation>
 <translation id="5427571867875391349">Chromium をデフォルト ブラウザに設定する</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium Beta</translation>
-<translation id="5466153949126434691">Chromium は自動的に更新されるため、常に最新版をご利用になれます。このダウンロードが完了すると、Chromium が再起動し、すぐにお使いいただけます。</translation>
 <translation id="5479196819031988440">Chromium OS ではこのページを開けません。</translation>
 <translation id="5480860683791598150">このサイトで現在地を共有するには、Chromium で位置情報の使用を許可する必要があります</translation>
 <translation id="549669000822060376">Chromium は最新のシステム アップデートをインストールしています。しばらくお待ちください。</translation>
@@ -212,7 +211,6 @@
 <translation id="7867198900892795913">Chromium を最新版に更新できませんでした。新しい機能とセキュリティ修正は適用されていません。</translation>
 <translation id="7901117350626490574">Chromium の新しいアップデートを利用できます。再起動するとすぐにアップデートが適用されます。</translation>
 <translation id="7937630085815544518">Chromium に <ph name="USER_EMAIL_ADDRESS" /> としてログインしていました。再度ログインするには同じアカウントを使用してください。</translation>
-<translation id="7962572577636132072">Chromium は自動的に更新されるため、常に最新版をご利用になれます。</translation>
 <translation id="7975919845073681630">この Chromium はセカンダリ インストールのため、既定のブラウザには設定できません。</translation>
 <translation id="7979877361127045932">Chromium メニューで非表示</translation>
 <translation id="8013436988911883588">Chromium にアクセスを許可すると、ウェブサイトからアクセスをリクエストできるようになります。</translation>

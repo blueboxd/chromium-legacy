@@ -228,21 +228,6 @@ net::URLRequestContext* ChromeBrowserStateIOData::GetMainRequestContext()
   return main_request_context_.get();
 }
 
-net::URLRequestContext* ChromeBrowserStateIOData::GetIsolatedAppRequestContext(
-    net::URLRequestContext* main_context,
-    const base::FilePath& partition_path) const {
-  DCHECK(initialized_);
-  AppRequestContext* context = nullptr;
-  if (base::Contains(app_request_context_map_, partition_path)) {
-    context = app_request_context_map_[partition_path];
-  } else {
-    context = AcquireIsolatedAppRequestContext(main_context);
-    app_request_context_map_[partition_path] = context;
-  }
-  DCHECK(context);
-  return context;
-}
-
 void ChromeBrowserStateIOData::SetCookieStoreForPartitionPath(
     std::unique_ptr<net::CookieStore> cookie_store,
     const base::FilePath& partition_path) {

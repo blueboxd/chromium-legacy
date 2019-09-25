@@ -233,14 +233,14 @@ void AssistantController::OnAccessibilityStatusChanged() {
 void AssistantController::OpenUrl(const GURL& url,
                                   bool in_background,
                                   bool from_server) {
-  auto* android_helper = AndroidIntentHelper::GetInstance();
-  if (url.SchemeIs(kAndroidIntentScheme) && android_helper) {
-    android_helper->LaunchAndroidIntent(url.spec());
+  if (assistant::util::IsDeepLinkUrl(url)) {
+    NotifyDeepLinkReceived(url);
     return;
   }
 
-  if (assistant::util::IsDeepLinkUrl(url)) {
-    NotifyDeepLinkReceived(url);
+  auto* android_helper = AndroidIntentHelper::GetInstance();
+  if (url.SchemeIs(kAndroidIntentScheme) && !android_helper) {
+    NOTREACHED();
     return;
   }
 
@@ -248,14 +248,18 @@ void AssistantController::OpenUrl(const GURL& url,
   // open the specified |url| in a new browser tab.
   NotifyOpeningUrl(url, in_background, from_server);
 
-  // The new tab should be opened with a user activation since the user
-  // interacted with the Assistant to open the url. |in_background| describes
-  // the relationship between |url| and Assistant UI, not the browser. As such,
-  // the browser will always be instructed to open |url| in a new browser tab
-  // and Assistant UI state will be updated downstream to respect
-  // |in_background|.
-  NewWindowDelegate::GetInstance()->NewTabWithUrl(
-      url, /*from_user_interaction=*/true);
+  if (url.SchemeIs(kAndroidIntentScheme)) {
+    android_helper->LaunchAndroidIntent(url.spec());
+  } else {
+    // The new tab should be opened with a user activation since the user
+    // interacted with the Assistant to open the url. |in_background| describes
+    // the relationship between |url| and Assistant UI, not the browser. As
+    // such, the browser will always be instructed to open |url| in a new
+    // browser tab and Assistant UI state will be updated downstream to respect
+    // |in_background|.
+    NewWindowDelegate::GetInstance()->NewTabWithUrl(
+        url, /*from_user_interaction=*/true);
+  }
   NotifyUrlOpened(url, from_server);
 }
 

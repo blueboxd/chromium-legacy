@@ -1101,7 +1101,6 @@ Voit ylläpitää tilin asetuksia asentamalla laitteellesi Family Link ‑sovell
 <translation id="2586672484245266891">Anna lyhyempi URL-osoite.</translation>
 <translation id="2588636910004461974">Laitteet: <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">Hae Googlesta tai kirjoita URL-osoite</translation>
-<translation id="2597521610396315071">Valvonnan lisääminen</translation>
 <translation id="2603115962224169880">Puhdista tietokone</translation>
 <translation id="2603463522847370204">Avaa incognito-ikkunassa</translation>
 <translation id="2604255671529671813">Verkkoyhteysvirhe</translation>
@@ -3824,7 +3823,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6659213950629089752">Tämän sivun lähensi laajennus <ph name="NAME" /></translation>
 <translation id="6659594942844771486">Välilehti</translation>
 <translation id="6664237456442406323">Tietokoneesi on valitettavasti määritetty virheellisellä laitetunnuksella. Siksi Chrome-käyttöjärjestelmä ei voi asentaa uusimpia tietoturvapäivityksiä ja tietokoneesi <ph name="BEGIN_BOLD" />voi altistua hyökkäyksille<ph name="END_BOLD" />.</translation>
-<translation id="6664774537677393800">Jokin meni vikaan profiilisi avaamisessa. Kirjaudu ensin ulos ja sitten uudelleen sisään.</translation>
+<translation id="6664774537677393800">Jotain meni pieleen. profiilisi avaamisessa. Kirjaudu ensin ulos ja sitten uudelleen sisään.</translation>
 <translation id="6673391612973410118"><ph name="PRINTER_MAKE_OR_MODEL" /> (USB)</translation>
 <translation id="667517062706956822">Haluatko, että Google kääntää tämän sivun kielestä <ph name="SOURCE_LANGUAGE" /> kieleen <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="6675665718701918026">Osoitinlaite yhdistetty.</translation>
@@ -3905,7 +3904,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="6792072150955115067"><ph name="APP_NAME" /> haluaa jakaa näyttösi sisällön kohteen <ph name="TARGET_NAME" /> kanssa. Valitse, mitä haluat jakaa.</translation>
 <translation id="6793604637258913070">Korosta tekstikursori, kun se on näkyvissä tai liikkuu.</translation>
 <translation id="6795884519221689054">Panda</translation>
-<translation id="6797493596609571643">Hups… Jokin meni vikaan.</translation>
+<translation id="6797493596609571643">Hups… Jotain meni pieleen..</translation>
 <translation id="6798578729981748444">Jos haluat suorittaa tuonnin loppuun, sulje kaikki Firefox-ikkunat.</translation>
 <translation id="6798780071646309401">caps lock päällä</translation>
 <translation id="6798954102094737107">Laajennus: <ph name="PLUGIN_NAME" /></translation>
@@ -4582,7 +4581,7 @@ Julkinen eksponentti (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bittiä):
 <translation id="7788668840732459509">Sijainti:</translation>
 <translation id="7789963078219276159">Aloitussivun taustakuvaksi on vaihdettu <ph name="CATEGORY" />.</translation>
 <translation id="7791543448312431591">Lisää</translation>
-<translation id="7792012425874949788">Jokin meni vikaan kirjautumisessa</translation>
+<translation id="7792012425874949788">Jotain meni pieleen. kirjautumisessa</translation>
 <translation id="7792388396321542707">Lopeta jakaminen</translation>
 <translation id="779308894558717334">Vaaleanvihreä</translation>
 <translation id="7793098747275782155">Tummansininen</translation>
@@ -5179,7 +5178,7 @@ Tallenna avaintiedosto suojattuun sijaintiin. Tarvitset sitä, jos haluat luoda 
 <translation id="8652400352452647993">Virhe: pakattu laajennus</translation>
 <translation id="8654151524613148204">Tiedosto on liian suuri käsiteltäväksi.</translation>
 <translation id="8655295600908251630">Kanava</translation>
-<translation id="8655319619291175901">Hups… Jokin meni vikaan.</translation>
+<translation id="8655319619291175901">Hups… Jotain meni pieleen..</translation>
 <translation id="8655972064210167941">Sisäänkirjautuminen epäonnistui, koska salasanasi vahvistaminen epäonnistui. Ota yhteyttä järjestelmänvalvojaan tai yritä uudelleen.</translation>
 <translation id="8656619792520327915">Lisää toinen Bluetooth-suojausavain</translation>
 <translation id="8656768832129462377">Älä tarkista</translation>

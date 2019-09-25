@@ -119,7 +119,6 @@ Some features may be unavailable and changes to preferences won't be saved.</tra
 <translation id="5416696090975899932">Chromium cannot show the print preview when the built-in PDF viewer is missing.</translation>
 <translation id="5427571867875391349">Set Chromium as your default browser</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
-<translation id="5466153949126434691">Chromium updates automatically so you always have the freshest version. When this download completes, Chromium will restart and you'll be on your way.</translation>
 <translation id="5479196819031988440">Chromium OS can't open this page.</translation>
 <translation id="5480860683791598150">Chromium needs access to your location to share your location with this site</translation>
 <translation id="549669000822060376">Please wait while Chromium installs the latest system updates.</translation>
@@ -215,7 +214,6 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="7867198900892795913">Chromium couldn't update to the latest version, so you're missing out on new features and security fixes.</translation>
 <translation id="7901117350626490574">A new update for Chromium is available and will be applied as soon as you relaunch.</translation>
 <translation id="7937630085815544518">You were signed in to Chromium as <ph name="USER_EMAIL_ADDRESS" />. Please use the same account to sign in again.</translation>
-<translation id="7962572577636132072">Chromium updates automatically so you always have the freshest version.</translation>
 <translation id="7975919845073681630">This is a secondary installation of Chromium, and cannot be made your default browser.</translation>
 <translation id="7979877361127045932">Hide in Chromium menu</translation>
 <translation id="8013436988911883588">Once Chromium has access, websites will be able to ask you for access.</translation>

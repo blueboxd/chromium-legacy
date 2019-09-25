@@ -10,6 +10,9 @@
 function initializeMonthPicker(config) {
   global.picker = new MonthPicker(config);
   main.append(global.picker);
+  main.style.border = '1px solid transparent';
+  main.style.height = (MonthPicker.Height - 2) + 'px';
+  main.style.width = (MonthPicker.Width - 2) + 'px';
   resizeWindow(MonthPicker.Width, MonthPicker.Height);
 }
 
@@ -109,10 +112,10 @@ class MonthPicker extends HTMLElement {
     this.yearListView_.element.focus();
   }
 }
-MonthPicker.Width = 230;
+MonthPicker.Width = 232;
 MonthPicker.YearWidth = 194;
-MonthPicker.YearHeight = 120;
+MonthPicker.YearHeight = 128;
 MonthPicker.YearPadding = 12;
-MonthPicker.Height = 172;
+MonthPicker.Height = 182;
 MonthPicker.ClassNameTodayButton = 'today-button-refresh';
 window.customElements.define('month-picker', MonthPicker);

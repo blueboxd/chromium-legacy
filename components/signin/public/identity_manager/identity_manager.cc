@@ -80,12 +80,6 @@ IdentityManager::IdentityManager(
       base::BindRepeating(&IdentityManager::OnRefreshTokenRevokedFromSource,
                           base::Unretained(this)));
 
-  // Seed the unconsented primary account with any state that
-  // |primary_account_manager_| and |account_tracker_service_|
-  // loaded from prefs.
-  if (primary_account_manager_->IsAuthenticated())
-    UpdateUnconsentedPrimaryAccount();
-
 #if defined(OS_ANDROID)
   java_identity_manager_ = Java_IdentityManager_create(
       base::android::AttachCurrentThread(), reinterpret_cast<intptr_t>(this));
@@ -133,11 +127,11 @@ CoreAccountId IdentityManager::GetUnconsentedPrimaryAccountId() const {
 }
 
 CoreAccountInfo IdentityManager::GetUnconsentedPrimaryAccountInfo() const {
-  return unconsented_primary_account_.value_or(CoreAccountInfo());
+  return primary_account_manager_->GetUnconsentedPrimaryAccountInfo();
 }
 
 bool IdentityManager::HasUnconsentedPrimaryAccount() const {
-  return unconsented_primary_account_.has_value();
+  return primary_account_manager_->HasUnconsentedPrimaryAccount();
 }
 
 std::unique_ptr<AccessTokenFetcher>
@@ -466,15 +460,10 @@ AccountInfo IdentityManager::GetAccountInfoForAccountWithRefreshToken(
 }
 
 void IdentityManager::UpdateUnconsentedPrimaryAccount() {
-  base::Optional<CoreAccountInfo> new_unconsented_primary_account =
+  base::Optional<CoreAccountInfo> account =
       ComputeUnconsentedPrimaryAccountInfo();
-  if (unconsented_primary_account_ != new_unconsented_primary_account) {
-    unconsented_primary_account_ = std::move(new_unconsented_primary_account);
-    for (auto& observer : observer_list_) {
-      observer.OnUnconsentedPrimaryAccountChanged(
-          unconsented_primary_account_.value_or(CoreAccountInfo()));
-    }
-  }
+  if (account)
+    primary_account_manager_->SetUnconsentedPrimaryAccountInfo(*account);
 }
 
 base::Optional<CoreAccountInfo>
@@ -488,14 +477,21 @@ IdentityManager::ComputeUnconsentedPrimaryAccountInfo() const {
   // request to GAIA that lists cookie accounts.
   return base::nullopt;
 #else
+  AccountsInCookieJarInfo cookie_info = GetAccountsInCookieJar();
+  if (!cookie_info.accounts_are_fresh)
+    return base::nullopt;
+
   std::vector<gaia::ListedAccount> cookie_accounts =
-      GetAccountsInCookieJar().signed_in_accounts;
+      cookie_info.signed_in_accounts;
   if (cookie_accounts.empty())
+    return CoreAccountInfo();
+
+  if (!AreRefreshTokensLoaded())
     return base::nullopt;
 
   const CoreAccountId first_account_id = cookie_accounts[0].id;
   if (!HasAccountWithRefreshToken(first_account_id))
-    return base::nullopt;
+    return CoreAccountInfo();
 
   return GetAccountInfoForAccountWithRefreshToken(first_account_id);
 #endif
@@ -515,6 +511,12 @@ void IdentityManager::GoogleSigninSucceeded(
         ConvertToJavaCoreAccountInfo(env, account_info));
   }
 #endif
+}
+
+void IdentityManager::UnconsentedPrimaryAccountChanged(
+    const CoreAccountInfo& account_info) {
+  for (auto& observer : observer_list_)
+    observer.OnUnconsentedPrimaryAccountChanged(account_info);
 }
 
 #if !defined(OS_CHROMEOS)

@@ -666,7 +666,7 @@
 <translation id="4277028893293644418">パスワードを再設定</translation>
 <translation id="4279811152705618813">この <ph name="DEVICE_TYPE" /> は <ph name="ENROLLMENT_DOMAIN" /> によって管理されています</translation>
 <translation id="428639260510061158">{NUM_CARDS,plural, =1{このカードを Google アカウントに保存しました}other{これらのカードを Google アカウントに保存しました}}</translation>
-<translation id="428847186335018806">Chrome でダウンロードまたはアップロードしたファイルをスキャンします。</translation>
+<translation id="428847186335018806">Chrome でダウンロードまたはアップロードするファイルをスキャンします。</translation>
 <translation id="42981349822642051">展開</translation>
 <translation id="4300675098767811073">多穴パンチ（右）</translation>
 <translation id="4302965934281694568">長3（封筒）</translation>
@@ -1018,6 +1018,7 @@
 <translation id="6058977677006700226">お使いのどのデバイスでも同じカードを使用できるようにしかすか？</translation>
 <translation id="6059925163896151826">USB デバイス</translation>
 <translation id="6060009363608157444">無効な DnsOverHttps モードです。</translation>
+<translation id="6064217302520318294">画面ロック</translation>
 <translation id="6080696365213338172">管理者が提供する証明書を使用してコンテンツにアクセスしています。<ph name="DOMAIN" /> に提供するデータは管理者によって傍受される可能性があります。</translation>
 <translation id="6094273045989040137">注釈を追加</translation>
 <translation id="610911394827799129">お使いの Google アカウントの <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> に、他の形式の閲覧履歴が記録されている場合があります</translation>
@@ -1128,7 +1129,7 @@
 <translation id="6671697161687535275">Chromium から候補を削除してもよろしいですか？</translation>
 <translation id="6685834062052613830">ログアウトして設定を完了してください</translation>
 <translation id="6689271823431384964">ログインしている場合は、その Google アカウントにカードを保存できます。この動作は設定で変更できます。カード名義人はアカウントから取得されます。</translation>
-<translation id="6707256370811247129">Chrome でダウンロードまたはアップロードしたキャッシュとファイルのコンテンツをスキャンします。</translation>
+<translation id="6707256370811247129">Chrome でキャッシュのコンテンツとダウンロードまたはアップロードするファイルをスキャンします。</translation>
 <translation id="6710213216561001401">前へ</translation>
 <translation id="6710594484020273272">&lt;検索キーワードを入力&gt;</translation>
 <translation id="671076103358959139">登録トークン:</translation>

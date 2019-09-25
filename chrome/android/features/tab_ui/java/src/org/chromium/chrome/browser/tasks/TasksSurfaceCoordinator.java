@@ -42,7 +42,6 @@ public class TasksSurfaceCoordinator implements TasksSurface {
         mMediator = new TasksSurfaceMediator(
                 activity, propertyModel, isTabCarousel, activity.getOverviewModeBehavior());
 
-        // TODO(mattsimmons): Handle incognito/dark theming.
         LinearLayout mvTilesLayout = mView.findViewById(R.id.mv_tiles_layout);
         mMostVisitedList = new MostVisitedListCoordinator(activity, mvTilesLayout);
     }
@@ -71,5 +70,6 @@ public class TasksSurfaceCoordinator implements TasksSurface {
     @Override
     public void destroy() {
         mMediator.destroy();
+        mMostVisitedList.destroy();
     }
 }

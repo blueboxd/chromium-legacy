@@ -458,6 +458,7 @@ unsigned HTMLImageElement::width() {
 
   if (!GetLayoutObject()) {
     // check the attribute first for an explicit pixel value
+    // TODO(cbiesinger): The attribute could be a float or percentage value...
     unsigned width = 0;
     if (ParseHTMLNonNegativeInteger(getAttribute(kWidthAttr), width))
       return width;
@@ -479,6 +480,7 @@ unsigned HTMLImageElement::height() {
 
   if (!GetLayoutObject()) {
     // check the attribute first for an explicit pixel value
+    // TODO(cbiesinger): The attribute could be a float or percentage value...
     unsigned height = 0;
     if (ParseHTMLNonNegativeInteger(getAttribute(kHeightAttr), height))
       return height;

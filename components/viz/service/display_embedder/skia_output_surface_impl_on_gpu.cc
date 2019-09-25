@@ -784,26 +784,8 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
 
 void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
     const OverlayProcessor::OutputSurfaceOverlayPlane& output_surface_plane) {
-  DCHECK(!is_using_vulkan());
-
-  if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
-    return;
-
-  gl::GLImage* image = output_device_->GetOverlayImage();
-  std::unique_ptr<gfx::GpuFence> gpu_fence =
-      output_device_->SubmitOverlayGpuFence();
-
-  if (image) {
-    // Output surface is also z-order 0.
-    int plane_z_order = 0;
-    // Output surface always uses the full texture.
-    gfx::RectF uv_rect(0.f, 0.f, 1.f, 1.f);
-
-    gl_surface_->ScheduleOverlayPlane(
-        plane_z_order, output_surface_plane.transform, image,
-        ToNearestRect(output_surface_plane.display_rect), uv_rect,
-        output_surface_plane.enable_blending, std::move(gpu_fence));
-  }
+  DCHECK(!output_surface_plane_);
+  output_surface_plane_ = output_surface_plane;
 }
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
@@ -823,6 +805,25 @@ void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
   DCHECK(output_device_);
 
   scoped_output_device_paint_.reset();
+
+  if (output_surface_plane_) {
+    DCHECK(!is_using_vulkan());
+    if (gl::GLImage* image = output_device_->GetOverlayImage()) {
+      std::unique_ptr<gfx::GpuFence> gpu_fence =
+          output_device_->SubmitOverlayGpuFence();
+
+      // Output surface is also z-order 0.
+      int plane_z_order = 0;
+      // Output surface always uses the full texture.
+      gfx::RectF uv_rect(0.f, 0.f, 1.f, 1.f);
+
+      gl_surface_->ScheduleOverlayPlane(
+          plane_z_order, output_surface_plane_->transform, image,
+          ToNearestRect(output_surface_plane_->display_rect), uv_rect,
+          output_surface_plane_->enable_blending, std::move(gpu_fence));
+    }
+    output_surface_plane_.reset();
+  }
 
   if (frame.sub_buffer_rect && frame.sub_buffer_rect->IsEmpty()) {
     // Call SwapBuffers() to present overlays.

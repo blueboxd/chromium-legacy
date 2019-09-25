@@ -281,11 +281,11 @@ bool WebAXObject::IsAutofillAvailable() const {
   return private_->IsAutofillAvailable();
 }
 
-WebString WebAXObject::AriaAutoComplete() const {
+WebString WebAXObject::AutoComplete() const {
   if (IsDetached())
     return WebString();
 
-  return private_->AriaAutoComplete();
+  return private_->AutoComplete();
 }
 
 ax::mojom::AriaCurrentState WebAXObject::AriaCurrentState() const {

@@ -171,9 +171,7 @@ void WebViewAutofillClientIOS::ShowWebauthnOfferDialog(
 void WebViewAutofillClientIOS::ConfirmSaveAutofillProfile(
     const AutofillProfile& profile,
     base::OnceClosure callback) {
-  // Since there is no confirmation needed to save an Autofill Profile,
-  // running |callback| will proceed with saving |profile|.
-  std::move(callback).Run();
+  [bridge_ confirmSaveAutofillProfile:profile callback:std::move(callback)];
 }
 
 void WebViewAutofillClientIOS::ConfirmSaveCreditCardLocally(

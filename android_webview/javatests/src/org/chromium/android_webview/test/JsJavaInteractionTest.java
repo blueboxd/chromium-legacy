@@ -53,6 +53,7 @@ public class JsJavaInteractionTest {
     private static final String HELLO = "Hello";
     private static final String NEW_TITLE = "new_title";
     private static final String JS_OBJECT_NAME = "myObject";
+    private static final String JS_OBJECT_NAME_2 = "myObject2";
     private static final String DATA_HTML = "<html><body>data</body></html>";
     private static final int MESSAGE_COUNT = 10000;
 
@@ -129,7 +130,7 @@ public class JsJavaInteractionTest {
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testPostMessageSimple() throws Throwable {
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         final String url = loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
 
@@ -147,7 +148,7 @@ public class JsJavaInteractionTest {
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testPostMessageWithPorts() throws Throwable {
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         final String url = loadUrlFromPath(POST_MESSAGE_WITH_PORTS_HTML);
 
@@ -175,7 +176,7 @@ public class JsJavaInteractionTest {
     @MediumTest
     @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testPostMessageRepeated() throws Throwable {
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         final String url = loadUrlFromPath(POST_MESSAGE_REPEAT_HTML);
         for (int i = 0; i < MESSAGE_COUNT; ++i) {
@@ -191,7 +192,7 @@ public class JsJavaInteractionTest {
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testPostMessageFromIframeWorks() throws Throwable {
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         final String frameUrl = mTestServer.getURL(POST_MESSAGE_SIMPLE_HTML);
         final String html = createCrossOriginAccessTestPageHtml(frameUrl);
@@ -214,11 +215,11 @@ public class JsJavaInteractionTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
-    public void testSetWebMessageListenerAfterPageLoadWontAffectCurrentPage() throws Throwable {
+    public void testAddWebMessageListenerAfterPageLoadWontAffectCurrentPage() throws Throwable {
         loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
 
-        // Set WebMessageListener after the page loaded won't affect the current page.
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        // Add WebMessageListener after the page loaded won't affect the current page.
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         // Check that we don't have a JavaScript object named JS_OBJECT_NAME
         Assert.assertFalse(hasJavaScriptObject(
@@ -231,11 +232,31 @@ public class JsJavaInteractionTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    public void testAddTheSameWebMessageListenerForDifferentJsObjectsWorks() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        addWebMessageListenerOnUiThread(
+                mAwContents, JS_OBJECT_NAME_2, new String[] {"*"}, mListener);
+
+        loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+        Assert.assertEquals(HELLO, data.mMessage);
+
+        mActivityTestRule.executeJavaScriptAndWaitForResult(
+                mAwContents, mContentsClient, JS_OBJECT_NAME_2 + ".postMessage('" + HELLO + "');");
+
+        TestWebMessageListener.Data data2 = mListener.waitForOnPostMessage();
+        Assert.assertEquals(HELLO, data2.mMessage);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInterfaction"})
     public void testFragmentNavigationWontDoJsInjection() throws Throwable {
         String url = loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
 
-        // Set WebMessageListener after the page loaded won't affect the current page.
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        // Add WebMessageListener after the page loaded won't affect the current page.
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         // Load with fragment url.
         mActivityTestRule.loadUrlSync(
@@ -252,44 +273,14 @@ public class JsJavaInteractionTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
-    public void testSetDifferentWebMessageListenerWillTakeEffectImmediately() throws Throwable {
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
-
-        loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
-
-        // Verify the first listener receives message.
-        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
-        Assert.assertEquals(HELLO, data.mMessage);
-
-        // Set a second listener.
-        TestWebMessageListener secondListener = new TestWebMessageListener();
-        setWebMessageListenerOnUiThread(mAwContents, secondListener, new String[] {"*"});
-
-        // Call JavaScript postMessage.
-        TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> mAwContents.evaluateJavaScriptForTests(
-                                "myObject.postMessage('second')", null));
-
-        // Verify the second listener receives message.
-        TestWebMessageListener.Data data2 = secondListener.waitForOnPostMessage();
-        Assert.assertEquals("second", data2.mMessage);
-
-        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
-        Assert.assertTrue(secondListener.hasNoMoreOnPostMessage());
-    }
-
-    @Test
-    @SmallTest
-    @Feature({"AndroidWebView", "JsJavaInterfaction"})
-    public void testSetWebMessageListenerAffectsRendererInitiatedNavigation() throws Throwable {
+    public void testAddWebMessageListenerAffectsRendererInitiatedNavigation() throws Throwable {
         // TODO(crbug.com/969842): We'd either replace the following html file with a file contains
         // no JavaScript code or add a test to ensure that evaluateJavascript() won't
         // over-trigger DidClearWindowObject.
         loadUrlFromPath(POST_MESSAGE_WITH_PORTS_HTML);
 
-        // Set WebMessageListener after the page loaded.
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        // Add WebMessageListener after the page loaded.
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         // Check that we don't have a JavaScript object named JS_OBJECT_NAME
         Assert.assertFalse(hasJavaScriptObject(
@@ -319,7 +310,7 @@ public class JsJavaInteractionTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
-    public void testSetWebMessageListenerWontAffectOtherAwContents() throws Throwable {
+    public void testAddWebMessageListenerWontAffectOtherAwContents() throws Throwable {
         // Create another AwContents object.
         final TestAwContentsClient awContentsClient = new TestAwContentsClient();
         final AwTestContainerView awTestContainerView =
@@ -327,7 +318,7 @@ public class JsJavaInteractionTest {
         final AwContents otherAwContents = awTestContainerView.getAwContents();
         AwActivityTestRule.enableJavaScriptOnUiThread(otherAwContents);
 
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         final String url = mTestServer.getURL(POST_MESSAGE_SIMPLE_HTML);
         mActivityTestRule.loadUrlSync(mAwContents, mContentsClient.getOnPageFinishedHelper(), url);
@@ -351,11 +342,11 @@ public class JsJavaInteractionTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
-    public void testSetWebMessageListenerAllowsCertainUrlWorksWithIframe() throws Throwable {
+    public void testAddWebMessageListenerAllowsCertainUrlWorksWithIframe() throws Throwable {
         final String frameUrl = mTestServer.getURL(POST_MESSAGE_SIMPLE_HTML);
         final String html = createCrossOriginAccessTestPageHtml(frameUrl);
-        setWebMessageListenerOnUiThread(
-                mAwContents, mListener, new String[] {parseOrigin(frameUrl)});
+        addWebMessageListenerOnUiThread(
+                mAwContents, JS_OBJECT_NAME, new String[] {parseOrigin(frameUrl)}, mListener);
 
         mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
                 mContentsClient.getOnPageFinishedHelper(), html, "text/html", false,
@@ -375,8 +366,8 @@ public class JsJavaInteractionTest {
     @Test
     @SmallTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
-    public void testUnsetWebMessageListenerCouldPreventInjectionForNextPageLoad() throws Throwable {
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+    public void testRemoveWebMessageListener_preventInjectionForNextPageLoad() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         // Load the the page.
         loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
@@ -387,7 +378,7 @@ public class JsJavaInteractionTest {
         Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
 
         // Remove WebMessageListener will disable injection for next page load.
-        TestThreadUtils.runOnUiThreadBlocking(() -> mAwContents.unsetWebMessageListener());
+        removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
 
         loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
 
@@ -397,46 +388,125 @@ public class JsJavaInteractionTest {
     }
 
     @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    public void testRemoveWebMessageListener_cutJsJavaMappingImmediately() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+
+        // Load the the page.
+        loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+        Assert.assertEquals(HELLO, data.mMessage);
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+
+        // Remove WebMessageListener will disable injection for next page load.
+        removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
+
+        // Should still have myObject.
+        Assert.assertTrue(hasJavaScriptObject(
+                JS_OBJECT_NAME, mActivityTestRule, mAwContents, mContentsClient));
+
+        // But posting message on myObject will be dropped.
+        mActivityTestRule.executeJavaScriptAndWaitForResult(
+                mAwContents, mContentsClient, JS_OBJECT_NAME + ".postMessage('" + HELLO + "');");
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    public void testRemoveWebMessageListener_removeWithNoAddWebMessageListener() throws Throwable {
+        // Call removeWebMessageListener() without addWebMessageListener() shouldn't fail.
+        removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
+
+        loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    public void testRemoveWebMessageListener_removeBeforeLoadPage() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
+
+        loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
+
+        Assert.assertFalse(hasJavaScriptObject(
+                JS_OBJECT_NAME, mActivityTestRule, mAwContents, mContentsClient));
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    public void testRemoveWebMessageListener_extraRemove() throws Throwable {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
+        // Extra removeWebMessageListener() does nothing.
+        removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME);
+
+        loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
+
+        Assert.assertFalse(hasJavaScriptObject(
+                JS_OBJECT_NAME, mActivityTestRule, mAwContents, mContentsClient));
+    }
+
+    @Test
     @MediumTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
     public void testAllowedOriginsWorksForVariousBaseUrls() throws Throwable {
         // Set a typical rule.
-        setWebMessageListenerOnUiThread(
-                mAwContents, mListener, new String[] {"https://www.example.com:443"});
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME,
+                new String[] {"https://www.example.com:443"}, mListener);
 
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.example.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.example.com:8080"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("http://www.example.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("http://example.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.google.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("file://etc"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("ftp://example.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl(null));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com", JS_OBJECT_NAME));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com:8080", JS_OBJECT_NAME));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("http://www.example.com", JS_OBJECT_NAME));
+        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("http://example.com", JS_OBJECT_NAME));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.google.com", JS_OBJECT_NAME));
+        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("file://etc", JS_OBJECT_NAME));
+        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("ftp://example.com", JS_OBJECT_NAME));
+        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl(null, JS_OBJECT_NAME));
 
         // Inject to all frames.
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        addWebMessageListenerOnUiThread(
+                mAwContents, JS_OBJECT_NAME_2, new String[] {"*"}, mListener);
 
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.example.com"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.example.com:8080"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("http://www.example.com"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("http://example.com"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.google.com"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("file://etc"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("ftp://example.com"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl(null));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com", JS_OBJECT_NAME_2));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com:8080", JS_OBJECT_NAME_2));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("http://www.example.com", JS_OBJECT_NAME_2));
+        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("http://example.com", JS_OBJECT_NAME_2));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.google.com", JS_OBJECT_NAME_2));
+        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("file://etc", JS_OBJECT_NAME_2));
+        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("ftp://example.com", JS_OBJECT_NAME_2));
+        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl(null, JS_OBJECT_NAME_2));
 
         // ftp scheme.
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"ftp://example.com"});
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("ftp://example.com"));
+        final String jsObjectName3 = JS_OBJECT_NAME + "3";
+        addWebMessageListenerOnUiThread(
+                mAwContents, jsObjectName3, new String[] {"ftp://example.com"}, mListener);
+        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("ftp://example.com", jsObjectName3));
 
         // file scheme.
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"file://*"});
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("file://etc"));
+        final String jsObjectName4 = JS_OBJECT_NAME + "4";
+        addWebMessageListenerOnUiThread(
+                mAwContents, jsObjectName4, new String[] {"file://*"}, mListener);
+        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("file://etc", jsObjectName4));
 
         // Pass an URI instead of origin shouldn't work.
+        final String jsObjectName5 = JS_OBJECT_NAME + "5";
         try {
-            setWebMessageListenerOnUiThread(
-                    mAwContents, mListener, new String[] {"https://www.example.com/index.html"});
+            addWebMessageListenerOnUiThread(mAwContents, jsObjectName5,
+                    new String[] {"https://www.example.com/index.html"}, mListener);
             Assert.fail("allowedOriginRules shouldn't be url like");
         } catch (RuntimeException e) {
             // Should catch IllegalArgumentException in the end of the re-throw chain.
@@ -446,82 +516,137 @@ public class JsJavaInteractionTest {
             }
             Assert.assertTrue(ex instanceof IllegalArgumentException);
         }
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.example.com"));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com", jsObjectName5));
     }
 
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
-    public void testCallSetWebMessageListenerAgainForTheSameOrigins() throws Throwable {
+    public void testDontAllowAddWebMessageLitenerWithTheSameJsObjectName() {
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        try {
+            addWebMessageListenerOnUiThread(
+                    mAwContents, JS_OBJECT_NAME, new String[] {"*"}, new TestWebMessageListener());
+            Assert.fail("Shouldn't allow the same Js object name be added more than once.");
+        } catch (RuntimeException e) {
+            // Should catch IllegalArgumentException in the end of the re-throw chain.
+            Throwable ex = e;
+            while (ex.getCause() != null) {
+                ex = ex.getCause();
+            }
+            Assert.assertTrue(ex instanceof IllegalArgumentException);
+        }
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    public void testAddWebMessageListener_SameOrigins() throws Throwable {
         final String[] allowedOriginRules =
                 new String[] {"https://www.example.com", "https://www.allowed.com"};
-        setWebMessageListenerOnUiThread(mAwContents, mListener, allowedOriginRules);
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, allowedOriginRules, mListener);
 
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.example.com"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com"));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com", JS_OBJECT_NAME));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com", JS_OBJECT_NAME));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com", JS_OBJECT_NAME));
 
-        // Call setWebMessageListener() with the same set of origins.
-        setWebMessageListenerOnUiThread(mAwContents, mListener, allowedOriginRules);
+        // Call addWebMessageListener() with the same set of origins.
+        addWebMessageListenerOnUiThread(
+                mAwContents, JS_OBJECT_NAME_2, allowedOriginRules, mListener);
 
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.example.com"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com"));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com", JS_OBJECT_NAME_2));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com", JS_OBJECT_NAME_2));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com", JS_OBJECT_NAME_2));
     }
 
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
-    public void testCallSetWebMessageListenerAgainForOverlappingSetOfOrigins() throws Throwable {
+    public void testAddWebMessageListener_OverlappingSetOfOrigins() throws Throwable {
         final String[] allowedOriginRules1 =
                 new String[] {"https://www.example.com", "https://www.allowed.com"};
-        setWebMessageListenerOnUiThread(mAwContents, mListener, allowedOriginRules1);
+        addWebMessageListenerOnUiThread(
+                mAwContents, JS_OBJECT_NAME, allowedOriginRules1, mListener);
 
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.example.com"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.ok.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com"));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com", JS_OBJECT_NAME));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com", JS_OBJECT_NAME));
+        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.ok.com", JS_OBJECT_NAME));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com", JS_OBJECT_NAME));
 
         final String[] allowedOriginRules2 =
                 new String[] {"https://www.example.com", "https://www.ok.com"};
-        // Call setWebMessageListener with overlapping set of origins.
-        setWebMessageListenerOnUiThread(mAwContents, mListener, allowedOriginRules2);
+        // Call addWebMessageListener with overlapping set of origins.
+        addWebMessageListenerOnUiThread(
+                mAwContents, JS_OBJECT_NAME_2, allowedOriginRules2, mListener);
 
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.example.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.ok.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com"));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com", JS_OBJECT_NAME_2));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com", JS_OBJECT_NAME_2));
+        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.ok.com", JS_OBJECT_NAME_2));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com", JS_OBJECT_NAME_2));
+
+        // Remove the listener should remove the js object from the next navigation.
+        removeWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME_2);
+
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com", JS_OBJECT_NAME_2));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com", JS_OBJECT_NAME_2));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.ok.com", JS_OBJECT_NAME_2));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com", JS_OBJECT_NAME_2));
     }
 
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
-    public void testCallSetWebMessageListenerAgainForNonOverlappingSetOfOrigins() throws Throwable {
+    public void testAddWebMessageListener_NonOverlappingSetOfOrigins() throws Throwable {
         final String[] allowedOriginRules1 =
                 new String[] {"https://www.example.com", "https://www.allowed.com"};
-        setWebMessageListenerOnUiThread(mAwContents, mListener, allowedOriginRules1);
+        addWebMessageListenerOnUiThread(
+                mAwContents, JS_OBJECT_NAME, allowedOriginRules1, mListener);
 
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.example.com"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.ok.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com"));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com", JS_OBJECT_NAME));
+        Assert.assertTrue(
+                isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com", JS_OBJECT_NAME));
+        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.ok.com", JS_OBJECT_NAME));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com", JS_OBJECT_NAME));
 
         final String[] allowedOriginRules2 = new String[] {"https://www.ok.com"};
-        // Call setWebMessageListener with non-overlapping set of origins.
-        setWebMessageListenerOnUiThread(mAwContents, mListener, allowedOriginRules2);
+        // Call addWebMessageListener with non-overlapping set of origins.
+        addWebMessageListenerOnUiThread(
+                mAwContents, JS_OBJECT_NAME_2, allowedOriginRules2, mListener);
 
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.example.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com"));
-        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.ok.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com"));
-        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl(""));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.example.com", JS_OBJECT_NAME_2));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.allowed.com", JS_OBJECT_NAME_2));
+        Assert.assertTrue(isJsObjectInjectedWhenLoadingUrl("https://www.ok.com", JS_OBJECT_NAME_2));
+        Assert.assertFalse(
+                isJsObjectInjectedWhenLoadingUrl("https://www.noinjection.com", JS_OBJECT_NAME_2));
+        Assert.assertFalse(isJsObjectInjectedWhenLoadingUrl("", JS_OBJECT_NAME_2));
     }
 
     @Test
     @MediumTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
     public void testJsReplyProxyWorks() throws Throwable {
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         final String url = loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
 
@@ -542,9 +667,71 @@ public class JsJavaInteractionTest {
 
     @Test
     @MediumTest
+    @Feature({"AndroidWebView", "JsJavaInterfaction"})
+    public void testJsReplyProxyReplyToTheCorrectJsObject() throws Throwable {
+        final TestWebMessageListener webMessageListener2 = new TestWebMessageListener();
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
+        addWebMessageListenerOnUiThread(
+                mAwContents, JS_OBJECT_NAME_2, new String[] {"*"}, webMessageListener2);
+
+        final String url = loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
+
+        // Listener for myObject.
+        final String listener1 = "function (event) {"
+                + "  if (window.listenerResult1) {"
+                + "    window.listenerResult1 += event.data;"
+                + "  } else {"
+                + "    window.listenerResult1 = event.data;"
+                + "  }"
+                + "}";
+
+        // Listener for myObject2.
+        final String listener2 = "function (event) {"
+                + "  if (window.listenerResult2) {"
+                + "    window.listenerResult2 += event.data;"
+                + "  } else {"
+                + "    window.listenerResult2 = event.data;"
+                + "  }"
+                + "}";
+
+        // Add two different js objects.
+        addEventListener(listener1, "listener1", JS_OBJECT_NAME, mActivityTestRule, mAwContents,
+                mContentsClient);
+        addEventListener(listener2, "listener2", JS_OBJECT_NAME_2, mActivityTestRule, mAwContents,
+                mContentsClient);
+
+        TestWebMessageListener.Data data = mListener.waitForOnPostMessage();
+
+        final String message = "message";
+        mActivityTestRule.executeJavaScriptAndWaitForResult(mAwContents, mContentsClient,
+                JS_OBJECT_NAME_2 + ".postMessage('" + message + "');");
+        TestWebMessageListener.Data data2 = webMessageListener2.waitForOnPostMessage();
+
+        Assert.assertEquals(message, data2.mMessage);
+
+        final String hello1 = "hello1";
+        final String hello2 = "hello2";
+        // Targeting myObject.
+        data.mReplyProxy.postMessage(hello1);
+        // Targeting myObject2.
+        data2.mReplyProxy.postMessage(hello2);
+
+        Assert.assertEquals(hello1,
+                getJsObjectValue(
+                        "window.listenerResult1", mActivityTestRule, mAwContents, mContentsClient));
+        Assert.assertEquals(hello2,
+                getJsObjectValue(
+                        "window.listenerResult2", mActivityTestRule, mAwContents, mContentsClient));
+
+        Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
+        Assert.assertTrue(webMessageListener2.hasNoMoreOnPostMessage());
+    }
+
+    @Test
+    @MediumTest
     @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testJsReplyProxyDropsMessageIfJsObjectIsGone() throws Throwable {
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         final String url = loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
 
@@ -574,7 +761,7 @@ public class JsJavaInteractionTest {
     @MediumTest
     @Feature({"AndroidWebView", "JsJavaInteraction"})
     public void testJsAddAndRemoveEventListener() throws Throwable {
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
         loadUrlFromPath(POST_MESSAGE_SIMPLE_HTML);
 
         JsReplyProxy proxy = mListener.waitForOnPostMessage().mReplyProxy;
@@ -631,7 +818,7 @@ public class JsJavaInteractionTest {
     @MediumTest
     @Feature({"AndroidWebView", "JsJavaInterfaction"})
     public void testJsObjectRemoveOnMessage() throws Throwable {
-        setWebMessageListenerOnUiThread(mAwContents, mListener, new String[] {"*"});
+        addWebMessageListenerOnUiThread(mAwContents, JS_OBJECT_NAME, new String[] {"*"}, mListener);
 
         final String url = loadUrlFromPath(POST_MESSAGE_REPLY_HTML);
 
@@ -656,11 +843,12 @@ public class JsJavaInteractionTest {
         Assert.assertTrue(mListener.hasNoMoreOnPostMessage());
     }
 
-    private boolean isJsObjectInjectedWhenLoadingUrl(final String baseUrl) throws Throwable {
+    private boolean isJsObjectInjectedWhenLoadingUrl(
+            final String baseUrl, final String jsObjectName) throws Throwable {
         mActivityTestRule.loadDataWithBaseUrlSync(mAwContents,
                 mContentsClient.getOnPageFinishedHelper(), DATA_HTML, "text/html", false, baseUrl,
                 null);
-        return hasJavaScriptObject(JS_OBJECT_NAME, mActivityTestRule, mAwContents, mContentsClient);
+        return hasJavaScriptObject(jsObjectName, mActivityTestRule, mAwContents, mContentsClient);
     }
 
     private String loadUrlFromPath(String path) throws Exception {
@@ -683,12 +871,17 @@ public class JsJavaInteractionTest {
                 + "</body></html>";
     }
 
-    private static void setWebMessageListenerOnUiThread(final AwContents awContents,
-            final WebMessageListener listener, final String[] allowedOriginRules) {
+    private static void addWebMessageListenerOnUiThread(final AwContents awContents,
+            final String jsObjectName, final String[] allowedOriginRules,
+            final WebMessageListener listener) {
         TestThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> awContents.setWebMessageListener(
-                                JS_OBJECT_NAME, allowedOriginRules, listener));
+                () -> awContents.addWebMessageListener(jsObjectName, allowedOriginRules, listener));
+    }
+
+    private static void removeWebMessageListenerOnUiThread(
+            final AwContents awContents, final String jsObjectName) {
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> awContents.removeWebMessageListener(jsObjectName));
     }
 
     private static boolean hasJavaScriptObject(final String jsObjectName,

@@ -222,7 +222,7 @@
 
       如果不設定這項政策，網路程式碼可能會在瀏覽器程序外執行 (取決於 NetworkService 實驗的實測結果)。</translation>
 <translation id="1384459581748403878">參考頁面：<ph name="REFERENCE_URL" /></translation>
-<translation id="138847842893090358">回報 OS 的更新狀態</translation>
+<translation id="138847842893090358">回報作業系統的更新狀態</translation>
 <translation id="1393485621820363363">已啟用企業裝置印表機</translation>
 <translation id="1397855852561539316">預設搜尋引擎建議網址</translation>
 <translation id="1404043648050567997">「安全瀏覽」服務會檢查使用者要瀏覽的網站，如果是已知有惡意攻擊風險的網站，就會顯示警告網頁。如果啟用這項政策，可防止使用者忽略警告而繼續前往惡意網站。
@@ -2150,9 +2150,9 @@
 <translation id="4832852360828533362">使用者與裝置回報功能</translation>
 <translation id="4834526953114077364">移除近期登入次數最少的使用者 (3 個月都未曾登入)，直到有足夠的可用空間</translation>
 <translation id="4835622243021053389">啟用 NTLMv2 驗證。</translation>
-<translation id="4856471929724652373">回報 OS 的更新資訊，例如更新狀態、平台版本、上次更新檢查時間以及上次重新啟動時間。
+<translation id="4856471929724652373">回報作業系統的更新資訊，例如更新狀態、平台版本、上次更新檢查時間以及上次重新啟動時間。
 
-      如果將這項政策設為 False 或不予設定，系統將不會回報 OS 的更新資訊。如果設為 True，則系統會回報 OS 的更新資訊。</translation>
+      如果將這項政策設為 False 或不予設定，系統將不會回報作業系統的更新資訊。如果設為 True，則系統會回報作業系統的更新資訊。</translation>
 <translation id="4858735034935305895">允許全螢幕模式</translation>
 <translation id="4861767323695239729">設定可在使用者工作階段中使用的輸入法</translation>
 <translation id="487460824085252184">自動遷移，不要求使用者同意。</translation>
@@ -4273,7 +4273,6 @@
 <translation id="8798099450830957504">預設</translation>
 <translation id="8800453707696044281">自訂電池停止充電值 (以百分比表示)</translation>
 <translation id="8801680448782904838">透過通知建議或要求使用者重新啟動瀏覽器或裝置</translation>
-<translation id="8802816494059596691">這份清單中指定的主機名稱會從 HTTP 嚴格傳輸安全性政策檢查作業中排除，該檢查可能會將要求從 HTTP 升級為 HTTPS。這項政策只允許單一標籤主機名稱。主機名稱必須標準化：任何 IDN 都必須轉換為單一標籤格式，且所有 ASCII 字母都必須使用小寫。這項政策只適用於指定的主機名稱，不適用於指定主機名稱的子網域。</translation>
 <translation id="8818173863808665831">回報裝置的地理位置。
 
       如果未設定這項政策，或將其設定為 False，系統將不會回報位置。</translation>

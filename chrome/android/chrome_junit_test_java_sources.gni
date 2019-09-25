@@ -41,7 +41,6 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/compositor/overlays/strip/StripLayoutHelperTest.java",
   "junit/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulatorTest.java",
   "junit/src/org/chromium/chrome/browser/contextmenu/RevampedContextMenuCoordinatorTest.java",
-  "junit/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchContextForTest.java",
   "junit/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchContextTest.java",
   "junit/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchEntityHeuristicTest.java",
   "junit/src/org/chromium/chrome/browser/contextualsearch/ContextualSearchInternalStateTest.java",

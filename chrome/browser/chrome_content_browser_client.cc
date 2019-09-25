@@ -99,8 +99,8 @@
 #include "chrome/browser/prerender/prerender_message_filter.h"
 #include "chrome/browser/prerender/prerender_util.h"
 #include "chrome/browser/previews/previews_content_util.h"
-#include "chrome/browser/previews/previews_lite_page_decider.h"
-#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/browser/previews/previews_ui_tab_helper.h"
@@ -3467,8 +3467,9 @@ void ChromeContentBrowserClient::BrowserURLHandlerCreated(
 
   // Handler to rewrite Preview's Server Lite Page, to show the original URL to
   // the user.
-  handler->AddHandlerPair(&previews::HandlePreviewsLitePageURLRewrite,
-                          &previews::HandlePreviewsLitePageURLRewriteReverse);
+  handler->AddHandlerPair(
+      &previews::HandlePreviewsLitePageRedirectURLRewrite,
+      &previews::HandlePreviewsLitePageRedirectURLRewriteReverse);
 }
 
 base::FilePath ChromeContentBrowserClient::GetDefaultDownloadDirectory() {
@@ -4899,7 +4900,8 @@ ChromeContentBrowserClient::WillCreateURLLoaderRequestInterceptors(
   if (base::FeatureList::IsEnabled(
           previews::features::kLitePageServerPreviews)) {
     interceptors.push_back(
-        std::make_unique<previews::PreviewsLitePageURLLoaderInterceptor>(
+        std::make_unique<
+            previews::PreviewsLitePageRedirectURLLoaderInterceptor>(
             network_loader_factory,
             chrome_navigation_ui_data->data_reduction_proxy_page_id(),
             frame_tree_node_id));

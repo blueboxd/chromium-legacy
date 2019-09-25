@@ -267,7 +267,7 @@
 <translation id="2230458221926704099">Beheben Sie den Verbindungsfehler mithilfe der <ph name="BEGIN_LINK" />Diagnose-App<ph name="END_LINK" /></translation>
 <translation id="2239100178324503013">Jetzt senden</translation>
 <translation id="2248949050832152960">WebAuthn verwenden</translation>
-<translation id="2250931979407627383">Fadenheftung links</translation>
+<translation id="2250931979407627383">Mehrere Heftklammern links</translation>
 <translation id="225207911366869382">Dieser Wert für die Richtlinie ist veraltet.</translation>
 <translation id="2257315177824333709">Ihre Karte kann momentan nicht gespeichert werden</translation>
 <translation id="2262243747453050782">HTTP-Fehler</translation>
@@ -344,7 +344,7 @@
 <translation id="2625385379895617796">Ihre Uhr geht vor</translation>
 <translation id="2634124572758952069">Die Server-IP-Adresse von <ph name="HOST_NAME" /> wurde nicht gefunden.</translation>
 <translation id="2638745661847473633">Der Server <ph name="ORIGIN" />, zu dem Sie gehen, verlangt, dass auf alle an ihn gerichteten Anfragen eine Ursprungsrichtlinie angewendet wird. Aber er hat
-    keine gültige Richtlinie bereitgestellt, was den Browser daran hindert, Ihre
+    eine ungültige Richtlinie bereitgestellt, was den Browser daran hindert, Ihre
     Anfrage für <ph name="SITE" /> auszuführen. Ursprungsrichtlinien können von
     Websitebetreibern verwendet werden, um die Sicherheit und andere Eigenschaften einer Website zu konfigurieren.</translation>
 <translation id="2639739919103226564">Status: </translation>
@@ -394,7 +394,7 @@
 <translation id="2878197950673342043">Posterfaltung</translation>
 <translation id="2878424575911748999">A1</translation>
 <translation id="2881276955470682203">Karte speichern?</translation>
-<translation id="2882949212241984732">Doppelseitige Fensterfaltung</translation>
+<translation id="2882949212241984732">Doppelte Fensterfaltung</translation>
 <translation id="2903493209154104877">Adressen</translation>
 <translation id="290376772003165898">Diese Seite ist nicht auf <ph name="LANGUAGE" />?</translation>
 <translation id="2909946352844186028">Eine Netzwerkänderung ist aufgetreten.</translation>
@@ -886,7 +886,7 @@
 <translation id="5384855140246857529">Wenn Sie Ihre Karten auf allen Geräten verwenden möchten, melden Sie sich an und aktivieren Sie die Synchronisierung.</translation>
 <translation id="5386426401304769735">Die Zertifikatskette für diese Website enthält ein Zertifikat mit SHA-1-Signatur.</translation>
 <translation id="538659543871111977">A4-Tab</translation>
-<translation id="5396631636586785122">Fadenheftung rechts</translation>
+<translation id="5396631636586785122">Mehrere Heftklammern rechts</translation>
 <translation id="540969355065856584">Dieser Server konnte nicht beweisen, dass er <ph name="DOMAIN" /> ist. Sein Sicherheitszertifikat ist zurzeit ungültig. Mögliche Gründe sind eine fehlerhafte Konfiguration oder ein Angreifer, der Ihre Verbindung abfängt.</translation>
 <translation id="5421136146218899937">Browserdaten löschen...</translation>
 <translation id="5430298929874300616">Lesezeichen löschen</translation>
@@ -911,7 +911,7 @@
 <translation id="5510766032865166053">Eventuell wurde sie verschoben oder gelöscht.</translation>
 <translation id="5523118979700054094">Richtlinienname</translation>
 <translation id="552553974213252141">Wurde der Text korrekt extrahiert?</translation>
-<translation id="55293785478302737">Fadenheftung</translation>
+<translation id="55293785478302737">Mehrere Heftklammern</translation>
 <translation id="553484882784876924">Prc6 (Umschlag)</translation>
 <translation id="5540224163453853">Der gewünschte Artikel wurde nicht gefunden.</translation>
 <translation id="5541546772353173584">E-Mail-Adresse hinzufügen</translation>
@@ -1023,6 +1023,7 @@
 <translation id="6058977677006700226">Karten auf allen Ihren Geräten nutzen?</translation>
 <translation id="6059925163896151826">USB-Geräte</translation>
 <translation id="6060009363608157444">Ungültiger DnsOverHttps-Modus.</translation>
+<translation id="6064217302520318294">Displaysperre</translation>
 <translation id="6080696365213338172">Sie haben über ein vom Administrator bereitgestelltes Zertifikat auf Inhalte zugegriffen. Die Daten, die Sie innerhalb von <ph name="DOMAIN" /> bereitstellen, können von Ihrem Administrator abgefangen werden.</translation>
 <translation id="6094273045989040137">Anmerkung hinzufügen</translation>
 <translation id="610911394827799129">Unter <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> sind möglicherweise weitere Arten von Browserverlaufsdaten für Ihr Google-Konto gespeichert.</translation>
@@ -1090,7 +1091,7 @@
 <translation id="6446608382365791566">Weitere Informationen hinzufügen</translation>
 <translation id="6447842834002726250">Cookies</translation>
 <translation id="6451458296329894277">Erneute Formular-Übermittlung bestätigen</translation>
-<translation id="6457206614190510200">Heftstich</translation>
+<translation id="6457206614190510200">Rückendrahtheftung</translation>
 <translation id="6465306955648956876">Passwörter verwalten…</translation>
 <translation id="647261751007945333">Geräterichtlinien</translation>
 <translation id="6476284679642588870">Zahlungsmethoden verwalten</translation>
@@ -1379,7 +1380,7 @@ Weitere Details:
 <translation id="7942349550061667556">Rot</translation>
 <translation id="7947285636476623132">Prüfen Sie Ihr Ablaufjahr und versuchen Sie es dann erneut</translation>
 <translation id="7951415247503192394">(32-Bit)</translation>
-<translation id="7953569069500808819">Fadenheftung oben</translation>
+<translation id="7953569069500808819">Mehrere Heftklammern oben</translation>
 <translation id="7956713633345437162">Mobile Lesezeichen</translation>
 <translation id="7961015016161918242">Nie</translation>
 <translation id="7977894662897852582">Edp</translation>
@@ -1444,7 +1445,7 @@ Weitere Details:
 <translation id="8253091569723639551">Rechnungsadresse ist erforderlich</translation>
 <translation id="825929999321470778">Alle gespeicherten Passwörter anzeigen</translation>
 <translation id="8261506727792406068">Löschen</translation>
-<translation id="8262952874573525464">Fadenheftung unten</translation>
+<translation id="8262952874573525464">Mehrere Heftklammern unten</translation>
 <translation id="8267698848189296333">Als <ph name="USERNAME" /> anmelden</translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">Anmelden</translation>

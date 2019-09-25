@@ -1046,6 +1046,12 @@ void SiteInstanceImpl::LockToOriginIfNeeded() {
                    << " in process locked to " << process_lock;
     }
   }
+
+  // Track which isolation contexts use the given process.  This lets
+  // ChildProcessSecurityPolicyImpl (e.g. CanAccessDataForOrigin) determine
+  // whether a given URL should require a lock or not (a dynamically isolated
+  // origin may require a lock in some isolation contexts but not in others).
+  policy->IncludeIsolationContext(process_->GetID(), GetIsolationContext());
 }
 
 // static

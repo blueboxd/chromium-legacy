@@ -386,6 +386,8 @@ WRAPPED_INSTANTIATE_TEST_SUITE_P(
         TestCase("checkPasteIntoFolderDisabledForReadOnlyFolder"),
         TestCase("checkInstallWithLinuxDisabledForDebianFile"),
         TestCase("checkInstallWithLinuxEnabledForDebianFile"),
+        TestCase("checkImportCrostiniImageEnabled"),
+        TestCase("checkImportCrostiniImageDisabled"),
         TestCase("checkNewFolderEnabledInsideReadWriteFolder"),
         TestCase("checkNewFolderDisabledInsideReadOnlyFolder"),
         TestCase("checkPasteEnabledInsideReadWriteFolder"),

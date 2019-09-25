@@ -79,7 +79,7 @@ class FakeNetworkConfig {
 
     ['getNetworkState', 'getNetworkStateList', 'getDeviceStateList',
      'getManagedProperties', 'setNetworkTypeEnabledState', 'requestNetworkScan',
-     'getGlobalPolicy', 'getVpnProviders']
+     'getGlobalPolicy', 'getVpnProviders', 'getNetworkCertificates']
         .forEach((methodName) => {
           this.resolverMap_.set(methodName, new PromiseResolver());
         });
@@ -213,7 +213,7 @@ class FakeNetworkConfig {
   // networkConfig methods
 
   /**
-   * @param { !chromeos.networkConfig.mojom.CrosNetworkConfigObserverProxy }
+   * @param {!chromeos.networkConfig.mojom.CrosNetworkConfigObserverProxy }
    *     observer
    */
   addObserver(observer) {
@@ -314,13 +314,13 @@ class FakeNetworkConfig {
     });
   }
 
-  /** @param { !chromeos.networkConfig.mojom.NetworkType } type */
+  /** @param {!chromeos.networkConfig.mojom.NetworkType } type */
   requestNetworkScan(type) {
     this.methodCalled('requestNetworkScan');
   }
 
   /**
-   * @return { !Promise<{result: !chromeos.networkConfig.mojom.GlobalPolicy}>}
+   * @return {!Promise<{result: !chromeos.networkConfig.mojom.GlobalPolicy}>}
    */
   getGlobalPolicy() {
     return new Promise(resolve => {
@@ -330,13 +330,25 @@ class FakeNetworkConfig {
   }
 
   /**
-   * @return { !Promise<{
+   * @return {!Promise<{
    *     result: !Array<!chromeos.networkConfig.mojom.VpnProvider>}>}
    */
   getVpnProviders() {
     return new Promise(resolve => {
       this.methodCalled('getVpnProviders');
       resolve({providers: this.vpnProviders_});
+    });
+  }
+
+  /**
+   * @return {!Promise<{
+   *     serverCas: !Array<!chromeos.networkConfig.mojom.NetworkCertificate>,
+   *     userCerts: !Array<!chromeos.networkConfig.mojom.NetworkCertificate>}>}
+   */
+  getNetworkCertificates() {
+    return new Promise(resolve => {
+      this.methodCalled('getNetworkCertificates');
+      resolve({serverCas: [], userCerts: []});
     });
   }
 }

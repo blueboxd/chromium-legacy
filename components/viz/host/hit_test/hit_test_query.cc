@@ -285,10 +285,18 @@ bool HitTestQuery::FindTargetInRegionForLocation(
       !(flags & HitTestRegionFlags::kHitTestIgnore)) {
     target->frame_sink_id = hit_test_data_[region_index].frame_sink_id;
     target->location_in_target = location_in_target;
-    target->flags = flags;
+    uint32_t async_hit_test_reasons =
+        hit_test_data_[region_index].async_hit_test_reasons;
+    uint32_t target_flags = flags;
+    if (root_view_overlapped) {
+      DCHECK_EQ(hit_test_data_[region_index].async_hit_test_reasons,
+                AsyncHitTestReasons::kOverlappedRegion);
+      target_flags &= ~HitTestRegionFlags::kHitTestAsk;
+      async_hit_test_reasons = AsyncHitTestReasons::kNotAsyncHitTest;
+    }
+    target->flags = target_flags;
     // We record fast path hit testing instances with reason kNotAsyncHitTest.
-    RecordSlowPathHitTestReasons(
-        hit_test_data_[region_index].async_hit_test_reasons);
+    RecordSlowPathHitTestReasons(async_hit_test_reasons);
     return true;
   }
   return false;

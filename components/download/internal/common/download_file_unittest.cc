@@ -184,6 +184,15 @@ class DownloadFileTest : public testing::Test {
 
   void ClearCallback() { sink_callback_.Reset(); }
 
+  void OnStreamActive(int64_t offset) {
+    DCHECK(download_file_->source_streams_.find(offset) !=
+           download_file_->source_streams_.end())
+        << "Can't find stream at offset : " << offset;
+    DownloadFileImpl::SourceStream* stream =
+        download_file_->source_streams_[offset].get();
+    download_file_->StreamActive(stream, MOJO_RESULT_OK);
+  }
+
   void SetInterruptReasonCallback(const base::Closure& closure,
                                   DownloadInterruptReason* reason_p,
                                   DownloadInterruptReason reason,
@@ -235,7 +244,6 @@ class DownloadFileTest : public testing::Test {
     }
 
     save_info->offset = 0;
-    save_info->length = length;
     save_info->file_offset = file_offset;
 
     download_file_.reset(new TestDownloadFileImpl(
@@ -1123,6 +1131,68 @@ TEST_F(DownloadFileTest, SecondStreamStartingOffsetAlreadyWritten) {
 
   // The stream should get terminated and reset the callback.
   EXPECT_TRUE(sink_callback_.is_null());
+  download_file_->Cancel();
+  DestroyDownloadFile(0, false);
+}
+
+// The second stream successfully reads the data from its offset. However,
+// before it is able to write the data, the same block was written by
+// the first stream.
+TEST_F(DownloadFileTest, SecondStreamReadsOffsetWrittenByFirst) {
+  int64_t stream_0_length = GetBuffersLength(kTestData8, 4);
+
+  ASSERT_TRUE(CreateDownloadFile(stream_0_length, true,
+                                 DownloadItem::ReceivedSlices()));
+
+  // First stream writes the first 2 chunks.
+  Sequence seq;
+  SetupDataAppend(kTestData8, 2, input_stream_, seq, 0);
+
+  EXPECT_CALL(*input_stream_, Read(_, _))
+      .InSequence(seq)
+      .WillOnce(Return(InputStream::EMPTY))
+      .RetiresOnSaturation();
+  sink_callback_.Run(MOJO_RESULT_OK);
+  base::RunLoop().RunUntilIdle();
+
+  // The second stream is created and waiting for data.
+  additional_streams_[0] = new StrictMock<MockInputStream>();
+  EXPECT_CALL(*additional_streams_[0], RegisterDataReadyCallback(_))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*additional_streams_[0], ClearDataReadyCallback())
+      .RetiresOnSaturation();
+  EXPECT_CALL(*additional_streams_[0], Read(_, _))
+      .WillOnce(Return(InputStream::EMPTY))
+      .RetiresOnSaturation();
+  int64_t offset = strlen(kTestData1) + strlen(kTestData2);
+  download_file_->AddInputStream(
+      std::unique_ptr<MockInputStream>(additional_streams_[0]), offset,
+      DownloadSaveInfo::kLengthFullContent);
+  base::RunLoop().RunUntilIdle();
+
+  // First stream reads the 3rd chunk and writes it to disk.
+  const char* chunk[] = {kTestData4};
+  SetupDataAppend(chunk, 1, input_stream_, seq, offset);
+  EXPECT_CALL(*input_stream_, Read(_, _))
+      .InSequence(seq)
+      .WillOnce(Return(InputStream::EMPTY))
+      .RetiresOnSaturation();
+  sink_callback_.Run(MOJO_RESULT_OK);
+  base::RunLoop().RunUntilIdle();
+
+  // Second stream also reads the 3rd chunk, but it will be terminated.
+  SetupDataAppend(chunk, 1, additional_streams_[0], seq, offset);
+  OnStreamActive(offset);
+  base::RunLoop().RunUntilIdle();
+
+  // First stream writes the last chunk, and completes the download.
+  chunk[0] = kTestData5;
+  SetupDataAppend(chunk, 1, input_stream_, seq, offset + strlen(kTestData4));
+  SetupFinishStream(DOWNLOAD_INTERRUPT_REASON_NONE, input_stream_, seq);
+  EXPECT_CALL(*(observer_.get()), MockDestinationCompleted(_, _));
+  sink_callback_.Run(MOJO_RESULT_OK);
+  base::RunLoop().RunUntilIdle();
+
   download_file_->Cancel();
   DestroyDownloadFile(0, false);
 }

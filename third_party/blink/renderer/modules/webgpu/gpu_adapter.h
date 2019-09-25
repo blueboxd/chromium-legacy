@@ -6,6 +6,7 @@
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_WEBGPU_GPU_ADAPTER_H_
 
 #include "base/memory/scoped_refptr.h"
+#include "gpu/command_buffer/client/webgpu_interface.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/modules/webgpu/dawn_object.h"
@@ -22,8 +23,10 @@ class GPUAdapter final : public ScriptWrappable, public DawnObjectBase {
  public:
   static GPUAdapter* Create(
       const String& name,
+      gpu::webgpu::PowerPreference power_preference,
       scoped_refptr<DawnControlClientHolder> dawn_control_client);
   GPUAdapter(const String& name,
+             gpu::webgpu::PowerPreference power_preference,
              scoped_refptr<DawnControlClientHolder> dawn_control_client);
 
   const String& name() const;

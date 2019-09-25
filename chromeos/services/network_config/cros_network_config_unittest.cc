@@ -14,6 +14,8 @@
 #include "chromeos/dbus/shill/fake_shill_device_client.h"
 #include "chromeos/login/login_state/login_state.h"
 #include "chromeos/network/managed_network_configuration_handler.h"
+#include "chromeos/network/network_cert_loader.h"
+#include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_configuration_handler.h"
 #include "chromeos/network/network_connection_handler.h"
 #include "chromeos/network/network_device_handler.h"
@@ -42,6 +44,7 @@ class CrosNetworkConfigTest : public testing::Test {
  public:
   CrosNetworkConfigTest() {
     LoginState::Initialize();
+    NetworkCertLoader::Initialize();
     network_profile_handler_ = NetworkProfileHandler::InitializeForTesting();
     network_device_handler_ = NetworkDeviceHandler::InitializeForTesting(
         helper_.network_state_handler());
@@ -60,20 +63,25 @@ class CrosNetworkConfigTest : public testing::Test {
             helper_.network_state_handler(),
             network_configuration_handler_.get(),
             managed_network_configuration_handler_.get());
+    network_certificate_handler_ =
+        std::make_unique<NetworkCertificateHandler>();
     cros_network_config_ = std::make_unique<CrosNetworkConfig>(
         helper_.network_state_handler(), network_device_handler_.get(),
         managed_network_configuration_handler_.get(),
-        network_connection_handler_.get());
+        network_connection_handler_.get(), network_certificate_handler_.get());
     SetupPolicy();
     SetupNetworks();
   }
 
   ~CrosNetworkConfigTest() override {
     cros_network_config_.reset();
+    network_certificate_handler_.reset();
+    network_connection_handler_.reset();
     managed_network_configuration_handler_.reset();
     network_configuration_handler_.reset();
     network_device_handler_.reset();
     network_profile_handler_.reset();
+    NetworkCertLoader::Shutdown();
     LoginState::Shutdown();
   }
 
@@ -386,6 +394,24 @@ class CrosNetworkConfigTest : public testing::Test {
     return result;
   }
 
+  void GetNetworkCertificates(
+      std::vector<mojom::NetworkCertificatePtr>* server_cas,
+      std::vector<mojom::NetworkCertificatePtr>* user_certs) {
+    base::RunLoop run_loop;
+    cros_network_config()->GetNetworkCertificates(base::BindOnce(
+        [](std::vector<mojom::NetworkCertificatePtr>* server_cas_result,
+           std::vector<mojom::NetworkCertificatePtr>* user_certs_result,
+           base::OnceClosure quit_closure,
+           std::vector<mojom::NetworkCertificatePtr> server_cas,
+           std::vector<mojom::NetworkCertificatePtr> user_certs) {
+          *server_cas_result = std::move(server_cas);
+          *user_certs_result = std::move(user_certs);
+          std::move(quit_closure).Run();
+        },
+        server_cas, user_certs, run_loop.QuitClosure()));
+    run_loop.Run();
+  }
+
   NetworkStateTestHelper& helper() { return helper_; }
   CrosNetworkConfigTestObserver* observer() { return observer_.get(); }
   CrosNetworkConfig* cros_network_config() {
@@ -394,11 +420,15 @@ class CrosNetworkConfigTest : public testing::Test {
   ManagedNetworkConfigurationHandler* managed_network_configuration_handler() {
     return managed_network_configuration_handler_.get();
   }
+  NetworkCertificateHandler* network_certificate_handler() {
+    return network_certificate_handler_.get();
+  }
   std::string wifi1_path() { return wifi1_path_; }
 
  private:
   base::test::SingleThreadTaskEnvironment task_environment_;
   NetworkStateTestHelper helper_{false /* use_default_devices_and_services */};
+  std::unique_ptr<NetworkCertificateHandler> network_certificate_handler_;
   std::unique_ptr<NetworkProfileHandler> network_profile_handler_;
   std::unique_ptr<NetworkDeviceHandler> network_device_handler_;
   std::unique_ptr<NetworkConfigurationHandler> network_configuration_handler_;
@@ -1010,6 +1040,26 @@ TEST_F(CrosNetworkConfigTest, VpnProviders) {
 
   base::RunLoop().RunUntilIdle();  // Ensure observers run.
   ASSERT_EQ(1, observer()->vpn_providers_changed());
+}
+
+TEST_F(CrosNetworkConfigTest, NetworkCertificates) {
+  SetupObserver();
+  ASSERT_EQ(0, observer()->network_certificates_changed());
+
+  std::vector<mojom::NetworkCertificatePtr> server_cas;
+  std::vector<mojom::NetworkCertificatePtr> user_certs;
+  GetNetworkCertificates(&server_cas, &user_certs);
+  EXPECT_EQ(0u, server_cas.size());
+  EXPECT_EQ(0u, user_certs.size());
+
+  network_certificate_handler()->AddAuthorityCertificateForTest(
+      "authority_cert");
+  base::RunLoop().RunUntilIdle();  // Ensure observers run.
+  ASSERT_EQ(1, observer()->network_certificates_changed());
+
+  GetNetworkCertificates(&server_cas, &user_certs);
+  EXPECT_EQ(1u, server_cas.size());
+  EXPECT_EQ(0u, user_certs.size());
 }
 
 TEST_F(CrosNetworkConfigTest, NetworkListChanged) {

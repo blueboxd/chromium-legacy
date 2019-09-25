@@ -20,9 +20,8 @@ source_set("app_launcher") {
     "//ios/chrome/browser/overlays",
     "//ios/chrome/browser/overlays/public/web_content_area",
     "//ios/chrome/browser/ui/alert_view_controller",
-    "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays:coordinators",
-    "//ios/chrome/browser/ui/presenters",
+    "//ios/chrome/browser/ui/overlays/common/alerts",
     "//ui/base",
   ]
 }
@@ -47,7 +46,7 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/alert_view_controller",
     "//ios/chrome/browser/ui/alert_view_controller/test",
     "//ios/chrome/browser/ui/dialogs",
-    "//ios/chrome/browser/ui/elements",
+    "//ios/chrome/browser/ui/overlays/common/alerts/test",
     "//ios/chrome/browser/ui/overlays/test",
     "//testing/gmock",
     "//testing/gtest",

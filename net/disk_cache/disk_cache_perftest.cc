@@ -16,9 +16,9 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "base/test/perf_time_logger.h"
 #include "base/test/test_file_util.h"
 #include "base/threading/thread.h"
+#include "base/timer/elapsed_timer.h"
 #include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/completion_repeating_callback.h"
@@ -35,6 +35,7 @@
 #include "net/disk_cache/simple/simple_index.h"
 #include "net/disk_cache/simple/simple_index_file.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "testing/platform_test.h"
 
 using base::Time;
@@ -51,6 +52,50 @@ const int kChunkSize = 32 * 1024;
 
 // As of 2017-01-12, this is a typical per-tab limit on HTTP connections.
 const int kMaxParallelOperations = 10;
+
+static constexpr char kMetricPrefixDiskCache[] = "DiskCache.";
+static constexpr char kMetricPrefixSimpleIndex[] = "SimpleIndex.";
+static constexpr char kMetricCacheEntriesWriteTimeMs[] =
+    "cache_entries_write_time";
+static constexpr char kMetricCacheHeadersReadTimeColdMs[] =
+    "cache_headers_read_time_cold";
+static constexpr char kMetricCacheHeadersReadTimeWarmMs[] =
+    "cache_headers_read_time_warm";
+static constexpr char kMetricCacheEntriesReadTimeColdMs[] =
+    "cache_entries_read_time_cold";
+static constexpr char kMetricCacheEntriesReadTimeWarmMs[] =
+    "cache_entries_read_time_warm";
+static constexpr char kMetricCacheKeysHashTimeMs[] = "cache_keys_hash_time";
+static constexpr char kMetricFillBlocksTimeMs[] = "fill_sequential_blocks_time";
+static constexpr char kMetricCreateDeleteBlocksTimeMs[] =
+    "create_and_delete_random_blocks_time";
+static constexpr char kMetricSimpleCacheInitTotalTimeMs[] =
+    "simple_cache_initial_read_total_time";
+static constexpr char kMetricSimpleCacheInitPerEntryTimeUs[] =
+    "simple_cache_initial_read_per_entry_time";
+static constexpr char kMetricAverageEvictionTimeMs[] = "average_eviction_time";
+
+perf_test::PerfResultReporter SetUpDiskCacheReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixDiskCache, story);
+  reporter.RegisterImportantMetric(kMetricCacheEntriesWriteTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricCacheHeadersReadTimeColdMs, "ms");
+  reporter.RegisterImportantMetric(kMetricCacheHeadersReadTimeWarmMs, "ms");
+  reporter.RegisterImportantMetric(kMetricCacheEntriesReadTimeColdMs, "ms");
+  reporter.RegisterImportantMetric(kMetricCacheEntriesReadTimeWarmMs, "ms");
+  reporter.RegisterImportantMetric(kMetricCacheKeysHashTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricFillBlocksTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricCreateDeleteBlocksTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricSimpleCacheInitTotalTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricSimpleCacheInitPerEntryTimeUs, "us");
+  return reporter;
+}
+
+perf_test::PerfResultReporter SetUpSimpleIndexReporter(
+    const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixSimpleIndex, story);
+  reporter.RegisterImportantMetric(kMetricAverageEvictionTimeMs, "ms");
+  return reporter;
+}
 
 void MaybeIncreaseFdLimitTo(unsigned int max_descriptors) {
 #if defined(OS_POSIX)
@@ -76,8 +121,10 @@ class DiskCachePerfTest : public DiskCacheTestWithCache {
 
  protected:
   // Helper methods for constructing tests.
-  bool TimeWrites();
-  bool TimeReads(WhatToRead what_to_read, const char* timer_message);
+  bool TimeWrites(const std::string& story);
+  bool TimeReads(WhatToRead what_to_read,
+                 const std::string& metric,
+                 const std::string& story);
   void ResetAndEvictSystemDiskCache();
 
   // Callbacks used within tests for intermediate operations.
@@ -90,7 +137,7 @@ class DiskCachePerfTest : public DiskCacheTestWithCache {
                      int result);
 
   // Complete perf tests.
-  void CacheBackendPerformance();
+  void CacheBackendPerformance(const std::string& story);
 
   const size_t kFdLimitForCacheTests = 8192;
 
@@ -350,7 +397,7 @@ bool ReadHandler::CheckForErrorAndCancel(int result) {
   return false;
 }
 
-bool DiskCachePerfTest::TimeWrites() {
+bool DiskCachePerfTest::TimeWrites(const std::string& story) {
   for (size_t i = 0; i < kNumEntries; i++) {
     TestEntry entry;
     entry.key = GenerateKey(true);
@@ -360,30 +407,40 @@ bool DiskCachePerfTest::TimeWrites() {
 
   net::TestCompletionCallback cb;
 
-  base::PerfTimeLogger timer("Write disk cache entries");
+  auto reporter = SetUpDiskCacheReporter(story);
+  base::ElapsedTimer write_timer;
 
   WriteHandler write_handler(this, cache_.get(), cb.callback());
   write_handler.Run();
-  return cb.WaitForResult() == net::OK;
+  auto result = cb.WaitForResult();
+  reporter.AddResult(kMetricCacheEntriesWriteTimeMs,
+                     write_timer.Elapsed().InMillisecondsF());
+  return result == net::OK;
 }
 
 bool DiskCachePerfTest::TimeReads(WhatToRead what_to_read,
-                                  const char* timer_message) {
-  base::PerfTimeLogger timer(timer_message);
+                                  const std::string& metric,
+                                  const std::string& story) {
+  auto reporter = SetUpDiskCacheReporter(story);
+  base::ElapsedTimer timer;
 
   net::TestCompletionCallback cb;
   ReadHandler read_handler(this, what_to_read, cache_.get(), cb.callback());
   read_handler.Run();
-  return cb.WaitForResult() == net::OK;
+  auto result = cb.WaitForResult();
+  reporter.AddResult(metric, timer.Elapsed().InMillisecondsF());
+  return result == net::OK;
 }
 
 TEST_F(DiskCachePerfTest, BlockfileHashes) {
-  base::PerfTimeLogger timer("Hash disk cache keys");
+  auto reporter = SetUpDiskCacheReporter("baseline_story");
+  base::ElapsedTimer timer;
   for (int i = 0; i < 300000; i++) {
     std::string key = GenerateKey(true);
     base::Hash(key);
   }
-  timer.Done();
+  reporter.AddResult(kMetricCacheKeysHashTimeMs,
+                     timer.Elapsed().InMillisecondsF());
 }
 
 void DiskCachePerfTest::ResetAndEvictSystemDiskCache() {
@@ -412,41 +469,41 @@ void DiskCachePerfTest::ResetAndEvictSystemDiskCache() {
   InitCache();
 }
 
-void DiskCachePerfTest::CacheBackendPerformance() {
+void DiskCachePerfTest::CacheBackendPerformance(const std::string& story) {
   LOG(ERROR) << "Using cache at:" << cache_path_.MaybeAsASCII();
   SetMaxSize(500 * 1024 * 1024);
   InitCache();
-  EXPECT_TRUE(TimeWrites());
+  EXPECT_TRUE(TimeWrites(story));
 
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
   base::RunLoop().RunUntilIdle();
 
   ResetAndEvictSystemDiskCache();
   EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_ONLY,
-                        "Read disk cache headers only (cold)"));
+                        kMetricCacheHeadersReadTimeColdMs, story));
   EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_ONLY,
-                        "Read disk cache headers only (warm)"));
+                        kMetricCacheHeadersReadTimeWarmMs, story));
 
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
   base::RunLoop().RunUntilIdle();
 
   ResetAndEvictSystemDiskCache();
   EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_AND_BODY,
-                        "Read disk cache entries (cold)"));
+                        kMetricCacheEntriesReadTimeColdMs, story));
   EXPECT_TRUE(TimeReads(WhatToRead::HEADERS_AND_BODY,
-                        "Read disk cache entries (warm)"));
+                        kMetricCacheEntriesReadTimeWarmMs, story));
 
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
   base::RunLoop().RunUntilIdle();
 }
 
 TEST_F(DiskCachePerfTest, CacheBackendPerformance) {
-  CacheBackendPerformance();
+  CacheBackendPerformance("blockfile_cache");
 }
 
 TEST_F(DiskCachePerfTest, SimpleCacheBackendPerformance) {
   SetSimpleCacheMode();
-  CacheBackendPerformance();
+  CacheBackendPerformance("simple_cache");
 }
 
 // Creating and deleting "entries" on a block-file is something quite frequent
@@ -463,7 +520,8 @@ TEST_F(DiskCachePerfTest, BlockFilesPerformance) {
   const int kNumBlocks = 60000;
   disk_cache::Addr address[kNumBlocks];
 
-  base::PerfTimeLogger timer1("Fill three block-files");
+  auto reporter = SetUpDiskCacheReporter("blockfile_cache");
+  base::ElapsedTimer sequential_timer;
 
   // Fill up the 32-byte block file (use three files).
   for (int i = 0; i < kNumBlocks; i++) {
@@ -472,8 +530,9 @@ TEST_F(DiskCachePerfTest, BlockFilesPerformance) {
         files.CreateBlock(disk_cache::RANKINGS, block_size, &address[i]));
   }
 
-  timer1.Done();
-  base::PerfTimeLogger timer2("Create and delete blocks");
+  reporter.AddResult(kMetricFillBlocksTimeMs,
+                     sequential_timer.Elapsed().InMillisecondsF());
+  base::ElapsedTimer random_timer;
 
   for (int i = 0; i < 200000; i++) {
     int block_size = base::RandInt(1, 4);
@@ -484,7 +543,8 @@ TEST_F(DiskCachePerfTest, BlockFilesPerformance) {
         files.CreateBlock(disk_cache::RANKINGS, block_size, &address[entry]));
   }
 
-  timer2.Done();
+  reporter.AddResult(kMetricCreateDeleteBlocksTimeMs,
+                     random_timer.Elapsed().InMillisecondsF());
   base::RunLoop().RunUntilIdle();
 }
 
@@ -567,12 +627,14 @@ TEST_F(DiskCachePerfTest, SimpleCacheInitialReadPortion) {
 
   disk_cache::SimpleBackendImpl::FlushWorkerPoolForTesting();
   base::RunLoop().RunUntilIdle();
-  LOG(ERROR) << "Early portion:" << elapsed_early << " ms";
-  LOG(ERROR) << "\tPer entry:"
-             << 1000 * (elapsed_early / (kIterations * kBatchSize)) << " us";
-  LOG(ERROR) << "Event loop portion: " << elapsed_late << " ms";
-  LOG(ERROR) << "\tPer entry:"
-             << 1000 * (elapsed_late / (kIterations * kBatchSize)) << " us";
+  auto reporter = SetUpDiskCacheReporter("early_portion");
+  reporter.AddResult(kMetricSimpleCacheInitTotalTimeMs, elapsed_early);
+  reporter.AddResult(kMetricSimpleCacheInitPerEntryTimeUs,
+                     1000 * (elapsed_early / (kIterations * kBatchSize)));
+  reporter = SetUpDiskCacheReporter("event_loop_portion");
+  reporter.AddResult(kMetricSimpleCacheInitTotalTimeMs, elapsed_late);
+  reporter.AddResult(kMetricSimpleCacheInitPerEntryTimeUs,
+                     1000 * (elapsed_late / (kIterations * kBatchSize)));
 }
 
 // Measures how quickly SimpleIndex can compute which entries to evict.
@@ -612,8 +674,9 @@ TEST(SimpleIndexPerfTest, EvictionPerformance) {
     evict_elapsed_ms += timer.Elapsed().InMillisecondsF();
   }
 
-  LOG(ERROR) << "Average time to evict:" << (evict_elapsed_ms / iterations)
-             << "ms";
+  auto reporter = SetUpSimpleIndexReporter("baseline_story");
+  reporter.AddResult(kMetricAverageEvictionTimeMs,
+                     evict_elapsed_ms / iterations);
 }
 
 }  // namespace

@@ -1595,6 +1595,23 @@ std::unique_ptr<base::DictionaryValue> GetOncFromConfigProperties(
   return onc;
 }
 
+mojom::NetworkCertificatePtr GetMojoCert(
+    const NetworkCertificateHandler::Certificate& cert,
+    mojom::CertificateType type) {
+  auto result = mojom::NetworkCertificate::New();
+  result->type = type;
+  result->hash = cert.hash;
+  result->issued_by = cert.issued_by;
+  result->issued_to = cert.issued_to;
+  result->hardware_backed = cert.hardware_backed;
+  result->device_wide = cert.device_wide;
+  if (type == mojom::CertificateType::kServerCA)
+    result->pem_or_id = cert.pem;
+  if (type == mojom::CertificateType::kUserCert)
+    result->pem_or_id = cert.pkcs11_id;
+  return result;
+}
+
 }  // namespace
 
 CrosNetworkConfig::CrosNetworkConfig()
@@ -1602,23 +1619,30 @@ CrosNetworkConfig::CrosNetworkConfig()
           NetworkHandler::Get()->network_state_handler(),
           NetworkHandler::Get()->network_device_handler(),
           NetworkHandler::Get()->managed_network_configuration_handler(),
-          NetworkHandler::Get()->network_connection_handler()) {}
+          NetworkHandler::Get()->network_connection_handler(),
+          NetworkHandler::Get()->network_certificate_handler()) {}
 
 CrosNetworkConfig::CrosNetworkConfig(
     NetworkStateHandler* network_state_handler,
     NetworkDeviceHandler* network_device_handler,
     ManagedNetworkConfigurationHandler* network_configuration_handler,
-    NetworkConnectionHandler* network_connection_handler)
+    NetworkConnectionHandler* network_connection_handler,
+    NetworkCertificateHandler* network_certificate_handler)
     : network_state_handler_(network_state_handler),
       network_device_handler_(network_device_handler),
       network_configuration_handler_(network_configuration_handler),
-      network_connection_handler_(network_connection_handler) {
+      network_connection_handler_(network_connection_handler),
+      network_certificate_handler_(network_certificate_handler) {
   CHECK(network_state_handler);
 }
 
 CrosNetworkConfig::~CrosNetworkConfig() {
   if (network_state_handler_->HasObserver(this))
     network_state_handler_->RemoveObserver(this, FROM_HERE);
+  if (network_certificate_handler_ &&
+      network_certificate_handler_->HasObserver(this)) {
+    network_certificate_handler_->RemoveObserver(this);
+  }
 }
 
 void CrosNetworkConfig::BindRequest(mojom::CrosNetworkConfigRequest request) {
@@ -1630,6 +1654,10 @@ void CrosNetworkConfig::AddObserver(
     mojom::CrosNetworkConfigObserverPtr observer) {
   if (!network_state_handler_->HasObserver(this))
     network_state_handler_->AddObserver(this, FROM_HERE);
+  if (network_certificate_handler_ &&
+      !network_certificate_handler_->HasObserver(this)) {
+    network_certificate_handler_->AddObserver(this);
+  }
   observers_.AddPtr(std::move(observer));
 }
 
@@ -2372,6 +2400,24 @@ void CrosNetworkConfig::GetVpnProviders(GetVpnProvidersCallback callback) {
   std::move(callback).Run(mojo::Clone(vpn_providers_));
 }
 
+void CrosNetworkConfig::GetNetworkCertificates(
+    GetNetworkCertificatesCallback callback) {
+  const std::vector<NetworkCertificateHandler::Certificate>&
+      handler_server_cas =
+          network_certificate_handler_->server_ca_certificates();
+  std::vector<mojom::NetworkCertificatePtr> server_cas;
+  for (const auto& cert : handler_server_cas)
+    server_cas.push_back(GetMojoCert(cert, mojom::CertificateType::kServerCA));
+
+  std::vector<mojom::NetworkCertificatePtr> user_certs;
+  const std::vector<NetworkCertificateHandler::Certificate>&
+      handler_user_certs = network_certificate_handler_->client_certificates();
+  for (const auto& cert : handler_user_certs)
+    user_certs.push_back(GetMojoCert(cert, mojom::CertificateType::kUserCert));
+
+  std::move(callback).Run(std::move(server_cas), std::move(user_certs));
+}
+
 // NetworkStateHandlerObserver
 void CrosNetworkConfig::NetworkListChanged() {
   observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
@@ -2420,6 +2466,12 @@ void CrosNetworkConfig::OnShuttingDown() {
   if (network_state_handler_->HasObserver(this))
     network_state_handler_->RemoveObserver(this, FROM_HERE);
   network_state_handler_ = nullptr;
+}
+
+void CrosNetworkConfig::OnCertificatesChanged() {
+  observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
+    observer->OnNetworkCertificatesChanged();
+  });
 }
 
 const std::string& CrosNetworkConfig::GetServicePathFromGuid(

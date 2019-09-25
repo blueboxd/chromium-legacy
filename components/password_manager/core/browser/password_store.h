@@ -54,10 +54,12 @@ using metrics_util::GaiaPasswordHashChange;
 
 class AffiliatedMatchHelper;
 class PasswordStoreConsumer;
+class PasswordLeakHistoryConsumer;
 class PasswordStoreSigninNotifier;
 class PasswordSyncableService;
 class PasswordSyncBridge;
 struct InteractionsStats;
+struct LeakedCredentials;
 
 #if defined(SYNC_PASSWORD_REUSE_DETECTION_ENABLED)
 using PasswordHashDataList = base::Optional<std::vector<PasswordHashData>>;
@@ -241,6 +243,19 @@ class PasswordStore : protected PasswordStoreSync,
   // Retrieves the statistics for |origin_domain| and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.
   void GetSiteStats(const GURL& origin_domain, PasswordStoreConsumer* consumer);
+
+  // Adds information about credentials leaked on |leaked_credentials.url| for
+  // |leaked_credentials.username|. The first |leaked_credentials.create_time|
+  // is kept, so if the record for given url and username already exists,
+  // the new one will be ignored.
+  void AddLeakedCredentials(const LeakedCredentials& leaked_credentials);
+
+  // Removes information about credentials leaked on |url| for |username|.
+  void RemoveLeakedCredentials(const GURL& url, const base::string16& username);
+
+  // Retrieves all leaked credentials and notifies |consumer| on completion. The
+  // request will be cancelled if the consumer is destroyed.
+  void GetAllLeakedCredentials(PasswordLeakHistoryConsumer* consumer);
 
   // Adds an observer to be notified when the password store data changes.
   void AddObserver(Observer* observer);
@@ -437,6 +452,14 @@ class PasswordStore : protected PasswordStoreSync,
   virtual std::vector<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) = 0;
 
+  // Synchronous implementation for manipulating with information about leaked
+  // credentials.
+  virtual void AddLeakedCredentialsImpl(
+      const LeakedCredentials& leaked_credentials) = 0;
+  virtual void RemoveLeakedCredentialsImpl(const GURL& url,
+                                           const base::string16& username) = 0;
+  virtual std::vector<LeakedCredentials> GetAllLeakedCredentialsImpl() = 0;
+
   // PasswordStoreSync:
   PasswordStoreChangeList AddLoginSync(const autofill::PasswordForm& form,
                                        AddLoginError* error) override;
@@ -511,6 +534,9 @@ class PasswordStore : protected PasswordStoreSync,
   using StatsResult = std::vector<InteractionsStats>;
   using StatsTask = base::OnceCallback<StatsResult()>;
 
+  using LeakedCredentialsResult = std::vector<LeakedCredentials>;
+  using LeakedCredentialsTask = base::OnceCallback<LeakedCredentialsResult()>;
+
   // Called on the main thread after initialization is completed.
   // |success| is true if initialization was successful. Sets the
   // |init_status_|.
@@ -537,6 +563,13 @@ class PasswordStore : protected PasswordStoreSync,
   void PostStatsTaskAndReplyToConsumerWithResult(
       PasswordStoreConsumer* consumer,
       StatsTask task);
+
+  // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
+  // Invokes |consumer|->OnGetLeakedCredentials() on the caller's thread with
+  // the result.
+  void PostLeakedCredentialsTaskAndReplyToConsumerWithResult(
+      PasswordLeakHistoryConsumer* consumer,
+      LeakedCredentialsTask task);
 
   // The following methods notify observers that the password store may have
   // been modified via NotifyLoginsChanged(). Note that there is no guarantee

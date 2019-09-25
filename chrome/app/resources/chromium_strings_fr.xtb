@@ -117,7 +117,6 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="5416696090975899932">Impossible d'afficher l'aperçu avant impression dans Chromium, car la visionneuse de PDF intégrée est absente.</translation>
 <translation id="5427571867875391349">Définir Chromium comme navigateur par défaut</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Bêta</translation>
-<translation id="5466153949126434691">Chromium est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version. Une fois le téléchargement terminé, Chromium redémarre et vous pouvez de nouveau l'utiliser.</translation>
 <translation id="5479196819031988440">Chromium OS ne peut pas ouvrir cette page</translation>
 <translation id="5480860683791598150">Chromium a besoin d'accéder à votre position pour la partager avec ce site</translation>
 <translation id="549669000822060376">Veuillez patienter pendant que Chromium installe les dernières mises à jour du système.</translation>
@@ -212,7 +211,6 @@ Chromium ne peut pas récupérer vos paramètres.</translation>
 <translation id="7867198900892795913">Échec de l'installation de la dernière version de Chromium. Vous ne disposez donc pas des nouvelles fonctionnalités, ni des correctifs de sécurité.</translation>
 <translation id="7901117350626490574">Une nouvelle mise à jour est disponible pour Chromium et sera installée dès que vous le relancerez.</translation>
 <translation id="7937630085815544518">Vous étiez connecté à Chromium en tant que <ph name="USER_EMAIL_ADDRESS" />. Veuillez utiliser le même compte pour vous reconnecter.</translation>
-<translation id="7962572577636132072">Chromium est automatiquement mis à jour pour vous permettre de toujours disposer de la dernière version.</translation>
 <translation id="7975919845073681630">Ceci est une installation secondaire de Chromium. Vous ne pouvez pas le définir comme navigateur par défaut.</translation>
 <translation id="7979877361127045932">Masquer dans le menu Chromium</translation>
 <translation id="8013436988911883588">Une fois l'accès à une ressource accordé à Chromium, les sites Web sont également en mesure de vous demander l'accès.</translation>

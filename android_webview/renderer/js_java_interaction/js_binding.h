@@ -26,6 +26,7 @@ class RenderFrame;
 }  // namespace content
 
 namespace android_webview {
+class JsJavaConfigurator;
 // A gin::Wrappable class used for providing JavaScript API. We will inject the
 // object of this class to JavaScript world in JsJavaConfigurator.
 // JsJavaConfigurator will own at most one instance of this class. When the
@@ -38,7 +39,8 @@ class JsBinding : public gin::Wrappable<JsBinding>,
 
   static std::unique_ptr<JsBinding> Install(
       content::RenderFrame* render_frame,
-      const base::string16& js_object_name);
+      const base::string16& js_object_name,
+      JsJavaConfigurator* js_java_configurator);
 
   // mojom::JavaToJsMessaging implementation.
   void OnPostMessage(const base::string16& message) override;
@@ -48,7 +50,9 @@ class JsBinding : public gin::Wrappable<JsBinding>,
   ~JsBinding() final;
 
  private:
-  explicit JsBinding(content::RenderFrame* render_frame);
+  explicit JsBinding(content::RenderFrame* render_frame,
+                     const base::string16& js_object_name,
+                     JsJavaConfigurator* js_java_configurator);
 
   // gin::Wrappable implementation
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
@@ -66,11 +70,14 @@ class JsBinding : public gin::Wrappable<JsBinding>,
   void SetOnMessage(v8::Isolate* isolate, v8::Local<v8::Value> value);
 
   content::RenderFrame* render_frame_;
+  base::string16 js_object_name_;
   v8::Global<v8::Function> on_message_;
   std::vector<v8::Global<v8::Function>> listeners_;
+  // |js_java_configurator| owns JsBinding objects, so it will out live
+  // JsBinding's life cycle, it is safe to access it.
+  JsJavaConfigurator* js_java_configurator_;
 
   mojo::Receiver<mojom::JavaToJsMessaging> receiver_{this};
-  mojo::AssociatedRemote<mojom::JsToJavaMessaging> js_to_java_messaging_;
 
   DISALLOW_COPY_AND_ASSIGN(JsBinding);
 };

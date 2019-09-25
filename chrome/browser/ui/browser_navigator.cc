@@ -19,7 +19,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/prerender/prerender_manager_factory.h"
-#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/renderer_host/chrome_navigation_ui_data.h"
 #include "chrome/browser/signin/signin_promo.h"
@@ -342,7 +342,7 @@ void LoadURLInContents(WebContents* target_contents,
     load_url_params.navigation_ui_data =
         ChromeNavigationUIData::CreateForMainFrameNavigation(
             target_contents, params->disposition,
-            PreviewsLitePageDecider::GeneratePageIdForProfile(
+            PreviewsLitePageRedirectDecider::GeneratePageIdForProfile(
                 GetSourceProfile(params)));
   }
 

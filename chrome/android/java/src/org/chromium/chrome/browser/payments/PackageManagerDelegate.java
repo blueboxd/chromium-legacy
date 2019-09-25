@@ -19,6 +19,7 @@ import android.os.StrictMode.ThreadPolicy;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PackageManagerUtils;
 
 import java.util.List;
 
@@ -50,33 +51,12 @@ public class PackageManagerDelegate {
     }
 
     /**
-     * Retrieves the single activity that matches the given intent, or null if none found.
-     * @param intent The intent to query.
-     * @return The matching activity.
-     */
-    public ResolveInfo resolveActivity(Intent intent) {
-        ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            return ContextUtils.getApplicationContext().getPackageManager().resolveActivity(
-                    intent, 0);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
-    }
-
-    /**
      * Retrieves the list of activities that can respond to the given intent.
      * @param intent The intent to query.
      * @return The list of activities that can respond to the intent.
      */
     public List<ResolveInfo> getActivitiesThatCanRespondToIntent(Intent intent) {
-        ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            return ContextUtils.getApplicationContext().getPackageManager().queryIntentActivities(
-                    intent, 0);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        return PackageManagerUtils.queryIntentActivities(intent, 0);
     }
 
     /**
@@ -87,13 +67,7 @@ public class PackageManagerDelegate {
      * @return The list of activities that can respond to the intent.
      */
     public List<ResolveInfo> getActivitiesThatCanRespondToIntentWithMetaData(Intent intent) {
-        ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            return ContextUtils.getApplicationContext().getPackageManager().queryIntentActivities(
-                    intent, PackageManager.GET_META_DATA);
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        return PackageManagerUtils.queryIntentActivities(intent, PackageManager.GET_META_DATA);
     }
 
     /**

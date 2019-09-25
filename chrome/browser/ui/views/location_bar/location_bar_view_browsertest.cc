@@ -28,7 +28,6 @@
 #include "components/security_state/core/security_state.h"
 #include "components/zoom/zoom_controller.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/test/url_loader_interceptor.h"
 #include "net/cert/ct_policy_status.h"
 #include "net/ssl/ssl_info.h"
@@ -36,6 +35,7 @@
 #include "net/test/test_data_directory.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_response.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/base/test/material_design_controller_test_api.h"
 
 class LocationBarViewBrowserTest : public InProcessBrowserTest {
@@ -73,7 +73,7 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, LocationBarDecoration) {
 
   // Altering zoom should display a bubble. Note ZoomBubbleView closes
   // asynchronously, so precede checks with a run loop flush.
-  zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(1.5));
+  zoom_controller->SetZoomLevel(blink::PageZoomFactorToZoomLevel(1.5));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(zoom_view->GetVisible());
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
@@ -85,13 +85,13 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, LocationBarDecoration) {
   EXPECT_FALSE(ZoomBubbleView::GetZoomBubble());
 
   // Show the bubble again.
-  zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(2.0));
+  zoom_controller->SetZoomLevel(blink::PageZoomFactorToZoomLevel(2.0));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(zoom_view->GetVisible());
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
 
   // Remains visible at 100% until the bubble is closed.
-  zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(1.0));
+  zoom_controller->SetZoomLevel(blink::PageZoomFactorToZoomLevel(1.0));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(zoom_view->GetVisible());
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());
@@ -114,7 +114,7 @@ IN_PROC_BROWSER_TEST_F(LocationBarViewBrowserTest, BubblesCloseOnHide) {
   ASSERT_TRUE(zoom_view);
   EXPECT_FALSE(zoom_view->GetVisible());
 
-  zoom_controller->SetZoomLevel(content::ZoomFactorToZoomLevel(1.5));
+  zoom_controller->SetZoomLevel(blink::PageZoomFactorToZoomLevel(1.5));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(zoom_view->GetVisible());
   EXPECT_TRUE(ZoomBubbleView::GetZoomBubble());

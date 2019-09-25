@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/send_tab_to_self/send_tab_to_self_sub_menu_model.h"
 
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/sync/send_tab_to_self_sync_service_factory.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"

@@ -353,6 +353,14 @@ void IDBDatabase::deleteObjectStore(const String& name,
 IDBTransaction* IDBDatabase::transaction(
     ScriptState* script_state,
     const StringOrStringSequence& store_names,
+    const String& mode,
+    ExceptionState& exception_state) {
+  return transaction(script_state, store_names, mode, nullptr, exception_state);
+}
+
+IDBTransaction* IDBDatabase::transaction(
+    ScriptState* script_state,
+    const StringOrStringSequence& store_names,
     const String& mode_string,
     const IDBTransactionOptions* options,
     ExceptionState& exception_state) {
@@ -423,7 +431,8 @@ IDBTransaction* IDBDatabase::transaction(
 
   mojom::IDBTransactionDurability durability =
       mojom::IDBTransactionDurability::Default;
-  if (RuntimeEnabledFeatures::IDBRelaxedDurabilityEnabled() && options) {
+  if (options) {
+    DCHECK(RuntimeEnabledFeatures::IDBRelaxedDurabilityEnabled());
     if (options->durability() == "relaxed") {
       durability = mojom::IDBTransactionDurability::Relaxed;
     } else if (options->durability() == "strict") {

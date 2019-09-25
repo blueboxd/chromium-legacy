@@ -193,6 +193,9 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual void FrameSizeChanged(RenderFrameHost* render_frame_host,
                                 const gfx::Size& frame_size) {}
 
+  // The DOMContentLoaded handler in the frame has completed.
+  virtual void DOMContentLoaded(RenderFrameHost* render_frame_host) {}
+
   // The onload handler in the frame has completed. Only called for the top-
   // level frame.
   virtual void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) {}

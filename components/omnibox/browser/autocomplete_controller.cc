@@ -370,6 +370,8 @@ void AutocompleteController::Start(const AutocompleteInput& input) {
         name, 1, 1000, 50, base::Histogram::kUmaTargetedHistogramFlag);
     counter->Add(static_cast<int>((end_time - start_time).InMilliseconds()));
   }
+  base::UmaHistogramBoolean("Omnibox.Start.WantAsyncMatches",
+                            input.want_asynchronous_matches());
 
   // This will usually set |done_| to false, unless all of the providers are
   // are finished after the synchronous pass we just completed.
@@ -596,6 +598,10 @@ void AutocompleteController::UpdateResult(
     // StartExpireTimer.
     result_.CopyOldMatches(input_, &last_result, template_url_service_);
   }
+
+  // Log metrics for how many matches are asynchronously changed.
+  if (!in_start_)
+    AutocompleteResult::LogAsynchronousUpdateMetrics(last_result, result_);
 
   UpdateKeywordDescriptions(&result_);
   UpdateAssociatedKeywords(&result_);

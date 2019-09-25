@@ -8,3 +8,5 @@
 -PaymentHandlerEnableDelegationsTest.*
 -PaymentHandlerExploitTest.*
 -PaymentRequestCanMakePaymentQueryCCTest.*
+-PaymentRequestCanMakePaymentQueryPMITest.*
+-PaymentRequestCanMakePaymentQueryTest.*

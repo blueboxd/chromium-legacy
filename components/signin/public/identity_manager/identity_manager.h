@@ -597,10 +597,14 @@ class IdentityManager : public KeyedService,
 
   // Figures out and returns the current unconsented primary account based on
   // current cookies.
+  // Returns nullopt if the account could not be computed, and CoreAccountInfo()
+  // if there is no account.
   base::Optional<CoreAccountInfo> ComputeUnconsentedPrimaryAccountInfo() const;
 
   // PrimaryAccountManager::Observer:
   void GoogleSigninSucceeded(const CoreAccountInfo& account_info) override;
+  void UnconsentedPrimaryAccountChanged(
+      const CoreAccountInfo& account_info) override;
 #if !defined(OS_CHROMEOS)
   void GoogleSignedOut(const CoreAccountInfo& account_info) override;
 #endif
@@ -666,10 +670,6 @@ class IdentityManager : public KeyedService,
   base::ObserverList<Observer, true>::Unchecked observer_list_;
   base::ObserverList<DiagnosticsObserver, true>::Unchecked
       diagnostics_observer_list_;
-
-  // If HasPrimaryAccount() is true, then |unconsented_primary_account_|
-  // must be equal to the value returned by GetPrimaryAccountInfo().
-  base::Optional<CoreAccountInfo> unconsented_primary_account_;
 
 #if defined(OS_ANDROID)
   // Java-side IdentityManager object.

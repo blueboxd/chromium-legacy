@@ -52,6 +52,7 @@ import android.widget.Toast;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.StrictModeContext;
 
 import java.io.File;
@@ -703,7 +704,7 @@ public class WebViewBrowserActivity extends AppCompatActivity {
         // check if there is a specialized app that had registered itself
         // for this kind of an intent.
         Matcher m = BROWSER_URI_SCHEMA.matcher(url);
-        if (m.matches() && !isSpecializedHandlerAvailable(context, intent)) {
+        if (m.matches() && !isSpecializedHandlerAvailable(intent)) {
             return false;
         }
         // Sanitize the Intent, ensuring web pages can not bypass browser
@@ -737,10 +738,9 @@ public class WebViewBrowserActivity extends AppCompatActivity {
     /**
      * Search for intent handlers that are specific to the scheme of the URL in the intent.
      */
-    private static boolean isSpecializedHandlerAvailable(Context context, Intent intent) {
-        PackageManager pm = context.getPackageManager();
-        List<ResolveInfo> handlers = pm.queryIntentActivities(intent,
-                PackageManager.GET_RESOLVED_FILTER);
+    private static boolean isSpecializedHandlerAvailable(Intent intent) {
+        List<ResolveInfo> handlers = PackageManagerUtils.queryIntentActivities(
+                intent, PackageManager.GET_RESOLVED_FILTER);
         if (handlers == null || handlers.size() == 0) {
             return false;
         }

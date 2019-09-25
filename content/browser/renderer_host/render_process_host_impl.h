@@ -512,6 +512,13 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::LockManager> receiver) override;
 
+  // Binds |receiver| to the PermissionService instance owned by
+  // |permission_service_context_|, and is used by workers via
+  // BrowserInterfaceBroker.
+  void CreatePermissionService(
+      const url::Origin& origin,
+      mojo::PendingReceiver<blink::mojom::PermissionService> receiver) override;
+
   // Adds a CORB (Cross-Origin Read Blocking) exception for |process_id|.  The
   // exception will be removed when the corresponding RenderProcessHostImpl is
   // destroyed (see |cleanup_corb_exception_for_plugin_upon_destruction_|).

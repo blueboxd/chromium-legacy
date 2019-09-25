@@ -320,6 +320,22 @@ void RecordDeltaBetweenTimeNowAndPerformanceCountHistogram(
   }
 }
 
+int GetFlagsFromRawInputMessage(RAWINPUT* input) {
+  int flags = ui::EF_NONE;
+  if (input->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_1_DOWN)
+    flags |= ui::EF_LEFT_MOUSE_BUTTON;
+  if (input->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_2_DOWN)
+    flags |= ui::EF_RIGHT_MOUSE_BUTTON;
+  if (input->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_3_DOWN)
+    flags |= ui::EF_MIDDLE_MOUSE_BUTTON;
+  if (input->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_4_DOWN)
+    flags |= ui::EF_BACK_MOUSE_BUTTON;
+  if (input->data.mouse.usButtonFlags & RI_MOUSE_BUTTON_5_DOWN)
+    flags |= ui::EF_FORWARD_MOUSE_BUTTON;
+
+  return ui::GetModifiersFromKeyState() | flags;
+}
+
 constexpr auto kTouchDownContextResetTimeout =
     base::TimeDelta::FromMilliseconds(500);
 
@@ -993,6 +1009,18 @@ bool HWNDMessageHandler::HasChildRenderingWindow() {
       hwnd());
 }
 
+std::unique_ptr<aura::ScopedEnableUnadjustedMouseEvents>
+HWNDMessageHandler::RegisterUnadjustedMouseEvent() {
+  if (!base::FeatureList::IsEnabled(::features::kPointerLockOptions))
+    return nullptr;
+
+  std::unique_ptr<ScopedEnableUnadjustedMouseEventsWin> scoped_enable =
+      ScopedEnableUnadjustedMouseEventsWin::StartMonitor(this);
+
+  DCHECK(using_wm_input_);
+  return scoped_enable;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // HWNDMessageHandler, gfx::WindowImpl overrides:
 
@@ -1127,6 +1155,16 @@ LRESULT HWNDMessageHandler::HandlePointerMessage(unsigned int message,
                                                  bool* handled) {
   base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
   LRESULT ret = OnPointerEvent(message, w_param, l_param);
+  *handled = !ref.get() || msg_handled_;
+  return ret;
+}
+
+LRESULT HWNDMessageHandler::HandleInputMessage(unsigned int message,
+                                               WPARAM w_param,
+                                               LPARAM l_param,
+                                               bool* handled) {
+  base::WeakPtr<HWNDMessageHandler> ref(msg_handler_weak_factory_.GetWeakPtr());
+  LRESULT ret = OnInputEvent(message, w_param, l_param);
   *handled = !ref.get() || msg_handled_;
   return ret;
 }
@@ -2021,6 +2059,54 @@ LRESULT HWNDMessageHandler::OnPointerEvent(UINT message,
   }
   SetMsgHandled(FALSE);
   return -1;
+}
+
+LRESULT HWNDMessageHandler::OnInputEvent(UINT message,
+                                         WPARAM w_param,
+                                         LPARAM l_param) {
+  if (!using_wm_input_)
+    return -1;
+
+  HRAWINPUT input_handle = reinterpret_cast<HRAWINPUT>(l_param);
+
+  // Get the size of the input record.
+  UINT size = 0;
+  UINT result = ::GetRawInputData(input_handle, RID_INPUT, nullptr, &size,
+                                  sizeof(RAWINPUTHEADER));
+  if (result == static_cast<UINT>(-1)) {
+    PLOG(ERROR) << "GetRawInputData() failed";
+    return 0;
+  }
+  DCHECK_EQ(0u, result);
+
+  // Retrieve the input record.
+  uint8_t buffer[size];
+  RAWINPUT* input = reinterpret_cast<RAWINPUT*>(&buffer);
+  result = ::GetRawInputData(input_handle, RID_INPUT, &buffer, &size,
+                             sizeof(RAWINPUTHEADER));
+  if (result == static_cast<UINT>(-1)) {
+    PLOG(ERROR) << "GetRawInputData() failed";
+    return 0;
+  }
+  DCHECK_EQ(size, result);
+
+  if (input->header.dwType == RIM_TYPEMOUSE &&
+      input->data.mouse.usButtonFlags != RI_MOUSE_WHEEL) {
+    POINT cursor_pos = {0};
+    ::GetCursorPos(&cursor_pos);
+    ScreenToClient(hwnd(), &cursor_pos);
+    ui::MouseEvent event(
+        ui::ET_MOUSE_MOVED, gfx::PointF(cursor_pos.x, cursor_pos.y),
+        gfx::PointF(cursor_pos.x, cursor_pos.y), ui::EventTimeForNow(),
+        GetFlagsFromRawInputMessage(input), 0);
+    if (!(input->data.mouse.usFlags & MOUSE_MOVE_ABSOLUTE)) {
+      ui::MouseEvent::DispatcherApi(&event).set_movement(
+          gfx::Vector2dF(input->data.mouse.lLastX, input->data.mouse.lLastY));
+    }
+    delegate_->HandleMouseEvent(&event);
+  }
+
+  return ::DefRawInputProc(&input, 1, sizeof(RAWINPUTHEADER));
 }
 
 void HWNDMessageHandler::OnMove(const gfx::Point& point) {
@@ -2971,6 +3057,13 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
             delegate_->HandleMouseEvent(&mouse_wheel_event))
                ? 0
                : 1;
+  }
+
+  // Suppress |ET_MOUSE_MOVED| and |ET_MOUSE_DRAGGED| events from WM_MOUSE*
+  // messages when using WM_INPUT.
+  if (using_wm_input_ && (event.type() == ui::ET_MOUSE_MOVED ||
+                          event.type() == ui::ET_MOUSE_DRAGGED)) {
+    return 0;
   }
 
   // There are cases where the code handling the message destroys the window,

@@ -121,14 +121,12 @@ Polymer({
     }
   },
 
-  /**
-   * @param {Event} e
-   * @private
-   */
+  /** @private */
   showSearch_: function(e) {
-    if (e.target != this.$.clearSearch) {
-      this.showingSearch = true;
-    }
+    const clearSearchButton = this.$$('#clearSearch');
+    const wasClearSearchClicked = e.composedPath().includes(clearSearchButton);
+
+    this.showingSearch = !wasClearSearchClicked;
   },
 
   /**

@@ -911,6 +911,17 @@ var ENTRIES = {
     typeText: 'DEB file'
   }),
 
+  tiniFile: new TestEntryInfo({
+    type: EntryType.FILE,
+    sourceFileName: 'archive.tar.gz',
+    targetPath: 'test.tini',
+    mimeType: 'application/gzip',
+    lastModifiedTime: 'Jan 1, 2014, 1:00 AM',
+    nameText: 'test.tini',
+    sizeText: '439 bytes',
+    typeText: 'Crostini image file'
+  }),
+
   hiddenFile: new TestEntryInfo({
     type: EntryType.FILE,
     sourceFileName: 'text.txt',

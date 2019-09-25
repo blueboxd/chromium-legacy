@@ -147,11 +147,12 @@ void NetExportFileWriter::StartNetLog(
 
   NotifyStateObserversAsync();
 
-  network_context->CreateNetLogExporter(mojo::MakeRequest(&net_log_exporter_));
+  network_context->CreateNetLogExporter(
+      net_log_exporter_.BindNewPipeAndPassReceiver());
   base::Value custom_constants = base::Value::FromUniquePtrValue(
       GetPlatformConstantsForNetLog(command_line_string, channel_string));
 
-  net_log_exporter_.set_connection_error_handler(base::BindOnce(
+  net_log_exporter_.set_disconnect_handler(base::BindOnce(
       &NetExportFileWriter::OnConnectionError, base::Unretained(this)));
 
   base::PostTaskAndReplyWithResult(

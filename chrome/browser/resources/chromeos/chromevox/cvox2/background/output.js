@@ -138,6 +138,16 @@ Output.ROLE_INFO_ = {
   alert: {msgId: 'role_alert'},
   alertDialog: {msgId: 'role_alertdialog', outputContextFirst: true},
   article: {msgId: 'role_article', inherits: 'abstractItem'},
+  annotationAttribution:
+      {msgId: 'role_annotation_attribution', inherits: 'abstractContainer'},
+  annotationCommentary:
+      {msgId: 'role_annotation_commentary', inherits: 'abstractContainer'},
+  annotationPresence:
+      {msgId: 'role_annotation_presence', inherits: 'abstractContainer'},
+  annotationRevision:
+      {msgId: 'role_annotation_revision', inherits: 'abstractContainer'},
+  annotationSuggestion:
+      {msgId: 'role_annotation_suggestion', inherits: 'abstractContainer'},
   application: {msgId: 'role_application', inherits: 'abstractContainer'},
   banner: {msgId: 'role_banner', inherits: 'abstractContainer'},
   button: {msgId: 'role_button', earconId: 'BUTTON'},

@@ -372,15 +372,14 @@ bool PathProvider(int key, base::FilePath* result) {
       cur = cur.Append(FILE_PATH_LITERAL("pnacl"));
       break;
 #if BUILDFLAG(ENABLE_WIDEVINE) && BUILDFLAG(ENABLE_LIBRARY_CDMS)
-    // TODO(crbug.com/663554): Remove this after component updated CDM is
-    // supported on Linux and ChromeOS.
-    case chrome::FILE_WIDEVINE_CDM:
+    case chrome::DIR_BUNDLED_WIDEVINE_CDM:
       if (!GetComponentDirectory(&cur))
         return false;
-      cur =
-          cur.Append(
-                 media::GetPlatformSpecificDirectory(kWidevineCdmBaseDirectory))
-              .AppendASCII(base::GetNativeLibraryName(kWidevineCdmLibraryName));
+#if !defined(OS_CHROMEOS)
+      // TODO(crbug.com/971433): Move Widevine CDM to a separate folder on
+      // ChromeOS so that the manifest can be included.
+      cur = cur.AppendASCII(kWidevineCdmBaseDirectory);
+#endif  // !defined(OS_CHROMEOS)
       break;
 #endif  // BUILDFLAG(ENABLE_WIDEVINE) && BUILDFLAG(ENABLE_LIBRARY_CDMS)
     case chrome::FILE_RESOURCES_PACK:  // Falls through.

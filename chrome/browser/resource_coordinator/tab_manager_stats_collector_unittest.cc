@@ -10,6 +10,7 @@
 
 #include "base/bind.h"
 #include "base/macros.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"

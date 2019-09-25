@@ -79,4 +79,14 @@ TEST_F(WebGPUFormatTest, DissociateMailbox) {
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 
+TEST_F(WebGPUFormatTest, RequestAdapter) {
+  cmds::RequestAdapter& cmd = *GetBufferAs<cmds::RequestAdapter>();
+  void* next_cmd = cmd.Set(&cmd, static_cast<uint32_t>(11));
+  EXPECT_EQ(static_cast<uint32_t>(cmds::RequestAdapter::kCmdId),
+            cmd.header.command);
+  EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
+  EXPECT_EQ(static_cast<uint32_t>(11), cmd.power_preference);
+  CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
+}
+
 #endif  // GPU_COMMAND_BUFFER_COMMON_WEBGPU_CMD_FORMAT_TEST_AUTOGEN_H_

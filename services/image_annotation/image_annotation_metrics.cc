@@ -15,18 +15,19 @@
 
 namespace image_annotation {
 
-using namespace metrics_internal;
+using metrics_internal::kAnnotationConfidence;
+using metrics_internal::kAnnotationEmpty;
 
 void ReportCacheHit(const bool cache_hit) {
-  UMA_HISTOGRAM_BOOLEAN(kCacheHit, cache_hit);
+  UMA_HISTOGRAM_BOOLEAN(metrics_internal::kCacheHit, cache_hit);
 }
 
 void ReportJsonParseSuccess(const bool success) {
-  UMA_HISTOGRAM_BOOLEAN(kJsonParseSuccess, success);
+  UMA_HISTOGRAM_BOOLEAN(metrics_internal::kJsonParseSuccess, success);
 }
 
 void ReportPixelFetchSuccess(const bool success) {
-  UMA_HISTOGRAM_BOOLEAN(kPixelFetchSuccess, success);
+  UMA_HISTOGRAM_BOOLEAN(metrics_internal::kPixelFetchSuccess, success);
 }
 
 void ReportOcrAnnotation(const double confidence, const bool empty) {
@@ -58,74 +59,78 @@ void ReportDescAnnotation(const mojom::AnnotationType type,
   base::UmaHistogramBoolean(
       base::StringPrintf(kAnnotationEmpty, type_name.c_str()), empty);
 
-  UMA_HISTOGRAM_ENUMERATION(kDescType, type);
+  UMA_HISTOGRAM_ENUMERATION(metrics_internal::kDescType, type);
 }
 
 void ReportDescFailure(const DescFailureReason reason) {
-  UMA_HISTOGRAM_ENUMERATION(kDescFailure, reason);
+  UMA_HISTOGRAM_ENUMERATION(metrics_internal::kDescFailure, reason);
 }
 
 void ReportServerNetError(const int code) {
-  base::UmaHistogramSparse(kServerNetError, code);
+  base::UmaHistogramSparse(metrics_internal::kServerNetError, code);
 }
 
 void ReportServerResponseCode(const int code) {
-  base::UmaHistogramSparse(kServerHttpResponseCode, code);
+  base::UmaHistogramSparse(metrics_internal::kServerHttpResponseCode, code);
 }
 
 void ReportServerLatency(const base::TimeDelta latency) {
   // Use a custom time histogram with ~10 buckets per order of magnitude between
   // 1ms and 30sec.
-  UMA_HISTOGRAM_CUSTOM_TIMES(kServerLatency, latency,
+  UMA_HISTOGRAM_CUSTOM_TIMES(metrics_internal::kServerLatency, latency,
                              base::TimeDelta::FromMilliseconds(1),
                              base::TimeDelta::FromSeconds(30), 50);
 }
 
 void ReportImageRequestIncludesDesc(const bool includes_desc) {
-  UMA_HISTOGRAM_BOOLEAN(kImageRequestIncludesDesc, includes_desc);
+  UMA_HISTOGRAM_BOOLEAN(metrics_internal::kImageRequestIncludesDesc,
+                        includes_desc);
 }
 
 void ReportServerRequestSizeKB(const size_t size_kb) {
   // Use a custom memory histogram with ~10 buckets per order of magnitude
   // between 1KB and 30MB.
-  UMA_HISTOGRAM_CUSTOM_COUNTS(kServerRequestSize, size_kb, 1, 30000, 50);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(metrics_internal::kServerRequestSize, size_kb, 1,
+                              30000, 50);
 }
 
 void ReportServerResponseSizeBytes(const size_t size_bytes) {
   // Use a custom memory histogram with ~10 buckets per order of magnitude
   // between 1byte and 1MB (at which point we stop downloading).
-  UMA_HISTOGRAM_CUSTOM_COUNTS(kServerResponseSize, size_bytes, 1, 1000000, 70);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(metrics_internal::kServerResponseSize, size_bytes,
+                              1, 1000000, 70);
 }
 
 void ReportOcrStatus(const int status) {
-  base::UmaHistogramSparse(base::StringPrintf(kAnnotationStatus, "Ocr"),
-                           status);
+  base::UmaHistogramSparse(
+      base::StringPrintf(metrics_internal::kAnnotationStatus, "Ocr"), status);
 }
 
 void ReportDescStatus(const int status) {
-  base::UmaHistogramSparse(base::StringPrintf(kAnnotationStatus, "Desc"),
-                           status);
+  base::UmaHistogramSparse(
+      base::StringPrintf(metrics_internal::kAnnotationStatus, "Desc"), status);
 }
 
 void ReportEngineKnown(const bool known) {
-  UMA_HISTOGRAM_BOOLEAN(kEngineKnown, known);
+  UMA_HISTOGRAM_BOOLEAN(metrics_internal::kEngineKnown, known);
 }
 
 void ReportSourcePixelCount(const size_t pixel_count) {
   // Use a custom memory histogram with ~10 buckets per order of magnitude
   // 1x1 and 8K image resolution.
-  UMA_HISTOGRAM_CUSTOM_COUNTS(kSourcePixelCount, pixel_count, 1, 7680 * 4320,
-                              80);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(metrics_internal::kSourcePixelCount, pixel_count,
+                              1, 7680 * 4320, 80);
 }
 
 void ReportEncodedJpegSize(const size_t size_bytes) {
   // Use a custom memory histogram with ~10 buckets per order of magnitude
   // between 1byte and 1MB.
-  UMA_HISTOGRAM_CUSTOM_COUNTS(kEncodedJpegSize, size_bytes, 1, 1000000, 70);
+  UMA_HISTOGRAM_CUSTOM_COUNTS(metrics_internal::kEncodedJpegSize, size_bytes, 1,
+                              1000000, 70);
 }
 
 void ReportClientResult(const ClientResult result) {
-  UMA_HISTOGRAM_ENUMERATION(kClientResult, result);
+  UMA_HISTOGRAM_ENUMERATION(metrics_internal::kClientResult, result);
 }
 
 }  // namespace image_annotation

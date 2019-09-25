@@ -14,7 +14,8 @@
 #define WEBGPU_COMMAND_LIST(OP)           \
   OP(DawnCommands)              /* 256 */ \
   OP(AssociateMailboxImmediate) /* 257 */ \
-  OP(DissociateMailbox)         /* 258 */
+  OP(DissociateMailbox)         /* 258 */ \
+  OP(RequestAdapter)            /* 259 */
 
 enum CommandId {
   kOneBeforeStartPoint =

@@ -37,6 +37,7 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.UserData;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
@@ -851,9 +852,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             return;
         }
 
-        PackageManager packageManager = mContext.getPackageManager();
         List<ResolveInfo> supportedActivities =
-                packageManager.queryIntentActivities(createProcessTextIntent(), 0);
+                PackageManagerUtils.queryIntentActivities(createProcessTextIntent(), 0);
         for (int i = 0; i < supportedActivities.size(); i++) {
             ResolveInfo resolveInfo = supportedActivities.get(i);
             CharSequence label = resolveInfo.loadLabel(mContext.getPackageManager());
@@ -1486,10 +1486,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     private boolean isShareAvailable() {
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        return mContext.getPackageManager()
-                       .queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
-                       .size()
-                > 0;
+        return !PackageManagerUtils.queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                        .isEmpty();
     }
 
     // The callback class that delivers the result from a SmartSelectionClient.

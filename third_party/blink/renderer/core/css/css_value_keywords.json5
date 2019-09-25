@@ -1205,5 +1205,9 @@
     // (forced-colors:) media feature
     // none
     "active",
+
+    // (navigation-controls) media feature
+    // none
+    "back-button",
   ],
 }

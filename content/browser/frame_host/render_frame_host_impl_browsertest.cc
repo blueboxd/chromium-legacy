@@ -3147,4 +3147,65 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   }
 }
 
+namespace {
+
+// Calls |callback| whenever a DOMContentLoaded is reached in
+// |render_frame_host|.
+class DOMContentLoadedObserver : public WebContentsObserver {
+ public:
+  DOMContentLoadedObserver(WebContents* web_contents,
+                           base::RepeatingClosure callback)
+      : WebContentsObserver(web_contents), callback_(callback) {}
+
+ protected:
+  // WebContentsObserver:
+  void DocumentLoadedInFrame(RenderFrameHost* render_Frame_host) override {
+    callback_.Run();
+  }
+
+ private:
+  base::RepeatingClosure callback_;
+  DISALLOW_COPY_AND_ASSIGN(DOMContentLoadedObserver);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(ContentBrowserTest, DocumentLoaded) {
+  net::test_server::ControllableHttpResponse main_document_response(
+      embedded_test_server(), "/main_document");
+
+  EXPECT_TRUE(embedded_test_server()->Start());
+  GURL main_document_url(embedded_test_server()->GetURL("/main_document"));
+
+  WebContents* web_contents = shell()->web_contents();
+  RenderFrameHostImpl* rfhi =
+      static_cast<RenderFrameHostImpl*>(web_contents->GetMainFrame());
+  TestNavigationObserver load_observer(web_contents);
+  base::RunLoop loop_until_dcl;
+  DOMContentLoadedObserver dcl_observer(web_contents,
+                                        loop_until_dcl.QuitClosure());
+  shell()->LoadURL(main_document_url);
+
+  EXPECT_FALSE(rfhi->dom_content_loaded());
+
+  main_document_response.WaitForRequest();
+  main_document_response.Send(
+      "HTTP/1.1 200 OK\r\n"
+      "Connection: close\r\n"
+      "Content-Type: text/html; charset=utf-8\r\n"
+      "\r\n"
+      "<img src='/hung'>");
+
+  load_observer.WaitForNavigationFinished();
+  EXPECT_FALSE(rfhi->dom_content_loaded());
+
+  main_document_response.Done();
+
+  // We should reach DOMContentLoaded, but not onload, since the image resource
+  // is still loading.
+  loop_until_dcl.Run();
+  EXPECT_TRUE(rfhi->is_loading());
+  EXPECT_TRUE(rfhi->dom_content_loaded());
+}
+
 }  // namespace content

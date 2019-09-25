@@ -345,7 +345,6 @@ test.customizeMenu.testMenu_BackgroundPreviewApplied = function() {
 
   // Check that correct styling is applied to the page.
   assertTrue(document.body.classList.contains('alternate-logo'));
-  assertTrue(document.body.classList.contains('non-white-bg'));
 };
 
 /**

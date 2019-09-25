@@ -115,7 +115,6 @@
 <translation id="5416696090975899932">Chromium no puede mostrar la vista previa de impresión si falta el visor de PDF incorporado.</translation>
 <translation id="5427571867875391349">Establecer Chromium como navegador predeterminado</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" />: Versión Beta de Chromium</translation>
-<translation id="5466153949126434691">Chromium se actualiza automáticamente para que siempre tengas la versión más reciente. Cuando se complete esta descarga, Chromium se reiniciará y podrás usarlo.</translation>
 <translation id="5479196819031988440">El Sistema operativo Chromium no puede abrir esta página.</translation>
 <translation id="5480860683791598150">Chromium necesita acceder a tu ubicación para compartirla con este sitio</translation>
 <translation id="549669000822060376">Espera mientras Chromium instala las últimas actualizaciones del sistema.</translation>
@@ -207,7 +206,6 @@
 <translation id="7867198900892795913">Chromium no se pudo actualizar a la última versión, por lo que te estás perdiendo las nuevas funciones y correcciones de seguridad.</translation>
 <translation id="7901117350626490574">Hay una nueva actualización disponible para Chromium que se aplicará cuando lo reinicies.</translation>
 <translation id="7937630085815544518">Accediste a Chromium con <ph name="USER_EMAIL_ADDRESS" />. Usa la misma cuenta para volver a acceder.</translation>
-<translation id="7962572577636132072">Chromium se actualiza automáticamente para que siempre tengas la versión más reciente.</translation>
 <translation id="7975919845073681630">Como esta es una instalación secundaria de Chromium, no puede establecerse como tu navegador predeterminado.</translation>
 <translation id="7979877361127045932">Ocultar en el menú de Chromium</translation>
 <translation id="8013436988911883588">Una vez que Chromium tenga acceso, los sitios web podrán solicitarte acceso.</translation>

@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">由於你輸入太多次錯誤的 PIN 碼，因此安全金鑰已遭到鎖定。如要解鎖，請移除安全金鑰後重新插入。</translation>
 <translation id="1137673463384776352">在「<ph name="APP" />」中開啟連結</translation>
 <translation id="1140351953533677694">存取你的藍牙和序列裝置</translation>
+<translation id="114036956334641753">音訊和字幕</translation>
 <translation id="1140610710803014750">如要將書籤同步到所有裝置，請登入並開啟同步處理功能。</translation>
 <translation id="1140746652461896221">封鎖你造訪的任何網頁所含內容</translation>
 <translation id="1143142264369994168">憑證簽署者</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">已知網路</translation>
 <translation id="123578888592755962">磁碟空間已滿</translation>
 <translation id="1238191093934674082">Open VPN</translation>
+<translation id="1239594683407221485">在「檔案」應用程式中探索裝置內容。</translation>
 <translation id="124116460088058876">更多語言</translation>
 <translation id="1241753985463165747">叫用時讀取及變更你在目前網站上的所有資料</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" /> 要求重設您的設定。</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">網際網路連線已中斷。請檢查你的網際網路連線，然後再試一次。</translation>
 <translation id="1463112138205428654">進階保護功能已封鎖 <ph name="FILE_NAME" />。</translation>
 <translation id="1464258312790801189">你的帳戶</translation>
+<translation id="1464781208867302907">如要開啟裝置偏好設定選項，請前往「設定」。</translation>
 <translation id="1465176863081977902">複製音訊位址(&amp;O)</translation>
 <translation id="1465827627707997754">披薩切片</translation>
 <translation id="1468571364034902819">無法使用這個設定檔</translation>
@@ -744,6 +747,7 @@
 <translation id="2099686503067610784">要刪除伺服器憑證「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="2100273922101894616">自動登入</translation>
 <translation id="2101225219012730419">版本：</translation>
+<translation id="2111670510994270194">在右側新增分頁</translation>
 <translation id="21133533946938348">固定分頁</translation>
 <translation id="2113479184312716848">開啟檔案(&amp;F)...</translation>
 <translation id="2113921862428609753">授權單位資訊存取</translation>
@@ -1096,7 +1100,6 @@
 <translation id="2586672484245266891">請輸入較短的網址</translation>
 <translation id="2588636910004461974">來自 <ph name="VENDOR_NAME" /> 的裝置</translation>
 <translation id="2594999711683503743">搜尋 Google 或輸入網址</translation>
-<translation id="2597521610396315071">新增監督功能</translation>
 <translation id="2603115962224169880">清理電腦</translation>
 <translation id="2603463522847370204">在無痕式視窗中開啟(&amp;I)</translation>
 <translation id="2604255671529671813">網路連線錯誤</translation>
@@ -1789,6 +1792,7 @@
 <translation id="3630995161997703415">請將這個網站加入檔案櫃，以便隨時使用</translation>
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME" />，你好！</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - 還可以使用 <ph name="TIME" /></translation>
+<translation id="3637561406135221044">正在掃描檔案中的機密資料...</translation>
 <translation id="3637682276779847508">如果無法輸入正確的 PIN 解鎖金鑰，SIM 卡會遭到永久停用。</translation>
 <translation id="3640214691812501263">為<ph name="USER_NAME" />新增「<ph name="EXTENSION_NAME" />」？</translation>
 <translation id="3640613767643722554">訓練 Google 助理辨識你的聲音</translation>
@@ -1876,7 +1880,7 @@
 <translation id="3748026146096797577">尚未連線</translation>
 <translation id="3752582316358263300">確定...</translation>
 <translation id="3752673729237782832">我的裝置</translation>
-<translation id="3753033997400164841">只要儲存一次，即可在所有裝置上使用</translation>
+<translation id="3753033997400164841">只要儲存一次，即可在所有裝置上使用。</translation>
 <translation id="3755411799582650620">你的 <ph name="PHONE_NAME" /> 現在也可以解鎖這台 <ph name="DEVICE_TYPE" />。</translation>
 <translation id="375636864092143889">網站正在使用你的麥克風</translation>
 <translation id="3757733214359997190">找不到任何網站</translation>
@@ -2226,6 +2230,7 @@
 <translation id="425573743389990240">電池放電速率 (瓦特) (如為負值，表示電池正在充電)</translation>
 <translation id="4256316378292851214">另存影片(&amp;V)...</translation>
 <translation id="4258348331913189841">檔案系統</translation>
+<translation id="4263223596040212967">請檢查你的鍵盤配置，然後再試一次。</translation>
 <translation id="4263757076580287579">已取消註冊印表機。</translation>
 <translation id="426564820080660648">如要檢查更新，請使用 Wi-Fi 或行動數據。</translation>
 <translation id="4267953847983678297">自動連線至行動數據網路</translation>
@@ -2321,6 +2326,7 @@
 <translation id="4416582610654027550">請輸入有效的網址</translation>
 <translation id="4419409365248380979">一律允許 <ph name="HOST" /> 設定 Coockie</translation>
 <translation id="4419610272958564173">不明的裝置 (製造商：<ph name="VENDOR_ID" />，產品：<ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">連線發生問題。請與「<ph name="CARRIER_NAME" />」聯絡以尋求協助。</translation>
 <translation id="4421932782753506458">毛毛</translation>
 <translation id="4423376891418188461">還原設定</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />，管理員要求你變更密碼。</translation>
@@ -2996,6 +3002,7 @@
 <translation id="5457599981699367932">以訪客身分瀏覽</translation>
 <translation id="5457991019809708398">已啟用，未使用漫遊服務</translation>
 <translation id="5458998536542739734">螢幕鎖定時的記事設定</translation>
+<translation id="546322474339998983">由 Chrome 瀏覽器和 <ph name="DEVICE_TYPE" /> 啟動器使用</translation>
 <translation id="5463231940765244860">輸入</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> 的索引</translation>
 <translation id="5463856536939868464">選單包含隱藏的書籤</translation>
@@ -3293,6 +3300,7 @@
 <translation id="5869948122057593679">關閉所有視窗</translation>
 <translation id="5870086504539785141">關閉無障礙選單</translation>
 <translation id="5870155679953074650">硬性錯誤數</translation>
+<translation id="5876851302954717356">在右側新增分頁</translation>
 <translation id="5877064549588274448">版本已變更。請重新啟動裝置以套用變更。</translation>
 <translation id="5877584842898320529">選取的印表機無法使用或未正確安裝。<ph name="BR" />請檢查你的印表機，或改選其他印表機。</translation>
 <translation id="5882919346125742463">已知網路</translation>
@@ -4491,6 +4499,7 @@
 <translation id="7685049629764448582">JavaScript 記憶體使用量</translation>
 <translation id="7685087414635069102">請輸入 PIN 碼</translation>
 <translation id="7685301384041462804">進入 VR 模式之前，請確認你信任這個網站。</translation>
+<translation id="768549422429443215">新增語言或重新排列清單。</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">確認新密碼</translation>
 <translation id="7690378713476594306">從清單中選擇</translation>
@@ -4552,6 +4561,7 @@
 <translation id="7773726648746946405">工作階段儲存空間</translation>
 <translation id="7774365994322694683">鳥</translation>
 <translation id="7776701556330691704">找不到語音</translation>
+<translation id="7780252971640011240">連線發生問題。請與你的電信業者聯絡以尋求協助。</translation>
 <translation id="7781335840981796660">系統將移除所有使用者帳戶和本機資料。</translation>
 <translation id="7782102568078991263">沒有更多來自 Google 的建議</translation>
 <translation id="7782717250816686129">儲存登入畫面中的永久資料，並在工作階段中置入憑證。</translation>

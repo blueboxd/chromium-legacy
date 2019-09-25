@@ -33,6 +33,25 @@ class UsersPrivateGetWhitelistedUsersFunction : public ExtensionFunction {
   DISALLOW_COPY_AND_ASSIGN(UsersPrivateGetWhitelistedUsersFunction);
 };
 
+// Implements the chrome.usersPrivate.isWhitelistedUser method.
+class UsersPrivateIsWhitelistedUserFunction : public ExtensionFunction {
+ public:
+  UsersPrivateIsWhitelistedUserFunction();
+  DECLARE_EXTENSION_FUNCTION("usersPrivate.isWhitelistedUser",
+                             USERSPRIVATE_ISWHITELISTEDUSER)
+
+ protected:
+  ~UsersPrivateIsWhitelistedUserFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  ChromeExtensionFunctionDetails chrome_details_;
+
+  DISALLOW_COPY_AND_ASSIGN(UsersPrivateIsWhitelistedUserFunction);
+};
+
 // Implements the chrome.usersPrivate.addWhitelistedUser method.
 class UsersPrivateAddWhitelistedUserFunction : public ExtensionFunction {
  public:

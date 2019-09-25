@@ -20,7 +20,8 @@ CrosNetworkConfigTestHelper::CrosNetworkConfigTestHelper() {
           network_state_helper_.network_state_handler(),
           network_device_handler_.get(),
           /*network_configuration_handler=*/nullptr,
-          /*network_connection_handler=*/nullptr);
+          /*network_connection_handler=*/nullptr,
+          /*network_certificate_handler=*/nullptr);
   OverrideInProcessInstanceForTesting(cros_network_config_impl_.get());
 }
 

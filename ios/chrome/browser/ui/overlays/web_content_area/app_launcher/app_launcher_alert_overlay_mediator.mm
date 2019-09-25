@@ -10,8 +10,7 @@
 #include "ios/chrome/browser/overlays/public/overlay_response.h"
 #include "ios/chrome/browser/overlays/public/web_content_area/app_launcher_alert_overlay.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
-#import "ios/chrome/browser/ui/alert_view_controller/alert_consumer.h"
-#import "ios/chrome/browser/ui/elements/text_field_configuration.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+subclassing.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -22,6 +21,10 @@
 @interface AppLauncherAlertOverlayMediator ()
 @property(nonatomic, readonly) OverlayRequest* request;
 @property(nonatomic, readonly) AppLauncherAlertOverlayRequestConfig* config;
+
+// Sets the OverlayResponse. |allowAppLaunch| indicates whether the alert's
+// allow button was tapped to allow the navigation to open in another app.
+- (void)updateResponseAllowingAppLaunch:(BOOL)allowAppLaunch;
 @end
 
 @implementation AppLauncherAlertOverlayMediator
@@ -42,26 +45,32 @@
   return self.request->GetConfig<AppLauncherAlertOverlayRequestConfig>();
 }
 
-- (void)setConsumer:(id<AlertConsumer>)consumer {
-  if (self.consumer == consumer)
-    return;
-  _consumer = consumer;
+#pragma mark - Response helpers
 
-  NSString* message = nil;
-  NSString* allowActionTitle = nil;
+- (void)updateResponseAllowingAppLaunch:(BOOL)allowAppLaunch {
+  self.request->set_response(
+      OverlayResponse::CreateWithInfo<AppLauncherAlertOverlayResponseInfo>(
+          allowAppLaunch));
+}
+
+@end
+
+@implementation AppLauncherAlertOverlayMediator (Subclassing)
+
+- (NSString*)alertMessage {
+  return self.config->is_repeated_request()
+             ? l10n_util::GetNSString(IDS_IOS_OPEN_REPEATEDLY_ANOTHER_APP)
+             : l10n_util::GetNSString(IDS_IOS_OPEN_IN_ANOTHER_APP);
+}
+
+- (NSArray<AlertAction*>*)alertActions {
   NSString* rejectActionTitle = l10n_util::GetNSString(IDS_CANCEL);
-  if (self.config->is_repeated_request()) {
-    message = l10n_util::GetNSString(IDS_IOS_OPEN_REPEATEDLY_ANOTHER_APP);
-    allowActionTitle =
-        l10n_util::GetNSString(IDS_IOS_OPEN_REPEATEDLY_ANOTHER_APP_ALLOW);
-  } else {
-    message = l10n_util::GetNSString(IDS_IOS_OPEN_IN_ANOTHER_APP);
-    allowActionTitle =
-        l10n_util::GetNSString(IDS_IOS_APP_LAUNCHER_OPEN_APP_BUTTON_LABEL);
-  }
-  [self.consumer setMessage:message];
+  NSString* allowActionTitle =
+      self.config->is_repeated_request()
+          ? l10n_util::GetNSString(IDS_IOS_OPEN_REPEATEDLY_ANOTHER_APP_ALLOW)
+          : l10n_util::GetNSString(IDS_IOS_APP_LAUNCHER_OPEN_APP_BUTTON_LABEL);
   __weak __typeof__(self) weakSelf = self;
-  [self.consumer setActions:@[
+  return @[
     [AlertAction actionWithTitle:allowActionTitle
                            style:UIAlertActionStyleDefault
                          handler:^(AlertAction* action) {
@@ -78,17 +87,7 @@
                            [strongSelf.delegate
                                stopDialogForMediator:strongSelf];
                          }],
-  ]];
-}
-
-#pragma mark - Response helpers
-
-// Sets the OverlayResponse. |allowAppLaunch| indicates whether the alert's
-// allow button was tapped to allow the navigation to open in another app.
-- (void)updateResponseAllowingAppLaunch:(BOOL)allowAppLaunch {
-  self.request->set_response(
-      OverlayResponse::CreateWithInfo<AppLauncherAlertOverlayResponseInfo>(
-          allowAppLaunch));
+  ];
 }
 
 @end

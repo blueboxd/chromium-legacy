@@ -577,8 +577,20 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
     case ax::mojom::Role::kAnchor:
       // No role description.
       break;
-    case ax::mojom::Role::kAnnotation:
-      // No role description.
+    case ax::mojom::Role::kAnnotationAttribution:
+      message_id = IDS_AX_ROLE_ANNOTATION_ATTRIBUTION;
+      break;
+    case ax::mojom::Role::kAnnotationCommentary:
+      message_id = IDS_AX_ROLE_ANNOTATION_COMMENTARY;
+      break;
+    case ax::mojom::Role::kAnnotationPresence:
+      message_id = IDS_AX_ROLE_ANNOTATION_PRESENCE;
+      break;
+    case ax::mojom::Role::kAnnotationRevision:
+      message_id = IDS_AX_ROLE_ANNOTATION_REVISION;
+      break;
+    case ax::mojom::Role::kAnnotationSuggestion:
+      message_id = IDS_AX_ROLE_ANNOTATION_SUGGESTION;
       break;
     case ax::mojom::Role::kApplication:
       message_id = IDS_AX_ROLE_APPLICATION;
@@ -991,6 +1003,9 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       // No role description.
       break;
     case ax::mojom::Role::kRuby:
+      // No role description.
+      break;
+    case ax::mojom::Role::kRubyAnnotation:
       // No role description.
       break;
     case ax::mojom::Role::kSvgRoot:

@@ -102,15 +102,6 @@ cr.define('cr.ui.login', function() {
   var MAX_SCREEN_TRANSITION_DURATION = 250;
 
   /**
-   * Groups of screens (screen IDs) that should have the same dimensions.
-   * @type Array<Array<string>>
-   * @const
-   */
-  var SCREEN_GROUPS = [[
-    SCREEN_OOBE_NETWORK, SCREEN_OOBE_EULA, SCREEN_OOBE_UPDATE,
-    SCREEN_OOBE_AUTO_ENROLLMENT_CHECK
-  ]];
-  /**
    * Group of screens (screen IDs) where factory-reset screen invocation is
    * available.
    * @type Array<string>
@@ -165,11 +156,6 @@ cr.define('cr.ui.login', function() {
     SCREEN_OOBE_ENABLE_DEBUGGING,
     SCREEN_OOBE_RESET,
   ];
-
-  /**
-   * OOBE screens group index.
-   */
-  var SCREEN_GROUP_OOBE = 0;
 
   /**
    * Constructor a display manager that manages initialization of screens,
@@ -265,7 +251,7 @@ cr.define('cr.ui.login', function() {
     },
 
     /**
-     * Returns dimensions of screen exluding header bar.
+     * Returns dimensions of screen excluding header bar.
      * @type {Object}
      */
     get clientAreaSize() {
@@ -631,7 +617,6 @@ cr.define('cr.ui.login', function() {
           innerContainer.classList.remove('down');
           innerContainer.addEventListener('transitionend', function f(e) {
             innerContainer.removeEventListener('transitionend', f);
-            outerContainer.classList.remove('down');
             chrome.send('loginVisible', ['oobe']);
             // Refresh defaultControl. It could have changed.
             var defaultControl = newStep.defaultControl;
@@ -756,10 +741,6 @@ cr.define('cr.ui.login', function() {
       }
       this.appendButtons_(el.buttons, screenId);
 
-      if (attributes && attributes.commonScreenSize) {
-        SCREEN_GROUPS[0].push(screenId);
-      }
-
       if (el.updateOobeConfiguration && this.oobe_configuration_)
         el.updateOobeConfiguration(this.oobe_configuration_);
     },
@@ -785,22 +766,7 @@ cr.define('cr.ui.login', function() {
 
       var width = screen.getPreferredSize().width;
       var height = screen.getPreferredSize().height;
-      for (let i = 0; i < SCREEN_GROUPS.length; ++i) {
-        let screenGroup = SCREEN_GROUPS[i];
-        if (screenGroup.indexOf(screen.id) != -1) {
-          // Set screen dimensions to maximum dimensions within this group.
-          for (let j = 0; j < screenGroup.length; ++j) {
-            let screen2 = $(screenGroup[j]);
-            // Other screens in this screen group might be missing if we're not
-            // in OOBE.
-            if (!screen2)
-              continue;
-            width = Math.max(width, screen2.getPreferredSize().width);
-            height = Math.max(height, screen2.getPreferredSize().height);
-          }
-          break;
-        }
-      }
+
       if (!this.isAdaptiveOobe) {
         if (screen.classList.contains('fullscreen')) {
           $('inner-container').style.height = '100%';
@@ -873,18 +839,6 @@ cr.define('cr.ui.login', function() {
         var screen = $(screenId);
         if (screen.setTabletModeState)
           screen.setTabletModeState(isInTabletMode);
-      }
-    },
-
-    /**
-     * Initialized first group of OOBE screens.
-     */
-    initializeOOBEScreens: function() {
-      if (this.isOobeUI() && $('inner-container').classList.contains('down')) {
-        for (let i = 0; i < SCREEN_GROUPS[SCREEN_GROUP_OOBE].length; ++i) {
-          let screen = $(SCREEN_GROUPS[SCREEN_GROUP_OOBE][i]);
-          screen.hidden = false;
-        }
       }
     },
 
@@ -1077,7 +1031,6 @@ cr.define('cr.ui.login', function() {
       instance.displayType = DISPLAY_TYPE.LOGIN;
     }
 
-    instance.initializeOOBEScreens();
     instance.initializeDemoModeMultiTapListener();
 
     window.addEventListener('resize', instance.onWindowResize_.bind(instance));

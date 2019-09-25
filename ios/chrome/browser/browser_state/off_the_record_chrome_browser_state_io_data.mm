@@ -194,17 +194,3 @@ void OffTheRecordChromeBrowserStateIOData::InitializeInternal(
                                               main_context->network_delegate());
   main_context->set_job_factory(main_job_factory_.get());
 }
-
-ChromeBrowserStateIOData::AppRequestContext*
-OffTheRecordChromeBrowserStateIOData::InitializeAppRequestContext(
-    net::URLRequestContext* main_context) const {
-  NOTREACHED();
-  return nullptr;
-}
-
-ChromeBrowserStateIOData::AppRequestContext*
-OffTheRecordChromeBrowserStateIOData::AcquireIsolatedAppRequestContext(
-    net::URLRequestContext* main_context) const {
-  NOTREACHED();
-  return nullptr;
-}

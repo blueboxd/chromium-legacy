@@ -234,6 +234,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
   // This method is invoked when the document in the given frame finished
   // loading. At this point, scripts marked as defer were executed, and
   // content scripts marked "document_end" get injected into the frame.
+  // TODO(kouhei): rename this to DOMContentLoaded().
   virtual void DocumentLoadedInFrame(RenderFrameHost* render_frame_host) {}
 
   // This method is invoked when the load is done, i.e. the spinner of the tab

@@ -626,6 +626,11 @@ void DesktopWindowTreeHostWin::MoveCursorToScreenLocationInPixels(
   ::SetCursorPos(cursor_location.x, cursor_location.y);
 }
 
+std::unique_ptr<aura::ScopedEnableUnadjustedMouseEvents>
+DesktopWindowTreeHostWin::RequestUnadjustedMovement() {
+  return message_handler_->RegisterUnadjustedMouseEvent();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, wm::AnimationHost implementation:
 
@@ -903,6 +908,7 @@ bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
   // with the event.
   if (window()->occlusion_state() == aura::Window::OcclusionState::OCCLUDED)
     UMA_HISTOGRAM_BOOLEAN("OccludedWindowMouseEvents", true);
+
   SendEventToSink(event);
   return event->handled();
 }

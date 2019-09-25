@@ -1379,7 +1379,7 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
           Si cette règle est définie sur une chaîne non vide, cette chaîne devient le nom de la destination <ph name="PRODUCT_NAME" />. Sinon, le nom de la destination est le nom de l'appareil. Si cette règle n'est pas définie, le nom de la destination est celui de l'appareil, et le propriétaire de l'appareil (ou un utilisateur du domaine gérant l'appareil) peut le modifier. Le nom est limité à 24 caractères.</translation>
 <translation id="3331950121151548952">Liste des domaines pour lesquels le contenu importé doit être vérifié afin de détecter d'éventuels logiciels malveillants.  Cette règle n'est utilisée que si la règle <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> est définie sur une valeur autorisant ou imposant la vérification des importations à la recherche d'éventuels logiciels malveillants.
 
-      Si cette règle n'est pas définie ou si elle est configurée, mais qu'aucun domaine n'est indiqué dans la liste, aucun contenu importé n'est vérifié pour déterminer s'il contient ou non un logiciel malveillant.
+      Si cette règle n'est pas définie ou si aucun domaine n'est indiqué dans la liste, aucun contenu importé n'est vérifié pour déterminer s'il contient ou non un logiciel malveillant.
       </translation>
 <translation id="3335468714959531450">Permet de définir une liste de formats d'URL spécifiant les sites autorisés à utiliser des cookies.
 
@@ -1907,7 +1907,7 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
           Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
           Si elle n'est pas définie, le clic automatique est désactivé au départ, mais les utilisateurs peuvent l'activer à tout moment.</translation>
-<translation id="4215197846797661927">Permet de définir le jour de recharge de la batterie en mode avancé.
+<translation id="4215197846797661927">Permet de définir la configuration quotidienne de recharge de la batterie en mode avancé.
 
           Cette règle n'est utilisée que si la règle <ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" /> est définie sur "True".
 
@@ -1984,11 +1984,11 @@ Cette option est habituellement désactivée dans le cadre de la protection cont
           Le message d'avertissement ne s'affiche que si le dépassement du délai d'inactivité entraîne une déconnexion ou l'arrêt de l'appareil.</translation>
 <translation id="4342827592971649626">Cette règle permet de contrôler l'analyse approfondie des téléchargements des utilisateurs à l'aide de la navigation sécurisée. Si cette règle n'est pas configurée ou si elle est définie sur le paramètre par défaut ("Ne pas analyser les fichiers"), les téléchargements des utilisateurs ne sont pas analysés par la navigation sécurisée.
 
-      Si cette règle est définie sur "Interdire l'analyse des fichiers", les utilisateurs ne sont pas autorisés à analyser leurs téléchargements. Ce paramètre est différent de celui par défaut, dans la mesure où certains utilisateurs (comme les utilisateurs de la Protection Avancée) peuvent envoyer leurs téléchargements pour analyse. Avec ce paramètre, ces utilisateurs ne peuvent donc pas analyser leurs fichiers.
+      Si cette règle est définie sur "Interdire l'analyse des fichiers", les utilisateurs ne sont pas autorisés à analyser leurs téléchargements. Ce paramètre est différent de celui par défaut, qui permet à certains utilisateurs (comme les utilisateurs de la Protection Avancée) d'envoyer leurs téléchargements pour analyse. Ce paramètre empêche ces utilisateurs d'analyser leurs fichiers.
 
       Si cette règle est définie sur "Envoyer les téléchargements des utilisateurs pour analyse", les téléchargements des utilisateurs sont envoyés sur le réseau à la navigation sécurisée afin d'y être analysés pour détecter les éventuels logiciels malveillants.
 
-      Si cette règle est définie sur "Envoyer les importations des utilisateurs pour analyse", les importations des utilisateurs sont envoyés sur le réseau à la navigation sécurisée afin d'y être analysés pour détecter les éventuels logiciels malveillants.
+      Si cette règle est définie sur "Envoyer les importations des utilisateurs pour analyse", les importations des utilisateurs sont envoyées sur le réseau à la navigation sécurisée afin d'y être analysées pour détecter les éventuels logiciels malveillants.
 
       Si cette règle est définie sur "Envoyer les importations et les téléchargements des utilisateurs pour analyse", le produit se comporte conformément aux règles indiquées sous "Envoyer les importations des utilisateurs pour analyse" et "Envoyer les téléchargements des utilisateurs pour analyse".
 
@@ -2587,9 +2587,9 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
       Si vous définissez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
 
       Si la règle n'est pas définie, l'utilisateur peut choisir une image à afficher sur le bureau et en arrière-plan de l'écran de connexion.</translation>
-<translation id="5437214086679373363">Permet de déterminer si les utilisateurs sont autorisés ou non à importer ou à télécharger des fichiers protégés par un mot de passe lorsqu'une analyse est requise.  Cette restriction ne s'applique qu'aux fichiers nécessitant une analyse comme défini par <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> et par les règles qui régissent la liste des domaines pour lesquels les vérifications sont activées.
+<translation id="5437214086679373363">Permet de déterminer si les utilisateurs sont autorisés ou non à importer ou à télécharger des fichiers protégés par un mot de passe lorsqu'une analyse est requise.  Cette restriction ne s'applique qu'aux fichiers nécessitant une analyse conformément à <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME" /> et aux règles qui régissent la liste des domaines pour lesquels les vérifications sont activées.
 
-      Si cette règle est définie sur "Aucune", <ph name="PRODUCT_NAME" /> empêche l'utilisateur d'importer ou de télécharger des fichiers protégés par un mot de passe.
+      Si cette règle est définie sur "Aucun", <ph name="PRODUCT_NAME" /> empêche l'utilisateur d'importer ou de télécharger des fichiers protégés par un mot de passe.
 
       Si cette règle est définie sur "Autoriser les téléchargements", <ph name="PRODUCT_NAME" /> autorise l'utilisateur à télécharger des fichiers protégés par un mot de passe.
 
@@ -3525,7 +3525,7 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
 
       Si cette règle n'est pas paramétrée, l'utilisateur pourra faire son propre choix.</translation>
 <translation id="7145335384492396213">Mode d'impression par code défini par défaut</translation>
-<translation id="7149042336307555519"> Types de connexion autorisés pour les mises à jour du système d'exploitation. En raison de leur taille, les mises à jour du système d'exploitation peuvent considérablement ralentir la connexion et entraînent parfois des frais supplémentaires. C'est pourquoi elles ne sont pas activées par défaut pour les types de connexion jugés onéreux (actuellement, seul le type de connexion au réseau mobile est concerné).
+<translation id="7149042336307555519"> Types de connexion autorisés pour les mises à jour du système d'exploitation. En raison de leur taille, les mises à jour du système d'exploitation peuvent considérablement ralentir la connexion et entraînent parfois des frais supplémentaires. Elles ne sont donc pas activées par défaut pour les types de connexion jugés coûteux (actuellement, seules les connexions mobiles sont concernées).
 
       Les identifiants des types de connexion reconnus sont <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> et <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Permet de contrôler le mode du résolveur DNS-over-HTTPS. Veuillez noter que cette règle ne définit que le mode par défaut pour chaque requête. Ce mode peut être ignoré pour les requêtes spéciales, telles que celles visant à résoudre un nom d'hôte de serveur DNS-over-HTTPS.
@@ -3562,13 +3562,13 @@ En cas de non-configuration de cette règle, aucune restriction ne s'applique qu
 <translation id="7185078796915954712">TLS 1.3</translation>
 <translation id="7187447094921703950">Permet d'activer la règle de gestion de l'alimentation avec passage à l'alimentation via la batterie.
 
-          Le passage à l'alimentation via la batterie est une règle d'économie d'énergie qui réduit au maximum le recours au courant alternatif pendant les pics d'utilisation au cours de la journée. Il est possible de définir une heure de début et de fin de ce mode pour chaque jour de la semaine. À ces périodes, le système fonctionnera sur la batterie, même si l'appareil est branché sur le courant alternatif, tant que le niveau de la batterie reste au-dessus du seuil défini. À la fin de la plage spécifiée, le système fonctionnera sur le courant alternatif s'il y est branché, mais ne rechargera pas la batterie. Le système reprendra son fonctionnement habituel en utilisant le courant alternatif et en rechargeant la batterie à l'heure de début de charge spécifiée.
+          Le passage à l'alimentation via la batterie est une règle d'économie d'énergie qui limite le recours à l'alimentation secteur pendant les pics d'utilisation au cours de la journée. Il est possible de définir l'heure de début et de fin de ce mode pour chaque jour de la semaine. Durant ces plages horaires, le système fonctionnera sur la batterie, même si l'appareil est branché sur le secteur, tant que le niveau de la batterie reste au-dessus du seuil défini. À la fin de la plage horaire programmée, le système fonctionnera sur le secteur s'il y est branché, mais ne rechargera pas la batterie. Le système reprendra son fonctionnement habituel en utilisant l'alimentation secteur et en rechargeant la batterie à l'heure programmée pour le début de la charge.
 
-          Si cette règle est définie sur "True", et si les règles <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> et <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> sont configurées, le passage à l'alimentation via la batterie est activé s'il est compatible avec l'appareil.
+          Si cette règle est définie sur "True", et si les règles <ph name="DEVICE_POWER_PEAK_SHIFT_BATTERY_THRESHOLD_NAME" /> et <ph name="DEVICE_POWER_PEAK_SHIFT_DAY_CONFIG_NAME" /> sont configurées, le passage à l'alimentation via la batterie est toujours activé s'il est compatible avec l'appareil.
 
           Si cette règle est définie sur "False", le passage à l'alimentation via la batterie est désactivé.
 
-          Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
+          Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier ni l'ignorer.
 
           Si cette règle n'est pas configurée, le passage à l'alimentation via la batterie est désactivé au départ et ne peut être activé par l'utilisateur.</translation>
 <translation id="718956142899066210">Types de connexion autorisés pour les mises à jour</translation>
@@ -4226,7 +4226,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
           Si cette règle n'est pas configurée, le paramètre est activé.</translation>
 <translation id="8382184662529825177">Autoriser l'utilisation de l'attestation à distance pour assurer la protection du contenu de l'appareil</translation>
-<translation id="8382693763260501307">Permet de gérer l'alimentation en mode avancé de recharge de la batterie.
+<translation id="8382693763260501307">Permet de gérer la recharge de la batterie en mode avancé.
 
           Le mode avancé de recharge de la batterie permet à l'utilisateur de maximiser les performances de la batterie. Pour ce faire, le système combine un algorithme de recharge standard avec d'autres techniques en dehors des heures de travail. Pendant les heures de travail, une option de recharge rapide est utilisée. La batterie est alors rechargée plus rapidement, et le niveau de charge complète est atteint plus vite. Pour chaque jour, vous pouvez définir l'heure à partir de laquelle le système est le plus sollicité, ainsi que la durée de cette utilisation intensive.
 
@@ -4234,7 +4234,7 @@ Il est conseillé de configurer les règles sur Windows via GPO, même si la ges
 
           Si cette règle est définie sur "False", ce mode est toujours désactivé.
 
-          Si vous configurez cette règle, les utilisateurs ne peuvent pas la modifier ni l'ignorer.
+          Si vous configurez cette règle, les utilisateurs ne peuvent ni la modifier ni l'ignorer.
 
           Si cette règle n'est pas configurée, ce mode est désactivé et ne peut être activé par l'utilisateur.</translation>
 <translation id="838870586332499308">Activer l'itinérance des données</translation>
@@ -4448,7 +4448,6 @@ Si vous désactivez ce paramètre ou s'il n'est pas défini, le nom canonique du
 <translation id="8798099450830957504">Par défaut</translation>
 <translation id="8800453707696044281">Personnaliser le pourcentage auquel la recharge de la batterie doit s'arrêter</translation>
 <translation id="8801680448782904838">Avertir un utilisateur qu'un redémarrage du navigateur ou de l'appareil est recommandé ou exigé</translation>
-<translation id="8802816494059596691">Les noms d'hôte indiqués dans cette liste seront exemptés de la vérification de la règle HSTS susceptible de remplacer les requêtes HTTP en requêtes HTTPS. Seuls les noms d'hôte sans extension sont autorisés dans cette règle. Les noms d'hôtes doivent être mis sous forme canonique : tous les noms de domaine internationalisés (IDN) doivent être convertis dans leur format d'étiquette A, et toutes les lettres ASCII doivent être en minuscules. Cette règle ne s'applique qu'aux noms d'hôte spécifiques indiqués. Elle ne s'applique pas aux sous-domaines des noms spécifiés.</translation>
 <translation id="8818173863808665831">Permet d'indiquer l'emplacement géographique de l'appareil.
 
       Si cette règle n'est pas définie, ou si la valeur "false" lui est attribuée, l'emplacement n'est pas indiqué.</translation>

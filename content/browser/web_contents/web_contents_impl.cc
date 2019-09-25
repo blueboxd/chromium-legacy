@@ -132,7 +132,6 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_state.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/common/referrer_type_converters.h"
 #include "content/public/common/result_codes.h"
 #include "content/public/common/url_utils.h"
@@ -153,6 +152,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/frame/sandbox_flags.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/loader/pause_subresource_loading_handle.mojom.h"
 #include "third_party/blink/public/mojom/mediastream/media_stream.mojom-shared.h"
 #include "third_party/blink/public/platform/web_security_style.h"
@@ -572,8 +572,10 @@ WebContentsImpl::WebContentsImpl(BrowserContext* browser_context)
       is_showing_before_unload_dialog_(false),
       last_active_time_(base::TimeTicks::Now()),
       closed_by_user_gesture_(false),
-      minimum_zoom_percent_(static_cast<int>(kMinimumZoomFactor * 100)),
-      maximum_zoom_percent_(static_cast<int>(kMaximumZoomFactor * 100)),
+      minimum_zoom_percent_(
+          static_cast<int>(blink::kMinimumPageZoomFactor * 100)),
+      maximum_zoom_percent_(
+          static_cast<int>(blink::kMaximumPageZoomFactor * 100)),
       zoom_scroll_remainder_(0),
       fullscreen_widget_process_id_(ChildProcessHost::kInvalidUniqueID),
       fullscreen_widget_routing_id_(MSG_ROUTING_NONE),
@@ -899,8 +901,6 @@ bool WebContentsImpl::OnMessageReceived(RenderFrameHostImpl* render_frame_host,
                         OnDomOperationResponse)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeThemeColor,
                         OnThemeColorChanged)
-    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
-                        OnDocumentLoadedInFrame)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishLoad, OnDidFinishLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidLoadResourceFromMemoryCache,
                         OnDidLoadResourceFromMemoryCache)
@@ -4817,9 +4817,9 @@ void WebContentsImpl::OnDidRunContentWithCertificateErrors(
       entry->GetURL().GetOrigin());
 }
 
-void WebContentsImpl::OnDocumentLoadedInFrame(RenderFrameHostImpl* source) {
+void WebContentsImpl::DOMContentLoaded(RenderFrameHost* render_frame_host) {
   for (auto& observer : observers_)
-    observer.DocumentLoadedInFrame(source);
+    observer.DocumentLoadedInFrame(render_frame_host);
 }
 
 void WebContentsImpl::OnDidFinishLoad(RenderFrameHostImpl* source,

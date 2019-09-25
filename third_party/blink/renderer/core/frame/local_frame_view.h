@@ -460,20 +460,6 @@ class CORE_EXPORT LocalFrameView final
     return animating_scrollable_areas_.Get();
   }
 
-  // With CSS style "resize:" enabled, a little resizer handle will appear at
-  // the bottom right of the object. We keep track of these resizer areas for
-  // checking if touches (implemented using Scroll gesture) are targeting the
-  // resizer.
-  // TODO(pdr): The resizers do not need to be tracked with
-  // PaintNonFastScrollableRegions and can be removed once that ships.
-  typedef HashSet<LayoutBox*> ResizerAreaSet;
-  void AddResizerArea(LayoutBox&);
-  void RemoveResizerArea(LayoutBox&);
-  const ResizerAreaSet* ResizerAreas() const {
-    DCHECK(!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
-    return resizer_areas_.get();
-  }
-
   void ScheduleAnimation(base::TimeDelta = base::TimeDelta());
 
   // FIXME: This should probably be renamed as the 'inSubtreeLayout' parameter
@@ -884,7 +870,6 @@ class CORE_EXPORT LocalFrameView final
 
   Member<ScrollableAreaSet> scrollable_areas_;
   Member<ScrollableAreaSet> animating_scrollable_areas_;
-  std::unique_ptr<ResizerAreaSet> resizer_areas_;
   std::unique_ptr<ObjectSet> viewport_constrained_objects_;
   unsigned sticky_position_object_count_;
   ObjectSet background_attachment_fixed_objects_;

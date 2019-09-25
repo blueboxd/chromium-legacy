@@ -181,7 +181,7 @@ public class FeedAppLifecycle
             mDelayedInitializeStarted = true;
             boolean initFeed = ChromeFeatureList.getFieldTrialParamByFeatureAsBoolean(
                     ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS, "init_feed_after_startup",
-                    true);
+                    false);
             if (initFeed) {
                 DeferredStartupHandler.getInstance().addDeferredTask(() -> {
                     // Since this is being run asynchronously, it's possible #destroy() is called

@@ -344,5 +344,12 @@ ReservedTexture WebGPUImplementation::ReserveTexture(DawnDevice device) {
 #endif
 }
 
+void WebGPUImplementation::RequestAdapter(PowerPreference power_preference) {
+  GPU_CLIENT_SINGLE_THREAD_CHECK();
+  GPU_CLIENT_LOG("[" << GetLogPrefix() << "] wgRequestAdapter("
+                     << static_cast<uint32_t>(power_preference) << ")");
+  helper_->RequestAdapter(static_cast<uint32_t>(power_preference));
+}
+
 }  // namespace webgpu
 }  // namespace gpu

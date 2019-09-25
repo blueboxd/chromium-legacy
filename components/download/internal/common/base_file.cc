@@ -80,9 +80,19 @@ void InitializeFile(base::File* file, const base::FilePath& file_path) {
     return;
   }
 #endif  // defined(OS_ANDROID)
-  file->Initialize(file_path, base::File::FLAG_OPEN_ALWAYS |
-                                  base::File::FLAG_WRITE |
-                                  base::File::FLAG_READ);
+
+  // Use exclusive write to prevent another process from writing the file.
+  file->Initialize(
+      file_path,
+      base::File::FLAG_OPEN_ALWAYS | base::File::FLAG_WRITE |
+          base::File::FLAG_READ
+#if defined(OS_WIN)
+          // Don't allow other process to write to the file while Chrome is
+          // writing to it. On posix systems, use FLAG_EXCLUSIVE_WRITE will
+          // cause file creation to fail if the file already exists.
+          | base::File::FLAG_EXCLUSIVE_WRITE
+#endif  // defined(OS_WIN)
+  );
 }
 
 void DeleteFile(const base::FilePath& file_path) {

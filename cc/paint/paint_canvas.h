@@ -176,7 +176,6 @@ class CC_PAINT_EXPORT PaintCanvas {
   virtual void drawPicture(sk_sp<const PaintRecord> record) = 0;
 
   virtual bool isClipEmpty() const = 0;
-  virtual bool isClipRect() const = 0;
   virtual const SkMatrix& getTotalMatrix() const = 0;
 
   // Used for printing

@@ -12,6 +12,7 @@
 #include "base/component_export.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_endpoint.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -155,7 +156,8 @@ class TestNetworkContext : public mojom::NetworkContext {
   void LookUpProxyForURL(
       const GURL& url,
       ::network::mojom::ProxyLookupClientPtr proxy_lookup_client) override {}
-  void CreateNetLogExporter(mojom::NetLogExporterRequest exporter) override {}
+  void CreateNetLogExporter(
+      mojo::PendingReceiver<mojom::NetLogExporter> receiver) override {}
   void ResolveHost(const net::HostPortPair& host,
                    mojom::ResolveHostParametersPtr optional_parameters,
                    mojom::ResolveHostClientPtr response_client) override {}

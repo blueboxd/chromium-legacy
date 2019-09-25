@@ -62,9 +62,9 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
   base::WeakPtr<OverlayRequestQueueImpl> GetWeakPtr();
 
   // Whether the queue is empty.
-  bool empty() const { return requests_.empty(); }
+  bool empty() const { return request_storages_.empty(); }
   // The number of requests in the queue.
-  size_t size() const { return requests_.size(); }
+  size_t size() const { return request_storages_.size(); }
 
   // Removes the front or back request from the queue, transferring ownership of
   // the request to the caller.  Must be called on a non-empty queue.
@@ -72,36 +72,36 @@ class OverlayRequestQueueImpl : public OverlayRequestQueue {
   std::unique_ptr<OverlayRequest> PopBackRequest();
 
   // OverlayRequestQueue:
+  void AddRequest(
+      std::unique_ptr<OverlayRequest> request,
+      std::unique_ptr<OverlayRequestCancelHandler> cancel_handler) override;
   void AddRequest(std::unique_ptr<OverlayRequest> request) override;
   OverlayRequest* front_request() const override;
   void CancelAllRequests() override;
+  void CancelRequest(OverlayRequest* request) override;
 
  private:
   // Private constructor called by container.
   explicit OverlayRequestQueueImpl(web::WebState* web_state);
 
-  // Helper object that cancels requests for navigation events.
-  class RequestCancellationHelper : public web::WebStateObserver {
-   public:
-    RequestCancellationHelper(OverlayRequestQueueImpl* queue,
-                              web::WebState* web_state);
+  // Helper object that stores OverlayRequests along with their cancellation
+  // handlers.
+  struct OverlayRequestStorage {
+    OverlayRequestStorage(
+        std::unique_ptr<OverlayRequest> request,
+        std::unique_ptr<OverlayRequestCancelHandler> cancel_handler);
+    ~OverlayRequestStorage();
 
-   private:
-    // web::WebStateObserver:
-    void DidFinishNavigation(
-        web::WebState* web_state,
-        web::NavigationContext* navigation_context) override;
-    void RenderProcessGone(web::WebState* web_state) override;
-    void WebStateDestroyed(web::WebState* web_state) override;
-
-    OverlayRequestQueueImpl* queue_ = nullptr;
+    std::unique_ptr<OverlayRequest> request;
+    std::unique_ptr<OverlayRequestCancelHandler> cancel_handler;
   };
 
-  RequestCancellationHelper cancellation_helper_;
+  web::WebState* web_state_ = nullptr;
   base::ObserverList<Observer, /* check_empty= */ true> observers_;
   // The queue used to hold the received requests.  Stored as a circular dequeue
   // to allow performant pop events from the front of the queue.
-  base::circular_deque<std::unique_ptr<OverlayRequest>> requests_;
+  base::circular_deque<std::unique_ptr<OverlayRequestStorage>>
+      request_storages_;
   base::WeakPtrFactory<OverlayRequestQueueImpl> weak_factory_;
 };
 

@@ -1,0 +1,6 @@
+AXWebArea AXRoleDescription='HTML content'
+++AXGroup AXRoleDescription='annotation-attribution' AXDescription='annotation-attribution'
+++AXGroup AXRoleDescription='annotation-commentary' AXDescription='annotation-commentary'
+++AXGroup AXRoleDescription='annotation-presence' AXDescription='annotation-presence'
+++AXGroup AXRoleDescription='annotation-revision' AXDescription='annotation-revision'
+++AXGroup AXRoleDescription='annotation-suggestion' AXDescription='annotation-suggestion'

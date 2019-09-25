@@ -4,16 +4,12 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
-import android.app.Activity;
-
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ActivityTabProvider;
 import org.chromium.chrome.browser.ActivityTabProvider.HintlessActivityTabObserver;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanel;
 import org.chromium.chrome.browser.compositor.bottombar.OverlayPanelManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
-import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
@@ -45,9 +41,6 @@ public class BottomSheetController implements Destroyable {
     /** A handle to the {@link BottomSheet} that this class controls. */
     private final BottomSheet mBottomSheet;
 
-    /** A handle to the {@link SnackbarManager} that manages snackbars inside the bottom sheet. */
-    private final SnackbarManager mSnackbarManager;
-
     /** A {@link VrModeObserver} that observers events of entering and exiting VR mode. */
     private final VrModeObserver mVrModeObserver;
 
@@ -71,22 +64,18 @@ public class BottomSheetController implements Destroyable {
 
     /**
      * Build a new controller of the bottom sheet.
-     * @param activity An activity for context.
      * @param lifecycleDispatcher The {@link ActivityLifecycleDispatcher} for the {@code activity}.
      * @param activityTabProvider The provider of the activity's current tab.
      * @param scrim The scrim that shows when the bottom sheet is opened.
      * @param bottomSheet The bottom sheet that this class will be controlling.
      * @param overlayManager The manager for overlay panels to attach listeners to.
      */
-    public BottomSheetController(final Activity activity,
-            final ActivityLifecycleDispatcher lifecycleDispatcher,
+    public BottomSheetController(final ActivityLifecycleDispatcher lifecycleDispatcher,
             final ActivityTabProvider activityTabProvider, final ScrimView scrim,
             BottomSheet bottomSheet, OverlayPanelManager overlayManager) {
         mBottomSheet = bottomSheet;
         mTabProvider = activityTabProvider;
         mOverlayPanelManager = overlayManager;
-        mSnackbarManager = new SnackbarManager(
-                activity, mBottomSheet.findViewById(R.id.bottom_sheet_snackbar_container));
 
         // Initialize the queue with a comparator that checks content priority.
         mContentQueue = new PriorityQueue<>(INITIAL_QUEUE_CAPACITY,
@@ -202,11 +191,6 @@ public class BottomSheetController implements Destroyable {
                 mIsProcessingHideRequest = false;
                 showNextContent(true);
             }
-
-            @Override
-            public void onSheetOffsetChanged(float heightFraction, float offsetPx) {
-                mSnackbarManager.dismissAllSnackbars();
-            }
         });
     }
 
@@ -251,13 +235,6 @@ public class BottomSheetController implements Destroyable {
      */
     public BottomSheet getBottomSheet() {
         return mBottomSheet;
-    }
-
-    /**
-     * @return The {@link SnackbarManager} that manages snackbars inside the bottom sheet.
-     */
-    public SnackbarManager getSnackbarManager() {
-        return mSnackbarManager;
     }
 
     /**

@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.preferences.SearchUtils.handleSearchNa
 
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.res.Resources;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.graphics.drawable.VectorDrawableCompat;
@@ -254,8 +253,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
     }
 
     private CharSequence getHeaderTitle(int resourceId, int count) {
-        SpannableStringBuilder spannable =
-                new SpannableStringBuilder(getResources().getString(resourceId));
+        SpannableStringBuilder spannable = new SpannableStringBuilder(getString(resourceId));
         String prefCount = String.format(Locale.getDefault(), " - %d", count);
         spannable.append(prefCount);
 
@@ -452,8 +450,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                 });
         builder.setNegativeButton(R.string.cancel, null);
         builder.setTitle(R.string.storage_clear_site_storage_title);
-        Resources res = getResources();
-        String dialogFormattedText = res.getString(R.string.storage_clear_dialog_text,
+        String dialogFormattedText = getString(R.string.storage_clear_dialog_text,
                 Formatter.formatShortFileSize(getActivity(), totalUsage));
         builder.setMessage(dialogFormattedText);
         builder.create().show();
@@ -552,7 +549,7 @@ public class SingleCategoryPreferences extends PreferenceFragmentCompat
                     : R.string.website_settings_add_site_description_cookies_allow;
         }
         assert resource > 0;
-        return getResources().getString(resource);
+        return getString(resource);
     }
 
     // OnPreferenceClickListener:

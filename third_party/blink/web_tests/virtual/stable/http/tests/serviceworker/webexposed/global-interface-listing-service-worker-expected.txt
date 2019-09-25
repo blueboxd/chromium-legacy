@@ -2567,7 +2567,6 @@ interface WorkerGlobalScope : EventTarget
     getter self
     method atob
     method btoa
-    method cancelAnimationFrame
     method clearInterval
     method clearTimeout
     method constructor
@@ -2575,7 +2574,6 @@ interface WorkerGlobalScope : EventTarget
     method fetch
     method importScripts
     method queueMicrotask
-    method requestAnimationFrame
     method setInterval
     method setTimeout
     setter onerror

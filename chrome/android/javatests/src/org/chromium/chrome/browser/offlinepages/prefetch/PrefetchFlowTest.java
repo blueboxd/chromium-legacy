@@ -22,6 +22,7 @@ import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
@@ -108,6 +109,8 @@ public class PrefetchFlowTest implements WebServer.RequestHandler {
         final String suggestionsBackend = Uri.encode(mServer.getBaseUrl() + "suggestions/");
         CommandLine.getInstance().appendSwitchWithValue("enable-features",
                 "OfflinePagesPrefetching<Trial,DownloadService<Trial,NTPArticleSuggestions<Trial");
+        CommandLine.getInstance().appendSwitchWithValue(
+                "disable-features", ChromeFeatureList.INTEREST_FEED_CONTENT_SUGGESTIONS + "<Trial");
         CommandLine.getInstance().appendSwitchWithValue("force-fieldtrials", "Trial/Group");
         CommandLine.getInstance().appendSwitchWithValue("force-fieldtrial-params",
                 "Trial.Group:start_up_delay_ms/100/offline_pages_backend/" + offlinePagesBackend

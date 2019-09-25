@@ -7,6 +7,7 @@
 #include <stdint.h>
 
 #include "base/bind.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -63,6 +64,11 @@ const base::FeatureParam<int> kMojoRecordUnreadMessageCountQuotaValue = {
     100  // Use a 100 message quote by default.
 };
 
+const base::FeatureParam<int> kMojoRecordUnreadMessageCountCrashThreshold = {
+    &features::kMojoRecordUnreadMessageCount, "CrashThreshold",
+    0  // Set to zero to disable crash dumps by default.
+};
+
 int UnreadMessageCountQuota() {
   static const bool enabled =
       base::FeatureList::IsEnabled(features::kMojoRecordUnreadMessageCount);
@@ -75,6 +81,26 @@ int UnreadMessageCountQuota() {
 
   static const int quota = kMojoRecordUnreadMessageCountQuotaValue.Get();
   return quota;
+}
+
+void MaybeDumpWithoutCrashing(int quota_used) {
+  static const int crash_theshold =
+      kMojoRecordUnreadMessageCountCrashThreshold.Get();
+  if (crash_theshold == 0)
+    return;
+
+  static bool have_crashed = false;
+  if (have_crashed)
+    return;
+
+  // Only crash once per process/per run. Note that this is slightly racy
+  // against concurrent quota overruns on multiple threads, but that's fine.
+  have_crashed = true;
+
+  // This is happening because the user of the interface implicated on the crash
+  // stack has queued up an unreasonable number of messages, namely
+  // |quota_used|.
+  base::debug::DumpWithoutCrashing();
 }
 
 }  // namespace
@@ -368,8 +394,10 @@ bool Connector::Accept(Message* message) {
     MojoResult rv = MojoQueryQuota(message_pipe_.get().value(),
                                    MOJO_QUOTA_TYPE_UNREAD_MESSAGE_COUNT,
                                    nullptr, &limit, &usage);
-    if (rv == MOJO_RESULT_OK && usage > max_unread_message_quota_used_)
+    if (rv == MOJO_RESULT_OK && usage > max_unread_message_quota_used_) {
+      MaybeDumpWithoutCrashing(usage);
       max_unread_message_quota_used_ = usage;
+    }
   }
 
   MojoResult rv =

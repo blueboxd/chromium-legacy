@@ -41,8 +41,13 @@ TEST(UrlUtilsTest, IsSafeRedirectTarget) {
   EXPECT_FALSE(IsSafeRedirectTarget(GURL(), CreateValidURL("about:blank")));
   EXPECT_FALSE(IsSafeRedirectTarget(
       GURL(), CreateValidURL("filesystem:http://foo.com/bar")));
+#if !defined(CHROMECAST_BUILD)
   EXPECT_FALSE(
       IsSafeRedirectTarget(GURL(), CreateValidURL("data:text/plain,foo")));
+#else
+  EXPECT_TRUE(
+      IsSafeRedirectTarget(GURL(), CreateValidURL("data:text/plain,foo")));
+#endif
   EXPECT_FALSE(
       IsSafeRedirectTarget(GURL(), CreateValidURL("blob:https://foo.com/bar")));
 #if defined(OS_ANDROID)

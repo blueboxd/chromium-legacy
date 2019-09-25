@@ -32,7 +32,6 @@
 #include "components/ntp_tiles/ntp_tile_impression.h"
 #include "components/ntp_tiles/tile_source.h"
 #include "components/ntp_tiles/tile_visual_type.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/renderer/chrome_object_extensions_utils.h"
 #include "content/public/renderer/render_frame.h"
 #include "content/public/renderer/render_thread.h"
@@ -41,6 +40,7 @@
 #include "gin/handle.h"
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url_request.h"
 #include "third_party/blink/public/web/blink.h"
@@ -814,7 +814,7 @@ v8::Local<v8::Value> NewTabPageBindings::GetMostVisited(v8::Isolate* isolate) {
 
   // This corresponds to "window.devicePixelRatio" in JavaScript.
   float zoom_factor =
-      content::ZoomLevelToZoomFactor(render_view->GetZoomLevel());
+      blink::PageZoomLevelToZoomFactor(render_view->GetZoomLevel());
   float device_pixel_ratio = render_view->GetDeviceScaleFactor() * zoom_factor;
 
   int render_view_id = render_view->GetRoutingID();

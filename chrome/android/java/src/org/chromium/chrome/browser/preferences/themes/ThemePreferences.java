@@ -48,7 +48,7 @@ public class ThemePreferences extends PreferenceFragmentCompat {
     @Override
     public void onCreatePreferences(@Nullable Bundle savedInstanceState, String rootKey) {
         PreferenceUtils.addPreferencesFromResource(this, R.xml.theme_preferences);
-        getActivity().setTitle(getResources().getString(R.string.prefs_themes));
+        getActivity().setTitle(R.string.prefs_themes);
 
         ChromePreferenceManager chromePreferenceManager = ChromePreferenceManager.getInstance();
         RadioButtonGroupThemePreference radioButtonGroupThemePreference =

@@ -946,7 +946,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
                             bool lost);
 
   void NotifySwapPromiseMonitorsOfSetNeedsRedraw();
-  void NotifySwapPromiseMonitorsOfForwardingToMainThread();
 
   void UpdateRootLayerStateForSynchronousInputHandler();
 

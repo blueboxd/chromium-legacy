@@ -244,6 +244,8 @@ WINBASEAPI VOID WINAPI SetLastError(_In_ DWORD dwErrCode);
 #define DeleteFile DeleteFileW
 #define DispatchMessage DispatchMessageW
 #define DrawText DrawTextW
+#define FindFirstFile FindFirstFileW
+#define FindNextFile FindNextFileW
 #define GetComputerName GetComputerNameW
 #define GetCurrentDirectory GetCurrentDirectoryW
 #define GetCurrentTime() GetTickCount()
@@ -253,6 +255,7 @@ WINBASEAPI VOID WINAPI SetLastError(_In_ DWORD dwErrCode);
 #define LoadIcon LoadIconW
 #define LoadImage LoadImageW
 #define PostMessage PostMessageW
+#define RemoveDirectory RemoveDirectoryW
 #define ReplaceFile ReplaceFileW
 #define ReportEvent ReportEventW
 #define SendMessage SendMessageW

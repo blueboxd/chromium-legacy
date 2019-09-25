@@ -91,7 +91,8 @@ class PDFiumPage {
 
     // Valid for DOCLINK_AREA only.
     int page;
-    // Valid for DOCLINK_AREA only. From the top of the page.
+    // Valid for DOCLINK_AREA only. From the top-left of the page.
+    base::Optional<float> x_in_pixels;
     base::Optional<float> y_in_pixels;
   };
 

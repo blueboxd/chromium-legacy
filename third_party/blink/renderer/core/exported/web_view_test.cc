@@ -48,6 +48,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/frame/frame_owner_element_type.h"
 #include "third_party/blink/public/common/manifest/web_display_mode.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom-blink.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_cursor_info.h"
@@ -4250,19 +4251,19 @@ TEST_F(WebViewTest, PreferredSize) {
   EXPECT_EQ(100, size.width);
   EXPECT_EQ(100, size.height);
 
-  web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
+  web_view->SetZoomLevel(PageZoomFactorToZoomLevel(2.0));
   size = web_view->ContentsPreferredMinimumSize();
   EXPECT_EQ(200, size.width);
   EXPECT_EQ(200, size.height);
 
   // Verify that both width and height are rounded (in this case up)
-  web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(0.9995));
+  web_view->SetZoomLevel(PageZoomFactorToZoomLevel(0.9995));
   size = web_view->ContentsPreferredMinimumSize();
   EXPECT_EQ(100, size.width);
   EXPECT_EQ(100, size.height);
 
   // Verify that both width and height are rounded (in this case down)
-  web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(1.0005));
+  web_view->SetZoomLevel(PageZoomFactorToZoomLevel(1.0005));
   size = web_view->ContentsPreferredMinimumSize();
   EXPECT_EQ(100, size.width);
   EXPECT_EQ(100, size.height);
@@ -4272,7 +4273,7 @@ TEST_F(WebViewTest, PreferredSize) {
       ToKURL(url), test::CoreTestDataPath("specify_size.html"));
   web_view = web_view_helper_.InitializeAndLoad(url);
 
-  web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(1));
+  web_view->SetZoomLevel(PageZoomFactorToZoomLevel(1));
   size = web_view->ContentsPreferredMinimumSize();
   EXPECT_EQ(2, size.width);
   EXPECT_EQ(2, size.height);
@@ -5032,7 +5033,7 @@ TEST_F(WebViewTest, ResizeForPrintingViewportUnits) {
 TEST_F(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->MainFrameWidget()->Resize(WebSize(800, 600));
-  web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
+  web_view->SetZoomLevel(PageZoomFactorToZoomLevel(2.0));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),
@@ -5067,7 +5068,7 @@ TEST_F(WebViewTest, WidthMediaQueryWithPageZoomAfterPrinting) {
 TEST_F(WebViewTest, ViewportUnitsPrintingWithPageZoom) {
   WebViewImpl* web_view = web_view_helper_.Initialize();
   web_view->MainFrameWidget()->Resize(WebSize(800, 600));
-  web_view->SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
+  web_view->SetZoomLevel(PageZoomFactorToZoomLevel(2.0));
 
   WebURL base_url = url_test_helpers::ToKURL("http://example.com/");
   frame_test_helpers::LoadHTMLString(web_view->MainFrameImpl(),

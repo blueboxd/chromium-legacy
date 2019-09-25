@@ -186,6 +186,18 @@ MediaQueryEvaluatorTestCase g_forcedcolors_none_cases[] = {
     {nullptr, 0}  // Do not remove the terminator line.
 };
 
+MediaQueryEvaluatorTestCase g_navigationcontrols_back_button_cases[] = {
+    {"(navigation-controls: back-button)", 1},
+    {"(navigation-controls: none)", 0},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
+MediaQueryEvaluatorTestCase g_navigationcontrols_none_cases[] = {
+    {"(navigation-controls: back-button)", 0},
+    {"(navigation-controls: none)", 1},
+    {nullptr, 0}  // Do not remove the terminator line.
+};
+
 void TestMQEvaluator(MediaQueryEvaluatorTestCase* test_cases,
                      const MediaQueryEvaluator& media_query_evaluator,
                      CSSParserMode mode) {

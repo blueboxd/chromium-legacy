@@ -129,8 +129,14 @@ class TrayBackground : public views::Background {
     cc::PaintFlags background_flags;
     background_flags.setAntiAlias(true);
     int border_radius = kTrayRoundedBorderRadius;
+    const bool tablet_mode =
+        Shell::Get()->tablet_mode_controller() &&
+        Shell::Get()->tablet_mode_controller()->InTabletMode();
     background_flags.setColor(
-        ShelfConfig::Get()->shelf_control_permanent_highlight_background());
+        tablet_mode && ShelfConfig::Get()->is_in_app()
+            ? SK_ColorTRANSPARENT
+            : ShelfConfig::Get()
+                  ->shelf_control_permanent_highlight_background());
     border_radius = ShelfConfig::Get()->control_border_radius();
 
     gfx::Rect bounds = tray_background_view_->GetBackgroundBounds();

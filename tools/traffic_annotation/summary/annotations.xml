@@ -133,7 +133,7 @@ Refer to README.md for content description and update process.
  <item id="history_notice_utils_popup" hash_code="80832574" type="1" second_id="110307337" content_hash_code="30618510" os_list="linux,windows" semantics_fields="2,3,4" policy_fields="4" file_path="components/browsing_data/core/history_notice_utils.cc"/>
  <item id="history_ui_favicon_request_handler_get_favicon" hash_code="17562717" type="0" content_hash_code="64054629" os_list="linux,windows" file_path="components/favicon/core/history_ui_favicon_request_handler_impl.cc"/>
  <item id="http_server_error_response" hash_code="32197336" type="0" content_hash_code="61082230" os_list="linux,windows" file_path="net/server/http_server.cc"/>
- <item id="https_server_previews_navigation" hash_code="35725390" type="0" content_hash_code="84423109" os_list="linux,windows" file_path="chrome/browser/previews/previews_lite_page_serving_url_loader.cc"/>
+ <item id="https_server_previews_navigation" hash_code="35725390" type="0" content_hash_code="84423109" os_list="linux,windows" file_path="chrome/browser/previews/previews_lite_page_redirect_serving_url_loader.cc"/>
  <item id="icon_cacher" hash_code="103133150" type="0" content_hash_code="116368348" os_list="linux,windows" file_path="components/ntp_tiles/icon_cacher_impl.cc"/>
  <item id="icon_catcher_get_large_icon" hash_code="44494884" type="0" content_hash_code="98262037" os_list="linux,windows" file_path="components/ntp_tiles/icon_cacher_impl.cc"/>
  <item id="image_annotation" hash_code="107881858" type="0" content_hash_code="96203979" os_list="linux,windows" file_path="services/image_annotation/annotator.cc"/>
@@ -201,7 +201,7 @@ Refer to README.md for content description and update process.
  <item id="prefetch_download" hash_code="44583172" type="0" content_hash_code="21424542" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/prefetch_downloader_impl.cc"/>
  <item id="prefetch_visuals" hash_code="91068704" type="0" content_hash_code="90439946" os_list="linux,windows" file_path="components/offline_pages/core/prefetch/visuals_fetch_by_url.cc"/>
  <item id="previews_litepage_origin_prober" hash_code="33703614" type="0" content_hash_code="116235355" os_list="linux,windows" file_path="chrome/browser/previews/previews_lite_page_redirect_url_loader.cc"/>
- <item id="previews_litepage_prober" hash_code="33813109" type="0" content_hash_code="52572789" os_list="linux,windows" file_path="chrome/browser/previews/previews_lite_page_decider.cc"/>
+ <item id="previews_litepage_prober" hash_code="33813109" type="0" content_hash_code="52572789" os_list="linux,windows" file_path="chrome/browser/previews/previews_lite_page_redirect_decider.cc"/>
  <item id="previews_prober" hash_code="41010697" type="0" deprecated="2019-07-24" content_hash_code="51581107" file_path=""/>
  <item id="printer_job_handler" hash_code="67638271" type="1" second_id="111712433" content_hash_code="75712693" os_list="linux,windows" semantics_fields="2,3,4" file_path="chrome/service/cloud_print/printer_job_handler.cc"/>
  <item id="privet_http_impl" hash_code="71251498" type="0" content_hash_code="107348604" os_list="linux,windows" file_path="chrome/browser/printing/cloud_print/privet_http_impl.cc"/>

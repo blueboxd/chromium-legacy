@@ -16,10 +16,6 @@ Bug(none) virtual/scroll_customization/fast/events/touch/ [ Skip ]
 Bug(none) virtual/threaded/printing/ [ Skip ]
 Bug(none) virtual/threaded/http/tests/devtools/tracing/ [ Skip ]
 
-# Because PaintNonFastScrollableRegions implies CompositeAfterPaint, these tests
-# have already been run as part of the non-virtual test suite.
-Bug(none) virtual/paint-non-fast-scrollable-regions/ [ Skip ]
-
 # Fail before CompositeAfterPaint but pass with it.
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Pass ]
 crbug.com/736052 compositing/overflow/composited-scroll-with-fractional-translation.html [ Pass ]

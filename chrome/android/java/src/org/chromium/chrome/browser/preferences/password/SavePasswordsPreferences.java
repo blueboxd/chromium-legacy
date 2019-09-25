@@ -300,7 +300,7 @@ public class SavePasswordsPreferences
                 getPreferenceScreen().removePreference(passwordParent);
             } else {
                 getView().announceForAccessibility(
-                        getResources().getText(R.string.accessible_find_in_page_no_results));
+                        getString(R.string.accessible_find_in_page_no_results));
             }
         }
     }

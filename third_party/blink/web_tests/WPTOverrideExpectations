@@ -1014,7 +1014,6 @@ crbug.com/lpz external/wpt/html/rendering/non-replaced-elements/the-page/iframe-
 crbug.com/lpz external/wpt/html/rendering/non-replaced-elements/the-page/iframe-marginwidth-marginheight.html [ Failure ]
 crbug.com/lpz external/wpt/html/rendering/pixel-length-attributes.html [ Failure ]
 crbug.com/lpz external/wpt/html/rendering/replaced-elements/attributes-for-embedded-content-and-images/align.html [ Failure ]
-crbug.com/lpz external/wpt/html/rendering/replaced-elements/attributes-for-embedded-content-and-images/img-aspect-ratio.tentative.html [ Failure ]
 crbug.com/lpz external/wpt/html/rendering/unmapped-attributes.html [ Failure ]
 crbug.com/lpz external/wpt/html/rendering/widgets/button-layout/abspos.html [ Failure ]
 crbug.com/lpz external/wpt/html/rendering/widgets/button-layout/computed-style.html [ Failure ]

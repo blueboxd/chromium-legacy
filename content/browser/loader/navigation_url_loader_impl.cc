@@ -230,12 +230,19 @@ std::unique_ptr<network::ResourceRequest> CreateResourceRequest(
   new_request->has_user_gesture = request_info->common_params->has_user_gesture;
   new_request->enable_load_timing = true;
 
+  FrameTreeNode* frame_tree_node =
+      FrameTreeNode::GloballyFindByID(frame_tree_node_id);
   if (request_info->is_main_frame) {
-    new_request->mode = network::mojom::RequestMode::kNavigate;
+    // `<portal>` acts like a top-level navigation, but we want to represent it
+    // as a nested navigation for the purposes of security checks like
+    // `Sec-Fetch-Mode`.
+    new_request->mode =
+        frame_tree_node &&
+                WebContentsImpl::FromFrameTreeNode(frame_tree_node)->IsPortal()
+            ? network::mojom::RequestMode::kNavigateNestedFrame
+            : network::mojom::RequestMode::kNavigate;
   } else {
     new_request->mode = network::mojom::RequestMode::kNavigateNestedFrame;
-    FrameTreeNode* frame_tree_node =
-        FrameTreeNode::GloballyFindByID(frame_tree_node_id);
     if (frame_tree_node && (frame_tree_node->frame_owner_element_type() ==
                                 blink::FrameOwnerElementType::kObject ||
                             frame_tree_node->frame_owner_element_type() ==

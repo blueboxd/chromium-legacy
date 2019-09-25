@@ -27,7 +27,6 @@
 #include "android_webview/browser/aw_speech_recognition_manager_delegate.h"
 #include "android_webview/browser/aw_web_contents_view_delegate.h"
 #include "android_webview/browser/cookie_manager.h"
-#include "android_webview/browser/js_java_interaction/js_api_handler_factory.h"
 #include "android_webview/browser/network_service/aw_proxy_config_monitor.h"
 #include "android_webview/browser/network_service/aw_proxying_restricted_cookie_manager.h"
 #include "android_webview/browser/network_service/aw_proxying_url_loader_factory.h"
@@ -37,7 +36,6 @@
 #include "android_webview/common/aw_content_client.h"
 #include "android_webview/common/aw_descriptors.h"
 #include "android_webview/common/aw_switches.h"
-#include "android_webview/common/js_java_interaction/interfaces.mojom.h"
 #include "android_webview/common/render_view_messages.h"
 #include "android_webview/common/url_constants.h"
 #include "android_webview/grit/aw_resources.h"
@@ -713,13 +711,6 @@ bool AwContentBrowserClient::BindAssociatedReceiverFromFrame(
         render_frame_host);
     return true;
   }
-  if (interface_name == mojom::JsToJavaMessaging::Name_) {
-    JsApiHandlerFactory::BindJsToJavaMessaging(
-        mojo::PendingAssociatedReceiver<mojom::JsToJavaMessaging>(
-            std::move(*handle)),
-        render_frame_host);
-    return true;
-  }
 
   return false;
 }
@@ -931,6 +922,17 @@ bool AwContentBrowserClient::ShouldEnableStrictSiteIsolation() {
   // consider running AW tests with and without site-per-process (and this might
   // require returning true below).  Adding OOPIF support for AW is tracked by
   // https://crbug.com/869494.
+  return false;
+}
+
+bool AwContentBrowserClient::ShouldLockToOrigin(
+    content::BrowserContext* browser_context,
+    const GURL& effective_url) {
+  // TODO(lukasza): https://crbug.cmo/869494: Once Android WebView supports
+  // OOPIFs, we should remove this ShouldLockToOrigin overload.  Till then,
+  // returning false helps avoid accidentally applying citadel-style Site
+  // Isolation enforcement to Android WebView (and causing incorrect renderer
+  // kills).
   return false;
 }
 

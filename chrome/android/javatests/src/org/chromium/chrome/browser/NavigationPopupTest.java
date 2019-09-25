@@ -158,7 +158,11 @@ public class NavigationPopupTest {
     @MediumTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Navigation"})
-    public void testLongPressBackTriggering() throws ExecutionException {
+    @CommandLineFlags.Add({"force-fieldtrials=GestureNavigation/Disabled",
+            "force-fieldtrial-params=GestureNavigation.Disabled:"
+                    + "overscroll_history_navigation_bottom_sheet/false"})
+    public void
+    testLongPressBackTriggering() throws ExecutionException {
         KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
         TestThreadUtils.runOnUiThreadBlocking(
                 () -> { mActivityTestRule.getActivity().onKeyDown(KeyEvent.KEYCODE_BACK, event); });
@@ -174,7 +178,11 @@ public class NavigationPopupTest {
     @SmallTest
     @Restriction(UiRestriction.RESTRICTION_TYPE_PHONE)
     @Feature({"Navigation"})
-    public void testLongPressBackTriggering_Cancellation() throws ExecutionException {
+    @CommandLineFlags.Add({"force-fieldtrials=GestureNavigation/Disabled",
+            "force-fieldtrial-params=GestureNavigation.Disabled:"
+                    + "overscroll_history_navigation_bottom_sheet/false"})
+    public void
+    testLongPressBackTriggering_Cancellation() throws ExecutionException {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             KeyEvent event = new KeyEvent(KeyEvent.ACTION_DOWN, KeyEvent.KEYCODE_BACK);
             mActivityTestRule.getActivity().onKeyDown(KeyEvent.KEYCODE_BACK, event);

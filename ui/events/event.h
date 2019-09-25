@@ -18,6 +18,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/gesture_event_details.h"
 #include "ui/events/gestures/gesture_types.h"
@@ -485,6 +486,22 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   MouseEvent(const MouseEvent& copy);
   ~MouseEvent() override;
 
+  class DispatcherApi {
+   public:
+    explicit DispatcherApi(MouseEvent* event) : event_(event) {}
+
+    // TODO(eirage): convert this to builder pattern.
+    void set_movement(const gfx::Vector2dF& movement) {
+      event_->movement_ = movement;
+      event_->set_flags(event_->flags() | EF_UNADJUSTED_MOUSE);
+    }
+
+   private:
+    MouseEvent* event_;
+
+    DISALLOW_COPY_AND_ASSIGN(DispatcherApi);
+  };
+
   // Conveniences to quickly test what button is down
   bool IsOnlyLeftMouseButton() const {
     return button_flags() == EF_LEFT_MOUSE_BUTTON;
@@ -543,6 +560,8 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   // Updates the button that changed.
   void set_changed_button_flags(int flags) { changed_button_flags_ = flags; }
 
+  const gfx::Vector2dF& movement() const { return movement_; }
+
   const PointerDetails& pointer_details() const { return pointer_details_; }
 
  private:
@@ -558,6 +577,12 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
 
   // See description above getter for details.
   int changed_button_flags_;
+
+  // Raw mouse movement value reported from mouse hardware. The value of this is
+  // platform dependent and may change depending upon the hardware connected to
+  // the device. This field is only set if the flag EF_UNADJUSTED_MOUSE is
+  // present.
+  gfx::Vector2dF movement_;
 
   // The most recent user-generated MouseEvent, used to detect double clicks.
   static MouseEvent* last_click_event_;

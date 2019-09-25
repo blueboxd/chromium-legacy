@@ -766,6 +766,9 @@ QuicChromiumClientSession::QuicChromiumClientSession(
                                        connection_description,
                                        std::move(socket_performance_watcher),
                                        net_log_)),
+      http3_logger_(VersionHasStreamType(connection->transport_version())
+                        ? new QuicHttp3Logger(net_log_)
+                        : nullptr),
       going_away_(false),
       port_migration_detected_(false),
       push_delegate_(push_delegate),
@@ -800,6 +803,8 @@ QuicChromiumClientSession::QuicChromiumClientSession(
           std::make_unique<ProofVerifyContextChromium>(cert_verify_flags,
                                                        net_log_),
           crypto_config_->GetConfig()));
+  if (VersionHasStreamType(transport_version()))
+    set_debug_visitor(http3_logger_.get());
   connection->set_debug_visitor(logger_.get());
   connection->set_creator_debug_delegate(logger_.get());
   migrate_back_to_default_timer_.SetTaskRunner(task_runner_);

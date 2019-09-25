@@ -909,9 +909,13 @@ void V4L2SliceVideoDecoder::SurfaceReady(
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  // Find the timestamp associated with |bitstream_id|. On some rare occasions
-  // it's possible that a single DecoderBuffer produces multiple surfaces with
-  // the same |bitstream_id|, so we can't remove the timestamp from the cache.
+  // Find the timestamp associated with |bitstream_id|. It's possible that a
+  // surface is output multiple times for different |bitstream_id|s (e.g. VP9
+  // show_existing_frame feature). This means we need to output the same frame
+  // again with a different timestamp.
+  // On some rare occasions it's also possible that a single DecoderBuffer
+  // produces multiple surfaces with the same |bitstream_id|, so we shouldn't
+  // remove the timestamp from the cache.
   const auto it = bitstream_id_to_timestamp_.Peek(bitstream_id);
   DCHECK(it != bitstream_id_to_timestamp_.end());
   base::TimeDelta timestamp = it->second;
@@ -1101,15 +1105,14 @@ void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame,
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(4) << "timestamp: " << timestamp;
 
-  // |frame| haven't been set timestamp before, we could set the timestamp
-  // directly without wrapping.
+  // Set the timestamp at which the decode operation started on the
+  // |frame|. If the frame has been outputted before (e.g. because of VP9
+  // show-existing-frame feature) we can't overwrite the timestamp directly, as
+  // the original frame might still be in use. Instead we wrap the frame in
+  // another frame with a different timestamp.
   if (frame->timestamp().is_zero())
     frame->set_timestamp(timestamp);
 
-  // We need to update one or more attributes of the frame. Since we can't
-  // modify the attributes of the frame directly, we wrap the frame into a new
-  // frame with updated attributes. The old frame is bound to a destruction
-  // observer so it's not destroyed before the wrapped frame.
   if (frame->visible_rect() != visible_rect ||
       frame->timestamp() != timestamp) {
     gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);
@@ -1121,7 +1124,6 @@ void V4L2SliceVideoDecoder::RunOutputCB(scoped_refptr<VideoFrame> frame,
 
     frame = std::move(wrapped_frame);
   }
-  frame->metadata()->SetBoolean(VideoFrameMetadata::POWER_EFFICIENT, true);
 
   // Although the document of VideoDecoder says "should run |output_cb| as soon
   // as possible (without thread trampolining)", MojoVideoDecoderService still

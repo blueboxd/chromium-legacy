@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FEATURE_PROMOS_GLOBAL_MEDIA_CONTROLS_PROMO_CONTROLLER_H_
 #define CHROME_BROWSER_UI_VIEWS_FEATURE_PROMOS_GLOBAL_MEDIA_CONTROLS_PROMO_CONTROLLER_H_
 
+#include "chrome/browser/ui/global_media_controls/media_toolbar_button_observer.h"
 #include "chrome/browser/ui/views/feature_promos/feature_promo_bubble_view.h"
 #include "ui/views/widget/widget_observer.h"
 
@@ -15,7 +16,8 @@ class Profile;
 // showing the promo bubble and highlighting the appropriate app menu items.
 // Notifies the GlobalMediaControlsInProductHelp service when the promo is
 // finished.
-class GlobalMediaControlsPromoController : public views::WidgetObserver {
+class GlobalMediaControlsPromoController : public views::WidgetObserver,
+                                           public MediaToolbarButtonObserver {
  public:
   GlobalMediaControlsPromoController(MediaToolbarButtonView* owner,
                                      Profile* profile);
@@ -24,11 +26,12 @@ class GlobalMediaControlsPromoController : public views::WidgetObserver {
   // Shows the IPH promo. Should only be called once.
   void ShowPromo();
 
-  // Called when the global media controls dialog is opened.
-  void OnMediaDialogOpened();
-
-  // Called when the global media controls toolbar button is disabled or hidden.
-  void OnMediaToolbarButtonDisabledOrHidden();
+  // MediaToolbarButtonObserver implementation.
+  void OnMediaDialogOpened() override;
+  void OnMediaButtonShown() override {}
+  void OnMediaButtonHidden() override;
+  void OnMediaButtonEnabled() override {}
+  void OnMediaButtonDisabled() override;
 
   void disable_bubble_timeout_for_test() {
     disable_bubble_timeout_for_test_ = true;

@@ -7,6 +7,7 @@
 
 #include "base/fuchsia/scoped_service_binding.h"
 #include "base/fuchsia/service_directory.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "fuchsia/http/http_service_impl.h"

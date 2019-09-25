@@ -49,11 +49,11 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   bool IsSVGAnimationAttributeSettingJavaScriptURL(
       const Attribute&) const override;
 
-  AnimatedPropertyType GetAnimatedPropertyType();
-  bool AnimatedPropertyTypeSupportsAddition();
+  AnimatedPropertyType GetAnimatedPropertyType() const;
+  bool AnimatedPropertyTypeSupportsAddition() const;
 
  protected:
-  bool HasValidTarget() override;
+  bool HasValidTarget() const override;
 
   void WillChangeAnimationTarget() final;
   void DidChangeAnimationTarget() final;
@@ -73,7 +73,7 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
   void ApplyResultsToTarget() final;
   float CalculateDistance(const String& from_string,
                           const String& to_string) final;
-  bool IsAdditive() final;
+  bool IsAdditive() const final;
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
@@ -90,10 +90,9 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
                            stringsShouldNotSupportAddition);
 
  private:
-  void ResetAnimatedPropertyType();
+  void ResetCachedAnimationState();
 
-  bool ShouldApplyAnimation(const SVGElement& target_element,
-                            const QualifiedName& attribute_name);
+  bool ShouldApplyAnimation(const SVGElement& target_element) const;
 
   void SetAttributeType(const AtomicString&);
 
@@ -102,6 +101,7 @@ class CORE_EXPORT SVGAnimateElement : public SVGAnimationElement {
 
   virtual void ResolveTargetProperty();
   void ClearTargetProperty();
+  void UpdateTargetProperty();
 
   virtual SVGPropertyBase* CreatePropertyForAnimation(const String&) const;
   SVGPropertyBase* CreatePropertyForAttributeAnimation(const String&) const;

@@ -18,7 +18,7 @@
 #include "base/files/file_util.h"
 #include "base/i18n/time_formatting.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/metrics/user_metrics.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

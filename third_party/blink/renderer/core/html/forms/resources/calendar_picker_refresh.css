@@ -29,7 +29,7 @@ body {
 .calendar-navigation-button {
   -webkit-align-self: center;
   background-color: #ffffff;
-  border: 0;
+  border: 1px solid transparent;
   color: #101010;
   padding: 0;
   text-align: center;
@@ -49,7 +49,7 @@ body {
 }
 
 .calendar-navigation-button:disabled path {
-  fill: rgba(16, 16, 16, 0.3);;
+  fill: rgba(16, 16, 16, 0.3);
 }
 
 .calendar-title {
@@ -83,9 +83,13 @@ body {
   margin-inline-end: 1px;
 }
 
+.week-number-cell {
+  border: 1px solid transparent !important;
+}
+
 .day-cell {
   background-color: #ffffff;
-  border: 0 !important;
+  border: 1px solid transparent !important;
   border-radius: 2px;
   color: #767676;
   padding: 1px;
@@ -132,7 +136,7 @@ body {
 }
 
 .today-button-refresh {
-  border: 0;
+  border: 1px solid transparent;
   bottom: 12px;
   color: #0078D4;
   font-size: 12px;
@@ -171,9 +175,127 @@ body {
 .year-list-cell .label {
   background-color: #EFEFEF;
   border-color: #CECECE;
+  margin-bottom: 1px;
 }
 
 .month-button {
+  border: 1px solid transparent !important;
   border-radius: 2px;
   color: #101010;
+}
+
+/* These forced colors mode styles override the default styling for elements
+ * when forced colors mode is enabled.
+ */
+@media (forced-colors: active) {
+  .calendar-navigation-button {
+    background-color: Window;
+    color: WindowText;
+    forced-color-adjust: none;
+  }
+
+  .calendar-navigation-button:hover {
+    background-color: Window;
+    border-color: Highlight;
+  }
+
+  .calendar-navigation-button:disabled {
+    background-color: Window;
+    border-color: transparent;
+  }
+
+  .calendar-navigation-button path {
+    fill: WindowText;
+  }
+
+  .calendar-navigation-button:disabled path {
+    fill: GrayText;
+  }
+
+  .month-popup-button polygon {
+    fill: WindowText !important;
+  }
+
+  .month-popup-button:disabled polygon {
+    fill: GrayText !important;
+  }
+
+  .week-number-cell  {
+    background-color: Window;
+    color: WindowText;
+    forced-color-adjust: none;
+  }
+
+  .day-cell {
+    background-color: Window;
+    color: GrayText;
+    forced-color-adjust: none;
+  }
+
+  .month-button {
+    background-color: Window;
+    color: WindowText;
+    forced-color-adjust: none;
+  }
+
+  .day-cell.current-month {
+    color: WindowText;
+  }
+
+  .day-cell.highlighted,
+  .month-button.highlighted,
+  .week-number-cell.highlighted {
+    background-color: Window;
+    border-color: Highlight !important;
+  }
+
+  .day-cell.selected,
+  .month-button.selected,
+  .week-number-cell.selected {
+    background-color: Highlight;
+  }
+
+  .day-cell.highlighted.today,
+  .day-cell.today,
+  .month-button.today {
+    background-color: Highlight;
+    border: 2px solid Window !important;
+  }
+
+  .day-cell.selected.today,
+  .month-button.selected.today {
+    border: 1px solid Window !important;
+  }
+
+  .day-cell.disabled,
+  .day-cell.disabled.today,
+  .month-button[aria-disabled="true"],
+  .week-number-cell.disabled {
+    background-color: Window;
+    border: 0 !important;
+    color: GrayText;
+  }
+
+  .today-button-refresh {
+    background-color: Window;
+    color: LinkText;
+    forced-color-adjust: none;
+  }
+
+  .today-button-refresh:hover {
+    background-color: Window;
+    border-color: Highlight;
+  }
+
+  .today-button-refresh:disabled {
+    background-color: Window;
+    border-color: transparent;
+    color: GrayText;
+    forced-color-adjust: none;
+  }
+
+  .scrubby-scroll-thumb {
+    background-color: WindowText;
+    forced-color-adjust: none;
+  }
 }

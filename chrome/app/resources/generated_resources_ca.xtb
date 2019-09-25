@@ -649,7 +649,7 @@
 <translation id="1926339101652878330">Aquesta configuració està controlada per una política d'empresa. Contacteu amb l'administrador per obtenir més informació.</translation>
 <translation id="1927632033341042996">Dit <ph name="NEW_FINGER_NUMBER" /></translation>
 <translation id="1928202201223835302">Introdueix el PIN antic</translation>
-<translation id="1929546189971853037">Llegir l'historial de navegació en tots els dispositius on hàgiu iniciar la sessió</translation>
+<translation id="1929546189971853037">Llegir l'historial de navegació en tots els dispositius en què tens la sessió iniciada</translation>
 <translation id="1931152874660185993">No hi ha cap component instal·lat.</translation>
 <translation id="1932026958134051332">Opcions d'Accés amb interruptors</translation>
 <translation id="1932098463447129402">No abans</translation>
@@ -1100,7 +1100,6 @@ Pots gestionar la configuració d'aquest compte instal·lant l'aplicació Family
 <translation id="2586672484245266891">Introdueix un URL més curt</translation>
 <translation id="2588636910004461974">Dispositius del proveïdor <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">Fes una cerca a Google o escriu l'URL</translation>
-<translation id="2597521610396315071">Afegeix supervisió</translation>
 <translation id="2603115962224169880">Neteja l'ordinador</translation>
 <translation id="2603463522847370204">Obre-ho en una &amp;finestra d'incògnit</translation>
 <translation id="2604255671529671813">Error de connexió a la xarxa</translation>
@@ -4130,7 +4129,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7117228822971127758">Torna-ho a provar més tard</translation>
 <translation id="7117247127439884114">Torna a iniciar la sessió...</translation>
 <translation id="711840821796638741">Mostra les adreces d'interès gestionades</translation>
-<translation id="711902386174337313">Accedeix a la llista de dispositius en què s'ha iniciat la sessió</translation>
+<translation id="711902386174337313">Accedeix a la llista de dispositius en què tens la sessió iniciada</translation>
 <translation id="7120865473764644444">No s'ha pogut connectar amb el servidor de sincronització. S'està tornant a provar…</translation>
 <translation id="7121362699166175603">Esborra l'historial i les complecions automàtiques a la barra d'adreces. A <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> trobaràs altres maneres d'explorar l'historial de navegació del Compte de Google.</translation>
 <translation id="7121389946694989825">Envia dades d'ús i de diagnòstic. En aquests moments aquest dispositiu envia automàticament a Google dades de diagnòstic, del dispositiu i d''ús d'aplicacions. Aquestes dades no es faran servir per identificar el teu fill i ajudaran a millorar l'estabilitat del sistema i de les aplicacions, entre altres característiques. Una part de les dades agregades també serà útil per a les aplicacions i els col·laboradors de Google, com ara els desenvolupadors d'Android. Si l'opció Activitat al web i en aplicacions addicional està activada per al teu fill, és possible que aquestes dades es desin al seu Compte de Google. <ph name="BEGIN_LINK1" />Més informació<ph name="END_LINK1" /></translation>
@@ -4566,7 +4565,7 @@ Assegureu-vos que no es pugui accedir a informació sensible.</translation>
 <translation id="7780252971640011240">Hi ha problemes de connexió. Contacta amb l'operador per obtenir ajuda.</translation>
 <translation id="7781335840981796660">Se suprimiran tots els comptes d'usuari i totes les dades locals.</translation>
 <translation id="7782102568078991263">Cap suggeriment més de Google</translation>
-<translation id="7782717250816686129">Emmagatzema les dades permanents a la pàgina d'inici de sessió i introdueix les credencials per iniciar la sessió.</translation>
+<translation id="7782717250816686129">Emmagatzema les dades permanents a la pàgina d'inici de sessió i insereix les credencials per iniciar la sessió.</translation>
 <translation id="778330624322499012">No s'ha pogut carregar <ph name="PLUGIN_NAME" /></translation>
 <translation id="7784067724422331729">La configuració de seguretat del vostre ordinador ha bloquejat aquest fitxer.</translation>
 <translation id="7784796923038949829">No es poden llegir o canviar les dades del lloc web</translation>
@@ -4963,7 +4962,8 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8291967909914612644">País del proveïdor domèstic</translation>
 <translation id="8294431847097064396">Font</translation>
 <translation id="8297006494302853456">Feble</translation>
-<translation id="8299319456683969623">Actualment no teniu connexió.</translation>
+<translation id="8299319456683969623">En aquests moments no tens connexió.
+</translation>
 <translation id="8300011035382349091">Edita l'adreça d'interès d'aquesta pestanya</translation>
 <translation id="8300374739238450534">Blau nit</translation>
 <translation id="8300849813060516376">Error d'OTASP</translation>
@@ -5243,7 +5243,7 @@ Deseu el fitxer de clau en una ubicació segura. El necessitareu per crear versi
 <translation id="8727154974495727220">Quan el dispositiu <ph name="DEVICE_TYPE" /> estigui configurat, prem el botó de l'Assistent o digues "Ok Google" per obtenir ajuda en qualsevol moment. Ves a la configuració de l'Assistent per fer-hi canvis.</translation>
 <translation id="8730621377337864115">Fet</translation>
 <translation id="8732030010853991079">Per fer servir aquesta extensió, feu clic en aquesta icona.</translation>
-<translation id="8732212173949624846">Llegir i canviar l'historial de navegació en tots els dispositius on s'hagi iniciat la sessió</translation>
+<translation id="8732212173949624846">Llegir i canviar l'historial de navegació en tots els dispositius en què tens la sessió iniciada</translation>
 <translation id="8732844209475700754">Més opcions de configuració relacionades amb la privadesa, la seguretat i la recollida de dades</translation>
 <translation id="8734073480934656039">Si s'activa aquesta configuració, les aplicacions de quiosc es podran iniciar automàticament en iniciar el dispositiu.</translation>
 <translation id="8734674662128056360">Bloqueig de galetes de tercers</translation>

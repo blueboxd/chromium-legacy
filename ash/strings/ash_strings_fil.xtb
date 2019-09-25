@@ -41,6 +41,7 @@
 <translation id="1460620680449458626">Naka-mute ang volume.</translation>
 <translation id="1467432559032391204">Kaliwa</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1516740043221086139">Naka-on ang Huwag istorbohin.</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{Ipakita ang mga setting ng notification. Naka-off ang mga notification para sa isang app}one{Ipakita ang mga setting ng notification. Naka-off ang mga notification para sa # app}other{Ipakita ang mga setting ng notification. Naka-off ang mga notification para sa # na app}}</translation>
 <translation id="1525508553941733066">I-DISMISS</translation>
 <translation id="1537254971476575106">Fullscreen magnifier</translation>
@@ -255,6 +256,7 @@
 <translation id="4585337515783392668">Ihinto ang pag-cast sa isang hindi pa natutukoy na tagatanggap</translation>
 <translation id="4628757576491864469">Mga Device</translation>
 <translation id="4659419629803378708">Na-enable ang ChromeVox</translation>
+<translation id="4665114317261903604">I-toggle ang Huwag istorbohin. <ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">I-unlock ang device gamit ang parent code</translation>
 <translation id="4731797938093519117">Pangunahing access</translation>
 <translation id="4734965478015604180">Horizontal</translation>
@@ -353,6 +355,7 @@
 <translation id="6254629735336163724">Naka-lock sa horizontal</translation>
 <translation id="6259254695169772643">Gamitin ang iyong stylus para pumili</translation>
 <translation id="6267036997247669271"><ph name="NAME" />: Ina-activate...</translation>
+<translation id="6283712521836204486">Naka-off ang Huwag istorbohin.</translation>
 <translation id="6284232397434400372">Binago ang resolution</translation>
 <translation id="6297287540776456956">Gamitin ang stylus upang pumili ng rehiyon</translation>
 <translation id="6310121235600822547">Na-rotate ang <ph name="DISPLAY_NAME" /> sa <ph name="ROTATION" /></translation>

@@ -17,12 +17,17 @@
 #include "components/autofill/core/browser/payments/legal_message_line.h"
 
 namespace autofill {
+class AutofillProfile;
 class CreditCard;
 class FormStructure;
 }  // namespace autofill
 
 // WebView extension of AutofillClientIOSBridge.
 @protocol CWVAutofillClientIOSBridge<AutofillClientIOSBridge>
+
+// Bridge for AutofillClient's method |ConfirmSaveAutofillProfile|.
+- (void)confirmSaveAutofillProfile:(const autofill::AutofillProfile&)profile
+                          callback:(base::OnceClosure)callback;
 
 // Bridge for AutofillClient's method |ConfirmSaveCreditCardLocally|.
 - (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard

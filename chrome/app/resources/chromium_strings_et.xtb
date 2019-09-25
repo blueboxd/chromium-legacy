@@ -117,7 +117,6 @@
 <translation id="5416696090975899932">Chromium ei saa printimise eelvaadet kuvada, kui sisseehitatud PDF-vaatur puudub.</translation>
 <translation id="5427571867875391349">Määra Chromium vaikebrauseriks</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromiumi beetaversioon</translation>
-<translation id="5466153949126434691">Chromium teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni. Kui allalaadimine on lõppenud, siis Chrome taaskäivitub ja võite alustada kasutamist.</translation>
 <translation id="5479196819031988440">Chromium OS ei saa seda lehte avada.</translation>
 <translation id="5480860683791598150">Chromium vajab juurdepääsu teie asukohale, et seda selle saidiga jagada</translation>
 <translation id="549669000822060376">Oodake, kuni Chromium installib uusimad süsteemivärskendused.</translation>
@@ -213,7 +212,6 @@ Chromium ei saa teie seadeid taastada.</translation>
 <translation id="7867198900892795913">Chromiumi ei saanud uusimale versioonile värskendada, mistõttu jääte ilma uutest funktsioonidest ja turvaparandustest.</translation>
 <translation id="7901117350626490574">Saadaval on uus Chromiumi värskendus, mis rakendatakse taaskäivitamisel.</translation>
 <translation id="7937630085815544518">Olite Chromiumisse sisse logitud kasutajana <ph name="USER_EMAIL_ADDRESS" />. Kasutage uuesti sisselogimiseks sama kontot.</translation>
-<translation id="7962572577636132072">Chromium teeb värskendused automaatselt, nii et kasutate alati uusimat versiooni.</translation>
 <translation id="7975919845073681630">See on Chromiumi sekundaarne install ja seda ei saa määrata vaikebrauseriks.</translation>
 <translation id="7979877361127045932">Chromiumi menüüs peitmine</translation>
 <translation id="8013436988911883588">Kui annate Chromiumile juurdepääsu, saavad veebisaidid küsida teilt juurdepääsuluba.</translation>

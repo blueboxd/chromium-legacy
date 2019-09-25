@@ -201,11 +201,6 @@ class WebView {
   // change.
   virtual double SetZoomLevel(double) = 0;
 
-  // Helper functions to convert between zoom level and zoom factor.  zoom
-  // factor is zoom percent / 100, so 300% = 3.0.
-  BLINK_EXPORT static double ZoomLevelToZoomFactor(double zoom_level);
-  BLINK_EXPORT static double ZoomFactorToZoomLevel(double factor);
-
   // Returns the current text zoom factor, where 1.0 is the normal size, > 1.0
   // is scaled up and < 1.0 is scaled down.
   virtual float TextZoomFactor() = 0;

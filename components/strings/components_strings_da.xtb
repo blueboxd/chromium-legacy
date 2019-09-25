@@ -275,7 +275,7 @@
 <translation id="2270484714375784793">Telefonnummer</translation>
 <translation id="2277103315734023688">Spol frem</translation>
 <translation id="2283340219607151381">Gem og udfyld adresser</translation>
-<translation id="2289385804009217824">Renskær</translation>
+<translation id="2289385804009217824">Beskær</translation>
 <translation id="2292556288342944218">Din internetadgang er blokeret</translation>
 <translation id="2297722699537546652">B5 (Envelope)</translation>
 <translation id="2310021320168182093">Chou2 (Envelope)</translation>
@@ -410,7 +410,7 @@
 <translation id="2925673989565098301">Leveringsmetode</translation>
 <translation id="2928905813689894207">Faktureringsadresse</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> anden}one{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> anden}other{<ph name="SHIPPING_ADDRESS_PREVIEW" /> og <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> andre}}</translation>
-<translation id="2930577230479659665">Renskær efter hver kopi</translation>
+<translation id="2930577230479659665">Beskær efter hver kopi</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">Denne server kunne ikke bevise, at den er <ph name="DOMAIN" />, da sikkerhedscertifikatet er fra <ph name="DOMAIN2" />. Dette kan skyldes en fejlkonfiguration, eller at en hacker har opfanget din forbindelse.</translation>
 <translation id="2948083400971632585">Du kan deaktivere alle proxyer, der er konfigureret for en forbindelse, fra siden Indstillinger.</translation>
@@ -881,7 +881,7 @@
 <translation id="5300589172476337783">Vis</translation>
 <translation id="5308380583665731573">Få forbindelse</translation>
 <translation id="5308689395849655368">Rapportering af nedbrud er deaktiveret.</translation>
-<translation id="5314967030527622926">Værktøj til at lave en brochure</translation>
+<translation id="5314967030527622926">Brochureværktøj</translation>
 <translation id="5317780077021120954">Gem</translation>
 <translation id="5323105697514565458"><ph name="FRIENDLY_MATCH_TEXT" />, <ph name="MATCH_POSITION" /> af <ph name="NUM_MATCHES" /></translation>
 <translation id="5324080437450482387">Vælg kontaktoplysninger</translation>
@@ -1011,7 +1011,7 @@
 <translation id="598637245381783098">Betalingsappen kan ikke åbnes</translation>
 <translation id="5989320800837274978">Der er hverken angivet faste proxyservere eller en .pac-scriptwebadresse.</translation>
 <translation id="5990559369517809815">Anmodninger til serveren er blokeret af en udvidelse.</translation>
-<translation id="5992691462791905444">Engineering Z-fals</translation>
+<translation id="5992691462791905444">Z-fals med kant foroven</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> resultater for "<ph name="SEARCH_TEXT" />"</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">År</translation>
@@ -1035,6 +1035,7 @@
 <translation id="6058977677006700226">Vil du bruge kortene på alle dine enheder?</translation>
 <translation id="6059925163896151826">USB-enheder</translation>
 <translation id="6060009363608157444">Ugyldig DnsOverHttps-tilstand.</translation>
+<translation id="6064217302520318294">Skærmlås</translation>
 <translation id="6080696365213338172">Du har opnår adgang til indhold vha. et administratorcertifikat. De data, du angiver til <ph name="DOMAIN" />, kan indhentes af din administrator.</translation>
 <translation id="6094273045989040137">Annoter</translation>
 <translation id="610911394827799129">Din Google-konto kan have andre former for browserhistorik på <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -1052,7 +1053,7 @@
 <translation id="6218753634732582820">Vil du fjerne adressen fra Chromium?</translation>
 <translation id="622039917539443112">Parallelfals</translation>
 <translation id="6221345481584921695">Google Beskyttet browsing <ph name="BEGIN_LINK" />registrerede malware<ph name="END_LINK" /> på <ph name="SITE" /> for nylig. Websites, der normalt er sikre, inficeres undertiden med malware. Det skadelige indhold kommer fra <ph name="SUBRESOURCE_HOST" />, som er en kendt malwaredistributør.</translation>
-<translation id="6234122620015464377">Renskær efter hvert dokument</translation>
+<translation id="6234122620015464377">Beskær efter hvert dokument</translation>
 <translation id="6240447795304464094">Google Pay-logo</translation>
 <translation id="6251924700383757765">Privatlivspolitik</translation>
 <translation id="6254436959401408446">Der er ikke nok hukommelse til at åbne denne side</translation>
@@ -1402,7 +1403,7 @@ Yderligere oplysninger:
 <translation id="8009225694047762179">Administrer adgangskoder</translation>
 <translation id="8012116502927253373">{NUM_CARDS,plural, =1{Kortet og faktureringsadressen gemmes. Du kan bruge dem, når du er logget ind på <ph name="USER_EMAIL" />.}one{Kortet og faktureringsadressen gemmes. Du kan bruge dem, når du er logget ind på <ph name="USER_EMAIL" />.}other{Kortene og faktureringsadresserne gemmes. Du kan bruge dem, når du er logget ind på <ph name="USER_EMAIL" />.}}</translation>
 <translation id="8025119109950072390">Hackere på dette website kan narre dig til at gøre noget farligt, såsom at installere software eller afsløre dine personlige oplysninger (f.eks. adgangskoder, telefonnumre eller kreditkort).</translation>
-<translation id="8028960012888758725">Renskær efter tryk</translation>
+<translation id="8028960012888758725">Beskær efter tryk</translation>
 <translation id="8034522405403831421">Denne side er på <ph name="SOURCE_LANGUAGE" />. Vil du oversætte den til <ph name="TARGET_LANGUAGE" />?</translation>
 <translation id="8035152190676905274">Pen</translation>
 <translation id="8037117624646282037">Hvem der senest har brugt enheden</translation>
@@ -1544,7 +1545,7 @@ Yderligere oplysninger:
 <translation id="8792621596287649091">Du kan miste adgangen til din <ph name="ORG_NAME" />-konto eller udsættes for identitetstyveri. Chromium anbefaler, at du skifter din adgangskode nu.</translation>
 <translation id="8800988563907321413">Her vises de forslag, der er tæt på dig</translation>
 <translation id="8805819170075074995">Listepost "<ph name="LANGUAGE_ID" />": Posten blev ignoreret, fordi den også er inkluderet i politikken SpellcheckLanguage.</translation>
-<translation id="8807160976559152894">Renskær efter hver side</translation>
+<translation id="8807160976559152894">Beskær efter hver side</translation>
 <translation id="8820817407110198400">Bogmærker</translation>
 <translation id="883848425547221593">Andre bogmærker</translation>
 <translation id="884264119367021077">Leveringsadresse</translation>

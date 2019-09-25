@@ -11,6 +11,8 @@
 @property(nonatomic, assign) BOOL didSeeMemoryWarningShortlyBeforeTerminating;
 @property(nonatomic, assign) BOOL isFirstSessionAfterUpgrade;
 @property(nonatomic, assign) float deviceBatteryLevel;
+@property(nonatomic, assign)
+    previous_session_info_constants::DeviceBatteryState deviceBatteryState;
 @property(nonatomic, assign) BOOL OSRestartedAfterPreviousSession;
 
 + (void)resetSharedInstanceForTesting;

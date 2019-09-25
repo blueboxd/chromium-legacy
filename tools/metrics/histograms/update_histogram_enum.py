@@ -191,7 +191,7 @@ def UpdateHistogramDefinitions(histogram_enum_name, source_enum_values,
   for child in enum_node.childNodes:
     if child.nodeName == 'int':
       value = int(child.attributes['value'].value)
-      if not source_enum_values.has_key(value):
+      if value not in source_enum_values:
         new_item_nodes[value] = child
     # Preserve existing non-generated comments.
     elif (child.nodeType == minidom.Node.COMMENT_NODE and

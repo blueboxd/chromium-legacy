@@ -4,6 +4,7 @@
 
 #include "content/browser/scheduler/browser_io_thread_delegate.h"
 
+#include "base/message_loop/message_pump.h"
 #include "base/message_loop/message_pump_type.h"
 #include "base/task/sequence_manager/sequence_manager.h"
 #include "base/task/sequence_manager/task_queue.h"

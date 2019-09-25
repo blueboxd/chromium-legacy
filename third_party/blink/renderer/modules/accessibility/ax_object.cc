@@ -92,6 +92,11 @@ struct RoleEntry {
 const RoleEntry kRoles[] = {
     {"alert", ax::mojom::Role::kAlert},
     {"alertdialog", ax::mojom::Role::kAlertDialog},
+    {"annotation-attribution", ax::mojom::Role::kAnnotationAttribution},
+    {"annotation-commentary", ax::mojom::Role::kAnnotationCommentary},
+    {"annotation-presence", ax::mojom::Role::kAnnotationPresence},
+    {"annotation-revision", ax::mojom::Role::kAnnotationRevision},
+    {"annotation-suggestion", ax::mojom::Role::kAnnotationSuggestion},
     {"application", ax::mojom::Role::kApplication},
     {"article", ax::mojom::Role::kArticle},
     {"banner", ax::mojom::Role::kBanner},
@@ -231,7 +236,11 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kAlertDialog, "AlertDialog"},
     {ax::mojom::Role::kAlert, "Alert"},
     {ax::mojom::Role::kAnchor, "Anchor"},
-    {ax::mojom::Role::kAnnotation, "Annotation"},
+    {ax::mojom::Role::kAnnotationAttribution, "kAnnotationAttribution"},
+    {ax::mojom::Role::kAnnotationCommentary, "AnnotationCommentary"},
+    {ax::mojom::Role::kAnnotationPresence, "AnnotationPresence"},
+    {ax::mojom::Role::kAnnotationRevision, "AnnotationRevision"},
+    {ax::mojom::Role::kAnnotationSuggestion, "AnnotationSuggestion"},
     {ax::mojom::Role::kApplication, "Application"},
     {ax::mojom::Role::kArticle, "Article"},
     {ax::mojom::Role::kAudio, "Audio"},
@@ -381,6 +390,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kRowHeader, "RowHeader"},
     {ax::mojom::Role::kRow, "Row"},
     {ax::mojom::Role::kRuby, "Ruby"},
+    {ax::mojom::Role::kRubyAnnotation, "RubyAnnotation"},
     {ax::mojom::Role::kSvgRoot, "SVGRoot"},
     {ax::mojom::Role::kScrollBar, "ScrollBar"},
     {ax::mojom::Role::kScrollView, "ScrollView"},
@@ -1199,6 +1209,11 @@ const AXObject* AXObject::DisabledAncestor() const {
 
 bool AXObject::ComputeAccessibilityIsIgnoredButIncludedInTree() const {
   if (!GetNode())
+    return false;
+
+  // Disallow inert nodes from the tree to ensure the dialog is always the
+  // first child of the root.
+  if (GetNode()->IsInert())
     return false;
 
   // If the node is part of the user agent shadow dom, or has the explicit
@@ -3378,6 +3393,11 @@ bool AXObject::NameFromContents(bool recursive) const {
     // containers for many subobjects. Superset of nameFrom:author ARIA roles.
     case ax::mojom::Role::kAlert:
     case ax::mojom::Role::kAlertDialog:
+    case ax::mojom::Role::kAnnotationAttribution:
+    case ax::mojom::Role::kAnnotationCommentary:
+    case ax::mojom::Role::kAnnotationPresence:
+    case ax::mojom::Role::kAnnotationRevision:
+    case ax::mojom::Role::kAnnotationSuggestion:
     case ax::mojom::Role::kApplication:
     case ax::mojom::Role::kAudio:
     case ax::mojom::Role::kArticle:
@@ -3496,7 +3516,6 @@ bool AXObject::NameFromContents(bool recursive) const {
     // Some objects can contribute their contents to ancestor names, but
     // only have their own name if they are focusable
     case ax::mojom::Role::kAbbr:
-    case ax::mojom::Role::kAnnotation:
     case ax::mojom::Role::kCanvas:
     case ax::mojom::Role::kCaption:
     case ax::mojom::Role::kContentDeletion:
@@ -3532,6 +3551,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     // if the row might receive focus
     case ax::mojom::Role::kRow:
     case ax::mojom::Role::kRuby:
+    case ax::mojom::Role::kRubyAnnotation:
       result = recursive || (CanReceiveAccessibilityFocus() && !IsEditable());
       break;
 

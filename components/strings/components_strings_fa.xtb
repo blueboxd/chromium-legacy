@@ -345,8 +345,8 @@
 <translation id="2634124572758952069">‏نشانی IP سرور <ph name="HOST_NAME" /> پیدا نشد.</translation>
 <translation id="2638745661847473633">سروری که به آن می‌روید، <ph name="ORIGIN" />، درخواست کرده است
     برای همه درخواست‌هایش خط‌مشی اصلی اعمال شود. اما اکنون خط‌مشی
-    نامعتبری را ارسال کرده است، به معنای اینکه
-مرورگر درخواستتان را
+    نامعتبری را ارسال کرده است، که به این معناست که
+مرورگر نمی‌تواند درخواستتان را
     برای <ph name="SITE" /> برآورده کند. اپراتورهای سایت می‌توانند از
     خط‌مشی‌های اصلی برای پیکربندی امنیت و ویژگی‌های دیگر سایت استفاده کنند.</translation>
 <translation id="2639739919103226564">وضعیت:</translation>
@@ -607,7 +607,7 @@
 <translation id="3963837677003247395">به‌صورت دستی ادامه می‌دهید؟</translation>
 <translation id="3964661563329879394">{COUNT,plural, =0{هیچ‌کدام}=1{از ۱ سایت }one{از # سایت }other{از # سایت }}</translation>
 <translation id="397105322502079400">در حال محاسبه…</translation>
-<translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود است</translation>
+<translation id="3973234410852337861"><ph name="HOST_NAME" /> مسدود شده است</translation>
 <translation id="3981540111851280311">‏<ph name="ENROLLMENT_DOMAIN" /> «محافظت از خطرات تهدیدکننده Chrome Enterprise» را در مرورگرتان فعال کرده است. «محافظت از خطرات تهدیدکننده Chrome Enterprise» به برخی داده‌هایتان دسترسی دارد.</translation>
 <translation id="3987940399970879459">کمتر از ۱ مگابایت</translation>
 <translation id="3990250421422698716">‏آفست Z شکل</translation>
@@ -1010,7 +1010,7 @@
 <translation id="598637245381783098">برنامه پرداخت باز نشد</translation>
 <translation id="5989320800837274978">‏سرور پروکسی ثابت و URL اسکریپت pac. تعیین نشده‌اند.</translation>
 <translation id="5990559369517809815">درخواست‌های ارسالی به سرور توسط یک برنامهٔ افزودنی مسدود شد.</translation>
-<translation id="5992691462791905444">سه‌لت مهندسی</translation>
+<translation id="5992691462791905444">‏تاخوردگی Z شکل مهندسی</translation>
 <translation id="6000758707621254961"><ph name="RESULT_COUNT" /> نتیجه برای «<ph name="SEARCH_TEXT" />»</translation>
 <translation id="6008256403891681546">JCB</translation>
 <translation id="6015796118275082299">سال</translation>
@@ -1034,6 +1034,7 @@
 <translation id="6058977677006700226">از کارت‌ها در همه دستگاه‌هایتان استفاده شود؟</translation>
 <translation id="6059925163896151826">‏دستگاه‌های USB</translation>
 <translation id="6060009363608157444">‏حالت DnsOverHttps نامعتبر است.</translation>
+<translation id="6064217302520318294">قفل صفحه</translation>
 <translation id="6080696365213338172">شما با استفاده از گواهی ارائه شده توسط سرپرست سیستم به محتوا دسترسی پیدا کرده‌اید. داده‌هایی که به <ph name="DOMAIN" /> ارائه می‌کنید ممکن است توسط سرپرست سیستم رهگیری شوند.</translation>
 <translation id="6094273045989040137">حاشیه‌نویسی</translation>
 <translation id="610911394827799129">‏ممکن است حساب Google شما اشکال دیگری از سابقه مرور در <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /> داشته باشد</translation>

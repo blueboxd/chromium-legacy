@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_download_button_element.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -46,9 +47,8 @@ bool MediaControlDownloadButtonElement::ShouldDisplayDownloadButton() const {
   return true;
 }
 
-WebLocalizedString::Name
-MediaControlDownloadButtonElement::GetOverflowStringName() const {
-  return WebLocalizedString::kOverflowMenuDownload;
+int MediaControlDownloadButtonElement::GetOverflowStringId() const {
+  return IDS_MEDIA_OVERFLOW_MENU_DOWNLOAD;
 }
 
 bool MediaControlDownloadButtonElement::HasOverflowButton() const {

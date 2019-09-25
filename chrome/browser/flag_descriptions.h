@@ -2337,13 +2337,6 @@ extern const char kWebrtcPipeWireCapturerDescription[];
 
 #endif  // #if defined(WEBRTC_USE_PIPEWIRE)
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
-extern const char kEnableDbusAndX11StatusIconsName[];
-extern const char kEnableDbusAndX11StatusIconsDescription[];
-
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
-
 // ============================================================================
 // Don't just add flags to the end, put them in the right section in
 // alphabetical order. See top instructions for more.

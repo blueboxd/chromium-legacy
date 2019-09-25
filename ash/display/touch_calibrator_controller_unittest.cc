@@ -25,8 +25,6 @@
 #include "ui/events/test/event_generator.h"
 #include "ui/events/test/events_test_utils.h"
 
-using namespace display;
-
 namespace ash {
 namespace {
 
@@ -50,10 +48,10 @@ class TouchCalibratorControllerTest : public AshTestBase {
 
   void TearDown() override {
     // Reset all touch device and touch association.
-    test::TouchDeviceManagerTestApi(touch_device_manager())
+    display::test::TouchDeviceManagerTestApi(touch_device_manager())
         .ResetTouchDeviceManager();
     ui::DeviceDataManagerTestApi().SetTouchscreenDevices({});
-    test::TouchTransformControllerTestApi(
+    display::test::TouchTransformControllerTestApi(
         Shell::Get()->touch_transformer_controller())
         .touch_transform_setter()
         ->ConfigureTouchDevices(std::vector<ui::TouchDeviceTransform>());
@@ -78,22 +76,22 @@ class TouchCalibratorControllerTest : public AshTestBase {
     return ctrl->touch_calibrator_views_;
   }
 
-  const Display& InitDisplays() {
+  const display::Display& InitDisplays() {
     // Initialize 2 displays each with resolution 500x500.
     UpdateDisplay("500x500,500x500");
     // Assuming index 0 points to the native display, we will calibrate the
     // touch display at index 1.
     const int kTargetDisplayIndex = 1;
-    DisplayIdList display_id_list =
+    display::DisplayIdList display_id_list =
         display_manager()->GetCurrentDisplayIdList();
     int64_t target_display_id = display_id_list[kTargetDisplayIndex];
-    const Display& touch_display =
+    const display::Display& touch_display =
         display_manager()->GetDisplayForId(target_display_id);
     return touch_display;
   }
 
   void StartCalibrationChecks(TouchCalibratorController* ctrl,
-                              const Display& target_display) {
+                              const display::Display& target_display) {
     EXPECT_FALSE(ctrl->IsCalibrating());
     EXPECT_FALSE(!!ctrl->touch_calibrator_views_.size());
 
@@ -131,14 +129,14 @@ class TouchCalibratorControllerTest : public AshTestBase {
 
   // Generates a touch press and release event in the |display| with source
   // device id as |touch_device_id|.
-  void GenerateTouchEvent(const Display& display,
+  void GenerateTouchEvent(const display::Display& display,
                           int touch_device_id,
                           const gfx::Point& location = gfx::Point(20, 20)) {
     // Get the correct EventTarget for the given |display|.
     aura::Window::Windows root_windows = Shell::GetAllRootWindows();
     ui::EventTarget* event_target = nullptr;
     for (auto* window : root_windows) {
-      if (Screen::GetScreen()->GetDisplayNearestWindow(window).id() ==
+      if (display::Screen::GetScreen()->GetDisplayNearestWindow(window).id() ==
           display.id()) {
         event_target = window;
         break;
@@ -178,7 +176,7 @@ class TouchCalibratorControllerTest : public AshTestBase {
     transforms.push_back(touch_device_transform);
 
     // This makes touchscreen target displays valid for ui::DeviceDataManager.
-    test::TouchTransformControllerTestApi(
+    display::test::TouchTransformControllerTestApi(
         Shell::Get()->touch_transformer_controller())
         .touch_transform_setter()
         ->ConfigureTouchDevices(transforms);
@@ -190,7 +188,7 @@ class TouchCalibratorControllerTest : public AshTestBase {
 };
 
 TEST_F(TouchCalibratorControllerTest, StartCalibration) {
-  const Display& touch_display = InitDisplays();
+  const display::Display& touch_display = InitDisplays();
   TouchCalibratorController touch_calibrator_controller;
   StartCalibrationChecks(&touch_calibrator_controller, touch_display);
 
@@ -200,7 +198,7 @@ TEST_F(TouchCalibratorControllerTest, StartCalibration) {
 }
 
 TEST_F(TouchCalibratorControllerTest, KeyEventIntercept) {
-  const Display& touch_display = InitDisplays();
+  const display::Display& touch_display = InitDisplays();
   TouchCalibratorController touch_calibrator_controller;
   StartCalibrationChecks(&touch_calibrator_controller, touch_display);
 
@@ -211,7 +209,7 @@ TEST_F(TouchCalibratorControllerTest, KeyEventIntercept) {
 }
 
 TEST_F(TouchCalibratorControllerTest, TouchThreshold) {
-  const Display& touch_display = InitDisplays();
+  const display::Display& touch_display = InitDisplays();
   TouchCalibratorController touch_calibrator_controller;
   StartCalibrationChecks(&touch_calibrator_controller, touch_display);
 
@@ -239,7 +237,7 @@ TEST_F(TouchCalibratorControllerTest, TouchThreshold) {
 }
 
 TEST_F(TouchCalibratorControllerTest, TouchDeviceIdIsSet) {
-  const Display& touch_display = InitDisplays();
+  const display::Display& touch_display = InitDisplays();
 
   TouchCalibratorController touch_calibrator_controller;
   StartCalibrationChecks(&touch_calibrator_controller, touch_display);
@@ -256,7 +254,7 @@ TEST_F(TouchCalibratorControllerTest, TouchDeviceIdIsSet) {
 }
 
 TEST_F(TouchCalibratorControllerTest, CustomCalibration) {
-  const Display& touch_display = InitDisplays();
+  const display::Display& touch_display = InitDisplays();
 
   TouchCalibratorController touch_calibrator_controller;
   EXPECT_FALSE(touch_calibrator_controller.IsCalibrating());
@@ -296,14 +294,14 @@ TEST_F(TouchCalibratorControllerTest, CustomCalibration) {
   const display::ManagedDisplayInfo& info =
       display_manager()->GetDisplayInfo(touch_display.id());
 
-  test::TouchDeviceManagerTestApi tdm_test_api(touch_device_manager());
+  display::test::TouchDeviceManagerTestApi tdm_test_api(touch_device_manager());
   EXPECT_TRUE(tdm_test_api.AreAssociated(info, touchdevice));
   EXPECT_EQ(calibration_data,
             touch_device_manager()->GetCalibrationData(touchdevice, info.id()));
 }
 
 TEST_F(TouchCalibratorControllerTest, CustomCalibrationInvalidTouchId) {
-  const Display& touch_display = InitDisplays();
+  const display::Display& touch_display = InitDisplays();
 
   TouchCalibratorController touch_calibrator_controller;
   EXPECT_FALSE(touch_calibrator_controller.IsCalibrating());
@@ -345,7 +343,7 @@ TEST_F(TouchCalibratorControllerTest, CustomCalibrationInvalidTouchId) {
 }
 
 TEST_F(TouchCalibratorControllerTest, IgnoreInternalTouchDevices) {
-  const Display& touch_display = InitDisplays();
+  const display::Display& touch_display = InitDisplays();
 
   // We need to initialize a touch device before starting calibration so that
   // the set |internal_touch_device_ids_| can be initialized.
@@ -382,14 +380,15 @@ TEST_F(TouchCalibratorControllerTest, HighDPIMonitorsCalibration) {
   // Index 0 points to the native internal display, we will calibrate the touch
   // display at index 2.
   const int kTargetDisplayIndex = 2;
-  DisplayIdList display_id_list = display_manager()->GetCurrentDisplayIdList();
+  display::DisplayIdList display_id_list =
+      display_manager()->GetCurrentDisplayIdList();
 
   int64_t internal_display_id = display_id_list[1];
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                internal_display_id);
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         internal_display_id);
 
   int64_t target_display_id = display_id_list[kTargetDisplayIndex];
-  const Display& touch_display =
+  const display::Display& touch_display =
       display_manager()->GetDisplayForId(target_display_id);
 
   // We create 2 touch devices.
@@ -416,7 +415,7 @@ TEST_F(TouchCalibratorControllerTest, HighDPIMonitorsCalibration) {
   touch_device_transform.device_id = external_touchdevice.id;
   transforms.push_back(touch_device_transform);
 
-  test::TouchTransformControllerTestApi(
+  display::test::TouchTransformControllerTestApi(
       Shell::Get()->touch_transformer_controller())
       .touch_transform_setter()
       ->ConfigureTouchDevices(transforms);
@@ -438,7 +437,7 @@ TEST_F(TouchCalibratorControllerTest, HighDPIMonitorsCalibration) {
       ->SkipCurrentAnimation();
 
   // Reinitialize the transforms, as starting calibration resets them.
-  test::TouchTransformControllerTestApi(
+  display::test::TouchTransformControllerTestApi(
       Shell::Get()->touch_transformer_controller())
       .touch_transform_setter()
       ->ConfigureTouchDevices(transforms);
@@ -474,14 +473,15 @@ TEST_F(TouchCalibratorControllerTest, RotatedHighDPIMonitorsCalibration) {
   // Index 0 points to the native internal display, we will calibrate the touch
   // display at index 1.
   const int kTargetDisplayIndex = 1;
-  DisplayIdList display_id_list = display_manager()->GetCurrentDisplayIdList();
+  display::DisplayIdList display_id_list =
+      display_manager()->GetCurrentDisplayIdList();
 
   int64_t internal_display_id = display_id_list[0];
-  test::ScopedSetInternalDisplayId set_internal(display_manager(),
-                                                internal_display_id);
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         internal_display_id);
 
   int64_t target_display_id = display_id_list[kTargetDisplayIndex];
-  const Display& touch_display =
+  const display::Display& touch_display =
       display_manager()->GetDisplayForId(target_display_id);
 
   // We create 2 touch devices.
@@ -508,7 +508,7 @@ TEST_F(TouchCalibratorControllerTest, RotatedHighDPIMonitorsCalibration) {
   touch_device_transform.device_id = external_touchdevice.id;
   transforms.push_back(touch_device_transform);
 
-  test::TouchTransformControllerTestApi(
+  display::test::TouchTransformControllerTestApi(
       Shell::Get()->touch_transformer_controller())
       .touch_transform_setter()
       ->ConfigureTouchDevices(transforms);
@@ -530,7 +530,7 @@ TEST_F(TouchCalibratorControllerTest, RotatedHighDPIMonitorsCalibration) {
       ->SkipCurrentAnimation();
 
   // Reinitialize the transforms, as starting calibration resets them.
-  test::TouchTransformControllerTestApi(
+  display::test::TouchTransformControllerTestApi(
       Shell::Get()->touch_transformer_controller())
       .touch_transform_setter()
       ->ConfigureTouchDevices(transforms);
@@ -563,7 +563,7 @@ TEST_F(TouchCalibratorControllerTest, RotatedHighDPIMonitorsCalibration) {
 }
 
 TEST_F(TouchCalibratorControllerTest, InternalTouchDeviceIsRejected) {
-  const Display& touch_display = InitDisplays();
+  const display::Display& touch_display = InitDisplays();
 
   // We need to initialize a touch device before starting calibration so that
   // the set |internal_touch_device_ids_| can be initialized.

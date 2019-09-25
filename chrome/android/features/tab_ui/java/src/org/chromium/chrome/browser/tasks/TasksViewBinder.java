@@ -22,7 +22,6 @@ class TasksViewBinder {
         } else if (propertyKey == MORE_TABS_CLICK_LISTENER) {
             view.setMoreTabsOnClickListener(model.get(MORE_TABS_CLICK_LISTENER));
         } else if (propertyKey == MV_TILES_VISIBLE) {
-            // TODO(mattsimmons): Hide these when in incognito mode.
             view.setMostVisitedVisibility(model.get(MV_TILES_VISIBLE) ? View.VISIBLE : View.GONE);
         } else if (propertyKey == TOP_PADDING) {
             view.setPadding(0, model.get(TOP_PADDING), 0, 0);

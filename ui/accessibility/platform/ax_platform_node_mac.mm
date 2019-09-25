@@ -43,7 +43,11 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kAlert, NSAccessibilityGroupRole},
       {ax::mojom::Role::kAlertDialog, NSAccessibilityGroupRole},
       {ax::mojom::Role::kAnchor, NSAccessibilityGroupRole},
-      {ax::mojom::Role::kAnnotation, NSAccessibilityUnknownRole},
+      {ax::mojom::Role::kAnnotationAttribution, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kAnnotationCommentary, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kAnnotationPresence, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kAnnotationRevision, NSAccessibilityGroupRole},
+      {ax::mojom::Role::kAnnotationSuggestion, NSAccessibilityGroupRole},
       {ax::mojom::Role::kApplication, NSAccessibilityGroupRole},
       {ax::mojom::Role::kArticle, NSAccessibilityGroupRole},
       {ax::mojom::Role::kAudio, NSAccessibilityGroupRole},
@@ -182,6 +186,10 @@ RoleMap BuildRoleMap() {
       {ax::mojom::Role::kRootWebArea, @"AXWebArea"},
       {ax::mojom::Role::kRow, NSAccessibilityRowRole},
       {ax::mojom::Role::kRowHeader, @"AXCell"},
+      // TODO(accessibility) What should kRuby be? It's not listed? Any others
+      // missing? Maybe use switch statement so that compiler doesn't allow us
+      // to miss any.
+      {ax::mojom::Role::kRubyAnnotation, NSAccessibilityUnknownRole},
       {ax::mojom::Role::kScrollBar, NSAccessibilityScrollBarRole},
       {ax::mojom::Role::kSearch, NSAccessibilityGroupRole},
       {ax::mojom::Role::kSearchBox, NSAccessibilityTextFieldRole},

@@ -90,18 +90,17 @@
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
 #include "media/cdm/cdm_paths.h"  // nogncheck
-// Registers Widevine CDM if Widevine is enabled, the Widevine CDM is
-// bundled and not a component. When the Widevine CDM is a component, it is
-// registered in widevine_cdm_component_installer.cc.
-#if BUILDFLAG(BUNDLE_WIDEVINE_CDM) && !BUILDFLAG(ENABLE_WIDEVINE_CDM_COMPONENT)
-#define REGISTER_BUNDLED_WIDEVINE_CDM
+#endif
+
+#if BUILDFLAG(BUNDLE_WIDEVINE_CDM)
+#include "base/native_library.h"
+#include "chrome/common/media/cdm_manifest.h"
 #include "third_party/widevine/cdm/widevine_cdm_common.h"  // nogncheck
 // TODO(crbug.com/663554): Needed for WIDEVINE_CDM_VERSION_STRING. Support
 // component updated CDM on all desktop platforms and remove this.
 // This file is In SHARED_INTERMEDIATE_DIR.
 #include "widevine_cdm_version.h"  // nogncheck
 #endif
-#endif  // BUILDFLAG(ENABLE_LIBRARY_CDMS)
 
 #if BUILDFLAG(ENABLE_CDM_HOST_VERIFICATION)
 #include "chrome/common/media/cdm_host_file_path.h"
@@ -341,54 +340,87 @@ bool GetSystemPepperFlash(content::PepperPluginInfo* plugin) {
 }
 #endif  //  BUILDFLAG(ENABLE_PLUGINS)
 
-#if defined(REGISTER_BUNDLED_WIDEVINE_CDM)
-bool IsWidevineAvailable(base::FilePath* cdm_path,
-                         content::CdmCapability* capability) {
+#if BUILDFLAG(BUNDLE_WIDEVINE_CDM) && defined(OS_LINUX)
+// On Linux/ChromeOS we have to preload the CDM since it uses the zygote
+// sandbox. On Windows and Mac, the bundled CDM is handled by the component
+// updater.
+
+// This code checks to see if the Widevine CDM was bundled with Chrome. If one
+// can be found and looks valid, it updates |version| with the version,
+// |cdm_path| with the location of the Widevine CDM library, |capability| with
+// the capabilities of this version. and returns true. Otherwise it returns
+// false, and may or may not have touched the other parameters.
+bool GetBundledWidevine(base::Version* version,
+                        base::FilePath* cdm_path,
+                        content::CdmCapability* capability) {
+  // Check if the Widevine library can be found.
   static enum {
     NOT_CHECKED,
     FOUND,
     NOT_FOUND,
   } widevine_cdm_file_check = NOT_CHECKED;
 
-  if (base::PathService::Get(chrome::FILE_WIDEVINE_CDM, cdm_path)) {
-    if (widevine_cdm_file_check == NOT_CHECKED)
-      widevine_cdm_file_check = base::PathExists(*cdm_path) ? FOUND : NOT_FOUND;
+  // If we've already checked and not found the CDM, no need to try again,
+  // hoping that it shows up.
+  if (widevine_cdm_file_check == NOT_FOUND)
+    return false;
 
-    if (widevine_cdm_file_check == FOUND) {
-      // Add the supported codecs as if they came from the component manifest.
-      // This list must match the CDM that is being bundled with Chrome.
-      capability->video_codecs.push_back(media::VideoCodec::kCodecVP8);
-      capability->video_codecs.push_back(media::VideoCodec::kCodecVP9);
-      capability->video_codecs.push_back(media::VideoCodec::kCodecAV1);
-      // TODO(crbug.com/899403): Update this and tests after Widevine CDM
-      // supports VP9 profile 2.
-      capability->supports_vp9_profile2 = false;
+  base::FilePath install_dir;
+  if (!base::PathService::Get(chrome::DIR_BUNDLED_WIDEVINE_CDM, &install_dir))
+    return false;
+
+#if defined(OS_CHROMEOS)
+  // On ChromeOS the Widevine CDM library is in the directory returned above,
+  // and does not have a manifest.
+  // TODO(crbug.com/971433): Move Widevine CDM to a separate folder so that the
+  // manifest can be included.
+  *cdm_path = install_dir.AppendASCII(
+      base::GetNativeLibraryName(kWidevineCdmLibraryName));
+  if (widevine_cdm_file_check == NOT_CHECKED)
+    widevine_cdm_file_check = base::PathExists(*cdm_path) ? FOUND : NOT_FOUND;
+
+  if (widevine_cdm_file_check != FOUND)
+    return false;
+
+  // As there is no manifest, set |version| and |capability| as if it came from
+  // one. These values must match the CDM that is being bundled with Chrome.
+  *version = base::Version(WIDEVINE_CDM_VERSION_STRING);
+
+  // Add the supported codecs as if they came from the component manifest.
+  capability->video_codecs.push_back(media::VideoCodec::kCodecVP8);
+  capability->video_codecs.push_back(media::VideoCodec::kCodecVP9);
+  capability->video_codecs.push_back(media::VideoCodec::kCodecAV1);
+  // TODO(crbug.com/899403): Update this and tests after Widevine CDM
+  // supports VP9 profile 2.
+  capability->supports_vp9_profile2 = false;
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)
-      capability->video_codecs.push_back(media::VideoCodec::kCodecH264);
+  capability->video_codecs.push_back(media::VideoCodec::kCodecH264);
 #endif  // BUILDFLAG(USE_PROPRIETARY_CODECS)
 
-      // Add the supported encryption schemes as if they came from the
-      // component manifest. This list must match the CDM that is being
-      // bundled with Chrome.
-      capability->encryption_schemes.insert(media::EncryptionMode::kCenc);
-      capability->encryption_schemes.insert(media::EncryptionMode::kCbcs);
+  // Both encryption schemes are supported on ChromeOS.
+  capability->encryption_schemes.insert(media::EncryptionMode::kCenc);
+  capability->encryption_schemes.insert(media::EncryptionMode::kCbcs);
 
-      // Temporary session is always supported.
-      capability->session_types.insert(media::CdmSessionType::kTemporary);
-#if defined(OS_CHROMEOS)
-      // TODO(crbug.com/767941): Push persistent-license support info here once
-      // we check in a new CDM that supports it on Linux.
-      capability->session_types.insert(
-          media::CdmSessionType::kPersistentLicense);
+  // Both temporary and persistent sessions are supported on ChromeOS.
+  capability->session_types.insert(media::CdmSessionType::kTemporary);
+  capability->session_types.insert(media::CdmSessionType::kPersistentLicense);
+  return true;
+#else
+  // On desktop Linux the MANIFEST is bundled with the CDM.
+  *cdm_path =
+      media::GetPlatformSpecificDirectory(install_dir)
+          .AppendASCII(base::GetNativeLibraryName(kWidevineCdmLibraryName));
+  if (widevine_cdm_file_check == NOT_CHECKED)
+    widevine_cdm_file_check = base::PathExists(*cdm_path) ? FOUND : NOT_FOUND;
+
+  if (widevine_cdm_file_check != FOUND)
+    return false;
+
+  auto manifest_path = install_dir.Append(FILE_PATH_LITERAL("manifest.json"));
+  return ParseCdmManifestFromPath(manifest_path, version, capability);
 #endif  // defined(OS_CHROMEOS)
-
-      return true;
-    }
-  }
-
-  return false;
 }
-#endif  // defined(REGISTER_BUNDLED_WIDEVINE_CDM)
+#endif  // BUILDFLAG(BUNDLE_WIDEVINE_CDM) && defined(OS_LINUX)
 
 }  // namespace
 
@@ -513,19 +545,17 @@ void ChromeContentClient::AddContentDecryptionModules(
     std::vector<content::CdmInfo>* cdms,
     std::vector<media::CdmHostFilePath>* cdm_host_file_paths) {
   if (cdms) {
-#if defined(REGISTER_BUNDLED_WIDEVINE_CDM)
+#if BUILDFLAG(BUNDLE_WIDEVINE_CDM) && defined(OS_LINUX)
+    base::Version version;
     base::FilePath cdm_path;
     content::CdmCapability capability;
-    if (IsWidevineAvailable(&cdm_path, &capability)) {
-      const base::Version version(WIDEVINE_CDM_VERSION_STRING);
-      DCHECK(version.IsValid());
-
+    if (GetBundledWidevine(&version, &cdm_path, &capability)) {
       cdms->push_back(
           content::CdmInfo(kWidevineCdmDisplayName, kWidevineCdmGuid, version,
                            cdm_path, kWidevineCdmFileSystemId,
                            std::move(capability), kWidevineKeySystem, false));
     }
-#endif  // defined(REGISTER_BUNDLED_WIDEVINE_CDM)
+#endif  // BUILDFLAG(BUNDLE_WIDEVINE_CDM) && defined(OS_LINUX)
 
 #if BUILDFLAG(ENABLE_LIBRARY_CDMS)
     // Register Clear Key CDM if specified in command line.

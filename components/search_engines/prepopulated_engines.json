@@ -28,7 +28,7 @@
     // Increment this if you change the data in ways that mean users with
     // existing data should get a new version. Otherwise, existing data may
     // continue to be used and updates made here will not always appear.
-    "kCurrentDataVersion": 116
+    "kCurrentDataVersion": 117
   },
 
   // The following engines are included in country lists and are added to the
@@ -130,7 +130,7 @@
       "alternate_urls": [
         "https://go.mail.ru/msearch?q={searchTerms}&{mailru:referralID}"
       ],
-      "encoding": "windows-1251",
+      "new_tab_url": "https://go.mail.ru/chrome/newtab/",
       "suggest_url": "https://suggests.go.mail.ru/chrome?q={searchTerms}",
       "type": "SEARCH_ENGINE_MAILRU",
       "id": 83

@@ -276,8 +276,6 @@ void NGBoxFragmentPainter::PaintInternal(const PaintInfo& paint_info) {
 void NGBoxFragmentPainter::RecordScrollHitTestData(
     const PaintInfo& paint_info,
     const DisplayItemClient& background_client) {
-  DCHECK(RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
-
   // Hit test display items are only needed for compositing. This flag is used
   // for for printing and drag images which do not need hit testing.
   if (paint_info.GetGlobalPaintFlags() & kGlobalPaintFlattenCompositingLayers)
@@ -629,28 +627,26 @@ void NGBoxFragmentPainter::PaintBoxDecorationBackground(
                     PhysicalFragment().EffectiveAllowedTouchAction()));
   }
 
-  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-    bool needs_scroll_hit_test = true;
-    if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
-      // Pre-CompositeAfterPaint, there is no need to emit scroll hit test
-      // display items for composited scrollers because these display items are
-      // only used to create non-fast scrollable regions for non-composited
-      // scrollers. With CompositeAfterPaint, we always paint the scroll hit
-      // test display items but ignore the non-fast region if the scroll was
-      // composited in PaintArtifactCompositor::UpdateNonFastScrollableRegions.
-      const auto* layer = PhysicalFragment().Layer();
-      if (layer && layer->GetCompositedLayerMapping() &&
-          layer->GetCompositedLayerMapping()->HasScrollingLayer()) {
-        needs_scroll_hit_test = false;
-      }
+  bool needs_scroll_hit_test = true;
+  if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled()) {
+    // Pre-CompositeAfterPaint, there is no need to emit scroll hit test
+    // display items for composited scrollers because these display items are
+    // only used to create non-fast scrollable regions for non-composited
+    // scrollers. With CompositeAfterPaint, we always paint the scroll hit
+    // test display items but ignore the non-fast region if the scroll was
+    // composited in PaintArtifactCompositor::UpdateNonFastScrollableRegions.
+    const auto* layer = PhysicalFragment().Layer();
+    if (layer && layer->GetCompositedLayerMapping() &&
+        layer->GetCompositedLayerMapping()->HasScrollingLayer()) {
+      needs_scroll_hit_test = false;
     }
-
-    // Record the scroll hit test after the non-scrolling background so
-    // background squashing is not affected. Hit test order would be equivalent
-    // if this were immediately before the non-scrolling background.
-    if (!painting_scrolling_background && needs_scroll_hit_test)
-      RecordScrollHitTestData(paint_info, *background_client);
   }
+
+  // Record the scroll hit test after the non-scrolling background so
+  // background squashing is not affected. Hit test order would be equivalent
+  // if this were immediately before the non-scrolling background.
+  if (!painting_scrolling_background && needs_scroll_hit_test)
+    RecordScrollHitTestData(paint_info, *background_client);
 }
 
 // TODO(kojii): This logic is kept in sync with BoxPainter. Not much efforts to

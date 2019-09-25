@@ -14,15 +14,15 @@
 #include "base/strings/stringprintf.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/post_task.h"
-#include "base/test/perf_time_logger.h"
 #include "base/test/task_environment.h"
+#include "base/timer/elapsed_timer.h"
 #include "net/base/test_completion_callback.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_constants.h"
 #include "net/extras/sqlite/cookie_crypto_delegate.h"
 #include "net/log/net_log_with_source.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -42,6 +42,15 @@ static_assert(kRandomSeed > 10 * kNumDomains,
               "kRandomSeed not high enough for number of domains");
 static_assert(kRandomSeed > 10 * kCookiesPerDomain,
               "kRandomSeed not high enough for number of cookies per domain");
+
+static constexpr char kMetricPrefixSQLPCS[] = "SQLitePersistentCookieStore.";
+static constexpr char kMetricOperationDurationMs[] = "operation_duration";
+
+perf_test::PerfResultReporter SetUpSQLPCSReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixSQLPCS, story);
+  reporter.RegisterImportantMetric(kMetricOperationDurationMs, "ms");
+  return reporter;
+}
 
 }  // namespace
 
@@ -127,15 +136,12 @@ class SQLitePersistentCookieStorePerfTest : public testing::Test {
     perf_measurement_start_ = base::Time::Now();
   }
 
-  void EndPerfMeasurement() {
+  void EndPerfMeasurement(const std::string& story) {
     DCHECK(!perf_measurement_start_.is_null());
     base::TimeDelta elapsed = base::Time::Now() - perf_measurement_start_;
     perf_measurement_start_ = base::Time();
-    const ::testing::TestInfo* test_info =
-        ::testing::UnitTest::GetInstance()->current_test_info();
-    perf_test::PrintResult(
-        test_info->test_case_name(), std::string(".") + test_info->name(),
-        "time", static_cast<double>(elapsed.InMilliseconds()), "ms", true);
+    auto reporter = SetUpSQLPCSReporter(story);
+    reporter.AddResult(kMetricOperationDurationMs, elapsed.InMillisecondsF());
   }
 
  protected:
@@ -165,7 +171,7 @@ TEST_F(SQLitePersistentCookieStorePerfTest, TestLoadForKeyPerformance) {
         base::BindOnce(&SQLitePersistentCookieStorePerfTest::OnKeyLoaded,
                        base::Unretained(this)));
     key_loaded_event_.Wait();
-    EndPerfMeasurement();
+    EndPerfMeasurement("load_for_key");
 
     ASSERT_EQ(50U, cookies_.size());
   }
@@ -175,7 +181,7 @@ TEST_F(SQLitePersistentCookieStorePerfTest, TestLoadForKeyPerformance) {
 TEST_F(SQLitePersistentCookieStorePerfTest, TestLoadPerformance) {
   StartPerfMeasurement();
   Load();
-  EndPerfMeasurement();
+  EndPerfMeasurement("load");
 
   ASSERT_EQ(kNumDomains * kCookiesPerDomain, static_cast<int>(cookies_.size()));
 }
@@ -214,7 +220,7 @@ TEST_F(SQLitePersistentCookieStorePerfTest, TestDeletePerformance) {
     store_->Flush(test_closure.closure());
     test_closure.WaitForResult();
   }
-  EndPerfMeasurement();
+  EndPerfMeasurement("delete");
 }
 
 // Test update performance.
@@ -241,7 +247,7 @@ TEST_F(SQLitePersistentCookieStorePerfTest, TestUpdatePerformance) {
     store_->Flush(test_closure.closure());
     test_closure.WaitForResult();
   }
-  EndPerfMeasurement();
+  EndPerfMeasurement("update");
 }
 
 }  // namespace net

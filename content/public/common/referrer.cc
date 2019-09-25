@@ -117,13 +117,6 @@ url::Origin Referrer::SanitizeOriginForRequest(
 }
 
 // static
-void Referrer::SetReferrerForRequest(net::URLRequest* request,
-                                     const Referrer& referrer) {
-  request->SetReferrer(network::ComputeReferrer(referrer.url));
-  request->set_referrer_policy(ReferrerPolicyForUrlRequest(referrer.policy));
-}
-
-// static
 net::URLRequest::ReferrerPolicy Referrer::ReferrerPolicyForUrlRequest(
     network::mojom::ReferrerPolicy referrer_policy) {
   switch (referrer_policy) {

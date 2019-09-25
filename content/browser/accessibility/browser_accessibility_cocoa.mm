@@ -1899,6 +1899,21 @@ NSString* const NSAccessibilityRequiredAttributeChrome = @"AXRequired";
   }
 
   switch ([self internalRole]) {
+    case ax::mojom::Role::kAnnotationAttribution:
+      return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+          IDS_AX_ROLE_ANNOTATION_ATTRIBUTION));
+    case ax::mojom::Role::kAnnotationCommentary:
+      return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+          IDS_AX_ROLE_ANNOTATION_COMMENTARY));
+    case ax::mojom::Role::kAnnotationPresence:
+      return base::SysUTF16ToNSString(
+          content_client->GetLocalizedString(IDS_AX_ROLE_ANNOTATION_PRESENCE));
+    case ax::mojom::Role::kAnnotationRevision:
+      return base::SysUTF16ToNSString(
+          content_client->GetLocalizedString(IDS_AX_ROLE_ANNOTATION_REVISION));
+    case ax::mojom::Role::kAnnotationSuggestion:
+      return base::SysUTF16ToNSString(content_client->GetLocalizedString(
+          IDS_AX_ROLE_ANNOTATION_SUGGESTION));
     case ax::mojom::Role::kArticle:
       return base::SysUTF16ToNSString(
           content_client->GetLocalizedString(IDS_AX_ROLE_ARTICLE));

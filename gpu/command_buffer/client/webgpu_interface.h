@@ -8,6 +8,7 @@
 #include <dawn/dawn.h>
 
 #include "gpu/command_buffer/client/interface_base.h"
+#include "gpu/command_buffer/common/webgpu_cmd_enums.h"
 
 namespace gpu {
 namespace webgpu {

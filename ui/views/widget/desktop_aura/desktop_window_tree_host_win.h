@@ -141,6 +141,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void OnCursorVisibilityChangedNative(bool show) override;
   void MoveCursorToScreenLocationInPixels(
       const gfx::Point& location_in_pixels) override;
+  std::unique_ptr<aura::ScopedEnableUnadjustedMouseEvents>
+  RequestUnadjustedMovement() override;
 
   // Overridden from aura::client::AnimationHost
   void SetHostTransitionOffsets(

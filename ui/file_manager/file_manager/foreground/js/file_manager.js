@@ -1217,7 +1217,7 @@ class FileManager extends cr.EventTarget {
    */
   async onCrostiniChanged_(event) {
     // The background |this.crostini_| object also listens to all crostini
-    // events including enable/disable, allow/disallow and share/unshare.
+    // events including enable/disable, and share/unshare.
     // But to ensure we don't have any race conditions between bg and fg, we
     // set enabled status on it before calling |setupCrostini_| which reads
     // enabled status from it to determine whether 'Linux files' is shown.

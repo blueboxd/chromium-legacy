@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/profiles/profile_destroyer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
@@ -104,6 +105,12 @@ void BrowserWithTestWindowTest::TearDown() {
 
   profile_manager_->DeleteAllTestingProfiles();
   profile_ = nullptr;
+
+  // Depends on LocalState owned by |profile_manager_|.
+  if (SystemNetworkContextManager::GetInstance()) {
+    SystemNetworkContextManager::DeleteInstance();
+  }
+
   profile_manager_.reset();
 
 #if defined(OS_CHROMEOS)

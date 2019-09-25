@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_cast_button_element.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect.h"
@@ -73,9 +74,8 @@ bool MediaControlCastButtonElement::WillRespondToMouseClickEvents() {
   return true;
 }
 
-WebLocalizedString::Name MediaControlCastButtonElement::GetOverflowStringName()
-    const {
-  return WebLocalizedString::kOverflowMenuCast;
+int MediaControlCastButtonElement::GetOverflowStringId() const {
+  return IDS_MEDIA_OVERFLOW_MENU_CAST;
 }
 
 bool MediaControlCastButtonElement::HasOverflowButton() const {

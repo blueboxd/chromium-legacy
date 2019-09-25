@@ -206,7 +206,10 @@ TEST_F(MobileSessionShutdownMetricsProviderTest,
       "Stability.iOS.UTE.HasPossibleExplanation", false, 1);
 
   // Test UTE with low battery when OS did not restart.
-  [PreviousSessionInfo sharedInstance].deviceBatteryLevel = 0.01;
+  [PreviousSessionInfo sharedInstance].deviceBatteryLevel =
+      kCriticallyLowBatteryLevel;
+  [PreviousSessionInfo sharedInstance].deviceBatteryState =
+      previous_session_info_constants::DeviceBatteryState::kUnplugged;
   histogram_tester = std::make_unique<base::HistogramTester>();
   metrics_provider_->ProvidePreviousSessionData(nullptr);
   histogram_tester->ExpectUniqueSample(
@@ -222,6 +225,15 @@ TEST_F(MobileSessionShutdownMetricsProviderTest,
       "Stability.iOS.UTE.OSRestartedAfterPreviousSession", true, 1);
   histogram_tester->ExpectUniqueSample(
       "Stability.iOS.UTE.HasPossibleExplanation", true, 1);
+
+  // Test UTE with normal battery when OS restarted after previous session.
+  [PreviousSessionInfo sharedInstance].deviceBatteryLevel = 50;
+  histogram_tester = std::make_unique<base::HistogramTester>();
+  metrics_provider_->ProvidePreviousSessionData(nullptr);
+  histogram_tester->ExpectUniqueSample(
+      "Stability.iOS.UTE.OSRestartedAfterPreviousSession", true, 1);
+  histogram_tester->ExpectUniqueSample(
+      "Stability.iOS.UTE.HasPossibleExplanation", false, 1);
 }
 
 INSTANTIATE_TEST_SUITE_P(/* No InstantiationName */,

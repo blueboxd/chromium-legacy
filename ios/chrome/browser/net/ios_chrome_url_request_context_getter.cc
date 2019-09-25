@@ -51,32 +51,6 @@ class FactoryForMain : public IOSChromeURLRequestContextFactory {
   ProtocolHandlerMap protocol_handlers_;
 };
 
-// Factory that creates the URLRequestContext for a given isolated app.
-class FactoryForIsolatedApp : public IOSChromeURLRequestContextFactory {
- public:
-  FactoryForIsolatedApp(const ChromeBrowserStateIOData* io_data,
-                        const base::FilePath& partition_path,
-                        net::URLRequestContextGetter* main_context)
-      : io_data_(io_data),
-        partition_path_(partition_path),
-        main_request_context_getter_(main_context) {}
-
-  net::URLRequestContext* Create() override {
-    // We will copy most of the state from the main request context.
-    //
-    // Note that this factory is one-shot.  After Create() is called once, the
-    // factory is actually destroyed. Thus it is safe to destructively pass
-    // state onwards.
-    return io_data_->GetIsolatedAppRequestContext(
-        main_request_context_getter_->GetURLRequestContext(), partition_path_);
-  }
-
- private:
-  const ChromeBrowserStateIOData* const io_data_;
-  const base::FilePath partition_path_;
-  scoped_refptr<net::URLRequestContextGetter> main_request_context_getter_;
-};
-
 }  // namespace
 
 // ----------------------------------------------------------------------------
@@ -128,15 +102,4 @@ IOSChromeURLRequestContextGetter* IOSChromeURLRequestContextGetter::Create(
     ProtocolHandlerMap* protocol_handlers) {
   return new IOSChromeURLRequestContextGetter(
       std::make_unique<FactoryForMain>(io_data, protocol_handlers));
-}
-
-// static
-IOSChromeURLRequestContextGetter*
-IOSChromeURLRequestContextGetter::CreateForIsolatedApp(
-    net::URLRequestContextGetter* main_context,
-    const ChromeBrowserStateIOData* io_data,
-    const base::FilePath& partition_path) {
-  return new IOSChromeURLRequestContextGetter(
-      std::make_unique<FactoryForIsolatedApp>(io_data, partition_path,
-                                              main_context));
 }

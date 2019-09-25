@@ -47,6 +47,24 @@ public class PaymentRequestPaymentAppUiSkipTest {
     public PaymentRequestTestRule mPaymentRequestTestRule =
             new PaymentRequestTestRule("payment_request_bobpay_ui_skip_test.html");
 
+    /** If the transaction fails, the browser shows an error message. */
+    @Test
+    @MediumTest
+    @Feature({"Payments"})
+    public void testFail() throws InterruptedException, TimeoutException {
+        mPaymentRequestTestRule.installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
+
+        // Wait for the error message overlay.
+        mPaymentRequestTestRule.triggerUIAndWait(
+                "buyFail", mPaymentRequestTestRule.getResultReady());
+
+        // Dismiss the error message overlay.
+        mPaymentRequestTestRule.clickErrorOverlayAndWait(
+                R.id.ok_button, mPaymentRequestTestRule.getCompleteReplied());
+
+        mPaymentRequestTestRule.expectResultContains(new String[] {"Transaction failed"});
+    }
+
     /**
      * If Bob Pay is supported and installed, user should be able to pay with it. Here Bob Pay
      * responds to Chrome immediately.

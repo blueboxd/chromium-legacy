@@ -83,6 +83,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
     MESSAGE_HANDLER_EX(WM_PAINT, OnPaint)
     MESSAGE_HANDLER_EX(WM_NCPAINT, OnNCPaint)
     MESSAGE_HANDLER_EX(WM_ERASEBKGND, OnEraseBkGnd)
+    MESSAGE_HANDLER_EX(WM_INPUT, OnInput)
     MESSAGE_RANGE_HANDLER(WM_MOUSEFIRST, WM_MOUSELAST, OnMouseRange)
     MESSAGE_HANDLER_EX(WM_MOUSELEAVE, OnMouseLeave)
     MESSAGE_HANDLER_EX(WM_MOUSEACTIVATE, OnMouseActivate)
@@ -146,6 +147,7 @@ class CONTENT_EXPORT LegacyRenderWidgetHostHWND
 
   LRESULT OnEraseBkGnd(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnGetObject(UINT message, WPARAM w_param, LPARAM l_param);
+  LRESULT OnInput(UINT message, WPARAM w_param, LPARAM l_param);
   LRESULT OnKeyboardRange(UINT message, WPARAM w_param, LPARAM l_param,
                           BOOL& handled);
   LRESULT OnMouseLeave(UINT message, WPARAM w_param, LPARAM l_param);

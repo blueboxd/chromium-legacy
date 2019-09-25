@@ -48,7 +48,6 @@
 <translation id="1540800554400757039">Địa chỉ 1</translation>
 <translation id="1545749641540134597">Quét mã QR</translation>
 <translation id="1552525382687785070">Quản trị viên của bạn đã tắt tính năng đồng bộ hóa</translation>
-<translation id="1558704936695638228">Nhấn và giữ để có thêm các tùy chọn về tab</translation>
 <translation id="1580783302095112590">Thư đã được gửi.</translation>
 <translation id="1582732959743469162">Thao tác này sẽ ngừng tất cả hoạt động tải xuống đang diễn ra.</translation>
 <translation id="1605658421715042784">Sao chép hình ảnh</translation>
@@ -109,6 +108,7 @@
 <translation id="2360196772093551345">Yêu cầu trang web dành cho thiết bị di động</translation>
 <translation id="2381405137052800939">Thông tin cơ bản</translation>
 <translation id="2386793615875593361">Đã chọn 1</translation>
+<translation id="2421044535038393232">Tiếp tục chỉnh sửa</translation>
 <translation id="2435457462613246316">Hiển thị mật khẩu</translation>
 <translation id="2481538920734869610">THÊM TÀI KHOẢN</translation>
 <translation id="2497852260688568942">Đồng bộ hóa bị quản trị viên của bạn tắt</translation>
@@ -228,6 +228,7 @@
 <translation id="418156467088430727">Xem phiên bản ngoại tuyến trong tab mới</translation>
 <translation id="4181841719683918333">Ngôn ngữ</translation>
 <translation id="424315890655130736">Nhập cụm mật khẩu</translation>
+<translation id="4263576668337963058">Hiển thị các hành động có thể thực hiện trên trang</translation>
 <translation id="4272631900155121838">Để quét mã QR, hãy bật máy ảnh từ cài đặt</translation>
 <translation id="4281844954008187215">Điều khoản dịch vụ</translation>
 <translation id="430793432425771671">Đồng bộ hóa mọi thứ</translation>

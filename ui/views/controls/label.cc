@@ -512,10 +512,6 @@ int Label::GetHeightForWidth(int w) const {
   return height + GetInsets().height();
 }
 
-void Label::Layout() {
-  ClearDisplayText();
-}
-
 View* Label::GetTooltipHandlerForPoint(const gfx::Point& point) {
   if (!handles_tooltips_ ||
       (tooltip_text_.empty() && !ShouldShowDefaultTooltip()))
@@ -638,6 +634,7 @@ void Label::PaintText(gfx::Canvas* canvas) {
 void Label::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   if (previous_bounds.size() != size())
     InvalidateLayout();
+  ClearDisplayText();
 }
 
 void Label::OnPaint(gfx::Canvas* canvas) {

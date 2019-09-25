@@ -41,6 +41,7 @@ static_library("client") {
 
   deps = [
     "//remoting/client/audio",
+    "//remoting/client/notification",
     "//remoting/codec:decoder",
     "//remoting/protocol",
     "//third_party/libyuv",

@@ -40,20 +40,6 @@ class Crostini {
   isEnabled(vmName) {}
 
   /**
-   * Set whether the specified VM allows root access.
-   * @param {string} vmName
-   * @param {boolean} allowed
-   */
-  setRootAccessAllowed(vmName, allowed) {}
-
-  /**
-   * Returns true if root access to specified VM is allowed.
-   * @param {string} vmName
-   * @return {boolean}
-   */
-  isRootAccessAllowed(vmName) {}
-
-  /**
    * Registers an entry as a shared path for the specified VM.
    * @param {string} vmName
    * @param {!Entry} entry

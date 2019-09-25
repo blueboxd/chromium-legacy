@@ -268,10 +268,11 @@ void SVGSMILElement::BuildPendingResource() {
   ConnectConditions();
 }
 
-static inline void ClearTimesWithDynamicOrigins(
-    Vector<SMILTimeWithOrigin>& time_list) {
+static inline void RemoveInstanceTimesWithOrigin(
+    Vector<SMILTimeWithOrigin>& time_list,
+    SMILTimeOrigin origin) {
   for (int i = time_list.size() - 1; i >= 0; --i) {
-    if (time_list[i].OriginIsScript())
+    if (time_list[i].Origin() == origin)
       time_list.EraseAt(i);
   }
 }
@@ -309,8 +310,10 @@ Node::InsertionNotificationRequest SVGSMILElement::InsertedInto(
 
   // "If no attribute is present, the default begin value (an offset-value of 0)
   // must be evaluated."
-  if (!FastHasAttribute(svg_names::kBeginAttr))
-    begin_times_.push_back(SMILTimeWithOrigin());
+  if (!FastHasAttribute(svg_names::kBeginAttr) && begin_times_.IsEmpty()) {
+    begin_times_.push_back(
+        SMILTimeWithOrigin(SMILTime(), SMILTimeOrigin::kAttribute));
+  }
 
   if (is_waiting_for_first_interval_)
     ResolveFirstInterval();
@@ -475,21 +478,28 @@ void SVGSMILElement::ParseBeginOrEnd(const String& parse_string,
       begin_or_end == kBegin ? begin_times_ : end_times_;
   if (begin_or_end == kEnd)
     has_end_event_conditions_ = false;
-  HashSet<SMILTime> existing;
-  for (const auto& instance_time : time_list) {
-    if (!instance_time.Time().IsUnresolved())
-      existing.insert(instance_time.Time());
-  }
+
+  // Remove any previously added offset-values.
+  // TODO(fs): Ought to remove instance times originating from sync-bases,
+  // events etc. as well if those conditions are no longer in the attribute.
+  RemoveInstanceTimesWithOrigin(time_list, SMILTimeOrigin::kAttribute);
+
   Vector<String> split_string;
   parse_string.Split(';', split_string);
   for (const auto& item : split_string) {
     SMILTime value = ParseClockValue(item);
     if (value.IsUnresolved()) {
       ParseCondition(item, begin_or_end);
-    } else if (!existing.Contains(value)) {
+    } else {
       time_list.push_back(
           SMILTimeWithOrigin(value, SMILTimeOrigin::kAttribute));
     }
+  }
+  // "If no attribute is present, the default begin value (an offset-value of 0)
+  // must be evaluated."
+  if (begin_or_end == kBegin && parse_string.IsNull()) {
+    begin_times_.push_back(
+        SMILTimeWithOrigin(SMILTime(), SMILTimeOrigin::kAttribute));
   }
   std::sort(time_list.begin(), time_list.end());
 }
@@ -705,7 +715,7 @@ static void InsertSortedAndUnique(Vector<SMILTimeWithOrigin>& list,
       break;
     // If they share both time and origin, we don't need to add it,
     // we just need to react.
-    if (position->HasSameOrigin(time))
+    if (position->Origin() == time.Origin())
       return;
   }
   list.insert(position - list.begin(), time);
@@ -717,15 +727,14 @@ void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
   SMILTime current_presentation_time =
       time_container_ ? time_container_->CurrentDocumentTime() : SMILTime();
   DCHECK(!current_presentation_time.IsUnresolved());
-  SMILTimeWithOrigin time_with_origin(time, origin);
   // Ignore new instance times for 'end' if the element is not active
   // and the origin is script.
   if (begin_or_end == kEnd && GetActiveState() == kInactive &&
-      time_with_origin.OriginIsScript())
+      origin == SMILTimeOrigin::kScript)
     return;
   Vector<SMILTimeWithOrigin>& list =
       begin_or_end == kBegin ? begin_times_ : end_times_;
-  InsertSortedAndUnique(list, time_with_origin);
+  InsertSortedAndUnique(list, SMILTimeWithOrigin(time, origin));
   if (begin_or_end == kBegin)
     BeginListChanged(current_presentation_time);
   else
@@ -1237,8 +1246,8 @@ void SVGSMILElement::BeginByLinkActivation() {
 }
 
 void SVGSMILElement::EndedActiveInterval() {
-  ClearTimesWithDynamicOrigins(begin_times_);
-  ClearTimesWithDynamicOrigins(end_times_);
+  RemoveInstanceTimesWithOrigin(begin_times_, SMILTimeOrigin::kScript);
+  RemoveInstanceTimesWithOrigin(end_times_, SMILTimeOrigin::kScript);
 }
 
 void SVGSMILElement::ScheduleRepeatEvents() {
@@ -1261,7 +1270,7 @@ void SVGSMILElement::DispatchPendingEvent(const AtomicString& event_type) {
   DispatchEvent(*Event::Create(event_type));
 }
 
-bool SVGSMILElement::HasValidTarget() {
+bool SVGSMILElement::HasValidTarget() const {
   return targetElement() && targetElement()->InActiveDocument();
 }
 

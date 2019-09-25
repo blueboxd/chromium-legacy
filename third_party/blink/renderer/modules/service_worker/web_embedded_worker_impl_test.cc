@@ -200,20 +200,23 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
         /*interface_provider_info=*/nullptr,
         /*browser_interface_broker=*/mojo::NullRemote());
 
-    WebURL script_url =
-        url_test_helpers::ToKURL("https://www.example.com/sw.js");
-    WebURLResponse response(script_url);
+    script_url_ = url_test_helpers::ToKURL("https://www.example.com/sw.js");
+    WebURLResponse response(script_url_);
     response.SetMimeType("text/javascript");
     response.SetHttpStatusCode(200);
-    Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(script_url,
+    Platform::Current()->GetURLLoaderMockFactory()->RegisterURL(script_url_,
                                                                 response, "");
+  }
 
-    start_data_.script_url = script_url;
-    start_data_.user_agent = WebString("dummy user agent");
-    start_data_.script_type = mojom::ScriptType::kClassic;
-    start_data_.wait_for_debugger_mode =
+  std::unique_ptr<WebEmbeddedWorkerStartData> CreateStartData() {
+    auto start_data = std::make_unique<WebEmbeddedWorkerStartData>();
+    start_data->script_url = script_url_;
+    start_data->user_agent = WebString("dummy user agent");
+    start_data->script_type = mojom::ScriptType::kClassic;
+    start_data->wait_for_debugger_mode =
         WebEmbeddedWorkerStartData::kDontWaitForDebugger;
-    start_data_.v8_cache_options = WebSettings::V8CacheOptions::kDefault;
+    start_data->v8_cache_options = WebSettings::V8CacheOptions::kDefault;
+    return start_data;
   }
 
   void TearDown() override {
@@ -222,7 +225,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
         ->UnregisterAllURLsAndClearMemoryCache();
   }
 
-  WebEmbeddedWorkerStartData start_data_;
+  WebURL script_url_;
   std::unique_ptr<MockServiceWorkerContextClient> mock_client_;
   std::unique_ptr<WebEmbeddedWorkerImpl> worker_;
 };
@@ -231,7 +234,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
   worker_->StartWorkerContext(
-      start_data_,
+      CreateStartData(),
       /*installed_scripts_manager_params=*/nullptr,
       /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
       Thread::Current()->GetTaskRunner());
@@ -243,10 +246,11 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
 }
 
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
-  start_data_.wait_for_debugger_mode =
+  std::unique_ptr<WebEmbeddedWorkerStartData> start_data = CreateStartData();
+  start_data->wait_for_debugger_mode =
       WebEmbeddedWorkerStartData::kWaitForDebugger;
   worker_->StartWorkerContext(
-      start_data_,
+      std::move(start_data),
       /*installed_scripts_manager_params=*/nullptr,
       /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
       Thread::Current()->GetTaskRunner());
@@ -259,7 +263,7 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
 TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
   // Load the shadow page.
   worker_->StartWorkerContext(
-      start_data_,
+      CreateStartData(),
       /*installed_scripts_manager_params=*/nullptr,
       /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
       Thread::Current()->GetTaskRunner());
@@ -280,11 +284,12 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   ResourceError error = ResourceError::Failure(script_url);
   Platform::Current()->GetURLLoaderMockFactory()->RegisterErrorURL(
       script_url, response, error);
-  start_data_.script_url = script_url;
+  std::unique_ptr<WebEmbeddedWorkerStartData> start_data = CreateStartData();
+  start_data->script_url = script_url;
 
   // Start worker and load the script.
   worker_->StartWorkerContext(
-      start_data_,
+      std::move(start_data),
       /*installed_scripts_manager_params=*/nullptr,
       /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
       Thread::Current()->GetTaskRunner());

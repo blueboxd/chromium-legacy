@@ -2523,8 +2523,9 @@ TEST_F(NetworkContextTest, CreateNetLogExporter) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  mojom::NetLogExporterPtr net_log_exporter;
-  network_context->CreateNetLogExporter(mojo::MakeRequest(&net_log_exporter));
+  mojo::Remote<mojom::NetLogExporter> net_log_exporter;
+  network_context->CreateNetLogExporter(
+      net_log_exporter.BindNewPipeAndPassReceiver());
 
   base::ScopedTempDir temp_dir;
   ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
@@ -2573,8 +2574,9 @@ TEST_F(NetworkContextTest, CreateNetLogExporterUnbounded) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  mojom::NetLogExporterPtr net_log_exporter;
-  network_context->CreateNetLogExporter(mojo::MakeRequest(&net_log_exporter));
+  mojo::Remote<mojom::NetLogExporter> net_log_exporter;
+  network_context->CreateNetLogExporter(
+      net_log_exporter.BindNewPipeAndPassReceiver());
 
   base::FilePath temp_path;
   ASSERT_TRUE(base::CreateTemporaryFile(&temp_path));
@@ -2610,8 +2612,9 @@ TEST_F(NetworkContextTest, CreateNetLogExporterErrors) {
   std::unique_ptr<NetworkContext> network_context =
       CreateContextWithParams(CreateContextParams());
 
-  mojom::NetLogExporterPtr net_log_exporter;
-  network_context->CreateNetLogExporter(mojo::MakeRequest(&net_log_exporter));
+  mojo::Remote<mojom::NetLogExporter> net_log_exporter;
+  network_context->CreateNetLogExporter(
+      net_log_exporter.BindNewPipeAndPassReceiver());
 
   net::TestCompletionCallback stop_callback;
   net_log_exporter->Stop(base::Value(base::Value::Type::DICTIONARY),

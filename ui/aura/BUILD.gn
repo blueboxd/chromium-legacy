@@ -36,6 +36,7 @@ jumbo_component("aura") {
     "input_state_lookup_win.h",
     "layout_manager.h",
     "null_window_targeter.h",
+    "scoped_enable_unadjusted_mouse_events.h",
     "scoped_keyboard_hook.h",
     "scoped_simple_keyboard_hook.h",
     "scoped_window_targeter.h",

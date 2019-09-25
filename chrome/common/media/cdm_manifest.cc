@@ -5,17 +5,22 @@
 #include "chrome/common/media/cdm_manifest.h"
 
 #include <stddef.h>
+#include <memory>
 #include <string>
 #include <vector>
 
 #include "base/containers/flat_set.h"
 #include "base/containers/span.h"
+#include "base/files/file_path.h"
+#include "base/json/json_file_value_serializer.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_split.h"
 #include "base/values.h"
+#include "base/version.h"
 #include "content/public/common/cdm_info.h"
+#include "extensions/common/manifest_constants.h"
 #include "media/base/content_decryption_module.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/video_codecs.h"
@@ -75,7 +80,9 @@ const char kCdmSupportedCodecLegacyVp9[] = "vp9.0";
 // Supports at least VP9 profile 0 and profile 2.
 const char kCdmSupportedCodecVp9[] = "vp09";
 const char kCdmSupportedCodecAv1[] = "av01";
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
 const char kCdmSupportedCodecAvc1[] = "avc1";
+#endif
 
 // The following strings are used to specify supported encryption schemes in
 // the parameter |kCdmSupportedEncryptionSchemesName|.
@@ -168,8 +175,10 @@ bool GetCodecs(const base::Value& manifest,
       *supports_vp9_profile2 = true;
     } else if (codec == kCdmSupportedCodecAv1) {
       result.push_back(media::VideoCodec::kCodecAV1);
+#if BUILDFLAG(USE_PROPRIETARY_CODECS)
     } else if (codec == kCdmSupportedCodecAvc1) {
       result.push_back(media::VideoCodec::kCodecH264);
+#endif
     }
   }
 
@@ -299,6 +308,25 @@ bool GetCdmProxyProtocols(
   return true;
 }
 
+bool GetVersion(const base::Value& manifest, base::Version* version) {
+  DCHECK(manifest.is_dict());
+  auto* version_string =
+      manifest.FindStringKey(extensions::manifest_keys::kVersion);
+  if (!version_string) {
+    DLOG(ERROR) << "CDM manifest missing "
+                << extensions::manifest_keys::kVersion;
+    return false;
+  }
+
+  *version = base::Version(*version_string);
+  if (!version->IsValid()) {
+    DLOG(ERROR) << "CDM manifest version " << version_string << " is invalid.";
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 bool IsCdmManifestCompatibleWithChrome(const base::Value& manifest) {
@@ -313,10 +341,6 @@ bool IsCdmManifestCompatibleWithChrome(const base::Value& manifest) {
                                    media::IsSupportedCdmHostVersion);
 }
 
-// Returns true if the entries in the manifest can be parsed correctly,
-// false otherwise. Updates |version| and |capability| with the values obtained
-// from the manifest, if they are provided. If this method returns false,
-// |version| and |capability| may or may not be updated.
 bool ParseCdmManifest(const base::Value& manifest,
                       content::CdmCapability* capability) {
   DCHECK(manifest.is_dict());
@@ -326,4 +350,22 @@ bool ParseCdmManifest(const base::Value& manifest,
          GetEncryptionSchemes(manifest, &capability->encryption_schemes) &&
          GetSessionTypes(manifest, &capability->session_types) &&
          GetCdmProxyProtocols(manifest, &capability->cdm_proxy_protocols);
+}
+
+bool ParseCdmManifestFromPath(const base::FilePath& manifest_path,
+                              base::Version* version,
+                              content::CdmCapability* capability) {
+  JSONFileValueDeserializer deserializer(manifest_path);
+  int error_code;
+  std::string error_message;
+  std::unique_ptr<base::Value> manifest =
+      deserializer.Deserialize(&error_code, &error_message);
+  if (!manifest || !manifest->is_dict()) {
+    DLOG(ERROR) << "Could not deserialize CDM manifest from " << manifest_path
+                << ". Error: " << error_code << " / " << error_message;
+    return false;
+  }
+
+  return GetVersion(*manifest, version) &&
+         ParseCdmManifest(*manifest, capability);
 }

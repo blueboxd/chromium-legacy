@@ -227,6 +227,7 @@ class ASH_EXPORT OverviewGrid : public ScreenRotationAnimatorObserver,
   // transformation and opacity change should be animated. The animation
   // settings will be set by the caller via |callback|. Returns the settings of
   // the first window we are animating; the caller will observe this animation.
+  // The returned object may be nullptr.
   std::unique_ptr<ui::ScopedLayerAnimationSettings> UpdateYPositionAndOpacity(
       int new_y,
       float opacity,

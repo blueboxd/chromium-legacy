@@ -545,6 +545,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                              bool is_display_none) override;
   void FrameSizeChanged(RenderFrameHost* render_frame_host,
                         const gfx::Size& frame_size) override;
+  void DOMContentLoaded(RenderFrameHost* render_frame_host) override;
   void DocumentOnLoadCompleted(RenderFrameHost* render_frame_host) override;
   void UpdateStateForFrame(RenderFrameHost* render_frame_host,
                            const PageState& page_state) override;
@@ -1292,7 +1293,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                                const GURL& target_url);
   void OnDidDisplayContentWithCertificateErrors(RenderFrameHostImpl* source);
   void OnDidRunContentWithCertificateErrors(RenderFrameHostImpl* source);
-  void OnDocumentLoadedInFrame(RenderFrameHostImpl* source);
   void OnDidFinishLoad(RenderFrameHostImpl* source, const GURL& url);
   void OnGoToEntryAtOffset(RenderFrameHostImpl* source,
                            int offset,

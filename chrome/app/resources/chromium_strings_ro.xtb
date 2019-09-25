@@ -117,7 +117,6 @@
 <translation id="5416696090975899932">Chromium nu poate afișa previzualizarea înainte de printare când vizualizatorul PDF încorporat lipsește.</translation>
 <translation id="5427571867875391349">Setați Chromium ca browser prestabilit</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
-<translation id="5466153949126434691">Chromium se actualizează automat, deci ai întotdeauna cea mai recentă versiune. După această descărcare, Chromium va reporni și va fi gata de utilizare.</translation>
 <translation id="5479196819031988440">Sistemul de operare Chromium nu poate deschide pagina.</translation>
 <translation id="5480860683791598150">Chromium are nevoie de acces la locația ta ca să permită accesul la locație pentru acest site</translation>
 <translation id="549669000822060376">Așteaptă până când Chromium instalează cele mai recente actualizări de sistem.</translation>
@@ -213,7 +212,6 @@ Chromium nu poate recupera setările.</translation>
 <translation id="7867198900892795913">Chromium nu s-a putut actualiza la cea mai recentă versiune. Astfel, pierzi noi funcții și remedieri de securitate.</translation>
 <translation id="7901117350626490574">Este disponibilă o nouă actualizare pentru Chromium, iar aceasta va fi aplicată după repornire.</translation>
 <translation id="7937630085815544518">Ați fost conectat(ă) la Chromium ca <ph name="USER_EMAIL_ADDRESS" />. Utilizați același cont pentru a vă conecta din nou.</translation>
-<translation id="7962572577636132072">Chromium se actualizează automat, deci vei avea întotdeauna cea mai recentă versiune.</translation>
 <translation id="7975919845073681630">Aceasta este o instalare secundară a browserului Chromium și nu poate fi setat ca browser prestabilit.</translation>
 <translation id="7979877361127045932">Ascunde în meniul Chromium</translation>
 <translation id="8013436988911883588">Odată ce Chromium are acces, site-urile web îți vor putea solicita accesul.</translation>

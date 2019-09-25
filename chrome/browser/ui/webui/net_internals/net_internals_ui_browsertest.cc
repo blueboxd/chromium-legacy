@@ -14,6 +14,7 @@
 #include "base/files/scoped_file.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"

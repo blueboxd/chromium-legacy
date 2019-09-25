@@ -40,7 +40,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
   NGLayoutOpportunity FindLayoutOpportunity(
       const NGBfcOffset& offset,
       const LayoutUnit available_inline_size,
-      const LogicalSize& minimum_size) const {
+      const LayoutUnit minimum_inline_size) const {
     // If the area clears all floats, we can just return the layout opportunity
     // which matches the available space.
     if (offset.block_offset >=
@@ -52,7 +52,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     }
 
     return GetDerivedGeometry().FindLayoutOpportunity(
-        offset, available_inline_size, minimum_size);
+        offset, available_inline_size, minimum_inline_size);
   }
 
   LayoutOpportunityVector AllLayoutOpportunities(
@@ -351,7 +351,7 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     NGLayoutOpportunity FindLayoutOpportunity(
         const NGBfcOffset& offset,
         const LayoutUnit available_inline_size,
-        const LogicalSize& minimum_size) const;
+        const LayoutUnit minimum_inline_size) const;
 
     LayoutOpportunityVector AllLayoutOpportunities(
         const NGBfcOffset& offset,
@@ -360,7 +360,6 @@ class CORE_EXPORT NGExclusionSpaceInternal {
     template <typename LambdaFunc>
     void IterateAllLayoutOpportunities(const NGBfcOffset& offset,
                                        const LayoutUnit available_inline_size,
-                                       bool is_inline_level,
                                        const LambdaFunc&) const;
 
     // See |NGShelf| for a broad description of what shelves are. We always
@@ -424,12 +423,12 @@ class CORE_EXPORT NGExclusionSpace {
 
   // Returns a layout opportunity, within the BFC.
   // The area to search for layout opportunities is defined by the given offset,
-  // and available_inline_size. The layout opportunity must be greater than the
-  // given minimum_size.
+  // and |available_inline_size|. The layout opportunity must be greater than
+  // the given |minimum_inline_size|.
   NGLayoutOpportunity FindLayoutOpportunity(
       const NGBfcOffset& offset,
       const LayoutUnit available_inline_size,
-      const LogicalSize& minimum_size) const {
+      const LayoutUnit minimum_inline_size = LayoutUnit()) const {
     if (!exclusion_space_) {
       NGBfcOffset end_offset(
           offset.line_offset + available_inline_size.ClampNegativeToZero(),
@@ -437,7 +436,7 @@ class CORE_EXPORT NGExclusionSpace {
       return NGLayoutOpportunity(NGBfcRect(offset, end_offset), nullptr);
     }
     return exclusion_space_->FindLayoutOpportunity(
-        offset, available_inline_size, minimum_size);
+        offset, available_inline_size, minimum_inline_size);
   }
 
   // If possible prefer FindLayoutOpportunity over this function.

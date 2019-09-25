@@ -32,6 +32,7 @@
 #include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/app_list_types.h"
 #include "ash/public/cpp/ash_pref_names.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
 #include "ash/screen_util.h"
@@ -1221,6 +1222,10 @@ gfx::Rect AppListControllerImpl::SnapBoundsToDisplayEdge(
   DCHECK(app_list_view && app_list_view->GetWidget());
   aura::Window* window = app_list_view->GetWidget()->GetNativeView();
   return ash::screen_util::SnapBoundsToDisplayEdge(bounds, window);
+}
+
+int AppListControllerImpl::GetShelfHeight() {
+  return ShelfConfig::Get()->shelf_size();
 }
 
 void AppListControllerImpl::RecordAppLaunched(

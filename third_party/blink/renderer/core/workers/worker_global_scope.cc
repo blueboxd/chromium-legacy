@@ -489,10 +489,6 @@ WorkerGlobalScope::WorkerGlobalScope(
       timers_(GetTaskRunner(TaskType::kJavascriptTimer)),
       time_origin_(time_origin),
       font_selector_(MakeGarbageCollected<OffscreenFontSelector>(this)),
-      animation_frame_provider_(
-          MakeGarbageCollected<WorkerAnimationFrameProvider>(
-              this,
-              creation_params->begin_frame_provider_params)),
       script_eval_state_(ScriptEvalState::kPauseAfterFetch) {
   InstanceCounters::IncrementCounter(
       InstanceCounters::kWorkerGlobalScopeCounter);
@@ -561,28 +557,6 @@ void WorkerGlobalScope::queueMicrotask(V8VoidFunction* callback) {
                 WrapPersistent(callback), nullptr));
 }
 
-int WorkerGlobalScope::requestAnimationFrame(V8FrameRequestCallback* callback,
-                                             ExceptionState& exception_state) {
-  auto* frame_callback =
-      MakeGarbageCollected<FrameRequestCallbackCollection::V8FrameCallback>(
-          callback);
-  frame_callback->SetUseLegacyTimeBase(false);
-
-  int ret = animation_frame_provider_->RegisterCallback(frame_callback);
-
-  if (ret == WorkerAnimationFrameProvider::kInvalidCallbackId) {
-    exception_state.ThrowDOMException(
-        DOMExceptionCode::kNotSupportedError,
-        "requestAnimationFrame not supported in this Worker.");
-  }
-
-  return ret;
-}
-
-void WorkerGlobalScope::cancelAnimationFrame(int id) {
-  animation_frame_provider_->CancelCallback(id);
-}
-
 void WorkerGlobalScope::SetWorkerSettings(
     std::unique_ptr<WorkerSettings> worker_settings) {
   worker_settings_ = std::move(worker_settings);
@@ -605,7 +579,6 @@ void WorkerGlobalScope::Trace(blink::Visitor* visitor) {
   visitor->Trace(timers_);
   visitor->Trace(pending_error_events_);
   visitor->Trace(font_selector_);
-  visitor->Trace(animation_frame_provider_);
   visitor->Trace(trusted_types_);
   visitor->Trace(worker_script_);
   WorkerOrWorkletGlobalScope::Trace(visitor);

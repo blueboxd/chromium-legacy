@@ -105,6 +105,10 @@ class MODULES_EXPORT IDBDatabase final
   IDBTransaction* transaction(ScriptState*,
                               const StringOrStringSequence& store_names,
                               const String& mode,
+                              ExceptionState&);
+  IDBTransaction* transaction(ScriptState*,
+                              const StringOrStringSequence& store_names,
+                              const String& mode,
                               const IDBTransactionOptions* options,
                               ExceptionState&);
   void deleteObjectStore(const String& name, ExceptionState&);

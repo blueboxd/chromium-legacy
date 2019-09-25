@@ -67,7 +67,6 @@ const CommandLinePrefStore::BooleanSwitchToPreferenceMapEntry
          true},
         {switches::kAllowOutdatedPlugins, prefs::kPluginsAllowOutdated, true},
         {switches::kNoPings, prefs::kEnableHyperlinkAuditing, false},
-        {network::switches::kNoReferrers, prefs::kEnableReferrers, false},
         {switches::kAllowRunningInsecureContent,
          prefs::kWebKitAllowRunningInsecureContent, true},
         {switches::kAllowCrossOriginAuthPrompt,

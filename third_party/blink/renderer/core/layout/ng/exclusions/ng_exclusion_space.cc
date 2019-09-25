@@ -109,33 +109,6 @@ bool Intersects(const NGLayoutOpportunity& opportunity,
          opportunity.rect.BlockEndOffset() > offset.block_offset;
 }
 
-// Returns true if the area defined by the given offset and inline_size
-// intersects with the shelfs area.
-//
-// No checks for the block direction are needed as the given area (defined by
-// offset and inline_size) extends to a block-end of infinity, and a shelf also
-// has a block-end of infinity.
-//
-// If the shelf is at -Infinity or +Infinity at either end, the given area
-// always intersects.
-bool Intersects(const NGExclusionSpaceInternal::NGShelf& shelf,
-                const NGBfcOffset& offset,
-                const LayoutUnit inline_size,
-                bool is_inline_level) {
-  if (shelf.line_right >= offset.line_offset &&
-      shelf.line_left <= offset.line_offset + inline_size)
-    return true;
-
-  // Negative available space creates a zero-width opportunity at the inline-end
-  // of the shelf. Consider such shelf intersects.
-  if (UNLIKELY(is_inline_level &&
-               (shelf.line_left > offset.line_offset ||
-                shelf.line_right < offset.line_offset + inline_size)))
-    return true;
-
-  return false;
-}
-
 // Creates a new layout opportunity. The given layout opportunity *must*
 // intersect with the given area (defined by offset and inline_size).
 NGLayoutOpportunity CreateLayoutOpportunity(const NGLayoutOpportunity& other,
@@ -163,10 +136,7 @@ NGLayoutOpportunity CreateLayoutOpportunity(const NGLayoutOpportunity& other,
 NGLayoutOpportunity CreateLayoutOpportunity(
     const NGExclusionSpaceInternal::NGShelf& shelf,
     const NGBfcOffset& offset,
-    const LayoutUnit inline_size,
-    bool is_inline_level) {
-  DCHECK(Intersects(shelf, offset, inline_size, is_inline_level));
-
+    const LayoutUnit inline_size) {
   NGBfcOffset start_offset(std::max(shelf.line_left, offset.line_offset),
                            std::max(shelf.block_offset, offset.block_offset));
 
@@ -547,22 +517,23 @@ NGLayoutOpportunity
 NGExclusionSpaceInternal::DerivedGeometry::FindLayoutOpportunity(
     const NGBfcOffset& offset,
     const LayoutUnit available_inline_size,
-    const LogicalSize& minimum_size) const {
+    const LayoutUnit minimum_inline_size) const {
   // TODO(ikilpatrick): Determine what to do for a -ve available_inline_size.
 
   NGLayoutOpportunity return_opportunity;
   IterateAllLayoutOpportunities(
-      offset, available_inline_size, false /* is_inline_level */,
-      [&return_opportunity, &minimum_size,
-       &available_inline_size](const NGLayoutOpportunity opportunity) -> bool {
+      offset, available_inline_size,
+      [&return_opportunity, &offset, &available_inline_size,
+       &minimum_inline_size](const NGLayoutOpportunity opportunity) -> bool {
         // Determine if this opportunity will fit the given size.
         //
-        // NOTE: There are cases where the available_inline_size may be smaller
-        // than the minimum_size.inline_size. In such cases if the opportunity
-        // is the same as the available_inline_size, it pretends that it "fits".
-        if ((opportunity.rect.InlineSize() >= minimum_size.inline_size ||
-             opportunity.rect.InlineSize() == available_inline_size) &&
-            opportunity.rect.BlockSize() >= minimum_size.block_size) {
+        // NOTE: There are cases where the |available_inline_size| may be
+        // smaller than the |minimum_inline_size|. In such cases if the
+        // opportunity is the same as the |available_inline_size|, it pretends
+        // that it "fits".
+        if (opportunity.rect.InlineSize() >= minimum_inline_size ||
+            (opportunity.rect.InlineSize() == available_inline_size &&
+             opportunity.rect.LineStartOffset() == offset.line_offset)) {
           return_opportunity = std::move(opportunity);
           return true;
         }
@@ -581,7 +552,7 @@ NGExclusionSpaceInternal::DerivedGeometry::AllLayoutOpportunities(
 
   // This method is only used for determining the position of line-boxes.
   IterateAllLayoutOpportunities(
-      offset, available_inline_size, true /* is_inline_level */,
+      offset, available_inline_size,
       [&opportunities](const NGLayoutOpportunity opportunity) -> bool {
         opportunities.push_back(std::move(opportunity));
         return false;
@@ -594,7 +565,6 @@ template <typename LambdaFunc>
 void NGExclusionSpaceInternal::DerivedGeometry::IterateAllLayoutOpportunities(
     const NGBfcOffset& offset,
     const LayoutUnit available_inline_size,
-    bool is_inline_level,
     const LambdaFunc& lambda) const {
   auto* shelves_it = shelves_.begin();
   auto* areas_it = areas_.begin();
@@ -607,11 +577,6 @@ void NGExclusionSpaceInternal::DerivedGeometry::IterateAllLayoutOpportunities(
     // as there is always an infinitely sized shelf at the very end.
     DCHECK_NE(shelves_it, shelves_end);
     const NGShelf& shelf = *shelves_it;
-
-    if (!Intersects(shelf, offset, available_inline_size, is_inline_level)) {
-      ++shelves_it;
-      continue;
-    }
 
     if (areas_it != areas_end) {
       const NGClosedArea& area = *areas_it;
@@ -653,8 +618,7 @@ void NGExclusionSpaceInternal::DerivedGeometry::IterateAllLayoutOpportunities(
         HasSolidEdges(shelf.line_right_edges, offset.block_offset,
                       LayoutUnit::Max());
     if (has_solid_edges) {
-      if (lambda(CreateLayoutOpportunity(shelf, offset, available_inline_size,
-                                         is_inline_level)))
+      if (lambda(CreateLayoutOpportunity(shelf, offset, available_inline_size)))
         return;
     }
     ++shelves_it;

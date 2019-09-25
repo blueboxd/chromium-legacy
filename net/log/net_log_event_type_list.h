@@ -3234,3 +3234,18 @@ EVENT_TYPE(COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE)
 //  {
 //  }
 EVENT_TYPE(COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE)
+
+//
+// HTTP/3 events.
+//
+// Event emitted when peer created control stream type is received.
+EVENT_TYPE(HTTP3_PEER_CONTROL_STREAM_CREATED)
+
+// Event emitted when peer created QPACK encoder stream type is received.
+EVENT_TYPE(HTTP3_PEER_QPACK_ENCODER_STREAM_CREATED)
+
+// Event emitted when peer created QPACK decoder stream type is received.
+EVENT_TYPE(HTTP3_PEER_QPACK_DECODER_STREAM_CREATED)
+
+// Event emitted when SETTINGS frame is received.
+EVENT_TYPE(HTTP3_SETTINGS_RECEIVED)

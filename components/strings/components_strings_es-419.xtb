@@ -1033,6 +1033,7 @@
 <translation id="6058977677006700226">¿Quieres usar tus tarjetas en todos los dispositivos?</translation>
 <translation id="6059925163896151826">Dispositivos USB</translation>
 <translation id="6060009363608157444">Modo DnsOverHttps no válido</translation>
+<translation id="6064217302520318294">Bloqueo de pantalla</translation>
 <translation id="6080696365213338172">Accediste al contenido mediante un certificado proporcionado por el administrador. Los datos que proporciones a <ph name="DOMAIN" /> pueden ser interceptados por tu administrador.</translation>
 <translation id="6094273045989040137">Agregar anotación</translation>
 <translation id="610911394827799129">Es posible que tu cuenta de Google tenga otros formularios del historial de navegación en <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" /></translation>
@@ -1067,7 +1068,7 @@
 <translation id="6302269476990306341">Se está deteniendo el Asistente de Google en Chrome</translation>
 <translation id="6305205051461490394">No se puede acceder a <ph name="URL" />.</translation>
 <translation id="6321917430147971392">Revisa la configuración de DNS.</translation>
-<translation id="6322182122604171028">No se puedo usar Windows Hello</translation>
+<translation id="6322182122604171028">No se pudo usar Windows Hello</translation>
 <translation id="6328639280570009161">Intenta inhabilitar la predicción de red.</translation>
 <translation id="6328784461820205019">"La conexión no es privada", "&lt;span class="error-code"&gt;NET::ERR_CERT_AUTHORITY_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_COMMON_NAME_INVALID&lt;/span&gt;", "&lt;span class="error-code"&gt;NET::ERR_CERT_WEAK_SIGNATURE_ALGORITHM&lt;/span&gt;", "&lt;span class="error-code"&gt;ERR_CERT_SYMANTEC_LEGACY&lt;/span&gt;" o "Error del certificado SSL"</translation>
 <translation id="6328786501058569169">Este sitio es engañoso</translation>

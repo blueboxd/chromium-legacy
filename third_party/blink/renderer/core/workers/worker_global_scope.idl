@@ -68,11 +68,6 @@
     [Replaceable] readonly attribute DOMString origin;
     void queueMicrotask(VoidFunction callback);
 
-    // AnimationFrameProvider mixin
-    // https://html.spec.whatwg.org/C/#animation-frames
-    [RaisesException] long requestAnimationFrame(FrameRequestCallback callback);
-    void cancelAnimationFrame(long handle);
-
     // FontFaceSource
     // https://drafts.csswg.org/css-font-loading-3/#font-face-source
     // TODO(fserb): temporarly until we can enable the interface below.

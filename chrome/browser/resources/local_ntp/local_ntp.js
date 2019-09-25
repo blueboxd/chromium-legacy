@@ -90,7 +90,6 @@ const CLASSES = {
   LEFT_ALIGN_ATTRIBUTION: 'left-align-attribution',
   // Vertically centers the most visited section for a non-Google provided page.
   NON_GOOGLE_PAGE: 'non-google-page',
-  NON_WHITE_BG: 'non-white-bg',
   SEARCH_ICON: 'search-icon',  // Magnifying glass/search icon.
   SELECTED: 'selected',  // A selected (via up/down arrow key) realbox match.
   SHOW_ELEMENT: 'show-element',
@@ -105,14 +104,6 @@ const SEARCH_HISTORY_MATCH_TYPES = [
   'search-history',
   'search-suggest-personalized',
 ];
-
-/**
- * Background color for Chrome dark mode. Used to determine if it is possible to
- * display a Google Doodle, or if the notifier should be used instead.
- * @type {string}
- * @const
- */
-const DARK_MODE_BACKGROUND_COLOR = 'rgba(53,54,58,1)';
 
 /**
  * The period of time (ms) before transitions can be applied to a toast
@@ -243,14 +234,6 @@ const REALBOX_KEYDOWN_HANDLED_KEYS = [
   'PageDown',
   'PageUp',
 ];
-
-/**
- * Background colors considered "white". Used to determine if it is possible to
- * display a Google Doodle, or if the notifier should be used instead. Also used
- * to determine if a colored or white logo should be used.
- * @const
- */
-const WHITE_BACKGROUND_COLORS = ['rgba(255,255,255,1)', 'rgba(0,0,0,0)'];
 
 // Local statics.
 
@@ -1486,23 +1469,10 @@ function renderTheme() {
   isDarkModeEnabled = window.matchMedia('(prefers-color-scheme: dark)').matches;
   document.body.classList.toggle('light-chip', !getUseDarkChips(info));
 
-  const background = [
-    convertToRGBAColor(info.backgroundColorRgba), info.imageUrl,
-    info.imageTiling, info.imageHorizontalAlignment, info.imageVerticalAlignment
-  ].join(' ').trim();
-
-  // If a custom background has been selected the image will be applied to the
-  // custom-background element instead of the body.
-  if (!info.customBackgroundConfigured) {
-    document.body.style.background = background;
-  }
-
   // Dark mode uses a white Google logo.
   const useWhiteLogo =
       info.alternateLogo || (info.usingDefaultTheme && isDarkModeEnabled);
   document.body.classList.toggle(CLASSES.ALTERNATE_LOGO, useWhiteLogo);
-  const isNonWhiteBackground = !WHITE_BACKGROUND_COLORS.includes(background);
-  document.body.classList.toggle(CLASSES.NON_WHITE_BG, isNonWhiteBackground);
 
   if (info.logoColor) {
     document.body.style.setProperty(
@@ -1512,14 +1482,22 @@ function renderTheme() {
   // The doodle notifier should be shown for non-default backgrounds. This
   // includes non-white backgrounds, excluding dark mode gray if dark mode is
   // enabled.
-  const isDefaultBackground = WHITE_BACKGROUND_COLORS.includes(background) ||
-      (isDarkModeEnabled && background === DARK_MODE_BACKGROUND_COLOR);
+  const isDefaultBackground = info.usingDefaultTheme && !info.imageUrl;
   document.body.classList.toggle(CLASSES.USE_NOTIFIER, !isDefaultBackground);
 
-  updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
-  setCustomThemeStyle(info);
+  // If a custom background has been selected the image will be applied to the
+  // custom-background element instead of the body.
+  if (!info.customBackgroundConfigured) {
+    document.body.style.background = [
+      convertToRGBAColor(info.backgroundColorRgba), info.imageUrl,
+      info.imageTiling, info.imageHorizontalAlignment,
+      info.imageVerticalAlignment
+    ].join(' ').trim();
 
-  if (info.customBackgroundConfigured) {
+    $(IDS.CUSTOM_BG).style.opacity = '0';
+    $(IDS.CUSTOM_BG).style.backgroundImage = '';
+    customize.clearAttribution();
+  } else {
     // Do anything only if the custom background changed.
     const imageUrl = assert(info.imageUrl);
     if (!$(IDS.CUSTOM_BG).style.backgroundImage.includes(imageUrl)) {
@@ -1549,11 +1527,10 @@ function renderTheme() {
           '' + info.attribution1, '' + info.attribution2,
           '' + info.attributionActionUrl);
     }
-  } else {
-    $(IDS.CUSTOM_BG).style.opacity = '0';
-    $(IDS.CUSTOM_BG).style.backgroundImage = '';
-    customize.clearAttribution();
   }
+
+  updateThemeAttribution(info.attributionUrl, info.imageHorizontalAlignment);
+  setCustomThemeStyle(info);
 
   $(customize.IDS.RESTORE_DEFAULT)
       .classList.toggle(

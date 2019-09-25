@@ -246,6 +246,21 @@ below:
       </message>
 
       <!-- Localized names for accessibility roles -->
+      <message name="IDS_AX_ROLE_ANNOTATION_ATTRIBUTION" desc="Accessibility role description for attribution, meaning authoring information tied to specific content">
+        authoring info
+      </message>
+      <message name="IDS_AX_ROLE_ANNOTATION_COMMENTARY" desc="Accessibility role description for commentary">
+        comments
+      </message>
+      <message name="IDS_AX_ROLE_ANNOTATION_PRESENCE" desc="Accessibility role description for presence, meaning information about another collaborator who is currently reviewing or editing this content">
+        live presence
+      </message>
+      <message name="IDS_AX_ROLE_ANNOTATION_REVISION" desc="Accessibility role description for revision, meaining historical change info tied to this content">
+        revision
+      </message>
+      <message name="IDS_AX_ROLE_ANNOTATION_SUGGESTION" desc="Accessibility role description for suggestion, meaning a suggested change to some content">
+        suggestion
+      </message>
       <message name="IDS_AX_ROLE_ARTICLE" desc="Accessibility role description for article">
         article
       </message>
@@ -266,7 +281,7 @@ below:
       <message name="IDS_AX_ROLE_CONTENT_DELETION" desc="Accessibility role description for content deletion, meaning content that is has been or is suggested to be removed from a document, such as in a revision review">
         deletion
       </message>
-      <message name="IDS_AX_ROLE_CONTENT_INSERTION" desc="Accessibility role description for content insertion, meaning content that has been marked or is suggested to be inserte nto a document, such as in a revision review">
+      <message name="IDS_AX_ROLE_CONTENT_INSERTION" desc="Accessibility role description for content insertion, meaning content that has been marked or is suggested to be inserted into a document, such as in a revision review">
         insertion
       </message>
       <message name="IDS_AX_ROLE_CHECK_BOX" desc="Accessibility role description for a check box">

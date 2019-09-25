@@ -17,6 +17,6 @@ PASS Setting 'scroll-snap-type' to a position throws TypeError
 PASS Setting 'scroll-snap-type' to a URL throws TypeError
 PASS Setting 'scroll-snap-type' to a transform throws TypeError
 PASS 'scroll-snap-type' does not supported 'x mandatory'
-FAIL 'scroll-snap-type' does not supported 'inline proximity' assert_equals: Unsupported value must be a CSSStyleValue and not one of its subclasses expected "[object CSSStyleValue]" but got "[object CSSKeywordValue]"
+FAIL 'scroll-snap-type' does not supported 'inline proximity' assert_class_string: Unsupported value must be a CSSStyleValue and not one of its subclasses expected "[object CSSStyleValue]" but got "[object CSSKeywordValue]"
 Harness: the test ran to completion.
 

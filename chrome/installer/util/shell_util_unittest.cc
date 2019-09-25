@@ -41,6 +41,7 @@ const wchar_t kOtherIco[] = L"other.ico";
 // For registry tests.
 const wchar_t kTestProgid[] = L"TestApp";
 const wchar_t kTestOpenCommand[] = L"C:\\test.exe";
+const wchar_t kTestApplicationName[] = L"Test Application";
 const wchar_t kTestFileTypeName[] = L"Test File Type";
 const wchar_t kTestIconPath[] = L"D:\\test.ico";
 const wchar_t* kTestFileExtensions[] = {
@@ -832,11 +833,9 @@ class ShellUtilRegistryTest : public testing::Test {
 
 TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
   // Create file associations.
-  EXPECT_TRUE(ShellUtil::AddFileAssociations(kTestProgid,
-                                             OpenCommand(),
-                                             kTestFileTypeName,
-                                             base::FilePath(kTestIconPath),
-                                             FileExtensions()));
+  EXPECT_TRUE(ShellUtil::AddFileAssociations(
+      kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
+      base::FilePath(kTestIconPath), FileExtensions()));
 
   // Ensure that the registry keys have been correctly set.
   base::win::RegKey key;
@@ -860,6 +859,15 @@ TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
                      KEY_READ));
   EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"", &value));
   EXPECT_EQ(L"\"C:\\test.exe\" \"%1\"", value);
+
+  // The Application subkey and values are only required by Windows 8 and later.
+  if (base::win::GetVersion() >= base::win::Version::WIN8) {
+    ASSERT_EQ(ERROR_SUCCESS,
+              key.Open(HKEY_CURRENT_USER,
+                       L"Software\\Classes\\TestApp\\Application", KEY_READ));
+    EXPECT_EQ(ERROR_SUCCESS, key.ReadValue(L"ApplicationName", &value));
+    EXPECT_EQ(L"Test Application", value);
+  }
 
   // .test1 should be default-associated with our test app.
   ASSERT_EQ(
@@ -893,11 +901,9 @@ TEST_F(ShellUtilRegistryTest, AddFileAssociations) {
 
 TEST_F(ShellUtilRegistryTest, DeleteFileAssociations) {
   // Create file associations.
-  EXPECT_TRUE(ShellUtil::AddFileAssociations(kTestProgid,
-                                             OpenCommand(),
-                                             kTestFileTypeName,
-                                             base::FilePath(kTestIconPath),
-                                             FileExtensions()));
+  EXPECT_TRUE(ShellUtil::AddFileAssociations(
+      kTestProgid, OpenCommand(), kTestApplicationName, kTestFileTypeName,
+      base::FilePath(kTestIconPath), FileExtensions()));
 
   // Delete them.
   EXPECT_TRUE(ShellUtil::DeleteFileAssociations(kTestProgid));

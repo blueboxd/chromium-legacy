@@ -3,13 +3,11 @@
 <translationbundle lang="ko">
 <translation id="1276998909102132017">갤러리 이미지</translation>
 <translation id="1430915738399379752">인쇄</translation>
-<translation id="1462966117743110941">이제 카메라에서 새로운 모드를 지원합니다. 또한 사진 및 동영상을 다운로드 폴더에서 사용할 수 있습니다.</translation>
 <translation id="1620510694547887537">카메라</translation>
 <translation id="1627744224761163218">4x4</translation>
 <translation id="1664224225747386870">녹화된 동영상이 없습니다.</translation>
 <translation id="1862930711583847113"><ph name="FILE" /> 파일을 내보낼 수 없습니다.</translation>
 <translation id="1899697626337024495">사진 해상도</translation>
-<translation id="2008689030244369546">새로워진 디자인</translation>
 <translation id="2036868001356139588">타이머 시간</translation>
 <translation id="2050339315714019657">세로 방향</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> 사용 중</translation>
@@ -44,9 +42,7 @@
 <translation id="5671277269877808209">정사각형</translation>
 <translation id="5775960006311140197">전문가 모드</translation>
 <translation id="5869546221129391014">격자</translation>
-<translation id="6040143037577758943">닫기</translation>
 <translation id="6073451960410192870">녹화 중지</translation>
-<translation id="6165508094623778733">자세히 알아보기</translation>
 <translation id="6197807149213783179">메타데이터 저장</translation>
 <translation id="6233780560267770709">3x3</translation>
 <translation id="6243827288366940320">황금 비율</translation>

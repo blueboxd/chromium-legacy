@@ -224,7 +224,8 @@ std::unique_ptr<VideoDecoder> GpuMojoMediaClient::CreateVideoDecoder(
       auto ycbcr_helper =
           YCbCrHelper::Create(gpu_task_runner_, std::move(get_stub_cb));
       video_decoder = std::make_unique<MediaCodecVideoDecoder>(
-          gpu_preferences_, gpu_feature_info_, DeviceInfo::GetInstance(),
+          gpu_preferences_, gpu_feature_info_, media_log->Clone(),
+          DeviceInfo::GetInstance(),
           CodecAllocator::GetInstance(gpu_task_runner_),
           std::make_unique<AndroidVideoSurfaceChooserImpl>(
               DeviceInfo::GetInstance()->IsSetOutputSurfaceSupported()),

@@ -8,7 +8,6 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.util.Pair;
 
@@ -47,13 +46,12 @@ public class IncognitoUtils {
         Context context = ContextUtils.getApplicationContext();
         ActivityManager manager =
                 (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        PackageManager pm = context.getPackageManager();
 
         Set<Integer> tabbedModeTaskIds = new HashSet<>();
         for (ActivityManager.AppTask task : manager.getAppTasks()) {
             ActivityManager.RecentTaskInfo info = DocumentUtils.getTaskInfoFromTask(task);
             if (info == null) continue;
-            String componentName = DocumentUtils.getTaskComponentName(task, pm);
+            String componentName = DocumentUtils.getTaskComponentName(task);
 
             if (ChromeTabbedActivity.isTabbedModeComponentName(componentName)) {
                 tabbedModeTaskIds.add(info.id);

@@ -110,10 +110,3 @@ void OffTheRecordChromeBrowserStateImpl::ClearNetworkingHistorySince(
     base::PostTask(FROM_HERE, {web::WebThread::UI}, completion);
   }
 }
-
-net::URLRequestContextGetter*
-OffTheRecordChromeBrowserStateImpl::CreateIsolatedRequestContext(
-    const base::FilePath& partition_path) {
-  NOTIMPLEMENTED();
-  return nullptr;
-}

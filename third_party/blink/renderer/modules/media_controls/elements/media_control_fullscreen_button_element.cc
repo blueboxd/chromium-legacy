@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_fullscreen_button_element.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/settings.h"
@@ -41,11 +42,10 @@ bool MediaControlFullscreenButtonElement::WillRespondToMouseClickEvents() {
   return true;
 }
 
-WebLocalizedString::Name
-MediaControlFullscreenButtonElement::GetOverflowStringName() const {
+int MediaControlFullscreenButtonElement::GetOverflowStringId() const {
   if (MediaElement().IsFullscreen())
-    return WebLocalizedString::kOverflowMenuExitFullscreen;
-  return WebLocalizedString::kOverflowMenuEnterFullscreen;
+    return IDS_MEDIA_OVERFLOW_MENU_EXIT_FULLSCREEN;
+  return IDS_MEDIA_OVERFLOW_MENU_ENTER_FULLSCREEN;
 }
 
 bool MediaControlFullscreenButtonElement::HasOverflowButton() const {

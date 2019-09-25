@@ -51,9 +51,9 @@
 #include "components/proxy_config/pref_proxy_config_tracker_impl.h"
 #include "components/proxy_config/proxy_config_dictionary.h"
 #include "components/proxy_config/proxy_config_pref_names.h"
-#include "content/public/common/page_zoom.h"
 #include "net/proxy_resolution/proxy_bypass_rules.h"
 #include "net/proxy_resolution/proxy_config.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 
 using ::chromeos::system::TimezoneSettings;
 
@@ -481,7 +481,7 @@ void ArcSettingsServiceImpl::SyncPageZoom() const {
     return;
 
   double zoom_level = profile_->GetZoomLevelPrefs()->GetDefaultZoomLevelPref();
-  double zoom_factor = content::ZoomLevelToZoomFactor(zoom_level);
+  double zoom_factor = blink::PageZoomLevelToZoomFactor(zoom_level);
 
   base::DictionaryValue extras;
   extras.SetDouble("zoomFactor", zoom_factor);

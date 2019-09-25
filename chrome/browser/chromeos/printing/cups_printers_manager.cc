@@ -248,20 +248,13 @@ class CupsPrintersManagerImpl
     // detected printers.
     ClearNetworkDetectedPrinters();
   }
-
-  // mojom::CrosNetworkConfigObserver implementation.
   void OnNetworkStateChanged(
       chromeos::network_config::mojom::NetworkStatePropertiesPtr /* network */)
       override {}
-
-  // mojom::CrosNetworkConfigObserver implementation.
   void OnNetworkStateListChanged() override {}
-
-  // mojom::CrosNetworkConfigObserver implementation.
   void OnDeviceStateListChanged() override {}
-
-  // mojom::CrosNetworkConfigObserver implementation.
   void OnVpnProvidersChanged() override {}
+  void OnNetworkCertificatesChanged() override {}
 
   // Callback for PrinterDetectors.
   void OnPrintersFound(

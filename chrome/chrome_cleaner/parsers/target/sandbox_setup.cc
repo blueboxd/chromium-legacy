@@ -6,10 +6,11 @@
 
 #include <utility>
 
+#include "base/run_loop.h"
 #include "base/task/single_thread_task_executor.h"
-#include "chrome/chrome_cleaner/mojom/parser_interface.mojom.h"
 #include "chrome/chrome_cleaner/ipc/mojo_sandbox_hooks.h"
 #include "chrome/chrome_cleaner/ipc/mojo_task_runner.h"
+#include "chrome/chrome_cleaner/mojom/parser_interface.mojom.h"
 #include "chrome/chrome_cleaner/os/early_exit.h"
 #include "chrome/chrome_cleaner/parsers/target/parser_impl.h"
 #include "components/chrome_cleaner/public/constants/result_codes.h"

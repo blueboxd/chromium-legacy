@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/test/metrics/histogram_tester.h"
 #include "cc/metrics/compositor_frame_reporting_controller.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -109,6 +110,45 @@ class FrameSequenceTrackerTest : public testing::Test {
     // kReadyForTermination. So at this point, the |removal_trackers_| should be
     // empty.
     EXPECT_TRUE(collection_.removal_trackers_.empty());
+  }
+
+  void ReportMetrics() {
+    base::HistogramTester histogram_tester;
+
+    // Test that there is no main thread frames expected.
+    tracker_->impl_throughput_.frames_expected = 100u;
+    tracker_->impl_throughput_.frames_produced = 85u;
+    tracker_->ReportMetrics();
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 1u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 0u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 1u);
+
+    // Test that both are reported.
+    tracker_->main_throughput_.frames_expected = 50u;
+    tracker_->main_throughput_.frames_produced = 25u;
+    tracker_->ReportMetrics();
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 1u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
+
+    // Test that none is reported.
+    tracker_->main_throughput_.frames_expected = 2u;
+    tracker_->main_throughput_.frames_produced = 1u;
+    tracker_->impl_throughput_.frames_expected = 2u;
+    tracker_->impl_throughput_.frames_produced = 1u;
+    tracker_->ReportMetrics();
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.CompositorThread.TouchScroll", 2u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.MainThread.TouchScroll", 1u);
+    histogram_tester.ExpectTotalCount(
+        "Graphics.Smoothness.Throughput.SlowerThread.TouchScroll", 2u);
   }
 
  protected:
@@ -272,6 +312,10 @@ TEST_F(FrameSequenceTrackerTest, MultipleCheckerboardingFrames) {
   collection_.NotifyFramePresented(frame_token, feedback);
 
   EXPECT_EQ(kFrames, number_of_frames_checkerboarded());
+}
+
+TEST_F(FrameSequenceTrackerTest, ReportMetrics) {
+  ReportMetrics();
 }
 
 }  // namespace cc

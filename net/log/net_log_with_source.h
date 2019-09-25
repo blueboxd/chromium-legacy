@@ -18,7 +18,7 @@ class NetLog;
 // output log messages without needing to pass in the source.
 class NET_EXPORT NetLogWithSource {
  public:
-  NetLogWithSource() : net_log_(nullptr) {}
+  NetLogWithSource();
   ~NetLogWithSource();
 
   // Adds a log entry to the NetLog for the bound source.
@@ -29,10 +29,7 @@ class NET_EXPORT NetLogWithSource {
   void AddEntry(NetLogEventType type,
                 NetLogEventPhase phase,
                 const ParametersCallback& get_params) const {
-    // TODO(eroman): Should merge the nullity check with
-    // GetObserverCaptureModes() to reduce expanded code size.
-    if (net_log_)
-      net_log_->AddEntry(type, source_, phase, get_params);
+    non_null_net_log_->AddEntry(type, source_, phase, get_params);
   }
 
   // Convenience methods that call AddEntry with a fixed "capture phase"
@@ -119,7 +116,7 @@ class NET_EXPORT NetLogWithSource {
                             int byte_count,
                             const char* bytes) const;
 
-  bool IsCapturing() const;
+  bool IsCapturing() const { return non_null_net_log_->IsCapturing(); }
 
   // Helper to create a NetLogWithSource given a NetLog and a NetLogSourceType.
   // Takes care of creating a unique source ID, and handles
@@ -127,14 +124,28 @@ class NET_EXPORT NetLogWithSource {
   static NetLogWithSource Make(NetLog* net_log, NetLogSourceType source_type);
 
   const NetLogSource& source() const { return source_; }
-  NetLog* net_log() const { return net_log_; }
+
+  // Returns the bound NetLog*, or nullptr.
+  NetLog* net_log() const;
 
  private:
-  NetLogWithSource(const NetLogSource& source, NetLog* net_log)
-      : source_(source), net_log_(net_log) {}
+  NetLogWithSource(const NetLogSource& source, NetLog* non_null_net_log)
+      : source_(source), non_null_net_log_(non_null_net_log) {}
 
   NetLogSource source_;
-  NetLog* net_log_;
+
+  // There are two types of NetLogWithSource:
+  //
+  // (a) An ordinary NetLogWithSource for which |source().IsValid()| and
+  //     |net_log() != nullptr|
+  //
+  // (b) A default constructed NetLogWithSource for which
+  //     |!source().IsValid()| and |net_log() == nullptr|.
+  //
+  // As an optimization, both types internally store a non-null NetLog*. This
+  // way no null checks are needed before dispatching to the (possibly dummy)
+  // NetLog
+  NetLog* non_null_net_log_;
 };
 
 }  // namespace net

@@ -6,7 +6,7 @@
 
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_histograms.h"
-#include "chrome/browser/previews/previews_lite_page_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
 #include "content/public/browser/navigation_handle.h"
 #include "extensions/buildflags/buildflags.h"
 #include "ui/base/window_open_disposition.h"
@@ -44,7 +44,8 @@ ChromeNavigationUIData::ChromeNavigationUIData(
             prerender_contents->origin());
   }
   data_reduction_proxy_page_id_ =
-      PreviewsLitePageDecider::GeneratePageIdForWebContents(web_contents);
+      PreviewsLitePageRedirectDecider::GeneratePageIdForWebContents(
+          web_contents);
 }
 
 ChromeNavigationUIData::~ChromeNavigationUIData() {}

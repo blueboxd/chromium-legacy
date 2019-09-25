@@ -1341,6 +1341,10 @@ void WizardController::OnHIDScreenNecessityCheck(bool screen_needed) {
   if (!GetOobeUI())
     return;
 
+  // Check for tests configuration.
+  if (StartupUtils::IsEulaAccepted() || StartupUtils::IsOobeCompleted())
+    return;
+
   const auto* skip_screen_key = oobe_configuration_.FindKeyOfType(
       configuration::kSkipHIDDetection, base::Value::Type::BOOLEAN);
   const bool skip_screen = skip_screen_key && skip_screen_key->GetBool();

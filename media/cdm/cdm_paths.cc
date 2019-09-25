@@ -24,16 +24,19 @@ const base::Token kClearKeyCdmDifferentGuid{0xc3914773474bdb02ull,
 // this ID is based on the pepper plugin MIME type.
 const char kClearKeyCdmFileSystemId[] = "application_x-ppapi-clearkey-cdm";
 
-base::FilePath GetPlatformSpecificDirectory(const std::string& cdm_base_path) {
+base::FilePath GetPlatformSpecificDirectory(
+    const base::FilePath& cdm_base_path) {
   // CDM_PLATFORM_SPECIFIC_PATH is specified in cdm_paths.gni.
   const std::string kPlatformSpecific = BUILDFLAG(CDM_PLATFORM_SPECIFIC_PATH);
   if (kPlatformSpecific.empty())
     return base::FilePath();
 
-  return base::FilePath()
-      .AppendASCII(cdm_base_path)
-      .AppendASCII(kPlatformSpecific)
-      .NormalizePathSeparators();
+  return cdm_base_path.AppendASCII(kPlatformSpecific).NormalizePathSeparators();
+}
+
+base::FilePath GetPlatformSpecificDirectory(const std::string& cdm_base_path) {
+  return GetPlatformSpecificDirectory(
+      base::FilePath::FromUTF8Unsafe(cdm_base_path));
 }
 
 }  // namespace media

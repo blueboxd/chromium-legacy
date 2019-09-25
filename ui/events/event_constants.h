@@ -149,6 +149,9 @@ enum MouseEventFlags {
   EF_SCROLL_BY_PAGE = 1 << 22,       // Indicates this mouse event is generated
                                      // when users is requesting to scroll by
                                      // pages.
+  EF_UNADJUSTED_MOUSE = 1 << 23,     // Indicates this mouse event is unadjusted
+                                  // mouse events that has unadjusted movement
+                                  // delta, i.e. is from WM_INPUT on Windows.
 };
 
 // Result of dispatching an event.

@@ -18,8 +18,7 @@ LayoutUnit CalculateOutOfFlowStaticInlineLevelOffset(
 
   // Find a layout opportunity, where we would have placed a zero-sized line.
   NGLayoutOpportunity opportunity = exclusion_space.FindLayoutOpportunity(
-      origin_bfc_offset, child_available_inline_size,
-      /* minimum_size */ LogicalSize());
+      origin_bfc_offset, child_available_inline_size);
 
   LayoutUnit child_line_offset = IsLtr(direction)
                                      ? opportunity.rect.LineStartOffset()

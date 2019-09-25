@@ -11,6 +11,7 @@
 #include "base/run_loop.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_function.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_dom_exception.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -253,7 +254,7 @@ WakeLockTestingContext::WakeLockTestingContext(
       mojom::blink::WakeLockService::Name_,
       WTF::BindRepeating(&MockWakeLockService::BindRequest,
                          WTF::Unretained(mock_wake_lock_service)));
-  test_api.SetBinderForName(
+  GetDocument()->GetBrowserInterfaceBroker().SetBinderForTesting(
       mojom::blink::PermissionService::Name_,
       WTF::BindRepeating(&MockPermissionService::BindRequest,
                          WTF::Unretained(&permission_service_)));

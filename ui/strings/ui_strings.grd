@@ -426,12 +426,6 @@ need to be translated for each locale.-->
 
       <!--Accessible name strings-->
       <if expr="is_macosx">
-        <message name="IDS_ACCNAME_CONTENT_DELETION_ROLE_DESCRIPTION" desc="Accessibility role description for content deletion, meaning content that is has been or is suggested to be removed from a document, such as in a revision review" meaning="UI element">
-          Deletion
-        </message>
-        <message name="IDS_ACCNAME_CONTENT_INSERTION_ROLE_DESCRIPTION" desc="Accessibility role description for content insertion, meaning content that is has been or is suggested to be inserted into a document, such as in a revision review" meaning="UI element">
-          Insertion
-        </message>
         <message name="IDS_ACCNAME_TAB_ROLE_DESCRIPTION" desc="A generic description of a tab button's role." meaning="UI element">
           Tab
         </message>

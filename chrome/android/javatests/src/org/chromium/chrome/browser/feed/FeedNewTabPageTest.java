@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.feed;
 
 import static android.support.test.espresso.Espresso.onView;
 import static android.support.test.espresso.action.ViewActions.click;
-import static android.support.test.espresso.action.ViewActions.swipeLeft;
 import static android.support.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static android.support.test.espresso.assertion.ViewAssertions.matches;
 import static android.support.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -20,6 +19,11 @@ import static org.chromium.chrome.test.util.ViewUtils.VIEW_NULL;
 import static org.chromium.chrome.test.util.ViewUtils.waitForView;
 
 import android.support.test.InstrumentationRegistry;
+import android.support.test.espresso.ViewAction;
+import android.support.test.espresso.action.GeneralLocation;
+import android.support.test.espresso.action.GeneralSwipeAction;
+import android.support.test.espresso.action.Press;
+import android.support.test.espresso.action.Swipe;
 import android.support.test.espresso.contrib.RecyclerViewActions;
 import android.support.test.filters.MediumTest;
 import android.support.v7.widget.RecyclerView;
@@ -72,6 +76,12 @@ import java.util.List;
 public class FeedNewTabPageTest {
     private static final int ARTICLE_SECTION_HEADER_POSITION = 1;
     private static final int SIGNIN_PROMO_POSITION = 2;
+
+    // Espresso ViewAction that performs a swipe from center to left across the vertical center
+    // of the view. Used instead of ViewAction.swipeLeft which swipes from right edge to
+    // avoid conflict with gesture navigation UI which consumes the edge swipe.
+    private static final ViewAction SWIPE_LEFT = new GeneralSwipeAction(
+            Swipe.FAST, GeneralLocation.CENTER, GeneralLocation.CENTER_LEFT, Press.FINGER);
 
     @Rule
     public ChromeTabbedActivityTestRule mActivityTestRule = new ChromeTabbedActivityTestRule();
@@ -181,7 +191,7 @@ public class FeedNewTabPageTest {
         // Swipe away the sign-in promo.
         onView(instanceOf(RecyclerView.class))
                 .perform(RecyclerViewActions.actionOnItemAtPosition(
-                        SIGNIN_PROMO_POSITION, swipeLeft()));
+                        SIGNIN_PROMO_POSITION, SWIPE_LEFT));
 
         ViewGroup view = (ViewGroup) mNtp.getCoordinatorForTesting().getStream().getView();
         waitForView(view, withId(R.id.signin_promo_view_container), VIEW_NULL);

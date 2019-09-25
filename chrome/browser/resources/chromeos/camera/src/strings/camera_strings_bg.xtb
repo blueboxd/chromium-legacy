@@ -3,13 +3,11 @@
 <translationbundle lang="bg">
 <translation id="1276998909102132017">Изображения в галерията</translation>
 <translation id="1430915738399379752">Печат</translation>
-<translation id="1462966117743110941">Камерата вече поддържа нови режими, а снимките и видеоклиповете ви ще бъдат налични в папките за изтеглени файлове.</translation>
 <translation id="1620510694547887537">Камера</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Нищо не е записано</translation>
 <translation id="1862930711583847113">Файлът „<ph name="FILE" />“ не може да се експортира</translation>
 <translation id="1899697626337024495">Разделителна способност за снимките</translation>
-<translation id="2008689030244369546">Съвсем нов облик</translation>
 <translation id="2036868001356139588">Продължителност на таймера</translation>
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> е активна</translation>
@@ -44,9 +42,7 @@
 <translation id="5671277269877808209">Квадрат</translation>
 <translation id="5775960006311140197">Експертен режим</translation>
 <translation id="5869546221129391014">Таблица</translation>
-<translation id="6040143037577758943">Затваряне</translation>
 <translation id="6073451960410192870">Спиране на записа</translation>
-<translation id="6165508094623778733">Научете повече</translation>
 <translation id="6197807149213783179">Запазване на метаданните</translation>
 <translation id="6233780560267770709">3 на 3</translation>
 <translation id="6243827288366940320">Златно сечение</translation>

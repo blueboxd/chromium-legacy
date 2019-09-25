@@ -1,0 +1,6 @@
+[document web]
+++[section] name='annotation-attribution' xml-roles:annotation-attribution
+++[section] name='annotation-commentary' xml-roles:annotation-commentary
+++[section] name='annotation-presence' xml-roles:annotation-presence
+++[section] name='annotation-revision' xml-roles:annotation-revision
+++[section] name='annotation-suggestion' xml-roles:annotation-suggestion

@@ -192,11 +192,12 @@ if (enable_java_templates) {
           "//base/android/jni_generator/jni_generator_helper.h"
       _jni_generator_include_deps = [
         # Using //base/android/jni_generator/jni_generator_helper.h introduces
-        # a dependency on debugging_buildflags indirectly through
+        # a dependency on buildflags targets indirectly through
         # base/android/jni_android.h, which is part of the //base target.
         # This can't depend directly on //base without causing a dependency
         # cycle, though.
         "//base:debugging_buildflags",
+        "//base:logging_buildflags",
       ]
     }
 

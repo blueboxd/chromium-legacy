@@ -395,6 +395,19 @@ LRESULT LegacyRenderWidgetHostHWND::OnTouch(UINT message,
   return ret;
 }
 
+LRESULT LegacyRenderWidgetHostHWND::OnInput(UINT message,
+                                            WPARAM w_param,
+                                            LPARAM l_param) {
+  LRESULT ret = 0;
+  if (GetWindowEventTarget(GetParent())) {
+    bool msg_handled = false;
+    ret = GetWindowEventTarget(GetParent())
+              ->HandleInputMessage(message, w_param, l_param, &msg_handled);
+    SetMsgHandled(msg_handled);
+  }
+  return ret;
+}
+
 LRESULT LegacyRenderWidgetHostHWND::OnScroll(UINT message,
                                              WPARAM w_param,
                                              LPARAM l_param) {

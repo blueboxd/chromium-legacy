@@ -138,4 +138,8 @@ content::BrowserContext* FeedHostServiceFactory::GetBrowserContextToUse(
   return context->IsOffTheRecord() ? nullptr : context;
 }
 
+bool FeedHostServiceFactory::ServiceIsNULLWhileTesting() const {
+  return true;
+}
+
 }  // namespace feed

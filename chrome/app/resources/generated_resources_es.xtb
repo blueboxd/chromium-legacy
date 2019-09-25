@@ -1101,7 +1101,6 @@ Puedes gestionar la configuración de esta cuenta instalando la aplicación Fami
 <translation id="2586672484245266891">Introduce una URL más corta</translation>
 <translation id="2588636910004461974">Dispositivos de <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">Busca en Google o escribe una URL</translation>
-<translation id="2597521610396315071">Añadir supervisión</translation>
 <translation id="2603115962224169880">Limpiar ordenador</translation>
 <translation id="2603463522847370204">Abrir en una ventana de &amp;incógnito</translation>
 <translation id="2604255671529671813">No se ha podido establecer conexión con la red</translation>
@@ -5359,7 +5358,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8879284080359814990">&amp;Mostrar como pestaña</translation>
 <translation id="8879921471468674457">Recordar información de inicio de sesión</translation>
 <translation id="8881020143150461183">Vuelve a intentarlo. Si necesitas asistencia técnica, ponte en contacto con <ph name="CARRIER_NAME" />.</translation>
-<translation id="8884570509232205463">A partir de ahora, el dispositivo se bloqueará a las <ph name="UNLOCK_TIME" />.</translation>
+<translation id="8884570509232205463">Ahora, el dispositivo se bloqueará a las <ph name="UNLOCK_TIME" />.</translation>
 <translation id="8885197664446363138">Smart Lock no está disponible</translation>
 <translation id="8888253246822647887">La aplicación se abrirá cuando la actualización se haya completado. Las actualizaciones pueden tardar varios minutos.</translation>
 <translation id="8888432776533519951">Color:</translation>

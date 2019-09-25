@@ -6,7 +6,7 @@
 
 #include "base/command_line.h"
 #include "base/logging.h"
-#include "base/message_loop/message_loop.h"
+#include "base/message_loop/message_loop_current.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
 #include "build/build_config.h"

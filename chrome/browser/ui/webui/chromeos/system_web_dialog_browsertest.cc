@@ -18,10 +18,10 @@
 #include "components/account_id/account_id.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/common/service_manager_connection.h"
 #include "content/public/common/web_preferences.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "url/gurl.h"
 
@@ -132,7 +132,7 @@ IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, PageZoom) {
   features.InitAndEnableFeature(features::kSplitSettings);
 
   // Set the default browser page zoom to 150%.
-  double level = content::ZoomFactorToZoomLevel(1.5);
+  double level = blink::PageZoomFactorToZoomLevel(1.5);
   browser()->profile()->GetZoomLevelPrefs()->SetDefaultZoomLevelPref(level);
 
   // Open a system dialog.
@@ -142,8 +142,8 @@ IN_PROC_BROWSER_TEST_F(SystemWebDialogTest, PageZoom) {
   // Dialog page zoom is still 100%.
   auto* web_contents = dialog->GetWebUIForTest()->GetWebContents();
   double dialog_level = content::HostZoomMap::GetZoomLevel(web_contents);
-  EXPECT_TRUE(content::ZoomValuesEqual(dialog_level,
-                                       content::ZoomFactorToZoomLevel(1.0)))
+  EXPECT_TRUE(blink::PageZoomValuesEqual(dialog_level,
+                                         blink::PageZoomFactorToZoomLevel(1.0)))
       << dialog_level;
 }
 

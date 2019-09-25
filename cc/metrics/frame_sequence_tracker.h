@@ -15,6 +15,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/containers/flat_map.h"
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/trace_event/traced_value.h"
 #include "cc/cc_export.h"
 
@@ -193,10 +194,13 @@ class CC_EXPORT FrameSequenceTracker {
     static std::unique_ptr<base::trace_event::TracedValue> ToTracedValue(
         const ThroughputData& impl,
         const ThroughputData& main);
-    static void ReportHistogram(FrameSequenceTrackerType sequence_type,
-                                const char* thread_name,
-                                int metric_index,
-                                const ThroughputData& data);
+    // Returns the throughput in percent, a return value of base::nullopt
+    // indicates that no throughput metric is reported.
+    static base::Optional<int> ReportHistogram(
+        FrameSequenceTrackerType sequence_type,
+        const char* thread_name,
+        int metric_index,
+        const ThroughputData& data);
     // Tracks the number of frames that were expected to be shown during this
     // frame-sequence.
     uint32_t frames_expected = 0;
@@ -229,6 +233,9 @@ class CC_EXPORT FrameSequenceTracker {
                               uint64_t sequence_number);
 
   bool ShouldIgnoreBeginFrameSource(uint64_t source_id) const;
+
+  // Report related metrics: throughput, checkboarding...
+  void ReportMetrics();
 
   const FrameSequenceTrackerType type_;
 

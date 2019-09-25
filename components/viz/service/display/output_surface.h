@@ -66,8 +66,10 @@ class VIZ_SERVICE_EXPORT OutputSurface {
     // on the current system transform. So the OS presentation engine can
     // present buffers onto the screen directly.
     bool supports_pre_transform = false;
-    // Whether this OutputSurface supports DC layer overlays.
+    // Whether this OutputSurface supports direct composition layers.
     bool supports_dc_layers = false;
+    // Whether this OutputSurface supports direct composition video overlays.
+    bool supports_dc_video_overlays = false;
     // Whether this OutputSurface should skip DrawAndSwap(). This is true for
     // the unified display on Chrome OS. All drawing is handled by the physical
     // displays so the unified display should skip that work.

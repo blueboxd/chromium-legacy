@@ -1101,7 +1101,6 @@ Poți gestiona setările contului dacă instalezi aplicația Family Link pe disp
 <translation id="2586672484245266891">Introdu o adresă URL mai scurtă</translation>
 <translation id="2588636910004461974">Dispozitive de la <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">Caută pe Google sau introdu adresa URL</translation>
-<translation id="2597521610396315071">Adaugă supraveghere</translation>
 <translation id="2603115962224169880">Curăță computerul</translation>
 <translation id="2603463522847370204">Deschideți într-o &amp;fereastră incognito</translation>
 <translation id="2604255671529671813">Eroare de conectare la rețea</translation>
@@ -1794,7 +1793,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="3630995161997703415">Adaugă acest site pe raft pentru a-l folosi oricând</translation>
 <translation id="3636096452488277381">Bună ziua, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% – Timp rămas: <ph name="TIME" /></translation>
-<translation id="3637561406135221044">Se scanează fișierele pentru date sensibile...</translation>
+<translation id="3637561406135221044">Se caută date sensibile în fișiere...</translation>
 <translation id="3637682276779847508">Cardul SIM va fi dezactivat definitiv dacă nu vei introduce cheia corectă de deblocare a codului PIN.</translation>
 <translation id="3640214691812501263">Adaugi „<ph name="EXTENSION_NAME" />” pentru <ph name="USER_NAME" />?</translation>
 <translation id="3640613767643722554">Învață Asistentul să îți recunoască vocea</translation>
@@ -2233,7 +2232,7 @@ Mesaj de la server: <ph name="SERVER_MSG" /></translation>
 <translation id="425573743389990240">Rata de descărcare a bateriei în wați (valoarea negativă înseamnă că bateria se încarcă)</translation>
 <translation id="4256316378292851214">Sal&amp;vează videoclipul ca...</translation>
 <translation id="4258348331913189841">Sisteme de fișiere</translation>
-<translation id="4263223596040212967">Verifică aspectul tastaturii și încearcă din nou.</translation>
+<translation id="4263223596040212967">Verifică structura tastaturii și încearcă din nou.</translation>
 <translation id="4263757076580287579">Înregistrarea imprimantei a fost anulată.</translation>
 <translation id="426564820080660648">Pentru a verifica dacă există actualizări, utilizați Ethernet, Wi-Fi sau datele mobile.</translation>
 <translation id="4267953847983678297">Conectează-te automat la o rețea mobilă</translation>

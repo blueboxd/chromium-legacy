@@ -72,7 +72,7 @@ class BLINK_EXPORT WebEmbeddedWorker {
 
   // Starts and terminates WorkerThread and WorkerGlobalScope.
   virtual void StartWorkerContext(
-      const WebEmbeddedWorkerStartData&,
+      std::unique_ptr<WebEmbeddedWorkerStartData>,
       std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
       mojo::ScopedMessagePipeHandle content_settings_handle,
       scoped_refptr<base::SingleThreadTaskRunner>

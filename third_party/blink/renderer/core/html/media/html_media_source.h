@@ -74,11 +74,8 @@ class CORE_EXPORT HTMLMediaSource : public URLRegistrable,
   // The JavaScript exposed version of this is Buffered.
   virtual WebTimeRanges BufferedInternal() const = 0;
 
-  // The JavaScript exposed version of this is Seekable.
   virtual WebTimeRanges SeekableInternal() const = 0;
-
   virtual TimeRanges* Buffered() const = 0;
-  virtual TimeRanges* Seekable() const = 0;
   virtual void OnTrackChanged(TrackBase*) = 0;
 
   // URLRegistrable

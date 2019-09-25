@@ -8,18 +8,10 @@ let appsPage = null;
 /** @type {?TestAndroidAppsBrowserProxy} */
 let androidAppsBrowserProxy = null;
 
-const setAndroidAppsState = function(playStoreEnabled, settingsAppAvailable) {
-  const appsInfo = {
-    playStoreEnabled: playStoreEnabled,
-    settingsAppAvailable: settingsAppAvailable,
-  };
-  appsPage.androidAppsInfo = appsInfo;
-  appsPage.showAndroidApps = true;
-  Polymer.dom.flush();
-};
-
 suite('AppsPageTests', function() {
   setup(function() {
+    androidAppsBrowserProxy = new TestAndroidAppsBrowserProxy();
+    settings.AndroidAppsBrowserProxyImpl.instance_ = androidAppsBrowserProxy;
     PolymerTest.clearBody();
     appsPage = document.createElement('os-settings-apps-page');
     document.body.appendChild(appsPage);
@@ -28,6 +20,7 @@ suite('AppsPageTests', function() {
 
   teardown(function() {
     appsPage.remove();
+    appsPage = null;
   });
 
   suite('Page Combinations', function() {
@@ -75,31 +68,20 @@ suite('AppsPageTests', function() {
       assertTrue(AndroidAppsShown());
     });
   });
-});
-
-// Changes to this suite should be reflected in android_apps_page_test.js
-suite('AndroidAppsDetailPageTests', function() {
-  setup(function() {
-    androidAppsBrowserProxy = new TestAndroidAppsBrowserProxy();
-    settings.AndroidAppsBrowserProxyImpl.instance_ = androidAppsBrowserProxy;
-    PolymerTest.clearBody();
-    appsPage = document.createElement('os-settings-apps-page');
-    document.body.appendChild(appsPage);
-    testing.Test.disableAnimationsAndTransitions();
-  });
-
-  teardown(function() {
-    appsPage.remove();
-  });
 
   suite('Main Page', function() {
     setup(function() {
+      appsPage.showAndroidApps = true;
       appsPage.havePlayStoreApp = true;
       appsPage.prefs = {arc: {enabled: {value: false}}};
-      setAndroidAppsState(false, false);
+      appsPage.androidAppsInfo = {
+        playStoreEnabled: false,
+        settingsAppAvailable: false,
+      };
+      Polymer.dom.flush();
     });
 
-    test('Enable', function() {
+    test('Clicking enable button enables ARC', function() {
       const button = appsPage.$$('#enable');
       assertTrue(!!button);
       assertFalse(!!appsPage.$$('.subpage-arrow'));
@@ -108,45 +90,40 @@ suite('AndroidAppsDetailPageTests', function() {
       Polymer.dom.flush();
       assertTrue(appsPage.prefs.arc.enabled.value);
 
-      setAndroidAppsState(true, false);
+      appsPage.androidAppsInfo = {
+        playStoreEnabled: true,
+        settingsAppAvailable: false,
+      };
+      Polymer.dom.flush();
       assertTrue(!!appsPage.$$('.subpage-arrow'));
     });
+
+    // TODO(crbug.com/1006662): Test that setting playStoreEnabled to false
+    // navigates back to the main apps section.
   });
 
-  // TODO(crbug.com/1006662): Fix test suite.
-  suite.skip('SubPage', function() {
-    let subpage;
-
-    function flushAsync() {
-      Polymer.dom.flush();
-      return new Promise(resolve => {
-        appsPage.async(resolve);
-      });
-    }
-
-    /**
-     * Returns a new promise that resolves after a window 'popstate' event.
-     * @return {!Promise}
-     */
-    function whenPopState() {
-      return new Promise(function(resolve) {
-        window.addEventListener('popstate', function callback() {
-          window.removeEventListener('popstate', callback);
-          resolve();
-        });
-      });
-    }
+  suite('Android apps subpage', function() {
+    let subpage = null;
 
     setup(function() {
-      appsPage.havePlayStoreApp = true;
-      appsPage.prefs = {arc: {enabled: {value: true}}};
-      setAndroidAppsState(true, false);
-      settings.navigateTo(settings.routes.ANDROID_APPS);
-      appsPage.$$('#android-apps').click();
-      return flushAsync().then(() => {
-        subpage = appsPage.$$('settings-android-apps-subpage');
-        assertTrue(!!subpage);
-      });
+      androidAppsBrowserProxy = new TestAndroidAppsBrowserProxy();
+      settings.AndroidAppsBrowserProxyImpl.instance_ = androidAppsBrowserProxy;
+      PolymerTest.clearBody();
+      subpage = document.createElement('settings-android-apps-subpage');
+      document.body.appendChild(subpage);
+      testing.Test.disableAnimationsAndTransitions();
+
+      subpage.prefs = {arc: {enabled: {value: true}}};
+      subpage.androidAppsInfo = {
+        playStoreEnabled: true,
+        settingsAppAvailable: false,
+      };
+      Polymer.dom.flush();
+    });
+
+    teardown(function() {
+      subpage.remove();
+      subpage = null;
     });
 
     test('Sanity', function() {
@@ -156,14 +133,27 @@ suite('AndroidAppsDetailPageTests', function() {
 
     test('ManageAppsUpdate', function() {
       assertTrue(!subpage.$$('#manageApps'));
-      setAndroidAppsState(true, true);
+      subpage.androidAppsInfo = {
+        playStoreEnabled: true,
+        settingsAppAvailable: true,
+      };
+      Polymer.dom.flush();
       assertTrue(!!subpage.$$('#manageApps'));
-      setAndroidAppsState(true, false);
+
+      subpage.androidAppsInfo = {
+        playStoreEnabled: true,
+        settingsAppAvailable: false,
+      };
+      Polymer.dom.flush();
       assertTrue(!subpage.$$('#manageApps'));
     });
 
     test('ManageAppsOpenRequest', function() {
-      setAndroidAppsState(true, true);
+      subpage.androidAppsInfo = {
+        playStoreEnabled: true,
+        settingsAppAvailable: true,
+      };
+      Polymer.dom.flush();
       const button = subpage.$$('#manageApps');
       assertTrue(!!button);
       const promise =
@@ -187,23 +177,8 @@ suite('AndroidAppsDetailPageTests', function() {
       dialog.close();
     });
 
-    test('HideOnDisable', function() {
-      assertEquals(
-          settings.getCurrentRoute(), settings.routes.ANDROID_APPS_DETAILS);
-      setAndroidAppsState(false, false);
-      return whenPopState().then(function() {
-        assertEquals(settings.getCurrentRoute(), settings.routes.ANDROID_APPS);
-      });
-    });
-  });
-
-  // TODO(crbug.com/1006662): Fix test suite.
-  suite.skip('Enforced', function() {
-    let subpage;
-
-    setup(function() {
-      appsPage.havePlayStoreApp = true;
-      appsPage.prefs = {
+    test('ARC enabled by policy', function() {
+      subpage.prefs = {
         arc: {
           enabled: {
             value: true,
@@ -211,34 +186,25 @@ suite('AndroidAppsDetailPageTests', function() {
           }
         }
       };
-      setAndroidAppsState(true, true);
-      assertTrue(!!settings.routes.ANDROID_APPS_DETAILS);
-      appsPage.$$('#android-apps').click();
+      subpage.androidAppsInfo = {
+        playStoreEnabled: true,
+        settingsAppAvailable: true,
+      };
       Polymer.dom.flush();
-      subpage = appsPage.$$('settings-android-apps-subpage');
-      assertTrue(!!subpage);
-    });
 
-    test('Sanity', function(done) {
-      Polymer.dom.flush();
       assertFalse(!!subpage.$$('#remove'));
       assertTrue(!!subpage.$$('#manageApps'));
     });
-  });
 
-  suite('NoPlayStore', function() {
-    setup(function() {
-      appsPage.havePlayStoreApp = false;
-      appsPage.prefs = {arc: {enabled: {value: true}}};
-      setAndroidAppsState(true, true);
-    });
+    test('Can open app settings without Play Store', function() {
+      subpage.prefs = {arc: {enabled: {value: true}}};
+      subpage.androidAppsInfo = {
+        playStoreEnabled: false,
+        settingsAppAvailable: true,
+      };
+      Polymer.dom.flush();
 
-    test('Sanity', function() {
-      assertTrue(!!appsPage.$$('#manageApps'));
-    });
-
-    test('ManageAppsOpenRequest', function() {
-      const button = appsPage.$$('#manageApps');
+      const button = subpage.$$('#manageApps');
       assertTrue(!!button);
       const promise =
           androidAppsBrowserProxy.whenCalled('showAndroidAppsSettings');

@@ -3233,6 +3233,7 @@ if (is_android) {
       "android/java/src/org/chromium/base/ObservableSupplier.java",
       "android/java/src/org/chromium/base/ObservableSupplierImpl.java",
       "android/java/src/org/chromium/base/PackageUtils.java",
+      "android/java/src/org/chromium/base/PackageManagerUtils.java",
       "android/java/src/org/chromium/base/PathService.java",
       "android/java/src/org/chromium/base/PathUtils.java",
       "android/java/src/org/chromium/base/PiiElider.java",

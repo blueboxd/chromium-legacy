@@ -28,7 +28,7 @@ public class SharedWebViewChromium {
     private SharedWebViewContentsClientAdapter mContentsClientAdapter;
 
     // Default WebViewClient used to avoid null checks.
-    final static WebViewClient sNullWebViewClient = new WebViewClient();
+    static final WebViewClient sNullWebViewClient = new WebViewClient();
     // The WebViewClient instance that was passed to WebView.setWebViewClient().
     private WebViewClient mWebViewClient = sNullWebViewClient;
     private WebChromeClient mWebChromeClient;

@@ -46,7 +46,6 @@ namespace blink {
 class CompositorAnimationTimeline;
 class LocalFrame;
 class LocalFrameView;
-class GraphicsLayer;
 class Page;
 class Region;
 class ScrollableArea;
@@ -185,9 +184,6 @@ class CORE_EXPORT ScrollingCoordinator final
   bool should_scroll_on_main_thread_dirty_;
 
  private:
-  void SetShouldHandleScrollGestureOnMainThreadRegion(const Region&,
-                                                      GraphicsLayer*);
-
   void AddScrollbarLayerGroup(ScrollableArea*,
                               ScrollbarOrientation,
                               std::unique_ptr<ScrollbarLayerGroup>);

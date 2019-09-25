@@ -20,7 +20,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "components/prefs/pref_service.h"
 #include "components/version_info/version_info.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "services/network/public/cpp/network_service_buildflags.h"
 #include "services/network/public/mojom/network_context.mojom.h"
@@ -293,6 +292,36 @@ IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerStubResolverBrowsertest,
 
 INSTANTIATE_TEST_SUITE_P(,
                          SystemNetworkContextManagerStubResolverBrowsertest,
+                         ::testing::Bool());
+
+class SystemNetworkContextManagerReferrersFeatureBrowsertest
+    : public SystemNetworkContextManagerBrowsertest,
+      public testing::WithParamInterface<bool> {
+ public:
+  SystemNetworkContextManagerReferrersFeatureBrowsertest() {
+    scoped_feature_list_.InitWithFeatureState(features::kNoReferrers,
+                                              GetParam());
+  }
+  ~SystemNetworkContextManagerReferrersFeatureBrowsertest() override {}
+
+  void SetUpOnMainThread() override {}
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+};
+
+// Tests that toggling the kNoReferrers feature correctly changes the default
+// value of the kEnableReferrers pref.
+IN_PROC_BROWSER_TEST_P(SystemNetworkContextManagerReferrersFeatureBrowsertest,
+                       TestDefaultReferrerReflectsFeatureValue) {
+  ASSERT_TRUE(!!g_browser_process);
+  PrefService* local_state = g_browser_process->local_state();
+  ASSERT_TRUE(!!local_state);
+  EXPECT_NE(local_state->GetBoolean(prefs::kEnableReferrers), GetParam());
+}
+
+INSTANTIATE_TEST_SUITE_P(,
+                         SystemNetworkContextManagerReferrersFeatureBrowsertest,
                          ::testing::Bool());
 
 class SystemNetworkContextManagerFreezeQUICUaBrowsertest

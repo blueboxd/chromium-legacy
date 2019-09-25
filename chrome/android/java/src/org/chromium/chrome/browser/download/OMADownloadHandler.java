@@ -35,6 +35,7 @@ import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ObserverList;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -358,7 +359,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
                         omaInfo, mDownloadInfo, DOWNLOAD_STATUS_INSUFFICIENT_MEMORY);
                 return;
             }
-            if (getOpennableType(mContext.getPackageManager(), omaInfo) == null) {
+            if (getOpennableType(omaInfo) == null) {
                 showDownloadWarningDialog(
                         R.string.oma_download_non_acceptable_content,
                         omaInfo, mDownloadInfo, DOWNLOAD_STATUS_NON_ACCEPTABLE_CONTENT);
@@ -513,7 +514,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
         textView = (TextView) v.findViewById(R.id.oma_download_size);
         textView.setText(omaInfo.getValue(OMA_SIZE));
         textView = (TextView) v.findViewById(R.id.oma_download_type);
-        textView.setText(getOpennableType(mContext.getPackageManager(), omaInfo));
+        textView.setText(getOpennableType(omaInfo));
         textView = (TextView) v.findViewById(R.id.oma_download_description);
         textView.setText(omaInfo.getValue(OMA_DESCRIPTION));
 
@@ -597,11 +598,10 @@ public class OMADownloadHandler extends BroadcastReceiver {
     /**
      * Returns the first MIME type in the OMA download that can be opened on the device.
      *
-     * @param pm PackageManger for the current context.
      * @param omaInfo Information about the OMA content.
      * @return the MIME type can be opened by the device.
      */
-    static String getOpennableType(PackageManager pm, OMAInfo omaInfo) {
+    static String getOpennableType(OMAInfo omaInfo) {
         if (omaInfo.isValueEmpty(OMA_OBJECT_URI)) {
             return null;
         }
@@ -613,8 +613,9 @@ public class OMADownloadHandler extends BroadcastReceiver {
                     && !type.equalsIgnoreCase(OMA_DOWNLOAD_DESCRIPTOR_MIME)
                     && !type.equalsIgnoreCase(OMA_DRM_RIGHTS_MIME)) {
                 intent.setDataAndType(uri, type);
-                if (!pm.queryIntentActivities(intent,
-                        PackageManager.MATCH_DEFAULT_ONLY).isEmpty()) {
+                if (!PackageManagerUtils
+                                .queryIntentActivities(intent, PackageManager.MATCH_DEFAULT_ONLY)
+                                .isEmpty()) {
                     return type;
                 }
             }
@@ -713,7 +714,7 @@ public class OMADownloadHandler extends BroadcastReceiver {
         if (omaInfo == null) return;
         String mimeType = omaInfo.getDrmType();
         if (mimeType == null) {
-            mimeType = getOpennableType(mContext.getPackageManager(), omaInfo);
+            mimeType = getOpennableType(omaInfo);
         }
         String fileName = omaInfo.getValue(OMA_NAME);
         String url = omaInfo.getValue(OMA_OBJECT_URI);

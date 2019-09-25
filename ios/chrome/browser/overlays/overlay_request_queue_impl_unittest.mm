@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/overlays/overlay_request_queue_impl.h"
 
 #include "ios/chrome/browser/overlays/public/overlay_request.h"
+#import "ios/chrome/browser/overlays/public/overlay_request_cancel_handler.h"
 #include "ios/chrome/browser/overlays/test/fake_overlay_user_data.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -26,6 +27,16 @@ class MockOverlayRequestQueueImplObserver
                void(OverlayRequestQueueImpl*, OverlayRequest*));
   MOCK_METHOD2(QueuedRequestCancelled,
                void(OverlayRequestQueueImpl*, OverlayRequest*));
+};
+
+// Custom cancel handler that can be manually triggered.
+class FakeCancelHandler : public OverlayRequestCancelHandler {
+ public:
+  FakeCancelHandler(OverlayRequest* request, OverlayRequestQueue* queue)
+      : OverlayRequestCancelHandler(request, queue) {}
+
+  // Cancels the associated request.
+  void TriggerCancellation() { CancelRequest(); }
 };
 }  // namespace
 
@@ -106,6 +117,28 @@ TEST_F(OverlayRequestQueueImplTest, CancelAllRequests) {
   EXPECT_CALL(observer(), QueuedRequestCancelled(queue(), first_request));
   EXPECT_CALL(observer(), QueuedRequestCancelled(queue(), second_request));
   queue()->CancelAllRequests();
+
+  EXPECT_EQ(0U, queue()->size());
+  EXPECT_TRUE(queue()->empty());
+}
+
+// Tests that state is updated correctly and observer callbacks are received
+// when cancelling a request with a custom cancel handler.
+TEST_F(OverlayRequestQueueImplTest, CustomCancelHandler) {
+  std::unique_ptr<OverlayRequest> passed_request =
+      OverlayRequest::CreateWithConfig<FakeOverlayUserData>(nullptr);
+  OverlayRequest* request = passed_request.get();
+  std::unique_ptr<FakeCancelHandler> passed_cancel_handler =
+      std::make_unique<FakeCancelHandler>(request, queue());
+  FakeCancelHandler* cancel_handler = passed_cancel_handler.get();
+  EXPECT_CALL(observer(), RequestAddedToQueue(queue(), request));
+  queue()->AddRequest(std::move(passed_request),
+                      std::move(passed_cancel_handler));
+
+  // Trigger cancellation via the cancel handler, and verify that the request is
+  // correctly removed.
+  EXPECT_CALL(observer(), QueuedRequestCancelled(queue(), request));
+  cancel_handler->TriggerCancellation();
 
   EXPECT_EQ(0U, queue()->size());
   EXPECT_TRUE(queue()->empty());

@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_toggle_closed_captions_button_element.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/text_track.h"
@@ -70,9 +71,8 @@ void MediaControlToggleClosedCaptionsButtonElement::UpdateDisplayType() {
   MediaControlInputElement::UpdateDisplayType();
 }
 
-WebLocalizedString::Name
-MediaControlToggleClosedCaptionsButtonElement::GetOverflowStringName() const {
-  return WebLocalizedString::kOverflowMenuCaptions;
+int MediaControlToggleClosedCaptionsButtonElement::GetOverflowStringId() const {
+  return IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS;
 }
 
 bool MediaControlToggleClosedCaptionsButtonElement::HasOverflowButton() const {

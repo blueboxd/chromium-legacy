@@ -102,7 +102,6 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.content_public.common.Referrer;
 import org.chromium.content_public.common.UseZoomForDSFPolicy;
 import org.chromium.device.gamepad.GamepadList;
-import org.chromium.mojo.system.impl.CoreImpl;
 import org.chromium.net.NetworkChangeNotifier;
 import org.chromium.network.mojom.ReferrerPolicy;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -400,7 +399,6 @@ public class AwContents implements SmartClipProvider {
     // This can be accessed on any thread after construction. See AwContentsIoThreadClient.
     private final AwSettings mSettings;
     private final ScrollAccessibilityHelper mScrollAccessibilityHelper;
-    private WebMessageListener mWebMessageListener;
 
     private final ObserverList<PopupTouchHandleDrawable> mTouchHandleDrawables =
             new ObserverList<>();
@@ -2482,16 +2480,13 @@ public class AwContents implements SmartClipProvider {
     }
 
     /**
-     * Controls if we need to inject a JavaScript object to receive postMessage() call, i.e. the
-     * {@link AwContents#onPostMessage} callback. Note that this call doesn't inject the JavaScript
-     * object immediately. We are going to do the actual injection until the next navigation
-     * (DidClearWindowObject) happens.
+     * Add the {@link WebMessageListener} to AwContents, it will also inject the JavaScript object
+     * with the given name to frames that have origins matching the allowedOriginRules. Note that
+     * this call will not inject the JS object immediately. The JS object will be injected only for
+     * future navigations (in DidClearWindowObject).
      *
-     * Caution: Setting a different {@code listener} or {@code allowedOriginRules} will make that
-     * new {@code listener} receives messages immediately if the message's origin also matches the
-     * new {@code allowedOriginRules}. {@code jsObjectName} will take effect since next navigation.
-     *
-     * @param jsObjectName    The name for the injected JavaScript object.
+     * @param jsObjectName    The name for the injected JavaScript object for this {@link
+     *                        WebMessageListener}.
      * @param allowedOrigins  A list of matching rules for the allowed origins.
      *                        The JavaScript object will be injected when the frame's origin matches
      *                        any one of the allowed origins. If a wildcard "*" is provided, it will
@@ -2499,13 +2494,13 @@ public class AwContents implements SmartClipProvider {
      * @param listener        The {@link WebMessageListener} to be called when received
      *                        onPostMessage().
      * @throws IllegalArgumentException if one of the allowedOriginRules is invalid or one of
-     *                                  listener, jsObjectName and allowedOriginRules is {@code
-     *                                  null}.
+     *                                  jsObjectName and allowedOriginRules is {@code null}.
+     * @throws NullPointerException if listener is {@code null}.
      */
-    public void setWebMessageListener(@NonNull String jsObjectName,
+    public void addWebMessageListener(@NonNull String jsObjectName,
             @NonNull String[] allowedOriginRules, @NonNull WebMessageListener listener) {
         if (listener == null) {
-            throw new IllegalArgumentException("listener shouldn't be null");
+            throw new NullPointerException("listener shouldn't be null");
         }
 
         if (TextUtils.isEmpty(jsObjectName)) {
@@ -2519,47 +2514,26 @@ public class AwContents implements SmartClipProvider {
             }
         }
 
-        mWebMessageListener = listener;
         final String exceptionMessage =
-                AwContentsJni.get().setJsApiService(mNativeAwContents, AwContents.this,
-                        /* needToInjectJsObject*/ true, jsObjectName, allowedOriginRules);
+                AwContentsJni.get().addWebMessageListener(mNativeAwContents, AwContents.this,
+                        new WebMessageListenerHolder(listener), jsObjectName, allowedOriginRules);
 
         if (!TextUtils.isEmpty(exceptionMessage)) {
-            mWebMessageListener = null;
             throw new IllegalArgumentException(exceptionMessage);
         }
     }
 
     /**
-     *  Removes the {@link WebMessageListener} sets by {@link setWebMessageListener}. It then won't
-     * inject JavaScript object for navigation since next navigation.
+     * Removes the {@link WebMessageListener} added by {@link addWebMessageListener}. This call will
+     * immediately remove the JavaScript object/WebMessageListener mapping pair. So any messages
+     * from the JavaScript object will be dropped. However the JavaScript object will only be
+     * removed for future navigations.
+     *
+     * @param listener The {@link WebMessageListener} to be removed. Can not be {@code null}.
      */
-    public void unsetWebMessageListener() {
-        mWebMessageListener = null;
-        AwContentsJni.get().setJsApiService(mNativeAwContents, AwContents.this,
-                /* needToInjectJsObject */ false, "", new String[0]);
-    }
-
-    /**
-     * Receives JavaScript postMessage from renderer side, passes the message to {@link
-     * WebMessageListener}.
-     */
-    @CalledByNative
-    public void onPostMessage(String message, String sourceOrigin, boolean isMainFrame, int[] ports,
-            JsReplyProxy replyProxy) {
-        if (mWebMessageListener == null) return;
-        MessagePort[] messagePorts = new MessagePort[ports.length];
-        for (int i = 0; i < ports.length; ++i) {
-            messagePorts[i] = convertRawHandleToMessagePort(ports[i]);
-        }
-
-        mWebMessageListener.onPostMessage(
-                message, Uri.parse(sourceOrigin), isMainFrame, replyProxy, messagePorts);
-    }
-
-    private static MessagePort convertRawHandleToMessagePort(int rawHandle) {
-        return MessagePort.create(
-                CoreImpl.getInstance().acquireNativeHandle(rawHandle).toMessagePipeHandle());
+    public void removeWebMessageListener(@NonNull String jsObjectName) {
+        AwContentsJni.get().removeWebMessageListener(
+                mNativeAwContents, AwContents.this, jsObjectName);
     }
 
     /**
@@ -4054,7 +4028,9 @@ public class AwContents implements SmartClipProvider {
         void grantFileSchemeAccesstoChildProcess(long nativeAwContents, AwContents caller);
         void resumeLoadingCreatedPopupWebContents(long nativeAwContents, AwContents caller);
         AwRenderProcess getRenderProcess(long nativeAwContents, AwContents caller);
-        String setJsApiService(long nativeAwContents, AwContents caller,
-                boolean needToInjectJsObject, String jsObjectName, String[] allowedOrigins);
+        String addWebMessageListener(long nativeAwContents, AwContents caller,
+                WebMessageListenerHolder listener, String jsObjectName, String[] allowedOrigins);
+        void removeWebMessageListener(
+                long nativeAwContents, AwContents caller, String jsObjectName);
     }
 }

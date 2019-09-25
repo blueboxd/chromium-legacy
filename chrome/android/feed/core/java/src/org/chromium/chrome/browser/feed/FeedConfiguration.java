@@ -119,7 +119,7 @@ public final class FeedConfiguration {
 
     private static final String SPINNER_DELAY_MS = "spinner_delay";
     /** Default value for delay before showing a spinner. */
-    public static final long SPINNER_DELAY_MS_DEFAULT = 0;
+    public static final long SPINNER_DELAY_MS_DEFAULT = 500;
 
     private static final String SPINNER_MINIMUM_SHOW_TIME_MS = "spinner_minimum_show_time";
     /** Default value for how long spinners must be shown for. */
@@ -127,7 +127,7 @@ public final class FeedConfiguration {
 
     private static final String STORAGE_MISS_THRESHOLD = "storage_miss_threshold";
     /** Default number of items that can be missing from a call to FeedStore before failing. */
-    public static final long STORAGE_MISS_THRESHOLD_DEFAULT = 4;
+    public static final long STORAGE_MISS_THRESHOLD_DEFAULT = 100;
 
     private static final String TRIGGER_IMMEDIATE_PAGINATION = "trigger_immediate_pagination";
     /** Default value for triggering immediate pagination. */

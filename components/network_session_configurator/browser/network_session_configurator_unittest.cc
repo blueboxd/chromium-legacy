@@ -458,15 +458,15 @@ TEST_F(
 }
 
 TEST_F(NetworkSessionConfiguratorTest,
-       QuicAllowServerMigrationFromFieldTrialParams) {
+       QuicAllowPortMigrationFromFieldTrialParams) {
   std::map<std::string, std::string> field_trial_params;
-  field_trial_params["allow_server_migration"] = "true";
+  field_trial_params["allow_port_migration"] = "true";
   variations::AssociateVariationParams("QUIC", "Enabled", field_trial_params);
   base::FieldTrialList::CreateFieldTrial("QUIC", "Enabled");
 
   ParseFieldTrials();
 
-  EXPECT_TRUE(params_.quic_params.allow_server_migration);
+  EXPECT_TRUE(params_.quic_params.allow_port_migration);
 }
 
 TEST_F(NetworkSessionConfiguratorTest, PacketLengthFromFieldTrialParams) {

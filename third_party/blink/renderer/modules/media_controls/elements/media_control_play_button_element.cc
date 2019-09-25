@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_play_button_element.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
@@ -36,11 +37,10 @@ void MediaControlPlayButtonElement::UpdateDisplayType() {
   MediaControlInputElement::UpdateDisplayType();
 }
 
-WebLocalizedString::Name MediaControlPlayButtonElement::GetOverflowStringName()
-    const {
+int MediaControlPlayButtonElement::GetOverflowStringId() const {
   if (MediaElement().paused())
-    return WebLocalizedString::kOverflowMenuPlay;
-  return WebLocalizedString::kOverflowMenuPause;
+    return IDS_MEDIA_OVERFLOW_MENU_PLAY;
+  return IDS_MEDIA_OVERFLOW_MENU_PAUSE;
 }
 
 bool MediaControlPlayButtonElement::HasOverflowButton() const {

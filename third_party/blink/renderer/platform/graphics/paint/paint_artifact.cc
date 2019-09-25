@@ -71,29 +71,23 @@ void ComputeChunkDerivedData(const DisplayItemList& display_items,
       chunk.hit_test_data->AppendTouchActionRect(hit_test.GetHitTestRect());
     }
 
-#if DCHECK_IS_ON()
-    if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-      // Because ScrollHitTestDisplayItems force new paint chunks (see:
-      // PaintChunker::IncrementDisplayItemIndex), they should only be the first
-      // item in a paint chunk.
-      DCHECK(!item.IsScrollHitTest() || item.Equals(*items.begin()));
-    }
-#endif
-  }
-
-  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
     // Because ScrollHitTestDisplayItems force new paint chunks (see:
     // PaintChunker::IncrementDisplayItemIndex), they should only be the first
     // item in a paint chunk.
-    if (items.begin()->IsScrollHitTest()) {
-      const auto& scroll_hit_test_item =
-          static_cast<const ScrollHitTestDisplayItem&>(*items.begin());
-      if (!chunk.hit_test_data)
-        chunk.hit_test_data = std::make_unique<HitTestData>();
-      chunk.hit_test_data->SetScrollHitTest(
-          scroll_hit_test_item.scroll_offset_node(),
-          scroll_hit_test_item.scroll_container_bounds());
-    }
+    DCHECK(!item.IsScrollHitTest() || item.Equals(*items.begin()));
+  }
+
+  // Because ScrollHitTestDisplayItems force new paint chunks (see:
+  // PaintChunker::IncrementDisplayItemIndex), they should only be the first
+  // item in a paint chunk.
+  if (items.begin()->IsScrollHitTest()) {
+    const auto& scroll_hit_test_item =
+        static_cast<const ScrollHitTestDisplayItem&>(*items.begin());
+    if (!chunk.hit_test_data)
+      chunk.hit_test_data = std::make_unique<HitTestData>();
+    chunk.hit_test_data->SetScrollHitTest(
+        scroll_hit_test_item.scroll_offset_node(),
+        scroll_hit_test_item.scroll_container_bounds());
   }
 
   if (known_to_be_opaque_region.contains(chunk.bounds))

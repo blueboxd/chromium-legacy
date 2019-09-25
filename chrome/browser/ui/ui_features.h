@@ -48,10 +48,6 @@ extern const base::Feature kWebFooterExperiment;
 
 extern const base::Feature kWebUITabStrip;
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-extern const base::Feature kEnableDbusAndX11StatusIcons;
-#endif
-
 #if defined(OS_CHROMEOS)
 extern const base::Feature kHiddenNetworkWarning;
 #endif  // defined(OS_CHROMEOS)

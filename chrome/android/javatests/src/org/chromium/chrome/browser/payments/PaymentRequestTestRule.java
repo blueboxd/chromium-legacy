@@ -117,6 +117,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     final CallbackHelper mHasEnrolledInstrumentQueryResponded;
     final CallbackHelper mExpirationMonthChange;
     final CallbackHelper mPaymentResponseReady;
+    final CallbackHelper mCompleteReplied;
     PaymentRequestImpl mPaymentRequest;
     PaymentRequestUI mUI;
 
@@ -156,6 +157,7 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
         mShowFailed = new CallbackHelper();
         mCanMakePaymentQueryResponded = new CallbackHelper();
         mHasEnrolledInstrumentQueryResponded = new CallbackHelper();
+        mCompleteReplied = new CallbackHelper();
         mWebContentsRef = new AtomicReference<>();
         mTestFilePath = testFileName.equals("about:blank") || testFileName.startsWith("data:")
                 ? testFileName
@@ -242,6 +244,9 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     public CallbackHelper getPaymentResponseReady() {
         return mPaymentResponseReady;
     }
+    public CallbackHelper getCompleteReplied() {
+        return mCompleteReplied;
+    }
     public PaymentRequestUI getPaymentRequestUI() {
         return mUI;
     }
@@ -319,6 +324,18 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
                 if (canClick) mUI.getDialogForTest().findViewById(resourceId).performClick();
                 return canClick;
             }
+        });
+        helper.waitForCallback(callCount);
+    }
+
+    /** Clicks on an element in the error overlay. */
+    protected void clickErrorOverlayAndWait(int resourceId, CallbackHelper helper)
+            throws InterruptedException, TimeoutException {
+        int callCount = helper.getCallCount();
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            // Error overlay always allows clicks and is not taken into account in
+            // isAcceptingUserInput().
+            mUI.getDialogForTest().findViewById(resourceId).performClick();
         });
         helper.waitForCallback(callCount);
     }
@@ -1079,6 +1096,12 @@ public class PaymentRequestTestRule extends ChromeTabbedActivityTestRule
     public void onPaymentResponseReady() {
         ThreadUtils.assertOnUiThread();
         mPaymentResponseReady.notifyCalled();
+    }
+
+    @Override
+    public void onCompleteReplied() {
+        ThreadUtils.assertOnUiThread();
+        mCompleteReplied.notifyCalled();
     }
 
     /**

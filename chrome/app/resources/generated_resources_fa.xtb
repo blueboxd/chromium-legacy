@@ -1098,7 +1098,6 @@
 <translation id="2586672484245266891">لطفاً نشانی وب کوتاه‌تری وارد کنید</translation>
 <translation id="2588636910004461974">دستگاه‌های <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">‏در Google جستجو کنید یا نشانی وب را تایپ کنید</translation>
-<translation id="2597521610396315071">افزودن نظارت</translation>
 <translation id="2603115962224169880">پاک کردن رایانه</translation>
 <translation id="2603463522847370204">باز کردن در پنجره &amp;ناشناس</translation>
 <translation id="2604255671529671813">خطای اتصال شبکه</translation>
@@ -1578,7 +1577,7 @@
 <translation id="3317459757438853210">دو طرفه</translation>
 <translation id="3317678681329786349">دوربین و میکروفون مسدود شده‌اند</translation>
 <translation id="3319048459796106952">&amp;پنجره جدید حالت ناشناس</translation>
-<translation id="3323521181261657960">پاداش! مدت تماشای صفحه بیشتری دریافت کردید</translation>
+<translation id="3323521181261657960">پاداش! وقت تماشای صفحه بیشتر شد</translation>
 <translation id="3325910708063135066">‏در «تنظیمات برگزیده سیستم Mac»، دوربین و میکروفون خاموش‌اند</translation>
 <translation id="3328489342742826322">‏با بازیابی از داده‌های پشتیبان‌گیری‌شده، برنامه‌ها و داده‌های Linux موجود در پوشه فایل‌های Linux حذف خواهد شد.</translation>
 <translation id="3331321258768829690">(<ph name="UTCOFFSET" />) <ph name="LONGTZNAME" /> (<ph name="EXEMPLARCITY" />)</translation>
@@ -1791,7 +1790,7 @@
 <translation id="3630995161997703415">این سایت را به قفسه‌تان اضافه کنید تا هر زمان که بخواهید از آن استفاده کنید</translation>
 <translation id="3636096452488277381">سلام <ph name="USER_GIVEN_NAME" />، حالتان چطور است.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />٪ - <ph name="TIME" /> باقی مانده است</translation>
-<translation id="3637561406135221044">درحال اسکن کردن فایل‌های ازنظر وجود داده‌های حساس...</translation>
+<translation id="3637561406135221044">درحال اسکن کردن فایل‌ها، ازنظر وجود داده‌های حساس...</translation>
 <translation id="3637682276779847508">اگر نتوانید کلید باز کردن قفل پین صحیح را وارد کنید، سیم‌کارت برای همیشه غیرفعال می‌شود.</translation>
 <translation id="3640214691812501263">«<ph name="EXTENSION_NAME" />» برای «<ph name="USER_NAME" />» اضافه شود؟</translation>
 <translation id="3640613767643722554">به «دستیار» آموزش دهید صدایتان را تشخیص دهد</translation>
@@ -5499,7 +5498,7 @@
 <translation id="9076283476770535406">این سایت ممکن است شامل محتوای مخصوص بزرگسالان باشد</translation>
 <translation id="9076523132036239772">متأسفم، ایمیل و گذرواژه شما تأیید نشد. ابتدا به یک شبکه متصل شوید.</translation>
 <translation id="9084064520949870008">بازکردن به‌عنوان پنجره</translation>
-<translation id="9088234649737575428"><ph name="PLUGIN_NAME" /> توسط خط‌مشی شرکت مسدود شده است</translation>
+<translation id="9088234649737575428">خط‌مشی شرکت <ph name="PLUGIN_NAME" /> را مسدود کرده است</translation>
 <translation id="9088917181875854783">لطفاً تأیید کنید که این کلیدواژه در دستگاه "<ph name="DEVICE_NAME" />" نشان داده می‌شود:</translation>
 <translation id="9094033019050270033">به‌روزرسانی گذرواژه</translation>
 <translation id="9094038138851891550">نام کاربری نامعتبر است</translation>

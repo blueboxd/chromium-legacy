@@ -20,7 +20,6 @@ import org.chromium.chrome.browser.suggestions.ImageFetcher;
 import org.chromium.chrome.browser.suggestions.SuggestionsConfig;
 import org.chromium.chrome.browser.suggestions.SuggestionsDependencyFactory;
 import org.chromium.chrome.browser.suggestions.SuggestionsEventReporter;
-import org.chromium.chrome.browser.suggestions.SuggestionsRanker;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegateImpl;
 import org.chromium.chrome.browser.suggestions.tile.SuggestionsTileView;
@@ -31,27 +30,36 @@ import org.chromium.chrome.browser.suggestions.tile.TileGroupDelegateImpl;
 import org.chromium.chrome.browser.suggestions.tile.TileRenderer;
 import org.chromium.chrome.browser.suggestions.tile.TileSectionType;
 import org.chromium.ui.base.PageTransition;
+import org.chromium.ui.modelutil.PropertyModel;
+import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 
 /**
  * Coordinator for displaying a list of {@link SuggestionsTileView} in a {@link ViewGroup}.
  *
- * TODO(mattsimmons): Finish MVC of this. The way the renderer builds the layout complicates things.
+ * TODO(mattsimmons): Move logic and view manipulation into the mediator/viewbinder. (and add tests)
  */
 class MostVisitedListCoordinator implements TileGroup.Observer, TileGroup.TileSetupDelegate {
     private static final int TITLE_LINES = 1;
 
     // There's a limit of 12 in {@link MostVisitedSitesBridge#setObserver}.
     private static final int MAX_RESULTS = 12;
+    private PropertyModelChangeProcessor mModelChangeProcessor;
+    private MostVisitedListMediator mMediator;
     private TileGroup mTileGroup;
     private TileRenderer mRenderer;
     private ViewGroup mParent;
 
     public MostVisitedListCoordinator(ChromeActivity activity, ViewGroup parent) {
+        PropertyModel propertyModel = new PropertyModel(MostVisitedListProperties.ALL_KEYS);
+        mModelChangeProcessor = PropertyModelChangeProcessor.create(
+                propertyModel, parent, MostVisitedListViewBinder::bind);
+
+        mMediator = new MostVisitedListMediator(propertyModel, activity.getTabModelSelector());
+
         mParent = parent;
         Profile profile = Profile.getLastUsedProfile();
         SuggestionsSource suggestionsSource =
                 SuggestionsDependencyFactory.getInstance().createSuggestionSource(profile);
-        SuggestionsRanker suggestionsRanker = new SuggestionsRanker();
         SuggestionsEventReporter eventReporter =
                 SuggestionsDependencyFactory.getInstance().createEventReporter();
 
@@ -72,6 +80,10 @@ class MostVisitedListCoordinator implements TileGroup.Observer, TileGroup.TileSe
         mTileGroup = new TileGroup(
                 mRenderer, suggestionsUiDelegate, null, tileGroupDelegate, this, offlinePageBridge);
         mTileGroup.startObserving(MAX_RESULTS);
+    }
+
+    void destroy() {
+        mMediator.destroy();
     }
 
     private void updateTileIcon(Tile tile) {

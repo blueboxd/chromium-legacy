@@ -81,7 +81,7 @@ class CONTENT_EXPORT EmbeddedWorkerInstanceClientImpl
   // Handler of connection error bound to |receiver_|.
   void OnError();
 
-  blink::WebEmbeddedWorkerStartData BuildStartData(
+  std::unique_ptr<blink::WebEmbeddedWorkerStartData> BuildStartData(
       const blink::mojom::EmbeddedWorkerStartParams& params);
 
   mojo::Receiver<blink::mojom::EmbeddedWorkerInstanceClient> receiver_;

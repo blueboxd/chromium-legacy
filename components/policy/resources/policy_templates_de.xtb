@@ -390,7 +390,7 @@ Wenn die Richtlinie "EnableMediaRouter" auf "false" gesetzt ist, hat der Wert di
       sind nicht zulässig.</translation>
 <translation id="1634989431648355062">Das Plug-in "<ph name="FLASH_PLUGIN_NAME" />" für diese Websites zulassen</translation>
 <translation id="1645793986494086629">Schema:</translation>
-<translation id="1648816843164517573">Liste der Namen, die den HSTS-Richtliniencheck umgehen</translation>
+<translation id="1648816843164517573">Liste der Namen, die vom HSTS-Richtliniencheck ausgenommen sind</translation>
 <translation id="1653229475925941921">Ist diese Richtlinie konfiguriert, wird damit der Lupentyp bestimmt, der aktiviert ist. Wenn Sie die Richtlinie auf "None" setzen, ist die Lupe deaktiviert.
 
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
@@ -1111,7 +1111,7 @@ Wenn Sie "Letzte Sitzung wiederherstellen" wählen, werden die URLs, die beim le
       Wenn Sie diese Einstellung deaktivieren oder keinen Wert festlegen, wird für die Druckvorschau der zuletzt genutzte Drucker als Standarddrucker verwendet.
 
       Ist diese Einstellung aktiviert, wird für die Druckvorschau der Standarddrucker des Betriebssystems als Standarddrucker ausgewählt.</translation>
-<translation id="285627849510728211">Tageskonfiguration für den erweiterten Akkulademodus festlegen</translation>
+<translation id="285627849510728211">Tageskonfiguration für den intelligenten Akkulademodus festlegen</translation>
 <translation id="2856674246949497058">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Außerdem sollten Sie während des Vorgangs einen Powerwash durchführen.</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2873651257716068683">Dadurch wird die standardmäßige Druckseitengröße überschrieben. Wenn die Seitengröße nicht verfügbar ist, wird die Richtlinie ignoriert.</translation>
@@ -1345,7 +1345,7 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 <translation id="332771718998993005">Hiermit wird der Name von <ph name="PRODUCT_NAME" />-Zielen festgelegt.
 
           Wird für diese Richtlinie ein nicht-leerer String definiert, dann wird dieser als Name für das <ph name="PRODUCT_NAME" />-Ziel verwendet. Andernfalls wird der Gerätename als Zielname verwendet. Ist diese Richtlinie nicht definiert, wird der Gerätename als Zielname verwendet und der Geräteeigentümer oder ein Nutzer der Domain, von der das Gerät verwaltet wird, hat die Möglichkeit, den Namen zu ändern. Der Name darf maximal 24 Zeichen enthalten.</translation>
-<translation id="3331950121151548952">Liste der Domains, für die hochgeladene Inhalte auf Malware geprüft werden müssen.  Diese Richtlinie wird nur verwendet, wenn "<ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />" auf einen Wert gesetzt ist und Malwareprüfungen für Uploads zugelassen oder erzwungen werden.
+<translation id="3331950121151548952">Liste der Domains, für die hochgeladene Inhalte auf Malware geprüft werden müssen.  Diese Richtlinie wird nur verwendet, wenn "<ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" />" auf einen Wert gesetzt ist, mit dem Malwareprüfungen für Uploads zugelassen oder erzwungen werden.
 
       Wenn diese Richtlinie nicht konfiguriert oder eine leere Liste festgelegt ist, werden hochgeladene Inhalte nicht auf Malware geprüft.
       </translation>
@@ -1423,7 +1423,7 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
 
           Diese Richtlinie wird nur verwendet, wenn "<ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" />" auf "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />" gesetzt ist.
 
-          Wenn diese Richtlinie nicht konfiguriert oder festgelegt ist, wird der <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" />-Akkulademodus verwendet.</translation>
+          Wenn diese Richtlinie nicht konfiguriert oder festgelegt ist, wird der Akkulademodus <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> verwendet.</translation>
 <translation id="348495353354674884">Bildschirmtastatur aktivieren</translation>
 <translation id="3487623755010328395">
         Wenn diese Richtlinie festgelegt wird, versucht <ph name="PRODUCT_NAME" />, sich selbst zu registrieren und die zugehörige Cloud-Richtlinie für alle Profile anzuwenden.
@@ -1862,11 +1862,11 @@ Diese Richtlinie hat keine Auswirkungen darauf, ob die lokalen Nutzerdaten auf d
           Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
           Ist die Richtlinie nicht konfiguriert, ist "Automatisch klicken" anfangs deaktiviert, kann jedoch vom Nutzer jederzeit aktiviert werden.</translation>
-<translation id="4215197846797661927">Legt die Tageskonfiguration für den erweiterten Akkulademodus fest.
+<translation id="4215197846797661927">Legt die Tageskonfiguration für den intelligenten Akkulademodus fest.
 
           Diese Richtlinie wird nur verwendet, wenn "<ph name="DEVICE_ADVANCED_BATTERY_CHARGE_MODE_ENABLED_NAME" />" auf "true" gesetzt ist.
 
-          Ist diese Richtlinie nicht konfiguriert oder nicht eingestellt, dann bleibt der erweiterte Akkulademodus deaktiviert.
+          Ist diese Richtlinie nicht konfiguriert oder nicht eingestellt, dann bleibt der intelligente Akkulademodus deaktiviert.
 
           Hinweis: "<ph name="CHARGE_START_TIME_FIELD_NAME" />" muss kleiner sein als "<ph name="CHARGE_END_TIME_FIELD_NAME" />".
 
@@ -2165,14 +2165,14 @@ Wenn die Richtlinie auf "FALSE" gesetzt oder nicht festgelegt wird, führt die T
 <translation id="4807950475297505572">Die am längsten nicht verwendeten Nutzer werden entfernt, bis genügend freier Speicherplatz vorhanden ist.</translation>
 <translation id="4816674326202173458">Unternehmensnutzer sowohl als primären als auch als sekundären Nutzer zulassen (Standardverhalten für nicht verwaltete Nutzer)</translation>
 <translation id="4826326557828204741">Auszuführende Aktion beim Erreichen der Leerlaufverzögerung während des Akkubetriebs</translation>
-<translation id="4830531683854509779">Hiermit können Hardwarestatistiken für SoC-Komponenten gemeldet werden.
+<translation id="4830531683854509779">Hiermit können Sie festlegen, dass Hardwarestatistiken für SoC-Komponenten gemeldet werden.
 
       Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, werden keine Statistiken gemeldet.
       Wird die Richtlinie auf "true" gesetzt, werden Statistiken gemeldet.</translation>
 <translation id="4832852360828533362">Berichte zu Nutzern und Geräten</translation>
 <translation id="4834526953114077364">Die am längsten nicht verwendeten Nutzer, dich sich in den letzten 3 Monaten nicht angemeldet haben, werden entfernt, bis genügend freier Speicherplatz vorhanden ist.</translation>
 <translation id="4835622243021053389">NTLMv2-Authentifizierung aktivieren.</translation>
-<translation id="4856471929724652373">Sie können Informationen zum Betriebssystem-Update melden, wie den Updatestatus, die Plattformversion, die letzte Updateprüfung und den letzten Neustart.
+<translation id="4856471929724652373">Hiermit können Sie festlegen, dass Informationen zum Betriebssystem-Update gemeldet werden, wie der Updatestatus, die Plattformversion, die letzte Updateprüfung und der letzte Neustart.
 
       Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, werden die Informationen zum Betriebssystem-Update nicht gemeldet. Wird die Richtlinie auf "true" gesetzt, werden die Informationen zum Betriebssystem-Update gemeldet.</translation>
 <translation id="4858735034935305895">Vollbildmodus zulassen</translation>
@@ -2524,7 +2524,7 @@ Wenn diese Richtlinie zu "false" geändert wird, wirkt sich dies auf den Start n
 
       Ist sie auf "Upload von passwortgeschützten Dateien zulassen" gesetzt, können passwortgeschützte Dateien in <ph name="PRODUCT_NAME" /> hochgeladen werden.
 
-      Wenn diese Richtlinie nicht eingerichtet oder auf "Upload und Download zulassen" festgelegt ist, gelten in <ph name="PRODUCT_NAME" /> die unter "Download von passwortgeschützten Dateien zulassen" und "Upload von passwortgeschützten Dateien zulassen" beschriebenen Regeln.
+      Wenn diese Richtlinie nicht eingerichtet oder auf "Upload und Download von passwortgeschützten Dateien zulassen" festgelegt ist, gelten in <ph name="PRODUCT_NAME" /> die unter "Download von passwortgeschützten Dateien zulassen" und "Upload von passwortgeschützten Dateien zulassen" beschriebenen Regeln.
       </translation>
 <translation id="5437733496511628148">Durch Aktivieren dieser Einstellung wird verhindert, dass Webseitenelemente, die nicht von der Domain in der Adressleiste des Browser stammen, Cookies setzen.
 
@@ -3403,7 +3403,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 
           Diese Richtlinie wird nur verwendet, wenn "<ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" />" auf "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />" gesetzt ist.
 
-          Wenn diese Richtlinie nicht konfiguriert oder festgelegt ist, wird der <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" />-Akkulademodus verwendet.</translation>
+          Wenn diese Richtlinie nicht konfiguriert oder festgelegt ist, wird der Akkulademodus <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> verwendet.</translation>
 <translation id="7140629953254369759"><ph name="PRODUCT_OS_NAME" /> wird angewiesen, die jeweils angegebene Konfiguration des Aufgabenplaners zu nutzen.
 
       Diese Richtlinie kann auf "Konservativ" und auf "Leistung" gesetzt werden. Dadurch wird entweder eine Aufgabenplaner-Konfiguration für optimale Stabilität oder für optimale Leistung ausgewählt.
@@ -3412,7 +3412,7 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7145335384492396213">Standardmodus PIN-Druck</translation>
 <translation id="7149042336307555519"> Verbindungstypen, die für Betriebssystem-Updates verwendet werden können. Betriebssystem-Updates stellen für Verbindungen aufgrund ihrer Größe eine starke Belastung dar und können zusätzliche Kosten verursachen. Aus diesem Grund sind sie für teure Verbindungstypen (derzeit nur "cellular") standardmäßig nicht aktiviert.
 
-      Die unterstützten Verbindungstypen sind "<ph name="CONNECTION_TYPE_ETHERNET_NAME" />", "<ph name="CONNECTION_TYPE_WIFI_NAME" />" und "<ph name="CONNECTION_TYPE_CELLULAR_NAME" />".</translation>
+      Die unterstützten Verbindungstypen sind <ph name="CONNECTION_TYPE_ETHERNET_NAME" />, <ph name="CONNECTION_TYPE_WIFI_NAME" /> und <ph name="CONNECTION_TYPE_CELLULAR_NAME" />.</translation>
 <translation id="7152605873936173525">Über diese Richtlinie wird der Modus des DoH-Resolvers gesteuert. Bei dieser Richtlinie wird nur der Standardmodus auf Anfrageebene festgelegt. Für bestimmte Anfragetypen kann der Modus überschrieben werden, etwa bei Anfragen zum Auflösen des Hostnamens eines DoH-Servers.
 
       Durch den Modus "<ph name="SECURE_DNS_MODE_OFF" />" wird DoH (DNS over HTTPS) deaktiviert.
@@ -4237,7 +4237,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 
         Im USB-Berechtigungsmodell wird die URL der anfragenden Website ("anfragende URL") und die URL der Frame-Website der obersten Ebene ("einbettende URL") verwendet. Dabei wird der anfragenden URL die Berechtigung erteilt, auf das USB-Gerät zuzugreifen. Wird die anfragende Website in einen iFrame geladen, kann die anfragende von der einbettenden URL abweichen. Deshalb darf das Feld "urls" bis zu zwei durch ein Komma voneinander getrennte URL-Strings enthalten: die anfragende URL und die einbettende URL. Falls nur eine einzige URL angegeben ist, wird der Zugriff auf die entsprechenden USB-Geräte gewährt, wenn unabhängig vom Einbettungsstatus die URL der anfragenden Website mit dieser URL übereinstimmt. Die URLs im Feld "urls" müssen gültig sein, da ansonsten die Richtlinie ignoriert wird.
 
-        Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites der globale Standardwert zum Einsatz. Es gibt keinen automatischen Zugriff.</translation>
+        Ist diese Richtlinie nicht konfiguriert, kommt für alle Websites der globale Standardwert zum Einsatz (kein automatischer Zugriff).</translation>
 <translation id="8631434304112909927">Bis Version <ph name="UNTIL_VERSION" /></translation>
 <translation id="8649763579836720255">Chrome OS-Geräte können mithilfe einer Remote-Bescheinigung für überprüften Zugriff ein von der Chrome OS-Zertifizierungsstelle herausgegebenes Zertifikat erhalten, das die Berechtigung des Geräts für die Wiedergabe geschützter Medien nachweist. Bei diesem Vorgang werden Informationen zur Bestätigung der Hardware an die Chrome OS-Zertifizierungsstelle gesendet, anhand derer das Gerät eindeutig identifiziert werden kann.
 
@@ -4294,7 +4294,7 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn diese Richtlinie konfiguriert ist, werden diese Apps festgelegt und können von Nutzern nicht geändert werden.
 
       Ist diese Richtlinie nicht konfiguriert, können Nutzer die Liste der im Launcher angepinnten Apps ändern.</translation>
-<translation id="8779504970846195767">Hiermit wird der Schwellenwert des Akkus für das Umschalten bei Leistungsspitzen (%) festgelegt.
+<translation id="8779504970846195767">Hiermit wird der Schwellenwert des Akkus (%) für das Umschalten bei Leistungsspitzen festgelegt.
 
           Diese Richtlinie wird nur verwendet, wenn "<ph name="DEVICE_POWER_PEAK_SHIFT_ENABLED_NAME" />" auf "true" gesetzt ist.
 
@@ -4302,7 +4302,6 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
 <translation id="8798099450830957504">Standardeinstellung</translation>
 <translation id="8800453707696044281">Den Akkuladestand (%) für benutzerdefiniertes Beenden des Ladevorgangs festlegen</translation>
 <translation id="8801680448782904838">Nutzer benachrichtigen, dass ein Neustart des Browsers oder des Geräts empfohlen wird oder erforderlich ist</translation>
-<translation id="8802816494059596691">In dieser Liste aufgeführte Hostnamen sind vom HSTS-Richtliniencheck ausgenommen, der Anfragen von http auf https upgraden kann. Für diese Richtlinie sind nur Single-Label-Hostnamen zulässig. Hostnamen müssen kanonisiert werden: Alle IDNs müssen in ihr A-Label-Format konvertiert und alle ASCII-Buchstaben kleingeschrieben werden. Diese Richtlinie gilt nur für die angegebenen Hostnamen. Sie gilt nicht für Subdomains der angegebenen Namen.</translation>
 <translation id="8818173863808665831">Meldet den Standort des Geräts.
 
       Wenn die Richtlinie nicht oder auf "False" festgelegt wird, wird der Standort nicht gemeldet.</translation>
@@ -4464,9 +4463,9 @@ Nutzer können diese Einstellung weder ändern noch überschreiben.</translation
       Wenn als Richtlinienwert ein Token festgelegt ist, das mit einem Quick-Fix-Build verknüpft ist, wird das Gerät auf den entsprechenden Build aktualisiert, sofern eine solche Aktualisierung nicht durch eine andere Richtlinie blockiert wird.
 
       Falls die Richtlinie nicht konfiguriert oder der Wert nicht mit einem Quick-Fix-Build verknüpft ist, wird das Gerät nicht auf einen Quick-Fix-Build aktualisiert. Wenn auf dem Gerät bereits ein Quick-Fix-Build installiert ist und die Richtlinie nicht mehr konfiguriert oder der Wert nicht mehr mit einem Quick-Fix-Build verknüpft ist, wird das Gerät auf einen regulären Build aktualisiert, sofern die Aktualisierung nicht durch eine andere Richtlinie blockiert wird.</translation>
-<translation id="9053158112041032237">Hiermit können Sie die Energieverwaltungsrichtlinie für den Akkulademodus aktivieren.
+<translation id="9053158112041032237">Hiermit können Sie die Energieverwaltungsrichtlinie für den Akkulademodus festlegen.
 
-          Mit dieser Richtlinie können Sie das Aufladen des Akkus dynamisch steuern und auf diese Weise den durch unnötige Belastung entstehenden Akkuverschleiß verringern und die Lebensdauer des Akkus verlängern.
+          Mit dieser Richtlinie können Sie das Aufladen des Akkus dynamisch steuern. So lässt sich der durch unnötige Belastung entstehende Akkuverschleiß verringern und die Lebensdauer des Akkus verlängern.
 
           Wenn der benutzerdefinierte Akkulademodus ausgewählt wird, müssen "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" />" und "<ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" />" konfiguriert sein.
 

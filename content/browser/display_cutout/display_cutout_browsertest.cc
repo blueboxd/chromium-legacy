@@ -22,6 +22,7 @@
 #include "content/public/test/test_utils.h"
 #include "content/shell/browser/shell.h"
 #include "content/test/content_browser_test_utils_internal.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
@@ -159,8 +160,9 @@ class DisplayCutoutBrowserTest : public ContentBrowserTest {
   }
 
   void SendSafeAreaToFrame(int top, int left, int bottom, int right) {
-    blink::mojom::DisplayCutoutClientAssociatedPtr client;
-    MainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(&client);
+    mojo::AssociatedRemote<blink::mojom::DisplayCutoutClient> client;
+    MainFrame()->GetRemoteAssociatedInterfaces()->GetInterface(
+        client.BindNewEndpointAndPassReceiver());
     client->SetSafeArea(
         blink::mojom::DisplayCutoutSafeArea::New(top, left, bottom, right));
   }

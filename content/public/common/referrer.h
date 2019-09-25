@@ -47,9 +47,6 @@ struct CONTENT_EXPORT Referrer {
       const url::Origin& initiator,
       network::mojom::ReferrerPolicy policy);
 
-  static void SetReferrerForRequest(net::URLRequest* request,
-                                    const Referrer& referrer);
-
   static net::URLRequest::ReferrerPolicy ReferrerPolicyForUrlRequest(
       network::mojom::ReferrerPolicy referrer_policy);
 

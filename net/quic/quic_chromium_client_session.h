@@ -35,6 +35,7 @@
 #include "net/quic/quic_connection_logger.h"
 #include "net/quic/quic_connectivity_probing_manager.h"
 #include "net/quic/quic_crypto_client_config_handle.h"
+#include "net/quic/quic_http3_logger.h"
 #include "net/quic/quic_session_key.h"
 #include "net/socket/socket_performance_watcher.h"
 #include "net/spdy/http2_priority_dependencies.h"
@@ -822,6 +823,7 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
   std::vector<std::unique_ptr<QuicChromiumPacketReader>> packet_readers_;
   LoadTimingInfo::ConnectTiming connect_timing_;
   std::unique_ptr<QuicConnectionLogger> logger_;
+  std::unique_ptr<QuicHttp3Logger> http3_logger_;
   // True when the session is going away, and streams may no longer be created
   // on this session. Existing stream will continue to be processed.
   bool going_away_;

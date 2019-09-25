@@ -41,6 +41,34 @@ void SimulateNavigation(RenderFrameHost** rfh, const GURL& url) {
   *rfh = navigation_simulator->GetFinalRenderFrameHost();
 }
 
+// Helper that wraps a base::RunLoop and only quits the RunLoop
+// if the expected number of quit calls have happened.
+class RunLoopWithExpectedCount {
+ public:
+  RunLoopWithExpectedCount() = default;
+  ~RunLoopWithExpectedCount() { DCHECK_EQ(0, remaining_quit_calls_); }
+
+  void Run(int expected_quit_calls) {
+    DCHECK_GT(expected_quit_calls, 0);
+    DCHECK_EQ(remaining_quit_calls_, 0);
+    remaining_quit_calls_ = expected_quit_calls;
+    run_loop_.reset(new base::RunLoop());
+    run_loop_->Run();
+  }
+
+  void Quit() {
+    if (--remaining_quit_calls_ > 0)
+      return;
+    run_loop_->Quit();
+  }
+
+ private:
+  std::unique_ptr<base::RunLoop> run_loop_;
+  int remaining_quit_calls_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(RunLoopWithExpectedCount);
+};
+
 }  // namespace
 
 class CdmStorageTest : public RenderViewHostTestHarness {
@@ -78,7 +106,7 @@ class CdmStorageTest : public RenderViewHostTestHarness {
     cdm_storage_->Open(
         name, base::BindOnce(&CdmStorageTest::OpenDone, base::Unretained(this),
                              &status, cdm_file));
-    RunAndWaitForResult();
+    RunAndWaitForResult(1);
     return status == CdmStorage::Status::kSuccess;
   }
 
@@ -91,8 +119,25 @@ class CdmStorageTest : public RenderViewHostTestHarness {
     CdmFile::Status status;
     cdm_file->Read(base::BindOnce(&CdmStorageTest::FileRead,
                                   base::Unretained(this), &status, data));
-    RunAndWaitForResult();
+    RunAndWaitForResult(1);
     return status == CdmFile::Status::kSuccess;
+  }
+
+  // Attempts to reads the contents of the previously opened |cdm_file| twice.
+  // We don't really care about the data, just that 1 read succeeds and the
+  // other fails.
+  void ReadTwice(CdmFile* cdm_file,
+                 CdmFile::Status* status1,
+                 CdmFile::Status* status2) {
+    DVLOG(3) << __func__;
+    std::vector<uint8_t> data1;
+    std::vector<uint8_t> data2;
+
+    cdm_file->Read(base::BindOnce(&CdmStorageTest::FileRead,
+                                  base::Unretained(this), status1, &data1));
+    cdm_file->Read(base::BindOnce(&CdmStorageTest::FileRead,
+                                  base::Unretained(this), status2, &data2));
+    RunAndWaitForResult(2);
   }
 
   // Writes |data| to the previously opened |cdm_file|, replacing the contents
@@ -103,8 +148,23 @@ class CdmStorageTest : public RenderViewHostTestHarness {
     CdmFile::Status status;
     cdm_file->Write(data, base::BindOnce(&CdmStorageTest::FileWritten,
                                          base::Unretained(this), &status));
-    RunAndWaitForResult();
+    RunAndWaitForResult(1);
     return status == CdmFile::Status::kSuccess;
+  }
+
+  // Attempts to write the contents of the previously opened |cdm_file| twice.
+  // We don't really care about the data, just that 1 read succeeds and the
+  // other fails.
+  void WriteTwice(CdmFile* cdm_file,
+                  CdmFile::Status* status1,
+                  CdmFile::Status* status2) {
+    DVLOG(3) << __func__;
+
+    cdm_file->Write({1, 2, 3}, base::BindOnce(&CdmStorageTest::FileWritten,
+                                              base::Unretained(this), status1));
+    cdm_file->Write({4, 5, 6}, base::BindOnce(&CdmStorageTest::FileWritten,
+                                              base::Unretained(this), status2));
+    RunAndWaitForResult(2);
   }
 
  private:
@@ -120,7 +180,7 @@ class CdmStorageTest : public RenderViewHostTestHarness {
     CdmFileAssociatedPtr cdm_file_ptr;
     cdm_file_ptr.Bind(std::move(actual_cdm_file));
     *cdm_file = std::move(cdm_file_ptr);
-    run_loop_->Quit();
+    run_loop_with_count_->Quit();
   }
 
   void FileRead(CdmFile::Status* status,
@@ -130,24 +190,24 @@ class CdmStorageTest : public RenderViewHostTestHarness {
     DVLOG(3) << __func__;
     *status = actual_status;
     *data = actual_data;
-    run_loop_->Quit();
+    run_loop_with_count_->Quit();
   }
 
   void FileWritten(CdmFile::Status* status, CdmFile::Status actual_status) {
     DVLOG(3) << __func__;
     *status = actual_status;
-    run_loop_->Quit();
+    run_loop_with_count_->Quit();
   }
 
   // Start running and allow the asynchronous IO operations to complete.
-  void RunAndWaitForResult() {
-    run_loop_.reset(new base::RunLoop());
-    run_loop_->Run();
+  void RunAndWaitForResult(int expected_quit_calls) {
+    run_loop_with_count_ = std::make_unique<RunLoopWithExpectedCount>();
+    run_loop_with_count_->Run(expected_quit_calls);
   }
 
   RenderFrameHost* rfh_ = nullptr;
   CdmStoragePtr cdm_storage_;
-  std::unique_ptr<base::RunLoop> run_loop_;
+  std::unique_ptr<RunLoopWithExpectedCount> run_loop_with_count_;
 };
 
 TEST_F(CdmStorageTest, InvalidFileSystemIdWithSlash) {
@@ -301,6 +361,44 @@ TEST_F(CdmStorageTest, ReadThenWriteEmptyFile) {
   // Should still be empty.
   EXPECT_TRUE(Read(cdm_file.get(), &data_read));
   EXPECT_EQ(0u, data_read.size());
+}
+
+TEST_F(CdmStorageTest, ParallelRead) {
+  Initialize(kTestFileSystemId);
+
+  const char kFileName[] = "duplicate_read_file_name";
+  CdmFileAssociatedPtr cdm_file;
+  EXPECT_TRUE(Open(kFileName, &cdm_file));
+  EXPECT_TRUE(cdm_file.is_bound());
+
+  CdmFile::Status status1;
+  CdmFile::Status status2;
+  ReadTwice(cdm_file.get(), &status1, &status2);
+
+  // One call should succeed, one should fail.
+  EXPECT_TRUE((status1 == CdmFile::Status::kSuccess &&
+               status2 == CdmFile::Status::kFailure) ||
+              (status1 == CdmFile::Status::kFailure &&
+               status2 == CdmFile::Status::kSuccess));
+}
+
+TEST_F(CdmStorageTest, ParallelWrite) {
+  Initialize(kTestFileSystemId);
+
+  const char kFileName[] = "duplicate_write_file_name";
+  CdmFileAssociatedPtr cdm_file;
+  EXPECT_TRUE(Open(kFileName, &cdm_file));
+  EXPECT_TRUE(cdm_file.is_bound());
+
+  CdmFile::Status status1;
+  CdmFile::Status status2;
+  WriteTwice(cdm_file.get(), &status1, &status2);
+
+  // One call should succeed, one should fail.
+  EXPECT_TRUE((status1 == CdmFile::Status::kSuccess &&
+               status2 == CdmFile::Status::kFailure) ||
+              (status1 == CdmFile::Status::kFailure &&
+               status2 == CdmFile::Status::kSuccess));
 }
 
 }  // namespace content

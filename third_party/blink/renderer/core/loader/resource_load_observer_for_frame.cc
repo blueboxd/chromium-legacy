@@ -4,8 +4,6 @@
 
 #include "third_party/blink/renderer/core/loader/resource_load_observer_for_frame.h"
 
-#include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/core/core_probes_inl.h"
 #include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
@@ -179,16 +177,9 @@ void ResourceLoadObserverForFrame::DidReceiveResponse(
   }
 
   if (response.IsLegacyTLSVersion()) {
-    CountUsage(WebFeature::kLegacyTLSVersionInSubresource);
-    frame_client->ReportLegacyTLSVersion(response.CurrentRequestUrl());
-    // For non-main-frame loads, we have to use the main frame's document for
-    // the UKM recorder and source ID.
-    auto& root = frame.LocalFrameRoot();
-    ukm::builders::Net_LegacyTLSVersion(root.GetDocument()->UkmSourceID())
-        .SetIsMainFrame(frame.IsMainFrame())
-        .SetIsSubresource(true)
-        .SetIsAdResource(resource->GetResourceRequest().IsAdResource())
-        .Record(root.GetDocument()->UkmRecorder());
+    frame.Loader().ReportLegacyTLSVersion(
+        response.CurrentRequestUrl(), true /* is_subresource */,
+        resource->GetResourceRequest().IsAdResource());
   }
 
   frame.Loader().Progress().IncrementProgress(identifier, response);

@@ -45,6 +45,7 @@ SkiaOutputDeviceGL::SkiaOutputDeviceGL(
   capabilities_.max_frames_pending = gl_surface_->GetBufferCount() - 1;
   capabilities_.supports_gpu_vsync = gl_surface_->SupportsGpuVSync();
   capabilities_.supports_dc_layers = gl_surface_->SupportsDCLayers();
+  capabilities_.supports_dc_video_overlays = gl_surface_->UseOverlaysForVideo();
 }
 
 void SkiaOutputDeviceGL::Initialize(GrContext* gr_context,

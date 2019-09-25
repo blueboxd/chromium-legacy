@@ -34,6 +34,7 @@
 #include <unicode/uscript.h>
 
 #include "third_party/blink/public/common/css/forced_colors.h"
+#include "third_party/blink/public/common/css/navigation_controls.h"
 #include "third_party/blink/public/common/css/preferred_color_scheme.h"
 #include "third_party/blink/public/platform/pointer_properties.h"
 #include "third_party/blink/public/platform/web_common.h"
@@ -298,6 +299,7 @@ class WebSettings {
   virtual void SetForceDarkModeEnabled(bool) = 0;
   virtual void SetPreferredColorScheme(PreferredColorScheme) = 0;
   virtual void SetForcedColors(ForcedColors) = 0;
+  virtual void SetNavigationControls(NavigationControls) = 0;
 
  protected:
   ~WebSettings() = default;

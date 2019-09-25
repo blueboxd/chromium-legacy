@@ -56,6 +56,8 @@ base::Value NetLogQuicPacketSentParams(
               NetLogNumberValue(serialized_packet.packet_number.ToUint64()));
   dict.SetInteger("size", serialized_packet.encrypted_length);
   dict.SetKey("sent_time_us", NetLogNumberValue(sent_time.ToDebuggingValue()));
+  dict.SetString("encryption_level", quic::QuicUtils::EncryptionLevelToString(
+                                         serialized_packet.encryption_level));
   return std::move(dict);
 }
 

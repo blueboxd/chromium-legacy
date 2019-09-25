@@ -34,8 +34,6 @@
 #include "base/auto_reset.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/time/default_tick_clock.h"
-#include "services/metrics/public/cpp/ukm_builders.h"
-#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/common/origin_policy/origin_policy.h"
 #include "third_party/blink/public/mojom/commit_result/commit_result.mojom-blink.h"
@@ -1459,26 +1457,9 @@ void DocumentLoader::DidCommitNavigation(
   // Report legacy TLS versions after Page::DidCommitLoad, because the latter
   // clears the console.
   if (response_.IsLegacyTLSVersion()) {
-    CountUse(frame_->Tree().Parent()
-                 ? WebFeature::kLegacyTLSVersionInSubframeMainResource
-                 : WebFeature::kLegacyTLSVersionInMainFrameResource);
-    GetLocalFrameClient().ReportLegacyTLSVersion(response_.CurrentRequestUrl());
-    if (!frame_->Tree().Parent()) {
-      ukm::builders::Net_LegacyTLSVersion(document->UkmSourceID())
-          .SetIsMainFrame(true)
-          .SetIsSubresource(false)
-          .SetIsAdResource(frame_->IsAdSubframe() || frame_->IsAdRoot())
-          .Record(document->UkmRecorder());
-    } else {
-      // For non-main-frame loads, we have to use the main frame's document for
-      // the UKM recorder and source ID.
-      auto& root = frame_->LocalFrameRoot();
-      ukm::builders::Net_LegacyTLSVersion(root.GetDocument()->UkmSourceID())
-          .SetIsMainFrame(false)
-          .SetIsSubresource(false)
-          .SetIsAdResource(frame_->IsAdSubframe())
-          .Record(root.GetDocument()->UkmRecorder());
-    }
+    GetFrameLoader().ReportLegacyTLSVersion(
+        response_.CurrentRequestUrl(), false /* is_subresource */,
+        frame_->IsAdSubframe() || frame_->IsAdRoot());
   }
 }
 

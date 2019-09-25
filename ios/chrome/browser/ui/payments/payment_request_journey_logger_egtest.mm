@@ -66,6 +66,11 @@ using payments::JourneyLogger;
 #define MAYBE_testSelectedPaymentMethod testSelectedPaymentMethod
 #endif
 - (void)MAYBE_testSelectedPaymentMethod {
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/1007432): Enable this test.
+    EARL_GREY_TEST_DISABLED(@"The test is flaky on iOS 13");
+  }
+
   chrome_test_util::HistogramTester histogramTester;
 
   [self addProfiles];
@@ -279,6 +284,11 @@ using payments::JourneyLogger;
   testAllSectionStats_NumberOfSuggestionsShown_Completed
 #endif
 - (void)MAYBE_testAllSectionStats_NumberOfSuggestionsShown_Completed {
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/1007432): Enable this test.
+    EARL_GREY_TEST_DISABLED(@"The test is flaky on iOS 13");
+  }
+
   chrome_test_util::HistogramTester histogramTester;
 
   [self addProfiles];
@@ -432,6 +442,11 @@ using payments::JourneyLogger;
   testNoShippingSectionStats_NumberOfSuggestionsShown_Completed
 #endif
 - (void)MAYBE_testNoShippingSectionStats_NumberOfSuggestionsShown_Completed {
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/1007432): Enable this test.
+    EARL_GREY_TEST_DISABLED(@"The test is flaky on iOS 13");
+  }
+
   chrome_test_util::HistogramTester histogramTester;
 
   [self addProfiles];
@@ -588,6 +603,11 @@ using payments::JourneyLogger;
 #endif
 - (void)
     MAYBE_testNoContactDetailSectionStats_NumberOfSuggestionsShown_Completed {
+  if (@available(iOS 13, *)) {
+    // TODO(crbug.com/1007432): Enable this test.
+    EARL_GREY_TEST_DISABLED(@"The test is flaky on iOS 13");
+  }
+
   chrome_test_util::HistogramTester histogramTester;
 
   [self addProfiles];

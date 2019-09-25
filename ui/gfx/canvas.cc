@@ -168,10 +168,6 @@ void Canvas::ClipPath(const SkPath& path, bool do_anti_alias) {
   canvas_->clipPath(path, SkClipOp::kIntersect, do_anti_alias);
 }
 
-bool Canvas::IsClipEmpty() const {
-  return canvas_->isClipEmpty();
-}
-
 bool Canvas::GetClipBounds(Rect* bounds) {
   SkRect out;
   if (canvas_->getLocalClipBounds(&out)) {

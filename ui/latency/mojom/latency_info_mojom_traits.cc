@@ -155,9 +155,6 @@ EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::ToMojom(
     case ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT;
-    case ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT;
     case ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
@@ -178,9 +175,6 @@ EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::ToMojom(
     case ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
-    case ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT:
-      return ui::mojom::LatencyComponentType::
-          INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
     case ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT:
       return ui::mojom::LatencyComponentType::
           INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT;
@@ -214,10 +208,6 @@ bool EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::
       *output = ui::INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT;
       return true;
     case ui::mojom::LatencyComponentType::
-        LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT:
-      *output = ui::LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT;
-      return true;
-    case ui::mojom::LatencyComponentType::
         INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT:
       *output = ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT;
       return true;
@@ -243,10 +233,6 @@ bool EnumTraits<ui::mojom::LatencyComponentType, ui::LatencyComponentType>::
     case ui::mojom::LatencyComponentType::
         INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT:
       *output = ui::INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT;
-      return true;
-    case ui::mojom::LatencyComponentType::
-        INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT:
-      *output = ui::INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT;
       return true;
     case ui::mojom::LatencyComponentType::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT:
       *output = ui::INPUT_EVENT_LATENCY_ACK_RWH_COMPONENT;

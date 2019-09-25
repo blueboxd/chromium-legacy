@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
 #include "third_party/blink/public/platform/web_url_loader_mock_factory.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -2354,7 +2355,7 @@ TEST_F(ImplicitRootScrollerSimTest,
   EXPECT_EQ(container,
             GetDocument().GetRootScrollerController().EffectiveRootScroller());
   EXPECT_EQ(ToLayoutBox(container->GetLayoutObject())->Size().Height(), 600);
-  WebView().SetZoomLevel(WebView::ZoomFactorToZoomLevel(2.0));
+  WebView().SetZoomLevel(PageZoomFactorToZoomLevel(2.0));
   WebView().GetPage()->GetBrowserControls().SetShownRatio(0);
   WebView().ResizeWithBrowserControls(IntSize(800, 650), 50, 0, false);
   Compositor().BeginFrame();

@@ -142,6 +142,7 @@ enum DatabaseInitError {
   INIT_STATS_ERROR,
   MIGRATION_ERROR,
   COMMIT_TRANSACTION_ERROR,
+  INIT_LEAKED_CREDENTIALS_ERROR,
 
   DATABASE_INIT_ERROR_COUNT,
 };
@@ -734,6 +735,7 @@ bool LoginDatabase::Init() {
   }
 
   stats_table_.Init(&db_);
+  leaked_credentials_table_.Init(&db_);
 
   int current_version = meta_table_.GetVersionNumber();
   bool migration_success = FixVersionIfNeeded(&db_, &current_version);
@@ -767,6 +769,14 @@ bool LoginDatabase::Init() {
   if (!stats_table_.CreateTableIfNecessary()) {
     LogDatabaseInitError(INIT_STATS_ERROR);
     LOG(ERROR) << "Unable to create the stats table.";
+    transaction.Rollback();
+    db_.Close();
+    return false;
+  }
+
+  if (!leaked_credentials_table_.CreateTableIfNecessary()) {
+    LogDatabaseInitError(INIT_LEAKED_CREDENTIALS_ERROR);
+    LOG(ERROR) << "Unable to create the leaked credentials table.";
     transaction.Rollback();
     db_.Close();
     return false;

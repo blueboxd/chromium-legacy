@@ -227,7 +227,7 @@ public class VrShell extends GvrLayout
         mNonVrUiWidgetFactory = UiWidgetFactory.getInstance();
         UiWidgetFactory.setInstance(new VrUiWidgetFactory(this, mActivity.getModalDialogManager()));
 
-        mTabRedirectHandler = new TabRedirectHandler(mActivity) {
+        mTabRedirectHandler = new TabRedirectHandler() {
             @Override
             public boolean shouldStayInChrome(boolean hasExternalProtocol) {
                 return !hasExternalProtocol;
@@ -420,7 +420,7 @@ public class VrShell extends GvrLayout
 
         boolean hasOrCanRequestRecordAudioPermission =
                 hasRecordAudioPermission() || canRequestRecordAudioPermission();
-        boolean supportsRecognition = FeatureUtilities.isRecognitionIntentPresent(mActivity, false);
+        boolean supportsRecognition = FeatureUtilities.isRecognitionIntentPresent(false);
         mNativeVrShell = VrShellJni.get().init(VrShell.this, mDelegate, forWebVr,
                 !mVrBrowsingEnabled, hasOrCanRequestRecordAudioPermission && supportsRecognition,
                 getGvrApi().getNativeGvrContext(), mReprojectedRendering, displayWidthMeters,
@@ -713,8 +713,9 @@ public class VrShell extends GvrLayout
 
     @CalledByNative
     public void dialogSurfaceCreated(Surface surface) {
-        if (mVrBrowsingEnabled && mVrUiViewContainer != null)
+        if (mVrBrowsingEnabled && mVrUiViewContainer != null) {
             mVrUiViewContainer.setSurface(surface);
+        }
     }
 
     @Override
@@ -909,8 +910,9 @@ public class VrShell extends GvrLayout
     }
 
     public void setWebVrModeEnabled(boolean enabled) {
-        if (mNativeVrShell != 0)
+        if (mNativeVrShell != 0) {
             VrShellJni.get().setWebVrMode(mNativeVrShell, VrShell.this, enabled);
+        }
         if (!enabled) {
             mContentVrWindowAndroid.setVSyncPaused(false);
             mPendingVSyncPause = false;
@@ -957,8 +959,9 @@ public class VrShell extends GvrLayout
         if (topContentOffset != 0) return;
         // Wait until a new frame is definitely available.
         mActivity.getCompositorViewHolder().getCompositorView().surfaceRedrawNeededAsync(() -> {
-            if (mNativeVrShell != 0)
+            if (mNativeVrShell != 0) {
                 VrShellJni.get().resumeContentRendering(mNativeVrShell, VrShell.this);
+            }
         });
     }
 
@@ -1029,8 +1032,9 @@ public class VrShell extends GvrLayout
     @CalledByNative
     private void onExitVrRequestResult(@UiUnsupportedMode int reason, boolean shouldExit) {
         if (shouldExit) {
-            if (mNativeVrShell != 0)
+            if (mNativeVrShell != 0) {
                 VrShellJni.get().logUnsupportedModeUserMetric(mNativeVrShell, VrShell.this, reason);
+            }
         }
         mDelegate.onExitVrRequestResult(shouldExit);
     }
@@ -1163,21 +1167,24 @@ public class VrShell extends GvrLayout
 
     @Override
     public void onVrViewEmpty() {
-        if (mNativeVrShell != 0)
+        if (mNativeVrShell != 0) {
             VrShellJni.get().onOverlayTextureEmptyChanged(mNativeVrShell, VrShell.this, true);
+        }
     }
 
     @Override
     public void onVrViewNonEmpty() {
-        if (mNativeVrShell != 0)
+        if (mNativeVrShell != 0) {
             VrShellJni.get().onOverlayTextureEmptyChanged(mNativeVrShell, VrShell.this, false);
+        }
     }
 
     @Override
     protected void onSizeChanged(int width, int height, int oldWidth, int oldHeight) {
         super.onSizeChanged(width, height, oldWidth, oldHeight);
-        if (width > height)
+        if (width > height) {
             VrModuleProvider.getDelegate().removeBlackOverlayView(mActivity, true /* animate */);
+        }
     }
 
     /**

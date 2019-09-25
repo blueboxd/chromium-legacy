@@ -723,11 +723,6 @@ void LocalFrameClientImpl::DidRunContentWithCertificateErrors() {
     web_frame_->Client()->DidRunContentWithCertificateErrors();
 }
 
-void LocalFrameClientImpl::ReportLegacyTLSVersion(const KURL& url) {
-  if (web_frame_->Client())
-    web_frame_->Client()->ReportLegacyTLSVersion(url);
-}
-
 void LocalFrameClientImpl::DidChangePerformanceTiming() {
   if (web_frame_->Client())
     web_frame_->Client()->DidChangePerformanceTiming();

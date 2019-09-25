@@ -801,8 +801,8 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si se le asigna el valor "False" o no se le asigna ningún valor, no se registrarán los eventos.</translation>
 <translation id="2440773021691931148">Envía estadísticas e identificadores de hardware relacionados con la energía.
 
-      Si se asigna el valor "False" a esta política o no se le asigna ninguno, no se enviará ninguna estadística.
-      Si se le asigna el valor "True", se enviarán las estadísticas.</translation>
+      Si se asigna el valor False a esta política o no se le asigna ninguno, no se enviará ninguna estadística.
+      Si se le asigna el valor True, se enviarán las estadísticas.</translation>
 <translation id="244317009688098048">Permite habilitar la combinación de teclas de rescate para el inicio de sesión automático.
 
       Si se utiliza el valor True para esta política o no se establece la política y se ha configurado una cuenta local de dispositivo para el inicio de sesión automático sin tiempo de espera, <ph name="PRODUCT_OS_NAME" /> omitirá el inicio de sesión automático y mostrará la pantalla de inicio de sesión al utilizar la combinación de teclas Ctrl+Alt+S.
@@ -821,22 +821,22 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
 
       Consulta https://www.chromestatus.com/feature/4664843055398912.</translation>
 <translation id="2466131534462628618">La autenticación del portal cautivo ignora el proxy</translation>
-<translation id="2466697858869282874">Configura la disponibilidad y el comportamiento de la función de actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+<translation id="2466697858869282874">Configura la disponibilidad y el comportamiento de la función de actualización de firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Los ajustes individuales se pueden especificar en las propiedades del archivo JSON:
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: si se le asigna el valor <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, los usuarios podrán activar el flujo de Powerwash para instalar una actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH" />: si se le asigna el valor <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_POWERWASH_TRUE" />, los usuarios podrán activar el flujo de Powerwash para instalar una actualización de firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: si se le asigna el valor <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, los usuarios podrán ejecutar el flujo de la actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" />, que mantiene el estado en todos los dispositivos (incluido el registro de empresa), pero se perderán los datos de usuario. Este flujo de actualizaciones está disponible a partir de la versión 68.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE" />: si se le asigna el valor <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_ALLOW_USER_INITIATED_PRESERVE_DEVICE_STATE_TRUE" />, los usuarios podrán ejecutar el flujo de la actualización de firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" />, que mantiene el estado en todos los dispositivos (incluido el registro de empresa), pero se perderán los datos de usuario. Este flujo de actualizaciones está disponible a partir de la versión 68.
 
-      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: controla cómo se ejecutan las actualizaciones automáticas del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> para firmware vulnerable de <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Todos los flujos conservan el estado local del dispositivo.
-        Si se le asigna 1 como valor o no se le asigna ningún valor, las actualizaciones del firmware de TPM no se aplicarán.
+      <ph name="TPM_FIRMWARE_UPDATE_SETTINGS_AUTO_UPDATE_MODE" />: controla cómo se ejecutan las actualizaciones automáticas de firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> para firmware vulnerable de <ph name="TPM_FIRMWARE_UPDATE_TPM" />. Todos los flujos conservan el estado local del dispositivo.
+        Si se le asigna 1 como valor o no se le asigna ningún valor, las actualizaciones de firmware de TPM no se aplicarán.
         Si se le asigna 2 como valor, el firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> se actualizará cuando se reinicie el equipo después de que el usuario haya aceptado la actualización.
         Si se le asigna 3 como valor, el firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> se actualizará cuando se reinicie el equipo.
         Si se le asigna 4 como valor, el firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> se actualizará tras el registro, antes del inicio de sesión del usuario.
         Esta opción está disponible a partir de la versión 75.
 
-      Si no se le asigna ningún valor a esta política, la función de actualización del firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> no estará disponible.</translation>
+      Si no se le asigna ningún valor a esta política, la función de actualización de firmware de <ph name="TPM_FIRMWARE_UPDATE_TPM" /> no estará disponible.</translation>
 <translation id="2471748297300970300">Si se inhabilita, no se mostrará ninguna advertencia de seguridad cuando se inicie Chrome con algunas instrucciones de línea de comandos potencialmente peligrosas.
 
           Si se habilita o no se define, se mostrarán advertencias de seguridad cuando se usen algunas instrucciones de línea de comandos para iniciar Chrome.
@@ -1725,8 +1725,8 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se define la política de fondo de pantalla del dispositivo, pero sí se define la política de fondo de pantalla del usuario, esta última decidirá qué contenido se mostrará.</translation>
 <translation id="3964606652985594895">Envía estadísticas e identificadores de hardware de los dispositivos de almacenamiento.
 
-      Si se asigna el valor "False" a esta política o no se le asigna ninguno, no se enviará ninguna estadística.
-      Si se le asigna el valor "True", se enviarán las estadísticas.</translation>
+      Si se asigna el valor False a esta política o no se le asigna ninguno, no se enviará ninguna estadística.
+      Si se le asigna el valor True, se enviarán las estadísticas.</translation>
 <translation id="3965339130942650562">Tiempo de espera para cerrar sesión cuando el usuario se encuentre inactivo</translation>
 <translation id="3973371701361892765">No ocultar automáticamente los archivos</translation>
 <translation id="3984028218719007910">Permite determinar si <ph name="PRODUCT_OS_NAME" /> mantiene los datos de cuenta locales tras cerrar la sesión. Si el valor se establece en "true", <ph name="PRODUCT_OS_NAME" /> no conservará ninguna cuenta de forma permanente y todos los datos de la sesión del usuario se descartarán al cerrar la sesión. Si esta política no se configura o el valor correspondiente se establece en "false", el dispositivo puede guardar datos de usuario locales (encriptados).</translation>
@@ -2011,7 +2011,7 @@ Si esta política se establece en False, el usuario no podrá canjear ofertas.</
 
           Actualmente, esta función está inhabilitada en el servidor.</translation>
 <translation id="4363057787588706121">Permite combinar listas de políticas de fuentes distintas</translation>
-<translation id="4363101430102811068">Habilita la búsqueda de filtraciones de datos para las credenciales introducidas</translation>
+<translation id="4363101430102811068">Habilita la detección de filtraciones de datos para las credenciales introducidas</translation>
 <translation id="4363136876356691536">Si se asigna el valor "True" a esta política, las opciones de accesibilidad siempre aparecerán en el menú de la bandeja del sistema.
 
           Si se le asigna el valor "False", las opciones de accesibilidad nunca aparecerán en el menú de la bandeja del sistema.
@@ -2219,14 +2219,14 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4826326557828204741">Acción a emprender si se alcanza el retraso de inactividad mientras el dispositivo está usando la batería</translation>
 <translation id="4830531683854509779">Envía estadísticas de hardware sobre componentes SoC.
 
-      Si se asigna el valor "False" a esta política o no se le asigna ninguno, no se enviará ninguna estadística.
-      Si se le asigna el valor "True", se enviarán las estadísticas.</translation>
+      Si se asigna el valor False a esta política o no se le asigna ninguno, no se enviará ninguna estadística.
+      Si se le asigna el valor True, se enviarán las estadísticas.</translation>
 <translation id="4832852360828533362">Informes de usuarios y dispositivos</translation>
 <translation id="4834526953114077364">Eliminar usuarios utilizados hace más tiempo que no hayan iniciado sesión en los tres últimos meses hasta que haya suficiente espacio libre</translation>
 <translation id="4835622243021053389">Habilita la autenticación NTLMv2.</translation>
 <translation id="4856471929724652373">Envía información de las actualizaciones del sistema operativo, como el estado de actualización, la versión de la plataforma, la última comprobación de actualizaciones y el último reinicio.
 
-      Si se asigna el valor "False" a esta política o no se le asigna ninguno, no se enviará información de las actualizaciones del sistema operativo. Si se le asigna el valor "True", se enviará información de las actualizaciones del sistema operativo.</translation>
+      Si se asigna el valor False a esta política o no se le asigna ninguno, no se enviará información de las actualizaciones del sistema operativo. Si se le asigna el valor True, se enviará información de las actualizaciones del sistema operativo.</translation>
 <translation id="4858735034935305895">Permitir modo de pantalla completa</translation>
 <translation id="4861767323695239729">Configurar los métodos de introducción admitidos en una sesión de usuario</translation>
 <translation id="487460824085252184">Migrar automáticamente sin solicitar el consentimiento de los usuarios.</translation>
@@ -3107,7 +3107,7 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 Si la política está establecida en False, no se informará sobre los usuarios.</translation>
 <translation id="6394350458541421998">Esta política no está disponible desde la versión 29 de <ph name="PRODUCT_OS_NAME" />. Utiliza la política PresentationScreenDimDelayScale en su lugar.</translation>
 <translation id="6401669939808766804">Cerrar la sesión del usuario</translation>
-<translation id="6403746242226534223">Comprueba con Navegación Segura la reputación de las URL visitadas en tiempo real</translation>
+<translation id="6403746242226534223">Comprueba la reputación de Navegación Segura de las URL visitadas en tiempo real</translation>
 <translation id="6406448383934634215">Si la acción seleccionada al iniciar el navegador es Abrir una lista de URLs, esta política permitirá especificar la lista de las URL que se deben abrir. Si no se define ningún valor, no se abrirá ninguna URL al iniciar el navegador.
 
           Esta política solo se aplica si se asigna el valor RestoreOnStartup a la política RestoreOnStartupIsURLs.
@@ -3250,7 +3250,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
 <translation id="6689792153960219308">Informar sobre el estado del hardware</translation>
 <translation id="6698632841807204978">Habilitar la impresión en monocromo</translation>
 <translation id="6699880231565102694">Habilitar la autenticación de dos factores para hosts de acceso remoto</translation>
-<translation id="670597451099978576">Concede permiso automáticamente en la pantalla de inicio de sesión a estos sitios web para conectarse a dispositivos USB con los ID de proveedor y producto facilitados.</translation>
+<translation id="670597451099978576">Concede permiso automáticamente a estos sitios web para conectarse a dispositivos USB con los ID de proveedor y producto facilitados en la pantalla de inicio de sesión.</translation>
 <translation id="6720080634516505446"><ph name="PRODUCT_NAME" /> proporciona una instalación y actualización seguras de las extensiones. Sin embargo, el contenido de algunas extensiones alojadas fuera de Chrome Web Store solo lo pueden proteger algoritmos de hash o de firma no seguros, como SHA1. Si esta política no está habilitada, Chrome no permitirá la instalación ni las actualizaciones de esas extensiones hasta que sus desarrolladores modifiquen su diseño e incluyan algoritmos más seguros. Si esta política está habilitada, se permitirá la instalación y las actualizaciones de esas extensiones.
 
           Si esta política no está configurada, el comportamiento será como si estuviera habilitada.
@@ -3834,9 +3834,9 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
       Cuando esta política está desactivada, no se puede verificar el código de acceso parental en el dispositivo del menor.</translation>
 <translation id="7625444193696794922">Permite especificar el canal de versiones al que se vinculará este dispositivo.</translation>
 <translation id="7625498350540361483">
-      Si se asigna el valor "True" a esta política, <ph name="PRODUCT_NAME" /> podrá recoger registros de eventos WebRTC procedentes de los servicios de Google (p. ej., Google Meet) y enviarlos a Google.
+      Si se asigna el valor True a esta política, <ph name="PRODUCT_NAME" /> podrá recoger registros de eventos WebRTC procedentes de los servicios de Google (p. ej., Google Meet) y enviarlos a Google.
 
-      Si se le asigna el valor "False", <ph name="PRODUCT_NAME" /> no podrá recoger ni subir esos registros.
+      Si se le asigna el valor False, <ph name="PRODUCT_NAME" /> no podrá recoger ni subir esos registros.
 
       Si no se define esta política, en las versiones hasta la M76 (incluida), <ph name="PRODUCT_NAME" /> no podrá recoger ni subir esos registros.
 
@@ -4370,9 +4370,9 @@ Si no configuras esta opción o no le asignas ningún valor, el usuario puede ac
 Esta política hace que el encabezado X-GoogApps-Allowed-Domains se añada a todas las solicitudes HTTP y HTTPS en todos los dominios de google.com, como se describe en https://support.google.com/a/answer/1668854. 
 
 Los usuarios no pueden cambiar ni anular esta opción.</translation>
-<translation id="8625234016727663537">Permite configurar una lista con las URL de los sitios web a los que se concederá permiso automáticamente en la pantalla de inicio de sesión para acceder a un dispositivo USB con los ID de proveedor y producto especificados. Cada elemento de la lista debe contener tanto el dispositivo como las URL para que la política sea válida. Cada elemento de los dispositivos puede incluir un campo de ID de proveedor y otro de ID de producto. Los ID que se omitan se considerarán comodines, con una excepción: no se puede especificar un ID de producto sin definir también un ID de proveedor. De lo contrario, la política no será válida y se ignorará.
+<translation id="8625234016727663537">Permite configurar una lista con las URL de los sitios web a los que se concederá permiso automáticamente para acceder a un dispositivo USB con los ID de proveedor y producto especificados en la pantalla de inicio de sesión. Cada elemento de la lista debe contener tanto el dispositivo como las URL para que la política sea válida. Cada elemento de los dispositivos puede incluir un campo de ID de proveedor y otro de ID de producto. Los ID que se omitan se considerarán comodines, con una excepción: no se puede especificar un ID de producto sin definir también un ID de proveedor. De lo contrario, la política no será válida y se ignorará.
 
-        El modelo de permisos USB usa la URL del sitio web solicitante ("URL solicitante") y la URL del sitio web marco de nivel superior ("URL de inserción") para conceder permiso de acceso al dispositivo USB a la URL solicitante. La URL solicitante puede ser distinta a la de inserción si el sitio web solicitante se encuentra en un iframe. Por lo tanto, el campo "urls" puede contener un máximo de dos cadenas de URL delimitadas por una coma para especificar la URL solicitante y la de inserción, respectivamente. Si solo se especifica una URL, se otorgará acceso a los dispositivos USB correspondientes cuando la URL del sitio web solicitante coincida con esta URL, independientemente del estado de inserción. Las URL del campo "urls" deben ser URL válidas. De lo contrario, la política se ignorará.
+        El modelo de permisos USB usa la URL del sitio web solicitante (URL solicitante) y la URL del sitio web marco de nivel superior (URL de inserción) para conceder permiso de acceso al dispositivo USB a la URL solicitante. La URL solicitante puede ser distinta a la de inserción si el sitio web solicitante se encuentra en un iframe. Por lo tanto, el campo "urls" puede contener un máximo de dos cadenas de URL delimitadas por una coma para especificar la URL solicitante y la de inserción, respectivamente. Si solo se especifica una URL, se otorgará acceso a los dispositivos USB correspondientes cuando la URL del sitio web solicitante coincida con esta URL, independientemente del estado de inserción. Las URL del campo "urls" deben ser URL válidas. De lo contrario, la política se ignorará.
 
         Si no se asigna ningún valor a esta política, se usará en todos los sitios web el valor general predeterminado (sin acceso automático).</translation>
 <translation id="8631434304112909927">hasta la versión <ph name="UNTIL_VERSION" /></translation>
@@ -4447,7 +4447,6 @@ Los usuarios no pueden cambiar ni anular esta opción.</translation>
 <translation id="8798099450830957504">Predeterminado</translation>
 <translation id="8800453707696044281">Define un porcentaje personalizado de la parada de carga de la batería</translation>
 <translation id="8801680448782904838">Informar al usuario de que es necesario o recomendable reiniciar el navegador o el dispositivo</translation>
-<translation id="8802816494059596691">Los nombres de host que se especifican en esta lista quedarán exentos de la comprobación de la política de HSTS, que podría actualizar las solicitudes de http a https. Esta política solo admite nombres de host de una sola etiqueta. Los nombres de host deben seguir el canon de formato: cada IDN debe codificarse en su formato de etiqueta A y todas las letras ASCII deben ser minúsculas. Esta política solo se aplica a los nombres de host que se especifican en esta lista; no se aplica a sus subdominios.</translation>
 <translation id="8818173863808665831">Informa de la ubicación geográfica del dispositivo.
 
      Si no se establece esta política o se establece el valor "false", no se informará de la ubicación.</translation>

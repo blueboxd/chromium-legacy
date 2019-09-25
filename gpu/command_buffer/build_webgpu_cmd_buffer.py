@@ -17,6 +17,16 @@ import build_cmd_buffer_lib
 #
 # Options are documented in build_gles2_cmd_buffer.py/build_raster_cmd_buffer.py
 _NAMED_TYPE_INFO = {
+  'PowerPreference': {
+    'type': 'PowerPreference',
+    'valid': [
+      'PowerPreference::kHighPerformance',
+      'PowerPreference::kLowPower',
+    ],
+    'invalid': [
+      'PowerPreference::kNumPowerPreferences',
+    ],
+  }
 }
 
 # A function info object specifies the type and other special data for the
@@ -49,6 +59,10 @@ _FUNCTION_INFO = {
   },
   'DissociateMailbox': {
     'trace_level': 1,
+  },
+  'RequestAdapter': {
+    'impl_func': False,
+    'cmd_args': 'uint32_t power_preference'
   },
 }
 

@@ -217,13 +217,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
               std::move(receiver));
         }));
   }
-  parameterized_binder_registry_.AddInterface(base::Bind(
-      [](mojo::PendingReceiver<blink::mojom::PermissionService> receiver,
-         RenderProcessHost* host, const url::Origin& origin) {
-        static_cast<RenderProcessHostImpl*>(host)
-            ->permission_service_context()
-            .CreateServiceForWorker(std::move(receiver), origin);
-      }));
 
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
       [](blink::mojom::NotificationServiceRequest request,

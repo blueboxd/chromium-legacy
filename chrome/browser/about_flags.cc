@@ -2429,12 +2429,6 @@ const FeatureEntry kFeatureEntries[] = {
                                     "AndroidNightMode")},
 #endif  // BUILDFLAG(ENABLE_ANDROID_NIGHT_MODE)
 #endif  // OS_ANDROID
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-    {"enable-dbus-and-x11-status-icons",
-     flag_descriptions::kEnableDbusAndX11StatusIconsName,
-     flag_descriptions::kEnableDbusAndX11StatusIconsDescription, kOsLinux,
-     FEATURE_VALUE_TYPE(features::kEnableDbusAndX11StatusIcons)},
-#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
     {"enable-experimental-accessibility-features",
      flag_descriptions::kExperimentalAccessibilityFeaturesName,
      flag_descriptions::kExperimentalAccessibilityFeaturesDescription, kOsCrOS,

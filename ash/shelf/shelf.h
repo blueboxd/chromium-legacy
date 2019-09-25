@@ -138,7 +138,7 @@ class ASH_EXPORT Shelf : public ShelfLayoutManagerObserver {
   void ProcessMouseEvent(const ui::MouseEvent& event);
 
   // Handles a mousewheel scroll event coming from the shelf.
-  void ProcessMouseWheelEvent(const ui::MouseWheelEvent& event);
+  void ProcessMouseWheelEvent(ui::MouseWheelEvent* event);
 
   void AddObserver(ShelfObserver* observer);
   void RemoveObserver(ShelfObserver* observer);

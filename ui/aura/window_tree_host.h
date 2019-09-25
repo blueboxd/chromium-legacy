@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
 #include "ui/aura/aura_export.h"
+#include "ui/aura/scoped_enable_unadjusted_mouse_events.h"
 #include "ui/aura/window.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/ime/input_method_delegate.h"
@@ -240,6 +241,13 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   Window::OcclusionState GetNativeWindowOcclusionState() {
     return occlusion_state_;
   }
+
+  // Requests using unadjusted movement mouse events, i.e. WM_INPUT on Windows.
+  // Returns a ScopedEnableUnadjustedMouseEvents instance which stops using
+  // unadjusted mouse events when destroyed, returns nullptr if unadjusted mouse
+  // event is not not implemented or failed.
+  virtual std::unique_ptr<ScopedEnableUnadjustedMouseEvents>
+  RequestUnadjustedMovement();
 
   bool holding_pointer_moves() const { return holding_pointer_moves_; }
 

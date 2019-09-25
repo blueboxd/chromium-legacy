@@ -103,7 +103,6 @@ class ScrollableAreaStub : public GarbageCollected<ScrollableAreaStub>,
   bool IsScrollCornerVisible() const override { return true; }
   IntRect ScrollCornerRect() const override { return IntRect(); }
   bool ScrollbarsCanBeActive() const override { return true; }
-  IntRect ScrollableAreaBoundingBox() const override { return IntRect(); }
   bool ShouldPlaceVerticalScrollbarOnLeft() const override { return true; }
   void ScrollControlWasSetNeedsPaintInvalidation() override {}
   GraphicsLayer* LayerForContainer() const override { return nullptr; }

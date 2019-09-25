@@ -252,7 +252,7 @@ class AppListViewTest : public views::ViewsTestBase,
            view_->search_box_view()->GetWidget()->GetWindowBoundsInScreen();
   }
 
-  int ShelfHeight() const { return AppListConfig::instance().shelf_height(); }
+  int ShelfHeight() const { return delegate_->GetShelfHeight(); }
 
   // Gets the PaginationModel owned by |view_|.
   ash::PaginationModel* GetPaginationModel() const {
@@ -1893,7 +1893,7 @@ TEST_F(AppListViewTest, ShowFullscreenWhenInSideShelfMode) {
   EXPECT_EQ(ash::AppListViewState::kFullscreenAllApps, view_->app_list_state());
   // The rounded corners should be off screen in side shelf.
   gfx::Transform translation;
-  translation.Translate(0, -AppListConfig::instance().background_radius());
+  translation.Translate(0, -(delegate_->GetShelfHeight() / 2));
   // The rounded corners should be off screen in side shelf.
   EXPECT_EQ(translation,
             view_->GetAppListBackgroundShieldForTest()->GetTransform());

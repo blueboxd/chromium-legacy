@@ -19,8 +19,6 @@ chrome.fileManagerPrivate = {
   CrostiniEventType: {
     ENABLE: 'enable',
     DISABLE: 'disable',
-    ROOT_ACCESS_ALLOW: 'root_access_allow',
-    ROOT_ACCESS_DISALLOW: 'root_access_disallow',
     SHARE: 'share',
     UNSHARE: 'unshare',
   },

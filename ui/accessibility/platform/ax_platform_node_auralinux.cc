@@ -2294,10 +2294,12 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_DIALOG;
     case ax::mojom::Role::kAnchor:
       return ATK_ROLE_LINK;
-    case ax::mojom::Role::kAnnotation:
-      // TODO(accessibility) Panels are generally for containers of widgets.
-      // This should probably be a section (if a container) or static if text.
-      return ATK_ROLE_PANEL;
+    case ax::mojom::Role::kAnnotationAttribution:
+    case ax::mojom::Role::kAnnotationCommentary:
+    case ax::mojom::Role::kAnnotationPresence:
+    case ax::mojom::Role::kAnnotationRevision:
+    case ax::mojom::Role::kAnnotationSuggestion:
+      return ATK_ROLE_SECTION;
     case ax::mojom::Role::kApplication:
       // Only use ATK_ROLE_APPLICATION for elements with no parent, since it
       // is only for top level app windows and not ARIA applications.
@@ -2567,6 +2569,10 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_ROW_HEADER;
     case ax::mojom::Role::kRuby:
       return kStaticRole;
+    case ax::mojom::Role::kRubyAnnotation:
+      // TODO(accessibility) Panels are generally for containers of widgets.
+      // This should probably be a section (if a container) or static if text.
+      return ATK_ROLE_PANEL;
     case ax::mojom::Role::kScrollBar:
       return ATK_ROLE_SCROLL_BAR;
     case ax::mojom::Role::kSearch:

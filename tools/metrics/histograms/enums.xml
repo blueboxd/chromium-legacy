@@ -18121,6 +18121,7 @@ Called by update_net_error_codes.py.-->
   <int value="605" label="DeviceLoginSpokenFeedbackEnabled"/>
   <int value="606" label="DeviceLoginScreenHighContrastEnabled"/>
   <int value="607" label="DeviceLoginScreenVirtualKeyboardEnabled"/>
+  <int value="608" label="CloudExtensionRequestEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -20670,6 +20671,7 @@ Called by update_net_error_codes.py.-->
   <int value="1382" label="AUTOTESTPRIVATE_SETOVERVIEWMODESTATE"/>
   <int value="1383" label="AUTOTESTPRIVATE_TAKESCREENSHOTFORDISPLAY"/>
   <int value="1384" label="AUTOFILLPRIVATE_SETCREDITCARDFIDOAUTHENABLEDSTATE"/>
+  <int value="1385" label="USERSPRIVATE_ISWHITELISTEDUSER"/>
 </enum>
 
 <enum name="ExtensionIconState">

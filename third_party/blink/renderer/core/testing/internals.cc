@@ -2226,44 +2226,32 @@ DOMRectList* Internals::nonFastScrollableRects(
   frame->View()->UpdateAllLifecyclePhases(
       DocumentLifecycle::LifecycleUpdateReason::kTest);
 
-  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-    auto* pac = document->View()->GetPaintArtifactCompositor();
-    auto* layer_tree_host = pac->RootLayer()->layer_tree_host();
-    // Ensure |cc::TransformTree| has updated the correct ToScreen transforms.
-    layer_tree_host->UpdateLayers();
+  auto* pac = document->View()->GetPaintArtifactCompositor();
+  auto* layer_tree_host = pac->RootLayer()->layer_tree_host();
+  // Ensure |cc::TransformTree| has updated the correct ToScreen transforms.
+  layer_tree_host->UpdateLayers();
 
-    Vector<IntRect> layer_non_fast_scrollable_rects;
-    for (auto* layer : *layer_tree_host) {
-      const cc::Region& non_fast_region = layer->non_fast_scrollable_region();
-      for (const gfx::Rect& non_fast_rect : non_fast_region) {
-        gfx::RectF layer_rect(non_fast_rect);
+  Vector<IntRect> layer_non_fast_scrollable_rects;
+  for (auto* layer : *layer_tree_host) {
+    const cc::Region& non_fast_region = layer->non_fast_scrollable_region();
+    for (const gfx::Rect& non_fast_rect : non_fast_region) {
+      gfx::RectF layer_rect(non_fast_rect);
 
-        // Map |layer_rect| into screen space.
-        layer_rect.Offset(layer->offset_to_transform_parent());
-        auto& transform_tree =
-            layer->layer_tree_host()->property_trees()->transform_tree;
-        transform_tree.UpdateTransforms(layer->transform_tree_index());
-        const gfx::Transform& to_screen =
-            transform_tree.ToScreen(layer->transform_tree_index());
-        to_screen.TransformRect(&layer_rect);
+      // Map |layer_rect| into screen space.
+      layer_rect.Offset(layer->offset_to_transform_parent());
+      auto& transform_tree =
+          layer->layer_tree_host()->property_trees()->transform_tree;
+      transform_tree.UpdateTransforms(layer->transform_tree_index());
+      const gfx::Transform& to_screen =
+          transform_tree.ToScreen(layer->transform_tree_index());
+      to_screen.TransformRect(&layer_rect);
 
-        layer_non_fast_scrollable_rects.push_back(
-            IntRect(ToEnclosingRect(layer_rect)));
-      }
+      layer_non_fast_scrollable_rects.push_back(
+          IntRect(ToEnclosingRect(layer_rect)));
     }
-
-    return DOMRectList::Create(layer_non_fast_scrollable_rects);
   }
 
-  GraphicsLayer* layer = frame->View()->LayoutViewport()->LayerForScrolling();
-  if (!layer)
-    return DOMRectList::Create();
-  const cc::Region& region = layer->CcLayer()->non_fast_scrollable_region();
-  Vector<IntRect> rects;
-  rects.ReserveCapacity(region.GetRegionComplexity());
-  for (const gfx::Rect& rect : region)
-    rects.push_back(IntRect(rect));
-  return DOMRectList::Create(rects);
+  return DOMRectList::Create(layer_non_fast_scrollable_rects);
 }
 
 void Internals::evictAllResources() const {

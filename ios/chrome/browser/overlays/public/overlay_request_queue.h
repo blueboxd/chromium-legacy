@@ -6,6 +6,7 @@
 #define IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_REQUEST_QUEUE_H_
 
 #include "ios/chrome/browser/overlays/public/overlay_modality.h"
+#import "ios/chrome/browser/overlays/public/overlay_request_cancel_handler.h"
 
 class OverlayRequest;
 namespace web {
@@ -22,7 +23,14 @@ class OverlayRequestQueue {
                                            OverlayModality modality);
 
   // Adds |request| to be displayed alongside the content area of queue's
-  // corresponding WebState.
+  // corresponding WebState.  The request may be cancelled by
+  // |cancel_handler|.
+  virtual void AddRequest(
+      std::unique_ptr<OverlayRequest> request,
+      std::unique_ptr<OverlayRequestCancelHandler> cancel_handler) = 0;
+
+  // Adds |request| to the queue using a default cancellation handler that
+  // cancels requests for committed, document-changing navigations.
   virtual void AddRequest(std::unique_ptr<OverlayRequest> request) = 0;
 
   // Returns the front request in the queue, or nullptr if the queue is empty.
@@ -37,7 +45,11 @@ class OverlayRequestQueue {
   OverlayRequestQueue() = default;
 
  private:
+  friend class OverlayRequestCancelHandler;
   DISALLOW_COPY_AND_ASSIGN(OverlayRequestQueue);
+
+  // Called by cancellation handlers to cancel |request|.
+  virtual void CancelRequest(OverlayRequest* request) = 0;
 };
 
 #endif  // IOS_CHROME_BROWSER_OVERLAYS_PUBLIC_OVERLAY_REQUEST_QUEUE_H_

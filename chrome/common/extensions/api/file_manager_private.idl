@@ -232,8 +232,6 @@ enum SourceRestriction {
 enum CrostiniEventType {
   enable,
   disable,
-  root_access_allow,
-  root_access_disallow,
   share,
   unshare
 };

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.preferences.sync;
 import android.accounts.Account;
 import android.app.Dialog;
 import android.content.Intent;
-import android.content.res.Resources;
 import android.net.Uri;
 import android.os.Bundle;
 import android.provider.Settings;
@@ -461,13 +460,12 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
      * @param error The sync error.
      */
     private String getSyncErrorTitle(@SyncError int error) {
-        Resources res = getActivity().getResources();
         switch (error) {
             case SyncError.SYNC_SETUP_INCOMPLETE:
                 assert ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID);
-                return res.getString(R.string.sync_settings_not_confirmed_title);
+                return getString(R.string.sync_settings_not_confirmed_title);
             default:
-                return res.getString(R.string.sync_error_card_title);
+                return getString(R.string.sync_error_card_title);
         }
     }
 
@@ -476,22 +474,21 @@ public class SyncAndServicesPreferences extends PreferenceFragmentCompat
      * @param error The sync error.
      */
     private String getSyncErrorHint(@SyncError int error) {
-        Resources res = getActivity().getResources();
         switch (error) {
             case SyncError.ANDROID_SYNC_DISABLED:
-                return res.getString(R.string.hint_android_sync_disabled);
+                return getString(R.string.hint_android_sync_disabled);
             case SyncError.AUTH_ERROR:
-                return res.getString(R.string.hint_sync_auth_error);
+                return getString(R.string.hint_sync_auth_error);
             case SyncError.CLIENT_OUT_OF_DATE:
-                return res.getString(
+                return getString(
                         R.string.hint_client_out_of_date, BuildInfo.getInstance().hostPackageLabel);
             case SyncError.OTHER_ERRORS:
-                return res.getString(R.string.hint_other_sync_errors);
+                return getString(R.string.hint_other_sync_errors);
             case SyncError.PASSPHRASE_REQUIRED:
-                return res.getString(R.string.hint_passphrase_required);
+                return getString(R.string.hint_passphrase_required);
             case SyncError.SYNC_SETUP_INCOMPLETE:
                 assert ChromeFeatureList.isEnabled(ChromeFeatureList.SYNC_MANUAL_START_ANDROID);
-                return res.getString(R.string.hint_sync_settings_not_confirmed_description);
+                return getString(R.string.hint_sync_settings_not_confirmed_description);
             case SyncError.NO_ERROR:
             default:
                 return null;

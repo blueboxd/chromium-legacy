@@ -30,6 +30,7 @@
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/keyboard/keyboard_switches.h"
+#include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/shelf_types.h"
@@ -1746,8 +1747,7 @@ TEST_F(AppListPresenterDelegateTest, BackgroundCornerRadiusDuringDrag) {
                                    ->GetShelfViewForTesting()
                                    ->GetBoundsInScreen()
                                    .top_center();
-  const int background_radius =
-      app_list::AppListConfig::instance().background_radius();
+  const int background_radius = ShelfConfig::Get()->shelf_size() / 2;
 
   app_list::AppListView* view = GetAppListView();
   const views::View* const background_shield =
@@ -1825,8 +1825,7 @@ TEST_F(AppListPresenterDelegateTest,
                                    ->GetShelfViewForTesting()
                                    ->GetBoundsInScreen()
                                    .top_center();
-  const int background_radius =
-      app_list::AppListConfig::instance().background_radius();
+  const int background_radius = ShelfConfig::Get()->shelf_size() / 2;
 
   app_list::AppListView* view = GetAppListView();
   const views::View* const background_shield =
@@ -1949,7 +1948,7 @@ class AppListPresenterDelegateScalableAppListTest
         ExpectedSuggestionChipContainerTop(search_box_bounds) +
         32 /*suggestion chip container height*/;
     const int available_height =
-        display_height - config.shelf_height() -
+        display_height - ShelfConfig::Get()->shelf_size() -
         config.search_box_fullscreen_top_padding() -
         search_box_bounds.height() - 32 /*suggestion chip container height*/
         - 24 /*margin between suggestion chip and search box*/;
@@ -2015,7 +2014,7 @@ INSTANTIATE_TEST_SUITE_P(ScalableAppListEnabled,
 TEST_P(AppListPresenterDelegateScalableAppListTest,
        AppsPagePositionDuringDrag) {
   const app_list::AppListConfig& config = GetAppListView()->GetAppListConfig();
-  const int shelf_height = config.shelf_height();
+  const int shelf_height = ShelfConfig::Get()->shelf_size();
   const int fullscreen_y = 0;
   const int closed_y = 900 - shelf_height;
   const int fullscreen_search_box_padding =
@@ -2128,7 +2127,7 @@ TEST_P(AppListPresenterDelegateScalableAppListTest,
   GetAppListTestHelper()->CheckState(AppListViewState::kHalf);
 
   const app_list::AppListConfig& config = GetAppListView()->GetAppListConfig();
-  const int shelf_height = config.shelf_height();
+  const int shelf_height = ShelfConfig::Get()->shelf_size();
   const int search_results_height = 440;
   const int fullscreen_y = 0;
   const int closed_y = 900 - shelf_height;
@@ -2274,7 +2273,7 @@ TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageDuringDrag) {
       GetAppListView()->GetBoundsInScreen().top_center();
 
   const app_list::AppListConfig& config = GetAppListView()->GetAppListConfig();
-  const int shelf_height = config.shelf_height();
+  const int shelf_height = ShelfConfig::Get()->shelf_size();
   const int search_results_height = 440;
   const int fullscreen_y = 0;
   const int fullscreen_search_box_padding =
@@ -2381,7 +2380,7 @@ TEST_P(AppListPresenterDelegateScalableAppListTest, SwitchPageInFullscreen) {
   GetAppListTestHelper()->CheckState(AppListViewState::kFullscreenAllApps);
 
   const app_list::AppListConfig& config = GetAppListView()->GetAppListConfig();
-  const int shelf_height = config.shelf_height();
+  const int shelf_height = ShelfConfig::Get()->shelf_size();
   const int search_results_height = 440;
   const int fullscreen_y = 0;
   const int fullscreen_search_box_padding =

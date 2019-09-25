@@ -46,7 +46,7 @@ class CONTENT_EXPORT BrowserAccessibilityPosition
   void AnchorParent(AXTreeID* tree_id, int32_t* parent_id) const override;
   BrowserAccessibility* GetNodeInTree(AXTreeID tree_id,
                                       int32_t node_id) const override;
-  int MaxTextOffsetInParent() const override;
+  bool IsEmbeddedObjectInParent() const override;
 
   bool IsInLineBreakingObject() const override;
   ax::mojom::Role GetRole() const override;

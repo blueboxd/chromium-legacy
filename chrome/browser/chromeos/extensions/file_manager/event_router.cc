@@ -588,14 +588,6 @@ void EventRouter::ObserveEvents() {
           crostini::kCrostiniDefaultVmName, crostini::prefs::kCrostiniEnabled,
           file_manager_private::CROSTINI_EVENT_TYPE_ENABLE,
           file_manager_private::CROSTINI_EVENT_TYPE_DISABLE));
-  pref_change_registrar_->Add(
-      crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy,
-      base::BindRepeating(
-          &EventRouter::OnCrostiniChanged, weak_factory_.GetWeakPtr(),
-          crostini::kCrostiniDefaultVmName,
-          crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy,
-          file_manager_private::CROSTINI_EVENT_TYPE_ROOT_ACCESS_ALLOW,
-          file_manager_private::CROSTINI_EVENT_TYPE_ROOT_ACCESS_DISALLOW));
   pref_change_registrar_->Add(arc::prefs::kArcEnabled, callback);
   pref_change_registrar_->Add(arc::prefs::kArcHasAccessToRemovableMedia,
                               callback);

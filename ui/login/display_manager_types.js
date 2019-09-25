@@ -9,7 +9,6 @@
 
 /**
  * @typedef {{
- *   commonScreenSize: (boolean|undefined),
  *   enableDebuggingAllowed: (boolean|undefined),
  *   enterDemoModeAllowed: (boolean|undefined),
  *   noAnimatedTransition: (boolean|undefined),
@@ -20,13 +19,6 @@
  * }}
  */
 var DisplayManagerScreenAttributes = {};
-
-/**
- * True when screen should have size matched with others.
- * (i.e. it's a part of main flow)
- * @type {boolean|undefined}
- */
-DisplayManagerScreenAttributes.commonScreenSize;
 
 /**
  * True if showing "enable debugging" is allowed for the screen.

@@ -131,7 +131,7 @@ public class LocationBarVoiceRecognitionHandlerTest {
         }
 
         @Override
-        protected boolean isRecognitionIntentPresent(Context context, boolean useCachedValue) {
+        protected boolean isRecognitionIntentPresent(boolean useCachedValue) {
             return true;
         }
 

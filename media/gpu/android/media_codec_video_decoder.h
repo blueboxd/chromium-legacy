@@ -29,6 +29,7 @@
 
 namespace media {
 
+class MediaLog;
 class ScopedAsyncTrace;
 struct SupportedVideoDecoderConfig;
 
@@ -64,6 +65,7 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   MediaCodecVideoDecoder(
       const gpu::GpuPreferences& gpu_preferences,
       const gpu::GpuFeatureInfo& gpu_feature_info,
+      std::unique_ptr<MediaLog> media_log,
       DeviceInfo* device_info,
       CodecAllocator* codec_allocator,
       std::unique_ptr<AndroidVideoSurfaceChooser> surface_chooser,
@@ -193,8 +195,10 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   void CancelPendingDecodes(DecodeStatus status);
 
   // Sets |state_| and does common teardown for the terminal states. |state_|
-  // must be either kSurfaceDestroyed or kError.
-  void EnterTerminalState(State state);
+  // must be either kSurfaceDestroyed or kError.  |reason| will be logged to
+  // |media_log_| as an info event ("error" indicates that playback will stop,
+  // but we don't know that the renderer will do that).
+  void EnterTerminalState(State state, const char* reason);
   bool InTerminalState();
 
   // Releases |codec_| if it's not null.
@@ -215,6 +219,8 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
   // Create a callback that will handle promotion hints, and set the overlay
   // position if required.
   PromotionHintAggregator::NotifyPromotionHintCB CreatePromotionHintCB();
+
+  std::unique_ptr<MediaLog> media_log_;
 
   State state_ = State::kInitializing;
 

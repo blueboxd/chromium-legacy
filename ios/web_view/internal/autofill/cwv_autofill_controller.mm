@@ -35,6 +35,7 @@
 #include "ios/web_view/internal/app/application_context.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_client_ios_bridge.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_form_internal.h"
+#import "ios/web_view/internal/autofill/cwv_autofill_profile_internal.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_internal.h"
 #import "ios/web_view/internal/autofill/cwv_credit_card_saver_internal.h"
@@ -418,6 +419,26 @@ fetchNonPasswordSuggestionsForFormWithName:(NSString*)formName
 
 - (void)hideAutofillPopup {
   [_autofillAgent hideAutofillPopup];
+}
+
+- (void)confirmSaveAutofillProfile:(const autofill::AutofillProfile&)profile
+                          callback:(base::OnceClosure)callback {
+  if (![_delegate respondsToSelector:@selector
+                  (autofillController:
+                      decideSavePolicyForAutofillProfile:decisionHandler:)]) {
+    return;
+  }
+
+  __block base::OnceClosure scopedCallback = std::move(callback);
+  CWVAutofillProfile* autofillProfile =
+      [[CWVAutofillProfile alloc] initWithProfile:profile];
+  [_delegate autofillController:self
+      decideSavePolicyForAutofillProfile:autofillProfile
+                         decisionHandler:^(BOOL save) {
+                           if (save) {
+                             std::move(scopedCallback).Run();
+                           }
+                         }];
 }
 
 - (void)confirmSaveCreditCardLocally:(const autofill::CreditCard&)creditCard

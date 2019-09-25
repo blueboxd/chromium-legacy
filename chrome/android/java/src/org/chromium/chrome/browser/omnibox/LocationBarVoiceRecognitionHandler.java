@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.omnibox;
 
 import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -67,7 +66,7 @@ public class LocationBarVoiceRecognitionHandler {
             new CachedMetrics.EnumeratedHistogramSample(
                     "VoiceInteraction.VoiceResultConfidenceValue", 101);
 
-    final private Delegate mDelegate;
+    private final Delegate mDelegate;
     private WebContentsObserver mVoiceSearchWebContentsObserver;
 
     // VoiceInteractionEventSource defined in tools/metrics/histograms/enums.xml.
@@ -350,7 +349,7 @@ public class LocationBarVoiceRecognitionHandler {
 
         if (!showSpeechRecognitionIntent(windowAndroid, intent, source)) {
             // Requery whether or not the recognition intent can be handled.
-            isRecognitionIntentPresent(activity, false);
+            isRecognitionIntentPresent(false);
             mDelegate.updateMicButtonState();
             recordVoiceSearchFailureEventSource(source);
         }
@@ -390,7 +389,7 @@ public class LocationBarVoiceRecognitionHandler {
         }
 
         Activity activity = windowAndroid.getActivity().get();
-        return activity != null && isRecognitionIntentPresent(activity, true);
+        return activity != null && isRecognitionIntentPresent(true);
     }
 
     /**
@@ -458,13 +457,11 @@ public class LocationBarVoiceRecognitionHandler {
      * {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent} is handled by any
      * {@link android.app.Activity}s in the system.
      *
-     * @param context        The {@link Context} to use to check to see if the {@link Intent} will
-     *                       be handled.
      * @param useCachedValue Whether or not to use the cached value from a previous result.
      * @return {@code true} if recognition is supported.  {@code false} otherwise.
      */
     @VisibleForTesting
-    protected boolean isRecognitionIntentPresent(Context context, boolean useCachedValue) {
-        return FeatureUtilities.isRecognitionIntentPresent(context, useCachedValue);
+    protected boolean isRecognitionIntentPresent(boolean useCachedValue) {
+        return FeatureUtilities.isRecognitionIntentPresent(useCachedValue);
     }
 }

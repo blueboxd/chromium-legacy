@@ -11,15 +11,16 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/test/perf_time_logger.h"
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
+#include "base/timer/elapsed_timer.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/cookies/cookie_monster.h"
 #include "net/cookies/cookie_monster_store_test.h"
 #include "net/cookies/cookie_util.h"
 #include "net/cookies/parsed_cookie.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "url/gurl.h"
 
 namespace net {
@@ -29,6 +30,36 @@ namespace {
 const int kNumCookies = 20000;
 const char kCookieLine[] = "A  = \"b=;\\\"\"  ;secure;;;";
 const char kGoogleURL[] = "http://www.foo.com";
+
+static constexpr char kMetricPrefixParsedCookie[] = "ParsedCookie.";
+static constexpr char kMetricPrefixCookieMonster[] = "CookieMonster.";
+static constexpr char kMetricParseTimeMs[] = "parse_time";
+static constexpr char kMetricAddTimeMs[] = "add_time";
+static constexpr char kMetricQueryTimeMs[] = "query_time";
+static constexpr char kMetricDeleteAllTimeMs[] = "delete_all_time";
+static constexpr char kMetricQueryDomainTimeMs[] = "query_domain_time";
+static constexpr char kMetricImportTimeMs[] = "import_time";
+static constexpr char kMetricGetKeyTimeMs[] = "get_key_time";
+static constexpr char kMetricGCTimeMs[] = "gc_time";
+
+perf_test::PerfResultReporter SetUpParseReporter(const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixParsedCookie, story);
+  reporter.RegisterImportantMetric(kMetricParseTimeMs, "ms");
+  return reporter;
+}
+
+perf_test::PerfResultReporter SetUpCookieMonsterReporter(
+    const std::string& story) {
+  perf_test::PerfResultReporter reporter(kMetricPrefixCookieMonster, story);
+  reporter.RegisterImportantMetric(kMetricAddTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricQueryTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricDeleteAllTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricQueryDomainTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricImportTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricGetKeyTimeMs, "ms");
+  reporter.RegisterImportantMetric(kMetricGCTimeMs, "ms");
+  return reporter;
+}
 
 class CookieMonsterTest : public testing::Test {
  public:
@@ -122,23 +153,25 @@ class GetAllCookiesCallback : public CookieTestCallback {
 
 TEST(ParsedCookieTest, TestParseCookies) {
   std::string cookie(kCookieLine);
-  base::PerfTimeLogger timer("Parsed_cookie_parse_cookies");
+  auto reporter = SetUpParseReporter("parse_cookies");
+  base::ElapsedTimer timer;
   for (int i = 0; i < kNumCookies; ++i) {
     ParsedCookie pc(cookie);
     EXPECT_TRUE(pc.IsValid());
   }
-  timer.Done();
+  reporter.AddResult(kMetricParseTimeMs, timer.Elapsed().InMillisecondsF());
 }
 
 TEST(ParsedCookieTest, TestParseBigCookies) {
   std::string cookie(3800, 'z');
   cookie += kCookieLine;
-  base::PerfTimeLogger timer("Parsed_cookie_parse_big_cookies");
+  auto reporter = SetUpParseReporter("parse_big_cookies");
+  base::ElapsedTimer timer;
   for (int i = 0; i < kNumCookies; ++i) {
     ParsedCookie pc(cookie);
     EXPECT_TRUE(pc.IsValid());
   }
-  timer.Done();
+  reporter.AddResult(kMetricParseTimeMs, timer.Elapsed().InMillisecondsF());
 }
 
 TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
@@ -151,27 +184,30 @@ TEST_F(CookieMonsterTest, TestAddCookiesOnSingleHost) {
   SetCookieCallback setCookieCallback;
 
   // Add a bunch of cookies on a single host
-  base::PerfTimeLogger timer("Cookie_monster_add_single_host");
+  auto reporter = SetUpCookieMonsterReporter("single_host");
+  base::ElapsedTimer add_timer;
 
   for (std::vector<std::string>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
     setCookieCallback.SetCookie(cm.get(), GURL(kGoogleURL), *it);
   }
-  timer.Done();
+  reporter.AddResult(kMetricAddTimeMs, add_timer.Elapsed().InMillisecondsF());
 
   GetCookieListCallback getCookieListCallback;
 
-  base::PerfTimeLogger timer2("Cookie_monster_query_single_host");
+  base::ElapsedTimer query_timer;
   for (std::vector<std::string>::const_iterator it = cookies.begin();
        it != cookies.end(); ++it) {
     getCookieListCallback.GetCookieList(cm.get(), GURL(kGoogleURL));
   }
-  timer2.Done();
+  reporter.AddResult(kMetricQueryTimeMs,
+                     query_timer.Elapsed().InMillisecondsF());
 
-  base::PerfTimeLogger timer3("Cookie_monster_deleteall_single_host");
+  base::ElapsedTimer delete_all_timer;
   cm->DeleteAllAsync(CookieMonster::DeleteCallback());
   base::RunLoop().RunUntilIdle();
-  timer3.Done();
+  reporter.AddResult(kMetricDeleteAllTimeMs,
+                     delete_all_timer.Elapsed().InMillisecondsF());
 }
 
 TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
@@ -185,26 +221,29 @@ TEST_F(CookieMonsterTest, TestAddCookieOnManyHosts) {
   SetCookieCallback setCookieCallback;
 
   // Add a cookie on a bunch of host
-  base::PerfTimeLogger timer("Cookie_monster_add_many_hosts");
+  auto reporter = SetUpCookieMonsterReporter("many_hosts");
+  base::ElapsedTimer add_timer;
   for (std::vector<GURL>::const_iterator it = gurls.begin(); it != gurls.end();
        ++it) {
     setCookieCallback.SetCookie(cm.get(), *it, cookie);
   }
-  timer.Done();
+  reporter.AddResult(kMetricAddTimeMs, add_timer.Elapsed().InMillisecondsF());
 
   GetCookieListCallback getCookieListCallback;
 
-  base::PerfTimeLogger timer2("Cookie_monster_query_many_hosts");
+  base::ElapsedTimer query_timer;
   for (std::vector<GURL>::const_iterator it = gurls.begin(); it != gurls.end();
        ++it) {
     getCookieListCallback.GetCookieList(cm.get(), *it);
   }
-  timer2.Done();
+  reporter.AddResult(kMetricQueryTimeMs,
+                     query_timer.Elapsed().InMillisecondsF());
 
-  base::PerfTimeLogger timer3("Cookie_monster_deleteall_many_hosts");
+  base::ElapsedTimer delete_all_timer;
   cm->DeleteAllAsync(CookieMonster::DeleteCallback());
   base::RunLoop().RunUntilIdle();
-  timer3.Done();
+  reporter.AddResult(kMetricDeleteAllTimeMs,
+                     delete_all_timer.Elapsed().InMillisecondsF());
 }
 
 TEST_F(CookieMonsterTest, TestDomainTree) {
@@ -256,11 +295,13 @@ TEST_F(CookieMonsterTest, TestDomainTree) {
       getCookieListCallback.GetCookieList(cm.get(), probe_gurl);
   EXPECT_EQ(5u, cookie_list.size())
       << CanonicalCookie::BuildCookieLine(cookie_list);
-  base::PerfTimeLogger timer("Cookie_monster_query_domain_tree");
+  auto reporter = SetUpCookieMonsterReporter("tree");
+  base::ElapsedTimer query_domain_timer;
   for (int i = 0; i < kNumCookies; i++) {
     getCookieListCallback.GetCookieList(cm.get(), probe_gurl);
   }
-  timer.Done();
+  reporter.AddResult(kMetricQueryDomainTimeMs,
+                     query_domain_timer.Elapsed().InMillisecondsF());
 }
 
 TEST_F(CookieMonsterTest, TestDomainLine) {
@@ -296,11 +337,13 @@ TEST_F(CookieMonsterTest, TestDomainLine) {
   const CookieList& cookie_list =
       getCookieListCallback.GetCookieList(cm.get(), probe_gurl);
   EXPECT_EQ(32u, cookie_list.size());
-  base::PerfTimeLogger timer2("Cookie_monster_query_domain_line");
+  auto reporter = SetUpCookieMonsterReporter("line");
+  base::ElapsedTimer query_domain_timer;
   for (int i = 0; i < kNumCookies; i++) {
     getCookieListCallback.GetCookieList(cm.get(), probe_gurl);
   }
-  timer2.Done();
+  reporter.AddResult(kMetricQueryDomainTimeMs,
+                     query_domain_timer.Elapsed().InMillisecondsF());
 }
 
 TEST_F(CookieMonsterTest, TestImport) {
@@ -330,9 +373,11 @@ TEST_F(CookieMonsterTest, TestImport) {
   // Import will happen on first access.
   GURL gurl("www.foo.com");
   CookieOptions options;
-  base::PerfTimeLogger timer("Cookie_monster_import_from_store");
+  auto reporter = SetUpCookieMonsterReporter("from_store");
+  base::ElapsedTimer import_timer;
   getCookieListCallback.GetCookieList(cm.get(), gurl);
-  timer.Done();
+  reporter.AddResult(kMetricImportTimeMs,
+                     import_timer.Elapsed().InMillisecondsF());
 
   // Just confirm keys were set as expected.
   EXPECT_EQ("domain_1.com", cm->GetKey("www.Domain_1.com"));
@@ -340,10 +385,12 @@ TEST_F(CookieMonsterTest, TestImport) {
 
 TEST_F(CookieMonsterTest, TestGetKey) {
   std::unique_ptr<CookieMonster> cm(new CookieMonster(nullptr, nullptr));
-  base::PerfTimeLogger timer("Cookie_monster_get_key");
+  auto reporter = SetUpCookieMonsterReporter("baseline_story");
+  base::ElapsedTimer get_key_timer;
   for (int i = 0; i < kNumCookies; i++)
     cm->GetKey("www.foo.com");
-  timer.Done();
+  reporter.AddResult(kMetricGetKeyTimeMs,
+                     get_key_timer.Elapsed().InMillisecondsF());
 }
 
 // This test is probing for whether garbage collection happens when it
@@ -403,10 +450,11 @@ TEST_F(CookieMonsterTest, TestGCTimes) {
     // Trigger the Garbage collection we're allowed.
     setCookieCallback.SetCookie(cm.get(), gurl, cookie_line);
 
-    base::PerfTimeLogger timer((std::string("GC_") + test_case.name).c_str());
+    auto reporter = SetUpCookieMonsterReporter(test_case.name);
+    base::ElapsedTimer gc_timer;
     for (int i = 0; i < kNumCookies; i++)
       setCookieCallback.SetCookie(cm.get(), gurl, cookie_line);
-    timer.Done();
+    reporter.AddResult(kMetricGCTimeMs, gc_timer.Elapsed().InMillisecondsF());
   }
 }
 

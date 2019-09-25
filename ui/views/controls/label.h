@@ -246,7 +246,6 @@ class VIEWS_EXPORT Label : public View,
   gfx::Size CalculatePreferredSize() const override;
   gfx::Size GetMinimumSize() const override;
   int GetHeightForWidth(int w) const override;
-  void Layout() override;
   View* GetTooltipHandlerForPoint(const gfx::Point& point) override;
   bool CanProcessEventsWithinSubtree() const override;
   WordLookupClient* GetWordLookupClient() override;

@@ -117,7 +117,6 @@
 <translation id="5416696090975899932">Chromium ne može prikazati pregled ispisa kad nedostaje ugrađeni PDF preglednik.</translation>
 <translation id="5427571867875391349">Postavite Chrome kao zadani preglednik</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
-<translation id="5466153949126434691">Chromium se ažurira automatski, pa uvijek imate najnoviju verziju. Kada se ovo preuzimanje dovrši, Chromium će se pokrenuti ponovo i moći ćete nastaviti.</translation>
 <translation id="5479196819031988440">OS Chromium ne može otvoriti ovu stranicu.</translation>
 <translation id="5480860683791598150">Chromium treba dopuštenje za pristup vašoj lokaciji da bi je podijelio s ovom web-lokacijom</translation>
 <translation id="549669000822060376">Pričekajte da Chromium instalira najnovija ažuriranja sustava.</translation>
@@ -213,7 +212,6 @@ Chromium ne može oporaviti vaše postavke.</translation>
 <translation id="7867198900892795913">Chromium se nije mogao ažurirati na najnoviju verziju, tako da nemate nove značajke i sigurnosne popravke.</translation>
 <translation id="7901117350626490574">Dostupno je novo ažuriranje za Chromium i primijenit će se nakon ponovnog pokretanja.</translation>
 <translation id="7937630085815544518">Bili ste prijavljeni na Chromium kao <ph name="USER_EMAIL_ADDRESS" />. Prijavite se ponovo istim računom.</translation>
-<translation id="7962572577636132072">Chromium se automatski ažurira tako da uvijek imate najnoviju verziju.</translation>
 <translation id="7975919845073681630">Ovo je sekundarna instalacija Chromiuma, pa on ne može biti vaš zadani preglednik.</translation>
 <translation id="7979877361127045932">Sakrij u izborniku Chromiuma</translation>
 <translation id="8013436988911883588">Kada Chromium dobije pristup, web-lokacije će vas moći tražiti pristup.</translation>

@@ -3,13 +3,11 @@
 <translationbundle lang="et">
 <translation id="1276998909102132017">Galerii pildid</translation>
 <translation id="1430915738399379752">Printimine</translation>
-<translation id="1462966117743110941">Teie kaamera toetab nüüd uusi režiime ning teie fotod ja videod on saadaval kaustas Allalaadimised.</translation>
 <translation id="1620510694547887537">Kaamera</translation>
 <translation id="1627744224761163218">4 x 4</translation>
 <translation id="1664224225747386870">Midagi pole salvestatud</translation>
 <translation id="1862930711583847113">Faili <ph name="FILE" /> ei saa eksportida</translation>
 <translation id="1899697626337024495">Foto eraldusvõime</translation>
-<translation id="2008689030244369546">Täiesti uus välimus</translation>
 <translation id="2036868001356139588">Taimeri kestus</translation>
 <translation id="2050339315714019657">Vertikaalpaigutus</translation>
 <translation id="2064538373111010176"><ph name="CAMERA" /> on aktiivne</translation>
@@ -44,9 +42,7 @@ Salvestusruumi kasutuse lubadega rakendustel on juurdepääs teie fotodele ja vi
 <translation id="5671277269877808209">Ruut</translation>
 <translation id="5775960006311140197">Ekspertrežiim</translation>
 <translation id="5869546221129391014">Ruudustik</translation>
-<translation id="6040143037577758943">Sulge</translation>
 <translation id="6073451960410192870">Peata salvestamine</translation>
-<translation id="6165508094623778733">Lisateave</translation>
 <translation id="6197807149213783179">Salvesta metaandmed</translation>
 <translation id="6233780560267770709">3 korda 3</translation>
 <translation id="6243827288366940320">Kuldlõige</translation>

@@ -1013,6 +1013,7 @@
 <translation id="6058977677006700226">Je passen gebruiken op al je apparaten?</translation>
 <translation id="6059925163896151826">USB-apparaten</translation>
 <translation id="6060009363608157444">Ongeldige DnsOverHttps-modus.</translation>
+<translation id="6064217302520318294">Schermvergrendeling</translation>
 <translation id="6080696365213338172">Je hebt toegang tot content gekregen met behulp van een certificaat van je beheerder. Gegevens die je verstrekt aan <ph name="DOMAIN" />, kunnen door je beheerder worden onderschept.</translation>
 <translation id="6094273045989040137">Aantekeningen maken</translation>
 <translation id="610911394827799129">Er kunnen andere vormen van browsegeschiedenis zijn opgeslagen voor je Google-account op <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>
@@ -1122,7 +1123,7 @@
 <translation id="6671697161687535275">Formuliersuggestie verwijderen uit Chromium?</translation>
 <translation id="6685834062052613830">Uitloggen en configuratie voltooien</translation>
 <translation id="6689271823431384964">Chrome biedt aan je kaarten in je Google-account op te slaan omdat je bent ingelogd. Je kunt dit wijzigen in de instellingen. De naam van de kaarthouder is afkomstig uit je account.</translation>
-<translation id="6707256370811247129">Scan de content van het cachegeheugen en de bestanden die je downloadt of uploadt in Chrome.</translation>
+<translation id="6707256370811247129">De content van het cachegeheugen en de bestanden die je downloadt of uploadt in Chrome scannen.</translation>
 <translation id="6710213216561001401">Vorige</translation>
 <translation id="6710594484020273272">&lt;Typ een zoekterm&gt;</translation>
 <translation id="671076103358959139">Inschrijftoken:</translation>

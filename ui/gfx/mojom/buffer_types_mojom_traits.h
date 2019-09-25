@@ -102,9 +102,6 @@ struct EnumTraits<gfx::mojom::BufferFormat, gfx::BufferFormat> {
       case gfx::mojom::BufferFormat::P010:
         *out = gfx::BufferFormat::P010;
         return true;
-      // TODO(crbug.com/988538): remove
-      case gfx::mojom::BufferFormat::UYVY_422:
-        return false;
     }
     NOTREACHED();
     return false;

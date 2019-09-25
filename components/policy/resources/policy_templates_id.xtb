@@ -4293,7 +4293,6 @@ Pengguna tidak dapat mengubah atau mengganti setelan ini.</translation>
 <translation id="8798099450830957504">Default</translation>
 <translation id="8800453707696044281">Menetapkan nilai akhir pengisian daya baterai kustom dalam persen</translation>
 <translation id="8801680448782904838">Beri tahu pengguna bahwa meluncurkan ulang browser atau memulai ulang perangkat direkomendasikan atau diperlukan</translation>
-<translation id="8802816494059596691">Hostname yang ditentukan dalam daftar ini akan dikecualikan dari pemeriksaan kebijakan HSTS yang berpotensi mengupgrade permintaan dari http ke https. Hanya hostname berlabel tunggal yang diizinkan dalam kebijakan ini. Hostname harus dikanonikalisasi: semua IDN harus dikonversi ke format berlabel A, dan semua huruf ASCII harus berupa huruf kecil. Kebijakan ini hanya berlaku untuk hostname tertentu yang sudah ditentukan; tidak berlaku bagi subdomain nama yang ditentukan.</translation>
 <translation id="8818173863808665831">Melaporkan lokasi geografis perangkat.
 
       Jika kebijakan tidak disetel, atau disetel ke false, lokasi tidak akan dilaporkan.</translation>

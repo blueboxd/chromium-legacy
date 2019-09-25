@@ -117,7 +117,6 @@
 <translation id="5416696090975899932">Chromium kann ohne den integrierten PDF-Viewer keine Druckvorschau anzeigen.</translation>
 <translation id="5427571867875391349">Chromium als Standardbrowser festlegen</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
-<translation id="5466153949126434691">Chromium wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen. Nach Abschluss des Downloads wird Chromium neu gestartet und Sie können fortfahren.</translation>
 <translation id="5479196819031988440">Chromium OS kann diese Seite nicht öffnen.</translation>
 <translation id="5480860683791598150">Chromium benötigt Zugriff auf Ihren Standort, um ihn mit dieser Website zu teilen</translation>
 <translation id="549669000822060376">Bitte warten Sie, bis die aktuellen Systemupdates von Chromium installiert wurden.</translation>
@@ -212,7 +211,6 @@ Chromium kann Ihre Einstellungen nicht wiederherstellen.</translation>
 <translation id="7867198900892795913">Chromium konnte nicht auf die neueste Version aktualisiert werden. In Ihrer Version fehlen daher einige neue Funktionen und Sicherheitspatches.</translation>
 <translation id="7901117350626490574">Ein neues Update für Chromium ist verfügbar und wird installiert, sobald Sie den Browser neu starten.</translation>
 <translation id="7937630085815544518">Sie waren in Chromium als <ph name="USER_EMAIL_ADDRESS" /> angemeldet. Melden Sie sich bitte wieder mit demselben Konto an.</translation>
-<translation id="7962572577636132072">Chromium wird automatisch aktualisiert, sodass Sie immer über die neueste Version verfügen.</translation>
 <translation id="7975919845073681630">Dies ist eine Zweitinstallation, daher kann Chromium nicht als Standardbrowser festgelegt werden.</translation>
 <translation id="7979877361127045932">Im Chromium-Menü ausblenden</translation>
 <translation id="8013436988911883588">Sobald Chromium Zugriff hat, können Websites Sie um Zugriff bitten.</translation>

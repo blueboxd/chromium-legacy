@@ -1,0 +1,6 @@
+android.webkit.WebView focusable focused scrollable
+++android.view.View role_description='authoring info' name='annotation-attribution'
+++android.view.View role_description='comments' name='annotation-commentary'
+++android.view.View role_description='live presence' name='annotation-presence'
+++android.view.View role_description='revision' name='annotation-revision'
+++android.view.View role_description='suggestion' name='annotation-suggestion'

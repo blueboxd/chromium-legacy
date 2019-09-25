@@ -195,12 +195,6 @@ net::URLRequestContextGetter* ChromeBrowserStateImpl::CreateRequestContext(
       .get();
 }
 
-net::URLRequestContextGetter*
-ChromeBrowserStateImpl::CreateIsolatedRequestContext(
-    const base::FilePath& partition_path) {
-  return io_data_->CreateIsolatedAppRequestContextGetter(partition_path).get();
-}
-
 void ChromeBrowserStateImpl::ClearNetworkingHistorySince(
     base::Time time,
     const base::Closure& completion) {

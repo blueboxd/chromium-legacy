@@ -78,7 +78,6 @@ class MockScrollableAreaForAnimatorTest
   MOCK_CONST_METHOD1(VisibleContentRect, IntRect(IncludeScrollbarsInRect));
   MOCK_CONST_METHOD0(ContentsSize, IntSize());
   MOCK_CONST_METHOD0(ScrollbarsCanBeActive, bool());
-  MOCK_CONST_METHOD0(ScrollableAreaBoundingBox, IntRect());
   MOCK_METHOD0(RegisterForAnimation, void());
   MOCK_METHOD0(ScheduleAnimation, bool());
   MOCK_CONST_METHOD0(UsedColorScheme, WebColorScheme());

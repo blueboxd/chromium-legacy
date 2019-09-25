@@ -40,8 +40,12 @@ constexpr int kArrowButtonGroupWidth =
     kArrowButtonSize + kArrowButtonEndPadding + kDistanceToArrowButton;
 
 // The gesture fling event with the velocity smaller than the threshold will be
-// neglected.
-constexpr int kFlingVelocityThreshold = 1000;
+// ignored.
+constexpr int kGestureFlingVelocityThreshold = 1000;
+
+// The mouse wheel event (including touchpad scrolling) with the main axis
+// offset smaller than the threshold will be ignored.
+constexpr int KScrollOffsetThreshold = 20;
 
 // Horizontal size of the tap areafor the overflow arrow button.
 constexpr int kArrowButtonTapAreaHorizontal = 32;
@@ -592,6 +596,11 @@ void ScrollableShelfView::ChildPreferredSizeChanged(views::View* child) {
 }
 
 void ScrollableShelfView::OnMouseEvent(ui::MouseEvent* event) {
+  if (event->IsMouseWheelEvent()) {
+    HandleMouseWheelEvent(event->AsMouseWheelEvent());
+    return;
+  }
+
   // The mouse event's location may be outside of ShelfView but within the
   // bounds of the ScrollableShelfView. Meanwhile, ScrollableShelfView should
   // handle the mouse event consistently with ShelfView. To achieve this,
@@ -844,15 +853,16 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
 
   if (event.type() == ui::ET_SCROLL_FLING_START) {
     const bool is_horizontal_alignment = GetShelf()->IsHorizontalAlignment();
-
-    int scroll_velocity = is_horizontal_alignment
-                              ? event.details().velocity_x()
-                              : event.details().velocity_y();
-    if (abs(scroll_velocity) < kFlingVelocityThreshold)
+    if (!ShouldHandleScroll(gfx::Vector2dF(event.details().velocity_x(),
+                                           event.details().velocity_y()),
+                            /*is_gesture_fling=*/true)) {
       return false;
+    }
 
     layout_strategy_ = layout_strategy_before_main_axis_scrolling_;
-
+    const int scroll_velocity = is_horizontal_alignment
+                                    ? event.details().velocity_x()
+                                    : event.details().velocity_y();
     float page_scrolling_offset =
         CalculatePageScrollingOffset(scroll_velocity < 0);
     if (is_horizontal_alignment) {
@@ -876,6 +886,35 @@ bool ScrollableShelfView::ProcessGestureEvent(const ui::GestureEvent& event) {
   else
     ScrollByYOffset(-event.details().scroll_y(), /*animate=*/false);
   return true;
+}
+
+void ScrollableShelfView::HandleMouseWheelEvent(ui::MouseWheelEvent* event) {
+  // Note that the scrolling from touchpad is propagated as mouse wheel event.
+
+  // When shelf is horizontally aligned, the mouse wheel event may be handled
+  // by AppList.
+  if (!ShouldHandleScroll(gfx::Vector2dF(event->x_offset(), event->y_offset()),
+                          /*is_gesture_fling=*/false) &&
+      GetShelf()->IsHorizontalAlignment()) {
+    GetShelf()->ProcessMouseWheelEvent(event);
+    return;
+  }
+
+  event->SetHandled();
+
+  // Scrolling the mouse wheel may create multiple mouse wheel events at the
+  // same time. If the scrollable shelf view is during scrolling animation at
+  // this moment, do not handle the mouse wheel event.
+  if (shelf_view_->layer()->GetAnimator()->is_animating())
+    return;
+
+  if (GetShelf()->IsHorizontalAlignment()) {
+    ScrollByXOffset(CalculatePageScrollingOffset(event->x_offset() < 0),
+                    /*animating=*/true);
+  } else {
+    ScrollByYOffset(CalculatePageScrollingOffset(event->y_offset() < 0),
+                    /*animating=*/true);
+  }
 }
 
 void ScrollableShelfView::ScrollByXOffset(float x_offset, bool animating) {
@@ -1063,6 +1102,16 @@ bool ScrollableShelfView::CanFitAllAppsWithoutScrolling() const {
   preferred_length += 2 * GetAppIconEndPadding();
 
   return available_length >= preferred_length;
+}
+
+bool ScrollableShelfView::ShouldHandleScroll(const gfx::Vector2dF& offset,
+                                             bool is_gesture_scrolling) const {
+  const float main_axis_offset =
+      GetShelf()->IsHorizontalAlignment() ? offset.x() : offset.y();
+
+  const int threshold = is_gesture_scrolling ? kGestureFlingVelocityThreshold
+                                             : KScrollOffsetThreshold;
+  return abs(main_axis_offset) > threshold;
 }
 
 }  // namespace ash

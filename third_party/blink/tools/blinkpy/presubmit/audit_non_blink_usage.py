@@ -736,6 +736,7 @@ _CONFIG = [
         # The WebGPU Blink module needs access to the WebGPU control
         # command buffer interface.
         'allowed': [
+            'gpu::webgpu::PowerPreference',
             'gpu::webgpu::WebGPUInterface',
         ],
     },

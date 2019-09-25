@@ -116,7 +116,6 @@
 <translation id="5416696090975899932">A Chromium nem tudja megjeleníteni a nyomtatási előnézetet, ha nincs beépített PDF-megjelenítő.</translation>
 <translation id="5427571867875391349">A Chromium beállítása alapértelmezett böngészőként</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Béta</translation>
-<translation id="5466153949126434691">A Chromium automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik. A letöltés befejezése után a Chromium újraindul, és máris rendelkezésre áll.</translation>
 <translation id="5479196819031988440">A Chromium OS nem tudja megnyitni ezt az oldalt.</translation>
 <translation id="5480860683791598150">A Chromiumnak a helyadatokhoz való hozzáférésre van szüksége ahhoz, hogy megoszthassa az Ön tartózkodási helyét a webhellyel</translation>
 <translation id="549669000822060376">Kérjük, várjon, amíg a Chromium telepíti a legutóbbi rendszerfrissítéseket.</translation>
@@ -209,7 +208,6 @@ A Chromium nem tudja visszaállítani a beállításait.</translation>
 <translation id="7867198900892795913">Nem sikerült a Chromium frissítése a legújabb verzióra, így Ön lemarad az új funkciókról és biztonsági javításokról.</translation>
 <translation id="7901117350626490574">Új Chromium-frissítés jelent meg, amely az újraindítás után azonnal érvénybe lép.</translation>
 <translation id="7937630085815544518"><ph name="USER_EMAIL_ADDRESS" /> néven volt bejelentkezve a Chromiumba. Kérjük, ugyanazzal a fiókkal jelentkezzen be újra.</translation>
-<translation id="7962572577636132072">A Chromium automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik.</translation>
 <translation id="7975919845073681630">Ez a Chromium második telepítése, amelyet nem állíthat be az alapértelmezett böngészővé.</translation>
 <translation id="7979877361127045932">Elrejtés a Chromium-menüben</translation>
 <translation id="8013436988911883588">Miután hozzáférést biztosított a Chromiumnak, a webhelyek is hozzáférést kérhetnek.</translation>

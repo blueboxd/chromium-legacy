@@ -73,7 +73,8 @@ class IntentFilter {
   IntentFilter(IntentFilter&& other);
   IntentFilter(const std::string& package_name,
                std::vector<AuthorityEntry> authorities,
-               std::vector<PatternMatcher> paths);
+               std::vector<PatternMatcher> paths,
+               std::vector<std::string> schemes);
   ~IntentFilter();
 
   IntentFilter& operator=(IntentFilter&& other);
@@ -85,6 +86,7 @@ class IntentFilter {
     return authorities_;
   }
   const std::vector<PatternMatcher>& paths() const { return paths_; }
+  const std::vector<std::string>& schemes() const { return schemes_; }
 
  private:
   bool MatchDataAuthority(const GURL& url) const;
@@ -93,6 +95,7 @@ class IntentFilter {
   std::string package_name_;
   std::vector<AuthorityEntry> authorities_;
   std::vector<PatternMatcher> paths_;
+  std::vector<std::string> schemes_;
 
   DISALLOW_COPY_AND_ASSIGN(IntentFilter);
 };

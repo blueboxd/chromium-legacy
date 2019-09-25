@@ -2641,6 +2641,24 @@
             ]
         }
     ],
+    "GestureNavigation": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "params": {
+                        "overscroll_history_navigation_bottom_sheet": "true"
+                    },
+                    "enable_features": [
+                        "OverscrollHistoryNavigation"
+                    ]
+                }
+            ]
+        }
+    ],
     "GlobalMediaControlsInProductHelp": [
         {
             "platforms": [
@@ -3090,21 +3108,6 @@
             "experiments": [
                 {
                     "name": "Enabled"
-                }
-            ]
-        }
-    ],
-    "InterestFeedContentSuggestions": [
-        {
-            "platforms": [
-                "android"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "InterestFeedContentSuggestions"
-                    ]
                 }
             ]
         }
@@ -6054,6 +6057,21 @@
             ]
         }
     ],
+    "TabSwitcherLongpressMenu": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "TabSwitcherLongpressMenu"
+                    ]
+                }
+            ]
+        }
+    ],
     "TabToGTSAnimation": [
         {
             "platforms": [
@@ -6398,6 +6416,21 @@
                     "name": "UsePdfCompositorServiceForPrint",
                     "enable_features": [
                         "UsePdfCompositorServiceForPrint"
+                    ]
+                }
+            ]
+        }
+    ],
+    "UseSkiaRenderer": [
+        {
+            "platforms": [
+                "linux"
+            ],
+            "experiments": [
+                {
+                    "name": "UseSkiaRenderer",
+                    "enable_features": [
+                        "UseSkiaRenderer"
                     ]
                 }
             ]

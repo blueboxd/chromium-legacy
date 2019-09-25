@@ -5,11 +5,11 @@
 #ifndef IOS_CHROME_BROWSER_UI_OVERLAYS_WEB_CONTENT_AREA_HTTP_AUTH_DIALOGS_HTTP_AUTH_DIALOG_OVERLAY_COORDINATOR_H_
 #define IOS_CHROME_BROWSER_UI_OVERLAYS_WEB_CONTENT_AREA_HTTP_AUTH_DIALOGS_HTTP_AUTH_DIALOG_OVERLAY_COORDINATOR_H_
 
-#import "ios/chrome/browser/ui/overlays/overlay_request_coordinator.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator.h"
 
 // A coordinator that is used to display UI for HTTP authentication dialogs via
 // OverlayPresenter.
-@interface HTTPAuthDialogOverlayCoordinator : OverlayRequestCoordinator
+@interface HTTPAuthDialogOverlayCoordinator : AlertOverlayCoordinator
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_OVERLAYS_WEB_CONTENT_AREA_HTTP_AUTH_DIALOGS_HTTP_AUTH_DIALOG_OVERLAY_COORDINATOR_H_

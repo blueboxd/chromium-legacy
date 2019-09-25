@@ -306,11 +306,6 @@
     "args": ["--enable-blink-features=CompositeAfterPaint"]
   },
   {
-    "prefix": "paint-non-fast-scrollable-regions",
-    "base": "scrollingcoordinator",
-    "args": ["--enable-blink-features=PaintNonFastScrollableRegions"]
-  },
-  {
     "prefix": "highdpi-threaded",
     "base": "external/wpt/css/css-paint-api/hidpi",
     "args": ["--force-device-scale-factor=2","--enable-use-zoom-for-dsf=false",
@@ -976,11 +971,6 @@
     "prefix": "passive-fingerprinting",
     "base": "http/tests/navigation/frozen-useragent.html",
     "args": ["--enable-features=FreezeUserAgent"]
-  },
-  {
-    "prefix": "native-file-system",
-    "base": "external/wpt/native-file-system",
-    "args": ["--enable-features=NativeFileSystemAPI"]
   },
   {
     "prefix": "file-handling",

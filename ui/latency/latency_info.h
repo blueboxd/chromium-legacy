@@ -44,10 +44,6 @@ enum LatencyComponentType {
   // BEGIN COMPONENT is when we show the latency begin in chrome://tracing.
   // Timestamp when the input event is sent from RenderWidgetHost to renderer.
   INPUT_EVENT_LATENCY_BEGIN_RWH_COMPONENT,
-  // In threaded scrolling, main thread scroll listener update is async to
-  // scroll processing in impl thread. This is the timestamp when we consider
-  // the main thread scroll listener update is begun.
-  LATENCY_BEGIN_SCROLL_LISTENER_UPDATE_MAIN_COMPONENT,
   // ---------------------------NORMAL COMPONENT-------------------------------
   // The original timestamp of the touch event which converts to scroll update.
   INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
@@ -66,8 +62,6 @@ enum LatencyComponentType {
   // This is special component indicating there is rendering scheduled for
   // the event associated with this LatencyInfo on impl thread.
   INPUT_EVENT_LATENCY_RENDERING_SCHEDULED_IMPL_COMPONENT,
-  // Timestamp when a scroll update is forwarded to the main thread.
-  INPUT_EVENT_LATENCY_FORWARD_SCROLL_UPDATE_TO_MAIN_COMPONENT,
   // Original timestamp of the last event that has been coalesced into this one.
   INPUT_EVENT_LATENCY_SCROLL_UPDATE_LAST_EVENT_COMPONENT,
   // Timestamp when the event's ack is received by the RWH.

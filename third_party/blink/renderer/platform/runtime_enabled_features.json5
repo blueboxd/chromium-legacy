@@ -137,6 +137,13 @@
       status: "experimental",
     },
     {
+      // Use an aspect ratio from the HTML attributes even when we use sizing
+      // from CSS.
+      // https://github.com/WICG/intrinsicsize-attribute/issues/16
+      name: "AspectRatioFromWidthAndHeight",
+      status: "test",
+    },
+    {
       name: "AsyncClipboard",
       status: "stable",
     },
@@ -962,6 +969,9 @@
       name: "MediaEngagementBypassAutoplayPolicies",
     },
     {
+      name: "MediaQueryNavigationControls",
+    },
+    {
       name: "MediaQueryPrefersColorScheme",
       status: "stable",
     },
@@ -1181,11 +1191,6 @@
       name: "PagePopup",
       // Android does not have support for PagePopup
       status: {"Android": "", "default": "stable"},
-    },
-    // See: https://docs.google.com/document/d/1IyYJ6bVF7KZq96b_s5NrAzGtVoBXn_LQnya9y4yT3iw/view
-    {
-      name: "PaintNonFastScrollableRegions",
-      status: "stable",
     },
     {
       name: "PaintUnderInvalidationChecking",

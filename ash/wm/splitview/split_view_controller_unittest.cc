@@ -863,10 +863,58 @@ TEST_F(SplitViewControllerTest,
 }
 
 // Test that if the internal screen display configuration changes during the
-// divider snap animation, and if the adjusted divider bounds place it at an
-// edge of the screen, then split view ends.
+// divider snap animation, and if the adjusted divider bounds place it at the
+// left edge of the screen, then split view ends.
 TEST_F(SplitViewControllerTest,
-       InternalDisplayConfigurationChangeDuringDividerSnapToEndSplitView) {
+       InternalDisplayConfigurationChangeDuringDividerSnapToLeft) {
+  UpdateDisplay("407x400");
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  display::DisplayManager* display_manager = Shell::Get()->display_manager();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager,
+                                                         display_id);
+
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+
+  const gfx::Rect bounds_window1 = window1->GetBoundsInScreen();
+  const gfx::Rect bounds_window2 = window2->GetBoundsInScreen();
+  const gfx::Rect bounds_divider =
+      split_view_divider()->GetDividerBoundsInScreen(false /* is_dragging */);
+
+  // Test that |window1| and |window2| has the same width and height after snap.
+  EXPECT_NEAR(bounds_window1.width(), bounds_window2.width(), 1);
+  EXPECT_EQ(bounds_window1.height(), bounds_window2.height());
+  EXPECT_EQ(bounds_divider.height(), bounds_window1.height());
+
+  // Test that |window1|, divider, |window2| are aligned properly.
+  EXPECT_EQ(bounds_divider.x(), bounds_window1.x() + bounds_window1.width());
+  EXPECT_EQ(bounds_window2.x(), bounds_divider.x() + bounds_divider.width());
+
+  // Drag the divider to end split view pending the snap animation.
+  const gfx::Point divider_center =
+      split_view_divider()
+          ->GetDividerBoundsInScreen(false /* is_dragging */)
+          .CenterPoint();
+  GetEventGenerator()->set_current_screen_location(divider_center);
+  GetEventGenerator()->DragMouseBy(20 - bounds_window1.width(), 0);
+  ASSERT_TRUE(split_view_controller()->InSplitViewMode());
+  ASSERT_TRUE(IsDividerAnimating());
+
+  // Change the display configuration and check that split view ends.
+  UpdateDisplay("507x500");
+  EXPECT_FALSE(split_view_controller()->InSplitViewMode());
+}
+
+// Test that if the internal screen display configuration changes during the
+// divider snap animation, and if the adjusted divider bounds place it at the
+// right edge of the screen, then split view ends.
+TEST_F(SplitViewControllerTest,
+       InternalDisplayConfigurationChangeDuringDividerSnapToRight) {
   UpdateDisplay("407x400");
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();

@@ -878,7 +878,8 @@ const base::FilePath& DownloadItemImpl::GetForcedFilePath() const {
 }
 
 base::FilePath DownloadItemImpl::GetTemporaryFilePath() const {
-  if (state_ == TARGET_PENDING_INTERNAL || INTERRUPTED_TARGET_PENDING_INTERNAL)
+  if (state_ == TARGET_PENDING_INTERNAL ||
+      state_ == INTERRUPTED_TARGET_PENDING_INTERNAL)
     return download_file_ ? download_file_->FullPath() : base::FilePath();
   return base::FilePath();
 }

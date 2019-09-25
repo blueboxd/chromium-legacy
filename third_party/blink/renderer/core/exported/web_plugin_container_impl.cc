@@ -150,13 +150,10 @@ void WebPluginContainerImpl::Paint(GraphicsContext& context,
   if (!cull_rect.Intersects(FrameRect()))
     return;
 
-  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-    if (WantsWheelEvents()) {
-      ScrollHitTestDisplayItem::Record(
-          context, *GetLayoutEmbeddedContent(),
-          DisplayItem::kPluginScrollHitTest, nullptr,
-          GetLayoutEmbeddedContent()->FirstFragment().VisualRect());
-    }
+  if (WantsWheelEvents()) {
+    ScrollHitTestDisplayItem::Record(
+        context, *GetLayoutEmbeddedContent(), DisplayItem::kPluginScrollHitTest,
+        nullptr, GetLayoutEmbeddedContent()->FirstFragment().VisualRect());
   }
 
   if (RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && layer_) {
@@ -650,11 +647,9 @@ void WebPluginContainerImpl::SetWantsWheelEvents(bool wants_wheel_events) {
         LocalFrameView* frame_view = element_->GetDocument().GetFrame()->View();
         scrolling_coordinator->NotifyGeometryChanged(frame_view);
 
-        if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-          // Scroll hit test display items depend on wheel events. The scroll
-          // hit test display items paint in the background phase.
-          GetLayoutEmbeddedContent()->SetBackgroundNeedsFullPaintInvalidation();
-        }
+        // Scroll hit test display items depend on wheel events. The scroll
+        // hit test display items paint in the background phase.
+        GetLayoutEmbeddedContent()->SetBackgroundNeedsFullPaintInvalidation();
       }
     }
   }

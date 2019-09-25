@@ -31,9 +31,6 @@ import java.util.ArrayList;
 public class IntentUtils {
     private static final String TAG = "IntentUtils";
 
-    /** See {@link #isIntentTooLarge(Intent)}. */
-    private static final int MAX_INTENT_SIZE_THRESHOLD = 750000;
-
     /**
      * Just like {@link Intent#hasExtra(String)} but doesn't throw exceptions.
      */
@@ -413,17 +410,6 @@ public class IntentUtils {
         Parcel parcel = Parcel.obtain();
         intent.writeToParcel(parcel, 0);
         return parcel.dataSize();
-    }
-
-    /**
-     * Determines if an Intent's size is bigger than a reasonable threshold.  Having too many large
-     * transactions in flight simultaneously (including Intents) causes Android to throw a
-     * {@link TransactionTooLargeException}.  According to that class, the limit across all
-     * transactions combined is one megabyte.  Best practice is to keep each individual Intent well
-     * under the limit to avoid this situation.
-     */
-    public static boolean isIntentTooLarge(Intent intent) {
-        return getParceledIntentSize(intent) > MAX_INTENT_SIZE_THRESHOLD;
     }
 
     /**

@@ -20,6 +20,7 @@
 #include "gin/converter.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "skia/ext/platform_canvas.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/frame/document_interface_broker.mojom.h"
 #include "third_party/blink/public/platform/scheduler/web_thread_scheduler.h"
 #include "third_party/blink/public/platform/web_coalesced_input_event.h"
@@ -124,7 +125,7 @@ bool WebViewPlugin::Initialize(WebPluginContainer* container) {
   // resources when images have a "srcset" attribute.
   web_view()->SetDeviceScaleFactor(container_->DeviceScaleFactor());
   web_view()->SetZoomLevel(
-      blink::WebView::ZoomFactorToZoomLevel(container_->PageZoomFactor()));
+      blink::PageZoomFactorToZoomLevel(container_->PageZoomFactor()));
 
   return true;
 }
@@ -387,7 +388,7 @@ void WebViewPlugin::WebViewHelper::FrameDetached(DetachType type) {
 void WebViewPlugin::OnZoomLevelChanged() {
   if (container_) {
     web_view()->SetZoomLevel(
-        blink::WebView::ZoomFactorToZoomLevel(container_->PageZoomFactor()));
+        blink::PageZoomFactorToZoomLevel(container_->PageZoomFactor()));
   }
 }
 

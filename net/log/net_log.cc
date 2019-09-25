@@ -56,11 +56,6 @@ uint32_t NetLog::NextID() {
   return base::subtle::NoBarrier_AtomicIncrement(&last_id_, 1);
 }
 
-bool NetLog::IsCapturing() const {
-  CheckAlive();
-  return GetObserverCaptureModes() != 0;
-}
-
 void NetLog::AddObserver(NetLog::ThreadSafeObserver* observer,
                          NetLogCaptureMode capture_mode) {
   base::AutoLock lock(lock_);
@@ -201,10 +196,6 @@ void NetLog::AddEntryInternal(NetLogEventType type,
         observer->OnAddEntry(entry);
     }
   }
-}
-
-NetLogCaptureModeSet NetLog::GetObserverCaptureModes() const {
-  return base::subtle::NoBarrier_Load(&observer_capture_modes_);
 }
 
 void NetLog::AddEntryWithMaterializedParams(NetLogEventType type,

@@ -75,7 +75,7 @@ TEST_F(GlobalMediaControlsInProductHelpTest,
   // Start playing media in a tab.
   BrowserList::SetLastActive(browser());
   AddTab(browser(), GURL("chrome://blank"));
-  gmc_iph.ToolbarIconEnabled();
+  gmc_iph.OnMediaButtonEnabled();
 
   // Open a new foreground tab.
   AddTab(browser(), GURL("chrome://blank"));
@@ -118,12 +118,12 @@ TEST_F(GlobalMediaControlsInProductHelpTest, DoesNotTriggerForOtherProfiles) {
   // Start playing media.
   BrowserList::SetLastActive(browser());
   AddTab(browser(), GURL("chrome://blank"));
-  gmc_iph.ToolbarIconEnabled();
+  gmc_iph.OnMediaButtonEnabled();
 
   // Switch to the other profile and play media.
   BrowserList::SetLastActive(alt_browser.get());
   AddTab(alt_browser.get(), GURL("chrome://blank"));
-  alt_gmc_iph.ToolbarIconEnabled();
+  alt_gmc_iph.OnMediaButtonEnabled();
 
   // Open a new foreground tab to the other profile.
   AddTab(alt_browser.get(), GURL("chrome://blank"));
@@ -142,10 +142,10 @@ TEST_F(GlobalMediaControlsInProductHelpTest, MediaStoppedDoesNotTriggerIPH) {
   // Start playing media in a tab.
   BrowserList::SetLastActive(browser());
   AddTab(browser(), GURL("chrome://blank"));
-  gmc_iph.ToolbarIconEnabled();
+  gmc_iph.OnMediaButtonEnabled();
 
   // Stop playing media.
-  gmc_iph.ToolbarIconDisabled();
+  gmc_iph.OnMediaButtonDisabled();
 
   // Open a new foreground tab.
   AddTab(browser(), GURL("chrome://blank"));

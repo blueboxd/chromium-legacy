@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/login/saml/password_expiry_notification.h"
 
+#include <memory>
+#include <vector>
+
 #include "ash/public/cpp/notification_utils.h"
 #include "ash/public/cpp/session/session_activation_observer.h"
 #include "ash/public/cpp/session/session_controller.h"
@@ -53,11 +56,6 @@ namespace {
 // Unique ID for this notification.
 const char kNotificationId[] = "saml.password-expiry-notification";
 
-// NotifierId for histogram reporting.
-const base::NoDestructor<NotifierId> kNotifierId(
-    message_center::NotifierType::SYSTEM_COMPONENT,
-    kNotificationId);
-
 // Simplest type of notification UI - no progress bars, images etc.
 const NotificationType kNotificationType =
     message_center::NOTIFICATION_TYPE_SIMPLE;
@@ -69,19 +67,12 @@ const NotificationHandler::Type kNotificationHandlerType =
 // The icon to use for this notification - looks like an office building.
 const gfx::VectorIcon& kIcon = vector_icons::kBusinessIcon;
 
-// Leaving this empty means the notification is attributed to the system -
-// ie "Chromium OS" or similar.
-const base::NoDestructor<base::string16> kEmptyDisplaySource;
-
-// No origin URL is needed since the notification comes from the system.
-const base::NoDestructor<GURL> kEmptyOriginUrl;
-
-// Warning level of WARNING makes the title  orange.
-const SystemNotificationWarningLevel kWarningLevel =
+// Warning level of WARNING makes the title orange.
+constexpr SystemNotificationWarningLevel kWarningLevel =
     SystemNotificationWarningLevel::WARNING;
 
 // A time-delta of length one minute.
-const base::TimeDelta kOneMinute = base::TimeDelta::FromMinutes(1);
+constexpr base::TimeDelta kOneMinute = base::TimeDelta::FromMinutes(1);
 
 base::string16 GetBodyText() {
   return l10n_util::GetStringUTF16(IDS_PASSWORD_EXPIRY_CALL_TO_ACTION);
@@ -135,6 +126,17 @@ void PasswordExpiryNotificationDelegate::Click(
 void PasswordExpiryNotification::Show(Profile* profile,
                                       base::TimeDelta time_until_expiry) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // NotifierId for histogram reporting.
+  static const base::NoDestructor<NotifierId> kNotifierId(
+      message_center::NotifierType::SYSTEM_COMPONENT, kNotificationId);
+
+  // Leaving this empty means the notification is attributed to the system -
+  // ie "Chromium OS" or similar.
+  static const base::NoDestructor<base::string16> kEmptyDisplaySource;
+
+  // No origin URL is needed since the notification comes from the system.
+  static const base::NoDestructor<GURL> kEmptyOriginUrl;
 
   const base::string16 title = GetTitleText(time_until_expiry);
   const base::string16 body = GetBodyText();

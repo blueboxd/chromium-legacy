@@ -79,11 +79,6 @@ const base::Feature kWebFooterExperiment{"WebFooterExperiment",
 const base::Feature kWebUITabStrip{"WebUITabStrip",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-constexpr base::Feature kEnableDbusAndX11StatusIcons{
-    "EnableDbusAndX11StatusIcons", base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 #if defined(OS_CHROMEOS)
 // Enables a warning about connecting to hidden WiFi networks.
 // https://crbug.com/903908

@@ -41,6 +41,7 @@
 <translation id="1460620680449458626">当前处于静音状态。</translation>
 <translation id="1467432559032391204">向左</translation>
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
+<translation id="1516740043221086139">“勿扰”模式已开启。</translation>
 <translation id="1520303207432623762">{NUM_APPS,plural, =1{显示通知设置。针对 1 个应用关闭通知}other{显示通知设置。针对 # 个应用关闭通知}}</translation>
 <translation id="1525508553941733066">关闭</translation>
 <translation id="1537254971476575106">全屏放大镜</translation>
@@ -255,6 +256,7 @@
 <translation id="4585337515783392668">停止投射至不明接收器</translation>
 <translation id="4628757576491864469">设备</translation>
 <translation id="4659419629803378708">已启用 ChromeVox</translation>
+<translation id="4665114317261903604">开启/关闭“勿扰”模式。<ph name="STATE_TEXT" /></translation>
 <translation id="4696813013609194136">使用家长访问代码解锁设备</translation>
 <translation id="4731797938093519117">家长访问</translation>
 <translation id="4734965478015604180">横向</translation>
@@ -353,6 +355,7 @@
 <translation id="6254629735336163724">已锁定为横向</translation>
 <translation id="6259254695169772643">请使用您的触控笔进行选择</translation>
 <translation id="6267036997247669271"><ph name="NAME" />：正在激活…</translation>
+<translation id="6283712521836204486">“勿扰”模式已关闭。</translation>
 <translation id="6284232397434400372">分辨率已更改</translation>
 <translation id="6297287540776456956">使用触控笔选择一个区域</translation>
 <translation id="6310121235600822547"><ph name="DISPLAY_NAME" />已旋转为<ph name="ROTATION" /></translation>

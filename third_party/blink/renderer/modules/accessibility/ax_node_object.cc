@@ -637,7 +637,7 @@ ax::mojom::Role AXNodeObject::NativeRoleIgnoringAria() const {
     return ax::mojom::Role::kMath;
 
   if (GetNode()->HasTagName(kRpTag) || GetNode()->HasTagName(kRtTag))
-    return ax::mojom::Role::kAnnotation;
+    return ax::mojom::Role::kRubyAnnotation;
 
   if (IsHTMLFormElement(*GetNode()))
     return ax::mojom::Role::kForm;
@@ -1369,8 +1369,7 @@ unsigned AXNodeObject::HierarchicalLevel() const {
   return level;
 }
 
-// TODO: rename this just AutoComplete, it's not only ARIA.
-String AXNodeObject::AriaAutoComplete() const {
+String AXNodeObject::AutoComplete() const {
   if (IsNativeTextControl() || IsARIATextControl()) {
     const AtomicString& aria_auto_complete =
         GetAOMPropertyOrARIAAttribute(AOMStringProperty::kAutocomplete)

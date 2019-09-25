@@ -12,14 +12,14 @@
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/message_loop/message_loop.h"
-#include "base/message_loop/message_loop_current.h"
 #include "base/no_destructor.h"
 #include "base/optional.h"
 // Necessary to convert async media::VideoDecoder to sync CdmVideoDecoder.
 // Typically not recommended for production code, but is ok here since
 // ClearKeyCdm is only for testing.
 #include "base/run_loop.h"
+#include "base/task/single_thread_task_executor.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "media/base/decode_status.h"
 #include "media/base/media_util.h"
 #include "media/cdm/cdm_type_conversion.h"
@@ -141,9 +141,10 @@ bool ToCdmVideoFrame(const VideoFrame& video_frame,
 // the CDM and the host is depending on the same base/ target. In static build,
 // they will not be available and we have to setup it by ourselves.
 void SetupGlobalEnvironmentIfNeeded() {
-  // Creating a base::MessageLoop to setup base::ThreadTaskRunnerHandle.
-  if (!base::MessageLoopCurrent::IsSet()) {
-    static base::NoDestructor<base::MessageLoop> message_loop;
+  // Creating a base::SingleThreadTaskExecutor to setup
+  // base::ThreadTaskRunnerHandle.
+  if (!base::ThreadTaskRunnerHandle::IsSet()) {
+    static base::NoDestructor<base::SingleThreadTaskExecutor> task_executor;
   }
 
   if (!base::CommandLine::InitializedForCurrentProcess())

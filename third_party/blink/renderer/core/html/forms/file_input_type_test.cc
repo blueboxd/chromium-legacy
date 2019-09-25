@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/file_input_type.h"
 
+#include "base/run_loop.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/renderer/core/clipboard/data_object.h"
 #include "third_party/blink/renderer/core/dom/document.h"

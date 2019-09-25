@@ -13,7 +13,6 @@ import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.os.Build;
 import android.text.TextUtils;
 
@@ -122,12 +121,11 @@ public class IncognitoNotificationService extends IntentService {
         Context context = ContextUtils.getApplicationContext();
         ActivityManager manager =
                 (ActivityManager) context.getSystemService(Context.ACTIVITY_SERVICE);
-        PackageManager pm = getPackageManager();
 
         for (AppTask task : manager.getAppTasks()) {
             RecentTaskInfo info = DocumentUtils.getTaskInfoFromTask(task);
             if (info == null) continue;
-            String componentName = DocumentUtils.getTaskComponentName(task, pm);
+            String componentName = DocumentUtils.getTaskComponentName(task);
 
             // It is not easily possible to distinguish between tasks sitting on top of
             // ChromeLauncherActivity, so we treat them all as likely ChromeTabbedActivities and

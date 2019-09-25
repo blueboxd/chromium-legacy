@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">किसी समस्या की रिपोर्ट करें</translation>
 <translation id="2223693656926968778">मौजूदा आइटम पर कार्रवाई करें</translation>
 <translation id="225732394367814946">बोली की दर बढ़ाएं</translation>
+<translation id="2267538686624070261">गलत वर्तनी छोड़ रहे हैं</translation>
 <translation id="2267945578749931355">अगला वर्ण</translation>
 <translation id="2278490101488436824">तीन उंगलियों से बाईं ओर स्वाइप करें</translation>
 <translation id="2281234842553884450">पिछला स्लाइडर</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">समूह</translation>
 <translation id="2582407057977008361">अलग</translation>
 <translation id="2592212930811759050">बदलाव शुरू करने के लिए दो बार टैप करें</translation>
+<translation id="2598495320872286378">व्याकरण की गड़बड़ी</translation>
 <translation id="2614981083756825552">गणित ML लेआउट</translation>
 <translation id="2624431853467395961">जानें मोड खोलें</translation>
 <translation id="2626530649491650971">क्‍लिक करने योग्‍य</translation>
@@ -821,6 +823,7 @@
 <translation id="6833103209700200188">पादलेख</translation>
 <translation id="6858047746862060282">प्रस्तावना</translation>
 <translation id="6859876496651143278">एक उंगली से बाईं ओर स्वाइप करें</translation>
+<translation id="6865519907510167493">गलत वर्तनी</translation>
 <translation id="6871161210040114857">केस को अनदेखा करना.</translation>
 <translation id="6877435256196695200">कोई अगला ग्राफ़िक नहीं.</translation>
 <translation id="6897341342232909480">बाएं ले जाएं</translation>
@@ -1111,6 +1114,7 @@
 <translation id="8446884382197647889">ज़्यादा जानें</translation>
 <translation id="8455868257606149352">अधिकतम <ph name="X" /></translation>
 <translation id="84575901236241018">एक्सेस कुंजी है, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">व्याकरण की गड़बड़ी छोड़ी जा रही है</translation>
 <translation id="847154984256717791">व्यस्त</translation>
 <translation id="8476408756881832830">जब ChromeVox बोल रहा हो, तब प्लेबैक रोकें</translation>
 <translation id="8476508772960940536">विंडो अवलोकन</translation>

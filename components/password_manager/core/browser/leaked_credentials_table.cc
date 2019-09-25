@@ -59,7 +59,9 @@ bool operator==(const LeakedCredentials& lhs, const LeakedCredentials& rhs) {
          lhs.create_time == rhs.create_time;
 }
 
-LeakedCredentialsTable::LeakedCredentialsTable(sql::Database* db) : db_(db) {}
+void LeakedCredentialsTable::Init(sql::Database* db) {
+  db_ = db;
+}
 
 bool LeakedCredentialsTable::CreateTableIfNecessary() {
   if (!db_->DoesTableExist(kLeakedCredentialsTableName)) {

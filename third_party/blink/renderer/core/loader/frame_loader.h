@@ -160,6 +160,9 @@ class CORE_EXPORT FrameLoader final {
       const FetchClientSettingsObject* fetch_client_settings_object,
       Document* document_for_logging,
       network::mojom::RequestContextFrameType) const;
+  void ReportLegacyTLSVersion(const KURL& url,
+                              bool is_subresource,
+                              bool is_ad_resource);
 
   Frame* Opener();
   void SetOpener(LocalFrame*);
@@ -304,6 +307,10 @@ class CORE_EXPORT FrameLoader final {
   WebScopedVirtualTimePauser virtual_time_pauser_;
 
   Member<ContentSecurityPolicy> last_origin_document_csp_;
+
+  // The origins for which a legacy TLS version warning has been printed. The
+  // size of this set is capped, after which no more warnings are printed.
+  HashSet<String> tls_version_warning_origins_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameLoader);
 };

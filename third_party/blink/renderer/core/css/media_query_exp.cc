@@ -94,6 +94,12 @@ static inline bool FeatureWithValidIdent(const String& media_feature,
     }
   }
 
+  if (RuntimeEnabledFeatures::MediaQueryNavigationControlsEnabled()) {
+    if (media_feature == kNavigationControlsMediaFeature) {
+      return ident == CSSValueID::kNone || ident == CSSValueID::kBackButton;
+    }
+  }
+
   return false;
 }
 
@@ -205,7 +211,8 @@ static inline bool FeatureWithoutValue(const String& media_feature) {
          media_feature == kImmersiveMediaFeature ||
          media_feature == kPrefersColorSchemeMediaFeature ||
          media_feature == kPrefersReducedMotionMediaFeature ||
-         media_feature == kForcedColorsMediaFeature;
+         media_feature == kForcedColorsMediaFeature ||
+         media_feature == kNavigationControlsMediaFeature;
 }
 
 bool MediaQueryExp::IsViewportDependent() const {

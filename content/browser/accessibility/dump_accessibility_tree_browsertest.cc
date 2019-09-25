@@ -327,6 +327,11 @@ IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityAddress) {
   RunHtmlTest(FILE_PATH_LITERAL("address.html"));
 }
 
+IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest,
+                       AccessibilityAnnotationRoles) {
+  RunAriaTest(FILE_PATH_LITERAL("annotation-roles.html"));
+}
+
 IN_PROC_BROWSER_TEST_P(DumpAccessibilityTreeTest, AccessibilityArea) {
   RunHtmlTest(FILE_PATH_LITERAL("area.html"));
 }

@@ -10,7 +10,6 @@ import android.app.ActivityManager.AppTask;
 import android.app.ActivityManager.RecentTaskInfo;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.net.Uri;
 import android.os.Build;
@@ -18,6 +17,7 @@ import android.text.TextUtils;
 import android.util.Log;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.base.PackageManagerUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -99,11 +99,10 @@ public class DocumentUtils {
     /**
      * Given an AppTask retrieves the task component name.
      * @param task The app task to use.
-     * @param pm The package manager to use for resolving intent.
      * @return Fully qualified component name name or null if we were not able to
      * determine it.
      */
-    public static String getTaskComponentName(AppTask task, PackageManager pm) {
+    public static String getTaskComponentName(AppTask task) {
         RecentTaskInfo info = getTaskInfoFromTask(task);
         if (info == null) return null;
 
@@ -113,10 +112,9 @@ public class DocumentUtils {
         } else if (baseIntent.getComponent() != null) {
             return baseIntent.getComponent().getClassName();
         } else {
-            ResolveInfo resolveInfo = pm.resolveActivity(baseIntent, 0);
+            ResolveInfo resolveInfo = PackageManagerUtils.resolveActivity(baseIntent, 0);
             if (resolveInfo == null) return null;
             return resolveInfo.activityInfo.name;
         }
     }
-
 }

@@ -1097,7 +1097,6 @@ Wenn Sie die Family Link App auf Ihrem Gerät installieren, können Sie die Eins
 <translation id="2586672484245266891">Geben Sie eine kürzere URL ein</translation>
 <translation id="2588636910004461974">Geräte von <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">Bei Google suchen oder URL eingeben</translation>
-<translation id="2597521610396315071">Elternaufsicht einrichten</translation>
 <translation id="2603115962224169880">Computer bereinigen</translation>
 <translation id="2603463522847370204">In &amp;Inkognito-Fenster öffnen</translation>
 <translation id="2604255671529671813">Fehler bei der Netzwerkverbindung</translation>
@@ -1878,7 +1877,7 @@ Servernachricht: <ph name="SERVER_MSG" /></translation>
 <translation id="3748026146096797577">Nicht verbunden</translation>
 <translation id="3752582316358263300">Ok</translation>
 <translation id="3752673729237782832">Meine Geräte</translation>
-<translation id="3753033997400164841">Einmal speichern. Überall verwenden</translation>
+<translation id="3753033997400164841">Einmal speichern. Überall verwenden.</translation>
 <translation id="3755411799582650620">Sie können mit Ihrem <ph name="PHONE_NAME" /> jetzt Ihr <ph name="DEVICE_TYPE" /> entsperren.</translation>
 <translation id="375636864092143889">Die Website verwendet Ihr Mikrofon</translation>
 <translation id="3757733214359997190">Keine Websites gefunden</translation>
@@ -3001,7 +3000,7 @@ Starten Sie den VR-Modus nur dann, wenn Sie dieser Website vertrauen.</translati
 <translation id="5457599981699367932">Als Gast nutzen</translation>
 <translation id="5457991019809708398">An, kein Roaming</translation>
 <translation id="5458998536542739734">Notizen auf Sperrbildschirm</translation>
-<translation id="546322474339998983">Wird vom Chrome-Browser und <ph name="DEVICE_TYPE" />-Launcher verwendet</translation>
+<translation id="546322474339998983">Wird vom Chrome-Browser und <ph name="DEVICE_TYPE" /> Launcher verwendet</translation>
 <translation id="5463231940765244860">Eingabe</translation>
 <translation id="5463275305984126951">Index von <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menü enthält ausgeblendete Lesezeichen</translation>
@@ -5276,7 +5275,7 @@ Speichern Sie Ihre Schlüsseldatei an einem sicheren Ort. Sie benötigen die Dat
 <translation id="8774934320277480003">Oberer Rand</translation>
 <translation id="8775144690796719618">Ungültige URL</translation>
 <translation id="8777628254805677039">Root-Passwort</translation>
-<translation id="8780123805589053431">Bildbeschreibungen von Google abrufen</translation>
+<translation id="8780123805589053431">Bildbeschreibungen von Google verwenden</translation>
 <translation id="8780443667474968681">Die Sprachsuche wurde deaktiviert.</translation>
 <translation id="878069093594050299">Dieses Zertifikat wurde für folgende Verwendungszwecke verifiziert:</translation>
 <translation id="8781980678064919987">Beim Zuklappen herunterfahren</translation>

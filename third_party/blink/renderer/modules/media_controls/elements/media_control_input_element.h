@@ -49,10 +49,10 @@ class MODULES_EXPORT MediaControlInputElement : public HTMLInputElement,
   // will be used as a suffix for histograms.
   virtual const char* GetNameForHistograms() const = 0;
 
-  // Returns a string representation of the media control element.
-  // Subclasses should override this method to return the string representation
+  // Returns a string resource id of the media control element.
+  // Subclasses should override this method to return the string resource id
   // of the overflow button.
-  virtual WebLocalizedString::Name GetOverflowStringName() const;
+  virtual int GetOverflowStringId() const;
 
   // Implements a default event handler to record interaction on click.
   void DefaultEventHandler(Event&) override;

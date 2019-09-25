@@ -398,7 +398,7 @@ URLLoader::URLLoader(
   url_request_->set_method(request.method);
   url_request_->set_site_for_cookies(request.site_for_cookies);
   url_request_->set_attach_same_site_cookies(request.attach_same_site_cookies);
-  url_request_->SetReferrer(ComputeReferrer(request.referrer));
+  url_request_->SetReferrer(request.referrer.GetAsReferrer().spec());
   url_request_->set_referrer_policy(request.referrer_policy);
   url_request_->set_upgrade_if_insecure(request.upgrade_if_insecure);
 

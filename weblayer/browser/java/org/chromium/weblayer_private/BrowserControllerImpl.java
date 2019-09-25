@@ -10,6 +10,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
+import android.webkit.ValueCallback;
 import android.widget.FrameLayout;
 
 import org.chromium.base.annotations.JNINamespace;
@@ -149,9 +150,10 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
     }
 
     @Override
-    public void setSupportsEmbedding(boolean enable) {
+    public void setSupportsEmbedding(boolean enable, IObjectWrapper callback) {
         mContentViewRenderView.requestMode(enable ? ContentViewRenderView.MODE_TEXTURE_VIEW
-                                                  : ContentViewRenderView.MODE_SURFACE_VIEW);
+                                                  : ContentViewRenderView.MODE_SURFACE_VIEW,
+                (ValueCallback<Boolean>) ObjectWrapper.unwrap(callback, ValueCallback.class));
     }
 
     @NativeMethods

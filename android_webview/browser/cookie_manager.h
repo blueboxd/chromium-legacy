@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/containers/circular_deque.h"
 #include "base/lazy_instance.h"
 #include "base/threading/thread.h"

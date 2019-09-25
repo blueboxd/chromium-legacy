@@ -11,6 +11,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/numerics/ranges.h"
+#include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"

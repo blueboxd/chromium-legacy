@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">此安全密钥已被锁定，因为您输错 PIN 码的次数过多。要解锁此密钥，请先将其拔出，然后再重新插入。</translation>
 <translation id="1137673463384776352">在<ph name="APP" />中打开链接</translation>
 <translation id="1140351953533677694">访问您的蓝牙和串行设备</translation>
+<translation id="114036956334641753">音频和字幕</translation>
 <translation id="1140610710803014750">要想将您的书签同步到您的所有设备上，请登录并开启同步功能。</translation>
 <translation id="1140746652461896221">屏蔽您访问的任意网页上的内容</translation>
 <translation id="1143142264369994168">证书签名人</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">已知网络</translation>
 <translation id="123578888592755962">磁盘已满</translation>
 <translation id="1238191093934674082">Open VPN</translation>
+<translation id="1239594683407221485">在“文件”应用中浏览此设备上的内容。</translation>
 <translation id="124116460088058876">更多语言</translation>
 <translation id="1241753985463165747">调用时可读取和更改您在当前网站上的所有数据</translation>
 <translation id="1242633766021457174"><ph name="THIRD_PARTY_TOOL_NAME" />要重置您的设置。</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">互联网连接已断开。请检查您的互联网连接并重试。</translation>
 <translation id="1463112138205428654"><ph name="FILE_NAME" /> 已被高级保护功能屏蔽。</translation>
 <translation id="1464258312790801189">您的帐号</translation>
+<translation id="1464781208867302907">若想指定设备偏好设置，请转到“设置”页面。</translation>
 <translation id="1465176863081977902">复制音频地址(&amp;O)</translation>
 <translation id="1465827627707997754">披萨片</translation>
 <translation id="1468571364034902819">无法使用这份个人资料</translation>
@@ -741,6 +744,7 @@
 <translation id="2099686503067610784">要删除服务器证书“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="2100273922101894616">自动登录</translation>
 <translation id="2101225219012730419">版本：</translation>
+<translation id="2111670510994270194">在右侧新增标签页</translation>
 <translation id="21133533946938348">固定标签页</translation>
 <translation id="2113479184312716848">打开文件(&amp;F)...</translation>
 <translation id="2113921862428609753">授权中心信息访问权限</translation>
@@ -1093,7 +1097,6 @@
 <translation id="2586672484245266891">请输入一个较短的网址</translation>
 <translation id="2588636910004461974">来自<ph name="VENDOR_NAME" />的设备</translation>
 <translation id="2594999711683503743">使用 Google 执行搜索，或者输入网址</translation>
-<translation id="2597521610396315071">添加监管设置</translation>
 <translation id="2603115962224169880">清理计算机</translation>
 <translation id="2603463522847370204">在隐身窗口中打开(&amp;I)</translation>
 <translation id="2604255671529671813">网络连接错误</translation>
@@ -1786,6 +1789,7 @@
 <translation id="3630995161997703415">请将此网站添加到您的任务栏中，以便随时使用</translation>
 <translation id="3636096452488277381"><ph name="USER_GIVEN_NAME" />，您好！</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - 还可使用 <ph name="TIME" /></translation>
+<translation id="3637561406135221044">正在扫描文件以检查其中是否含有敏感数据…</translation>
 <translation id="3637682276779847508">如果您无法输入正确的 PIN 码解锁密钥，您的 SIM 卡将被永久停用。</translation>
 <translation id="3640214691812501263">要为<ph name="USER_NAME" />添加“<ph name="EXTENSION_NAME" />”吗？</translation>
 <translation id="3640613767643722554">训练 Google 助理识别您的声音</translation>
@@ -2223,6 +2227,7 @@
 <translation id="425573743389990240">电池放电率（单位为瓦，负值表示电池正在充电）</translation>
 <translation id="4256316378292851214">视频存储为(&amp;V)...</translation>
 <translation id="4258348331913189841">文件系统</translation>
+<translation id="4263223596040212967">请检查键盘布局，然后重试。</translation>
 <translation id="4263757076580287579">已取消注册打印机。</translation>
 <translation id="426564820080660648">要检查是否有更新，请使用以太网、WLAN 或移动数据。</translation>
 <translation id="4267953847983678297">自动连接到移动网络</translation>
@@ -2318,6 +2323,7 @@
 <translation id="4416582610654027550">请输入一个有效网址</translation>
 <translation id="4419409365248380979">总是允许 <ph name="HOST" /> 设置 Cookie</translation>
 <translation id="4419610272958564173">未知设备（供应商：<ph name="VENDOR_ID" />，产品：<ph name="PRODUCT_ID" />）</translation>
+<translation id="4421167684395067330">连接时遇到问题。请与<ph name="CARRIER_NAME" />联系以获取帮助。</translation>
 <translation id="4421932782753506458">猫咪</translation>
 <translation id="4423376891418188461">还原设置</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />，您的管理员要求您更改密码。</translation>
@@ -2993,6 +2999,7 @@
 <translation id="5457599981699367932">以访客身份浏览</translation>
 <translation id="5457991019809708398">已启用，未使用漫游服务</translation>
 <translation id="5458998536542739734">锁定屏幕备注</translation>
+<translation id="546322474339998983">由 Chrome 浏览器和 <ph name="DEVICE_TYPE" /> 启动器使用</translation>
 <translation id="5463231940765244860">输入</translation>
 <translation id="5463275305984126951"><ph name="LOCATION" /> 的索引</translation>
 <translation id="5463856536939868464">包含隐藏书签的菜单</translation>
@@ -3290,6 +3297,7 @@
 <translation id="5869948122057593679">关闭您的所有窗口</translation>
 <translation id="5870086504539785141">关闭辅助功能菜单</translation>
 <translation id="5870155679953074650">硬故障数</translation>
+<translation id="5876851302954717356">在右侧新增标签页</translation>
 <translation id="5877064549588274448">版本已更改。请重新启动设备来应用这些变更。</translation>
 <translation id="5877584842898320529">所选打印机不可用或未正确安装。<ph name="BR" />请检查打印机，或尝试另选一台打印机。</translation>
 <translation id="5882919346125742463">已知网络</translation>
@@ -4488,6 +4496,7 @@
 <translation id="7685049629764448582">JavaScript 使用的内存</translation>
 <translation id="7685087414635069102">必须输入 PIN 码</translation>
 <translation id="7685301384041462804">请确保您信任此网站，然后再进入 VR 环境。</translation>
+<translation id="768549422429443215">添加语言或将列表中的语言重新排列。</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">再次输入新密码</translation>
 <translation id="7690378713476594306">从列表中选择</translation>
@@ -4549,6 +4558,7 @@
 <translation id="7773726648746946405">会话存储</translation>
 <translation id="7774365994322694683">鸟</translation>
 <translation id="7776701556330691704">未找到任何语音</translation>
+<translation id="7780252971640011240">连接时遇到问题。请与您的运营商联系以获取帮助。</translation>
 <translation id="7781335840981796660">所有用户帐号和本地数据都将会移除。</translation>
 <translation id="7782102568078991263">Google 无法提供其他任何建议</translation>
 <translation id="7782717250816686129">存储登录屏幕上的持久性数据，并将凭据插入到会话中。</translation>

@@ -445,14 +445,12 @@ void VaapiVideoDecoder::SurfaceReady(const scoped_refptr<VASurface>& va_surface,
   DVLOGF(3);
 
   // Find the timestamp associated with |buffer_id|. It's possible that a
-  // surface is output multiple times for different |buffer_id|s (e.g. VP9 use
-  // existing frame feature). This means we need to output the same frame again
-  // with a different timestamp than the one recorded in CreateSurface(). We
-  // can't overwrite the timestamp directly as the original frame might still be
-  // in use. Instead we wrap the frame in another frame with a different
-  // timestamp in OutputFrameTask(). On some rare occasions it's also possible
-  // that a single DecoderBuffer produces multiple surfaces with the same
-  // |bitstream_id|, so we shouldn't remove the timestamp from the cache.
+  // surface is output multiple times for different |buffer_id|s (e.g. VP9
+  // show_existing_frame feature). This means we need to output the same frame
+  // again with a different timestamp.
+  // On some rare occasions it's also possible that a single DecoderBuffer
+  // produces multiple surfaces with the same |buffer_id|, so we shouldn't
+  // remove the timestamp from the cache.
   const auto it = buffer_id_to_timestamp_.Peek(buffer_id);
   DCHECK(it != buffer_id_to_timestamp_.end());
   base::TimeDelta timestamp = it->second;
@@ -471,15 +469,14 @@ void VaapiVideoDecoder::OutputFrameTask(scoped_refptr<VideoFrame> video_frame,
   DCHECK(video_frame);
   DVLOGF(4);
 
-  // |video_frame| haven't been set timestamp before, we could set the timestamp
-  // directly without wrapping.
+  // Set the timestamp at which the decode operation started on the
+  // |video_frame|. If the frame has been outputted before (e.g. because of VP9
+  // show-existing-frame feature) we can't overwrite the timestamp directly, as
+  // the original frame might still be in use. Instead we wrap the frame in
+  // another frame with a different timestamp.
   if (video_frame->timestamp().is_zero())
     video_frame->set_timestamp(timestamp);
 
-  // We need to update one or more attributes of the frame. Since we can't
-  // modify the attributes of the frame directly, we wrap the frame into a new
-  // frame with updated attributes. The old frame is bound to a destruction
-  // observer so it's not destroyed before the wrapped frame.
   if (video_frame->visible_rect() != visible_rect ||
       video_frame->timestamp() != timestamp) {
     gfx::Size natural_size = GetNaturalSize(visible_rect, pixel_aspect_ratio_);

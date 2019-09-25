@@ -1094,7 +1094,6 @@
 <translation id="2586672484245266891">कृपया एक लहान URL टाका</translation>
 <translation id="2588636910004461974"><ph name="VENDOR_NAME" /> कडील डिव्हाइस</translation>
 <translation id="2594999711683503743">Google वर शोधा किंवा URL टाइप करा</translation>
-<translation id="2597521610396315071">पर्यवेक्षण जोडा</translation>
 <translation id="2603115962224169880">काँप्युटर साफ करा</translation>
 <translation id="2603463522847370204">&amp;गुप्त विंडोमध्ये उघडा</translation>
 <translation id="2604255671529671813">नेटवर्क कनेक्शन एरर</translation>
@@ -2016,10 +2015,10 @@
 <translation id="3937734102568271121">नेहमी <ph name="LANGUAGE" /> मध्‍ये भाषांतर करा</translation>
 <translation id="3938128855950761626">विक्रेता <ph name="VENDOR_ID" /> कडील डिव्हाइस</translation>
 <translation id="3940233957883229251">अॉटो-रिपीट सुरू करा</translation>
-<translation id="3941565636838060942">या प्रोग्रामवरील अॅक्सेस लपवण्यासाठी, तुम्ही नियंत्रण पॅनेलमधील
-  <ph name="CONTROL_PANEL_APPLET_NAME" /> वापरून तो अनइंस्टॉल करणे अावश्यक आहे.
+<translation id="3941565636838060942">या प्रोग्रामवरील अॅक्सेस लपवण्यासाठी, तुम्हाला नियंत्रण पॅनेलमधील
+  <ph name="CONTROL_PANEL_APPLET_NAME" /> वापरून तो अनइंस्टॉल करण्याची आवश्यकता आहे.
 
-  तुम्ही <ph name="CONTROL_PANEL_APPLET_NAME" /> सुरू करू इच्छिता?</translation>
+  तुम्ही <ph name="CONTROL_PANEL_APPLET_NAME" /> सुरुवात करू इच्छिता?</translation>
 <translation id="394183848452296464">शॉर्टकट तयार करू शकत नाही</translation>
 <translation id="3943582379552582368">&amp;मागील</translation>
 <translation id="3943857333388298514">पेस्ट करा</translation>

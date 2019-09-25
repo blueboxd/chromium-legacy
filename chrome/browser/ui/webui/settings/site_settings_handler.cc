@@ -52,11 +52,11 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/common/origin_util.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/permissions/api_permission.h"
 #include "extensions/common/permissions/permissions_data.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/text/bytes_formatting.h"
 
@@ -1269,7 +1269,7 @@ void SiteSettingsHandler::SendZoomLevels() {
     // Calculate the zoom percent from the factor. Round up to the nearest whole
     // number.
     int zoom_percent = static_cast<int>(
-        content::ZoomLevelToZoomFactor(zoom_level.zoom_level) * 100 + 0.5);
+        blink::PageZoomLevelToZoomFactor(zoom_level.zoom_level) * 100 + 0.5);
     exception->SetString(kZoom, base::FormatPercent(zoom_percent));
     exception->SetString(site_settings::kSource,
                          site_settings::SiteSettingSourceToString(

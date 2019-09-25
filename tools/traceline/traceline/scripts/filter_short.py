@@ -17,7 +17,7 @@ import re
 def parseEvents(z):
   print 'parseEvents(['
   for e in z:
-    if e.has_key('ms') and e.has_key('done'):
+    if 'ms' in e and 'done' in e:
       dur = e['done'] - e['ms']
       if dur < 0.2:
         continue

@@ -58,6 +58,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "ui/display/screen.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_features.h"
@@ -762,7 +763,7 @@ TEST_F(RenderWidgetHostTest, SynchronizeVisualProperties) {
   // The zoom has changed so host should send out a sync message
   EXPECT_CALL(mock_visual_properties_manager_, SendVisualProperties(_, _))
       .Times(1);
-  double new_zoom_level = content::ZoomFactorToZoomLevel(0.25);
+  double new_zoom_level = blink::PageZoomFactorToZoomLevel(0.25);
   delegate_->SetZoomLevel(new_zoom_level);
   EXPECT_TRUE(host_->SynchronizeVisualProperties());
   EXPECT_FALSE(host_->visual_properties_ack_pending_);

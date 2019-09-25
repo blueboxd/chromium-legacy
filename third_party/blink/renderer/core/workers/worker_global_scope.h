@@ -35,7 +35,6 @@
 #include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/script/script_type.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
-#include "third_party/blink/renderer/core/animation_frame/worker_animation_frame_provider.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/dom/frame_request_callback_collection.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
@@ -198,13 +197,6 @@ class CORE_EXPORT WorkerGlobalScope
   // https://html.spec.whatwg.org/C/#windoworworkerglobalscope-mixin
   void queueMicrotask(V8VoidFunction*);
 
-  int requestAnimationFrame(V8FrameRequestCallback* callback, ExceptionState&);
-  void cancelAnimationFrame(int id);
-
-  WorkerAnimationFrameProvider* GetAnimationFrameProvider() {
-    return animation_frame_provider_;
-  }
-
   TrustedTypePolicyFactory* GetTrustedTypes() const override;
   TrustedTypePolicyFactory* trustedTypesWorkers() const {
     return GetTrustedTypes();
@@ -266,7 +258,6 @@ class CORE_EXPORT WorkerGlobalScope
   int last_pending_error_event_id_ = 0;
 
   Member<OffscreenFontSelector> font_selector_;
-  Member<WorkerAnimationFrameProvider> animation_frame_provider_;
 
   service_manager::InterfaceProvider interface_provider_;
 

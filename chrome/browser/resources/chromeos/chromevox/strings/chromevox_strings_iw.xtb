@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">דיווח על בעיה</translation>
 <translation id="2223693656926968778">נקוט פעולה לגבי הפריט הנוכחי</translation>
 <translation id="225732394367814946">הגבר את קצב הדיבור</translation>
+<translation id="2267538686624070261">יציאה משגיאת איות</translation>
 <translation id="2267945578749931355">התו הבא</translation>
 <translation id="2278490101488436824">החלקה שמאלה עם שלוש אצבעות</translation>
 <translation id="2281234842553884450">המחוון הקודם</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">קבוצה</translation>
 <translation id="2582407057977008361">בצד</translation>
 <translation id="2592212930811759050">לחיצה פעמיים מפעילה עריכה</translation>
+<translation id="2598495320872286378">שגיאת דקדוק</translation>
 <translation id="2614981083756825552">‏פריסת Math ML</translation>
 <translation id="2624431853467395961">פתח מצב למידה</translation>
 <translation id="2626530649491650971">clickable</translation>
@@ -821,6 +823,7 @@
 <translation id="6833103209700200188">כותרת תחתונה</translation>
 <translation id="6858047746862060282">פרולוג</translation>
 <translation id="6859876496651143278">החלקה שמאלה עם אצבע אחת</translation>
+<translation id="6865519907510167493">שגיאת איות</translation>
 <translation id="6871161210040114857">ללא תלות ברישיות.</translation>
 <translation id="6877435256196695200">אין עוד פריט גרפיקה.</translation>
 <translation id="6897341342232909480">העבר שמאלה</translation>
@@ -1111,6 +1114,7 @@
 <translation id="8446884382197647889">למידע נוסף</translation>
 <translation id="8455868257606149352">מקסימום <ph name="X" /></translation>
 <translation id="84575901236241018">כולל מקש גישה, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">יציאה משגיאת דקדוק</translation>
 <translation id="847154984256717791">עסוק</translation>
 <translation id="8476408756881832830">‏השהה את ההשמעה כשתוסף ה-ChromeVox מקריא</translation>
 <translation id="8476508772960940536">סקירת חלון</translation>

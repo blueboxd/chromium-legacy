@@ -52,42 +52,87 @@ class PLATFORM_EXPORT CanvasResource
     : public WTF::ThreadSafeRefCounted<CanvasResource> {
  public:
   virtual ~CanvasResource();
+
+  // We perform a lazy copy on write if the canvas content needs to be updated
+  // while its current resource is in use. In order to avoid re-allocating
+  // resources, its preferable to reuse a resource if its no longer in use.
+  // This API indicates whether a resource can be recycled.
   virtual bool IsRecycleable() const = 0;
+
+  // Returns true if rendering to the resource is accelerated.
   virtual bool IsAccelerated() const = 0;
+
+  // Returns true if the resource can be used with accelerated compositing. This
+  // is different from IsAccelerated since a resource may be rendered to on the
+  // CPU but can be used with GPU compositing (using GMBs).
   virtual bool SupportsAcceleratedCompositing() const = 0;
+
+  // Returns true if the resource is still usable. It maybe not be valid in the
+  // case of a context loss or if we fail to initialize the memory backing for
+  // the resource.
   virtual bool IsValid() const = 0;
+
+  // When a resource is returned by the display compositor, a sync token is
+  // provided to indicate when the compositor's commands using the resource are
+  // executed on the GPU thread.
+  // However in some cases we need to ensure that the commands using the
+  // resource have finished executing on the GPU itself. This API indicates
+  // whether this is required. The primary use-case for this is GMBs rendered to
+  // on the CPU but composited on the GPU. Its important for the GPU reads to be
+  // finished before updating the resource on the CPU.
   virtual bool NeedsReadLockFences() const { return false; }
+
+  // The bounds for this resource.
   virtual IntSize Size() const = 0;
+
+  // The mailbox which can be used to reference this resource in GPU commands.
+  // The sync mode indicates how the sync token for the resource should be
+  // prepared.
   virtual const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) = 0;
+
+  // A CanvasResource is not thread-safe and does not allow concurrent usage
+  // from multiple threads. But it maybe used from any thread. It remains bound
+  // to the current thread until Transfer is called. Note that while the
+  // resource maybe used for reads on any thread, it can be written to only on
+  // the thread where it was created.
   virtual void Transfer() {}
+
+  // Returns the sync token to indicate when all writes to the current resource
+  // are finished on the GPU thread.
   virtual const gpu::SyncToken GetSyncToken() {
     NOTREACHED();
     return gpu::SyncToken();
   }
+
+  // Provides a TransferableResource representation of this resource to share it
+  // with the compositor.
   bool PrepareTransferableResource(viz::TransferableResource*,
                                    std::unique_ptr<viz::SingleReleaseCallback>*,
                                    MailboxSyncMode);
+
+  // Issues a wait for this sync token on the context used by this resource for
+  // rendering.
   void WaitSyncToken(const gpu::SyncToken&);
-  virtual scoped_refptr<CanvasResource> MakeAccelerated(
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) = 0;
-  virtual scoped_refptr<CanvasResource> MakeUnaccelerated() = 0;
+
   virtual bool OriginClean() const = 0;
   virtual void SetOriginClean(bool) = 0;
-  virtual scoped_refptr<StaticBitmapImage> Bitmap() = 0;
-  virtual void CopyFromTexture(GLuint source_texture,
-                               GLenum format,
-                               GLenum type) {
-    NOTREACHED();
-  }
 
-  // Only CanvasResourceProvider and derivatives should call this.
+  // Provides a StaticBitmapImage wrapping this resource. Commonly used for
+  // snapshots not used in compositing (for instance to draw to another canvas).
+  virtual scoped_refptr<StaticBitmapImage> Bitmap() = 0;
+
+  // Copies the contents of |image| to the resource's backing memory. Only
+  // CanvasResourceProvider and derivatives should call this.
   virtual void TakeSkImage(sk_sp<SkImage> image) = 0;
 
+  // Provides the texture ID that can be used to write to this resource.
+  // TODO(khushalsagar): Won't work with OOPR.
   virtual GLuint GetBackingTextureHandleForOverwrite() {
     NOTREACHED();
     return 0;
   }
 
+  // Returns the texture target for the ID provided above.
   virtual GLenum TextureTarget() const {
     NOTREACHED();
     return 0;
@@ -107,7 +152,9 @@ class PLATFORM_EXPORT CanvasResource
     Abandon();
   }
 
+  // The filter quality to use when the resource is drawn by the compositor.
   SkFilterQuality FilterQuality() const { return filter_quality_; }
+
   SkImageInfo CreateSkImageInfo() const;
 
  protected:
@@ -123,9 +170,19 @@ class PLATFORM_EXPORT CanvasResource
   // before this resource could be deleted.
   virtual void Abandon() { TearDown(); }
 
+  // Returns true if the resource is backed by memory such that it can be used
+  // for direct scanout by the display.
   virtual bool IsOverlayCandidate() const { return false; }
+
+  // Returns true if the resource is backed by memory that can be referenced
+  // using a mailbox.
   virtual bool HasGpuMailbox() const = 0;
+
+  // Destroys the backing memory and any other references to it kept alive by
+  // this object. This must be called from the same thread where the resource
+  // was created.
   virtual void TearDown() = 0;
+
   gpu::gles2::GLES2Interface* ContextGL() const;
   GLenum GLFilter() const;
   GrContext* GetGrContext() const;
@@ -157,125 +214,6 @@ class PLATFORM_EXPORT CanvasResource
 #endif
 };
 
-// Resource type for skia Bitmaps (RAM and texture backed)
-class PLATFORM_EXPORT CanvasResourceBitmap final : public CanvasResource {
- public:
-  static scoped_refptr<CanvasResourceBitmap> Create(
-      scoped_refptr<StaticBitmapImage>,
-      base::WeakPtr<CanvasResourceProvider>,
-      SkFilterQuality,
-      const CanvasColorParams&);
-  ~CanvasResourceBitmap() override;
-
-  // Not recyclable: Skia handles texture recycling internally and bitmaps are
-  // cheap to allocate.
-  bool IsRecycleable() const final { return false; }
-  bool IsAccelerated() const final;
-  bool SupportsAcceleratedCompositing() const override {
-    return IsAccelerated();
-  }
-  bool IsValid() const final;
-  IntSize Size() const final;
-  void Transfer() final;
-  scoped_refptr<StaticBitmapImage> Bitmap() final;
-  bool OriginClean() const final;
-  void SetOriginClean(bool value) final;
-  scoped_refptr<CanvasResource> MakeAccelerated(
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final;
-  scoped_refptr<CanvasResource> MakeUnaccelerated() final;
-  void TakeSkImage(sk_sp<SkImage> image) final;
-
- private:
-  void TearDown() override;
-  GLenum TextureTarget() const final;
-  base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
-      const override;
-  const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) override;
-  bool HasGpuMailbox() const override;
-  const gpu::SyncToken GetSyncToken() override;
-
-  CanvasResourceBitmap(scoped_refptr<StaticBitmapImage>,
-                       base::WeakPtr<CanvasResourceProvider>,
-                       SkFilterQuality,
-                       const CanvasColorParams&);
-
-  scoped_refptr<StaticBitmapImage> image_;
-};
-
-// Resource type for GpuMemoryBuffers
-class PLATFORM_EXPORT CanvasResourceGpuMemoryBuffer final
-    : public CanvasResource {
- public:
-  static scoped_refptr<CanvasResourceGpuMemoryBuffer> Create(
-      const IntSize&,
-      const CanvasColorParams&,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      base::WeakPtr<CanvasResourceProvider>,
-      SkFilterQuality,
-      bool is_accelerated);
-  ~CanvasResourceGpuMemoryBuffer() override;
-  bool IsRecycleable() const final { return IsValid(); }
-  bool IsAccelerated() const final { return is_accelerated_; }
-  bool IsValid() const override;
-  bool SupportsAcceleratedCompositing() const override { return true; }
-  bool NeedsReadLockFences() const final { return true; }
-  bool OriginClean() const final { return is_origin_clean_; }
-  void SetOriginClean(bool value) final { is_origin_clean_ = value; }
-  scoped_refptr<CanvasResource> MakeAccelerated(
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
-    NOTREACHED();
-    return nullptr;
-  }
-  scoped_refptr<CanvasResource> MakeUnaccelerated() final {
-    NOTREACHED();
-    return nullptr;
-  }
-  void Abandon() final;
-  IntSize Size() const final;
-  void TakeSkImage(sk_sp<SkImage> image) final;
-  void CopyFromTexture(GLuint source_texture,
-                       GLenum format,
-                       GLenum type) override;
-  scoped_refptr<StaticBitmapImage> Bitmap() override;
-  GLuint GetBackingTextureHandleForOverwrite() final;
-
- private:
-  void TearDown() override;
-  GLenum TextureTarget() const final;
-  bool IsOverlayCandidate() const final { return true; }
-  const gpu::Mailbox& GetOrCreateGpuMailbox(MailboxSyncMode) override;
-  bool HasGpuMailbox() const override;
-  const gpu::SyncToken GetSyncToken() override;
-  base::WeakPtr<WebGraphicsContext3DProviderWrapper> ContextProviderWrapper()
-      const override;
-  void WillPaint();
-  void DidPaint();
-
-  CanvasResourceGpuMemoryBuffer(
-      const IntSize&,
-      const CanvasColorParams&,
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>,
-      base::WeakPtr<CanvasResourceProvider>,
-      SkFilterQuality,
-      bool is_accelerated);
-
-  gpu::Mailbox gpu_mailbox_;
-  gpu::SyncToken sync_token_;
-  bool mailbox_needs_new_sync_token_ = false;
-  base::WeakPtr<WebGraphicsContext3DProviderWrapper> context_provider_wrapper_;
-  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer_;
-  void* buffer_base_address_ = nullptr;
-  sk_sp<SkSurface> surface_;
-  GLuint texture_id_ = 0;
-  MailboxSyncMode mailbox_sync_mode_ = kVerifiedSyncToken;
-  bool is_accelerated_;
-  bool is_origin_clean_ = true;
-
-  // GL_TEXTURE_2D view of |gpu_memory_buffer_| for CopyFromTexture(); only used
-  // if TextureTarget() is GL_TEXTURE_EXTERNAL_OES.
-  GLuint texture_2d_id_for_copy_ = 0;
-};
-
 // Resource type for SharedBitmaps
 class PLATFORM_EXPORT CanvasResourceSharedBitmap final : public CanvasResource {
  public:
@@ -290,23 +228,9 @@ class PLATFORM_EXPORT CanvasResourceSharedBitmap final : public CanvasResource {
   bool IsValid() const final;
   bool SupportsAcceleratedCompositing() const final { return false; }
   bool NeedsReadLockFences() const final { return false; }
-  scoped_refptr<CanvasResource> MakeAccelerated(
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
-    NOTREACHED();
-    return nullptr;
-  }
-  scoped_refptr<CanvasResource> MakeUnaccelerated() final {
-    NOTREACHED();
-    return nullptr;
-  }
   void Abandon() final;
   IntSize Size() const final;
   void TakeSkImage(sk_sp<SkImage> image) final;
-  void CopyFromTexture(GLuint source_texture,
-                       GLenum format,
-                       GLenum type) override {
-    NOTREACHED();
-  }
   scoped_refptr<StaticBitmapImage> Bitmap() final;
   bool OriginClean() const final { return is_origin_clean_; }
   void SetOriginClean(bool flag) final { is_origin_clean_ = flag; }
@@ -352,15 +276,6 @@ class PLATFORM_EXPORT CanvasResourceSharedImage final : public CanvasResource {
 
   bool OriginClean() const final { return is_origin_clean_; }
   void SetOriginClean(bool value) final { is_origin_clean_ = value; }
-  scoped_refptr<CanvasResource> MakeAccelerated(
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
-    NOTREACHED();
-    return nullptr;
-  }
-  scoped_refptr<CanvasResource> MakeUnaccelerated() final {
-    NOTREACHED();
-    return nullptr;
-  }
   void TakeSkImage(sk_sp<SkImage> image) final { NOTREACHED(); }
   void NotifyResourceLost() final;
   bool NeedsReadLockFences() const final {
@@ -500,15 +415,6 @@ class PLATFORM_EXPORT ExternalCanvasResource final : public CanvasResource {
   bool NeedsReadLockFences() const final { return false; }
   bool OriginClean() const final { return is_origin_clean_; }
   void SetOriginClean(bool value) final { is_origin_clean_ = value; }
-  scoped_refptr<CanvasResource> MakeAccelerated(
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
-    NOTREACHED();
-    return nullptr;
-  }
-  scoped_refptr<CanvasResource> MakeUnaccelerated() final {
-    NOTREACHED();
-    return nullptr;
-  }
   void Abandon() final;
   IntSize Size() const final { return size_; }
   void TakeSkImage(sk_sp<SkImage> image) final;
@@ -559,15 +465,6 @@ class PLATFORM_EXPORT CanvasResourceSwapChain final : public CanvasResource {
   bool NeedsReadLockFences() const final { return false; }
   bool OriginClean() const final { return is_origin_clean_; }
   void SetOriginClean(bool value) final { is_origin_clean_ = value; }
-  scoped_refptr<CanvasResource> MakeAccelerated(
-      base::WeakPtr<WebGraphicsContext3DProviderWrapper>) final {
-    NOTREACHED();
-    return nullptr;
-  }
-  scoped_refptr<CanvasResource> MakeUnaccelerated() final {
-    NOTREACHED();
-    return nullptr;
-  }
   void Abandon() final;
   IntSize Size() const final { return size_; }
   void TakeSkImage(sk_sp<SkImage> image) final;

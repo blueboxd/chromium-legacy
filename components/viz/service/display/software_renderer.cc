@@ -812,12 +812,14 @@ sk_sp<SkShader> SoftwareRenderer::GetBackdropFilterShader(
       (unclipped_rect.top_right() - backdrop_rect.top_right()) +
       (backdrop_rect.bottom_left() - unclipped_rect.bottom_left());
 
-  sk_sp<SkImageFilter> filter =
+  sk_sp<cc::PaintFilter> paint_filter =
       cc::RenderSurfaceFilters::BuildImageFilter(
           *backdrop_filters,
           gfx::SizeF(backdrop_bitmap.width(), backdrop_bitmap.height()),
-          clipping_offset)
-          ->cached_sk_filter_;
+          clipping_offset);
+  if (!paint_filter)
+    return nullptr;
+  sk_sp<SkImageFilter> filter = paint_filter->cached_sk_filter_;
 
   // TODO(989238): Software renderer does not support/implement kClamp_TileMode.
   SkIRect result_rect;

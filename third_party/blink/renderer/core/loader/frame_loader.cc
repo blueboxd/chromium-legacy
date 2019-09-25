@@ -41,7 +41,10 @@
 
 #include "base/auto_reset.h"
 #include "base/unguessable_token.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "services/metrics/public/cpp/ukm_builders.h"
+#include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/mojom/fetch/fetch_api_request.mojom-blink.h"
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom-blink.h"
@@ -62,6 +65,7 @@
 #include "third_party/blink/renderer/core/events/page_transition_event.h"
 #include "third_party/blink/renderer/core/frame/csp/content_security_policy.h"
 #include "third_party/blink/renderer/core/frame/csp/navigation_initiator_impl.h"
+#include "third_party/blink/renderer/core/frame/frame_console.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_client.h"
@@ -109,6 +113,7 @@
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/network/network_utils.h"
 #include "third_party/blink/renderer/platform/scheduler/public/frame_scheduler.h"
+#include "third_party/blink/renderer/platform/web_test_support.h"
 #include "third_party/blink/renderer/platform/weborigin/security_origin.h"
 #include "third_party/blink/renderer/platform/weborigin/security_policy.h"
 #include "third_party/blink/renderer/platform/wtf/assertions.h"
@@ -957,6 +962,8 @@ void FrameLoader::CommitNavigation(
 
   CommitDocumentLoader(provisional_document_loader_.Release(), unload_timing);
 
+  tls_version_warning_origins_.clear();
+
   // Load the document if needed.
   document_loader_->StartLoadingResponse();
 
@@ -1554,6 +1561,76 @@ void FrameLoader::ModifyRequestForCSP(
                                               document_for_logging, frame_type);
 }
 
+void FrameLoader::ReportLegacyTLSVersion(const KURL& url,
+                                         bool is_subresource,
+                                         bool is_ad_resource) {
+  document_loader_->GetUseCounterHelper().Count(
+      is_subresource
+          ? WebFeature::kLegacyTLSVersionInSubresource
+          : (frame_->Tree().Parent()
+                 ? WebFeature::kLegacyTLSVersionInSubframeMainResource
+                 : WebFeature::kLegacyTLSVersionInMainFrameResource),
+      frame_.Get());
+
+  // For non-main-frame loads, we have to use the main frame's document for
+  // the UKM recorder and source ID.
+  auto& root = frame_->LocalFrameRoot();
+  ukm::builders::Net_LegacyTLSVersion(root.GetDocument()->UkmSourceID())
+      .SetIsMainFrame(frame_->IsMainFrame())
+      .SetIsSubresource(is_subresource)
+      .SetIsAdResource(is_ad_resource)
+      .Record(root.GetDocument()->UkmRecorder());
+
+  // Web tests use an outdated server on macOS. See https://crbug.com/936515.
+#if defined(OS_MACOSX)
+  if (WebTestSupport::IsRunningWebTest())
+    return;
+#endif
+
+  String origin = SecurityOrigin::Create(url)->ToString();
+  // To prevent log spam, only log the message once per origin.
+  if (tls_version_warning_origins_.Contains(origin))
+    return;
+
+  // After |kMaxSecurityWarningMessages| warnings, stop printing messages to the
+  // console. At exactly |kMaxSecurityWarningMessages| warnings, print a message
+  // that additional resources on the page use legacy certificates without
+  // specifying which exact resources. Before |kMaxSecurityWarningMessages|
+  // messages, print the exact resource URL in the message to help the developer
+  // pinpoint the problematic resources.
+  const size_t kMaxSecurityWarningMessages = 10;
+  size_t num_warnings = tls_version_warning_origins_.size();
+  if (num_warnings > kMaxSecurityWarningMessages)
+    return;
+
+  String console_message;
+  if (num_warnings == kMaxSecurityWarningMessages) {
+    console_message =
+        "Additional resources on this page were loaded with TLS 1.0 or TLS "
+        "1.1, which are deprecated and will be disabled in the future. Once "
+        "disabled, users will be prevented from loading these resources. "
+        "Servers should enable TLS 1.2 or later. See "
+        "https://www.chromestatus.com/feature/5654791610957824 for more "
+        "information.";
+  } else {
+    console_message =
+        "The connection used to load resources from " + origin +
+        " used TLS 1.0 or TLS "
+        "1.1, which are deprecated and will be disabled in the future. Once "
+        "disabled, users will be prevented from loading these resources. The "
+        "server should enable TLS 1.2 or later. See "
+        "https://www.chromestatus.com/feature/5654791610957824 for more "
+        "information.";
+  }
+  tls_version_warning_origins_.insert(origin);
+  // To avoid spamming the console, use verbose message level for subframe
+  // resources, and only use the warning level for main-frame resources.
+  frame_->Console().AddMessage(ConsoleMessage::Create(
+      mojom::ConsoleMessageSource::kOther,
+      frame_->IsMainFrame() ? mojom::ConsoleMessageLevel::kWarning
+                            : mojom::ConsoleMessageLevel::kVerbose,
+      console_message));
+}
 
 void FrameLoader::RecordLatestRequiredCSP() {
   required_csp_ =

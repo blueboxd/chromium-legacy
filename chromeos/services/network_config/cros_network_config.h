@@ -7,6 +7,7 @@
 
 #include "base/containers/flat_map.h"
 #include "base/memory/weak_ptr.h"
+#include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -26,7 +27,8 @@ class NetworkStateHandler;
 namespace network_config {
 
 class CrosNetworkConfig : public mojom::CrosNetworkConfig,
-                          public NetworkStateHandlerObserver {
+                          public NetworkStateHandlerObserver,
+                          public NetworkCertificateHandler::Observer {
  public:
   // Constructs an instance of CrosNetworkConfig with default network subsystem
   // dependencies appropriate for a production environment.
@@ -38,7 +40,8 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
       NetworkStateHandler* network_state_handler,
       NetworkDeviceHandler* network_device_handler,
       ManagedNetworkConfigurationHandler* network_configuration_handler,
-      NetworkConnectionHandler* network_connection_handler);
+      NetworkConnectionHandler* network_connection_handler,
+      NetworkCertificateHandler* network_certificate_handler);
   ~CrosNetworkConfig() override;
 
   void BindRequest(mojom::CrosNetworkConfigRequest request);
@@ -78,6 +81,7 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
                        StartDisconnectCallback callback) override;
   void SetVpnProviders(std::vector<mojom::VpnProviderPtr> providers) override;
   void GetVpnProviders(GetVpnProvidersCallback callback) override;
+  void GetNetworkCertificates(GetNetworkCertificatesCallback callback) override;
 
  private:
   void GetManagedPropertiesSuccess(int callback_id,
@@ -146,13 +150,17 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void DevicePropertiesUpdated(const DeviceState* device) override;
   void OnShuttingDown() override;
 
+  // NetworkCertificateHandler::Observer
+  void OnCertificatesChanged() override;
+
   const std::string& GetServicePathFromGuid(const std::string& guid);
 
   NetworkStateHandler* network_state_handler_;    // Unowned
   NetworkDeviceHandler* network_device_handler_;  // Unowned
   ManagedNetworkConfigurationHandler*
-      network_configuration_handler_;                     // Unowned
-  NetworkConnectionHandler* network_connection_handler_;  // Unowned
+      network_configuration_handler_;                       // Unowned
+  NetworkConnectionHandler* network_connection_handler_;    // Unowned
+  NetworkCertificateHandler* network_certificate_handler_;  // Unowned
 
   mojo::InterfacePtrSet<mojom::CrosNetworkConfigObserver> observers_;
   mojo::BindingSet<mojom::CrosNetworkConfig> bindings_;

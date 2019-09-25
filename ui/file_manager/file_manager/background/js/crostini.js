@@ -22,12 +22,6 @@ class CrostiniImpl {
      */
     this.shared_paths_ = {};
 
-    /**
-     * True if root access to specified VM is allowed.
-     * @private {Object<boolean>}
-     */
-    this.rootAccessAllowed_ = {};
-
     /** @private {?VolumeManager} */
     this.volumeManager_ = null;
   }
@@ -41,8 +35,6 @@ class CrostiniImpl {
         loadTimeData.getBoolean('CROSTINI_ENABLED');
     this.enabled_[CrostiniImpl.PLUGIN_VM] =
         loadTimeData.getBoolean('PLUGIN_VM_ENABLED');
-    this.rootAccessAllowed_[CrostiniImpl.DEFAULT_VM] =
-        loadTimeData.getBoolean('CROSTINI_ROOT_ACCESS_ALLOWED');
   }
 
   /**
@@ -77,24 +69,6 @@ class CrostiniImpl {
    */
   isEnabled(vmName) {
     return this.enabled_[vmName];
-  }
-
-  /**
-   * Set whether the specified VM allows root access.
-   * @param {string} vmName
-   * @param {boolean} allowed
-   */
-  setRootAccessAllowed(vmName, allowed) {
-    this.rootAccessAllowed_[vmName] = allowed;
-  }
-
-  /**
-   * Returns true if root access to specified VM is allowed.
-   * @param {string} vmName
-   * @return {boolean}
-   */
-  isRootAccessAllowed(vmName) {
-    return this.rootAccessAllowed_[vmName];
   }
 
   /**
@@ -179,12 +153,6 @@ class CrostiniImpl {
         break;
       case chrome.fileManagerPrivate.CrostiniEventType.DISABLE:
         this.setEnabled(event.vmName, false);
-        break;
-      case chrome.fileManagerPrivate.CrostiniEventType.ROOT_ACCESS_ALLOW:
-        this.setRootAccessAllowed(event.vmName, true);
-        break;
-      case chrome.fileManagerPrivate.CrostiniEventType.ROOT_ACCESS_DISALLOW:
-        this.setRootAccessAllowed(event.vmName, false);
         break;
       case chrome.fileManagerPrivate.CrostiniEventType.SHARE:
         for (const entry of event.entries) {

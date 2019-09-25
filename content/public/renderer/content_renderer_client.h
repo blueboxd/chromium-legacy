@@ -391,12 +391,6 @@ class CONTENT_EXPORT ContentRendererClient {
   // suspended after a period of inactivity.
   virtual bool IsIdleMediaSuspendEnabled();
 
-  // Returns true to suppress the warning for deprecated TLS versions.
-  //
-  // This is a workaround for an outdated test server used by Blink tests on
-  // macOS. See https://crbug.com/936515.
-  virtual bool SuppressLegacyTLSVersionConsoleMessage();
-
   // Allows the embedder to return a (possibly null) URLLoaderThrottleProvider
   // for a frame or worker. For frames this is called on the main thread, and
   // for workers it's called on the worker thread.

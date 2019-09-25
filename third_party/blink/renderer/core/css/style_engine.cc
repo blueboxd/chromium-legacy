@@ -1865,7 +1865,8 @@ void StyleEngine::UpdateColorScheme() {
 
   PreferredColorScheme old_preferred_color_scheme = preferred_color_scheme_;
   preferred_color_scheme_ = settings->GetPreferredColorScheme();
-  if (auto* overrides = GetDocument().GetPage()->GetMediaFeatureOverrides()) {
+  if (const auto* overrides =
+          GetDocument().GetPage()->GetMediaFeatureOverrides()) {
     MediaQueryExpValue value = overrides->GetOverride("prefers-color-scheme");
     if (value.IsValid())
       preferred_color_scheme_ = CSSValueIDToPreferredColorScheme(value.id);

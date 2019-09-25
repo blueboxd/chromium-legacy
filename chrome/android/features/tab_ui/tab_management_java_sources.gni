@@ -30,6 +30,8 @@ tab_management_test_java_sources = [
 ]
 
 tab_management_junit_java_sources = [
+  "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/MostVisitedListMediatorUnitTest.java",
+  "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/MostVisitedListViewBinderUnitTest.java",
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/tab_groups/TabGroupModelFilterUnitTest.java",
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/tab_management/TabSwitcherMediatorUnitTest.java",
   "//chrome/android/features/tab_ui/junit/src/org/chromium/chrome/browser/tasks/tab_management/TabGridDialogMediatorUnitTest.java",

@@ -116,31 +116,7 @@ TEST_F('OSSettingsAdvancedPageBrowserTest', 'DISABLED_AllJsTests', () => {
   mocha.run();
 });
 
-// Tests for the Android App section in Google Play Store.
-// eslint-disable-next-line no-var
-var OSSettingsAndroidAppsPageTest = class extends OSSettingsBrowserTest {
-  /** @override */
-  get browsePreload() {
-    return super.browsePreload + 'android_apps_page/android_apps_page.html';
-  }
-
-  /** @override */
-  get extraLibraries() {
-    return super.extraLibraries.concat([
-      '//ui/webui/resources/js/promise_resolver.js',
-      BROWSER_SETTINGS_PATH + '../test_browser_proxy.js',
-      BROWSER_SETTINGS_PATH + 'chromeos/test_android_apps_browser_proxy.js',
-      'android_apps_page_test.js',
-    ]);
-  }
-};
-
-// Disabled due to flakiness on linux-chromeos-rel
-TEST_F('OSSettingsAndroidAppsPageTest', 'DISABLED_AllJsTests', () => {
-  mocha.run();
-});
-
-// Tests for the Android App section in Google Play Store.
+// Tests for the Apps section (combines Chrome and Android apps).
 // eslint-disable-next-line no-var
 var OSSettingsAppsPageTest = class extends OSSettingsBrowserTest {
   /** @override */

@@ -665,10 +665,13 @@ void AssistantManagerServiceImpl::OnOpenAndroidApp(
                      interaction);
   mojom::AndroidAppInfoPtr app_info_ptr = mojom::AndroidAppInfo::New();
   app_info_ptr->package_name = app_info.package_name;
-  device_actions()->OpenAndroidApp(
-      std::move(app_info_ptr),
-      base::BindOnce(&AssistantManagerServiceImpl::HandleOpenAndroidAppResponse,
-                     weak_factory_.GetWeakPtr(), interaction));
+  for (auto& it : interaction_subscribers_) {
+    it->OnOpenAppResponse(
+        mojo::Clone(app_info_ptr),
+        base::BindOnce(
+            &AssistantManagerServiceImpl::HandleOpenAndroidAppResponse,
+            weak_factory_.GetWeakPtr(), interaction));
+  }
 }
 
 void AssistantManagerServiceImpl::OnVerifyAndroidApp(
@@ -704,11 +707,13 @@ void AssistantManagerServiceImpl::OnOpenMediaAndroidIntentOnMainThread(
       app_info_ptr->intent = url;
     }
   }
-  device_actions()->OpenAndroidApp(
-      std::move(app_info_ptr),
-      base::BindOnce(
-          &AssistantManagerServiceImpl::HandleLaunchMediaIntentResponse,
-          weak_factory_.GetWeakPtr()));
+  for (auto& it : interaction_subscribers_) {
+    it->OnOpenAppResponse(
+        mojo::Clone(app_info_ptr),
+        base::BindOnce(
+            &AssistantManagerServiceImpl::HandleLaunchMediaIntentResponse,
+            weak_factory_.GetWeakPtr()));
+  }
 }
 
 void AssistantManagerServiceImpl::OnPlayMedia(

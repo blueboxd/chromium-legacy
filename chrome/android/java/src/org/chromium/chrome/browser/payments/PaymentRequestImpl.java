@@ -194,6 +194,12 @@ public class PaymentRequestImpl
          * Called when the payment response is ready.
          */
         void onPaymentResponseReady();
+
+        /**
+         * Called when the browser acknowledges the renderer's complete call, which indicates that
+         * the browser UI has closed.
+         */
+        void onCompleteReplied();
     }
 
     /**
@@ -2547,7 +2553,10 @@ public class PaymentRequestImpl
 
         if (mUI != null) {
             mUI.close(immediateClose, () -> {
-                if (mClient != null) mClient.onComplete();
+                if (mClient != null) {
+                    if (sObserverForTest != null) sObserverForTest.onCompleteReplied();
+                    mClient.onComplete();
+                }
                 closeClient();
             });
             mUI = null;

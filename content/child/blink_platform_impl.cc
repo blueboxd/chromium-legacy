@@ -90,8 +90,6 @@ std::unique_ptr<blink::WebThemeEngine> GetWebThemeEngine() {
 
 int ToMessageID(int resource_id) {
   switch (resource_id) {
-    case WebLocalizedString::kAXAMPMFieldText:
-      return IDS_AX_AM_PM_FIELD_TEXT;
     case WebLocalizedString::kAXDayOfMonthFieldText:
       return IDS_AX_DAY_OF_MONTH_FIELD_TEXT;
     case WebLocalizedString::kAXHourFieldText:
@@ -194,30 +192,10 @@ int ToMessageID(int resource_id) {
       return IDS_FORM_OTHER_MONTH_LABEL;
     case WebLocalizedString::kOtherWeekLabel:
       return IDS_FORM_OTHER_WEEK_LABEL;
-    case WebLocalizedString::kOverflowMenuCaptions:
-      return IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS;
     case WebLocalizedString::kOverflowMenuCaptionsSubmenuTitle:
       return IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS_SUBMENU_TITLE;
-    case WebLocalizedString::kOverflowMenuCast:
-      return IDS_MEDIA_OVERFLOW_MENU_CAST;
-    case WebLocalizedString::kOverflowMenuEnterFullscreen:
-      return IDS_MEDIA_OVERFLOW_MENU_ENTER_FULLSCREEN;
-    case WebLocalizedString::kOverflowMenuExitFullscreen:
-      return IDS_MEDIA_OVERFLOW_MENU_EXIT_FULLSCREEN;
-    case WebLocalizedString::kOverflowMenuMute:
-      return IDS_MEDIA_OVERFLOW_MENU_MUTE;
     case WebLocalizedString::kOverflowMenuUnmute:
       return IDS_MEDIA_OVERFLOW_MENU_UNMUTE;
-    case WebLocalizedString::kOverflowMenuPlay:
-      return IDS_MEDIA_OVERFLOW_MENU_PLAY;
-    case WebLocalizedString::kOverflowMenuPause:
-      return IDS_MEDIA_OVERFLOW_MENU_PAUSE;
-    case WebLocalizedString::kOverflowMenuDownload:
-      return IDS_MEDIA_OVERFLOW_MENU_DOWNLOAD;
-    case WebLocalizedString::kOverflowMenuEnterPictureInPicture:
-      return IDS_MEDIA_OVERFLOW_MENU_ENTER_PICTURE_IN_PICTURE;
-    case WebLocalizedString::kOverflowMenuExitPictureInPicture:
-      return IDS_MEDIA_OVERFLOW_MENU_EXIT_PICTURE_IN_PICTURE;
     case WebLocalizedString::kPictureInPictureInterstitialText:
       return IDS_MEDIA_PICTURE_IN_PICTURE_INTERSTITIAL_TEXT;
     case WebLocalizedString::kPlaceholderForDayOfMonthField:

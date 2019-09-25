@@ -15,6 +15,8 @@ import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.weblayer.shell.WebLayerShellActivity;
 
+import java.util.concurrent.CountDownLatch;
+
 @RunWith(BaseJUnit4ClassRunner.class)
 public class SmokeTest {
     @Rule
@@ -26,11 +28,23 @@ public class SmokeTest {
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
         Assert.assertNotNull(activity);
 
-        TestThreadUtils.runOnUiThreadBlocking(
-                () -> { activity.getBrowserFragmentImpl().setSupportsEmbedding(true); });
-
+        CountDownLatch latch = new CountDownLatch(1);
         String url = "data:text,foo";
-        mActivityTestRule.loadUrl(url);
+
+        TestThreadUtils.runOnUiThreadBlocking(() -> {
+            activity.getBrowserFragmentImpl().setSupportsEmbedding(true).addCallback(
+                    (Boolean result) -> {
+                        Assert.assertTrue(result);
+                        mActivityTestRule.loadUrl(url);
+                        latch.countDown();
+                    });
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Assert.fail(e.toString());
+        }
         mActivityTestRule.waitForNavigation(url);
     }
 }

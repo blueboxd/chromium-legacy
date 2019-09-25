@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">சிக்கல் குறித்துப் புகார் செய்</translation>
 <translation id="2223693656926968778">நடப்பு உருப்படியில் நடவடிக்கை எடு</translation>
 <translation id="225732394367814946">பேச்சு விகிதத்தை அதிகரி</translation>
+<translation id="2267538686624070261">எழுத்துப் பிழையைத் தவிர்த்துச் செல்கிறீர்கள்</translation>
 <translation id="2267945578749931355">அடுத்த எழுத்து</translation>
 <translation id="2278490101488436824">மூன்று விரல்களை இடதுபுறமாக ஸ்வைப் செய்யவும்</translation>
 <translation id="2281234842553884450">முந்தைய ஸ்லைடர்</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">குழு</translation>
 <translation id="2582407057977008361">Aside</translation>
 <translation id="2592212930811759050">திருத்துவதற்கு, இருமுறை தட்டவும்</translation>
+<translation id="2598495320872286378">இலக்கணப் பிழை</translation>
 <translation id="2614981083756825552">கணித ML தளவமைப்பு</translation>
 <translation id="2624431853467395961">கற்றல் பயன்முறையைத் திறக்கவும்</translation>
 <translation id="2626530649491650971">கிளிக் செய்யத்தக்கது</translation>
@@ -821,6 +823,7 @@
 <translation id="6833103209700200188">அடிக்குறிப்பு</translation>
 <translation id="6858047746862060282">முன்னுரை</translation>
 <translation id="6859876496651143278">ஒரு விரலை இடதுபுறமாக ஸ்வைப் செய்யவும்</translation>
+<translation id="6865519907510167493">எழுத்துப்பிழை உள்ளது</translation>
 <translation id="6871161210040114857">எழுத்து உணர்வு புறக்கணிக்கப்பட்டது.</translation>
 <translation id="6877435256196695200">அடுத்த கிராஃபிக் இல்லை.</translation>
 <translation id="6897341342232909480">இடப்புறம் நகர்த்து</translation>
@@ -1111,6 +1114,7 @@ Chrome உலாவி மெனுவைத் திறக்க, Alt+F வி
 <translation id="8446884382197647889">மேலும் அறிக</translation>
 <translation id="8455868257606149352">அதிகபட்சம் <ph name="X" /></translation>
 <translation id="84575901236241018">அணுகல் விசை உள்ளது, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">இலக்கணப் பிழையைத் தவிர்த்துச் செல்கிறீர்கள்</translation>
 <translation id="847154984256717791">பிஸி</translation>
 <translation id="8476408756881832830">ChromeVox பேசும் போது, பிளேபேக்கை இடைநிறுத்து</translation>
 <translation id="8476508772960940536">சாளரத்தின் மேலோட்டம்</translation>

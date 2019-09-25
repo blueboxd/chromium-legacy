@@ -4711,11 +4711,6 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
   if (did_scroll_content) {
     ShowScrollbarsForImplScroll(current_scrolling_node->element_id);
 
-    // If we are scrolling with an active scroll handler, forward latency
-    // tracking information to the main thread so the delay introduced by the
-    // handler is accounted for.
-    if (scroll_affects_scroll_handler())
-      NotifySwapPromiseMonitorsOfForwardingToMainThread();
     client_->SetNeedsCommitOnImplThread();
     SetNeedsRedraw();
     client_->RenewTreePriority();
@@ -5853,12 +5848,6 @@ void LayerTreeHostImpl::NotifySwapPromiseMonitorsOfSetNeedsRedraw() {
   auto it = swap_promise_monitor_.begin();
   for (; it != swap_promise_monitor_.end(); it++)
     (*it)->OnSetNeedsRedrawOnImpl();
-}
-
-void LayerTreeHostImpl::NotifySwapPromiseMonitorsOfForwardingToMainThread() {
-  auto it = swap_promise_monitor_.begin();
-  for (; it != swap_promise_monitor_.end(); it++)
-    (*it)->OnForwardScrollUpdateToMainThreadOnImpl();
 }
 
 void LayerTreeHostImpl::UpdateRootLayerStateForSynchronousInputHandler() {

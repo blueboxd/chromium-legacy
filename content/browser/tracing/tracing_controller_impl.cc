@@ -14,6 +14,7 @@
 #include "base/cpu.h"
 #include "base/files/file_tracing.h"
 #include "base/logging.h"
+#include "base/run_loop.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"

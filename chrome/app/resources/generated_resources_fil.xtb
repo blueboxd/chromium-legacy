@@ -96,6 +96,7 @@
 <translation id="1136712381129578788">Na-lock ang security key dahil napakaraming beses nang nailagay ang maling PIN. Para i-unlock ito, alisin at ipasok ulit ito.</translation>
 <translation id="1137673463384776352">Buksan ang link sa <ph name="APP" /></translation>
 <translation id="1140351953533677694">I-access ang iyong mga Bluetooth at Serial device</translation>
+<translation id="114036956334641753">Audio at mga caption</translation>
 <translation id="1140610710803014750">Para mailagay ang iyong mga bookmark sa lahat ng device mo, mag-sign in at i-on ang sync.</translation>
 <translation id="1140746652461896221">I-block ang content sa anumang page na binibisita mo</translation>
 <translation id="1143142264369994168">Tagapaglagda ng Certificate</translation>
@@ -173,6 +174,7 @@
 <translation id="1235458158152011030">Mga kilalang network</translation>
 <translation id="123578888592755962">Puno na ang disk</translation>
 <translation id="1238191093934674082">Open VPN</translation>
+<translation id="1239594683407221485">I-explore ang content ng device sa app na Mga File.</translation>
 <translation id="124116460088058876">Higit pang wika</translation>
 <translation id="1241753985463165747">Basahin at baguhin ang lahat ng iyong data sa kasalukuyang website kapag na-invoke</translation>
 <translation id="1242633766021457174">Gustong i-reset ng <ph name="THIRD_PARTY_TOOL_NAME" /> ang iyong mga setting.</translation>
@@ -312,6 +314,7 @@
 <translation id="146220085323579959">Nadiskonekta ang Internet. Pakisuri ang iyong koneksyon sa internet at subukang muli.</translation>
 <translation id="1463112138205428654">Na-block ng Advanced na Proteksyon ang <ph name="FILE_NAME" />.</translation>
 <translation id="1464258312790801189">Ang Iyong Mga Account</translation>
+<translation id="1464781208867302907">Para sa mga kagustuhan sa device, pumunta sa Mga Setting.</translation>
 <translation id="1465176863081977902">K&amp;opyahin ang Address ng Audio</translation>
 <translation id="1465827627707997754">Hiwa ng pizza</translation>
 <translation id="1468571364034902819">Hindi magagamit ang profile na ito</translation>
@@ -744,6 +747,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2099686503067610784">Tanggalin ang certificate ng server na "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="2100273922101894616">Awtomatikong Mag-sign in</translation>
 <translation id="2101225219012730419">Bersyon:</translation>
+<translation id="2111670510994270194">Bagong tab sa kanan</translation>
 <translation id="21133533946938348">Pin Tab</translation>
 <translation id="2113479184312716848">Buksan ang &amp;File...</translation>
 <translation id="2113921862428609753">Access sa Impormasyon ng Awtoridad</translation>
@@ -1097,7 +1101,6 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="2586672484245266891">Maglagay ng mas maikling URL</translation>
 <translation id="2588636910004461974">Mga device mula sa <ph name="VENDOR_NAME" /></translation>
 <translation id="2594999711683503743">Hanapin sa Google o i-type ang URL</translation>
-<translation id="2597521610396315071">Magdagdag ng Patnubay</translation>
 <translation id="2603115962224169880">Linisin ang computer</translation>
 <translation id="2603463522847370204">Buksan sa &amp;incognito window</translation>
 <translation id="2604255671529671813">Error sa koneksyon ng network</translation>
@@ -1790,6 +1793,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="3630995161997703415">Idagdag ang site na ito sa iyong shelf upang magamit ito anumang oras</translation>
 <translation id="3636096452488277381">Kamusta, <ph name="USER_GIVEN_NAME" />.</translation>
 <translation id="3636766455281737684"><ph name="PERCENTAGE" />% - <ph name="TIME" /> na lang ang natitira</translation>
+<translation id="3637561406135221044">Nagsa-scan ng mga file para sa sensitibong data...</translation>
 <translation id="3637682276779847508">Permanenteng madi-disable ang iyong SIM card kung hindi mo mailalagay ang tamang PIN Unlock Key.</translation>
 <translation id="3640214691812501263">Idagdag ang "<ph name="EXTENSION_NAME" />" para sa <ph name="USER_NAME" />?</translation>
 <translation id="3640613767643722554">Turuan ang iyong Assistant na makilala ang boses mo</translation>
@@ -2228,6 +2232,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="425573743389990240">Rate ng Pagdiskarga ng Baterya sa Watts (Ang ibig sabihin ng negatibong halaga ay nagcha-charge ang baterya)</translation>
 <translation id="4256316378292851214">I-sa&amp;ve ang Video Bilang...</translation>
 <translation id="4258348331913189841">Mga system ng file</translation>
+<translation id="4263223596040212967">Tingnan ang layout ng iyong keyboard at subukang muli.</translation>
 <translation id="4263757076580287579">Nakansela ang pagpaparehistro ng printer.</translation>
 <translation id="426564820080660648">Upang tumingin ng mga update, pakigamit ang Ethernet, Wi-Fi o mobile data.</translation>
 <translation id="4267953847983678297">Awtomatikong kumonekta sa cellular network</translation>
@@ -2323,6 +2328,7 @@ Puwede mong pamahalaan ang mga setting ng account na ito sa pamamagitan ng pag-i
 <translation id="4416582610654027550">Mag-type ng valid na URL</translation>
 <translation id="4419409365248380979">Laging payagan ang <ph name="HOST" /> na magset ng cookies</translation>
 <translation id="4419610272958564173">Hindi Kilalang Device (Vendor: <ph name="VENDOR_ID" />, Produkto: <ph name="PRODUCT_ID" />)</translation>
+<translation id="4421167684395067330">Nagkakaproblema sa pagkonekta. Makipag-ugnayan sa <ph name="CARRIER_NAME" /> para sa tulong.</translation>
 <translation id="4421932782753506458">Mingming</translation>
 <translation id="4423376891418188461">I-restore ang Mga Setting</translation>
 <translation id="442397852638519243"><ph name="USER_NAME" />, hinihiling sa iyo ng administrator mo na palitan ang iyong password.</translation>
@@ -2998,6 +3004,7 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translatio
 <translation id="5457599981699367932">Mag-browse bilang Bisita</translation>
 <translation id="5457991019809708398">Naka-on, hindi roaming</translation>
 <translation id="5458998536542739734">Mga tala sa lock screen</translation>
+<translation id="546322474339998983">Ginagamit ng Chrome browser at Launcher ng <ph name="DEVICE_TYPE" /></translation>
 <translation id="5463231940765244860">Ilagay</translation>
 <translation id="5463275305984126951">Index ng <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">Menu na naglalaman ng mga nakatagong bookmark</translation>
@@ -3295,6 +3302,7 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translatio
 <translation id="5869948122057593679">Isara ang Lahat ng Iyong Window</translation>
 <translation id="5870086504539785141">Isara ang menu ng accessibility</translation>
 <translation id="5870155679953074650">Mga hard fault</translation>
+<translation id="5876851302954717356">Bagong Tab sa Kanan</translation>
 <translation id="5877064549588274448">Binago ang channel. I-restart ang iyong device upang ilapat ang mga pagbabago.</translation>
 <translation id="5877584842898320529">Hindi available o hindi naka-install nang tama ang napiling printer. <ph name="BR" /> Suriin ang iyong printer o subukang pumili ng ibang printer.</translation>
 <translation id="5882919346125742463">Mga Kilalang Network</translation>
@@ -4493,6 +4501,7 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translatio
 <translation id="7685049629764448582">Memorya sa JavaScript</translation>
 <translation id="7685087414635069102">Kailangan ng PIN</translation>
 <translation id="7685301384041462804">Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translation>
+<translation id="768549422429443215">Magdagdag ng mga wika o baguhin ang pagkakasunud-sunod ng listahan.</translation>
 <translation id="7686938547853266130"><ph name="FRIENDLY_NAME" /> (<ph name="DEVICE_PATH" />)</translation>
 <translation id="7690294790491645610">Kumpirmahin ang bagong password</translation>
 <translation id="7690378713476594306">Pumili sa listahan</translation>
@@ -4554,6 +4563,7 @@ Tiyaking pinagkakatiwalaan mo ang site na ito bago ka pumasok sa VR.</translatio
 <translation id="7773726648746946405">Storage ng session</translation>
 <translation id="7774365994322694683">Ibon</translation>
 <translation id="7776701556330691704">Walang nakitang boses</translation>
+<translation id="7780252971640011240">Nagkakaproblema sa pagkonekta. Makipag-ugnayan sa iyong carrier para sa tulong.</translation>
 <translation id="7781335840981796660">Aalisin ang lahat ng user account at lokal na data.</translation>
 <translation id="7782102568078991263">Wala nang mga suhestiyon mula sa Google</translation>
 <translation id="7782717250816686129">I-store ang mga persistent data sa screen sa pag-log in at ilagay ang mga kredensyal sa session.</translation>

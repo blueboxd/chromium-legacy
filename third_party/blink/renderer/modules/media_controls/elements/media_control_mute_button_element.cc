@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_mute_button_element.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/input_type_names.h"
@@ -39,11 +40,10 @@ void MediaControlMuteButtonElement::UpdateDisplayType() {
   MediaControlInputElement::UpdateDisplayType();
 }
 
-WebLocalizedString::Name MediaControlMuteButtonElement::GetOverflowStringName()
-    const {
+int MediaControlMuteButtonElement::GetOverflowStringId() const {
   if (MediaElement().muted())
-    return WebLocalizedString::kOverflowMenuUnmute;
-  return WebLocalizedString::kOverflowMenuMute;
+    return IDS_MEDIA_OVERFLOW_MENU_UNMUTE;
+  return IDS_MEDIA_OVERFLOW_MENU_MUTE;
 }
 
 bool MediaControlMuteButtonElement::HasOverflowButton() const {

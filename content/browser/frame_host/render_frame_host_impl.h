@@ -85,6 +85,7 @@
 #include "third_party/blink/public/mojom/frame/navigation_initiator.mojom.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/image_downloader/image_downloader.mojom.h"
+#include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider.mojom.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
@@ -482,6 +483,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // FrameTreeNode. The proper way to check whether a frame is loading is to
   // call FrameTreeNode::IsLoading.
   bool is_loading() const { return is_loading_; }
+
+  // Returns true if this frame has fired DOMContentLoaded.
+  bool dom_content_loaded() const { return dom_content_loaded_; }
 
   // Returns true if this is a top-level frame, or if this frame's RenderFrame
   // is in a different process from its parent frame. Local roots are
@@ -1073,6 +1077,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetFileChooser(
       mojo::PendingReceiver<blink::mojom::FileChooser> receiver);
 
+  void CreatePermissionService(
+      mojo::PendingReceiver<blink::mojom::PermissionService> receiver);
+
   void CreateWebBluetoothService(
       mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
 
@@ -1315,6 +1322,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnSuddenTerminationDisablerChanged(
       bool present,
       blink::WebSuddenTerminationDisablerType disabler_type);
+  void OnDidFinishDocumentLoad();
   void OnDidStopLoading();
   void OnDidChangeLoadProgress(double load_progress);
   void OnSelectionChanged(const base::string16& text,
@@ -1991,6 +1999,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Indicates whether this RenderFrameHost is in the process of loading a
   // document or not.
   bool is_loading_;
+
+  // Indicates whether this RenderFrameHost has completed firing
+  // DOMContentLoaded or not.
+  bool dom_content_loaded_ = false;
 
   // The unique ID of the latest NavigationEntry that this RenderFrameHost is
   // showing. This may change even when this frame hasn't committed a page,

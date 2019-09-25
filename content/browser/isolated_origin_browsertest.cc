@@ -1239,8 +1239,6 @@ void CreateTestStoragePartitionService(
 
 // Verify that an isolated renderer process cannot read localStorage of an
 // origin outside of its isolated site.
-// TODO(nasko): Write a test to verify the opposite - any non-isolated renderer
-// process cannot access data of an isolated site.
 IN_PROC_BROWSER_TEST_F(
     IsolatedOriginTest,
     LocalStorageOriginEnforcement_IsolatedAccessingNonIsolated) {
@@ -1253,7 +1251,47 @@ IN_PROC_BROWSER_TEST_F(
   GURL isolated_url(
       embedded_test_server()->GetURL("isolated.foo.com", "/title1.html"));
   EXPECT_TRUE(IsIsolatedOrigin(url::Origin::Create(isolated_url)));
+
   EXPECT_TRUE(NavigateToURL(shell(), isolated_url));
+
+  content::RenderProcessHostKillWaiter kill_waiter(
+      shell()->web_contents()->GetMainFrame()->GetProcess());
+  // Use ignore_result here, since on Android the renderer process is
+  // terminated, but ExecuteScript still returns true. It properly returns
+  // false on all other platforms.
+  ignore_result(ExecuteScript(shell()->web_contents()->GetMainFrame(),
+                              "localStorage.length;"));
+  EXPECT_EQ(bad_message::RPH_MOJO_PROCESS_ERROR, kill_waiter.Wait());
+}
+
+#if defined(OS_ANDROID)
+#define MAYBE_LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated \
+  LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated
+#else
+// TODO(lukasza): https://crbug.com/566091: Once remote NTP is capable of
+// embedding OOPIFs, start enforcing citadel-style checks on desktop
+// platforms.
+#define MAYBE_LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated \
+  DISABLED_LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated
+#endif
+// Verify that a non-isolated renderer process cannot read localStorage of an
+// isolated origin.
+//
+// TODO(alexmos, lukasza): https://crbug.com/764958: Replicate this test for
+// the IO-thread case.
+IN_PROC_BROWSER_TEST_F(
+    IsolatedOriginTest,
+    MAYBE_LocalStorageOriginEnforcement_NonIsolatedAccessingIsolated) {
+  auto isolated_origin = url::Origin::Create(GURL("http://isolated.foo.com"));
+  EXPECT_TRUE(IsIsolatedOrigin(isolated_origin));
+
+  GURL nonisolated_url(
+      embedded_test_server()->GetURL("non-isolated.com", "/title1.html"));
+  EXPECT_FALSE(IsIsolatedOrigin(url::Origin::Create(nonisolated_url)));
+
+  RenderProcessHostImpl::SetStoragePartitionServiceRequestHandlerForTesting(
+      base::BindRepeating(&CreateTestStoragePartitionService, isolated_origin));
+  EXPECT_TRUE(NavigateToURL(shell(), nonisolated_url));
 
   content::RenderProcessHostKillWaiter kill_waiter(
       shell()->web_contents()->GetMainFrame()->GetProcess());

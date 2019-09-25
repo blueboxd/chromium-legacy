@@ -38,6 +38,10 @@ class DeviceActions : public ash::AndroidIntentHelper,
       chromeos::assistant::mojom::AppListEventSubscriberPtr subscriber)
       override;
 
+  // ash::AndroidIntentHelper overrides:
+  base::Optional<std::string> GetAndroidAppLaunchIntent(
+      chromeos::assistant::mojom::AndroidAppInfoPtr app_info) override;
+
  private:
   // ArcAppListPrefs::Observer overrides.
   void OnPackageListInitialRefreshed() override;

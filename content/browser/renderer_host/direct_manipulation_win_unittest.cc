@@ -350,6 +350,13 @@ class MockWindowEventTarget : public ui::WindowEventTarget {
     return S_OK;
   }
 
+  LRESULT HandleInputMessage(unsigned int message,
+                             WPARAM w_param,
+                             LPARAM l_param,
+                             bool* handled) override {
+    return S_OK;
+  }
+
   LRESULT HandleScrollMessage(unsigned int message,
                               WPARAM w_param,
                               LPARAM l_param,

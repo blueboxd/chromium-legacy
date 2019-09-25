@@ -13,6 +13,7 @@
 #include "content/browser/renderer_host/input/mouse_wheel_phase_handler.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/native_web_keyboard_event.h"
+#include "ui/aura/scoped_enable_unadjusted_mouse_events.h"
 #include "ui/aura/scoped_keyboard_hook.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/events/event_handler.h"
@@ -259,9 +260,12 @@ class CONTENT_EXPORT RenderWidgetHostViewEventHandler
   // locked.
   bool mouse_locked_;
 
-  // True if mouse is locked and we are reporting the unadjusted movement
-  // value (without mouse accelerations) from OS, i.e. WM_INPUT on Windows.
-  bool mouse_locked_unadjusted_movement_;
+  // Use to track whether pointer lock is in the unadjusted movement mode and
+  // mousemoves are using unadjusted movement value (without mouse
+  // accelerations) from OS, i.e. WM_INPUT on Windows. Deactivates raw input
+  // mode when destroyed.
+  std::unique_ptr<aura::ScopedEnableUnadjustedMouseEvents>
+      mouse_locked_unadjusted_movement_;
 
   // Whether pinch-to-zoom should be enabled and pinch events forwarded to the
   // renderer.

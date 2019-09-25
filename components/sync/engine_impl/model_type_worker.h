@@ -34,7 +34,6 @@ namespace syncer {
 
 class CancelationSignal;
 class ModelTypeProcessor;
-class WorkerEntityTracker;
 
 // A smart cache for sync types that use message passing (rather than
 // transactions and the syncable::Directory) to communicate with the sync
@@ -191,16 +190,6 @@ class ModelTypeWorker : public UpdateHandler,
   // decrypt anything that has encrypted data.
   // Should only be called during a GetUpdates cycle.
   void DecryptStoredEntities();
-
-  // Returns the entity tracker for the given |tag_hash|, or nullptr.
-  WorkerEntityTracker* GetEntityTracker(const std::string& tag_hash);
-
-  // Creates an entity tracker in the map using the given |data| and returns a
-  // pointer to it. Requires that one doesn't exist for data.client_tag_hash.
-  WorkerEntityTracker* CreateEntityTracker(const std::string& tag_hash);
-
-  // Gets the entity tracker for |data| or creates one if it doesn't exist.
-  WorkerEntityTracker* GetOrCreateEntityTracker(const std::string& tag_hash);
 
   // Nudges nudge_handler_ when initial sync is done, processor has local
   // changes and either encryption is disabled for the type or cryptographer is

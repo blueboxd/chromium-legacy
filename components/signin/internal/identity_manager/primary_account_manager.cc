@@ -53,6 +53,7 @@ void PrimaryAccountManager::RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kGoogleServicesLastUsername,
                                std::string());
   registry->RegisterStringPref(prefs::kGoogleServicesAccountId, std::string());
+  registry->RegisterBooleanPref(prefs::kGoogleServicesConsentedToSync, false);
   registry->RegisterBooleanPref(prefs::kAutologinEnabled, true);
   registry->RegisterListPref(prefs::kReverseAutologinRejectedEmailList);
   registry->RegisterBooleanPref(prefs::kSigninAllowed, true);
@@ -74,12 +75,21 @@ void PrimaryAccountManager::Initialize(PrefService* local_state) {
   // clear their login info also (not valid to be logged in without any
   // tokens).
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
-  if (cmd_line->HasSwitch(switches::kClearTokenService)) {
-    client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
-  }
+  if (cmd_line->HasSwitch(switches::kClearTokenService))
+    SetPrimaryAccountInternal(CoreAccountInfo(), false);
 
   std::string pref_account_id =
       client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
+
+  // Initial value for the kGoogleServicesConsentedToSync preference if it is
+  // missing.
+  const PrefService::Preference* consented_pref =
+      client_->GetPrefs()->FindPreference(
+          prefs::kGoogleServicesConsentedToSync);
+  if (consented_pref->IsDefaultValue()) {
+    client_->GetPrefs()->SetBoolean(prefs::kGoogleServicesConsentedToSync,
+                                    !pref_account_id.empty());
+  }
 
   if (!pref_account_id.empty()) {
     if (account_tracker_service_->GetMigrationState() ==
@@ -90,12 +100,25 @@ void PrimaryAccountManager::Initialize(PrefService* local_state) {
       if (!account_info.gaia.empty()) {
         pref_account_id = account_info.gaia;
         client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
-                                       pref_account_id);
+                                       account_info.gaia);
       }
     }
-    SetAuthenticatedAccountInfo(account_tracker_service_->GetAccountInfo(
-        CoreAccountId(pref_account_id)));
   }
+
+  bool consented =
+      client_->GetPrefs()->GetBoolean(prefs::kGoogleServicesConsentedToSync);
+  CoreAccountInfo account_info =
+      account_tracker_service_->GetAccountInfo(CoreAccountId(pref_account_id));
+  if (consented) {
+    DCHECK(!account_info.account_id.empty());
+    // First reset the state, because SetAuthenticatedAccountInfo can only be
+    // called if the user is not already signed in.
+    SetPrimaryAccountInternal(CoreAccountInfo(), /*consented=*/false);
+    SetAuthenticatedAccountInfo(account_info);
+  } else {
+    SetPrimaryAccountInternal(account_info, consented);
+  }
+
   if (policy_manager_) {
     policy_manager_->InitializePolicy(local_state, this);
   }
@@ -110,11 +133,38 @@ bool PrimaryAccountManager::IsInitialized() const {
 }
 
 CoreAccountInfo PrimaryAccountManager::GetAuthenticatedAccountInfo() const {
-  return authenticated_account_info_.value_or(CoreAccountInfo());
+  if (!IsAuthenticated())
+    return CoreAccountInfo();
+  return primary_account_info();
 }
 
 CoreAccountId PrimaryAccountManager::GetAuthenticatedAccountId() const {
   return GetAuthenticatedAccountInfo().account_id;
+}
+
+CoreAccountInfo PrimaryAccountManager::GetUnconsentedPrimaryAccountInfo()
+    const {
+  return primary_account_info();
+}
+
+bool PrimaryAccountManager::HasUnconsentedPrimaryAccount() const {
+  return !primary_account_info().account_id.empty();
+}
+
+void PrimaryAccountManager::SetUnconsentedPrimaryAccountInfo(
+    CoreAccountInfo account_info) {
+  if (IsAuthenticated()) {
+    DCHECK_EQ(account_info, GetAuthenticatedAccountInfo());
+    return;
+  }
+
+  bool account_changed = account_info != primary_account_info();
+  SetPrimaryAccountInternal(account_info, /*consented_to_sync=*/false);
+
+  if (account_changed) {
+    for (Observer& observer : observers_)
+      observer.UnconsentedPrimaryAccountChanged(primary_account_info());
+  }
 }
 
 void PrimaryAccountManager::SetAuthenticatedAccountInfo(
@@ -122,19 +172,21 @@ void PrimaryAccountManager::SetAuthenticatedAccountInfo(
   DCHECK(!account_info.account_id.empty());
   DCHECK(!IsAuthenticated());
 
-  std::string pref_account_id =
-      client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
+#if DCHECK_IS_ON()
+  {
+    std::string pref_account_id =
+        client_->GetPrefs()->GetString(prefs::kGoogleServicesAccountId);
+    bool consented_to_sync =
+        client_->GetPrefs()->GetBoolean(prefs::kGoogleServicesConsentedToSync);
 
-  DCHECK(pref_account_id.empty() ||
-         pref_account_id == account_info.account_id.id)
-      << "account_id=" << account_info.account_id
-      << " pref_account_id=" << pref_account_id;
-  authenticated_account_info_ = account_info;
+    DCHECK(pref_account_id.empty() || !consented_to_sync ||
+           pref_account_id == account_info.account_id.id)
+        << "account_id=" << account_info.account_id
+        << " pref_account_id=" << pref_account_id;
+  }
+#endif  // DCHECK_IS_ON()
 
-  // This preference is set so that code on I/O thread has access to the
-  // Gaia id of the signed in user.
-  client_->GetPrefs()->SetString(prefs::kGoogleServicesAccountId,
-                                 account_info.account_id.id);
+  SetPrimaryAccountInternal(account_info, /*consented_to_sync=*/true);
 
   // Go ahead and update the last signed in account info here as well. Once a
   // user is signed in the corresponding preferences should match. Doing it here
@@ -149,8 +201,28 @@ void PrimaryAccountManager::SetAuthenticatedAccountInfo(
   client_->GetPrefs()->CommitPendingWrite();
 }
 
+void PrimaryAccountManager::SetPrimaryAccountInternal(
+    const CoreAccountInfo& account_info,
+    bool consented_to_sync) {
+  primary_account_info_ = account_info;
+
+  PrefService* prefs = client_->GetPrefs();
+  const std::string& account_id = primary_account_info_.account_id;
+  if (account_id.empty()) {
+    DCHECK(!consented_to_sync);
+    prefs->ClearPref(prefs::kGoogleServicesAccountId);
+    prefs->ClearPref(prefs::kGoogleServicesConsentedToSync);
+  } else {
+    prefs->SetString(prefs::kGoogleServicesAccountId, account_id);
+    prefs->SetBoolean(prefs::kGoogleServicesConsentedToSync, consented_to_sync);
+  }
+}
+
 bool PrimaryAccountManager::IsAuthenticated() const {
-  return authenticated_account_info_.has_value();
+  bool consented_pref =
+      client_->GetPrefs()->GetBoolean(prefs::kGoogleServicesConsentedToSync);
+  DCHECK(!consented_pref || !primary_account_info().account_id.empty());
+  return consented_pref;
 }
 
 void PrimaryAccountManager::SignIn(const std::string& username) {
@@ -161,23 +233,27 @@ void PrimaryAccountManager::SignIn(const std::string& username) {
   DCHECK(!info.account_id.empty());
   if (IsAuthenticated()) {
     DCHECK_EQ(info.account_id, GetAuthenticatedAccountId())
-        << "Changing the authenticated account while authenticated is not "
-           "allowed.";
+        << "Changing the authenticated account while it is not allowed.";
     return;
   }
 
+  bool account_changed = info != primary_account_info();
   SetAuthenticatedAccountInfo(info);
 
-  for (Observer& observer : observers_)
+  for (Observer& observer : observers_) {
+    if (account_changed)
+      observer.UnconsentedPrimaryAccountChanged(info);
     observer.GoogleSigninSucceeded(info);
+  }
 }
 
 void PrimaryAccountManager::UpdateAuthenticatedAccountInfo() {
-  DCHECK(authenticated_account_info_.has_value());
+  DCHECK(!primary_account_info().account_id.empty());
+  DCHECK(IsAuthenticated());
   const CoreAccountInfo info = account_tracker_service_->GetAccountInfo(
-      authenticated_account_info_->account_id);
-  DCHECK_EQ(info.account_id, authenticated_account_info_->account_id);
-  authenticated_account_info_ = info;
+      primary_account_info().account_id);
+  DCHECK_EQ(info.account_id, primary_account_info().account_id);
+  SetPrimaryAccountInternal(info, /*consented_to_sync=*/true);
 }
 
 void PrimaryAccountManager::AddObserver(Observer* observer) {
@@ -249,9 +325,8 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
   }
 
   const CoreAccountInfo account_info = GetAuthenticatedAccountInfo();
-  authenticated_account_info_ = base::nullopt;
   client_->GetPrefs()->ClearPref(prefs::kGoogleServicesHostedDomain);
-  client_->GetPrefs()->ClearPref(prefs::kGoogleServicesAccountId);
+  SetPrimaryAccountInternal(CoreAccountInfo(), /*consented_to_sync=*/false);
 
   // Revoke all tokens before sending signed_out notification, because there
   // may be components that don't listen for token service events when the
@@ -275,8 +350,10 @@ void PrimaryAccountManager::OnSignoutDecisionReached(
       break;
   }
 
-  for (Observer& observer : observers_)
+  for (Observer& observer : observers_) {
     observer.GoogleSignedOut(account_info);
+    observer.UnconsentedPrimaryAccountChanged(primary_account_info());
+  }
 }
 
 void PrimaryAccountManager::OnRefreshTokensLoaded() {

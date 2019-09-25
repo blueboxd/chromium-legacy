@@ -228,7 +228,10 @@ class NET_EXPORT NetLog {
   //
   // TODO(eroman): Survey current callsites; most are probably not necessary,
   // and may even be harmful.
-  bool IsCapturing() const;
+  bool IsCapturing() const {
+    CheckAlive();
+    return GetObserverCaptureModes() != 0;
+  }
 
   // Adds an observer and sets its log capture mode.  The observer must not be
   // watching any NetLog, including this one, when this is called.
@@ -295,7 +298,9 @@ class NET_EXPORT NetLog {
                         const GetParamsInterface* get_params);
 
   // Returns the set of all capture modes being observed.
-  NetLogCaptureModeSet GetObserverCaptureModes() const;
+  NetLogCaptureModeSet GetObserverCaptureModes() const {
+    return base::subtle::NoBarrier_Load(&observer_capture_modes_);
+  }
 
   // Adds an entry using already materialized parameters, when it is already
   // known that the log is capturing (goes straight to acquiring observer lock).

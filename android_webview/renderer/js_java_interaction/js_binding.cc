@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "android_webview/renderer/js_java_interaction/js_java_configurator.h"
 #include "base/strings/string_util.h"
 #include "content/public/renderer/render_frame.h"
 #include "gin/data_object_builder.h"
@@ -35,7 +36,8 @@ gin::WrapperInfo JsBinding::kWrapperInfo = {gin::kEmbedderNativeGin};
 // static
 std::unique_ptr<JsBinding> JsBinding::Install(
     content::RenderFrame* render_frame,
-    const base::string16& js_object_name) {
+    const base::string16& js_object_name,
+    JsJavaConfigurator* js_java_configurator) {
   CHECK(!js_object_name.empty())
       << "JavaScript wrapper name shouldn't be empty";
 
@@ -47,7 +49,8 @@ std::unique_ptr<JsBinding> JsBinding::Install(
     return nullptr;
 
   v8::Context::Scope context_scope(context);
-  std::unique_ptr<JsBinding> js_binding(new JsBinding(render_frame));
+  std::unique_ptr<JsBinding> js_binding(
+      new JsBinding(render_frame, js_object_name, js_java_configurator));
   gin::Handle<JsBinding> bindings =
       gin::CreateHandle(isolate, js_binding.get());
   if (bindings.IsEmpty())
@@ -63,12 +66,18 @@ std::unique_ptr<JsBinding> JsBinding::Install(
   return js_binding;
 }
 
-JsBinding::JsBinding(content::RenderFrame* render_frame)
-    : render_frame_(render_frame) {
-  render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
-      &js_to_java_messaging_);
-  js_to_java_messaging_->SetJavaToJsMessaging(
-      receiver_.BindNewPipeAndPassRemote());
+JsBinding::JsBinding(content::RenderFrame* render_frame,
+                     const base::string16& js_object_name,
+                     JsJavaConfigurator* js_java_configurator)
+    : render_frame_(render_frame),
+      js_object_name_(js_object_name),
+      js_java_configurator_(js_java_configurator) {
+  mojom::JsToJavaMessaging* js_to_java_messaging =
+      js_java_configurator_->GetJsToJavaMessage(js_object_name_);
+  if (js_to_java_messaging) {
+    js_to_java_messaging->SetJavaToJsMessaging(
+        receiver_.BindNewPipeAndPassRemote());
+  }
 }
 
 JsBinding::~JsBinding() = default;
@@ -153,8 +162,12 @@ void JsBinding::PostMessage(gin::Arguments* args) {
     ports.emplace_back(port.value());
   }
 
-  js_to_java_messaging_->PostMessage(
-      message, blink::MessagePortChannel::ReleaseHandles(ports));
+  mojom::JsToJavaMessaging* js_to_java_messaging =
+      js_java_configurator_->GetJsToJavaMessage(js_object_name_);
+  if (js_to_java_messaging) {
+    js_to_java_messaging->PostMessage(
+        message, blink::MessagePortChannel::ReleaseHandles(ports));
+  }
 }
 
 // AddEventListener() needs to match EventTarget's AddEventListener() in blink.

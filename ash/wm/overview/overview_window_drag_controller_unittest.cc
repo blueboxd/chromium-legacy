@@ -4,6 +4,7 @@
 
 #include "ash/wm/overview/overview_window_drag_controller.h"
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/public/cpp/ash_features.h"
 #include "ash/shell.h"

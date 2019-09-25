@@ -2147,7 +2147,7 @@ YearListCell.BorderBottomWidth = 1;
 YearListCell.ButtonRows = 3;
 YearListCell.ButtonColumns = 4;
 YearListCell._SelectedHeight = hasInaccuratePointingDevice() ? 127 : 121;
-YearListCell._SelectedHeightRefresh = 121;
+YearListCell._SelectedHeightRefresh = 128;
 YearListCell.GetSelectedHeight = function() {
   if (global.params.isFormControlsRefreshEnabled) {
     return YearListCell._SelectedHeightRefresh;

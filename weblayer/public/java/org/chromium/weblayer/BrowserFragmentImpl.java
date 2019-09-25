@@ -6,6 +6,7 @@ package org.chromium.weblayer;
 
 import android.os.RemoteException;
 import android.view.View;
+import android.webkit.ValueCallback;
 
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IBrowserController;
@@ -51,11 +52,21 @@ public final class BrowserFragmentImpl {
      * container view of the fragment is animated in any way, needs to be rotated or blended, or
      * need to control z-order with other views or other BrowserFragmentImpls. Note embedder should
      * keep WebLayer in the default non-embedding mode when user is interacting with the web
-     * content.
+     * content. Embedding mode does not support encrypted video.
+     * @return a ListenableResult of whether the request succeeded. A request might fail if it is
+     * subsumed by a subsequent request, or if this object is destroyed.
      */
-    public void setSupportsEmbedding(boolean enable) {
+    public ListenableResult<Boolean> setSupportsEmbedding(boolean enable) {
         try {
-            getIBrowserController().setSupportsEmbedding(enable);
+            final ListenableResult<Boolean> listenableResult = new ListenableResult<Boolean>();
+            getIBrowserController().setSupportsEmbedding(
+                    enable, ObjectWrapper.wrap(new ValueCallback<Boolean>() {
+                        @Override
+                        public void onReceiveValue(Boolean result) {
+                            listenableResult.supplyResult(result);
+                        }
+                    }));
+            return listenableResult;
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

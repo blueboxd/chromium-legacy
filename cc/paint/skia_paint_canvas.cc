@@ -328,10 +328,6 @@ bool SkiaPaintCanvas::isClipEmpty() const {
   return canvas_->isClipEmpty();
 }
 
-bool SkiaPaintCanvas::isClipRect() const {
-  return canvas_->isClipRect();
-}
-
 const SkMatrix& SkiaPaintCanvas::getTotalMatrix() const {
   return canvas_->getTotalMatrix();
 }

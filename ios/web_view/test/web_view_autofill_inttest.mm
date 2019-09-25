@@ -64,7 +64,20 @@ NSString* const kTestFormHtml =
 // Tests autofill features in CWVWebViews.
 class WebViewAutofillTest : public WebViewInttestBase {
  protected:
-  WebViewAutofillTest() : autofill_controller_(web_view_.autofillController) {}
+  WebViewAutofillTest() : autofill_controller_(web_view_.autofillController) {
+    // Ensure CWVAutofillProfiles are saved by default.
+    id delegate = OCMProtocolMock(@protocol(CWVAutofillControllerDelegate));
+    autofill_controller_.delegate = delegate;
+    [[delegate stub] autofillController:autofill_controller_
+        decideSavePolicyForAutofillProfile:[OCMArg any]
+                           decisionHandler:[OCMArg
+                                               checkWithBlock:^BOOL(id param) {
+                                                 void (^decisionHandler)(BOOL) =
+                                                     param;
+                                                 decisionHandler(YES);
+                                                 return YES;
+                                               }]];
+  }
 
   bool LoadTestPage() WARN_UNUSED_RESULT {
     std::string html = base::SysNSStringToUTF8(kTestFormHtml);

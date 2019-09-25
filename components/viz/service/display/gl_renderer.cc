@@ -737,10 +737,12 @@ void GLRenderer::RestoreBlendFuncToDefault(SkBlendMode blend_mode) {
 }
 
 bool GLRenderer::ShouldApplyBackdropFilters(
-    const cc::FilterOperations* backdrop_filters) {
-  if (!backdrop_filters)
+    const DrawRenderPassDrawQuadParams* params) {
+  if (!params->backdrop_filters)
     return false;
-  DCHECK(!backdrop_filters->IsEmpty());
+  if (params->quad->shared_quad_state->opacity == 0.f)
+    return false;
+  DCHECK(!params->backdrop_filters->IsEmpty());
   return true;
 }
 
@@ -786,7 +788,7 @@ gfx::Rect GLRenderer::GetBackdropBoundingBoxForRenderPassQuad(
   *unclipped_rect = backdrop_rect;
   backdrop_rect.Intersect(MoveFromDrawToWindowSpace(
       current_frame()->current_render_pass->output_rect));
-  if (ShouldApplyBackdropFilters(params->backdrop_filters)) {
+  if (ShouldApplyBackdropFilters(params)) {
     float max_pixel_movement = params->backdrop_filters->MaximumPixelMovement();
     gfx::Rect scissor_rect(current_window_space_viewport_);
     scissor_rect.Inset(-max_pixel_movement, -max_pixel_movement);
@@ -910,7 +912,7 @@ sk_sp<SkImage> GLRenderer::ApplyBackdropFilters(
     const gfx::Rect& unclipped_rect,
     const base::Optional<gfx::RRectF>& backdrop_filter_bounds,
     const gfx::Transform& backdrop_filter_bounds_transform) {
-  DCHECK(ShouldApplyBackdropFilters(params->backdrop_filters));
+  DCHECK(ShouldApplyBackdropFilters(params));
   DCHECK(params->backdrop_filter_quality);
   DCHECK(!params->filters)
       << "Filters should always be in a separate Effect node";
@@ -1098,7 +1100,7 @@ bool GLRenderer::InitializeRPDQParameters(
   local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
   params->filters = FiltersForPass(quad->render_pass_id);
   params->backdrop_filters = BackdropFiltersForPass(quad->render_pass_id);
-  if (ShouldApplyBackdropFilters(params->backdrop_filters)) {
+  if (ShouldApplyBackdropFilters(params)) {
     params->backdrop_filter_bounds =
         BackdropFilterBoundsForPass(quad->render_pass_id);
     if (params->backdrop_filter_bounds.has_value()) {
@@ -1171,7 +1173,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
   params->blend_mode = quad->shared_quad_state->blend_mode;
   params->use_shaders_for_blending =
       !CanApplyBlendModeUsingBlendFunc(params->blend_mode) ||
-      ShouldApplyBackdropFilters(params->backdrop_filters) ||
+      ShouldApplyBackdropFilters(params) ||
       settings_->force_blending_with_shaders;
 
   if (params->use_shaders_for_blending) {
@@ -1197,7 +1199,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
       params->background_texture = GetBackdropTexture(
           params->background_rect, &params->background_texture_format);
 
-      if (ShouldApplyBackdropFilters(params->backdrop_filters)) {
+      if (ShouldApplyBackdropFilters(params)) {
         // Apply the background filters to R, so that it is applied in the
         // pixels' coordinate space.
         params->background_image =
@@ -1216,7 +1218,7 @@ void GLRenderer::UpdateRPDQShadersForBlending(
           params->background_texture = 0;
         }
       } else if (CanApplyBlendModeUsingBlendFunc(params->blend_mode) &&
-                 ShouldApplyBackdropFilters(params->backdrop_filters)) {
+                 ShouldApplyBackdropFilters(params)) {
         // Something went wrong with applying backdrop filters to the
         // backdrop.
         params->use_shaders_for_blending = false;

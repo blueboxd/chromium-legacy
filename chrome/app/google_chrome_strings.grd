@@ -1156,10 +1156,10 @@ Signing in anyway will merge Chrome information like bookmarks, history, and oth
           Please wait while Chrome installs the latest system updates.
         </message>
         <message name="IDS_CHECKING_FOR_UPDATE_MSG" desc="Chrome OS OOBE: message shown during checking for update stage.">
-          Chrome updates automatically so you always have the freshest version.
+          Future versions of Chrome will install automatically.
         </message>
         <message name="IDS_UPDATE_MSG" desc="Chrome OS OOBE: message shown during update stage.">
-          Chrome updates automatically so you always have the freshest version. When this download completes, Chrome will restart and you'll be on your way.
+          Future versions of Chrome will install automatically. When this download completes, Chrome will restart and you'll be on your way.
         </message>
         <message name="IDS_EULA_SCREEN_ACCESSIBLE_TITLE" desc="Title to be spoken on opening the OOBE EULA screen">
           Chrome OS terms

@@ -4456,6 +4456,13 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kAnchor:
       return ROLE_SYSTEM_LINK;
 
+    case ax::mojom::Role::kAnnotationAttribution:
+    case ax::mojom::Role::kAnnotationCommentary:
+    case ax::mojom::Role::kAnnotationPresence:
+    case ax::mojom::Role::kAnnotationRevision:
+    case ax::mojom::Role::kAnnotationSuggestion:
+      return ROLE_SYSTEM_GROUPING;
+
     case ax::mojom::Role::kApplication:
       return ROLE_SYSTEM_APPLICATION;
 
@@ -4818,7 +4825,7 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kSwitch:
       return ROLE_SYSTEM_CHECKBUTTON;
 
-    case ax::mojom::Role::kAnnotation:
+    case ax::mojom::Role::kRubyAnnotation:
     case ax::mojom::Role::kListMarker:
     case ax::mojom::Role::kStaticText:
       return ROLE_SYSTEM_STATICTEXT;
@@ -5042,6 +5049,12 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
   int32_t ia2_role = 0;
 
   switch (GetData().role) {
+    case ax::mojom::Role::kAnnotationAttribution:
+    case ax::mojom::Role::kAnnotationCommentary:
+    case ax::mojom::Role::kAnnotationPresence:
+    case ax::mojom::Role::kAnnotationRevision:
+    case ax::mojom::Role::kAnnotationSuggestion:
+      return IA2_ROLE_SECTION;
     case ax::mojom::Role::kBanner:
     case ax::mojom::Role::kHeader:
       // CORE-AAM recommends LANDMARK instead of HEADER.
@@ -5254,6 +5267,13 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
 
     case ax::mojom::Role::kAnchor:
       return L"link";
+
+    case ax::mojom::Role::kAnnotationAttribution:
+    case ax::mojom::Role::kAnnotationCommentary:
+    case ax::mojom::Role::kAnnotationPresence:
+    case ax::mojom::Role::kAnnotationRevision:
+    case ax::mojom::Role::kAnnotationSuggestion:
+      return L"group";
 
     case ax::mojom::Role::kApplication:
       return L"application";
@@ -5620,7 +5640,7 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
     case ax::mojom::Role::kSwitch:
       return L"checkbox";
 
-    case ax::mojom::Role::kAnnotation:
+    case ax::mojom::Role::kRubyAnnotation:
     case ax::mojom::Role::kListMarker:
     case ax::mojom::Role::kStaticText:
       return L"description";
@@ -5900,6 +5920,13 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
 
     case ax::mojom::Role::kAnchor:
       return UIA_HyperlinkControlTypeId;
+
+    case ax::mojom::Role::kAnnotationAttribution:
+    case ax::mojom::Role::kAnnotationCommentary:
+    case ax::mojom::Role::kAnnotationPresence:
+    case ax::mojom::Role::kAnnotationRevision:
+    case ax::mojom::Role::kAnnotationSuggestion:
+      return ROLE_SYSTEM_GROUPING;
 
     case ax::mojom::Role::kApplication:
       return UIA_PaneControlTypeId;
@@ -6264,7 +6291,7 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
     case ax::mojom::Role::kSwitch:
       return UIA_CheckBoxControlTypeId;
 
-    case ax::mojom::Role::kAnnotation:
+    case ax::mojom::Role::kRubyAnnotation:
     case ax::mojom::Role::kListMarker:
     case ax::mojom::Role::kStaticText:
       return UIA_TextControlTypeId;

@@ -270,6 +270,11 @@ bool ExecuteFileTask(Profile* profile,
                      const std::vector<storage::FileSystemURL>& file_urls,
                      FileTaskFinishedCallback done);
 
+// Returns true if a file handler is enabled. Some handlers such as
+// import-crostini-image can be disabled at runtime by enterprise policy.
+bool IsFileHandlerEnabled(Profile* profile,
+                          const apps::FileHandlerInfo& file_handler_info);
+
 // Returns true if a file handler matches with entries as good match.
 bool IsGoodMatchFileHandler(const apps::FileHandlerInfo& file_handler_info,
                             const std::vector<extensions::EntryInfo>& entries);

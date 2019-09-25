@@ -37,8 +37,16 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Alert");
     case ax::mojom::Role::kAnchor:
       return result.append("Anchor");
-    case ax::mojom::Role::kAnnotation:
-      return result.append("Annotation");
+    case ax::mojom::Role::kAnnotationAttribution:
+      return result.append("AnnotationAttribution");
+    case ax::mojom::Role::kAnnotationCommentary:
+      return result.append("AnnotationCommentary");
+    case ax::mojom::Role::kAnnotationPresence:
+      return result.append("AnnotationPresence");
+    case ax::mojom::Role::kAnnotationRevision:
+      return result.append("AnnotationRevision");
+    case ax::mojom::Role::kAnnotationSuggestion:
+      return result.append("AnnotationSuggestion");
     case ax::mojom::Role::kApplication:
       return result.append("Application");
     case ax::mojom::Role::kArticle:
@@ -299,6 +307,8 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Row");
     case ax::mojom::Role::kRuby:
       return result.append("Ruby");
+    case ax::mojom::Role::kRubyAnnotation:
+      return result.append("RubyAnnotation");
     case ax::mojom::Role::kSvgRoot:
       return result.append("SVGRoot");
     case ax::mojom::Role::kScrollBar:
@@ -1283,7 +1293,7 @@ float WebAXObjectProxy::FontSize() {
 
 std::string WebAXObjectProxy::Autocomplete() {
   accessibility_object_.UpdateLayoutAndCheckValidity();
-  return accessibility_object_.AriaAutoComplete().Utf8();
+  return accessibility_object_.AutoComplete().Utf8();
 }
 
 std::string WebAXObjectProxy::Current() {

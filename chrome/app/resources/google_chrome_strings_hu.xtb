@@ -13,7 +13,6 @@
 <translation id="1142745911746664600">Nem sikerült a Chrome frissítése</translation>
 <translation id="1154147086299354128">&amp;Megnyitás Chrome-ban</translation>
 <translation id="123620459398936149">A Chrome OS nem tudta szinkronizálni az adatokat. Kérjük, frissítse szinkronizálási összetett jelszavát.</translation>
-<translation id="127345590676626841">A Chrome automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik. A letöltés befejezése után a Chrome újraindul, és máris rendelkezésre áll.</translation>
 <translation id="1302523850133262269">Kérjük, várjon, amíg a Chrome telepíti a legutóbbi rendszerfrissítéseket.</translation>
 <translation id="137466361146087520">Google Chrome Béta</translation>
 <translation id="1393853151966637042">A Chrome használatával kapcsolatos súgó</translation>
@@ -212,7 +211,6 @@ Ha mindenképp bejelentkezik, akkor egyesíti a(z) <ph name="ACCOUNT_EMAIL_NEW" 
 <translation id="7408085963519505752">Chrome OS – Szerződési Feltételek</translation>
 <translation id="7419046106786626209">A Chrome OS nem tudta szinkronizálni az adatait, mert a szinkronizálás nem érhető el az Ön domainjénél.</translation>
 <translation id="7459554271817304652">A szinkronizálás beállításával személyre szabott beállításait az interneten tárolhatja, így azok bármelyik számítógépen elérhetők a Google Chrome böngészőből.</translation>
-<translation id="7473136999113284234">A Chrome automatikusan frissít, így Ön mindig a legújabb verzióval rendelkezik.</translation>
 <translation id="7486227612705979895">A Chrome hozzáfér Drive-jához, hogy javaslatokat nyújthasson a címsávon.</translation>
 <translation id="7531671357096394523">A Chrome összes példányát be kell zárnia.</translation>
 <translation id="7535429826459677826">Google Chrome Dev</translation>

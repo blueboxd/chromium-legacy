@@ -117,7 +117,6 @@
 <translation id="5416696090975899932">Chromium kan ikke vise forhåndsvisningen av utskrift når det innebygde PDF-visningsprogrammet mangler.</translation>
 <translation id="5427571867875391349">Bruk Chromium som standard nettleser</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – betaversjon av Chromium</translation>
-<translation id="5466153949126434691">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen. Når denne nedlastingen er fullført, kommer Chromium til å starte på nytt, og du er i gang.</translation>
 <translation id="5479196819031988440">Chromium OS kan ikke åpne denne siden.</translation>
 <translation id="5480860683791598150">Chromium trenger tilgang til posisjonen din for å kunne dele den med dette nettstedet</translation>
 <translation id="549669000822060376">Vent mens Chromium installerer de nyeste systemoppdateringene.</translation>
@@ -213,7 +212,6 @@ Chromium kan ikke gjenopprette innstillingen dine.</translation>
 <translation id="7867198900892795913">Chromium kunne ikke oppdateres til den nyeste versjonen, så du går glipp av nye funksjoner og sikkerhetsforbedringer.</translation>
 <translation id="7901117350626490574">En ny oppdatering for Chromium er tilgjengelig og tas i bruk når du starter Chromium på nytt.</translation>
 <translation id="7937630085815544518">Du ble logget på Chromium som <ph name="USER_EMAIL_ADDRESS" />. Du må logge deg på igjen med samme konto.</translation>
-<translation id="7962572577636132072">Chromium oppdateres automatisk, sånn at du alltid har den nyeste versjonen.</translation>
 <translation id="7975919845073681630">Dette er en sekundær installering av Chromium. Den kan ikke brukes som standardnettleser.</translation>
 <translation id="7979877361127045932">Skjul i Chromium-menyen</translation>
 <translation id="8013436988911883588">Når Chromium har fått tilgang, kan nettsteder spørre deg om tilgang.</translation>

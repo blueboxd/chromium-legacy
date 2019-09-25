@@ -711,7 +711,7 @@ class MODULES_EXPORT AXObject : public GarbageCollected<AXObject> {
   ax::mojom::Role DetermineAriaRoleAttribute() const;
   virtual ax::mojom::Role AriaRoleAttribute() const;
   virtual AXObject* ActiveDescendant() { return nullptr; }
-  virtual String AriaAutoComplete() const { return String(); }
+  virtual String AutoComplete() const { return String(); }
   virtual void AriaOwnsElements(AXObjectVector& owns) const {}
   virtual void AriaDescribedbyElements(AXObjectVector&) const {}
   virtual AXObject* ErrorMessage() const { return nullptr; }

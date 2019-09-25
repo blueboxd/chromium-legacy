@@ -55,7 +55,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   InsertionNotificationRequest InsertedInto(ContainerNode&) override;
   void RemovedFrom(ContainerNode&) override;
 
-  virtual bool HasValidTarget();
+  virtual bool HasValidTarget() const;
   virtual void AnimationAttributeChanged() = 0;
 
   SMILTimeContainer* TimeContainer() const { return time_container_.Get(); }
@@ -115,7 +115,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   // Returns true if this animation "sets" the
   // value of the animation. Thus all previous
   // animations are rendered useless.
-  virtual bool OverwritesUnderlyingAnimationValue() = 0;
+  virtual bool OverwritesUnderlyingAnimationValue() const = 0;
 
   bool AnimatedTypeIsLocked() const { return animated_property_locked_; }
   void LockAnimatedType() {

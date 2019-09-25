@@ -81,6 +81,11 @@ class PasswordStoreDefault : public PasswordStore {
   std::vector<InteractionsStats> GetAllSiteStatsImpl() override;
   std::vector<InteractionsStats> GetSiteStatsImpl(
       const GURL& origin_domain) override;
+  void AddLeakedCredentialsImpl(
+      const LeakedCredentials& leaked_credentials) override;
+  void RemoveLeakedCredentialsImpl(const GURL& url,
+                                   const base::string16& username) override;
+  std::vector<LeakedCredentials> GetAllLeakedCredentialsImpl() override;
 
   // Implements PasswordStoreSync interface.
   bool BeginTransaction() override;

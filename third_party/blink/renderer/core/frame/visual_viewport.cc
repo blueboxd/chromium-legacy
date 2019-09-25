@@ -913,19 +913,6 @@ float VisualViewport::BrowserControlsAdjustment() const {
   return browser_controls_adjustment_;
 }
 
-IntRect VisualViewport::ScrollableAreaBoundingBox() const {
-  // This method should return the bounding box in the top-level
-  // LocalFrameView's coordinate space; however, VisualViewport technically
-  // isn't a child of any Frames.  Nonetheless, the VisualViewport always
-  // occupies the entire main frame so just return that.
-  LocalFrame* frame = MainFrame();
-
-  if (!frame || !frame->View())
-    return IntRect();
-
-  return frame->View()->FrameRect();
-}
-
 bool VisualViewport::UserInputScrollable(ScrollbarOrientation) const {
   // If there is a non-root fullscreen element, prevent the viewport from
   // scrolling.

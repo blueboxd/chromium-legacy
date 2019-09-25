@@ -175,7 +175,9 @@ void CrashesDOMHandler::UpdateUI() {
   bool using_crashpad = false;
 #if defined(OS_WIN) || defined(OS_MACOSX) || defined(OS_ANDROID)
   using_crashpad = true;
-#elif defined(OS_LINUX)
+#elif defined(OS_LINUX) && !defined(OS_CHROMEOS)
+  // ChromeOS uses crash_sender instead of Crashpad for uploads even when
+  // Crashpad is enabled for dump generation.
   using_crashpad = crash_reporter::IsCrashpadEnabled();
 #endif
 

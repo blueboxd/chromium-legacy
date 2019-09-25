@@ -5941,10 +5941,6 @@ class SimpleSwapPromiseMonitor : public SwapPromiseMonitor {
     ADD_FAILURE() << "Should not get called on main thread.";
   }
 
-  void OnForwardScrollUpdateToMainThreadOnImpl() override {
-    ADD_FAILURE() << "Should not get called on main thread.";
-  }
-
  private:
   int* set_needs_commit_count_;
 };

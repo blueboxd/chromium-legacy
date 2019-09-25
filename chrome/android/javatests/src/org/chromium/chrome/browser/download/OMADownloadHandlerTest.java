@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.download;
 import android.app.DownloadManager;
 import android.content.Context;
 import android.content.Intent;
-import android.content.pm.PackageManager;
 import android.support.test.InstrumentationRegistry;
 import android.support.test.filters.MediumTest;
 import android.support.test.filters.SmallTest;
@@ -186,22 +185,21 @@ public class OMADownloadHandlerTest {
     @SmallTest
     @Feature({"Download"})
     public void testGetOpennableType() {
-        PackageManager pm = InstrumentationRegistry.getContext().getPackageManager();
         OMADownloadHandler.OMAInfo info = new OMADownloadHandler.OMAInfo();
-        Assert.assertEquals(OMADownloadHandler.getOpennableType(pm, info), null);
+        Assert.assertEquals(OMADownloadHandler.getOpennableType(info), null);
 
         info.addAttributeValue(OMADownloadHandler.OMA_TYPE, "application/octet-stream");
         info.addAttributeValue(OMADownloadHandler.OMA_TYPE,
                 OMADownloadHandler.OMA_DRM_MESSAGE_MIME);
         info.addAttributeValue(OMADownloadHandler.OMA_TYPE, "text/html");
-        Assert.assertEquals(OMADownloadHandler.getOpennableType(pm, info), null);
+        Assert.assertEquals(OMADownloadHandler.getOpennableType(info), null);
 
         info.addAttributeValue(OMADownloadHandler.OMA_OBJECT_URI, "http://www.test.com/test.html");
-        Assert.assertEquals(OMADownloadHandler.getOpennableType(pm, info), "text/html");
+        Assert.assertEquals(OMADownloadHandler.getOpennableType(info), "text/html");
 
         // Test that only the first opennable type is returned.
         info.addAttributeValue(OMADownloadHandler.OMA_TYPE, "image/png");
-        Assert.assertEquals(OMADownloadHandler.getOpennableType(pm, info), "text/html");
+        Assert.assertEquals(OMADownloadHandler.getOpennableType(info), "text/html");
     }
 
     /**

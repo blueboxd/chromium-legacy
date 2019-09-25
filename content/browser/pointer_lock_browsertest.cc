@@ -45,6 +45,13 @@ class MockPointerLockWebContentsDelegate : public WebContentsDelegate {
 };
 
 #ifdef USE_AURA
+class ScopedEnableUnadjustedMouseEventsForTesting
+    : public aura::ScopedEnableUnadjustedMouseEvents {
+ public:
+  explicit ScopedEnableUnadjustedMouseEventsForTesting() {}
+  ~ScopedEnableUnadjustedMouseEventsForTesting() override {}
+};
+
 class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewAura {
  public:
   MockPointerLockRenderWidgetHostView(RenderWidgetHost* host,
@@ -59,14 +66,16 @@ class MockPointerLockRenderWidgetHostView : public RenderWidgetHostViewAura {
   bool LockMouse(bool request_unadjusted_movement) override {
     event_handler()->mouse_locked_ = true;
     event_handler()->mouse_locked_unadjusted_movement_ =
-        request_unadjusted_movement;
+        request_unadjusted_movement
+            ? std::make_unique<ScopedEnableUnadjustedMouseEventsForTesting>()
+            : nullptr;
     return true;
   }
 
   void UnlockMouse() override {
     host_->LostMouseLock();
     event_handler()->mouse_locked_ = false;
-    event_handler()->mouse_locked_unadjusted_movement_ = false;
+    event_handler()->mouse_locked_unadjusted_movement_.reset();
   }
 
   bool IsMouseLocked() override { return event_handler()->mouse_locked(); }

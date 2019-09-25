@@ -253,60 +253,36 @@ SplitViewDivider::~SplitViewDivider() {
 }
 
 // static
-gfx::Size SplitViewDivider::GetDividerSize(
-    const gfx::Rect& work_area_bounds,
-    OrientationLockType screen_orientation,
-    bool is_dragging) {
-  if (IsLandscapeOrientation(screen_orientation)) {
-    return is_dragging ? gfx::Size(kSplitviewDividerEnlargedShortSideLength,
-                                   work_area_bounds.height())
-                       : gfx::Size(kSplitviewDividerShortSideLength,
-                                   work_area_bounds.height());
-  } else {
-    return is_dragging ? gfx::Size(work_area_bounds.width(),
-                                   kSplitviewDividerEnlargedShortSideLength)
-                       : gfx::Size(work_area_bounds.width(),
-                                   kSplitviewDividerShortSideLength);
-  }
-}
-
-// static
 gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(
     const gfx::Rect& work_area_bounds_in_screen,
-    OrientationLockType screen_orientation,
+    bool landscape,
     int divider_position,
     bool is_dragging) {
-  const gfx::Size divider_size = GetDividerSize(
-      work_area_bounds_in_screen, screen_orientation, is_dragging);
-  int dragging_diff = (kSplitviewDividerEnlargedShortSideLength -
-                       kSplitviewDividerShortSideLength) /
-                      2;
-  switch (screen_orientation) {
-    case OrientationLockType::kLandscapePrimary:
-    case OrientationLockType::kLandscapeSecondary:
-      return is_dragging
-                 ? gfx::Rect(work_area_bounds_in_screen.x() + divider_position -
-                                 dragging_diff,
-                             work_area_bounds_in_screen.y(),
-                             divider_size.width(), divider_size.height())
-                 : gfx::Rect(work_area_bounds_in_screen.x() + divider_position,
-                             work_area_bounds_in_screen.y(),
-                             divider_size.width(), divider_size.height());
-    case OrientationLockType::kPortraitPrimary:
-    case OrientationLockType::kPortraitSecondary:
-      return is_dragging
-                 ? gfx::Rect(work_area_bounds_in_screen.x(),
-                             work_area_bounds_in_screen.y() + divider_position -
-                                 (kSplitviewDividerEnlargedShortSideLength -
-                                  kSplitviewDividerShortSideLength) /
-                                     2,
-                             divider_size.width(), divider_size.height())
-                 : gfx::Rect(work_area_bounds_in_screen.x(),
-                             work_area_bounds_in_screen.y() + divider_position,
-                             divider_size.width(), divider_size.height());
-    default:
-      NOTREACHED();
-      return gfx::Rect();
+  const int dragging_diff = (kSplitviewDividerEnlargedShortSideLength -
+                             kSplitviewDividerShortSideLength) /
+                            2;
+  if (landscape) {
+    return is_dragging
+               ? gfx::Rect(work_area_bounds_in_screen.x() + divider_position -
+                               dragging_diff,
+                           work_area_bounds_in_screen.y(),
+                           kSplitviewDividerEnlargedShortSideLength,
+                           work_area_bounds_in_screen.height())
+               : gfx::Rect(work_area_bounds_in_screen.x() + divider_position,
+                           work_area_bounds_in_screen.y(),
+                           kSplitviewDividerShortSideLength,
+                           work_area_bounds_in_screen.height());
+  } else {
+    return is_dragging
+               ? gfx::Rect(work_area_bounds_in_screen.x(),
+                           work_area_bounds_in_screen.y() + divider_position -
+                               dragging_diff,
+                           work_area_bounds_in_screen.width(),
+                           kSplitviewDividerEnlargedShortSideLength)
+               : gfx::Rect(work_area_bounds_in_screen.x(),
+                           work_area_bounds_in_screen.y() + divider_position,
+                           work_area_bounds_in_screen.width(),
+                           kSplitviewDividerShortSideLength);
   }
 }
 
@@ -325,10 +301,9 @@ gfx::Rect SplitViewDivider::GetDividerBoundsInScreen(bool is_dragging) {
           Shell::GetPrimaryRootWindow()->GetChildById(
               desks_util::GetActiveDeskContainerId()));
   const int divider_position = controller_->divider_position();
-  const OrientationLockType screen_orientation = GetCurrentScreenOrientation();
-  return GetDividerBoundsInScreen(work_area_bounds_in_screen,
-                                  screen_orientation, divider_position,
-                                  is_dragging);
+  const bool landscape = IsCurrentScreenOrientationLandscape();
+  return GetDividerBoundsInScreen(work_area_bounds_in_screen, landscape,
+                                  divider_position, is_dragging);
 }
 
 void SplitViewDivider::SetAlwaysOnTop(bool on_top) {

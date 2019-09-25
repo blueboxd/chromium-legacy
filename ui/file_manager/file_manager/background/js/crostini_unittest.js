@@ -68,19 +68,6 @@ function testInitCrostiniPluginVmEnabled() {
 }
 
 /**
- * Tests init sets crostini root access allowed status.
- */
-function testInitCrostiniRootAccessAllowed() {
-  window.loadTimeData.data['CROSTINI_ROOT_ACCESS_ALLOWED'] = true;
-  crostini.initEnabled();
-  assertTrue(crostini.isRootAccessAllowed('termina'));
-
-  window.loadTimeData.data['CROSTINI_ROOT_ACCESS_ALLOWED'] = false;
-  crostini.initEnabled();
-  assertFalse(crostini.isRootAccessAllowed('termina'));
-}
-
-/**
  * Tests path sharing.
  */
 function testIsPathShared() {

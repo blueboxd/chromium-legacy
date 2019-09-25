@@ -163,7 +163,7 @@ public class InterceptNavigationDelegateImpl implements InterceptNavigationDeleg
             // not covering the case where a gesture is carried over via a redirect.  This is
             // currently not feasible because we do not see all navigations for iframes and it is
             // better to error on the side of caution and require direct user gestures for iframes.
-            tabRedirectHandler = TabRedirectHandler.create(associatedActivity);
+            tabRedirectHandler = TabRedirectHandler.create();
         } else {
             assert false;
             return false;

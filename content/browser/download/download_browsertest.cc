@@ -3760,10 +3760,8 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest,
                download->GetTargetFilePath().BaseName().value().c_str());
 }
 
-// Flaky on multiple platforms: https://crbug.com/810982
 // Verify parallel download in normal case.
-IN_PROC_BROWSER_TEST_F(ParallelDownloadTest,
-                       DISABLED_ParallelDownloadComplete) {
+IN_PROC_BROWSER_TEST_F(ParallelDownloadTest, ParallelDownloadComplete) {
   TestDownloadHttpResponse::Parameters parameters;
   parameters.etag = "ABC";
   parameters.size = 5097152;

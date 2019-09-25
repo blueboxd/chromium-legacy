@@ -11,7 +11,6 @@
 #include "base/memory/scoped_refptr.h"
 #include "chrome/browser/ui/ui_features.h"
 #include "ui/message_center/public/cpp/notifier_id.h"
-#include "ui/views/linux_ui/linux_ui.h"
 
 #if defined(USE_DBUS)
 #include "chrome/browser/ui/views/status_icons/status_icon_linux_dbus.h"
@@ -22,9 +21,6 @@
 #endif
 
 namespace {
-
-// Prefix for app indicator ids
-const char kAppIndicatorIdPrefix[] = "chrome_app_indicator_";
 
 gfx::ImageSkia GetBestImageRep(const gfx::ImageSkia& image) {
   float best_scale = 0.0f;
@@ -140,12 +136,12 @@ void StatusIconLinuxWrapper::OnImplInitializationFailed() {
     case kTypeX11:
       status_icon_linux_.reset();
       status_icon_ = nullptr;
-      status_icon_type_ = kTypeOther;
+      status_icon_type_ = kTypeNone;
       if (menu_model_)
         menu_model_->RemoveObserver(this);
       menu_model_ = nullptr;
       return;
-    case kTypeOther:
+    case kTypeNone:
       NOTREACHED();
   }
 }
@@ -159,27 +155,15 @@ std::unique_ptr<StatusIconLinuxWrapper>
 StatusIconLinuxWrapper::CreateWrappedStatusIcon(
     const gfx::ImageSkia& image,
     const base::string16& tool_tip) {
-  if (base::FeatureList::IsEnabled(features::kEnableDbusAndX11StatusIcons)) {
 #if defined(USE_DBUS)
-    return base::WrapUnique(new StatusIconLinuxWrapper(
-        base::MakeRefCounted<StatusIconLinuxDbus>(), image, tool_tip));
+  return base::WrapUnique(new StatusIconLinuxWrapper(
+      base::MakeRefCounted<StatusIconLinuxDbus>(), image, tool_tip));
 #elif defined(USE_X11)
-    return base::WrapUnique(new StatusIconLinuxWrapper(
-        std::make_unique<StatusIconLinuxX11>(), kTypeX11, image, tool_tip));
-#endif
-    return nullptr;
-  }
-  const views::LinuxUI* linux_ui = views::LinuxUI::instance();
-  if (linux_ui) {
-    auto status_icon =
-        linux_ui->CreateLinuxStatusIcon(image, tool_tip, kAppIndicatorIdPrefix);
-    if (status_icon) {
-      return base::WrapUnique(
-          new StatusIconLinuxWrapper(std::move(status_icon), kTypeOther,
-                                     gfx::ImageSkia(), base::string16()));
-    }
-  }
+  return base::WrapUnique(new StatusIconLinuxWrapper(
+      std::make_unique<StatusIconLinuxX11>(), kTypeX11, image, tool_tip));
+#else
   return nullptr;
+#endif
 }
 
 void StatusIconLinuxWrapper::UpdatePlatformContextMenu(

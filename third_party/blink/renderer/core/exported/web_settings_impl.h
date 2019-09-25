@@ -224,6 +224,7 @@ class CORE_EXPORT WebSettingsImpl final : public WebSettings {
   void SetForceDarkModeEnabled(bool) override;
   void SetPreferredColorScheme(PreferredColorScheme) override;
   void SetForcedColors(ForcedColors) override;
+  void SetNavigationControls(NavigationControls) override;
 
   bool RenderVSyncNotificationEnabled() const {
     return render_v_sync_notification_enabled_;

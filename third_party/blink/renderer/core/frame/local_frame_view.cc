@@ -3339,23 +3339,6 @@ void LocalFrameView::TrackObjectPaintInvalidation(
   tracked_object_paint_invalidations_->push_back(invalidation);
 }
 
-void LocalFrameView::AddResizerArea(LayoutBox& resizer_box) {
-  DCHECK(!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
-  if (!resizer_areas_)
-    resizer_areas_ = std::make_unique<ResizerAreaSet>();
-  resizer_areas_->insert(&resizer_box);
-}
-
-void LocalFrameView::RemoveResizerArea(LayoutBox& resizer_box) {
-  DCHECK(!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled());
-  if (!resizer_areas_)
-    return;
-
-  ResizerAreaSet::iterator it = resizer_areas_->find(&resizer_box);
-  if (it != resizer_areas_->end())
-    resizer_areas_->erase(it);
-}
-
 void LocalFrameView::ScheduleAnimation(base::TimeDelta delay) {
   if (auto* client = GetChromeClient())
     client->ScheduleAnimation(this, delay);

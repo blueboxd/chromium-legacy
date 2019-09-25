@@ -1536,6 +1536,8 @@ bool RenderFrameHostImpl::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(FrameHostMsg_ExitFullscreen, OnExitFullscreen)
     IPC_MESSAGE_HANDLER(FrameHostMsg_SuddenTerminationDisablerChanged,
                         OnSuddenTerminationDisablerChanged)
+    IPC_MESSAGE_HANDLER(FrameHostMsg_DidFinishDocumentLoad,
+                        OnDidFinishDocumentLoad)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidStopLoading, OnDidStopLoading)
     IPC_MESSAGE_HANDLER(FrameHostMsg_DidChangeLoadProgress,
                         OnDidChangeLoadProgress)
@@ -2454,6 +2456,7 @@ void RenderFrameHostImpl::DidCommitBackForwardCacheNavigation(
   // re-fire the DidStartLoading event, which we don't want since it has already
   // been fired.
   is_loading_ = true;
+  dom_content_loaded_ = false;
 
   DidCommitNavigationInternal(std::move(owned_request), validated_params.get(),
                               /*is_same_document_navigation=*/false);
@@ -3727,6 +3730,11 @@ bool RenderFrameHostImpl::GetSuddenTerminationDisablerState(
   return (sudden_termination_disabler_types_enabled_ & disabler_type) != 0;
 }
 
+void RenderFrameHostImpl::OnDidFinishDocumentLoad() {
+  dom_content_loaded_ = true;
+  delegate_->DOMContentLoaded(this);
+}
+
 void RenderFrameHostImpl::OnDidStopLoading() {
   TRACE_EVENT1("navigation", "RenderFrameHostImpl::OnDidStopLoading",
                "frame_tree_node", frame_tree_node_->frame_tree_node_id());
@@ -4328,13 +4336,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   }
 #endif
 
-  if (!permission_service_context_)
-    permission_service_context_.reset(new PermissionServiceContext(this));
-
-  registry_->AddInterface(
-      base::BindRepeating(&PermissionServiceContext::CreateService,
-                          base::Unretained(permission_service_context_.get())));
-
   registry_->AddInterface(
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 
@@ -4502,9 +4503,7 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       &GetRestrictedCookieManager, base::Unretained(this),
       GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
 
-  if (base::FeatureList::IsEnabled(features::kSmsReceiver) &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableExperimentalWebPlatformFeatures)) {
+  if (base::FeatureList::IsEnabled(features::kSmsReceiver)) {
     registry_->AddInterface(base::BindRepeating(
         &RenderFrameHostImpl::BindSmsReceiverReceiver, base::Unretained(this)));
   }
@@ -5424,6 +5423,7 @@ void RenderFrameHostImpl::CommitNavigation(
     if (IsURLHandledByNetworkStack(common_params->url))
       last_navigation_previews_state_ = common_params->previews_state;
 
+    dom_content_loaded_ = false;
     SendCommitNavigation(
         navigation_client, navigation_request, std::move(common_params),
         std::move(commit_params), head, std::move(response_body),
@@ -5498,6 +5498,7 @@ void RenderFrameHostImpl::FailedNavigation(
 
   // An error page is expected to commit, hence why is_loading_ is set to true.
   is_loading_ = true;
+  dom_content_loaded_ = false;
   DCHECK(navigation_request && navigation_request->IsNavigationStarted() &&
          navigation_request->GetNetErrorCode() != net::OK);
 }
@@ -6462,6 +6463,14 @@ void RenderFrameHostImpl::CreateLockManager(
     mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
   GetProcess()->CreateLockManager(GetLastCommittedOrigin(),
                                   std::move(receiver));
+}
+
+void RenderFrameHostImpl::CreatePermissionService(
+    mojo::PendingReceiver<blink::mojom::PermissionService> receiver) {
+  if (!permission_service_context_)
+    permission_service_context_.reset(new PermissionServiceContext(this));
+
+  permission_service_context_->CreateService(std::move(receiver));
 }
 
 void RenderFrameHostImpl::GetAuthenticator(

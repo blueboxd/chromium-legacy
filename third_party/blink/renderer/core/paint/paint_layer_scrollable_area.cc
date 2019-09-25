@@ -145,8 +145,6 @@ PaintLayerScrollableArea::PaintLayerScrollableArea(PaintLayer& layer)
       GetScrollAnimator().SetCurrentOffset(scroll_offset_);
     element->SetSavedLayerScrollOffset(ScrollOffset());
   }
-  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
-    UpdateResizerAreaSet();
 }
 
 PaintLayerScrollableArea::~PaintLayerScrollableArea() {
@@ -183,13 +181,6 @@ void PaintLayerScrollableArea::DisposeImpl() {
     // FIXME: Make setSavedLayerScrollOffset take DoubleSize. crbug.com/414283.
     if (auto* element = DynamicTo<Element>(GetLayoutBox()->GetNode()))
       element->SetSavedLayerScrollOffset(scroll_offset_);
-  }
-
-  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-    if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
-      if (LocalFrameView* frame_view = frame->View())
-        frame_view->RemoveResizerArea(*GetLayoutBox());
-    }
   }
 
   // Note: it is not safe to call ScrollAnchor::clear if the document is being
@@ -742,16 +733,6 @@ bool PaintLayerScrollableArea::ScrollbarsCanBeActive() const {
   return !!frame_view->GetFrame().GetDocument();
 }
 
-IntRect PaintLayerScrollableArea::ScrollableAreaBoundingBox() const {
-  if (LocalFrame* frame = GetLayoutBox()->GetFrame()) {
-    if (LocalFrameView* local_root = frame->LocalFrameRoot().View()) {
-      return local_root->RootFrameToDocument(frame->View()->ConvertToRootFrame(
-          GetLayoutBox()->AbsoluteBoundingBoxRect(0)));
-    }
-  }
-  return IntRect();
-}
-
 void PaintLayerScrollableArea::RegisterForAnimation() {
   if (HasBeenDisposed())
     return;
@@ -1187,8 +1168,6 @@ void PaintLayerScrollableArea::UpdateAfterStyleChange(
   ComputeScrollbarExistence(needs_horizontal_scrollbar,
                             needs_vertical_scrollbar, kForbidAddingAutoBars);
 
-  if (!RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled())
-    UpdateResizerAreaSet();
   UpdateResizerStyle(old_style);
 
   // Avoid some unnecessary computation if there were and will be no scrollbars.
@@ -1836,19 +1815,6 @@ bool PaintLayerScrollableArea::HitTestResizerInFragments(
   return false;
 }
 
-void PaintLayerScrollableArea::UpdateResizerAreaSet() {
-  LocalFrame* frame = GetLayoutBox()->GetFrame();
-  if (!frame)
-    return;
-  LocalFrameView* frame_view = frame->View();
-  if (!frame_view)
-    return;
-  if (GetLayoutBox()->CanResize())
-    frame_view->AddResizerArea(*GetLayoutBox());
-  else
-    frame_view->RemoveResizerArea(*GetLayoutBox());
-}
-
 void PaintLayerScrollableArea::UpdateResizerStyle(
     const ComputedStyle* old_style) {
   if (!RuntimeEnabledFeatures::CompositeAfterPaintEnabled() && old_style &&
@@ -2167,12 +2133,10 @@ void PaintLayerScrollableArea::UpdateScrollableAreaSet() {
   // PaintPropertyTreeBuilder::updateScrollAndScrollTranslation).
   GetLayoutBox()->SetNeedsPaintPropertyUpdate();
 
-  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-    // Scroll hit test display items depend on whether the box scrolls overflow.
-    // The scroll hit test display items paint in the background phase
-    // (see: BoxPainter::PaintBoxDecorationBackground).
-    GetLayoutBox()->SetBackgroundNeedsFullPaintInvalidation();
-  }
+  // Scroll hit test display items depend on whether the box scrolls overflow.
+  // The scroll hit test display items paint in the background phase
+  // (see: BoxPainter::PaintBoxDecorationBackground).
+  GetLayoutBox()->SetBackgroundNeedsFullPaintInvalidation();
 
   if (scrolls_overflow_) {
     DCHECK(CanHaveOverflowScrollbars(*GetLayoutBox()));

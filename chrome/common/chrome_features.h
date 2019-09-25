@@ -331,6 +331,8 @@ extern const base::Feature kNativeNotifications;
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNewNetErrorPageUI;
 #endif
 
+COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNoReferrers;
+
 #if defined(OS_POSIX)
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kNtlmV2Enabled;
 #endif

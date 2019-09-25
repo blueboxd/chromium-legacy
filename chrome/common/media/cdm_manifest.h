@@ -6,7 +6,9 @@
 #define CHROME_COMMON_MEDIA_CDM_MANIFEST_H_
 
 namespace base {
+class FilePath;
 class Value;
+class Version;
 }
 
 namespace content {
@@ -25,5 +27,14 @@ bool IsCdmManifestCompatibleWithChrome(const base::Value& manifest);
 // If this method returns false, |capability| may or may not be updated.
 bool ParseCdmManifest(const base::Value& manifest,
                       content::CdmCapability* capability);
+
+// Reads the file |manifest_path| which is assumed to be a CDM manifest and
+// extracts the necessary information from it to update |version| and
+// |capability|. Returns true on success, false if there are errors in the file.
+// If this method returns false, |version| and |capability| may or may not be
+// updated.
+bool ParseCdmManifestFromPath(const base::FilePath& manifest_path,
+                              base::Version* version,
+                              content::CdmCapability* capability);
 
 #endif  // CHROME_COMMON_MEDIA_CDM_MANIFEST_H_

@@ -139,7 +139,7 @@
           &lt;p&gt;Muokkaa aikaa ja päivämäärää &lt;strong&gt;Asetukset&lt;/strong&gt;‑sovelluksen  &lt;strong&gt;Yleistä&lt;/strong&gt;‑osiossa.&lt;/p&gt;</translation>
 <translation id="1569487616857761740">Lisää viimeinen voimassaolopäivä</translation>
 <translation id="1581080074034554886">CVC</translation>
-<translation id="1583429793053364125">Jokin meni vikaan tätä verkkosivua näytettäessä.</translation>
+<translation id="1583429793053364125">Jotain meni pieleen. tätä verkkosivua näytettäessä.</translation>
 <translation id="1588438908519853928">Normaali</translation>
 <translation id="1592005682883173041">Tietojen paikallinen käyttö</translation>
 <translation id="1594030484168838125">Valitse</translation>
@@ -1036,6 +1036,7 @@
 <translation id="6058977677006700226">Haluatko käyttää kortteja kaikilla laitteillasi?</translation>
 <translation id="6059925163896151826">USB-laitteet</translation>
 <translation id="6060009363608157444">Virheellinen DnsOverHttps-tila</translation>
+<translation id="6064217302520318294">Näytön lukitus</translation>
 <translation id="6080696365213338172">Käytät sisältöä järjestelmänvalvojan myöntämällä varmenteella. Järjestelmänvalvoja voi käyttää verkkotunnukselle <ph name="DOMAIN" /> lähettämiäsi tietoja.</translation>
 <translation id="6094273045989040137">Tee merkintä</translation>
 <translation id="610911394827799129">Google-tililläsi voi olla muita selaushistoriatietoja osoitteessa <ph name="BEGIN_LINK" />myactivity.google.com<ph name="END_LINK" />.</translation>

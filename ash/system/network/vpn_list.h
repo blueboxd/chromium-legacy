@@ -70,6 +70,7 @@ class ASH_EXPORT VpnList
   void OnNetworkStateListChanged() override;
   void OnDeviceStateListChanged() override;
   void OnVpnProvidersChanged() override;
+  void OnNetworkCertificatesChanged() override;
 
   void SetVpnProvidersForTest(std::vector<VpnProviderPtr> providers);
 

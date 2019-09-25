@@ -20,7 +20,8 @@
           on-click="onManageAndroidAppsTap_" external></cr-link-row>
     </template>
 
-    <template is="dom-if" if="[[allowRemove_(prefs.arc.enabled.*)]]">
+    <!-- Use 'restamp' so tests can check if the row exists. -->
+    <template is="dom-if" if="[[allowRemove_(prefs.arc.enabled.*)]]" restamp>
       <div id="remove" class="settings-box">
         <div id="androidRemoveLabel" class="start">
             $i18n{androidAppsRemove}

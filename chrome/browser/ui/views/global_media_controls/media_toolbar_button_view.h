@@ -19,8 +19,8 @@ class Connector;
 }  // namespace service_manager
 
 class Browser;
-class GlobalMediaControlsInProductHelp;
 class GlobalMediaControlsPromoController;
+class MediaToolbarButtonObserver;
 
 // Media icon shown in the trusted area of toolbar. Its lifetime is tied to that
 // of its parent ToolbarView. The icon is made visible when there is an active
@@ -33,6 +33,9 @@ class MediaToolbarButtonView : public ToolbarButton,
                          service_manager::Connector* connector,
                          const Browser* browser);
   ~MediaToolbarButtonView() override;
+
+  void AddObserver(MediaToolbarButtonObserver* observer);
+  void RemoveObserver(MediaToolbarButtonObserver* observer);
 
   // MediaToolbarButtonControllerDelegate implementation.
   void Show() override;
@@ -55,12 +58,13 @@ class MediaToolbarButtonView : public ToolbarButton,
   void OnPromoEnded();
 
   GlobalMediaControlsPromoController* GetPromoControllerForTesting() {
-    return &GetPromoController();
+    EnsurePromoController();
+    return promo_controller_.get();
   }
 
  private:
   // Lazily constructs |promo_controller_| if necessary.
-  GlobalMediaControlsPromoController& GetPromoController();
+  void EnsurePromoController();
 
   // Informs the Global Media Controls in-product help that the GMC dialog was
   // opened.
@@ -80,7 +84,8 @@ class MediaToolbarButtonView : public ToolbarButton,
   service_manager::Connector* const connector_;
   MediaToolbarButtonController controller_;
   const Browser* const browser_;
-  GlobalMediaControlsInProductHelp* in_product_help_;
+
+  base::ObserverList<MediaToolbarButtonObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaToolbarButtonView);
 };

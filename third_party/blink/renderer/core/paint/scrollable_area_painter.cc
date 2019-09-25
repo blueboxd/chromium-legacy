@@ -37,16 +37,13 @@ void ScrollableAreaPainter::PaintResizer(GraphicsContext& context,
   abs_rect.MoveBy(paint_offset);
 
   const auto& client = DisplayItemClientForCorner();
-  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-    IntRect touch_rect = scrollable_area_->ResizerCornerRect(
-        GetScrollableArea().GetLayoutBox()->PixelSnappedBorderBoxRect(
-            scrollable_area_->Layer()->SubpixelAccumulation()),
-        kResizerForTouch);
-    touch_rect.MoveBy(paint_offset);
-    ScrollHitTestDisplayItem::Record(context, client,
-                                     DisplayItem::kResizerScrollHitTest,
-                                     nullptr, touch_rect);
-  }
+  IntRect touch_rect = scrollable_area_->ResizerCornerRect(
+      GetScrollableArea().GetLayoutBox()->PixelSnappedBorderBoxRect(
+          scrollable_area_->Layer()->SubpixelAccumulation()),
+      kResizerForTouch);
+  touch_rect.MoveBy(paint_offset);
+  ScrollHitTestDisplayItem::Record(
+      context, client, DisplayItem::kResizerScrollHitTest, nullptr, touch_rect);
 
   if (const auto* resizer = GetScrollableArea().Resizer()) {
     if (!cull_rect.Intersects(abs_rect))

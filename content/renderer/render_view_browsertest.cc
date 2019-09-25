@@ -37,7 +37,6 @@
 #include "content/public/browser/web_ui_controller_factory.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_switches.h"
-#include "content/public/common/page_zoom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/use_zoom_for_dsf_policy.h"
@@ -70,6 +69,7 @@
 #include "third_party/blink/public/common/dom_storage/session_storage_namespace_id.h"
 #include "third_party/blink/public/common/origin_trials/origin_trial_policy.h"
 #include "third_party/blink/public/common/origin_trials/trial_token_validator.h"
+#include "third_party/blink/public/common/page/page_zoom.h"
 #include "third_party/blink/public/mojom/loader/request_context_frame_type.mojom.h"
 #include "third_party/blink/public/platform/modules/service_worker/web_service_worker_network_provider.h"
 #include "third_party/blink/public/platform/scheduler/test/renderer_scheduler_test_support.h"
@@ -2398,7 +2398,7 @@ TEST_F(RenderViewImplTest, PreferredSizeZoomed) {
   gfx::Size size = GetPreferredSize();
   EXPECT_EQ(gfx::Size(400 + scrollbar_width, 400), size);
 
-  EXPECT_TRUE(view()->SetZoomLevel(ZoomFactorToZoomLevel(2.0)));
+  EXPECT_TRUE(view()->SetZoomLevel(blink::PageZoomFactorToZoomLevel(2.0)));
   size = GetPreferredSize();
   EXPECT_EQ(gfx::Size(800 + scrollbar_width, 800), size);
 }
@@ -2784,7 +2784,7 @@ TEST_F(RenderViewImplTest, ZoomLevelUpdate) {
   EXPECT_FALSE(view()->SetZoomLevel(0));
 
   // Change the zoom level to 25% and check if the view gets the change.
-  EXPECT_TRUE(view()->SetZoomLevel(content::ZoomFactorToZoomLevel(0.25)));
+  EXPECT_TRUE(view()->SetZoomLevel(blink::PageZoomFactorToZoomLevel(0.25)));
 }
 
 #endif

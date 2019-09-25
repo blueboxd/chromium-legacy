@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/timer/elapsed_timer.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "testing/perf/perf_result_reporter.h"
 
 namespace net {
 namespace {
@@ -94,9 +95,12 @@ TEST(MimeSnifferTest, PlainTextPerfTest) {
   RunLooksLikeBinary(plaintext, kWarmupIterations);
   base::ElapsedTimer elapsed_timer;
   RunLooksLikeBinary(plaintext, kMeasuredIterations);
-  LOG(INFO) << (elapsed_timer.Elapsed().InMicroseconds() * 1000 * 1024 /
-                (static_cast<int64_t>(plaintext.size()) * kMeasuredIterations))
-            << "ns per KB";
+  perf_test::PerfResultReporter reporter("MimeSniffer.", "PlainText");
+  reporter.RegisterImportantMetric("throughput",
+                                   "bytesPerSecond_biggerIsBetter");
+  reporter.AddResult("throughput", static_cast<int64_t>(plaintext.size()) *
+                                       kMeasuredIterations /
+                                       elapsed_timer.Elapsed().InSecondsF());
 }
 
 }  // namespace

@@ -69,10 +69,10 @@ function ImageRequest(id, cache, piexLoader, request, callback) {
 
   /**
    * Used to download remote images using http:// or https:// protocols.
-   * @type {AuthorizedXHR}
+   * @type {XMLHttpRequest}
    * @private
    */
-  this.xhr_ = new AuthorizedXHR();
+  this.xhr_ = null;
 
   /**
    * Temporary canvas used to resize and compress the image.
@@ -95,6 +95,12 @@ function ImageRequest(id, cache, piexLoader, request, callback) {
    * @private
    */
   this.downloadCallback_ = null;
+
+  /**
+   * @type {boolean}
+   * @private
+   */
+  this.aborted_ = false;
 }
 
 /**
@@ -114,6 +120,19 @@ ImageRequest.VIDEO_THUMBNAIL_POSITION = 3; // [sec]
  * @type {number}
  */
 ImageRequest.MAX_MILLISECONDS_TO_LOAD_VIDEO = 3000;
+
+/**
+ * A map which is used to estimate content type from extension.
+ * @enum {string}
+ */
+ImageRequest.ExtensionContentTypeMap = {
+  gif: 'image/gif',
+  png: 'image/png',
+  svg: 'image/svg',
+  bmp: 'image/bmp',
+  jpg: 'image/jpeg',
+  jpeg: 'image/jpeg'
+};
 
 /**
  * Returns ID of the request.
@@ -310,7 +329,7 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
     return;
   }
 
-  // Fetch the image via authorized XHR and parse it.
+  // Fetch the image via XHR and parse it.
   var parseImage = function(contentType, blob) {
     if (contentType) {
       this.contentType_ = contentType;
@@ -319,7 +338,7 @@ ImageRequest.prototype.downloadOriginal_ = function(onSuccess, onFailure) {
   }.bind(this);
 
   // Request raw data via XHR.
-  this.xhr_.load(this.request_.url, parseImage, onFailure);
+  this.load(this.request_.url, parseImage, onFailure);
 };
 
 /**
@@ -366,47 +385,14 @@ ImageRequest.prototype.createVideoThumbnailUrl_ = function(url) {
 };
 
 /**
- * Creates a XmlHttpRequest wrapper with injected OAuth2 authentication headers.
- * @constructor
- */
-function AuthorizedXHR() {
-  this.xhr_ = null;
-  this.aborted_ = false;
-}
-
-/**
- * A map which is used to estimate content type from extension.
- * @enum {string}
- */
-AuthorizedXHR.ExtensionContentTypeMap = {
-  gif: 'image/gif',
-  png: 'image/png',
-  svg: 'image/svg',
-  bmp: 'image/bmp',
-  jpg: 'image/jpeg',
-  jpeg: 'image/jpeg'
-};
-
-/**
- * Aborts the current request (if running).
- */
-AuthorizedXHR.prototype.abort = function() {
-  this.aborted_ = true;
-  if (this.xhr_) {
-    this.xhr_.abort();
-  }
-};
-
-/**
- * Loads an image using a OAuth2 token. If it fails, then tries to retry with
- * a refreshed OAuth2 token.
+ * Loads an image.
  *
  * @param {string} url URL to the resource to be fetched.
  * @param {function(string, Blob)} onSuccess Success callback with the content
  *     type and the fetched data.
  * @param {function()} onFailure Failure callback.
  */
-AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
+ImageRequest.prototype.load = function(url, onSuccess, onFailure) {
   this.aborted_ = false;
 
   // Do not call any callbacks when aborting.
@@ -414,8 +400,8 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
       function(contentType, response) {
         // When content type is not available, try to estimate it from url.
         if (!contentType) {
-          contentType = AuthorizedXHR.ExtensionContentTypeMap[
-              this.extractExtension_(url)];
+          contentType =
+              ImageRequest.ExtensionContentTypeMap[this.extractExtension_(url)];
         }
 
         if (!this.aborted_) {
@@ -429,63 +415,25 @@ AuthorizedXHR.prototype.load = function(url, onSuccess, onFailure) {
     }
   }.bind(this));
 
-  // Fetches the access token and makes an authorized call. If refresh is true,
-  // then forces refreshing the access token.
-  var requestTokenAndCall = function(refresh, onInnerSuccess, onInnerFailure) {
-    chrome.fileManagerPrivate.requestAccessToken(refresh, function(token) {
-      if (this.aborted_) {
-        return;
-      }
-      if (!token) {
-        onInnerFailure();
-        return;
-      }
-      this.xhr_ = AuthorizedXHR.load_(
-          token, url, onInnerSuccess, onInnerFailure);
-    }.bind(this));
-  }.bind(this);
-
-  // Refreshes the access token and retries the request.
-  var maybeRetryCall = function(code) {
-    if (this.aborted_) {
-      return;
-    }
-    requestTokenAndCall(true, onMaybeSuccess, onMaybeFailure);
-  }.bind(this);
-
-  // Do not request a token for local resources, since it is not necessary.
-  if (/^filesystem:/.test(url)) {
-    // The query parameter is workaround for
-    // crbug.com/379678, which force to obtain the latest contents of the image.
-    var noCacheUrl = url + '?nocache=' + Date.now();
-    this.xhr_ = AuthorizedXHR.load_(
-        null,
-        noCacheUrl,
-        onMaybeSuccess,
-        onMaybeFailure);
-    return;
-  }
-
-  // Make the request with reusing the current token. If it fails, then retry.
-  requestTokenAndCall(false, onMaybeSuccess, maybeRetryCall);
+  // The query parameter is workaround for crbug.com/379678, which forces the
+  // browser to obtain the latest contents of the image.
+  var noCacheUrl = url + '?nocache=' + Date.now();
+  this.xhr_ = ImageRequest.load_(noCacheUrl, onMaybeSuccess, onMaybeFailure);
 };
 
 /**
  * Extracts extension from url.
  * @param {string} url Url.
- * @return {string} Extracted extensiion, e.g. png.
+ * @return {string} Extracted extension, e.g. png.
  */
-AuthorizedXHR.prototype.extractExtension_ = function(url) {
+ImageRequest.prototype.extractExtension_ = function(url) {
   var result = (/\.([a-zA-Z]+)$/i).exec(url);
   return result ? result[1] : '';
 };
 
 /**
- * Fetches data using authorized XmlHttpRequest with the provided OAuth2 token.
- * If the token is invalid, the request will fail.
+ * Fetches data using XmlHttpRequest.
  *
- * @param {?string} token OAuth2 token to be injected to the request. Null for
- *     no token.
  * @param {string} url URL to the resource to be fetched.
  * @param {function(string, Blob)} onSuccess Success callback with the content
  *     type and the fetched data.
@@ -494,7 +442,7 @@ AuthorizedXHR.prototype.extractExtension_ = function(url) {
  * @return {XMLHttpRequest} XHR instance.
  * @private
  */
-AuthorizedXHR.load_ = function(token, url, onSuccess, onFailure) {
+ImageRequest.load_ = function(url, onSuccess, onFailure) {
   let xhr = new XMLHttpRequest();
   xhr.responseType = 'blob';
 
@@ -514,9 +462,6 @@ AuthorizedXHR.load_ = function(token, url, onSuccess, onFailure) {
   // Perform a xhr request.
   try {
     xhr.open('GET', url, true);
-    if (token) {
-      xhr.setRequestHeader('Authorization', 'Bearer ' + token);
-    }
     xhr.send();
   } catch (e) {
     onFailure();
@@ -641,7 +586,10 @@ ImageRequest.prototype.cleanup_ = function() {
   this.image_.src = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAA' +
       'ABAAEAAAICTAEAOw==';
 
-  this.xhr_.abort();
+  this.aborted_ = true;
+  if (this.xhr_) {
+    this.xhr_.abort();
+  }
 
   // Dispose memory allocated by Canvas.
   this.canvas_.width = 0;

@@ -9,6 +9,8 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_feature_list.h"
+#include "build/build_config.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/env.h"
 #include "ui/aura/test/aura_test_base.h"
@@ -16,6 +18,7 @@
 #include "ui/aura/test/test_windows.h"
 #include "ui/aura/test/window_occlusion_tracker_test_api.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/ui_base_features.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/layer_animator.h"
@@ -73,6 +76,17 @@ class WindowOcclusionTrackerTest : public test::AuraTestBase {
  public:
   WindowOcclusionTrackerTest() = default;
 
+#if defined(OS_WIN)
+  void SetUp() override {
+    // Native Window Occlusion calculation runs in the background and can
+    // interfere with the expectations of these tests, so, disable it.
+    scoped_feature_list_.InitWithFeatures(
+        /*enabled_features=*/{},
+        /*disabled_features=*/{features::kCalculateNativeWinOcclusion});
+    AuraTestBase::SetUp();
+  }
+#endif
+
   Window* CreateTrackedWindow(MockWindowDelegate* delegate,
                               const gfx::Rect& bounds,
                               Window* parent = nullptr,
@@ -102,6 +116,8 @@ class WindowOcclusionTrackerTest : public test::AuraTestBase {
   }
 
  private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   DISALLOW_COPY_AND_ASSIGN(WindowOcclusionTrackerTest);
 };
 

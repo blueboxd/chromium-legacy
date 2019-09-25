@@ -14,6 +14,7 @@
 #include "base/values.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service.h"
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
+#include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
@@ -22,11 +23,13 @@
 #include "chrome/browser/chromeos/settings/scoped_cros_settings_test_helper.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_concierge_client.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/services/app_service/public/cpp/file_handler_info.h"
 #include "content/public/test/browser_task_environment.h"
@@ -302,6 +305,64 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackOfficeEditing) {
   // file browser handler.
   ChooseAndSetDefaultTask(pref_service, entries, &tasks);
   EXPECT_TRUE(tasks[0].is_default());
+}
+
+// Test IsFileHandlerEnabled which returns whether a file handler should be
+// used.
+TEST(FileManagerFileTasksTest, IsFileHandlerEnabled) {
+  content::BrowserTaskEnvironment task_environment;
+  TestingProfile test_profile;
+  crostini::CrostiniTestHelper helper(&test_profile);
+
+  apps::FileHandlerInfo test_handler;
+  test_handler.id = "test";
+
+  // Test import-crostini-image.
+  apps::FileHandlerInfo crostini_import_handler;
+  crostini_import_handler.id = "import-crostini-image";
+  test_profile.GetPrefs()->SetBoolean(
+      crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, true);
+  EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, crostini_import_handler));
+  EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+
+  test_profile.GetPrefs()->SetBoolean(
+      crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, false);
+  EXPECT_FALSE(IsFileHandlerEnabled(&test_profile, crostini_import_handler));
+  EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+
+  // Test install-linux-package - feature on.
+  apps::FileHandlerInfo install_linux_handler;
+  install_linux_handler.id = "install-linux-package";
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatures(
+        {features::kCrostiniAdvancedAccessControls}, {});
+    test_profile.GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, true);
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+
+    test_profile.GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, false);
+    EXPECT_FALSE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+  }
+
+  // Test install-linux-package - feature off.
+  {
+    base::test::ScopedFeatureList scoped_feature_list;
+    scoped_feature_list.InitWithFeatures(
+        {}, {features::kCrostiniAdvancedAccessControls});
+    test_profile.GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, true);
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+
+    test_profile.GetPrefs()->SetBoolean(
+        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, false);
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
+    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+  }
 }
 
 // Test IsGoodMatchFileHandler which returns whether a file handle info matches

@@ -41,6 +41,9 @@ class CHROMECAST_EXPORT LeScanner {
 
   static bool StartScan();
   static bool StopScan();
+
+  static bool SetScanParameters(int scan_interval_ms, int scan_window_ms)
+      __attribute__((__weak__));
 };
 
 inline LeScanner::ScanResult::ScanResult() = default;

@@ -74,12 +74,17 @@ bool IsUsingSkiaRenderer() {
   // We require OOP-D everywhere but WebView.
   bool enabled = base::FeatureList::IsEnabled(kUseSkiaRenderer) ||
                  base::FeatureList::IsEnabled(kVulkan);
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  if (enabled && IsAndroidSurfaceControlEnabled()) {
+    DLOG(ERROR) << "UseSkiaRenderer does not work with SurfaceControl";
+    return false;
+  }
+#else
   if (enabled && !IsVizDisplayCompositorEnabled()) {
     DLOG(ERROR) << "UseSkiaRenderer requires VizDisplayCompositor.";
     return false;
   }
-#endif  // !defined(OS_ANDROID)
+#endif  // defined(OS_ANDROID)
   return enabled;
 }
 

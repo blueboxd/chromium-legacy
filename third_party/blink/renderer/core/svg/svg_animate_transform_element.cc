@@ -33,7 +33,7 @@ SVGAnimateTransformElement::SVGAnimateTransformElement(Document& document)
     : SVGAnimateElement(svg_names::kAnimateTransformTag, document),
       transform_type_(SVGTransformType::kUnknown) {}
 
-bool SVGAnimateTransformElement::HasValidTarget() {
+bool SVGAnimateTransformElement::HasValidTarget() const {
   if (!SVGAnimateElement::HasValidTarget())
     return false;
   if (GetAttributeType() == kAttributeTypeCSS)

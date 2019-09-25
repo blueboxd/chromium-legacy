@@ -11,7 +11,7 @@
 #include "base/optional.h"
 #include "base/sequence_checker.h"
 #include "chrome/browser/availability/availability_prober.h"
-#include "chrome/browser/previews/previews_lite_page_serving_url_loader.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_serving_url_loader.h"
 #include "content/public/browser/url_loader_request_interceptor.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/system/data_pipe.h"
@@ -25,7 +25,8 @@ class PrefService;
 namespace previews {
 
 using HandleRequest = base::OnceCallback<void(
-    std::unique_ptr<PreviewsLitePageServingURLLoader> serving_url_loader,
+    std::unique_ptr<PreviewsLitePageRedirectServingURLLoader>
+        serving_url_loader,
     content::URLLoaderRequestInterceptor::RequestHandler handler)>;
 
 // A URL loader that attempts to fetch an HTTPS server lite page, and if
@@ -123,7 +124,7 @@ class PreviewsLitePageRedirectURLLoader : public network::mojom::URLLoader,
                             network_loader_factory);
 
   // The underlying URLLoader that speculatively tries to fetch the lite page.
-  std::unique_ptr<PreviewsLitePageServingURLLoader> serving_url_loader_;
+  std::unique_ptr<PreviewsLitePageRedirectServingURLLoader> serving_url_loader_;
 
   // A copy of the initial resource request that has been modified to fetch
   // the lite page.

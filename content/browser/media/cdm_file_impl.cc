@@ -434,7 +434,6 @@ void CdmFileImpl::Read(ReadCallback callback) {
   DVLOG(3) << __func__ << " file: " << file_name_;
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(file_locked_);
-  DCHECK(!file_reader_);
 
   // Only 1 Read() or Write() is allowed at any time.
   if (read_callback_ || write_callback_) {
@@ -488,7 +487,6 @@ void CdmFileImpl::Write(const std::vector<uint8_t>& data,
   DVLOG(3) << __func__ << " file: " << file_name_ << ", size: " << data.size();
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(file_locked_);
-  DCHECK(!file_writer_);
 
   // Only 1 Read() or Write() is allowed at any time.
   if (read_callback_ || write_callback_) {

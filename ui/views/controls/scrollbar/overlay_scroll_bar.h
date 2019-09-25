@@ -20,18 +20,13 @@ class VIEWS_EXPORT OverlayScrollBar : public ScrollBar {
   explicit OverlayScrollBar(bool horizontal);
   ~OverlayScrollBar() override;
 
- protected:
-  // ScrollBar overrides:
-  gfx::Rect GetTrackBounds() const override;
-
-  // ScrollBar overrides:
-  int GetThickness() const override;
-  bool OverlapsContent() const override;
-
-  // View overrides:
-  void Layout() override;
+  // ScrollBar:
+  gfx::Insets GetInsets() const override;
   void OnMouseEntered(const ui::MouseEvent& event) override;
   void OnMouseExited(const ui::MouseEvent& event) override;
+  bool OverlapsContent() const override;
+  gfx::Rect GetTrackBounds() const override;
+  int GetThickness() const override;
 
  private:
   class Thumb : public BaseScrollBarThumb {

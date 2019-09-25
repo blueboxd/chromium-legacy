@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "base/sequenced_task_runner.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
@@ -543,15 +544,10 @@ class LoginHandlerDelegate {
     auth_challenge_responder_.set_disconnect_handler(base::BindOnce(
         &LoginHandlerDelegate::OnRequestCancelled, base::Unretained(this)));
 
-    auto continue_after_inteceptor_io =
-        base::BindOnce(&LoginHandlerDelegate::ContinueAfterInterceptorIO,
-                       weak_factory_.GetWeakPtr());
-    base::PostTask(
-        FROM_HERE, {BrowserThread::IO},
-        base::BindOnce(&DevToolsURLLoaderInterceptor::HandleAuthRequest,
-                       request_id_.child_id, routing_id_,
-                       request_id_.request_id, auth_info_,
-                       std::move(continue_after_inteceptor_io)));
+    DevToolsURLLoaderInterceptor::HandleAuthRequest(
+        request_id_.child_id, routing_id_, request_id_.request_id, auth_info_,
+        base::BindOnce(&LoginHandlerDelegate::ContinueAfterInterceptor,
+                       weak_factory_.GetWeakPtr()));
   }
 
  private:
@@ -562,18 +558,7 @@ class LoginHandlerDelegate {
     delete this;
   }
 
-  static void ContinueAfterInterceptorIO(
-      base::WeakPtr<LoginHandlerDelegate> self_weak,
-      bool use_fallback,
-      const base::Optional<net::AuthCredentials>& auth_credentials) {
-    DCHECK_CURRENTLY_ON(BrowserThread::IO);
-    base::PostTask(
-        FROM_HERE, {BrowserThread::UI},
-        base::BindOnce(&LoginHandlerDelegate::ContinueAfterInterceptorUI,
-                       std::move(self_weak), use_fallback, auth_credentials));
-  }
-
-  void ContinueAfterInterceptorUI(
+  void ContinueAfterInterceptor(
       bool use_fallback,
       const base::Optional<net::AuthCredentials>& auth_credentials) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);

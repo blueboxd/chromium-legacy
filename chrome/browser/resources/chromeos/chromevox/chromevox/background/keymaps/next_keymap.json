@@ -998,7 +998,7 @@
       }
     },
     {
-      "command": "getBatteryDescription",
+      "command": "announceBatteryDescription",
       "sequence": {
         "cvoxModifier": true,
         "keys": {
@@ -1007,7 +1007,7 @@
       }
     },
     {
-      "command": "getRichTextDescription",
+      "command": "announceRichTextDescription",
       "sequence": {
         "cvoxModifier": true,
         "keys": {

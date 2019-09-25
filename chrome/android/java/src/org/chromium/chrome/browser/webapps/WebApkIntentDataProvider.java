@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PackageManagerUtils;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.ShortcutHelper;
@@ -483,9 +484,8 @@ public class WebApkIntentDataProvider extends BrowserServicesIntentDataProvider 
         shareIntent.setAction(Intent.ACTION_SEND);
         shareIntent.setPackage(webApkPackageName);
         shareIntent.setType("*/*");
-        List<ResolveInfo> resolveInfos =
-                ContextUtils.getApplicationContext().getPackageManager().queryIntentActivities(
-                        shareIntent, PackageManager.GET_META_DATA);
+        List<ResolveInfo> resolveInfos = PackageManagerUtils.queryIntentActivities(
+                shareIntent, PackageManager.GET_META_DATA);
 
         for (ResolveInfo resolveInfo : resolveInfos) {
             Bundle shareTargetMetaData = resolveInfo.activityInfo.metaData;

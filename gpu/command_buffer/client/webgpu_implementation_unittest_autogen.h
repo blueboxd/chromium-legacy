@@ -39,4 +39,15 @@ TEST_F(WebGPUImplementationTest, DissociateMailbox) {
   gl_->DissociateMailbox(1, 2);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
+
+TEST_F(WebGPUImplementationTest, RequestAdapter) {
+  struct Cmds {
+    cmds::RequestAdapter cmd;
+  };
+  Cmds expected;
+  expected.cmd.Init(1);
+
+  gl_->RequestAdapter(PowerPreference::kHighPerformance);
+  EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
+}
 #endif  // GPU_COMMAND_BUFFER_CLIENT_WEBGPU_IMPLEMENTATION_UNITTEST_AUTOGEN_H_

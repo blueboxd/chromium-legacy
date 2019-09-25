@@ -18,7 +18,7 @@
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
 #include "chrome/browser/previews/previews_https_notification_infobar_decider.h"
-#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
@@ -318,7 +318,8 @@ TEST_F(PreviewsUITabHelperUnitTest, TestPreviewsCallbackCalledNonOptOut) {
   EXPECT_FALSE(on_dismiss_value.value());
 }
 
-TEST_F(PreviewsUITabHelperUnitTest, TestReloadWithoutPreviewsLitePageRedirect) {
+TEST_F(PreviewsUITabHelperUnitTest,
+       TestReloadWithoutPreviewsLitePageRedirectRedirect) {
   SimulateWillProcessResponse();
   CallDidFinishNavigation();
   base::RunLoop().RunUntilIdle();

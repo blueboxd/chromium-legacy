@@ -12,6 +12,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "build/buildflag.h"
+#include "chrome/browser/chrome_content_browser_client.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -242,6 +243,56 @@ IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTest, BlobXMLHttpRequest) {
         };
         xhr.send();
       })
+  )";
+  EXPECT_EQ("DONE",
+            content::EvalJs(
+                browser()->tab_strip_model()->GetActiveWebContents(), kScript));
+}
+
+// A test specialization for verifying quota storage related operations do not
+// use BEST_EFFORT tasks.
+class NoBestEffortTasksTestWithQuota : public NoBestEffortTasksTest {
+ protected:
+  std::unique_ptr<storage::QuotaSettings> CreateQuotaSettings() override {
+    // Return nullptr to use the real quota subsystem.
+    return nullptr;
+  }
+};
+
+// Verify that cache_storage finishes without running BEST_EFFORT tasks.
+// Regression test for https://crbug.com/1006546.
+IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTestWithQuota, CacheStorage) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/empty.html"));
+  const char kScript[] = R"(
+      (async function() {
+        const name = 'foo';
+        const url = '/';
+        const body = 'hello world';
+        let c = await caches.open(name);
+        await c.put(url, new Response(body));
+        let r = await c.match(url);
+        await r.text();
+        return 'DONE';
+      })();
+  )";
+  EXPECT_EQ("DONE",
+            content::EvalJs(
+                browser()->tab_strip_model()->GetActiveWebContents(), kScript));
+}
+
+// Verify that quota estimate() finishes without running BEST_EFFORT tasks.
+// Regression test for https://crbug.com/1006546.
+IN_PROC_BROWSER_TEST_F(NoBestEffortTasksTestWithQuota, QuotaEstimate) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+  ui_test_utils::NavigateToURL(browser(),
+                               embedded_test_server()->GetURL("/empty.html"));
+  const char kScript[] = R"(
+      (async function() {
+        await navigator.storage.estimate();
+        return 'DONE';
+      })();
   )";
   EXPECT_EQ("DONE",
             content::EvalJs(

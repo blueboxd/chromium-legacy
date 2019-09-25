@@ -17,6 +17,7 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox.h"
+#include "gpu/command_buffer/common/webgpu_cmd_enums.h"
 #include "gpu/command_buffer/common/webgpu_cmd_format.h"
 #include "gpu/command_buffer/common/webgpu_cmd_ids.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -97,6 +98,19 @@ bool WireServerCommandSerializer::Flush() {
     put_offset_ = 0;
   }
   return true;
+}
+
+dawn_native::DeviceType PowerPreferenceToDawnDeviceType(
+    PowerPreference power_preference) {
+  switch (power_preference) {
+    case PowerPreference::kLowPower:
+      return dawn_native::DeviceType::IntegratedGPU;
+    case PowerPreference::kHighPerformance:
+      return dawn_native::DeviceType::DiscreteGPU;
+    default:
+      NOTREACHED();
+      return dawn_native::DeviceType::CPU;
+  }
 }
 
 }  // namespace
@@ -328,7 +342,12 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   // only if not returning an error.
   error::Error current_decoder_error_ = error::kNoError;
 
-  DawnDevice CreateDefaultDevice();
+  void DiscoverAdapters();
+
+  dawn_native::Adapter GetPreferredAdapter(
+      PowerPreference power_preference) const;
+
+  error::Error InitDawnDeviceAndSetWireServer(dawn_native::Adapter* adapter);
 
   std::unique_ptr<SharedImageRepresentationFactory>
       shared_image_representation_factory_;
@@ -342,6 +361,7 @@ class WebGPUDecoderImpl final : public WebGPUDecoder {
   std::unique_ptr<WireServerCommandSerializer> wire_serializer_;
   std::unique_ptr<DawnServiceMemoryTransferService> memory_transfer_service_;
   std::unique_ptr<dawn_native::Instance> dawn_instance_;
+  std::vector<dawn_native::Adapter> dawn_adapters_;
   DawnProcTable dawn_procs_;
   DawnDevice dawn_device_ = nullptr;
   std::unique_ptr<dawn_wire::WireServer> wire_server_;
@@ -402,9 +422,17 @@ WebGPUDecoderImpl::~WebGPUDecoderImpl() {
 }
 
 ContextResult WebGPUDecoderImpl::Initialize() {
-  dawn_device_ = CreateDefaultDevice();
+  DiscoverAdapters();
+  return ContextResult::kSuccess;
+}
+
+error::Error WebGPUDecoderImpl::InitDawnDeviceAndSetWireServer(
+    dawn_native::Adapter* adapter) {
+  DCHECK(adapter != nullptr && (*adapter));
+
+  dawn_device_ = adapter->CreateDevice();
   if (dawn_device_ == nullptr) {
-    return ContextResult::kFatalFailure;
+    return error::kLostContext;
   }
 
   dawn_wire::WireServerDescriptor descriptor = {};
@@ -415,10 +443,13 @@ ContextResult WebGPUDecoderImpl::Initialize() {
 
   wire_server_ = std::make_unique<dawn_wire::WireServer>(descriptor);
 
-  return ContextResult::kSuccess;
+  return error::kNoError;
 }
 
-DawnDevice WebGPUDecoderImpl::CreateDefaultDevice() {
+void WebGPUDecoderImpl::DiscoverAdapters() {
+  dawn_instance_->DiscoverDefaultAdapters();
+  std::vector<dawn_native::Adapter> adapters = dawn_instance_->GetAdapters();
+  for (const dawn_native::Adapter& adapter : adapters) {
 #if defined(OS_WIN)
   // On Windows 10, we pick D3D12 backend because the rest of Chromium renders
   // with D3D11. By the same token, we pick the first adapter because ANGLE also
@@ -427,57 +458,63 @@ DawnDevice WebGPUDecoderImpl::CreateDefaultDevice() {
   // decide to handle multiple adapters, code on the Chromium side will need to
   // change to do appropriate cross adapter copying to make this happen, either
   // manually or by using DirectComposition.
-  dawn_instance_->DiscoverDefaultAdapters();
-  const std::vector<dawn_native::Adapter> adapters =
-      dawn_instance_->GetAdapters();
-
-  for (dawn_native::Adapter adapter : adapters) {
     if (adapter.GetBackendType() == dawn_native::BackendType::D3D12) {
-      return adapter.CreateDevice();
+#else
+    if (adapter.GetBackendType() != dawn_native::BackendType::Null &&
+        adapter.GetBackendType() != dawn_native::BackendType::OpenGL) {
+#endif
+      dawn_adapters_.push_back(adapter);
     }
   }
-  return nullptr;
-#else
-  dawn_instance_->DiscoverDefaultAdapters();
-  std::vector<dawn_native::Adapter> adapters = dawn_instance_->GetAdapters();
+}
 
+dawn_native::Adapter WebGPUDecoderImpl::GetPreferredAdapter(
+    PowerPreference power_preference) const {
+  dawn_native::DeviceType preferred_device_type =
+      PowerPreferenceToDawnDeviceType(power_preference);
+
+  dawn_native::Adapter discrete_gpu_adapter = {};
   dawn_native::Adapter integrated_gpu_adapter = {};
   dawn_native::Adapter cpu_adapter = {};
   dawn_native::Adapter unknown_adapter = {};
 
-  for (dawn_native::Adapter adapter : adapters) {
-    if (adapter.GetBackendType() != dawn_native::BackendType::Null &&
-        adapter.GetBackendType() != dawn_native::BackendType::OpenGL) {
-      switch (adapter.GetDeviceType()) {
-        case dawn_native::DeviceType::DiscreteGPU:
-          // For now, we always prefer the discrete GPU
-          return adapter.CreateDevice();
-        case dawn_native::DeviceType::IntegratedGPU:
-          integrated_gpu_adapter = adapter;
-          break;
-        case dawn_native::DeviceType::CPU:
-          cpu_adapter = adapter;
-          break;
-        case dawn_native::DeviceType::Unknown:
-          unknown_adapter = adapter;
-          break;
-        default:
-          NOTREACHED();
-          break;
-      }
+  for (const dawn_native::Adapter& adapter : dawn_adapters_) {
+    if (adapter.GetDeviceType() == preferred_device_type) {
+      return adapter;
+    }
+    switch (adapter.GetDeviceType()) {
+      case dawn_native::DeviceType::DiscreteGPU:
+        discrete_gpu_adapter = adapter;
+        break;
+      case dawn_native::DeviceType::IntegratedGPU:
+        integrated_gpu_adapter = adapter;
+        break;
+      case dawn_native::DeviceType::CPU:
+        cpu_adapter = adapter;
+        break;
+      case dawn_native::DeviceType::Unknown:
+        unknown_adapter = adapter;
+        break;
+      default:
+        NOTREACHED();
+        break;
     }
   }
+
+  // For now, we always prefer the discrete GPU
+  if (discrete_gpu_adapter) {
+    return discrete_gpu_adapter;
+  }
   if (integrated_gpu_adapter) {
-    return integrated_gpu_adapter.CreateDevice();
+    return integrated_gpu_adapter;
   }
   if (cpu_adapter) {
-    return cpu_adapter.CreateDevice();
+    return cpu_adapter;
   }
   if (unknown_adapter) {
-    return unknown_adapter.CreateDevice();
+    return unknown_adapter;
   }
-  return nullptr;
-#endif
+  return dawn_native::Adapter();
 }
 
 const char* WebGPUDecoderImpl::GetCommandName(unsigned int command_id) const {
@@ -551,6 +588,24 @@ error::Error WebGPUDecoderImpl::DoCommands(unsigned int num_commands,
   }
 
   return result;
+}
+
+error::Error WebGPUDecoderImpl::HandleRequestAdapter(
+    uint32_t immediate_data_size,
+    const volatile void* cmd_data) {
+  const volatile webgpu::cmds::RequestAdapter& c =
+      *static_cast<const volatile webgpu::cmds::RequestAdapter*>(cmd_data);
+
+  PowerPreference power_preference =
+      static_cast<PowerPreference>(c.power_preference);
+  dawn_native::Adapter requested_adapter =
+      GetPreferredAdapter(power_preference);
+  if (!requested_adapter) {
+    return error::kLostContext;
+  }
+
+  // TODO(jiawei.shao@intel.com): support creating device with device descriptor
+  return InitDawnDeviceAndSetWireServer(&requested_adapter);
 }
 
 error::Error WebGPUDecoderImpl::HandleDawnCommands(

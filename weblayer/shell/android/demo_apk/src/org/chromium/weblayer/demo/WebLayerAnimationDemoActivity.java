@@ -60,12 +60,18 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
     }
 
     public static class ContainerFrameLayout extends FrameLayout {
+        private final BrowserFragmentImpl mFragment;
         private int mIndex;
         private boolean mInterceptTouchEvent;
 
-        public ContainerFrameLayout(Context context, int index) {
+        public ContainerFrameLayout(Context context, BrowserFragmentImpl fragment, int index) {
             super(context);
+            mFragment = fragment;
             mIndex = index;
+        }
+
+        public BrowserFragmentImpl getFragment() {
+            return mFragment;
         }
 
         public void setInterceptTouchEvent(boolean intercept) {
@@ -124,14 +130,15 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
     }
 
     private void createNewFragment(int index) {
-        ContainerFrameLayout container = new ContainerFrameLayout(this, index);
+        mBrowserFragments[index] = mProfile.createBrowserFragment(this);
+        final BrowserController controller = mBrowserFragments[index].getBrowserController();
+
+        ContainerFrameLayout container =
+                new ContainerFrameLayout(this, mBrowserFragments[index], index);
         mContainerViews[index] = container;
         int viewId = View.generateViewId();
         container.setId(viewId);
         mMainView.addView(container);
-
-        mBrowserFragments[index] = mProfile.createBrowserFragment(this);
-        final BrowserController controller = mBrowserFragments[index].getBrowserController();
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
         transaction.add(viewId, new ShellFragment(mBrowserFragments[index]));
@@ -253,12 +260,12 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
             mContainerViews[1].setOnClickListener(new OnClickImpl());
             mContainerViews[2].setOnClickListener(new OnClickImpl());
             mContainerViews[0].post(() -> {
-                mBrowserFragments[0].setSupportsEmbedding(true);
-                mBrowserFragments[1].setSupportsEmbedding(true);
-                mBrowserFragments[2].setSupportsEmbedding(true);
-                animateDown(mContainerViews[0]);
-                animateDown(mContainerViews[1]);
-                animateDown(mContainerViews[2]);
+                mBrowserFragments[0].setSupportsEmbedding(true).addCallback(
+                        (Boolean result) -> animateDown(mContainerViews[0]));
+                mBrowserFragments[1].setSupportsEmbedding(true).addCallback(
+                        (Boolean result) -> animateDown(mContainerViews[1]));
+                mBrowserFragments[2].setSupportsEmbedding(true).addCallback(
+                        (Boolean result) -> animateDown(mContainerViews[2]));
             });
         }
     }
@@ -284,8 +291,12 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
                 ContainerFrameLayout container = (ContainerFrameLayout) v;
                 if (mFullscreenContainer == container) return;
 
-                mMainView.removeView(container);
-                mMainView.addView(container, 0);
+                // Move to back by bringing others to the front.
+                // This avoids detaching and reattaching any views.
+                for (int i = 0; i < 3; ++i) {
+                    if (mContainerViews[i] == container) continue;
+                    mMainView.bringChildToFront(mContainerViews[i]);
+                }
 
                 if (mFullscreenContainer != null) {
                     animateDown(mFullscreenContainer);
@@ -297,15 +308,19 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
     }
 
     private static void animateDown(ContainerFrameLayout container) {
+        // Start animation after fullying switched from SurfaceView to TextureView.
         int index = container.getIndex();
-        container.animate()
-                .scaleX(1.0f / 3)
-                .scaleY(1.0f / 3)
-                .translationX(-container.getWidth() / 3.0f + (container.getWidth() / 3.0f * index))
-                .translationY(container.getHeight() / 3.0f)
-                .alpha(0.8f)
-                .setDuration(500);
-        container.setInterceptTouchEvent(true);
+        container.getFragment().setSupportsEmbedding(true).addCallback((Boolean result) -> {
+            container.animate()
+                    .scaleX(1.0f / 3)
+                    .scaleY(1.0f / 3)
+                    .translationX(
+                            -container.getWidth() / 3.0f + (container.getWidth() / 3.0f * index))
+                    .translationY(container.getHeight() / 3.0f)
+                    .alpha(0.8f)
+                    .setDuration(500);
+            container.setInterceptTouchEvent(true);
+        });
     }
 
     private static void animateUp(ContainerFrameLayout container) {
@@ -315,8 +330,11 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
                 .translationX(0)
                 .translationY(0)
                 .alpha(1.0f)
-                .setDuration(500);
-        container.setInterceptTouchEvent(false);
+                .setDuration(500)
+                .withEndAction(() -> {
+                    container.getFragment().setSupportsEmbedding(false);
+                    container.setInterceptTouchEvent(false);
+                });
     }
 
     private static void animateDown(MyWebView webview) {

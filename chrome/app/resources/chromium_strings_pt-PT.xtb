@@ -117,7 +117,6 @@
 <translation id="5416696090975899932">O Chromium não pode apresentar a pré-visualização de impressão com o visualizador de PDFs incorporado em falta.</translation>
 <translation id="5427571867875391349">Definir o Chromium como o seu navegador predefinido</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> – Chromium Beta</translation>
-<translation id="5466153949126434691">O Chromium é atualizado automaticamente para que tenha sempre a versão mais recente. Quando a transferência estiver concluída, o Chromium irá reiniciar e o processo estará terminado.</translation>
 <translation id="5479196819031988440">O SO Chromium não consegue abrir esta página.</translation>
 <translation id="5480860683791598150">O Chromium necessita de aceder à sua localização para a partilhar com este site.</translation>
 <translation id="549669000822060376">Aguarde até que o Chromium instale as atualizações do sistema mais recentes.</translation>
@@ -213,7 +212,6 @@ O Chromium não consegue recuperar as suas definições.</translation>
 <translation id="7867198900892795913">Não foi possível atualizar o Chromium para a versão mais recente, pelo que não está a beneficiar das novas funcionalidades e correções de segurança.</translation>
 <translation id="7901117350626490574">Está disponível uma atualização para o Chromium que será aplicada logo que o reinicie.</translation>
 <translation id="7937630085815544518">Iniciou sessão no Chromium com a conta <ph name="USER_EMAIL_ADDRESS" />. Utilize a mesma conta para iniciar sessão novamente.</translation>
-<translation id="7962572577636132072">O Chromium é atualizado automaticamente para que tenha sempre a versão mais recente.</translation>
 <translation id="7975919845073681630">Esta é uma instalação secundária do Chromium, pelo que não pode tornar-se o navegador predefinido.</translation>
 <translation id="7979877361127045932">Ocultar no menu do Chromium</translation>
 <translation id="8013436988911883588">Assim que o Chromium tiver acesso, os Websites poderão solicitar-lhe o acesso.</translation>

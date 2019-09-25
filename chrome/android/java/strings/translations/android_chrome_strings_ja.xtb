@@ -1021,7 +1021,7 @@ VR を開始する前に、信頼できるサイトかどうかを確認して�
 <translation id="8445448999790540984">パスワードをエクスポートできません</translation>
 <translation id="8447861592752582886">デバイスの許可を取り消します</translation>
 <translation id="8461694314515752532">同期データを同期パスフレーズで暗号化する</translation>
-<translation id="8466613982764129868"><ph name="TARGET_DEVICE_NAME" />がインターネットに接続していることを確認してください</translation>
+<translation id="8466613982764129868"><ph name="TARGET_DEVICE_NAME" /> がインターネットに接続していることを確認してください</translation>
 <translation id="8485434340281759656"><ph name="FILE_SIZE" /> <ph name="SEPARATOR" /> <ph name="DESCRIPTION" /></translation>
 <translation id="8487700953926739672">オフラインでの利用</translation>
 <translation id="8489271220582375723">履歴ページを開く</translation>

@@ -396,7 +396,7 @@
       phù hợp, quyền truy cập sẽ tự động bị từ chối.  Các mẫu ký tự đại diện không được phép.</translation>
 <translation id="1634989431648355062">Cho phép plugin <ph name="FLASH_PLUGIN_NAME" /> trên các trang web này</translation>
 <translation id="1645793986494086629">Lược đồ:</translation>
-<translation id="1648816843164517573">Danh sách các tên sẽ được miễn kiểm tra chính sách Bảo mật truyền tải nghiêm ngặt HTTP (HSTS)</translation>
+<translation id="1648816843164517573">Danh sách các tên sẽ bỏ qua quy trình kiểm tra chính sách Bảo mật truyền tải nghiêm ngặt HTTP (HSTS)</translation>
 <translation id="1653229475925941921">Nếu bạn đặt chính sách này, chính sách sẽ kiểm soát loại kính lúp được bật. Đặt chính sách thành ''None'' sẽ tắt kính lúp.
 
           Nếu bạn đặt chính sách này, người dùng sẽ không thể thay đổi hay ghi đè chính sách.
@@ -990,7 +990,7 @@
           Chính sách này là tùy chọn. Nếu không thiết lập, mặc định được sử dụng sẽ là UTF-8.
 
           Chính sách này chỉ được áp dụng nếu chính sách 'DefaultSearchProviderEnabled' được bật.</translation>
-<translation id="2679827548357140943">Cần phải kiểm tra danh sách miền của nội dung đã tải lên để xem có chứa phần mềm độc hại hay không</translation>
+<translation id="2679827548357140943">Danh sách miền mà cần phải kiểm tra nội dung tải lên để xem có chứa phần mềm độc hại hay không</translation>
 <translation id="268577405881275241">Bật tính năng proxy nén dữ liệu</translation>
 <translation id="2693108589792503178">Định cấu hình URL thay đổi mật khẩu.</translation>
 <translation id="2694143893026486692">Đã bật tùy chọn phóng to ở vị trí cố định</translation>
@@ -1368,9 +1368,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="332771718998993005">Xác định tên được quảng cáo là đích <ph name="PRODUCT_NAME" />.
 
           Nếu bạn đặt chính sách này thành một chuỗi không phải là chuỗi trống, thì chuỗi đó sẽ được sử dụng làm tên của đích <ph name="PRODUCT_NAME" />. Nếu không, tên đích sẽ là tên thiết bị. Nếu bạn không đặt chính sách này, thì tên đích sẽ là tên thiết bị và chủ sở hữu thiết bị (hoặc người dùng từ miền quản lý thiết bị) sẽ được phép thay đổi tên đó. Tên có độ dài tối đa là 24 ký tự.</translation>
-<translation id="3331950121151548952">Cần phải kiểm tra danh sách miền của nội dung đã tải lên để xem có chứa phần mềm độc hại hay không.  Chỉ dùng chính sách này nếu bạn đặt <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> thành giá trị cho phép hoặc thực thi quá trình kiểm tra phần mềm độc hại đối với nội dung đã tải lên.
+<translation id="3331950121151548952">Danh sách miền cần phải kiểm tra nội dung đã tải lên để xem có chứa phần mềm độc hại hay không.  Chỉ dùng chính sách này nếu bạn đặt <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME" /> thành giá trị cho phép hoặc thực thi quá trình kiểm tra để phát hiện phần mềm độc hại đối với nội dung đã tải lên.
 
-      Nếu bạn không đặt hoặc đặt chính sách này thành danh sách miền trống, thì sẽ không cần kiểm tra nội dung đã tải lên xem có chứa phần mềm độc hại hay không.
+      Nếu bạn không đặt hoặc đặt chính sách này thành danh sách miền trống, thì sẽ không có nội dung nào được kiểm tra để xem có chứa phần mềm độc hại hay không.
       </translation>
 <translation id="3335468714959531450">Cho phép bạn đặt danh sách các mẫu url chỉ định những trang web được phép đặt cookie.
 
@@ -1445,9 +1445,9 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
           Pin bắt đầu sạc khi lượng pin còn lại thấp hơn giá trị bắt đầu sạc pin tùy chỉnh này.
 
-          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> phải thấp hơn <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> tối thiểu là 5%.
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> phải thấp hơn <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> tối thiểu là 5 điểm phần trăm.
 
-          Chỉ dùng chính sách này nếu bạn đặt <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> thành <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+          Chính sách này chỉ được sử dụng nếu bạn đặt <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> thành <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
 
           Nếu bạn không định cấu hình hoặc không đặt chính sách này, thì chế độ sạc pin <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> sẽ được áp dụng.</translation>
 <translation id="348495353354674884">Bật bàn phím ảo</translation>
@@ -1984,7 +1984,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu bạn đặt chính sách này thành "Gửi tệp người dùng đã tải lên để quét", thì các tệp người dùng đã tải lên sẽ được gửi qua mạng đến tính năng Duyệt web an toàn để quét tìm phần mềm độc hại.
 
-      Nếu bạn đặt chính sách này thành "Gửi tệp người dùng đã tải lên và tải xuống để quét", thì sản phẩm sẽ hoạt động theo các quy tắc nêu trong phần "Gửi tệp người dùng đã tải lên để quét" và "Gửi tệp người dùng đã tải xuống để quét".
+      Nếu bạn đặt chính sách này thành "Gửi tệp người dùng đã tải lên và tải xuống để quét", thì hệ thống sẽ hoạt động theo các quy tắc nêu trong phần "Gửi tệp người dùng đã tải lên để quét" và "Gửi tệp người dùng đã tải xuống để quét".
 
       Vui lòng xem chính sách <ph name="DELAY_DELIVER_UNTIL_VERDICT_POLICY_NAME" /> và <ph name="UNSAFE_EVENTS_REPORTING_ENABLED" /> để biết thông tin chi tiết về cách kết quả quét xuất hiện đối với người dùng và quản trị viên.</translation>
 <translation id="4344356660952451291">Cần phải kiểm tra danh sách miền của nội dung tải xuống xem có tuân thủ hay không</translation>
@@ -3512,9 +3512,9 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
           Pin sẽ ngừng sạc khi đạt đến giá trị ngừng sạc pin tùy chỉnh.
 
-          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> phải thấp hơn <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> tối thiểu là 5%.
+          <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_START_CHARGING_NAME" /> phải thấp hơn <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_STOP_CHARGING_NAME" /> tối thiểu là 5 điểm phần trăm.
 
-          Chỉ dùng chính sách này nếu bạn đặt <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> thành <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
+          Chính sách này chỉ được sử dụng nếu bạn đặt <ph name="DEVICE_BATTERY_CHARGE_MODE_NAME" /> thành <ph name="DEVICE_BATTERY_CHARGE_CUSTOM_MODE_NAME" />.
 
           Nếu bạn không định cấu hình hoặc không đặt chính sách này, thì chế độ sạc pin <ph name="DEVICE_BATTERY_CHARGE_STANDARD_MODE_NAME" /> sẽ được áp dụng.</translation>
 <translation id="7140629953254369759">Hướng dẫn <ph name="PRODUCT_OS_NAME" /> sử dụng cấu hình bộ lập lịch tác vụ dựa trên tên được chỉ định.
@@ -4447,7 +4447,6 @@ Bạn nên định cấu hình chính sách trên Windows qua GPO, mặc dù vi�
 <translation id="8798099450830957504">Mặc định</translation>
 <translation id="8800453707696044281">Đặt mức phần trăm ngừng sạc pin tùy chỉnh</translation>
 <translation id="8801680448782904838">Thông báo cho người dùng biết họ cần hoặc bắt buộc phải chạy lại trình duyệt hoặc khởi động lại thiết bị</translation>
-<translation id="8802816494059596691">Các tên máy chủ đã chỉ định trong danh sách này sẽ được miễn kiểm tra chính sách HSTS (có thể nâng cấp yêu cầu từ http lên https). Chính sách này chỉ cho phép tên máy chủ một nhãn. Cần phải chuẩn hóa tên máy chủ: mọi IDN phải được chuyển sang định dạng nhãn A và tất cả chữ cái ASCII phải là chữ thường. Chính sách này chỉ áp dụng với các tên máy chủ cụ thể đã chỉ định, chứ không áp dụng với các miền con của tên máy chủ đã chỉ định.</translation>
 <translation id="8818173863808665831">Báo cáo vị trí địa lý của thiết bị.
 
       Nếu chính sách này không được đặt hoặc được đặt thành false, vị trí sẽ không được báo cáo.</translation>

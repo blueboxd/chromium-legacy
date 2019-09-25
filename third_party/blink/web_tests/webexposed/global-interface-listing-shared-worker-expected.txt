@@ -3580,7 +3580,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     getter self
 [Worker]     method atob
 [Worker]     method btoa
-[Worker]     method cancelAnimationFrame
 [Worker]     method clearInterval
 [Worker]     method clearTimeout
 [Worker]     method constructor
@@ -3588,7 +3587,6 @@ Starting worker: resources/global-interface-listing-worker.js
 [Worker]     method fetch
 [Worker]     method importScripts
 [Worker]     method queueMicrotask
-[Worker]     method requestAnimationFrame
 [Worker]     method setInterval
 [Worker]     method setTimeout
 [Worker]     setter onerror

@@ -328,7 +328,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   bool ScrollbarsCanBeActive() const override;
   void ScrollbarVisibilityChanged() override;
   void ScrollbarFrameRectChanged() override;
-  IntRect ScrollableAreaBoundingBox() const override;
   void RegisterForAnimation() override;
   void DeregisterForAnimation() override;
   bool UserInputScrollable(ScrollbarOrientation) const override;
@@ -587,8 +586,6 @@ class CORE_EXPORT PaintLayerScrollableArea final
   LayoutSize MinimumSizeForResizing(float zoom_factor);
   PhysicalRect LayoutContentRect(IncludeScrollbarsInRect) const;
 
-  // See comments on isPointInResizeControl.
-  void UpdateResizerAreaSet();
   void UpdateResizerStyle(const ComputedStyle* old_style);
 
   void UpdateScrollableAreaSet();

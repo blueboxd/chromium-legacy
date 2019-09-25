@@ -625,8 +625,11 @@ PDFiumPage::Area PDFiumPage::GetDestinationTarget(FPDF_DEST destination,
   target->page = page_index;
 
   base::Optional<gfx::PointF> xy = GetPageXYTarget(destination);
-  if (xy)
-    target->y_in_pixels = TransformPageToScreenXY(xy.value()).y();
+  if (xy) {
+    gfx::PointF point = TransformPageToScreenXY(xy.value());
+    target->x_in_pixels = point.x();
+    target->y_in_pixels = point.y();
+  }
 
   return DOCLINK_AREA;
 }

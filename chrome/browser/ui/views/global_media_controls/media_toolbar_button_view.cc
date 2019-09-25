@@ -28,8 +28,11 @@ MediaToolbarButtonView::MediaToolbarButtonView(
       connector_(connector),
       controller_(source_id, connector_, this),
       browser_(browser) {
-  in_product_help_ = GlobalMediaControlsInProductHelpFactory::GetForProfile(
-      browser_->profile());
+  GlobalMediaControlsInProductHelp* in_product_help =
+      GlobalMediaControlsInProductHelpFactory::GetForProfile(
+          browser_->profile());
+  if (in_product_help)
+    AddObserver(in_product_help);
 
   button_controller()->set_notify_action(
       views::ButtonController::NotifyAction::kOnPress);
@@ -45,41 +48,72 @@ MediaToolbarButtonView::MediaToolbarButtonView(
 
 MediaToolbarButtonView::~MediaToolbarButtonView() = default;
 
+void MediaToolbarButtonView::AddObserver(MediaToolbarButtonObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void MediaToolbarButtonView::RemoveObserver(
+    MediaToolbarButtonObserver* observer) {
+  observers_.RemoveObserver(observer);
+}
+
 void MediaToolbarButtonView::ButtonPressed(views::Button* sender,
                                            const ui::Event& event) {
   if (MediaDialogView::IsShowing()) {
     MediaDialogView::HideDialog();
   } else {
     MediaDialogView::ShowDialog(this, &controller_, connector_);
-    InformIPHOfDialogShown();
+
+    // Inform observers. Since the promo controller cares about the dialog
+    // showing, we need to ensure that it's created.
+    EnsurePromoController();
+    for (auto& observer : observers_)
+      observer.OnMediaDialogOpened();
   }
 }
 
 void MediaToolbarButtonView::Show() {
   SetVisible(true);
   PreferredSizeChanged();
+
+  for (auto& observer : observers_)
+    observer.OnMediaButtonShown();
 }
 
 void MediaToolbarButtonView::Hide() {
   SetVisible(false);
   PreferredSizeChanged();
-  InformIPHOfButtonDisabledorHidden();
+
+  // Inform observers. Since the promo controller cares about hiding, we need to
+  // ensure that it's created.
+  EnsurePromoController();
+  for (auto& observer : observers_)
+    observer.OnMediaButtonHidden();
 }
 
 void MediaToolbarButtonView::Enable() {
   SetEnabled(true);
-  InformIPHOfButtonEnabled();
+
 #if defined(OS_MACOSX)
   UpdateIcon();
 #endif  // defined(OS_MACOSX)
+
+  for (auto& observer : observers_)
+    observer.OnMediaButtonEnabled();
 }
 
 void MediaToolbarButtonView::Disable() {
   SetEnabled(false);
-  InformIPHOfButtonDisabledorHidden();
+
 #if defined(OS_MACOSX)
   UpdateIcon();
 #endif  // defined(OS_MACOSX)
+
+  // Inform observers. Since the promo controller cares about disabling, we need
+  // to ensure that it's created.
+  EnsurePromoController();
+  for (auto& observer : observers_)
+    observer.OnMediaButtonDisabled();
 }
 
 SkColor MediaToolbarButtonView::GetInkDropBaseColor() const {
@@ -120,7 +154,8 @@ void MediaToolbarButtonView::UpdateIcon() {
 }
 
 void MediaToolbarButtonView::ShowPromo() {
-  GetPromoController().ShowPromo();
+  EnsurePromoController();
+  promo_controller_->ShowPromo();
   is_promo_showing_ = true;
   GetInkDrop()->AnimateToState(views::InkDropState::ACTIVATED);
 }
@@ -130,30 +165,11 @@ void MediaToolbarButtonView::OnPromoEnded() {
   GetInkDrop()->AnimateToState(views::InkDropState::HIDDEN);
 }
 
-GlobalMediaControlsPromoController&
-MediaToolbarButtonView::GetPromoController() {
-  if (!promo_controller_) {
-    promo_controller_ = std::make_unique<GlobalMediaControlsPromoController>(
-        this, browser_->profile());
-  }
-  return *promo_controller_;
-}
+void MediaToolbarButtonView::EnsurePromoController() {
+  if (promo_controller_)
+    return;
 
-void MediaToolbarButtonView::InformIPHOfDialogShown() {
-  if (in_product_help_)
-    in_product_help_->GlobalMediaControlsOpened();
-
-  GetPromoController().OnMediaDialogOpened();
-}
-
-void MediaToolbarButtonView::InformIPHOfButtonEnabled() {
-  if (in_product_help_)
-    in_product_help_->ToolbarIconEnabled();
-}
-
-void MediaToolbarButtonView::InformIPHOfButtonDisabledorHidden() {
-  if (in_product_help_)
-    in_product_help_->ToolbarIconDisabled();
-
-  GetPromoController().OnMediaToolbarButtonDisabledOrHidden();
+  promo_controller_ = std::make_unique<GlobalMediaControlsPromoController>(
+      this, browser_->profile());
+  AddObserver(promo_controller_.get());
 }

@@ -10,50 +10,41 @@
 #import "ios/chrome/browser/overlays/public/web_content_area/app_launcher_alert_overlay.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/test/fake_alert_consumer.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/test/alert_overlay_mediator_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "testing/gtest_mac.h"
-#include "testing/platform_test.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-class AppLauncherAlertOverlayMediatorTest : public PlatformTest {
+class AppLauncherAlertOverlayMediatorTest : public AlertOverlayMediatorTest {
  protected:
-  AppLauncherAlertOverlayMediatorTest()
-      : consumer_([[FakeAlertConsumer alloc] init]) {
-    UpdateConsumer();
-  }
-
-  FakeAlertConsumer* consumer() const { return consumer_; }
+  AppLauncherAlertOverlayMediatorTest() { UpdateMediator(); }
 
   // Setter for whether the test is for a repeated app launch request.
   void set_is_repeated_request(bool is_repeated_request) {
     if (is_repeated_request_ == is_repeated_request)
       return;
     is_repeated_request_ = is_repeated_request;
-    UpdateConsumer();
+    UpdateMediator();
   }
 
  private:
   // Instantiates |request_| with an OverlayRequest configured with an
   // AppLauncherAlertOverlayRequestConfig set up using |is_repeated_request_|.
-  // Resets |mediator_| to a new AppLauncherAlertOverlayMediator created with
-  // |request_| and sets its consumer to |consumer_|.
-  void UpdateConsumer() {
+  // Creates a new mediator using using |request_|.
+  void UpdateMediator() {
     request_ =
         OverlayRequest::CreateWithConfig<AppLauncherAlertOverlayRequestConfig>(
             is_repeated_request_);
-    mediator_ = [[AppLauncherAlertOverlayMediator alloc]
-        initWithRequest:request_.get()];
-    mediator_.consumer = consumer_;
+    SetMediator([[AppLauncherAlertOverlayMediator alloc]
+        initWithRequest:request_.get()]);
   }
 
-  FakeAlertConsumer* consumer_;
   bool is_repeated_request_ = false;
   std::unique_ptr<OverlayRequest> request_;
-  AppLauncherAlertOverlayMediator* mediator_ = nil;
 };
 
 // Tests that the consumer values are set correctly for the first app launch

@@ -16,7 +16,6 @@
 #include "ui/shell_dialogs/shell_dialog_linux.h"
 #include "ui/views/buildflags.h"
 #include "ui/views/controls/button/button.h"
-#include "ui/views/linux_ui/status_icon_linux.h"
 #include "ui/views/views_export.h"
 
 // The main entrypoint into Linux toolkit specific code. GTK code should only
@@ -124,16 +123,6 @@ class VIEWS_EXPORT LinuxUI : public ui::LinuxInputMethodContextFactory,
   // progress, if available.
   virtual void SetDownloadCount(int count) const = 0;
   virtual void SetProgressFraction(float percentage) const = 0;
-
-  // Checks for platform support for status icons.
-  virtual bool IsStatusIconSupported() const = 0;
-
-  // Create a native status icon. The id_prefix is used to distinguish Chrome's
-  // status icons from other apps' status icons, and should be unique.
-  virtual std::unique_ptr<StatusIconLinux> CreateLinuxStatusIcon(
-      const gfx::ImageSkia& image,
-      const base::string16& tool_tip,
-      const char* id_prefix) const = 0;
 
   // Returns the icon for a given content type from the icon theme.
   // TODO(davidben): Add an observer for the theme changing, so we can drop the

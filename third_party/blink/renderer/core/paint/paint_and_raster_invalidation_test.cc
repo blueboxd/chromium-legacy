@@ -1051,12 +1051,10 @@ TEST_P(PaintAndRasterInvalidationTest, ResizeElementWhichHasNonCustomResizer) {
   UpdateAllLifecyclePhasesForTest();
 
   Vector<RasterInvalidationInfo> invalidations;
-  if (RuntimeEnabledFeatures::PaintNonFastScrollableRegionsEnabled()) {
-    // This is for DisplayItem::kResizerScrollHitTest.
-    invalidations.push_back(RasterInvalidationInfo{
-        object, object->DebugName(), IntRect(0, 0, 200, 100),
-        PaintInvalidationReason::kGeometry});
-  }
+  // This is for DisplayItem::kResizerScrollHitTest.
+  invalidations.push_back(RasterInvalidationInfo{
+      object, object->DebugName(), IntRect(0, 0, 200, 100),
+      PaintInvalidationReason::kGeometry});
   invalidations.push_back(RasterInvalidationInfo{
       object, object->DebugName(), IntRect(0, 0, 200, 100),
       PaintInvalidationReason::kGeometry});

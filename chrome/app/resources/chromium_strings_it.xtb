@@ -116,7 +116,6 @@
 <translation id="5416696090975899932">Impossibile visualizzare l'anteprima di stampa in Chromium senza il visualizzatore PDF integrato.</translation>
 <translation id="5427571867875391349">Imposta Chromium come browser predefinito</translation>
 <translation id="5438241569118040789"><ph name="PAGE_TITLE" /> - Chromium beta</translation>
-<translation id="5466153949126434691">Chromium si aggiorna automaticamente per consentirti di avere sempre la versione più recente. Al termine del download, Chromium si riavvierà e potrai procedere.</translation>
 <translation id="5479196819031988440">Chromium OS non è in grado di aprire la pagina.</translation>
 <translation id="5480860683791598150">Chromium deve poter accedere alla tua posizione per condividerla con questo sito</translation>
 <translation id="549669000822060376">Attendi mentre Chromium installa gli aggiornamenti di sistema più recenti.</translation>
@@ -211,7 +210,6 @@ Chromium non è in grado di recuperare le impostazioni.</translation>
 <translation id="7867198900892795913">Non è stato possibile aggiornare Chromium alla versione più recente, quindi non potrai utilizzare le nuove funzioni e gli aggiornamenti di sicurezza.</translation>
 <translation id="7901117350626490574">È disponibile un nuovo aggiornamento di Chromium che verrà installato al prossimo riavvio.</translation>
 <translation id="7937630085815544518">Hai eseguito l'accesso a Chromium come <ph name="USER_EMAIL_ADDRESS" />. Utilizza lo stesso account per eseguire di nuovo l'accesso.</translation>
-<translation id="7962572577636132072">Chromium si aggiorna automaticamente per consentirti di avere sempre la versione più recente.</translation>
 <translation id="7975919845073681630">Questa è un'installazione secondaria, di conseguenza Chromium non può essere impostato come browser predefinito.</translation>
 <translation id="7979877361127045932">Nascondi in menu Chromium</translation>
 <translation id="8013436988911883588">Dopo che Chromium avrà ottenuto l'accesso, i siti web potranno chiederti l'accesso.</translation>

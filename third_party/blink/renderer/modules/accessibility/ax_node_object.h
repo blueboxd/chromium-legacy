@@ -64,7 +64,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
   void AlterSliderOrSpinButtonValue(bool increase);
   AXObject* ActiveDescendant() override;
   String AriaAccessibilityDescription() const;
-  String AriaAutoComplete() const override;
+  String AutoComplete() const override;
   void AccessibilityChildrenFromAOMProperty(AOMRelationListProperty,
                                             AXObject::AXObjectVector&) const;
 

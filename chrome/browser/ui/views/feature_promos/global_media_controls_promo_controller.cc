@@ -66,8 +66,11 @@ void GlobalMediaControlsPromoController::OnMediaDialogOpened() {
   FinishPromo();
 }
 
-void GlobalMediaControlsPromoController::
-    OnMediaToolbarButtonDisabledOrHidden() {
+void GlobalMediaControlsPromoController::OnMediaButtonHidden() {
+  FinishPromo();
+}
+
+void GlobalMediaControlsPromoController::OnMediaButtonDisabled() {
   FinishPromo();
 }
 

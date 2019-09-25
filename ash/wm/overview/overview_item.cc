@@ -315,12 +315,10 @@ OverviewItem::UpdateYPositionAndOpacity(
     // Alter the y-translation. Offset by the window location relative to the
     // grid.
     gfx::Transform transform = layer->transform();
-    transform.matrix().setFloat(1, 3,
-                                static_cast<float>(initial_y - new_grid_y));
+    transform.matrix().setFloat(1, 3, initial_y - new_grid_y);
     layer->SetTransform(transform);
 
-    // Return the first layer for the caller to observe.
-    if (!settings_to_observe)
+    if (settings)
       settings_to_observe = std::move(settings);
   }
 

@@ -221,6 +221,10 @@ IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, AddAndRemoveUsers) {
   EXPECT_TRUE(RunSubtest("addAndRemoveUsers")) << message_;
 }
 
+IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, IsWhitelistedUser) {
+  EXPECT_TRUE(RunSubtest("isWhitelistedUser")) << message_;
+}
+
 IN_PROC_BROWSER_TEST_F(UsersPrivateApiTest, IsOwner) {
   EXPECT_TRUE(RunSubtest("isOwner")) << message_;
 }

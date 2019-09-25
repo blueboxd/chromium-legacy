@@ -106,13 +106,12 @@ WebEmbeddedWorkerImpl::~WebEmbeddedWorkerImpl() {
 }
 
 void WebEmbeddedWorkerImpl::StartWorkerContext(
-    const WebEmbeddedWorkerStartData& data,
+    std::unique_ptr<WebEmbeddedWorkerStartData> worker_start_data,
     std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
         installed_scripts_manager_params,
     mojo::ScopedMessagePipeHandle content_settings_handle,
     scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner) {
   DCHECK(!asked_to_terminate_);
-  worker_start_data_ = data;
 
   std::unique_ptr<ServiceWorkerInstalledScriptsManager>
       installed_scripts_manager;
@@ -144,17 +143,15 @@ void WebEmbeddedWorkerImpl::StartWorkerContext(
   // we should fix, but we're taking this shortcut for the prototype.
   //
   // https://crbug.com/590714
-  KURL script_url = worker_start_data_.script_url;
-  worker_start_data_.address_space = network::mojom::IPAddressSpace::kPublic;
+  KURL script_url = worker_start_data->script_url;
+  worker_start_data->address_space = network::mojom::IPAddressSpace::kPublic;
   if (network_utils::IsReservedIPAddress(script_url.Host()))
-    worker_start_data_.address_space = network::mojom::IPAddressSpace::kPrivate;
+    worker_start_data->address_space = network::mojom::IPAddressSpace::kPrivate;
   if (SecurityOrigin::Create(script_url)->IsLocalhost())
-    worker_start_data_.address_space = network::mojom::IPAddressSpace::kLocal;
+    worker_start_data->address_space = network::mojom::IPAddressSpace::kLocal;
 
-  devtools_worker_token_ = data.devtools_worker_token;
-  wait_for_debugger_mode_ = worker_start_data_.wait_for_debugger_mode;
   StartWorkerThread(
-      std::move(installed_scripts_manager),
+      std::move(worker_start_data), std::move(installed_scripts_manager),
       std::make_unique<ServiceWorkerContentSettingsProxy>(
           // Chrome doesn't use interface versioning.
           // TODO(falken): Is that comment about versioning correct?
@@ -178,6 +175,7 @@ void WebEmbeddedWorkerImpl::ResumeAfterDownload() {
 }
 
 void WebEmbeddedWorkerImpl::StartWorkerThread(
+    std::unique_ptr<WebEmbeddedWorkerStartData> worker_start_data,
     std::unique_ptr<ServiceWorkerInstalledScriptsManager>
         installed_scripts_manager,
     std::unique_ptr<ServiceWorkerContentSettingsProxy> content_settings_proxy,
@@ -191,7 +189,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
   // appropriate Document. See comment in CreateFetchClientSettingsObject() for
   // details.
   scoped_refptr<const SecurityOrigin> starter_origin =
-      SecurityOrigin::Create(worker_start_data_.script_url);
+      SecurityOrigin::Create(worker_start_data->script_url);
   // This roughly equals to shadow document's IsSecureContext() as a shadow
   // document have a frame with no parent.
   // See also Document::InitSecureContextState().
@@ -223,22 +221,22 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
 
   bool is_script_installed =
       installed_scripts_manager && installed_scripts_manager->IsScriptInstalled(
-                                       worker_start_data_.script_url);
+                                       worker_start_data->script_url);
 
   // We don't have to set ContentSecurityPolicy and ReferrerPolicy. They're
   // served by the worker script loader or the installed scripts manager on the
   // worker thread.
   global_scope_creation_params = std::make_unique<GlobalScopeCreationParams>(
-      worker_start_data_.script_url, worker_start_data_.script_type,
+      worker_start_data->script_url, worker_start_data->script_type,
       OffMainThreadWorkerScriptFetchOption::kEnabled, global_scope_name,
-      worker_start_data_.user_agent, std::move(web_worker_fetch_context),
+      worker_start_data->user_agent, std::move(web_worker_fetch_context),
       Vector<CSPHeaderAndType>(), network::mojom::ReferrerPolicy::kDefault,
       starter_origin.get(), starter_secure_context, starter_https_state,
       nullptr /* worker_clients */, std::move(content_settings_proxy),
       base::nullopt /* response_address_space */,
-      nullptr /* OriginTrialTokens */, devtools_worker_token_,
+      nullptr /* OriginTrialTokens */, worker_start_data->devtools_worker_token,
       std::move(worker_settings),
-      static_cast<V8CacheOptions>(worker_start_data_.v8_cache_options),
+      static_cast<V8CacheOptions>(worker_start_data->v8_cache_options),
       nullptr /* worklet_module_respones_map */,
       std::move(interface_provider_info_), std::move(browser_interface_broker_),
       BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
@@ -255,9 +253,11 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
       initiator_thread_task_runner);
 
   auto devtools_params = std::make_unique<WorkerDevToolsParams>();
-  devtools_params->devtools_worker_token = devtools_worker_token_;
+  devtools_params->devtools_worker_token =
+      worker_start_data->devtools_worker_token;
   devtools_params->wait_for_debugger =
-      wait_for_debugger_mode_ == WebEmbeddedWorkerStartData::kWaitForDebugger;
+      worker_start_data->wait_for_debugger_mode ==
+      WebEmbeddedWorkerStartData::kWaitForDebugger;
   mojo::PendingRemote<mojom::blink::DevToolsAgent> devtools_agent_remote;
   devtools_params->agent_receiver =
       devtools_agent_remote.InitWithNewPipeAndPassReceiver();
@@ -272,36 +272,38 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
   // If this is an installed service worker, the installed script will be read
   // from the service worker script storage on the worker thread.
   if (is_script_installed) {
-    switch (worker_start_data_.script_type) {
+    switch (worker_start_data->script_type) {
       case mojom::ScriptType::kClassic:
         worker_thread_->RunInstalledClassicScript(
-            worker_start_data_.script_url, v8_inspector::V8StackTraceId());
+            worker_start_data->script_url, v8_inspector::V8StackTraceId());
         break;
       case mojom::ScriptType::kModule:
         worker_thread_->RunInstalledModuleScript(
-            worker_start_data_.script_url,
-            CreateFetchClientSettingsObjectData(starter_origin.get(),
-                                                starter_https_state),
+            worker_start_data->script_url,
+            CreateFetchClientSettingsObjectData(
+                worker_start_data->script_url, starter_origin.get(),
+                starter_https_state, worker_start_data->address_space),
             network::mojom::CredentialsMode::kOmit);
         break;
     }
   } else {
     std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
         fetch_client_setting_object_data = CreateFetchClientSettingsObjectData(
-            starter_origin.get(), starter_https_state);
+            worker_start_data->script_url, starter_origin.get(),
+            starter_https_state, worker_start_data->address_space);
 
     // If this is a new (not installed) service worker, we are in the Update
     // algorithm here:
     // > Switching on job's worker type, run these substeps with the following
     // > options:
     // https://w3c.github.io/ServiceWorker/#update-algorithm
-    switch (worker_start_data_.script_type) {
+    switch (worker_start_data->script_type) {
       // > "classic": Fetch a classic worker script given job's serialized
       // > script url, job's client, "serviceworker", and the to-be-created
       // > environment settings object for this service worker.
       case mojom::ScriptType::kClassic:
         worker_thread_->FetchAndRunClassicScript(
-            worker_start_data_.script_url,
+            worker_start_data->script_url,
             std::move(fetch_client_setting_object_data),
             nullptr /* outside_resource_timing_notifier */,
             v8_inspector::V8StackTraceId());
@@ -312,7 +314,7 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
       // > to-be-created environment settings object for this service worker.
       case mojom::ScriptType::kModule:
         worker_thread_->FetchAndRunModuleScript(
-            worker_start_data_.script_url,
+            worker_start_data->script_url,
             std::move(fetch_client_setting_object_data),
             nullptr /* outside_resource_timing_notifier */,
             network::mojom::CredentialsMode::kOmit);
@@ -327,10 +329,12 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
 
 std::unique_ptr<CrossThreadFetchClientSettingsObjectData>
 WebEmbeddedWorkerImpl::CreateFetchClientSettingsObjectData(
+    const KURL& script_url,
     const SecurityOrigin* security_origin,
-    const HttpsState& https_state) {
+    const HttpsState& https_state,
+    network::mojom::IPAddressSpace address_space) {
   // TODO(crbug.com/967265): Currently we create an incomplete outside settings
-  // object from |worker_start_data_| but we should create a proper outside
+  // object from |worker_start_data| but we should create a proper outside
   // settings objects depending on the situation. For new worker case, this
   // should be the Document that called navigator.serviceWorker.register(). For
   // ServiceWorkerRegistration#update() case, it should be the Document that
@@ -339,14 +343,12 @@ WebEmbeddedWorkerImpl::CreateFetchClientSettingsObjectData(
   // To get a correct settings, we need to make a way to pass the settings
   // object over mojo IPCs.
 
-  const KURL& script_url = worker_start_data_.script_url;
   return std::make_unique<CrossThreadFetchClientSettingsObjectData>(
       script_url.Copy() /* global_object_url */,
       script_url.Copy() /* base_url */, security_origin->IsolatedCopy(),
       network::mojom::ReferrerPolicy::kDefault,
       script_url.GetString().IsolatedCopy() /* outgoing_referrer */,
-      https_state, AllowedByNosniff::MimeTypeCheck::kLax,
-      worker_start_data_.address_space,
+      https_state, AllowedByNosniff::MimeTypeCheck::kLax, address_space,
       kBlockAllMixedContent /* insecure_requests_policy */,
       FetchClientSettingsObject::InsecureNavigationsSet(),
       false /* mixed_autoupgrade_opt_out */);

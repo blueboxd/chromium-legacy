@@ -25,24 +25,19 @@ const CrNetworkListenerBehavior = {
   // CrosNetworkConfigObserver methods. Override these in the implementation.
 
   /**
-   * CrosNetworkConfigObserver impl
    * @param {!Array<chromeos.networkConfig.mojom.NetworkStateProperties>}
    *     activeNetworks
    */
   onActiveNetworksChanged: function(activeNetworks) {},
 
-  /**
-   * CrosNetworkConfigObserver impl
-   * @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network
-   */
+  /** @param {!chromeos.networkConfig.mojom.NetworkStateProperties} network */
   onNetworkStateChanged: function(network) {},
 
-  /** CrosNetworkConfigObserver impl */
   onNetworkStateListChanged: function() {},
 
-  /** CrosNetworkConfigObserver impl */
   onDeviceStateListChanged: function() {},
 
-  /** CrosNetworkConfigObserver impl */
   onVpnProvidersChanged: function() {},
+
+  onNetworkCertificatesChanged: function() {},
 };

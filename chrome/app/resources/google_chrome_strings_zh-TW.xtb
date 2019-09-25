@@ -13,7 +13,6 @@
 <translation id="1142745911746664600">無法更新 Chrome</translation>
 <translation id="1154147086299354128">在 Chrome 中開啟(&amp;O)</translation>
 <translation id="123620459398936149">Chrome OS 無法同步處理你的資料，請更新你的同步通關密語。</translation>
-<translation id="127345590676626841">Chrome 會自動更新，隨時讓你使用最新版本。完成這項下載作業後，Chrome 會重新啟動，自動為你進行更新。</translation>
 <translation id="1302523850133262269">請稍候，Chrome 正在安裝最新的系統更新。</translation>
 <translation id="137466361146087520">Google Chrome 測試版</translation>
 <translation id="1393853151966637042">前往 Chrome 說明頁面</translation>
@@ -217,14 +216,13 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="7408085963519505752">Chrome 作業系統條款</translation>
 <translation id="7419046106786626209">你的網域無法使用「同步功能」，因此 Chrome 作業系統無法同步處理你的資料。</translation>
 <translation id="7459554271817304652">設定同步處理功能，即可在網路上儲存你的個人化瀏覽器功能，並且透過任何電腦從 Google Chrome 使用這些功能。</translation>
-<translation id="7473136999113284234">Chrome 會自動更新，隨時讓你使用最新版本。</translation>
 <translation id="7486227612705979895">Chrome 將存取你的雲端硬碟，並在網址列提供建議</translation>
 <translation id="7531671357096394523">請關閉所有 Chrome 瀏覽器。</translation>
 <translation id="7535429826459677826">Google Chrome 開發人員版</translation>
 <translation id="7589360514048265910">我們已不支援 Mac OS X 10.9，因此這部電腦不會再收到 Google Chrome 更新。</translation>
 <translation id="7592736734348559088">你的帳戶登入詳細資料尚未更新，因此 Google Chrome 無法同步處理你的資料。</translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
-<translation id="7629695634924605473">Chrome 會通知你密碼是否曾遭到盜用</translation>
+<translation id="7629695634924605473">Chrome 會通知你密碼是否曾遭外洩</translation>
 <translation id="7641148173327520642">你的系統管理員已設定由 Google Chrome 開啟 <ph name="ALTERNATIVE_BROWSER_NAME" /> 以存取 <ph name="TARGET_URL_HOSTNAME" />。</translation>
 <translation id="7651907282515937834">Chrome Enterprise 標誌</translation>
 <translation id="7747138024166251722">安裝程式無法建立暫時目錄，請檢查可用磁碟空間與權限，以順利安裝軟體。</translation>

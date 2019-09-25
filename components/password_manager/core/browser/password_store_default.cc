@@ -222,6 +222,28 @@ std::vector<InteractionsStats> PasswordStoreDefault::GetSiteStatsImpl(
                    : std::vector<InteractionsStats>();
 }
 
+void PasswordStoreDefault::AddLeakedCredentialsImpl(
+    const LeakedCredentials& leaked_credentials) {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  if (login_db_)
+    login_db_->leaked_credentials_table().AddRow(leaked_credentials);
+}
+
+void PasswordStoreDefault::RemoveLeakedCredentialsImpl(
+    const GURL& url,
+    const base::string16& username) {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  if (login_db_)
+    login_db_->leaked_credentials_table().RemoveRow(url, username);
+}
+
+std::vector<LeakedCredentials>
+PasswordStoreDefault::GetAllLeakedCredentialsImpl() {
+  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
+  return login_db_ ? login_db_->leaked_credentials_table().GetAllRows()
+                   : std::vector<LeakedCredentials>();
+}
+
 bool PasswordStoreDefault::BeginTransaction() {
   if (login_db_)
     return login_db_->BeginTransaction();

@@ -48,6 +48,7 @@
     "min-monochrome",
     "min-width",
     "min-resolution",
+    "navigation-controls",
     "pointer",
     "prefers-color-scheme",
     "prefers-reduced-motion",

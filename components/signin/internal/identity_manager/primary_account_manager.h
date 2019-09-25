@@ -49,6 +49,11 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
     // Not called during a reauth.
     virtual void GoogleSigninSucceeded(const CoreAccountInfo& info) {}
 
+    // Called whenever the unconsented primary account changes. This includes
+    // the changes for the consented primary account as well.
+    virtual void UnconsentedPrimaryAccountChanged(const CoreAccountInfo& info) {
+    }
+
 #if !defined(OS_CHROMEOS)
     // Called whenever the currently signed-in user has been signed out.
     virtual void GoogleSignedOut(const CoreAccountInfo& info) {}
@@ -143,8 +148,21 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(const Observer* observer);
 
+  // Provides access to the core information of the user's unconsented primary
+  // account. Returns an empty info, if there is no such account.
+  CoreAccountInfo GetUnconsentedPrimaryAccountInfo() const;
+
+  // Returns whether the user's unconsented primary account is available.
+  bool HasUnconsentedPrimaryAccount() const;
+
+  // Sets the unconsented primary account. The unconsented primary account can
+  // only be changed if the user is not authenticated. If the user is
+  // authenticated, use Signout() instead.
+  void SetUnconsentedPrimaryAccountInfo(CoreAccountInfo account_info);
+
  private:
-  // Sets the authenticated user's account id.
+  // Sets the authenticated user's account id, when the user has consented to
+  // sync.
   // If the user is already authenticated with the same account id, then this
   // method is a no-op.
   // It is forbidden to call this method if the user is already authenticated
@@ -152,6 +170,10 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   // |account_id| must not be empty. To log the user out, use
   // ClearAuthenticatedAccountId() instead.
   void SetAuthenticatedAccountInfo(const CoreAccountInfo& account_info);
+
+  // Sets |primary_account_info_| and updates the associated preferences.
+  void SetPrimaryAccountInternal(const CoreAccountInfo& account_info,
+                                 bool consented_to_sync);
 
 #if !defined(OS_CHROMEOS)
   // Starts the sign out process.
@@ -170,6 +192,10 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
   void OnRefreshTokensLoaded() override;
 #endif
 
+  const CoreAccountInfo& primary_account_info() const {
+    return primary_account_info_;
+  }
+
   SigninClient* client_;
 
   // The ProfileOAuth2TokenService instance associated with this object. Must
@@ -179,8 +205,11 @@ class PrimaryAccountManager : public ProfileOAuth2TokenServiceObserver {
 
   bool initialized_ = false;
 
-  // Account id after successful authentication.
-  base::Optional<CoreAccountInfo> authenticated_account_info_;
+  // Account id after successful authentication. The account may or may not be
+  // consented to Sync.
+  // Must be kept in sync with prefs. Use SetPrimaryAccountInternal() to change
+  // this field.
+  CoreAccountInfo primary_account_info_;
 
 #if !defined(OS_CHROMEOS)
   signin::AccountConsistencyMethod account_consistency_;

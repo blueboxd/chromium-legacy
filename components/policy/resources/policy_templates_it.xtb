@@ -3684,11 +3684,11 @@ Se questa norma non viene impostata, verranno utilizzate le dimensioni predefini
 <translation id="7625498350540361483">
       Se il criterio è impostato su true, <ph name="PRODUCT_NAME" /> può raccogliere log eventi WebRTC dai servizi Google (ad es., Google Meet) e caricare i log su Google.
 
-      Se la norma è impostata su false, <ph name="PRODUCT_NAME" /> non può raccogliere né caricare questi log.
+      Se il criterio è impostato su false, <ph name="PRODUCT_NAME" /> non può raccogliere né caricare questi log.
 
-      Se il criterio non è impostato, fino alla versione M67 inclusa, <ph name="PRODUCT_NAME" /> non può raccogliere né caricare questi log.
+      Se il criterio non è impostato, fino alla versione M76 inclusa, <ph name="PRODUCT_NAME" /> non può raccogliere né caricare questi log.
 
-      Se il criterio non è impostato, a partire dalla versione M77, <ph name="PRODUCT_NAME" /> può raccogliere o caricare questi log per impostazione predefinita, se il profilo del browser è considerato gestito, ovvero se il profilo riceve norme a livello di cloud o macchina e se non si tratta di un profilo secondario, temporaneo, di accesso o in incognito.
+      Se il criterio non è impostato, a partire dalla versione M77, <ph name="PRODUCT_NAME" /> può raccogliere o caricare questi log per impostazione predefinita se il profilo del browser è considerato gestito, ovvero se il profilo riceve criteri a livello di cloud o macchina e se non si tratta di un profilo secondario, temporaneo, di accesso o in incognito.
 
       Questi log contengono informazioni diagnostiche utili per il debug dei problemi relativi a chiamate vocali o videochiamate in Chrome, ad esempio data/ora e dimensioni dei pacchetti RTP inviati e ricevuti, feedback sulla congestione della rete, nonché metadati su tempo e qualità dei frame audio e video. Questi log non contengono l'audio o i video delle chiamate.
 
@@ -4276,7 +4276,6 @@ Se l'impostazione viene impostata su true, o se non viene impostata, l'attestazi
 <translation id="8800453707696044281">Imposta il valore percentuale personalizzato raggiunto il quale viene interrotta la ricarica della batteria</translation>
 <translation id="8801680448782904838">Invia a un utente una notifica che comunica che è consigliato o necessario eseguire un riavvio del browser o del dispositivo
 </translation>
-<translation id="8802816494059596691">I nomi host specificati in questo elenco saranno esenti dal controllo dei criteri HSTS che potrebbero eseguire l'upgrade delle richieste da http a https. Solo i nomi host con etichetta singola sono consentiti in questo criterio. I nomi host devono essere in forma canonica: ogni IDN deve essere convertito nel relativo formato A-label e tutte le lettere ASCII devono essere minuscole. Questo criterio si applica soltanto ai nomi host specificati e non ai relativi sottodomini.</translation>
 <translation id="8818173863808665831">Consente di segnalare la posizione geografica del dispositivo.
 
 Se la norma non viene impostata o viene impostata su false, la posizione non viene segnalata.</translation>

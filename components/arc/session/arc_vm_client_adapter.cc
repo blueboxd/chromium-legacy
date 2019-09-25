@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/strings/stringprintf.h"
-#include "base/task/post_task.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/login_manager/arc.pb.h"
 #include "chromeos/dbus/upstart/upstart_client.h"
@@ -45,7 +45,8 @@ class ArcVmClientAdapter : public ArcClientAdapter {
             StartArcMiniContainerRequest_PlayStoreAutoUpdate_AUTO_UPDATE_OFF) {
       play_store_auto_update_ = false;
     }
-    base::PostTask(FROM_HERE, base::BindOnce(std::move(callback), true));
+    base::SequencedTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(callback), true));
   }
 
   void UpgradeArc(const UpgradeArcContainerRequest& request,

@@ -18,8 +18,8 @@
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings.h"
 #include "chrome/browser/data_reduction_proxy/data_reduction_proxy_chrome_settings_factory.h"
-#include "chrome/browser/previews/previews_lite_page_decider.h"
-#include "chrome/browser/previews/previews_lite_page_url_loader_interceptor.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_decider.h"
+#include "chrome/browser/previews/previews_lite_page_redirect_url_loader_interceptor.h"
 #include "chrome/browser/previews/previews_offline_helper.h"
 #include "chrome/browser/previews/previews_service.h"
 #include "chrome/browser/previews/previews_service_factory.h"
@@ -78,8 +78,8 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
   content::WebContents* web_contents = navigation_handle->GetWebContents();
   auto* previews_service = PreviewsServiceFactory::GetForProfile(
       Profile::FromBrowserContext(web_contents->GetBrowserContext()));
-  PreviewsLitePageDecider* decider =
-      previews_service->previews_lite_page_decider();
+  PreviewsLitePageRedirectDecider* decider =
+      previews_service->previews_lite_page_redirect_decider();
 
   std::vector<previews::LitePageRedirectIneligibleReason> ineligible_reasons;
 
@@ -160,8 +160,8 @@ bool ShouldAllowRedirectPreview(content::NavigationHandle* navigation_handle) {
   // This should always be last.
   if (previews::params::IsInLitePageRedirectControl()) {
     previews::PreviewsUserData::ServerLitePageInfo* info =
-        PreviewsLitePageURLLoaderInterceptor::GetOrCreateServerLitePageInfo(
-            navigation_handle, decider);
+        PreviewsLitePageRedirectURLLoaderInterceptor::
+            GetOrCreateServerLitePageInfo(navigation_handle, decider);
     info->status = previews::ServerLitePageStatus::kControl;
     return false;
   }

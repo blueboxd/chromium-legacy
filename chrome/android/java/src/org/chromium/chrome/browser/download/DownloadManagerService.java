@@ -389,7 +389,10 @@ public class DownloadManagerService
 
     @Override
     public void onDownloadCancelled(final DownloadInfo downloadInfo) {
-        DownloadItem item = new DownloadItem(false, downloadInfo);
+        DownloadInfo newInfo = DownloadInfo.Builder.fromDownloadInfo(downloadInfo)
+                                       .setState(DownloadState.CANCELLED)
+                                       .build();
+        DownloadItem item = new DownloadItem(false, newInfo);
         removeAutoResumableDownload(item.getId());
         updateDownloadProgress(new DownloadItem(false, downloadInfo), DownloadStatus.CANCELLED);
         updateDownloadInfoBar(item);
@@ -1129,6 +1132,8 @@ public class DownloadManagerService
             removeDownloadProgress(id.id);
         } else {
             mDownloadNotifier.notifyDownloadCanceled(id);
+            DownloadInfoBarController infoBarController = getInfoBarController(isOffTheRecord);
+            if (infoBarController != null) infoBarController.onDownloadItemRemoved(id);
         }
         recordDownloadFinishedUMA(DownloadStatus.CANCELLED, id.id, 0);
         maybeRecordBackgroundDownload(UmaBackgroundDownload.CANCELLED, id.id);

@@ -124,15 +124,6 @@ scoped_refptr<HttpRawRequestResponseInfo> BuildRawRequestResponseInfo(
   return info;
 }
 
-std::string ComputeReferrer(const GURL& referrer) {
-  if (!referrer.is_valid() || base::CommandLine::ForCurrentProcess()->HasSwitch(
-                                  switches::kNoReferrers)) {
-    return std::string();
-  }
-
-  return referrer.spec();
-}
-
 void LogConcerningRequestHeaders(const net::HttpRequestHeaders& request_headers,
                                  bool added_during_redirect) {
   net::HttpRequestHeaders::Iterator it(request_headers);

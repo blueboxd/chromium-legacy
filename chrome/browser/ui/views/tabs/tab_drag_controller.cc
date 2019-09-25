@@ -57,8 +57,8 @@
 #endif
 
 #if defined(USE_AURA)
-#include "ui/aura/env.h"  // nogncheck
-#include "ui/aura/window.h"  // nogncheck
+#include "ui/aura/env.h"                            // nogncheck
+#include "ui/aura/window.h"                         // nogncheck
 #include "ui/wm/core/window_modality_controller.h"  // nogncheck
 #endif
 
@@ -189,10 +189,9 @@ gfx::Rect GetTabstripScreenBounds(const TabDragContext* context) {
 
 // Returns true if |bounds| contains the y-coordinate |y|. The y-coordinate
 // of |bounds| is adjusted by |vertical_adjustment|.
-bool DoesRectContainVerticalPointExpanded(
-    const gfx::Rect& bounds,
-    int vertical_adjustment,
-    int y) {
+bool DoesRectContainVerticalPointExpanded(const gfx::Rect& bounds,
+                                          int vertical_adjustment,
+                                          int y) {
   int upper_threshold = bounds.bottom() + vertical_adjustment;
   int lower_threshold = bounds.y() - vertical_adjustment;
   return y >= lower_threshold && y <= upper_threshold;
@@ -287,11 +286,9 @@ TabDragController::TabDragData::TabDragData()
     : contents(NULL),
       source_model_index(-1),
       attached_tab(NULL),
-      pinned(false) {
-}
+      pinned(false) {}
 
-TabDragController::TabDragData::~TabDragData() {
-}
+TabDragController::TabDragData::~TabDragData() {}
 
 TabDragController::TabDragData::TabDragData(TabDragData&&) = default;
 
@@ -531,8 +528,8 @@ bool TabDragController::IsDraggingTab(content::WebContents* contents) {
 }
 
 void TabDragController::Drag(const gfx::Point& point_in_screen) {
-  TRACE_EVENT1("views", "TabDragController::Drag",
-               "point_in_screen", point_in_screen.ToString());
+  TRACE_EVENT1("views", "TabDragController::Drag", "point_in_screen",
+               point_in_screen.ToString());
 
   bring_to_front_timer_.Stop();
   move_stacked_timer_.Stop();
@@ -570,8 +567,8 @@ void TabDragController::Drag(const gfx::Point& point_in_screen) {
         new_bounds = CalculateDraggedBrowserBounds(
             source_context_, point_in_screen, &drag_bounds);
         new_bounds.Offset(-widget->GetRestoredBounds().x() +
-                          point_in_screen.x() -
-                          mouse_offset_.x(), 0);
+                              point_in_screen.x() - mouse_offset_.x(),
+                          0);
         widget->SetVisibilityChangedAnimationsEnabled(false);
         widget->Restore();
         widget->SetBounds(new_bounds);
@@ -642,8 +639,7 @@ void TabDragController::EndDrag(EndDragReason reason) {
                                                              : NORMAL);
 }
 
-void TabDragController::InitTabDragData(Tab* tab,
-                                        TabDragData* drag_data) {
+void TabDragController::InitTabDragData(Tab* tab, TabDragData* drag_data) {
   TRACE_EVENT0("views", "TabDragController::InitTabDragData");
   const int source_model_index = source_context_->GetIndexOf(tab);
   drag_data->source_model_index = source_model_index;
@@ -967,7 +963,7 @@ void TabDragController::MoveAttached(const gfx::Point& point_in_screen) {
   // only if we have moved a minimum distance since the last reorder (to prevent
   // jitter) or if this the first move and the tabs are not consecutive.
   if ((abs(point_in_screen.x() - last_move_screen_loc_) > threshold ||
-        (initial_move_ && !AreTabsConsecutive()))) {
+       (initial_move_ && !AreTabsConsecutive()))) {
     TabStripModel* attached_model = attached_context_->GetTabStripModel();
     int to_index = attached_context_->GetInsertionIndexForDraggedBounds(
         GetDraggedViewTabStripBounds(dragged_view_point), false,
@@ -1134,9 +1130,8 @@ TabDragContext* TabDragController::GetContextForWindow(
   BrowserView* browser_view =
       BrowserView::GetBrowserViewForNativeWindow(window);
   // We don't allow drops on windows that don't have tabstrips.
-  if (!browser_view ||
-      !browser_view->browser()->SupportsWindowFeature(
-          Browser::FEATURE_TABSTRIP))
+  if (!browser_view || !browser_view->browser()->SupportsWindowFeature(
+                           Browser::FEATURE_TABSTRIP))
     return NULL;
 
   TabDragContext* other_context = browser_view->tabstrip()->GetDragContext();
@@ -1162,8 +1157,8 @@ bool TabDragController::DoesTabStripContain(
 void TabDragController::Attach(TabDragContext* attached_context,
                                const gfx::Point& point_in_screen,
                                bool set_capture) {
-  TRACE_EVENT1("views", "TabDragController::Attach",
-               "point_in_screen", point_in_screen.ToString());
+  TRACE_EVENT1("views", "TabDragController::Attach", "point_in_screen",
+               point_in_screen.ToString());
 
   DCHECK(!attached_context_);  // We should already have detached by the time
                                // we get here.
@@ -1256,8 +1251,8 @@ void TabDragController::Attach(TabDragContext* attached_context,
 }
 
 void TabDragController::Detach(ReleaseCapture release_capture) {
-  TRACE_EVENT1("views", "TabDragController::Detach",
-               "release_capture", release_capture);
+  TRACE_EVENT1("views", "TabDragController::Detach", "release_capture",
+               release_capture);
 
   attached_context_tabs_closed_tracker_.reset();
 
@@ -1391,16 +1386,15 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
     attached_context_->OwnDragController(this);
   }
   const views::Widget::MoveLoopSource move_loop_source =
-      event_source_ == EVENT_SOURCE_MOUSE ?
-      views::Widget::MOVE_LOOP_SOURCE_MOUSE :
-      views::Widget::MOVE_LOOP_SOURCE_TOUCH;
+      event_source_ == EVENT_SOURCE_MOUSE
+          ? views::Widget::MOVE_LOOP_SOURCE_MOUSE
+          : views::Widget::MOVE_LOOP_SOURCE_TOUCH;
   const views::Widget::MoveLoopEscapeBehavior escape_behavior =
-      is_dragging_new_browser_ ?
-          views::Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_HIDE :
-          views::Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE;
-  views::Widget::MoveLoopResult result =
-      move_loop_widget_->RunMoveLoop(
-          drag_offset, move_loop_source, escape_behavior);
+      is_dragging_new_browser_
+          ? views::Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_HIDE
+          : views::Widget::MOVE_LOOP_ESCAPE_BEHAVIOR_DONT_HIDE;
+  views::Widget::MoveLoopResult result = move_loop_widget_->RunMoveLoop(
+      drag_offset, move_loop_source, escape_behavior);
   content::NotificationService::current()->Notify(
       chrome::NOTIFICATION_TAB_DRAG_LOOP_DONE,
       content::NotificationService::AllBrowserContextsAndSources(),
@@ -1431,8 +1425,8 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
       return;
     tab_strip_to_attach_to_after_exit_ = NULL;
   } else if (current_state_ == DragState::kWaitingToStop) {
-    EndDrag(result == views::Widget::MOVE_LOOP_CANCELED ?
-            END_DRAG_CANCEL : END_DRAG_COMPLETE);
+    EndDrag(result == views::Widget::MOVE_LOOP_CANCELED ? END_DRAG_CANCEL
+                                                        : END_DRAG_COMPLETE);
   }
 }
 
@@ -1780,8 +1774,8 @@ void TabDragController::BringWindowUnderPointToFront(
     return;
 
   if (window) {
-    views::Widget* widget_window = views::Widget::GetWidgetForNativeWindow(
-        window);
+    views::Widget* widget_window =
+        views::Widget::GetWidgetForNativeWindow(window);
     if (!widget_window)
       return;
 
@@ -1866,10 +1860,8 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
     // window is at least 50% the size of the old.
     const gfx::Size max_size(
         source->AsView()->GetWidget()->GetWindowBoundsInScreen().size());
-    new_bounds.set_width(
-        std::max(max_size.width() / 2, new_bounds.width()));
-    new_bounds.set_height(
-        std::max(max_size.height() / 2, new_bounds.height()));
+    new_bounds.set_width(std::max(max_size.width() / 2, new_bounds.width()));
+    new_bounds.set_height(std::max(max_size.height() / 2, new_bounds.height()));
   }
 
 #if defined(OS_CHROMEOS)
@@ -1894,7 +1886,7 @@ gfx::Rect TabDragController::CalculateDraggedBrowserBounds(
       break;
     }
     default:
-      break; // Nothing to do for DETACH_ABOVE_OR_BELOW.
+      break;  // Nothing to do for DETACH_ABOVE_OR_BELOW.
   }
 
   // Account for the extra space above the tabstrip on restored windows versus
@@ -1968,9 +1960,8 @@ Browser* TabDragController::CreateBrowserForDrag(
     const gfx::Point& point_in_screen,
     gfx::Vector2d* drag_offset,
     std::vector<gfx::Rect>* drag_bounds) {
-  gfx::Rect new_bounds(CalculateDraggedBrowserBounds(source,
-                                                     point_in_screen,
-                                                     drag_bounds));
+  gfx::Rect new_bounds(
+      CalculateDraggedBrowserBounds(source, point_in_screen, drag_bounds));
   *drag_offset = point_in_screen - new_bounds.origin();
 
   Profile* profile =

@@ -252,9 +252,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameMessageFilterBrowserTest, SameSiteCookies) {
   std::string a_hostname = "localhost";
   std::string b_hostname = "127.0.0.1";
   GURL url = a_server.GetURL(a_hostname, cookies_to_set);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   url = b_server.GetURL(b_hostname, cookies_to_set);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   // TODO(crbug.com/984685): Make it less painful to set up https cross-site
   // iframe tests.
   std::string a_hostname_and_port =

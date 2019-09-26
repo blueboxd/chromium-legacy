@@ -680,3 +680,37 @@ TEST_F(InfobarContainerCoordinatorTest,
   ASSERT_EQ(NSUInteger(2),
             infobar_container_coordinator_.childCoordinators.count);
 }
+
+// Tests that that a second Infobar (added right after the first one) is
+// not displayed if its destroyed before presentation.
+TEST_F(InfobarContainerCoordinatorTest, TestInfobarQueueStoppedNoDisplay) {
+  AddInfobar();
+  AddSecondInfobar();
+  ASSERT_EQ(NSUInteger(2),
+            infobar_container_coordinator_.childCoordinators.count);
+
+  EXPECT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return coordinator_.infobarBannerState ==
+               InfobarBannerPresentationState::Presented;
+      }));
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::Presented);
+
+  [second_coordinator_ stop];
+  [infobar_container_coordinator_ dismissInfobarBannerAnimated:NO
+                                                    completion:nil];
+  ASSERT_TRUE(base::test::ios::WaitUntilConditionOrTimeout(
+      base::test::ios::kWaitForUIElementTimeout, ^bool {
+        return coordinator_.infobarBannerState ==
+               InfobarBannerPresentationState::NotPresented;
+      }));
+
+  ASSERT_EQ(infobar_container_coordinator_.infobarBannerState,
+            InfobarBannerPresentationState::NotPresented);
+  ASSERT_EQ(NSUInteger(1),
+            infobar_container_coordinator_.childCoordinators.count);
+}
+
+// TODO(crbug.com/961343): Add tests that use a BadgedInfobar, in order to do
+// this a new TestInfoBarDelegate needs to be created.

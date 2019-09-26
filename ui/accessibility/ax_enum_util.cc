@@ -565,6 +565,8 @@ const char* ToString(ax::mojom::Role role) {
       return "ruby";
     case ax::mojom::Role::kRubyAnnotation:
       return "rubyAnnotation";
+    case ax::mojom::Role::kSection:
+      return "section";
     case ax::mojom::Role::kSvgRoot:
       return "svgRoot";
     case ax::mojom::Role::kScrollBar:
@@ -939,6 +941,8 @@ ax::mojom::Role ParseRole(const char* role) {
     return ax::mojom::Role::kRuby;
   if (0 == strcmp(role, "rubyAnnotation"))
     return ax::mojom::Role::kRubyAnnotation;
+  if (0 == strcmp(role, "section"))
+    return ax::mojom::Role::kSection;
   if (0 == strcmp(role, "svgRoot"))
     return ax::mojom::Role::kSvgRoot;
   if (0 == strcmp(role, "scrollBar"))

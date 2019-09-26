@@ -70,6 +70,10 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   options.SetPath({"QUIC", "close_sessions_on_ip_change"}, base::Value(true));
   options.SetPath({"QUIC", "race_cert_verification"}, base::Value(true));
   options.SetPath({"QUIC", "connection_options"}, base::Value("TIME,TBBR,REJ"));
+  options.SetPath(
+      {"QUIC", "set_quic_flags"},
+      base::Value("FLAGS_quic_reloadable_flag_quic_supports_tls_handshake=true,"
+                  "FLAGS_quic_reloadable_flag_quic_enable_version_99=true"));
   options.SetPath({"AsyncDNS", "enable"}, base::Value(true));
   options.SetPath({"NetworkErrorLogging", "enable"}, base::Value(true));
   options.SetPath({"NetworkErrorLogging", "preloaded_report_to_headers"},
@@ -140,6 +144,10 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   std::string options_json;
   EXPECT_TRUE(base::JSONWriter::Write(options, &options_json));
 
+  // Initialize QUIC flags set by the config.
+  FLAGS_quic_reloadable_flag_quic_supports_tls_handshake = false;
+  FLAGS_quic_reloadable_flag_quic_enable_version_99 = false;
+
   URLRequestContextConfig config(
       // Enable QUIC.
       true,
@@ -190,6 +198,9 @@ TEST(URLRequestContextConfigTest, TestExperimentalOptionParsing) {
   quic_connection_options.push_back(quic::kTBBR);
   quic_connection_options.push_back(quic::kREJ);
   EXPECT_EQ(quic_connection_options, params->quic_params.connection_options);
+
+  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_supports_tls_handshake);
+  EXPECT_TRUE(FLAGS_quic_reloadable_flag_quic_enable_version_99);
 
   // Check Custom QUIC User Agent Id.
   EXPECT_EQ("Custom QUIC UAID", params->quic_params.user_agent_id);

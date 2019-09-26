@@ -518,6 +518,14 @@ const base::Feature kNewNetErrorPageUI{"NewNetErrorPageUI",
 const base::Feature kNoReferrers{"NoReferrers",
                                  base::FEATURE_DISABLED_BY_DEFAULT};
 
+#if defined(OS_WIN)
+// Changes behavior of requireInteraction for notifications. Instead of staying
+// on-screen until dismissed, they are instead shown for a very long time.
+const base::Feature kNotificationDurationLongForRequireInteraction{
+    "NotificationDurationLongForRequireInteraction",
+    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // OS_WIN
+
 #if defined(OS_POSIX)
 // Enables NTLMv2, which implicitly disables NTLMv1.
 const base::Feature kNtlmV2Enabled{"NtlmV2Enabled",

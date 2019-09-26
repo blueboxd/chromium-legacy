@@ -745,7 +745,7 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 }
 
 #promo > div {
-  --promo-height: 32px;
+  --dismiss-background-rgb: var(--GG900-rgb);
   background-color: #FFF;
   border: 1px solid rgb(var(--GG300-rgb));
   border-radius: 16px;
@@ -753,7 +753,8 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   color: rgb(var(--GG700-rgb));
   display: inline-block;
   font-size: 12px;
-  line-height: var(--promo-height);
+  height: 32px;
+  line-height: 30px;  /* Height - 1px border-top - 1px border-bottom. */
   margin-bottom: 0;
   /* TODO(crbug.com/969062): this magic constant would be better implemented as
    * real multi-line promo text support or a better QA process to check that
@@ -765,31 +766,58 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
   overflow: hidden;
   padding: 0 16px;
   pointer-events: all;
+  position: relative;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
+#promo.dismissable > div {
+  padding-inline-end: 36px;  /* +24px for dismiss-icon - 4px less end padding */
+}
+
 @media (prefers-color-scheme: dark) {
   body:not(.light-chip) #promo > div {
+    --dismiss-background-rgb: var(--GG100-rgb);
     background-color: rgb(var(--GG900-rgb));
     border-color: rgba(0, 0, 0, .1);
     color: rgb(var(--GG200-rgb));
   }
 }
 
-#promo > div > .dismiss-promo {
-  --icon-size: 16px;
+#promo > div .dismiss-promo {
+  border-radius: 50%;
+  height: 24px;
+  position: absolute;
+  right: 4px;
+  top: 3px;  /* 4px from top - 1px of border. */
+  width: 24px;
+}
+
+[dir=rtl] #promo > div .dismiss-promo {
+  left: 4px;
+  right: auto;
+}
+
+#promo > div .dismiss-icon {
   -webkit-appearance: none;
-  background: url(../../../../ui/webui/resources/images/icon_clear.svg)
-      no-repeat center center;
-  background-size: var(--icon-size);
+  -webkit-mask-image: url(../../../../ui/webui/resources/images/icon_clear.svg);
+  -webkit-mask-position: center center;
+  -webkit-mask-repeat: no-repeat;
+  -webkit-mask-size: 16px;
+  background-color: rgb(var(--dismiss-background-rgb));
   border: none;
-  display: inline-block;
-  height: var(--promo-height);
-  margin-inline-end: -8px;
-  margin-inline-start: 8px;
-  vertical-align: middle;
-  width: var(--icon-size);
+  display: block;
+  height: 100%;
+  outline: none;
+  width: 100%;
+}
+
+#promo > div .dismiss-promo:hover {
+  background-color: rgba(var(--dismiss-background-rgb), .08);
+}
+
+#promo > div .dismiss-promo:focus-within {
+  background-color: rgba(var(--dismiss-background-rgb), .16);
 }
 
 #promo > div > a {
@@ -810,7 +838,9 @@ html[dir=rtl] #error-notice.has-link #error-notice-msg {
 #promo > div > img {
   border-radius: 50%;
   height: 24px;
-  margin: 0 8px 2px -12px;
+  margin-bottom: 2px;
+  margin-inline-end: 8px;
+  margin-inline-start: -12px;
   object-fit: cover;
   vertical-align: middle;
   width: 24px;

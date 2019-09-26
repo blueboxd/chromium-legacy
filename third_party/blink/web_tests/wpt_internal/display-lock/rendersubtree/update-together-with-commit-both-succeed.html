@@ -41,7 +41,7 @@ function runTest() {
     document.body.appendChild(container);
 
     Promise.all([
-      container.displayLock.update(),
+      container.updateRendering(),
       setVisible(container)
     ]).then(() => { finishTest("PASS"); },
             () => { finishTest("FAIL"); });

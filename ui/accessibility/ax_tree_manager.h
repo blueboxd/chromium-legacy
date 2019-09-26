@@ -11,8 +11,6 @@
 
 namespace ui {
 
-class AXPlatformNodeDelegate;
-
 // Each AXNode has access to its own tree, but a manager of multiple AXTrees
 // is necessary for operations that span across trees.
 class AX_EXPORT AXTreeManager {
@@ -22,16 +20,6 @@ class AX_EXPORT AXTreeManager {
   // Returns nullptr if the AXTreeID or node_id is not found.
   virtual AXNode* GetNodeFromTree(const AXTreeID tree_id,
                                   const int32_t node_id) const = 0;
-
-  // Exposes the mapping of AXPlatformNodeDelegate*'s from AXTreeID and
-  // AXNodeID. This is non-static to allow for test code to override with
-  // custom implementations.
-  virtual AXPlatformNodeDelegate* GetDelegate(const AXTreeID tree_id,
-                                              const int32_t node_id) const = 0;
-
-  // Exposes the AXPlatformNodeDelegate for the root of the given AXTree.
-  virtual AXPlatformNodeDelegate* GetRootDelegate(
-      const AXTreeID tree_id) const = 0;
 
   // Returns the tree id of the tree managed by this AXTreeManager.
   virtual AXTreeID GetTreeID() const = 0;

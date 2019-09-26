@@ -10,7 +10,6 @@ import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
-import android.os.Build;
 import android.os.Process;
 import android.preference.PreferenceManager;
 
@@ -18,7 +17,6 @@ import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
-import org.chromium.base.annotations.VerifiesOnP;
 
 /**
  * This class provides Android application context related utility methods.
@@ -138,19 +136,8 @@ public class ContextUtils {
     }
 
     /** @return The name of the current process. E.g. "org.chromium.chrome:privileged_process0". */
-    @VerifiesOnP
     public static String getProcessName() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            return Application.getProcessName();
-        }
-        try {
-            Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
-            return (String) activityThreadClazz.getMethod("currentProcessName").invoke(null);
-        } catch (Exception e) {
-            // If fallback logic is ever needed, refer to:
-            // https://chromium-review.googlesource.com/c/chromium/src/+/905563/1
-            throw new RuntimeException(e);
-        }
+        return ApiCompatibilityUtils.getProcessName();
     }
 
     /**

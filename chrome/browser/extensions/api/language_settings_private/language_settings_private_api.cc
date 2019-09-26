@@ -294,6 +294,7 @@ LanguageSettingsPrivateEnableLanguageFunction::Run() {
   }
 
   translate_prefs->AddToLanguageList(language_code, /*force_blocked=*/false);
+  translate_prefs->ResetRecentTargetLanguage();
 
   return RespondNow(NoArguments());
 }
@@ -327,6 +328,7 @@ LanguageSettingsPrivateDisableLanguageFunction::Run() {
   }
 
   translate_prefs->RemoveFromLanguageList(language_code);
+  translate_prefs->ResetRecentTargetLanguage();
 
   return RespondNow(NoArguments());
 }
@@ -356,6 +358,7 @@ LanguageSettingsPrivateSetEnableTranslationForLanguageFunction::Run() {
   } else {
     translate_prefs->BlockLanguage(language_code);
   }
+  translate_prefs->ResetRecentTargetLanguage();
 
   return RespondNow(NoArguments());
 }
@@ -408,6 +411,7 @@ LanguageSettingsPrivateMoveLanguageFunction::Run() {
   const int offset = 1;
   translate_prefs->RearrangeLanguage(language_code, where, offset,
                                      supported_language_codes);
+  translate_prefs->ResetRecentTargetLanguage();
 
   return RespondNow(NoArguments());
 }

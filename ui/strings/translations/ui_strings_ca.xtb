@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Centre de notificacions, <ph name="UNREAD_NOTIFICATION_COUNT" /> notificacions no llegides</translation>
 <translation id="4730374152663651037">UTILITZADES FREQÜENTMENT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{D'aquí a 1 mes}other{D'aquí a # mesos}}</translation>
-<translation id="4841881773802181781">Inserció</translation>
 <translation id="4881695831933465202">Obre</translation>
 <translation id="4888938634149558681">Fes una trucada</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 segon}other{# segons}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Desa el fitxer</translation>
 <translation id="6656912866303152668">Comprova que <ph name="TARGET_DEVICE_NAME" /> tingui la sincronització activada a Chrome i després prova de tornar a fer l'enviament.</translation>
 <translation id="6699343763173986273">Fitxer multimèdia: pista següent</translation>
-<translation id="673773751041746814">Supressió</translation>
 <translation id="6779314412797872738">Per enviar un número des d'aquest dispositiu al telèfon Android, <ph name="TROUBLESHOOT_LINK" /> a la configuració de tots dos dispositius.</translation>
 <translation id="6786750046913594791">Tanca la carpeta</translation>
 <translation id="6808150112686056157">Fitxer multimèdia: atura</translation>

@@ -40,7 +40,7 @@ base::Value GetPrintTicket(PrinterType type, bool cloud) {
   ticket.SetBoolKey(kSettingShouldPrintBackgrounds, false);
   ticket.SetBoolKey(kSettingShouldPrintSelectionOnly, false);
   ticket.SetBoolKey(kSettingPreviewModifiable, true);
-  ticket.SetBoolKey(kSettingPreviewIsPDF, false);
+  ticket.SetBoolKey(kSettingPreviewIsPdf, false);
   ticket.SetBoolKey(kSettingPrintToPDF, !cloud && type == kPdfPrinter);
   ticket.SetBoolKey(kSettingCloudPrintDialog, cloud);
   ticket.SetBoolKey(kSettingPrintWithPrivet, is_privet_printer);

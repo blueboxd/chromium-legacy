@@ -107,4 +107,13 @@ void SystemTrayModel::ShowVolumeSliderBubble() {
   }
 }
 
+void SystemTrayModel::ShowNetworkDetailedViewBubble(bool show_by_click) {
+  // Show the bubble on the primary display.
+  UnifiedSystemTray* system_tray = Shell::GetPrimaryRootWindowController()
+                                       ->GetStatusAreaWidget()
+                                       ->unified_system_tray();
+  if (system_tray)
+    system_tray->ShowNetworkDetailedViewBubble(show_by_click);
+}
+
 }  // namespace ash

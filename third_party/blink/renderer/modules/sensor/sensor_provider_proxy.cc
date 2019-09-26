@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/sensor/sensor_provider_proxy.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_proxy_impl.h"
 #include "third_party/blink/renderer/modules/sensor/sensor_proxy_inspector_impl.h"
 #include "third_party/blink/renderer/platform/mojo/mojo_helper.h"
@@ -19,7 +19,7 @@ void SensorProviderProxy::InitializeIfNeeded() {
   if (IsInitialized())
     return;
 
-  GetSupplementable()->GetInterfaceProvider()->GetInterface(
+  GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
       sensor_provider_.BindNewPipeAndPassReceiver());
   sensor_provider_.set_disconnect_handler(
       WTF::Bind(&SensorProviderProxy::OnSensorProviderConnectionError,

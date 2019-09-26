@@ -122,7 +122,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.7"
+              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -176,7 +176,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.7"
+              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -418,7 +418,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.7"
+              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -471,7 +471,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.7"
+              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -755,7 +755,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.7"
+              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -808,7 +808,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.7"
+              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -1186,7 +1186,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.7"
+              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -1239,7 +1239,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.7"
+              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -1619,7 +1619,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.7"
+              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -1672,7 +1672,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.7"
+              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",
@@ -29514,7 +29514,7 @@
             {
               "cipd_package": "chromium/android_webview/tools/cts_archive",
               "location": "android_webview/tools/cts_archive",
-              "revision": "version:1.7"
+              "revision": "4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C"
             },
             {
               "cipd_package": "infra/tools/luci/logdog/butler/${platform}",

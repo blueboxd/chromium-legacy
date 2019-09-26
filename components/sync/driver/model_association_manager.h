@@ -116,10 +116,6 @@ class ModelAssociationManager {
   State state() const { return state_; }
 
  private:
-  // Called at the end of association to reset state to prepare for next
-  // round of association.
-  void ResetForNextAssociation();
-
   // Start loading non-running types that are in |desired_types_|.
   void LoadEnabledTypes();
 

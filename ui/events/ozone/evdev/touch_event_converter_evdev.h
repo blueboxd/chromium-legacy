@@ -70,6 +70,7 @@ class EVENTS_OZONE_EVDEV_EXPORT TouchEventConverterEvdev
 
   static const char kHoldCountAtReleaseEventName[];
   static const char kHoldCountAtCancelEventName[];
+  static const char kPalmFilterTimerEventName[];
 
  private:
   friend class MockTouchEventConverterEvdev;

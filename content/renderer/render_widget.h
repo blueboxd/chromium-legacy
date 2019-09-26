@@ -275,7 +275,7 @@ class CONTENT_EXPORT RenderWidget
   // is true, the widget returned is a blink::WebFrameWidget.
   // TODO(crbug.com/419087): The main frame RenderWidget will also return
   // nullptr while the main frame is remote.
-  blink::WebWidget* GetWebWidget() const { return webwidget_internal_; }
+  blink::WebWidget* GetWebWidget() const { return webwidget_; }
 
   // Returns the current instance of WebInputMethodController which is to be
   // used for IME related tasks. This instance corresponds to the one from
@@ -704,7 +704,7 @@ class CONTENT_EXPORT RenderWidget
   // should be tied to the lifetime of the WebWidget. In the short term, for
   // main frames, the RenderView has to explicitly set/unset the WebWidget on
   // attach/detach.
-  void SetWebWidgetInternal(blink::WebWidget* web_widget);
+  void SetWebWidgetInternal(blink::WebWidget* webwidget);
 
  protected:
   // Notify subclasses that we initiated the paint operation.
@@ -766,11 +766,6 @@ class CONTENT_EXPORT RenderWidget
   // Helper method to get the device_viewport_rect() from the compositor, which
   // is always in physical pixels.
   gfx::Rect CompositorViewportRect() const;
-
-  // Just Close the WebWidget, in cases where the Close() will be deferred.
-  // It is safe to call this multiple times, which happens in the case of
-  // frame widgets beings closed, since subsequent calls are ignored.
-  void CloseWebWidget();
 
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void SetExternalPopupOriginAdjustmentsForEmulation(ExternalPopupMenu* popup);
@@ -937,10 +932,13 @@ class CONTENT_EXPORT RenderWidget
   // features.
   CompositorDependencies* const compositor_deps_;
 
-  // Use GetWebWidget() instead of using webwidget_internal_ directly.
-  // We are responsible for destroying this object via its Close method.
-  // May be NULL when the window is closing.
-  blink::WebWidget* webwidget_internal_ = nullptr;
+  // We are responsible for destroying this object via its Close method, unless
+  // the RenderWidget is associated with a RenderViewImpl through |delegate_|.
+  // Becomes null once close is initiated on the RenderWidget.
+  // TODO(https://crbug.com/995981): For main frame RenderWidgets associated
+  // with a RenderViewImpl through |delegate_|, this is also null when the
+  // RenderWidget is undead.
+  blink::WebWidget* webwidget_ = nullptr;
 
   // The delegate for this object which is just a RenderViewImpl.
   // This member is non-null if and only if the RenderWidget is associated with
@@ -952,7 +950,6 @@ class CONTENT_EXPORT RenderWidget
   // frame widgets.
   PageProperties* const page_properties_;
 
-  // This is lazily constructed and must not outlive webwidget_.
   std::unique_ptr<LayerTreeView> layer_tree_view_;
   // This is valid while |layer_tree_view_| is valid.
   cc::LayerTreeHost* layer_tree_host_ = nullptr;

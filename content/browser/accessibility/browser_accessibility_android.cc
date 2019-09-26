@@ -221,10 +221,6 @@ bool BrowserAccessibilityAndroid::IsChecked() const {
 }
 
 bool BrowserAccessibilityAndroid::IsClickable() const {
-  // Explicitly disabled form controls shouldn't be clickable.
-  if (!IsEnabled())
-    return false;
-
   // If it has a custom default action verb except for
   // ax::mojom::DefaultActionVerb::kClickAncestor, it's definitely clickable.
   // ax::mojom::DefaultActionVerb::kClickAncestor is used when an element with a
@@ -235,9 +231,18 @@ bool BrowserAccessibilityAndroid::IsClickable() const {
     return true;
   }
 
-  // Otherwise return true if it's focusable, but skip web areas and iframes.
+  if (!IsEnabled()) {
+    // TalkBack won't announce a control as disabled unless it's also marked
+    // as clickable. In other words, Talkback wants to know if the control
+    // might be clickable, if it wasn't disabled.
+    return ui::IsControl(GetRole());
+  }
+
+  // Skip web areas and iframes, they're focusable but not clickable.
   if (IsIframe() || (GetRole() == ax::mojom::Role::kRootWebArea))
     return false;
+
+  // Otherwise it's clickable if it's focusable.
   return IsFocusable();
 }
 
@@ -1007,6 +1012,10 @@ base::string16 BrowserAccessibilityAndroid::GetRoleDescription() const {
       break;
     case ax::mojom::Role::kRubyAnnotation:
       // No role description.
+      break;
+    case ax::mojom::Role::kSection:
+      // A <section> element uses the 'region' ARIA role mapping.
+      message_id = IDS_AX_ROLE_REGION;
       break;
     case ax::mojom::Role::kSvgRoot:
       message_id = IDS_AX_ROLE_GRAPHIC;

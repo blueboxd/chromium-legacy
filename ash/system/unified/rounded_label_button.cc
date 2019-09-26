@@ -25,6 +25,7 @@ RoundedLabelButton::RoundedLabelButton(views::ButtonListener* listener,
       AshColorProvider::ContentLayerType::kTextPrimary, kUnifiedMenuTextColor));
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
   SetBorder(views::CreateEmptyBorder(gfx::Insets()));
+  label()->SetElideBehavior(gfx::NO_ELIDE);
   label()->SetSubpixelRenderingEnabled(false);
   label()->SetFontList(views::Label::GetDefaultFontList().Derive(
       1, gfx::Font::NORMAL, gfx::Font::Weight::MEDIUM));

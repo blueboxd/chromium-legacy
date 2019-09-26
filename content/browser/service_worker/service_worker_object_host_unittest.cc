@@ -219,7 +219,7 @@ TEST_F(ServiceWorkerObjectHostTest, OnVersionStateChanged) {
       CreateProviderHostForWindow(
           helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
           helper_->context()->AsWeakPtr(), &remote_endpoint);
-  provider_host->UpdateUrls(scope, scope);
+  provider_host->UpdateUrls(scope, scope, url::Origin::Create(scope));
   blink::mojom::ServiceWorkerRegistrationObjectInfoPtr registration_info =
       GetRegistrationFromRemote(remote_endpoint.host_remote()->get(), scope);
   // |version_| is the installing version of |registration_| now.
@@ -332,7 +332,7 @@ TEST_F(ServiceWorkerObjectHostTest, DispatchExtendableMessageEvent_FromClient) {
           frame_host->GetProcess()->GetID(), true /* is_parent_frame_secure */,
           helper_->context()->AsWeakPtr(), &remote_endpoint);
   SetProviderHostRenderFrameId(provider_host.get(), frame_host->GetRoutingID());
-  provider_host->UpdateUrls(scope, scope);
+  provider_host->UpdateUrls(scope, scope, url::Origin::Create(scope));
 
   // Prepare a ServiceWorkerObjectHost for the worker.
   blink::mojom::ServiceWorkerObjectInfoPtr info =

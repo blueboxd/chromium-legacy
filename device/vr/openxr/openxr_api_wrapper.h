@@ -61,7 +61,7 @@ class OpenXrApiWrapper {
   XrResult GetLuid(LUID* luid) const;
   std::string GetRuntimeName() const;
   bool GetStageParameters(XrExtent2Df* stage_bounds,
-                          gfx::Transform* standing_transform) const;
+                          gfx::Transform* local_from_stage) const;
 
   static void DEVICE_VR_EXPORT SetTestHook(VRTestHook* hook);
 

@@ -296,11 +296,4 @@ void PasswordStoreDefault::ResetLoginDB() {
   login_db_.reset();
 }
 
-#if defined(USE_X11)
-void PasswordStoreDefault::SetLoginDB(std::unique_ptr<LoginDatabase> login_db) {
-  DCHECK(background_task_runner()->RunsTasksInCurrentSequence());
-  login_db_ = std::move(login_db);
-}
-#endif  // defined(USE_X11)
-
 }  // namespace password_manager

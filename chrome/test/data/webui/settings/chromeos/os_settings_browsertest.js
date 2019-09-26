@@ -89,6 +89,8 @@ var OSSettingsAddUsersTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      BROWSER_SETTINGS_PATH + '../fake_chrome_event.js',
+      'fake_users_private.js',
       'add_users_tests.js',
     ]);
   }
@@ -395,6 +397,10 @@ TEST_F('OSSettingsDevicePageTest', 'DisplayTest', () => {
 
 TEST_F('OSSettingsDevicePageTest', 'KeyboardTest', () => {
   mocha.grep(assert(device_page_tests.TestNames.Keyboard)).run();
+});
+
+TEST_F('OSSettingsDevicePageTest', 'NightLightTest', () => {
+  mocha.grep(assert(device_page_tests.TestNames.NightLight)).run();
 });
 
 TEST_F('OSSettingsDevicePageTest', 'PointersTest', () => {

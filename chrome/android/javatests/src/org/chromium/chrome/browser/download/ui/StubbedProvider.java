@@ -16,8 +16,6 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService.DownloadObserver;
-import org.chromium.chrome.browser.widget.ThumbnailProvider;
-import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
 import org.chromium.components.download.DownloadState;
 import org.chromium.components.offline_items_collection.ContentId;
 import org.chromium.components.offline_items_collection.LaunchLocation;
@@ -184,81 +182,17 @@ public class StubbedProvider implements BackendProvider {
         }
     }
 
-    /** Stubs out all attempts to get thumbnails for files. */
-    public static class StubbedThumbnailProvider implements ThumbnailProvider {
-        @Override
-        public void destroy() {}
-
-        @Override
-        public void getThumbnail(ThumbnailRequest request) {}
-
-        @Override
-        public void removeThumbnailsFromDisk(String contentId) {}
-
-        @Override
-        public void cancelRetrieval(ThumbnailRequest request) {}
-    }
-
-    /** Stubs out the UIDelegate. */
-    public class StubbedUIDelegate implements UIDelegate {
-        @Override
-        public void deleteItem(DownloadHistoryItemWrapper item) {
-            mHandler.post(() -> item.removePermanently());
-        }
-
-        @Override
-        public void shareItem(DownloadHistoryItemWrapper item) {}
-    }
-
     private static final long ONE_GIGABYTE = 1024L * 1024L * 1024L;
 
     private final Handler mHandler;
     private final StubbedDownloadDelegate mDownloadDelegate;
     private final StubbedOfflineContentProvider mOfflineContentProvider;
-    private final SelectionDelegate<DownloadHistoryItemWrapper> mSelectionDelegate;
-    private final StubbedThumbnailProvider mStubbedThumbnailProvider;
-    private UIDelegate mUIDelegate;
 
     public StubbedProvider() {
         mHandler = new Handler(Looper.getMainLooper());
         mDownloadDelegate = new StubbedDownloadDelegate();
         mOfflineContentProvider = new StubbedOfflineContentProvider();
-        mSelectionDelegate = new DownloadItemSelectionDelegate();
-        mStubbedThumbnailProvider = new StubbedThumbnailProvider();
-        mUIDelegate = new StubbedUIDelegate();
     }
-
-    public void setUIDelegate(UIDelegate delegate) {
-        mUIDelegate = delegate;
-    }
-
-    @Override
-    public StubbedDownloadDelegate getDownloadDelegate() {
-        return mDownloadDelegate;
-    }
-
-    @Override
-    public StubbedOfflineContentProvider getOfflineContentProvider() {
-        return mOfflineContentProvider;
-    }
-
-    @Override
-    public SelectionDelegate<DownloadHistoryItemWrapper> getSelectionDelegate() {
-        return mSelectionDelegate;
-    }
-
-    @Override
-    public StubbedThumbnailProvider getThumbnailProvider() {
-        return mStubbedThumbnailProvider;
-    }
-
-    @Override
-    public UIDelegate getUIDelegate() {
-        return mUIDelegate;
-    }
-
-    @Override
-    public void destroy() {}
 
     /** See {@link #createDownloadItem(int, String, boolean, int, int)}. */
     public static DownloadItem createDownloadItem(int which, String date) throws Exception {

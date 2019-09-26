@@ -268,8 +268,6 @@ public class ExternalNavigationHandler {
         return false;
     }
 
-    // http://crbug.com/169549 : If you type in a URL that then redirects in server side to a link
-    // that cannot be rendered by the browser, we want to show the intent picker.
     private boolean isTypedRedirectToExternalProtocol(
             ExternalNavigationParams params, int pageTransitionCore, boolean isExternalProtocol) {
         boolean isTyped = (pageTransitionCore == PageTransition.TYPED)
@@ -307,6 +305,121 @@ public class ExternalNavigationHandler {
         return false;
     }
 
+    private boolean preferToShowIntentPicker(ExternalNavigationParams params,
+            int pageTransitionCore, boolean isExternalProtocol, boolean isFormSubmit,
+            boolean linkNotFromIntent, boolean incomingIntentRedirect) {
+        // http://crbug.com/169549 : If you type in a URL that then redirects in server side to a
+        // link that cannot be rendered by the browser, we want to show the intent picker.
+        if (isTypedRedirectToExternalProtocol(params, pageTransitionCore, isExternalProtocol)) {
+            return true;
+        }
+        // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
+        // following a form submit.
+        boolean isRedirectFromFormSubmit = isFormSubmit && params.isRedirect();
+
+        if (!linkNotFromIntent && !incomingIntentRedirect && !isRedirectFromFormSubmit) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Incoming intent (not a redirect)");
+            return false;
+        }
+        // http://crbug.com/839751: Require user gestures for form submits to external
+        //                          protocols.
+        // TODO(tedchoc): Remove the ChromeFeatureList check once we verify this change does
+        //                not break the world.
+        if (isRedirectFromFormSubmit && !incomingIntentRedirect && !params.hasUserGesture()
+                && ChromeFeatureList.isEnabled(
+                        ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE)) {
+            if (DEBUG) {
+                Log.i(TAG,
+                        "NO_OVERRIDE: Incoming form intent attempting to redirect without "
+                                + "user gesture");
+            }
+            return false;
+        }
+        // http://crbug/331571 : Do not override a navigation started from user typing.
+        if (params.getRedirectHandler() != null
+                && params.getRedirectHandler().isNavigationFromUserTyping()) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation from user typing");
+            return false;
+        }
+        return true;
+    }
+
+    // http://crbug.com/159153: Don't override navigation from a chrome:* url to http or https.
+    // For example when clicking a link in bookmarks or most visited. When navigating from such
+    // a page, there is clear intent to complete the navigation in Chrome.
+    private boolean isLinkFromChromeInternalPage(ExternalNavigationParams params) {
+        if (params.getReferrerUrl() == null) return false;
+        if (params.getReferrerUrl().startsWith(UrlConstants.CHROME_URL_PREFIX)
+                && (params.getUrl().startsWith(UrlConstants.HTTP_URL_PREFIX)
+                        || params.getUrl().startsWith(UrlConstants.HTTPS_URL_PREFIX))) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Link from an internal chrome:// page");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean handleWtaiMcProtocol(ExternalNavigationParams params) {
+        if (!params.getUrl().startsWith(WTAI_MC_URL_PREFIX)) return false;
+        // wtai://wp/mc;number
+        // number=string(phone-number)
+        mDelegate.startActivity(
+                new Intent(Intent.ACTION_VIEW,
+                        Uri.parse(WebView.SCHEME_TEL
+                                + params.getUrl().substring(WTAI_MC_URL_PREFIX.length()))),
+                false);
+        if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT wtai:// link handled");
+        RecordUserAction.record("Android.PhoneIntent");
+        return true;
+    }
+
+    private boolean isUnhandledWtaiProtocol(ExternalNavigationParams params) {
+        if (!params.getUrl().startsWith(WTAI_URL_PREFIX)) return false;
+        if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Unsupported wtai:// link");
+        return true;
+    }
+
+    // The "about:", "chrome:", "chrome-native:", "chrome-devtools:", and "devtools:" schemes
+    // are internal to the browser; don't want these to be dispatched to other apps.
+    private boolean hasInternalScheme(ExternalNavigationParams params) {
+        if (params.getUrl().startsWith(ContentUrlConstants.ABOUT_URL_SHORT_PREFIX)
+                || params.getUrl().startsWith(UrlConstants.CHROME_URL_SHORT_PREFIX)
+                || params.getUrl().startsWith(UrlConstants.CHROME_NATIVE_URL_SHORT_PREFIX)
+                || params.getUrl().startsWith(UrlConstants.DEVTOOLS_URL_SHORT_PREFIX)
+                || params.getUrl().startsWith(UrlConstants.DEVTOOLS_FALLBACK_URL_SHORT_PREFIX)) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigating to a chrome-internal page");
+            return true;
+        }
+        return false;
+    }
+
+    // The "content:" scheme is disabled in Clank. Do not try to start an activity.
+    private boolean hasContentScheme(ExternalNavigationParams params) {
+        if (!params.getUrl().startsWith(UrlConstants.CONTENT_URL_SHORT_PREFIX)) return false;
+        if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation to content: URL");
+        return true;
+    }
+
+    // Special case - It makes no sense to use an external application for a YouTube
+    // pairing code URL, since these match the current tab with a device (Chromecast
+    // or similar) it is supposed to be controlling. Using a different application
+    // that isn't expecting this (in particular YouTube) doesn't work.
+    private boolean isYoutubePairingCode(ExternalNavigationParams params) {
+        if (params.getUrl().matches(".*youtube\\.com(\\/.*)?\\?(.+&)?pairingCode=[^&].+")) {
+            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: YouTube URL with a pairing code");
+            return true;
+        }
+        return false;
+    }
+
+    private boolean externalIntentRequestsDisabled() {
+        // TODO(changwan): check if we need to handle URL even when external intent is off.
+        if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_EXTERNAL_INTENT_REQUESTS)) {
+            Log.w(TAG, "External intent handling is disabled by a command-line flag.");
+            return true;
+        }
+        return false;
+    }
+
     private @OverrideUrlLoadingResult int shouldOverrideUrlLoadingInternal(
             ExternalNavigationParams params, Intent intent, boolean hasBrowserFallbackUrl,
             String browserFallbackUrl) {
@@ -315,10 +428,6 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
-        boolean isLink = pageTransitionCore == PageTransition.LINK;
-        boolean isFormSubmit = pageTransitionCore == PageTransition.FORM_SUBMIT;
-        boolean isFromIntent = (params.getPageTransition() & PageTransition.FROM_API) != 0;
         boolean isExternalProtocol = !UrlUtilities.isAcceptedScheme(params.getUrl());
 
         if (isInternalPdfDownload(isExternalProtocol, params)) {
@@ -331,27 +440,28 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
         }
 
-        // We do not want to show the intent picker for core types typed, bookmarks, auto toplevel,
-        // generated, keyword, keyword generated. See below for exception to typed URL and
-        // redirects:
-        // - http://crbug.com/143118 : URL intercepting should not be invoked on navigations
-        //   initiated by the user in the omnibox / NTP.
-        // - http://crbug.com/159153 : Don't override http or https URLs from the NTP or bookmarks.
-        // - http://crbug.com/162106: Intent picker should not be presented on returning to a page.
-        //   This should be covered by not showing the picker if the core type is reload.
+        // This should come after file intents, but before any returns of
+        // OVERRIDE_WITH_EXTERNAL_INTENT.
+        if (externalIntentRequestsDisabled()) return OverrideUrlLoadingResult.NO_OVERRIDE;
+
+        int pageTransitionCore = params.getPageTransition() & PageTransition.CORE_MASK;
+        boolean isLink = pageTransitionCore == PageTransition.LINK;
+        boolean isFormSubmit = pageTransitionCore == PageTransition.FORM_SUBMIT;
+        boolean isFromIntent = (params.getPageTransition() & PageTransition.FROM_API) != 0;
 
         // http://crbug.com/149218: We want to show the intent picker for ordinary links, providing
         // the link is not an incoming intent from another application, unless it's a redirect (see
         // below).
         boolean linkNotFromIntent = isLink && !isFromIntent;
 
-        boolean isOnEffectiveIntentRedirect = params.getRedirectHandler() == null ? false
+        boolean isOnEffectiveIntentRedirect = params.getRedirectHandler() == null
+                ? false
                 : params.getRedirectHandler().isOnEffectiveIntentRedirectChain();
 
         // http://crbug.com/170925: We need to show the intent picker when we receive an intent from
         // another app that 30x redirects to a YouTube/Google Maps/Play Store/Google+ URL etc.
-        boolean incomingIntentRedirect = (isLink && isFromIntent && params.isRedirect())
-                || isOnEffectiveIntentRedirect;
+        boolean incomingIntentRedirect =
+                (isLink && isFromIntent && params.isRedirect()) || isOnEffectiveIntentRedirect;
 
         // Don't stay in Chrome for Custom Tabs redirecting to Instant Apps.
         if (handleCCTRedirectsToInstantApps(params, isExternalProtocol, incomingIntentRedirect)) {
@@ -360,97 +470,24 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        if (!isTypedRedirectToExternalProtocol(params, pageTransitionCore, isExternalProtocol)) {
-            // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
-            // following a form submit.
-            boolean isRedirectFromFormSubmit = isFormSubmit && params.isRedirect();
-
-            if (!linkNotFromIntent && !incomingIntentRedirect && !isRedirectFromFormSubmit) {
-                if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Incoming intent (not a redirect)");
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
-            // http://crbug.com/839751: Require user gestures for form submits to external
-            //                          protocols.
-            // TODO(tedchoc): Remove the ChromeFeatureList check once we verify this change does
-            //                not break the world.
-            if (isRedirectFromFormSubmit && !incomingIntentRedirect && !params.hasUserGesture()
-                    && ChromeFeatureList.isEnabled(
-                            ChromeFeatureList.INTENT_BLOCK_EXTERNAL_FORM_REDIRECT_NO_GESTURE)) {
-                if (DEBUG) {
-                    Log.i(TAG,
-                            "NO_OVERRIDE: Incoming form intent attempting to redirect without "
-                                    + "user gesture");
-                }
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
-            // http://crbug/331571 : Do not override a navigation started from user typing.
-            if (params.getRedirectHandler() != null
-                    && params.getRedirectHandler().isNavigationFromUserTyping()) {
-                if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation from user typing");
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
-        }
-
-        // Don't override navigation from a chrome:* url to http or https. For example,
-        // when clicking a link in bookmarks or most visited. When navigating from such a
-        // page, there is clear intent to complete the navigation in Chrome.
-        if (params.getReferrerUrl() != null
-                && params.getReferrerUrl().startsWith(UrlConstants.CHROME_URL_PREFIX)
-                && (params.getUrl().startsWith(UrlConstants.HTTP_URL_PREFIX)
-                        || params.getUrl().startsWith(UrlConstants.HTTPS_URL_PREFIX))) {
-            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Link from an internal chrome:// page");
+        if (!preferToShowIntentPicker(params, pageTransitionCore, isExternalProtocol, isFormSubmit,
+                    linkNotFromIntent, incomingIntentRedirect)) {
             return OverrideUrlLoadingResult.NO_OVERRIDE;
         }
 
-        if (params.getUrl().startsWith(WTAI_MC_URL_PREFIX)) {
-            // wtai://wp/mc;number
-            // number=string(phone-number)
-            mDelegate.startActivity(new Intent(Intent.ACTION_VIEW,
-                    Uri.parse(WebView.SCHEME_TEL
-                            + params.getUrl().substring(WTAI_MC_URL_PREFIX.length()))), false);
-            if (DEBUG) Log.i(TAG, "OVERRIDE_WITH_EXTERNAL_INTENT wtai:// link handled");
-            RecordUserAction.record("Android.PhoneIntent");
+        if (isLinkFromChromeInternalPage(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
+
+        if (handleWtaiMcProtocol(params)) {
             return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
         }
+        // TODO: handle other WTAI schemes.
+        if (isUnhandledWtaiProtocol(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
 
-        if (params.getUrl().startsWith(WTAI_URL_PREFIX)) {
-            // TODO: handle other WTAI schemes.
-            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Unsupported wtai:// link");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
+        if (hasInternalScheme(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
 
-        // The "about:", "chrome:", "chrome-native:", "chrome-devtools:", and "devtools:" schemes
-        // are internal to the browser; don't want these to be dispatched to other apps.
-        if (params.getUrl().startsWith(ContentUrlConstants.ABOUT_URL_SHORT_PREFIX)
-                || params.getUrl().startsWith(UrlConstants.CHROME_URL_SHORT_PREFIX)
-                || params.getUrl().startsWith(UrlConstants.CHROME_NATIVE_URL_SHORT_PREFIX)
-                || params.getUrl().startsWith(UrlConstants.DEVTOOLS_URL_SHORT_PREFIX)
-                || params.getUrl().startsWith(UrlConstants.DEVTOOLS_FALLBACK_URL_SHORT_PREFIX)) {
-            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigating to a chrome-internal page");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
+        if (hasContentScheme(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
 
-        // The "content:" scheme is disabled in Clank. Do not try to start an activity.
-        if (params.getUrl().startsWith(UrlConstants.CONTENT_URL_SHORT_PREFIX)) {
-            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: Navigation to content: URL");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
-
-        // Special case - It makes no sense to use an external application for a YouTube
-        // pairing code URL, since these match the current tab with a device (Chromecast
-        // or similar) it is supposed to be controlling. Using a different application
-        // that isn't expecting this (in particular YouTube) doesn't work.
-        if (params.getUrl().matches(".*youtube\\.com(\\/.*)?\\?(.+&)?pairingCode=[^&].+")) {
-            if (DEBUG) Log.i(TAG, "NO_OVERRIDE: YouTube URL with a pairing code");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
-
-        // TODO(changwan): check if we need to handle URL even when external intent is off.
-        if (CommandLine.getInstance().hasSwitch(
-                ChromeSwitches.DISABLE_EXTERNAL_INTENT_REQUESTS)) {
-            Log.w(TAG, "External intent handling is disabled by a command-line flag.");
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
+        if (isYoutubePairingCode(params)) return OverrideUrlLoadingResult.NO_OVERRIDE;
 
         // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
         @WebappScopePolicy.NavigationDirective

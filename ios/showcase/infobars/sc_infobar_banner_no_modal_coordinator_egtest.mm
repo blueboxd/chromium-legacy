@@ -73,7 +73,7 @@ using ::showcase_utils::Close;
       assertWithMatcher:grey_nil()];
 }
 
-// Tests that the InfobarBanner is dismissed correctly when its swiped up.
+// Tests that the InfobarBanner is dismissed correctly when is swiped up.
 - (void)testInfobarBannerDismissSwipe {
   // Check Banner was presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -89,7 +89,7 @@ using ::showcase_utils::Close;
       assertWithMatcher:grey_nil()];
 }
 
-// Tests that the InfobarModal is not presented when the Banner its swiped down.
+// Tests that the InfobarModal is not presented when the Banner is swiped down.
 - (void)testInfobarBannerCantSwipeDown {
   // Check Banner was presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -113,7 +113,7 @@ using ::showcase_utils::Close;
       assertWithMatcher:grey_nil()];
 }
 
-// Tests that the InfobarModal is not presented when the Banner its tapped.
+// Tests that the InfobarModal is not presented when the Banner is tapped.
 - (void)testInfobarBannerTapped {
   // Check Banner was presented.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
@@ -135,6 +135,24 @@ using ::showcase_utils::Close;
   [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
                                           kInfobarBannerViewIdentifier)]
       assertWithMatcher:grey_nil()];
+}
+
+// Tests that there's no Infobar Open Modal button. Banners that don't present a
+// Modal shouldn't have one.
+- (void)testInfobarBannerNoGear {
+  // Check Banner was presented.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kInfobarBannerViewIdentifier)]
+      assertWithMatcher:grey_notNil()];
+  // Check Gear Button is not present.
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kInfobarBannerOpenModalButtonIdentifier)]
+      assertWithMatcher:grey_nil()];
+  // Dismiss banner.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kInfobarBannerViewIdentifier)]
+      performAction:grey_swipeFastInDirection(kGREYDirectionUp)];
 }
 
 @end

@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Tue, 23 Jul 2019 15:11:19 -0700
-Subject: [PATCH 5/5] Fix bad chrome_sqlite3_free
+Subject: [PATCH 5/6] Fix bad chrome_sqlite3_free
 
 Backports https://www.sqlite.org/src/info/f60a83069168899d
 
@@ -29,5 +29,5 @@ index 23cb6bb3b083..887be63bd7d0 100644
        return SQLITE_OK;
      }
 -- 
-2.22.0.657.g960e92d24f-goog
+2.23.0.351.gc4317032e6-goog
 

@@ -350,8 +350,6 @@ ModelType GetModelTypeFromSpecificsFieldNumber(int field_number);
 // a model type.
 int GetSpecificsFieldNumberFromModelType(ModelType model_type);
 
-FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in);
-
 // TODO(sync): The functions below badly need some cleanup.
 
 // Returns a string with application lifetime that represents the name of

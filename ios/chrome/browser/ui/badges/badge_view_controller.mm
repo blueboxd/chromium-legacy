@@ -76,7 +76,8 @@ const double kFullScreenProgressThreshold = 0.85;
   if (displayedBadgeItem) {
     BadgeButton* newButton = [self.buttonFactory
         getBadgeButtonForBadgeType:displayedBadgeItem.badgeType];
-    [newButton setAccepted:displayedBadgeItem.accepted animated:NO];
+    [newButton setAccepted:displayedBadgeItem.badgeState == BadgeStateAccepted
+                  animated:NO];
     self.displayedBadge = newButton;
   }
   if (fullscreenBadgeItem) {
@@ -101,12 +102,14 @@ const double kFullScreenProgressThreshold = 0.85;
   if (displayedBadgeItem) {
     if (self.displayedBadge &&
         self.displayedBadge.badgeType == displayedBadgeItem.badgeType) {
-      [self.displayedBadge setAccepted:displayedBadgeItem.accepted
-                              animated:YES];
+      [self.displayedBadge
+          setAccepted:displayedBadgeItem.badgeState == BadgeStateAccepted
+             animated:YES];
     } else {
       BadgeButton* newButton = [self.buttonFactory
           getBadgeButtonForBadgeType:displayedBadgeItem.badgeType];
-      [newButton setAccepted:displayedBadgeItem.accepted animated:NO];
+      [newButton setAccepted:displayedBadgeItem.badgeState == BadgeStateAccepted
+                    animated:NO];
       self.displayedBadge = newButton;
     }
   } else {

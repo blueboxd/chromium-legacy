@@ -152,8 +152,8 @@ class IconLabelBubbleViewTest : public ChromeViewsTestBase {
     ChromeViewsTestBase::TearDown();
   }
 
-  void VerifyWithAnimationStep(int step) {
-    Reset();
+  void VerifyWithAnimationStep(int step, bool icon_visible) {
+    Reset(icon_visible);
     for (int value = 0; value < kNumberOfSteps; value += step) {
       SetValue(value);
       VerifyAnimationStep();
@@ -183,16 +183,18 @@ class IconLabelBubbleViewTest : public ChromeViewsTestBase {
     widget_->Init(std::move(params));
   }
 
-  void Reset() {
+  void Reset(bool icon_visible) {
     view_->SetLabelVisible(true);
     SetValue(0);
     steady_reached_ = false;
     shrinking_reached_ = false;
     minimum_size_reached_ = false;
-    previous_width_ = 0;
     initial_image_x_ = GetImageBounds().x();
     EXPECT_EQ(GetLayoutInsets(LOCATION_BAR_ICON_INTERIOR_PADDING).left(),
               initial_image_x_);
+
+    previous_width_ = icon_visible ? initial_image_x_ : 0;
+    view_->set_grow_animation_starting_width_for_testing(previous_width_);
   }
 
   void VerifyAnimationStep() {
@@ -280,10 +282,21 @@ class IconLabelBubbleViewTest : public ChromeViewsTestBase {
 // size.
 // Various step sizes during animation simulate different possible timing.
 TEST_F(IconLabelBubbleViewTest, AnimateLayout) {
-  VerifyWithAnimationStep(1);
-  VerifyWithAnimationStep(5);
-  VerifyWithAnimationStep(10);
-  VerifyWithAnimationStep(25);
+  VerifyWithAnimationStep(1, false);
+  VerifyWithAnimationStep(5, false);
+  VerifyWithAnimationStep(10, false);
+  VerifyWithAnimationStep(25, false);
+}
+
+// Like AnimateLayout, tests layout rules while simulating animation, except
+// with the icon initially visible.
+// The animation is first growing the bubble from the image size, then keeping
+// its size constant and finally shrinking it down to the initial size.
+TEST_F(IconLabelBubbleViewTest, AnimateLayoutWithVisibleIcon) {
+  VerifyWithAnimationStep(1, true);
+  VerifyWithAnimationStep(5, true);
+  VerifyWithAnimationStep(10, true);
+  VerifyWithAnimationStep(25, true);
 }
 
 // Verify that clicking the view a second time hides its bubble.

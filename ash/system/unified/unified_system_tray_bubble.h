@@ -67,6 +67,9 @@ class ASH_EXPORT UnifiedSystemTrayBubble
   // Show audio settings detailed view.
   void ShowAudioDetailedView();
 
+  // Show network settings detailed view.
+  void ShowNetworkDetailedView(bool force);
+
   // Update bubble bounds and focus if necessary.
   void UpdateBubble();
 

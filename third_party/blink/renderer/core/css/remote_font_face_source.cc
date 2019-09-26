@@ -222,7 +222,7 @@ bool RemoteFontFaceSource::ShouldTriggerWebFontsIntervention() {
     return false;
 
   WebEffectiveConnectionType connection_type =
-      document->GetFrame()->Client()->GetEffectiveConnectionType();
+      GetNetworkStateNotifier().EffectiveType();
 
   bool network_is_slow =
       WebEffectiveConnectionType::kTypeOffline <= connection_type &&

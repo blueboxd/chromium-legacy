@@ -239,14 +239,14 @@ function mouseUpAt(xPosition, yPosition) {
 }
 
 // Simulate a mouse click on point.
-function mouseClickOn(x, y, button = 0 /* left */) {
+function mouseClickOn(x, y, button = 0 /* left */, keys = '') {
   return new Promise((resolve, reject) => {
     if (window.chrome && chrome.gpuBenchmarking) {
       let pointerActions = [{
         source: 'mouse',
         actions: [
           { 'name': 'pointerMove', 'x': x, 'y': y },
-          { 'name': 'pointerDown', 'x': x, 'y': y, 'button': button },
+          { 'name': 'pointerDown', 'x': x, 'y': y, 'button': button, 'keys': keys  },
           { 'name': 'pointerUp', 'button': button },
         ]
       }];

@@ -14,7 +14,6 @@
 #include "base/timer/timer.h"
 
 namespace base {
-class FilePath;
 class TimeDelta;
 class SequencedTaskRunner;
 }  // namespace base
@@ -59,12 +58,11 @@ class ArcSystemStatCollector {
       -1,  // End of sequence
   };
 
-  // Indices of fields to parse
-  // /sys/class/hwmon/hwmon*/temp*_input
-  // As an example:
+  // Indices of fields to parse as one value.
+  // For example: /sys/class/hwmon/hwmon*/temp*_input
   // 30000
-  static constexpr int kCpuTempInfoColumns[] = {
-      0,   // Temperature in celsius * 1000.
+  static constexpr int kOneValueColumns[] = {
+      0,
       -1,  // End of sequence
   };
 
@@ -85,6 +83,7 @@ class ArcSystemStatCollector {
 
  private:
   struct Sample;
+  struct SystemReadersContext;
 
   struct RuntimeFrame {
     // read, written sectors and total time in milliseconds.
@@ -94,22 +93,33 @@ class ArcSystemStatCollector {
     // objects, used bytes.
     int64_t gem_info[base::size(kGemInfoColumns) - 1] = {0};
     // Temperature of CPU, Core 0.
-    int64_t cpu_temperature_ = std::numeric_limits<int>::min();
+    int64_t cpu_temperature = std::numeric_limits<int>::min();
+    // CPU Frequency.
+    int64_t cpu_frequency = 0;
   };
 
-  // Schedule reading System stat files in |ReadSystemStatOnBackgroundThread| on
-  // background thread. Once ready result is passed to
+  // Schedules reading System stat files in |ReadSystemStatOnBackgroundThread|
+  // on background thread. Once ready result is passed to
   // |UpdateSystemStatOnUiThread|
   void ScheduleSystemStatUpdate();
-  static RuntimeFrame ReadSystemStatOnBackgroundThread();
-  void UpdateSystemStatOnUiThread(RuntimeFrame current_frame);
+
+  // Frees |context_| if it exists.
+  void FreeSystemReadersContext();
+
+  // Called when |SystemReadersContext| is initialized.
+  void OnInitOnUiThread(std::unique_ptr<SystemReadersContext> context);
+
+  // Reads system stat files on background thread using |context|.
+  static std::unique_ptr<SystemReadersContext> ReadSystemStatOnBackgroundThread(
+      std::unique_ptr<SystemReadersContext> context);
+  // Processes filled |current_frame_| on UI thread.
+  void UpdateSystemStatOnUiThread(
+      std::unique_ptr<SystemReadersContext> context);
 
   // To schedule updates of system stat.
   base::RepeatingTimer timer_;
   // Performs reading kernel stat files on backgrond thread.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
-  // Use to prevent double scheduling.
-  bool request_scheduled_ = false;
   // Used to limit the number of warnings printed in case System stat update is
   // dropped due to previous update is in progress.
   int missed_update_warning_left_ = 0;
@@ -121,6 +131,8 @@ class ArcSystemStatCollector {
   // Used to calculate delta.
   RuntimeFrame previous_frame_;
 
+  std::unique_ptr<SystemReadersContext> context_;
+
   base::WeakPtrFactory<ArcSystemStatCollector> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(ArcSystemStatCollector);
@@ -128,12 +140,10 @@ class ArcSystemStatCollector {
 
 // Helper that reads and parses stat file containing decimal number separated by
 // whitespace and text fields. It does not have any dynamic memory allocation.
-// |path| specifies the file to read and parse. |columns| contains index of
-// column to parse, end of sequence is specified by terminator -1. |output|
-// receives parsed value. Must be the size as |columns| size - 1.
-bool ParseStatFile(const base::FilePath& path,
-                   const int* columns,
-                   int64_t* output);
+// |fd| specifies the file descriptor to read and parse. |columns| contains
+// index of column to parse, end of sequence is specified by terminator -1.
+// |output| receives parsed value. Must be the size as |columns| size - 1.
+bool ParseStatFile(int fd, const int* columns, int64_t* output);
 
 }  // namespace arc
 

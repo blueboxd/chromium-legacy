@@ -101,7 +101,9 @@ class ShellContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::NetworkContext* network_context,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
-      const url::Origin& request_initiator) override;
+      const url::Origin& request_initiator,
+      const base::Optional<net::NetworkIsolationKey>& network_isolation_key)
+      override;
   std::string GetUserAgent() override;
 
  protected:

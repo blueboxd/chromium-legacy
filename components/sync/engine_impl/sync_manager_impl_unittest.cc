@@ -928,7 +928,6 @@ class SyncManagerTest : public testing::Test,
   SyncManagerTest()
       : sync_manager_("Test sync manager",
                       network::TestNetworkConnectionTracker::GetInstance()) {
-    switches_.encryption_method = EngineComponentsFactory::ENCRYPTION_KEYSTORE;
   }
 
   ~SyncManagerTest() override {}
@@ -1096,8 +1095,7 @@ class SyncManagerTest : public testing::Test,
 
   virtual EngineComponentsFactory* GetFactory() {
     return new TestEngineComponentsFactory(
-        GetSwitches(), EngineComponentsFactory::STORAGE_IN_MEMORY,
-        &storage_used_);
+        EngineComponentsFactory::STORAGE_IN_MEMORY, &storage_used_);
   }
 
   // Returns true if we are currently encrypting all sync data.  May
@@ -1145,8 +1143,6 @@ class SyncManagerTest : public testing::Test,
     }
   }
 
-  EngineComponentsFactory::Switches GetSwitches() const { return switches_; }
-
   void ExpectPassphraseAcceptance() {
     EXPECT_CALL(*encryption_observer_, OnPassphraseAccepted());
     EXPECT_CALL(*encryption_observer_, OnEncryptionComplete());
@@ -1189,7 +1185,6 @@ class SyncManagerTest : public testing::Test,
   StrictMock<SyncManagerObserverMock> manager_observer_;
   // Owned by |sync_manager_|.
   StrictMock<SyncEncryptionHandlerObserverMock>* encryption_observer_;
-  EngineComponentsFactory::Switches switches_;
   EngineComponentsFactory::StorageOption storage_used_;
   MockUnrecoverableErrorHandler mock_unrecoverable_error_handler_;
 };
@@ -2504,12 +2499,10 @@ class MockSyncScheduler : public FakeSyncScheduler {
 
 class ComponentsFactory : public TestEngineComponentsFactory {
  public:
-  ComponentsFactory(const Switches& switches,
-                    SyncScheduler* scheduler_to_use,
+  ComponentsFactory(SyncScheduler* scheduler_to_use,
                     SyncCycleContext** cycle_context,
                     EngineComponentsFactory::StorageOption* storage_used)
-      : TestEngineComponentsFactory(switches,
-                                    EngineComponentsFactory::STORAGE_IN_MEMORY,
+      : TestEngineComponentsFactory(EngineComponentsFactory::STORAGE_IN_MEMORY,
                                     storage_used),
         scheduler_to_use_(scheduler_to_use),
         cycle_context_(cycle_context) {}
@@ -2534,8 +2527,7 @@ class SyncManagerTestWithMockScheduler : public SyncManagerTest {
   SyncManagerTestWithMockScheduler() : scheduler_(nullptr) {}
   EngineComponentsFactory* GetFactory() override {
     scheduler_ = new MockSyncScheduler();
-    return new ComponentsFactory(GetSwitches(), scheduler_, &cycle_context_,
-                                 &storage_used_);
+    return new ComponentsFactory(scheduler_, &cycle_context_, &storage_used_);
   }
 
   MockSyncScheduler* scheduler() { return scheduler_; }
@@ -3180,8 +3172,7 @@ class SyncManagerInitInvalidStorageTest : public SyncManagerTest {
 
   EngineComponentsFactory* GetFactory() override {
     return new TestEngineComponentsFactory(
-        GetSwitches(), EngineComponentsFactory::STORAGE_INVALID,
-        &storage_used_);
+        EngineComponentsFactory::STORAGE_INVALID, &storage_used_);
   }
 };
 

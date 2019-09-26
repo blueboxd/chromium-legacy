@@ -30,7 +30,6 @@ class SharingIconView : public PageActionIconView {
   // PageActionIconView:
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   bool IsTriggerableEvent(const ui::Event& event) override;
-  double WidthMultiplier() const override;
   const gfx::VectorIcon& GetVectorIconBadge() const override;
   views::BubbleDialogDelegateView* GetBubble() const override;
   bool Update() override;

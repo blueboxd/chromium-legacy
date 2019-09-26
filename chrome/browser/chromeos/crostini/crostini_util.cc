@@ -344,13 +344,6 @@ bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy) {
   return IsCrostiniAllowedForProfileImpl(profile);
 }
 
-bool IsCrostiniExportImportUIAllowedForProfile(Profile* profile) {
-  return IsCrostiniUIAllowedForProfile(profile, true) &&
-         base::FeatureList::IsEnabled(chromeos::features::kCrostiniBackup) &&
-         profile->GetPrefs()->GetBoolean(
-             crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy);
-}
-
 bool IsCrostiniEnabled(Profile* profile) {
   return IsCrostiniUIAllowedForProfile(profile) &&
          profile->GetPrefs()->GetBoolean(crostini::prefs::kCrostiniEnabled);

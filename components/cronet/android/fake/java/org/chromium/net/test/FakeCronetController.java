@@ -178,14 +178,15 @@ public final class FakeCronetController {
      * @param url        the URL that the {@link UrlRequest} is connecting to
      * @param httpMethod the HTTP method that the {@link UrlRequest} is using to connect with
      * @param headers    the headers supplied by the {@link UrlRequest}
+     * @param body       the body of the fake HTTP request
      * @return a {@link FakeUrlResponse} if there is one, or a failed "404" response if none found
      */
     FakeUrlResponse getResponse(
-            String url, String httpMethod, List<Map.Entry<String, String>> headers) {
+            String url, String httpMethod, List<Map.Entry<String, String>> headers, byte[] body) {
         synchronized (mResponseMatchers) {
             for (ResponseMatcher responseMatcher : mResponseMatchers) {
                 FakeUrlResponse matchedResponse =
-                        responseMatcher.getMatchingResponse(url, httpMethod, headers);
+                        responseMatcher.getMatchingResponse(url, httpMethod, headers, body);
                 if (matchedResponse != null) {
                     return matchedResponse;
                 }

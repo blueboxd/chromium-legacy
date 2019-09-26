@@ -122,11 +122,6 @@ class BrowserViewLayout : public views::LayoutManager {
   // the bookmark bar and the toolbar.
   void UpdateTopContainerBounds();
 
-  // Returns the top margin to adjust the contents_container_ by. This is used
-  // to make the bookmark bar and contents_container_ overlap so that the
-  // preview contents hides the bookmark bar.
-  int GetTopMarginForActiveContent();
-
   // Layout the Download Shelf, returns the coordinate of the top of the
   // control, for laying out the previous control.
   int LayoutDownloadShelf(int bottom);

@@ -22,7 +22,7 @@ void FakeDisplayClient::OnDisplayReceivedCALayerParams(
 
 #if defined(OS_WIN)
 void FakeDisplayClient::CreateLayeredWindowUpdater(
-    mojom::LayeredWindowUpdaterRequest request) {}
+    mojo::PendingReceiver<mojom::LayeredWindowUpdater> receiver) {}
 #endif
 
 #if defined(USE_X11)

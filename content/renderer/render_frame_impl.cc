@@ -938,8 +938,6 @@ std::unique_ptr<DocumentState> BuildDocumentStateFromParams(
     document_state->set_was_alternate_protocol_available(
         head->was_alternate_protocol_available);
     document_state->set_connection_info(head->connection_info);
-    internal_data->set_effective_connection_type(
-        head->effective_connection_type);
   }
 
   bool load_data = !common_params.base_url_for_data_url.is_empty() &&
@@ -1862,8 +1860,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       handling_select_range_(false),
       render_accessibility_(nullptr),
       previews_state_(PREVIEWS_UNSPECIFIED),
-      effective_connection_type_(
-          blink::WebEffectiveConnectionType::kTypeUnknown),
       is_pasting_(false),
       suppress_further_dialogs_(false),
       blame_context_(nullptr),
@@ -1968,7 +1964,6 @@ void RenderFrameImpl::Initialize() {
       RenderFrameImpl::FromWebFrame(frame_->Parent());
   if (parent_frame) {
     previews_state_ = parent_frame->GetPreviewsState();
-    effective_connection_type_ = parent_frame->GetEffectiveConnectionType();
   }
 
   bool is_tracing_rail = false;
@@ -4738,9 +4733,6 @@ void RenderFrameImpl::DidCommitProvisionalLoad(
   // change at commit time.
   if (is_main_frame_) {
     previews_state_ = internal_data->previews_state();
-    effective_connection_type_ =
-        EffectiveConnectionTypeToWebEffectiveConnectionType(
-            internal_data->effective_connection_type());
   }
 
   if (previous_routing_id_ != MSG_ROUTING_NONE) {
@@ -5146,16 +5138,6 @@ void RenderFrameImpl::ForwardResourceTimingToParent(
 
 void RenderFrameImpl::DispatchLoad() {
   Send(new FrameHostMsg_DispatchLoad(routing_id_));
-}
-
-blink::WebEffectiveConnectionType
-RenderFrameImpl::GetEffectiveConnectionType() {
-  return effective_connection_type_;
-}
-
-void RenderFrameImpl::SetEffectiveConnectionTypeForTesting(
-    blink::WebEffectiveConnectionType type) {
-  effective_connection_type_ = type;
 }
 
 blink::WebURLRequest::PreviewsState RenderFrameImpl::GetPreviewsStateForFrame()

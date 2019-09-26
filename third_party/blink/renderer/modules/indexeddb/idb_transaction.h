@@ -75,6 +75,7 @@ class MODULES_EXPORT IDBTransaction final
       int64_t transaction_id,
       const HashSet<String>& scope,
       mojom::IDBTransactionMode,
+      mojom::IDBTransactionDurability,
       IDBDatabase* database);
   static IDBTransaction* CreateVersionChange(
       ExecutionContext*,
@@ -90,6 +91,7 @@ class MODULES_EXPORT IDBTransaction final
                  int64_t,
                  const HashSet<String>& scope,
                  mojom::IDBTransactionMode,
+                 mojom::IDBTransactionDurability,
                  IDBDatabase*);
   // For upgrade transactions.
   IDBTransaction(ExecutionContext*,
@@ -122,6 +124,7 @@ class MODULES_EXPORT IDBTransaction final
 
   // Implement the IDBTransaction IDL
   const String& mode() const;
+  const String& durability() const;
   DOMStringList* objectStoreNames() const;
   IDBDatabase* db() const { return database_.Get(); }
   DOMException* error() const { return error_; }
@@ -213,6 +216,7 @@ class MODULES_EXPORT IDBTransaction final
   Member<IDBDatabase> database_;
   Member<IDBOpenDBRequest> open_db_request_;
   const mojom::IDBTransactionMode mode_;
+  const mojom::IDBTransactionDurability durability_;
 
   // The names of the object stores that make up this transaction's scope.
   //

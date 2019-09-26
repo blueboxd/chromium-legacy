@@ -53,11 +53,10 @@ class VirtualAuthenticator {
 
 class VirtualAuthenticatorManager {
   constructor() {
-    const docBrokerRemote = new blink.mojom.DocumentInterfaceBrokerRemote(
-      Mojo.getDocumentInterfaceBrokerHandle());
     this.virtualAuthenticatorManager_ = new blink.test.mojom.VirtualAuthenticatorManagerRemote;
-    docBrokerRemote.getVirtualAuthenticatorManager(
-      this.virtualAuthenticatorManager_.$.bindNewPipeAndPassReceiver());
+    Mojo.bindInterface(
+      blink.test.mojom.VirtualAuthenticatorManager.$interfaceName,
+      this.virtualAuthenticatorManager_.$.bindNewPipeAndPassReceiver().handle, "context", true);
   }
 
   async createAuthenticator(options = {}) {

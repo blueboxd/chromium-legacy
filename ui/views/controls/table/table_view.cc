@@ -375,9 +375,8 @@ void TableView::SetSortOnPaint(bool sort_on_paint) {
 }
 
 void TableView::Layout() {
-  // parent()->parent() is the scrollview. When its width changes we force
-  // recalculating column sizes.
-  View* scroll_view = parent() ? parent()->parent() : nullptr;
+  // When the scrollview's width changes we force recalculating column sizes.
+  ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
   if (scroll_view) {
     const int scroll_view_width = scroll_view->GetContentsBounds().width();
     if (scroll_view_width != last_parent_width_) {
@@ -399,6 +398,11 @@ void TableView::Layout() {
     height = std::max(parent()->height(), height);
   }
   SetBounds(x(), y(), width, height);
+  if (header_) {
+    header_->SetBoundsRect(
+        gfx::Rect(header_->bounds().origin(),
+                  gfx::Size(width, header_->GetPreferredSize().height())));
+  }
 
   if (focus_ring_)
     focus_ring_->Layout();

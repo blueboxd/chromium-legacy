@@ -50,12 +50,18 @@ class ServiceWorkerTestContentClient : public TestContentClient {
 class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
  public:
   struct AllowServiceWorkerCallLog {
-    AllowServiceWorkerCallLog(const GURL& scope,
-                              const GURL& first_party,
-                              const GURL& script_url)
-        : scope(scope), first_party(first_party), script_url(script_url) {}
+    AllowServiceWorkerCallLog(
+        const GURL& scope,
+        const GURL& site_for_cookies,
+        const base::Optional<url::Origin>& top_frame_origin,
+        const GURL& script_url)
+        : scope(scope),
+          site_for_cookies(site_for_cookies),
+          top_frame_origin(top_frame_origin),
+          script_url(script_url) {}
     const GURL scope;
-    const GURL first_party;
+    const GURL site_for_cookies;
+    const base::Optional<url::Origin> top_frame_origin;
     const GURL script_url;
   };
 
@@ -63,21 +69,23 @@ class ServiceWorkerTestContentBrowserClient : public TestContentBrowserClient {
 
   bool AllowServiceWorkerOnIO(
       const GURL& scope,
-      const GURL& first_party,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       content::ResourceContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
-    logs_.emplace_back(scope, first_party, script_url);
+    logs_.emplace_back(scope, site_for_cookies, top_frame_origin, script_url);
     return false;
   }
 
   bool AllowServiceWorkerOnUI(
       const GURL& scope,
-      const GURL& first_party,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       content::BrowserContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter) override {
-    logs_.emplace_back(scope, first_party, script_url);
+    logs_.emplace_back(scope, site_for_cookies, top_frame_origin, script_url);
     return false;
   }
 
@@ -140,7 +148,8 @@ class ServiceWorkerProviderHostTest : public testing::Test {
       const GURL& document_url) {
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
     GURL site_for_cookies = document_url;
-    CreateProviderHostInternal(document_url, site_for_cookies,
+    url::Origin top_frame_origin = url::Origin::Create(document_url);
+    CreateProviderHostInternal(document_url, site_for_cookies, top_frame_origin,
                                &remote_endpoint);
     return remote_endpoint;
   }
@@ -148,17 +157,20 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   ServiceWorkerRemoteProviderEndpoint
   PrepareServiceWorkerProviderHostWithSiteForCookies(
       const GURL& document_url,
-      const GURL& site_for_cookies) {
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin) {
     ServiceWorkerRemoteProviderEndpoint remote_endpoint;
-    CreateProviderHostInternal(document_url, site_for_cookies,
+    CreateProviderHostInternal(document_url, site_for_cookies, top_frame_origin,
                                &remote_endpoint);
     return remote_endpoint;
   }
 
   ServiceWorkerProviderHost* CreateProviderHost(const GURL& document_url) {
     GURL site_for_cookies = document_url;
+    url::Origin top_frame_origin = url::Origin::Create(document_url);
     remote_endpoints_.emplace_back();
     return CreateProviderHostInternal(document_url, site_for_cookies,
+                                      top_frame_origin,
                                       &remote_endpoints_.back());
   }
 
@@ -169,14 +181,15 @@ class ServiceWorkerProviderHostTest : public testing::Test {
         helper_->mock_render_process_id(), false /* is_parent_frame_secure */,
         helper_->context()->AsWeakPtr(), &remote_endpoints_.back());
     ServiceWorkerProviderHost* host_raw = host.get();
-    host->UpdateUrls(document_url, document_url);
+    host->UpdateUrls(document_url, document_url,
+                     url::Origin::Create(document_url));
     return host_raw;
   }
 
   void FinishNavigation(ServiceWorkerProviderHost* host) {
     // In production code, the loader/request handler does this.
     const GURL url("https://www.example.com/page");
-    host->UpdateUrls(url, url);
+    host->UpdateUrls(url, url, url::Origin::Create(url));
 
     // In production code this is called from NavigationRequest in the browser
     // process right before navigation commit.
@@ -298,11 +311,12 @@ class ServiceWorkerProviderHostTest : public testing::Test {
   ServiceWorkerProviderHost* CreateProviderHostInternal(
       const GURL& document_url,
       const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin,
       ServiceWorkerRemoteProviderEndpoint* remote_endpoint) {
     base::WeakPtr<ServiceWorkerProviderHost> host = CreateProviderHostForWindow(
         helper_->mock_render_process_id(), true /* is_parent_frame_secure */,
         helper_->context()->AsWeakPtr(), remote_endpoint);
-    host->UpdateUrls(document_url, site_for_cookies);
+    host->UpdateUrls(document_url, site_for_cookies, top_frame_origin);
     return host.get();
   }
 
@@ -340,15 +354,19 @@ TEST_F(ServiceWorkerProviderHostTest, MatchRegistration) {
   ASSERT_EQ(nullptr, provider_host1->MatchRegistration());
 
   // SetDocumentUrl sets all of matching registrations
-  provider_host1->UpdateUrls(GURL("https://www.example.com/example1"),
-                             GURL("https://www.example.com/example1"));
+  provider_host1->UpdateUrls(
+      GURL("https://www.example.com/example1"),
+      GURL("https://www.example.com/example1"),
+      url::Origin::Create(GURL("https://www.example.com/example1")));
   ASSERT_EQ(registration2_, provider_host1->MatchRegistration());
   provider_host1->RemoveMatchingRegistration(registration2_.get());
   ASSERT_EQ(registration1_, provider_host1->MatchRegistration());
 
   // SetDocumentUrl with another origin also updates matching registrations
-  provider_host1->UpdateUrls(GURL("https://other.example.com/example"),
-                             GURL("https://other.example.com/example"));
+  provider_host1->UpdateUrls(
+      GURL("https://other.example.com/example"),
+      GURL("https://other.example.com/example"),
+      url::Origin::Create(GURL("https://other.example.com/example")));
   ASSERT_EQ(registration3_, provider_host1->MatchRegistration());
   provider_host1->RemoveMatchingRegistration(registration3_.get());
   ASSERT_EQ(nullptr, provider_host1->MatchRegistration());
@@ -362,31 +380,35 @@ TEST_F(ServiceWorkerProviderHostTest, ContextSecurity) {
           GURL("https://www.example.com/example1.html"));
 
   // Insecure document URL.
-  provider_host_secure_parent->UpdateUrls(GURL("http://host"),
-                                          GURL("http://host"));
+  provider_host_secure_parent->UpdateUrls(
+      GURL("http://host"), GURL("http://host"),
+      url::Origin::Create(GURL("http://host")));
   EXPECT_FALSE(provider_host_secure_parent->IsContextSecureForServiceWorker());
 
   // Insecure parent frame.
-  provider_host_insecure_parent->UpdateUrls(GURL("https://host"),
-                                            GURL("https://host"));
+  provider_host_insecure_parent->UpdateUrls(
+      GURL("https://host"), GURL("https://host"),
+      url::Origin::Create(GURL("https://host")));
   EXPECT_FALSE(
       provider_host_insecure_parent->IsContextSecureForServiceWorker());
 
   // Secure URL and parent frame.
-  provider_host_secure_parent->UpdateUrls(GURL("https://host"),
-                                          GURL("https://host"));
+  provider_host_secure_parent->UpdateUrls(
+      GURL("https://host"), GURL("https://host"),
+      url::Origin::Create(GURL("https://host")));
   EXPECT_TRUE(provider_host_secure_parent->IsContextSecureForServiceWorker());
 
   // Exceptional service worker scheme.
   GURL url(std::string(kServiceWorkerScheme) + "://host");
+  url::Origin origin = url::Origin::Create(url);
   EXPECT_TRUE(url.is_valid());
   EXPECT_FALSE(IsOriginSecure(url));
   EXPECT_TRUE(OriginCanAccessServiceWorkers(url));
-  provider_host_secure_parent->UpdateUrls(url, url);
+  provider_host_secure_parent->UpdateUrls(url, url, origin);
   EXPECT_TRUE(provider_host_secure_parent->IsContextSecureForServiceWorker());
 
   // Exceptional service worker scheme with insecure parent frame.
-  provider_host_insecure_parent->UpdateUrls(url, url);
+  provider_host_insecure_parent->UpdateUrls(url, url, origin);
   EXPECT_FALSE(
       provider_host_insecure_parent->IsContextSecureForServiceWorker());
 }
@@ -400,7 +422,7 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_SameOriginRedirect) {
   EXPECT_EQ(url1, host->url());
   EXPECT_EQ(url1, host->site_for_cookies());
 
-  host->UpdateUrls(url2, url2);
+  host->UpdateUrls(url2, url2, url::Origin::Create(url2));
   EXPECT_EQ(url2, host->url());
   EXPECT_EQ(url2, host->site_for_cookies());
   EXPECT_EQ(uuid1, host->client_uuid());
@@ -417,7 +439,7 @@ TEST_F(ServiceWorkerProviderHostTest, UpdateUrls_CrossOriginRedirect) {
   EXPECT_EQ(url1, host->url());
   EXPECT_EQ(url1, host->site_for_cookies());
 
-  host->UpdateUrls(url2, url2);
+  host->UpdateUrls(url2, url2, url::Origin::Create(url2));
   EXPECT_EQ(url2, host->url());
   EXPECT_EQ(url2, host->site_for_cookies());
   EXPECT_NE(uuid1, host->client_uuid());
@@ -572,7 +594,8 @@ TEST_F(ServiceWorkerProviderHostTest,
   ServiceWorkerRemoteProviderEndpoint remote_endpoint =
       PrepareServiceWorkerProviderHostWithSiteForCookies(
           GURL("https://www.example.com/foo"),
-          GURL("https://www.example.com/top"));
+          GURL("https://www.example.com/top"),
+          url::Origin::Create(GURL("https://www.example.com")));
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
             Register(remote_endpoint.host_remote()->get(),
@@ -582,7 +605,9 @@ TEST_F(ServiceWorkerProviderHostTest,
   EXPECT_EQ(GURL("https://www.example.com/scope"),
             test_browser_client.logs()[0].scope);
   EXPECT_EQ(GURL("https://www.example.com/top"),
-            test_browser_client.logs()[0].first_party);
+            test_browser_client.logs()[0].site_for_cookies);
+  EXPECT_EQ(url::Origin::Create(GURL("https://www.example.com")),
+            test_browser_client.logs()[0].top_frame_origin);
   EXPECT_EQ(GURL("https://www.example.com/bar"),
             test_browser_client.logs()[0].script_url);
 
@@ -593,7 +618,9 @@ TEST_F(ServiceWorkerProviderHostTest,
   EXPECT_EQ(GURL("https://www.example.com/foo"),
             test_browser_client.logs()[1].scope);
   EXPECT_EQ(GURL("https://www.example.com/top"),
-            test_browser_client.logs()[1].first_party);
+            test_browser_client.logs()[1].site_for_cookies);
+  EXPECT_EQ(url::Origin::Create(GURL("https://www.example.com")),
+            test_browser_client.logs()[1].top_frame_origin);
   EXPECT_EQ(GURL(), test_browser_client.logs()[1].script_url);
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
@@ -602,7 +629,9 @@ TEST_F(ServiceWorkerProviderHostTest,
   EXPECT_EQ(GURL("https://www.example.com/foo"),
             test_browser_client.logs()[2].scope);
   EXPECT_EQ(GURL("https://www.example.com/top"),
-            test_browser_client.logs()[2].first_party);
+            test_browser_client.logs()[2].site_for_cookies);
+  EXPECT_EQ(url::Origin::Create(GURL("https://www.example.com")),
+            *test_browser_client.logs()[2].top_frame_origin);
   EXPECT_EQ(GURL(), test_browser_client.logs()[2].script_url);
 
   SetBrowserClientForTesting(old_browser_client);
@@ -634,8 +663,9 @@ TEST_F(ServiceWorkerProviderHostTest, AllowsServiceWorker) {
   EXPECT_EQ(GURL("https://www.example.com/scope"),
             test_browser_client.logs()[0].scope);
   EXPECT_EQ(GURL("https://www.example.com/sw.js"),
-            test_browser_client.logs()[0].first_party);
-
+            test_browser_client.logs()[0].site_for_cookies);
+  EXPECT_EQ(url::Origin::Create(GURL("https://www.example.com")),
+            test_browser_client.logs()[0].top_frame_origin);
   SetBrowserClientForTesting(old_browser_client);
 }
 
@@ -920,7 +950,7 @@ void ServiceWorkerProviderHostTest::TestReservedClientsAreNotExposed(
         ServiceWorkerProviderHost::PreCreateForWebWorker(
             context_->AsWeakPtr(), helper_->mock_render_process_id(),
             provider_type, std::move(host_receiver), std::move(client_remote));
-    host->UpdateUrls(url, url);
+    host->UpdateUrls(url, url, url::Origin::Create(url));
     EXPECT_FALSE(CanFindClientProviderHost(host.get()));
     host->CompleteWebWorkerPreparation();
     EXPECT_TRUE(CanFindClientProviderHost(host.get()));
@@ -1006,7 +1036,7 @@ void ServiceWorkerProviderHostTest::TestClientPhaseTransition(
   EXPECT_FALSE(host->is_response_committed());
   EXPECT_FALSE(host->is_execution_ready());
 
-  host->UpdateUrls(url, url);
+  host->UpdateUrls(url, url, url::Origin::Create(url));
   host->CompleteWebWorkerPreparation();
 
   EXPECT_TRUE(host->is_response_committed());

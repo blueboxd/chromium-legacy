@@ -78,4 +78,9 @@ public class ChromeBundleSmokeTest {
     public void testModuleNativeCodeExecution() {
         runTestActivity(1); // Test case EXECUTE_NATIVE.
     }
+
+    @Test
+    public void testModuleJavaResourceLoading() {
+        runTestActivity(2); // Test case LOAD_JAVA_RESOURCE.
+    }
 }

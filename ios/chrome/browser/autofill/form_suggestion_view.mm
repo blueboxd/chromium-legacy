@@ -140,34 +140,12 @@ const CGFloat kSuggestionHorizontalMargin = 6;
 
 - (void)createAndInsertArrangedSubviews {
   auto setupBlock = ^(FormSuggestion* suggestion, NSUInteger idx, BOOL* stop) {
-    // Disable user interaction with suggestion if it is Google Pay logo.
-    BOOL userInteractionEnabled =
-        suggestion.identifier != autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
-
     UIView* label =
         [[FormSuggestionLabel alloc] initWithSuggestion:suggestion
                                                   index:idx
-                                 userInteractionEnabled:userInteractionEnabled
                                          numSuggestions:[self.suggestions count]
                                                  client:self.client];
     [self.stackView addArrangedSubview:label];
-
-    // If first suggestion is Google Pay logo animate it below the fold.
-    if (idx == 0U &&
-        suggestion.identifier == autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING) {
-      const CGFloat firstLabelWidth =
-          [label systemLayoutSizeFittingSize:UILayoutFittingCompressedSize]
-              .width +
-          kSuggestionHorizontalMargin;
-      dispatch_time_t popTime =
-          dispatch_time(DISPATCH_TIME_NOW, 0.5 * NSEC_PER_SEC);
-      __weak FormSuggestionView* weakSelf = self;
-      dispatch_after(popTime, dispatch_get_main_queue(), ^{
-        [weakSelf setContentOffset:CGPointMake(firstLabelWidth,
-                                               weakSelf.contentOffset.y)
-                          animated:YES];
-      });
-    }
   };
   [self.suggestions enumerateObjectsUsingBlock:setupBlock];
   if (self.trailingView) {

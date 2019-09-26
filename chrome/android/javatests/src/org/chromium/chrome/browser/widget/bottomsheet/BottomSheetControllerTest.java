@@ -56,6 +56,8 @@ public class BottomSheetControllerTest {
     private BottomSheetController mSheetController;
     private TestBottomSheetContent mLowPriorityContent;
     private TestBottomSheetContent mHighPriorityContent;
+    private TestBottomSheetContent mPeekableContent;
+    private TestBottomSheetContent mNonPeekableContent;
 
     @Before
     public void setUp() throws Exception {
@@ -82,6 +84,10 @@ public class BottomSheetControllerTest {
                     mActivityTestRule.getActivity(), ContentPriority.LOW, false);
             mHighPriorityContent = new TestBottomSheetContent(
                     mActivityTestRule.getActivity(), ContentPriority.HIGH, false);
+
+            mPeekableContent = new TestBottomSheetContent(mActivityTestRule.getActivity(), true);
+            mNonPeekableContent =
+                    new TestBottomSheetContent(mActivityTestRule.getActivity(), false);
         });
     }
 
@@ -124,6 +130,42 @@ public class BottomSheetControllerTest {
         requestContentInSheet(mHighPriorityContent, false);
         assertEquals("The bottom sheet is showing incorrect content.", mLowPriorityContent,
                 mBottomSheet.getCurrentSheetContent());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"BottomSheetController"})
+    public void testHandleBackPressPeekable() throws InterruptedException, TimeoutException {
+        int expectedState = mBottomSheet.isSmallScreen() ? BottomSheet.SheetState.FULL
+                                                         : BottomSheet.SheetState.HALF;
+        requestContentInSheet(mPeekableContent, true);
+        expandSheet();
+        assertEquals("The bottom sheet should be expanded.", expectedState,
+                mBottomSheet.getSheetState());
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mBottomSheet.handleBackPress();
+            mBottomSheet.endAnimations();
+        });
+        assertEquals("The bottom sheet should be peeking.", BottomSheet.SheetState.PEEK,
+                mBottomSheet.getSheetState());
+    }
+
+    @Test
+    @MediumTest
+    @Feature({"BottomSheetController"})
+    public void testHandleBackPressNonPeekable() throws InterruptedException, TimeoutException {
+        int expectedState = mBottomSheet.isSmallScreen() ? BottomSheet.SheetState.FULL
+                                                         : BottomSheet.SheetState.HALF;
+        requestContentInSheet(mNonPeekableContent, true);
+        expandSheet();
+        assertEquals("The bottom sheet should be expanded.", expectedState,
+                mBottomSheet.getSheetState());
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            mBottomSheet.handleBackPress();
+            mBottomSheet.endAnimations();
+        });
+        assertEquals("The bottom sheet should be hidden.", BottomSheet.SheetState.HIDDEN,
+                mBottomSheet.getSheetState());
     }
 
     @Test

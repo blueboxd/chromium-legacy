@@ -391,6 +391,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kSpellcheckEnabled,
     spellcheck::prefs::kSpellCheckEnable,
     base::Value::Type::BOOLEAN },
+  { key::kSharedClipboardEnabled,
+    prefs::kSharedClipboardEnabled,
+    base::Value::Type::BOOLEAN },
 
   // First run import.
   { key::kImportBookmarks,

@@ -453,7 +453,7 @@ class RenderThreadImplGpuMemoryBufferBrowserTest
   }
 
   void SetUpOnMainThread() override {
-    NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+    EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
     PostTaskToInProcessRendererAndWait(base::BindOnce(
         &RenderThreadImplGpuMemoryBufferBrowserTest::SetUpOnRenderThread,
         base::Unretained(this)));

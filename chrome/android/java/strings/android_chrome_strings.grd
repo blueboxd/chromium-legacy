@@ -2388,9 +2388,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_DOWNLOAD_UI_DETERMINATE_BYTES" desc="Appears in a notification when a user starts downloading a file. Indicates the number of bytes downloaded out of the total file size. E.g. 3/7 MB [downloaded]. As appropriate for your language, use '/' or 'of'; and change word order as needed.">
         <ph name="BYTES_DOWNLOADED_WITH_UNITS">%1$s<ex>12.2 MB</ex></ph> / <ph name="FILE_SIZE_WITH_UNITS">%2$s<ex>20.3 GB</ex></ph>
       </message>
-      <message name="IDS_PREFETCH_BADGE_NEW" desc="Message on download home to show that there are new prefetched contents">
-        New
-      </message>
       <message name="IDS_FILE_SIZE_DOWNLOADED_KB" desc="Notification message showing how many KBs have been downloaded.">
         Downloaded <ph name="KBS">%1$.1f<ex>10.1</ex></ph> KB
       </message>
@@ -2468,9 +2465,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       <message name="IDS_OPEN_DOWNLOADED_LABEL" desc="A text label on the snackbar widget to open the downloaded file.">
         Open
       </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_FREE_AND_OTHER" desc="Formatted string indicating how much storage is available to use on this device and how much storage space on this device has been used by other apps.">
-        <ph name="SPACE_FREE">%1$s<ex>4.8 GB available</ex></ph> (<ph name="SPACE_OTHER">%2$s<ex>5.22 GB other apps</ex></ph>)
-      </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_FREE_KB" desc="String indicating how much storage is available to use on the device, in kilobytes.">
         <ph name="kilobytes">%1$3.2f<ex>12.5</ex></ph> KB available
       </message>
@@ -2479,24 +2473,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_FREE_GB" desc="String indicating how much storage is available to use on the device, in gigabytes.">
         <ph name="gigabytes">%1$3.2f<ex>12.5</ex></ph> GB available
-      </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_OTHER_KB" desc="String indicating that some amount of storage space on the device has been used by other apps, in kilobytes.">
-        <ph name="kilobytes">%1$3.2f<ex>0.3</ex></ph> KB other apps
-      </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_OTHER_MB" desc="String indicating that some amount of storage space on the device has been used by other apps, in megabytes.">
-        <ph name="megabytes">%1$3.2f<ex>0.3</ex></ph> MB other apps
-      </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_OTHER_GB" desc="String indicating that some amount of storage space on the device has been used by other apps, in gigabytes.">
-        <ph name="gigabytes">%1$3.2f<ex>0.3</ex></ph> GB other apps
-      </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED_KB" desc="String indicating that some amount of storage space on the device has been used by downloads, in kilobytes.">
-        <ph name="kilobytes">%1$3.2f<ex>0.3</ex></ph> KB downloaded
-      </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED_MB" desc="String indicating that some amount of storage space on the device has been used by downloads, in megabytes.">
-        <ph name="megabytes">%1$3.2f<ex>0.3</ex></ph> MB downloaded
-      </message>
-      <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USED_GB" desc="String indicating that some amount of storage space on the device has been used by downloads, in gigabytes.">
-        <ph name="gigabytes">%1$3.2f<ex>0.3</ex></ph> GB downloaded
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_UI_SPACE_USING" desc="String indicating the amount of storage space used by downloads out of total available storage.">
         Using <ph name="SPACE_USED">%1$s<ex>0.3MB</ex></ph> of <ph name="SPACE_AVAILABLE">%2$s<ex>3 GB</ex></ph>
@@ -2548,15 +2524,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_SEARCH" desc="Placeholder text for the input field that allows users to search downloads.">
         Search your downloads
-      </message>
-      <message name="IDS_DOWNLOAD_MANAGER_NO_RESULTS" desc="Text explaining that no download items matched a search query.">
-        No downloads found
-      </message>
-      <message name="IDS_DOWNLOAD_MANAGER_OFFLINE_HEADER_TITLE" desc="The title for suggested offline pages header.">
-        Popular pages from Chrome
-      </message>
-      <message name="IDS_DOWNLOAD_MANAGER_OFFLINE_HEADER_DESCRIPTION" desc="Text containing the offline pages description.">
-        <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> - Updated <ph name="TIME_SINCE_UPDATE">%2$s<ex>4 minutes ago</ex></ph>
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_LIST_ITEM_DESCRIPTION" desc="Text containing the download list item description.">
         <ph name="FILE_SIZE">%1$s<ex>1.56 MB</ex></ph> <ph name="SEPARATOR">•</ph> <ph name="DESCRIPTION">%2$s<ex>www.example.com</ex></ph>

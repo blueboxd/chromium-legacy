@@ -184,7 +184,7 @@ public class DeviceConditions {
         KeyguardManager keyguardManager =
                 (KeyguardManager) context.getSystemService(Context.KEYGUARD_SERVICE);
         return keyguardManager != null && !keyguardManager.isKeyguardLocked()
-                && ApiCompatibilityUtils.isInteractive(context);
+                && ApiCompatibilityUtils.isInteractive();
     }
 
     private static Intent getBatteryStatus(Context context) {

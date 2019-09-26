@@ -1749,10 +1749,20 @@ IFACEMETHODIMP AXPlatformNodeWin::get_ExpandCollapseState(
   WIN_ACCESSIBILITY_API_HISTOGRAM(
       UMA_API_EXPANDCOLLAPSE_GET_EXPANDCOLLAPSESTATE);
   UIA_VALIDATE_CALL_1_ARG(result);
+
   const AXNodeData& data = GetData();
-  if (data.HasState(ax::mojom::State::kExpanded)) {
+  const bool is_menu_button = data.GetHasPopup() == ax::mojom::HasPopup::kMenu;
+  const bool is_expanded_menu_button =
+      is_menu_button &&
+      data.GetCheckedState() == ax::mojom::CheckedState::kTrue;
+  const bool is_collapsed_menu_button =
+      is_menu_button &&
+      data.GetCheckedState() != ax::mojom::CheckedState::kTrue;
+
+  if (data.HasState(ax::mojom::State::kExpanded) || is_expanded_menu_button) {
     *result = ExpandCollapseState_Expanded;
-  } else if (data.HasState(ax::mojom::State::kCollapsed)) {
+  } else if (data.HasState(ax::mojom::State::kCollapsed) ||
+             is_collapsed_menu_button) {
     *result = ExpandCollapseState_Collapsed;
   } else {
     *result = ExpandCollapseState_LeafNode;
@@ -4778,19 +4788,8 @@ int AXPlatformNodeWin::MSAARole() {
     case ax::mojom::Role::kRadioGroup:
       return ROLE_SYSTEM_GROUPING;
 
-    case ax::mojom::Role::kRegion: {
-      std::string html_tag =
-          GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-      if (html_tag == "section" &&
-          GetData()
-              .GetString16Attribute(ax::mojom::StringAttribute::kName)
-              .empty()) {
-        // Do not use ARIA mapping for nameless <section>.
-        return ROLE_SYSTEM_GROUPING;
-      }
-      // Use ARIA mapping.
+    case ax::mojom::Role::kRegion:
       return ROLE_SYSTEM_PANE;
-    }
 
     case ax::mojom::Role::kRow: {
       // Role changes depending on whether row is inside a treegrid
@@ -4803,6 +4802,17 @@ int AXPlatformNodeWin::MSAARole() {
 
     case ax::mojom::Role::kRuby:
       return ROLE_SYSTEM_TEXT;
+
+    case ax::mojom::Role::kSection: {
+      if (GetData()
+              .GetString16Attribute(ax::mojom::StringAttribute::kName)
+              .empty()) {
+        // Do not use ARIA mapping for nameless <section>.
+        return ROLE_SYSTEM_GROUPING;
+      }
+      // Use ARIA mapping.
+      return ROLE_SYSTEM_PANE;
+    }
 
     case ax::mojom::Role::kScrollBar:
       return ROLE_SYSTEM_SCROLLBAR;
@@ -5201,11 +5211,17 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
     case ax::mojom::Role::kPre:
       ia2_role = IA2_ROLE_PARAGRAPH;
       break;
-    case ax::mojom::Role::kRegion: {
-      std::string html_tag =
-          GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-      if (html_tag == "section" &&
-          GetData()
+    case ax::mojom::Role::kRegion:
+      ia2_role = IA2_ROLE_LANDMARK;
+      break;
+    case ax::mojom::Role::kRuby:
+      ia2_role = IA2_ROLE_TEXT_FRAME;
+      break;
+    case ax::mojom::Role::kSearch:
+      ia2_role = IA2_ROLE_LANDMARK;
+      break;
+    case ax::mojom::Role::kSection: {
+      if (GetData()
               .GetString16Attribute(ax::mojom::StringAttribute::kName)
               .empty()) {
         // Do not use ARIA mapping for nameless <section>.
@@ -5216,12 +5232,6 @@ int32_t AXPlatformNodeWin::ComputeIA2Role() {
       }
       break;
     }
-    case ax::mojom::Role::kRuby:
-      ia2_role = IA2_ROLE_TEXT_FRAME;
-      break;
-    case ax::mojom::Role::kSearch:
-      ia2_role = IA2_ROLE_LANDMARK;
-      break;
     case ax::mojom::Role::kSwitch:
       ia2_role = IA2_ROLE_TOGGLE_BUTTON;
       break;
@@ -5593,19 +5603,8 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
     case ax::mojom::Role::kRadioGroup:
       return L"radiogroup";
 
-    case ax::mojom::Role::kRegion: {
-      std::string html_tag =
-          GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-      if (html_tag == "section" &&
-          GetData()
-              .GetString16Attribute(ax::mojom::StringAttribute::kName)
-              .empty()) {
-        // Do not use ARIA mapping for nameless <section>.
-        return L"group";
-      }
-      // Use ARIA mapping.
+    case ax::mojom::Role::kRegion:
       return L"region";
-    }
 
     case ax::mojom::Role::kRow: {
       // Role changes depending on whether row is inside a treegrid
@@ -5618,6 +5617,17 @@ base::string16 AXPlatformNodeWin::UIAAriaRole() {
 
     case ax::mojom::Role::kRuby:
       return L"region";
+
+    case ax::mojom::Role::kSection: {
+      if (GetData()
+              .GetString16Attribute(ax::mojom::StringAttribute::kName)
+              .empty()) {
+        // Do not use ARIA mapping for nameless <section>.
+        return L"group";
+      }
+      // Use ARIA mapping.
+      return L"region";
+    }
 
     case ax::mojom::Role::kScrollBar:
       return L"scrollbar";
@@ -6243,19 +6253,8 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
     case ax::mojom::Role::kRadioGroup:
       return UIA_GroupControlTypeId;
 
-    case ax::mojom::Role::kRegion: {
-      std::string html_tag =
-          GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-      if (html_tag == "section" &&
-          GetData()
-              .GetString16Attribute(ax::mojom::StringAttribute::kName)
-              .empty()) {
-        // Do not use ARIA mapping for nameless <section>.
-        return UIA_GroupControlTypeId;
-      }
-      // Use ARIA mapping.
-      return UIA_PaneControlTypeId;
-    }
+    case ax::mojom::Role::kRegion:
+      return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kRow: {
       // Role changes depending on whether row is inside a treegrid
@@ -6269,6 +6268,9 @@ LONG AXPlatformNodeWin::ComputeUIAControlType() {  // NOLINT(runtime/int)
 
     case ax::mojom::Role::kRuby:
       return UIA_PaneControlTypeId;
+
+    case ax::mojom::Role::kSection:
+      return UIA_GroupControlTypeId;
 
     case ax::mojom::Role::kScrollBar:
       return UIA_ScrollBarControlTypeId;
@@ -6458,6 +6460,7 @@ base::Optional<LONG> AXPlatformNodeWin::ComputeUIALandmarkType() const {
       return UIA_SearchLandmarkTypeId;
 
     case ax::mojom::Role::kRegion:
+    case ax::mojom::Role::kSection:
       if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
         return UIA_CustomLandmarkTypeId;
       FALLTHROUGH;

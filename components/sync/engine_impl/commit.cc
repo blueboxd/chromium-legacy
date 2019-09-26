@@ -118,7 +118,6 @@ SyncerError Commit::PostAndProcessResponse(
                               ModelTypeToHistogramInt(request_type),
                               static_cast<int>(ModelType::NUM_ENTRIES));
   }
-  cycle->mutable_status_controller()->set_commit_request_types(request_types);
 
   if (cycle->context()->debug_info_getter()) {
     sync_pb::DebugInfo* debug_info = message_.mutable_debug_info();

@@ -203,11 +203,6 @@ void ServiceWorkerContextClient::FailedToLoadClassicScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "LOAD_SCRIPT", this,
                                   "Status", "FailedToLoadClassicScript");
-  // Cleanly send an OnStopped() message instead of just breaking the
-  // Mojo connection on termination, for consistency with the other
-  // startup failure paths.
-  instance_host_->OnStopped();
-
   // The caller is responsible for terminating the thread which
   // eventually destroys |this|.
 }
@@ -216,11 +211,6 @@ void ServiceWorkerContextClient::FailedToFetchModuleScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "LOAD_SCRIPT", this,
                                   "Status", "FailedToFetchModuleScript");
-  // Cleanly send an OnStopped() message instead of just breaking the
-  // Mojo connection on termination, for consistency with the other
-  // startup failure paths.
-  instance_host_->OnStopped();
-
   // The caller is responsible for terminating the thread which
   // eventually destroys |this|.
 }

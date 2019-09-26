@@ -402,7 +402,8 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
         switch (securityLevel) {
             case ConnectionSecurityLevel.NONE:
                 return isSmallDevice
-                                && !SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
+                                && (!SearchEngineLogoUtils.shouldShowSearchEngineLogo(isIncognito())
+                                        || getNewTabPageForCurrentTab() != null)
                         ? 0
                         : R.drawable.omnibox_info;
             case ConnectionSecurityLevel.HTTP_SHOW_WARNING:

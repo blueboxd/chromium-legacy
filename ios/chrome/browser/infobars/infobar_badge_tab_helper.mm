@@ -33,11 +33,8 @@ void InfobarBadgeTabHelper::SetDelegate(
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarAccepted(
     InfobarType infobar_type) {
-    InfobarBadgeModel* badgeModel =
-        [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type
-                                              accepted:YES];
-    [delegate_ updateInfobarBadge:badgeModel];
-    infobar_badge_models_[infobar_type] = badgeModel;
+  infobar_badge_models_[infobar_type].badgeState = BadgeStateAccepted;
+  [delegate_ updateInfobarBadge:infobar_badge_models_[infobar_type]];
 }
 
 void InfobarBadgeTabHelper::UpdateBadgeForInfobarBannerDismissed(
@@ -91,8 +88,7 @@ void InfobarBadgeTabHelper::UpdateBadgeForInfobar(infobars::InfoBar* infobar,
     InfobarType infobar_type = controller_.infobarType;
     if (display) {
       InfobarBadgeModel* new_badge =
-          [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type
-                                                accepted:NO];
+          [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type];
       infobar_badge_models_[infobar_type] = new_badge;
       [delegate_ addInfobarBadge:new_badge];
     } else {

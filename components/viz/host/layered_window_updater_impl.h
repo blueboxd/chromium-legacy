@@ -12,7 +12,8 @@
 #include "base/macros.h"
 #include "base/memory/unsafe_shared_memory_region.h"
 #include "components/viz/host/viz_host_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "services/viz/privileged/mojom/compositing/layered_window_updater.mojom.h"
 #include "ui/gfx/geometry/size.h"
 
@@ -26,8 +27,9 @@ namespace viz {
 class VIZ_HOST_EXPORT LayeredWindowUpdaterImpl
     : public mojom::LayeredWindowUpdater {
  public:
-  LayeredWindowUpdaterImpl(HWND hwnd,
-                           mojom::LayeredWindowUpdaterRequest request);
+  LayeredWindowUpdaterImpl(
+      HWND hwnd,
+      mojo::PendingReceiver<mojom::LayeredWindowUpdater> receiver);
   ~LayeredWindowUpdaterImpl() override;
 
   // mojom::LayeredWindowUpdater implementation.
@@ -37,7 +39,7 @@ class VIZ_HOST_EXPORT LayeredWindowUpdaterImpl
 
  private:
   const HWND hwnd_;
-  mojo::Binding<mojom::LayeredWindowUpdater> binding_;
+  mojo::Receiver<mojom::LayeredWindowUpdater> receiver_;
   std::unique_ptr<SkCanvas> canvas_;
 
   DISALLOW_COPY_AND_ASSIGN(LayeredWindowUpdaterImpl);

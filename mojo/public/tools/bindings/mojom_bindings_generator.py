@@ -61,6 +61,7 @@ _BUILTIN_GENERATORS = {
   "c++": "mojom_cpp_generator",
   "javascript": "mojom_js_generator",
   "java": "mojom_java_generator",
+  "typescript": "mojom_ts_generator",
 }
 
 

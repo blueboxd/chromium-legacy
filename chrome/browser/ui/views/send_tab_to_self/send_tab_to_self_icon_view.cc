@@ -14,6 +14,7 @@
 #include "components/omnibox/browser/omnibox_edit_model.h"
 #include "components/omnibox/browser/omnibox_view.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace send_tab_to_self {
 
@@ -51,24 +52,30 @@ bool SendTabToSelfIconView::Update() {
   }
 
   if (was_visible) {
-    // If send tab to self icon is showing:
-    // Hides the icon if the url is being editing.
     if (omnibox_view->model()->user_input_in_progress()) {
       SetVisible(false);
+    } else {
+      SendTabToSelfBubbleController* controller = GetController();
+      if (controller && controller->show_message()) {
+        controller->set_show_message(false);
+        if (initial_animation_state_ == AnimationState::kShowing &&
+            label()->GetVisible()) {
+          initial_animation_state_ = AnimationState::kShown;
+          SetLabel(l10n_util::GetStringUTF16(
+              IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL));
+        } else {
+          AnimateIn(IDS_BROWSER_SHARING_OMNIBOX_SENDING_LABEL);
+        }
+      }
     }
   } else {
-    // If send tab to self icon is hiding:
-    // Shows the send tab to self icon in omnibox when:
-    // send tab to self feature offered, and
-    // mouse focuses on the omnibox, and
-    // url has not been changed.
     if (send_tab_to_self::ShouldOfferFeature(web_contents) &&
         omnibox_view->model()->has_focus() &&
         !omnibox_view->model()->user_input_in_progress()) {
-      // Shows the animation one time per window.
-      if (!was_animation_shown_) {
+      // Shows the "Send" animation one time per window.
+      if (initial_animation_state_ == AnimationState::kNotShown) {
         AnimateIn(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF);
-        was_animation_shown_ = true;
+        initial_animation_state_ = AnimationState::kShowing;
       }
       SetVisible(true);
     }
@@ -104,7 +111,8 @@ SendTabToSelfBubbleController* SendTabToSelfIconView::GetController() const {
 }
 
 void SendTabToSelfIconView::AnimationEnded(const gfx::Animation* animation) {
-  IconLabelBubbleView::AnimationEnded(animation);
+  PageActionIconView::AnimationEnded(animation);
+  initial_animation_state_ = AnimationState::kShown;
 }
 
 }  // namespace send_tab_to_self

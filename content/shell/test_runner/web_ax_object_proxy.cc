@@ -309,6 +309,8 @@ std::string RoleToString(ax::mojom::Role role) {
       return result.append("Ruby");
     case ax::mojom::Role::kRubyAnnotation:
       return result.append("RubyAnnotation");
+    case ax::mojom::Role::kSection:
+      return result.append("Section");
     case ax::mojom::Role::kSvgRoot:
       return result.append("SVGRoot");
     case ax::mojom::Role::kScrollBar:

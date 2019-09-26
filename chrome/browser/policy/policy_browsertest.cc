@@ -5799,4 +5799,22 @@ IN_PROC_BROWSER_TEST_F(PolicyTestSyncXHR, CheckAllowSyncXHRInPageDismissal) {
   EXPECT_EQ("true", message);
 }
 
+class SharedClipboardPolicyTest : public PolicyTest {
+  void SetUpInProcessBrowserTestFixture() override {
+    PolicyTest::SetUpInProcessBrowserTestFixture();
+    PolicyMap policies;
+    policies.Set(policy::key::kSharedClipboardEnabled,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_CLOUD,
+                 std::make_unique<base::Value>(true), nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+};
+
+IN_PROC_BROWSER_TEST_F(SharedClipboardPolicyTest, SharedClipboardEnabled) {
+  PrefService* prefs = browser()->profile()->GetPrefs();
+  EXPECT_TRUE(prefs->IsManagedPreference(prefs::kSharedClipboardEnabled));
+  EXPECT_TRUE(prefs->GetBoolean(prefs::kSharedClipboardEnabled));
+}
+
 }  // namespace policy

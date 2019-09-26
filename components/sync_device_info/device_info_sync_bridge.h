@@ -127,6 +127,9 @@ class DeviceInfoSyncBridge : public ModelTypeSyncBridge,
   // allow unit tests to control expected results.
   int CountActiveDevices(const base::Time now) const;
 
+  // Deletes locally old data and metadata entries without issuing tombstones.
+  void ExpireOldEntries();
+
   const std::unique_ptr<MutableLocalDeviceInfoProvider>
       local_device_info_provider_;
 

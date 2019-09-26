@@ -74,8 +74,7 @@ TranslateHelper::TranslateHelper(content::RenderFrame* render_frame,
                                  const std::string& extension_scheme)
     : content::RenderFrameObserver(render_frame),
       world_id_(world_id),
-      extension_scheme_(extension_scheme),
-      binding_(this) {
+      extension_scheme_(extension_scheme) {
   translate_task_runner_ = this->render_frame()->GetTaskRunner(
       blink::TaskType::kInternalTranslation);
 }
@@ -134,12 +133,10 @@ void TranslateHelper::PageCaptured(const base::string16& contents) {
   // For the same render frame with the same url, each time when its texts are
   // captured, it should be treated as a new page to do translation.
   ResetPage();
-  mojom::PagePtr page;
-  binding_.Bind(
-      mojo::MakeRequest(&page),
-      main_frame->GetTaskRunner(blink::TaskType::kInternalTranslation));
   GetTranslateHandler()->RegisterPage(
-      std::move(page), details, !details.has_notranslate && !language.empty());
+      receiver_.BindNewPipeAndPassRemote(
+          main_frame->GetTaskRunner(blink::TaskType::kInternalTranslation)),
+      details, !details.has_notranslate && !language.empty());
 }
 
 void TranslateHelper::CancelPendingTranslation() {
@@ -457,17 +454,18 @@ void TranslateHelper::NotifyBrowserTranslationFailed(
       .Run(false, source_lang_, target_lang_, error);
 }
 
-const mojom::ContentTranslateDriverPtr& TranslateHelper::GetTranslateHandler() {
+const mojo::Remote<mojom::ContentTranslateDriver>&
+TranslateHelper::GetTranslateHandler() {
   if (!translate_handler_) {
     render_frame()->GetRemoteInterfaces()->GetInterface(
-        mojo::MakeRequest(&translate_handler_));
+        translate_handler_.BindNewPipeAndPassReceiver());
   }
 
   return translate_handler_;
 }
 
 void TranslateHelper::ResetPage() {
-  binding_.Close();
+  receiver_.reset();
   translate_callback_pending_.Reset();
   CancelPendingTranslation();
 }

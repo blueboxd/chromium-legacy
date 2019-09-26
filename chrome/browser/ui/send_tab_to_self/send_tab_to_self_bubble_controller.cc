@@ -68,9 +68,6 @@ SendTabToSelfBubbleController::GetValidDevices() const {
 }
 
 Profile* SendTabToSelfBubbleController::GetProfile() const {
-  if (!web_contents_) {
-    return nullptr;
-  }
   return Profile::FromBrowserContext(web_contents_->GetBrowserContext());
 }
 
@@ -79,7 +76,10 @@ void SendTabToSelfBubbleController::OnDeviceSelected(
     const std::string& target_device_guid) {
   RecordSendTabToSelfClickResult(kOmniboxIcon,
                                  SendTabToSelfClickResult::kClickItem);
-  CreateNewEntry(web_contents_, target_device_name, target_device_guid);
+  CreateNewEntry(web_contents_, target_device_name, target_device_guid, GURL(),
+                 false);
+  show_message_ = true;
+  UpdateIcon();
 }
 
 void SendTabToSelfBubbleController::OnBubbleClosed() {
@@ -91,7 +91,13 @@ SendTabToSelfBubbleController::SendTabToSelfBubbleController() = default;
 SendTabToSelfBubbleController::SendTabToSelfBubbleController(
     content::WebContents* web_contents)
     : web_contents_(web_contents) {
+  DCHECK(web_contents);
   FetchDeviceInfo();
+}
+
+void SendTabToSelfBubbleController::UpdateIcon() {
+  Browser* browser = chrome::FindBrowserWithWebContents(web_contents_);
+  browser->window()->UpdatePageActionIcon(PageActionIconType::kSendTabToSelf);
 }
 
 void SendTabToSelfBubbleController::FetchDeviceInfo() {

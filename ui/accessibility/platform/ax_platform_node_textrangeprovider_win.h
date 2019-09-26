@@ -87,6 +87,7 @@ class AX_EXPORT __declspec(uuid("3071e40d-a10d-45ff-a59f-6e8e1138e2c1"))
 
   friend class AXPlatformNodeTextRangeProviderTest;
   friend class AXPlatformNodeTextProviderTest;
+  friend class AXRangeScreenRectDelegateImpl;
 
   base::string16 GetString(int max_count);
   AXPlatformNodeWin* owner() const;

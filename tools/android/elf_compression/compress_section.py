@@ -43,6 +43,30 @@ OBJCOPY_PATH = pathlib.Path(__file__).resolve().parents[3].joinpath(
     'third_party/llvm-build/Release+Asserts/bin/llvm-objcopy')
 
 
+def SegmentContains(main_l, main_r, l, r):
+  """Returns true if [l, r) is contained inside [main_l, main_r).
+
+  Args:
+    main_l: int. Left border of the first segment.
+    main_r: int. Right border (exclusive) of the second segment.
+    l: int. Left border of the second segment.
+    r: int. Right border (exclusive) of the second segment.
+  """
+  return main_l <= l and main_r >= r
+
+
+def SegmentsIntersect(l1, r1, l2, r2):
+  """Returns true if [l1, r1) intersects with [l2, r2).
+
+  Args:
+    l1: int. Left border of the first segment.
+    r1: int. Right border (exclusive) of the second segment.
+    l2: int. Left border of the second segment.
+    r2: int. Right border (exclusive) of the second segment.
+  """
+  return l2 < r1 and r2 > l1
+
+
 def AlignUp(addr, page_size=ADDRESS_ALIGN):
   """Rounds up given address to be aligned to page_size.
 
@@ -125,11 +149,9 @@ def _FileRangeToVirtualAddressRange(data, l, r):
     # Current version of the prototype only supports ranges which are fully
     # contained inside one LOAD segment. It should cover most of the common
     # cases.
-    if phdr.p_offset >= r or phdr.FilePositionEnd() <= l:
-      # Range doesn't overlap.
+    if not SegmentsIntersect(phdr.p_offset, phdr.FilePositionEnd(), l, r):
       continue
-    if phdr.p_offset > l or phdr.FilePositionEnd() < r:
-      # Range overlap with LOAD segment but isn't fully covered by it.
+    if not SegmentContains(phdr.p_offset, phdr.FilePositionEnd(), l, r):
       raise RuntimeError('Range is not contained within one LOAD segment')
     l_virt = phdr.p_vaddr + (l - phdr.p_offset)
     r_virt = phdr.p_vaddr + (r - phdr.p_offset)
@@ -277,7 +299,7 @@ def _SplitLoadSegmentAndNullifyRange(data, l, r):
   range_phdr = None
   for phdr in elf_hdr.GetProgramHeadersByType(
       elf_headers.ProgramHeader.Type.PT_LOAD):
-    if phdr.p_offset <= l and phdr.FilePositionEnd() >= r:
+    if SegmentContains(phdr.p_offset, phdr.FilePositionEnd(), l, r):
       range_phdr = phdr
       break
   if range_phdr is None:
@@ -329,6 +351,52 @@ def _SplitLoadSegmentAndNullifyRange(data, l, r):
   elf_hdr.PatchData(data)
 
 
+def _CutRangeAndCorrectFile(data, l, r):
+  """Removes [l, r) from the data and fixes offsets to stabilize the ELF."""
+  elf = elf_headers.ElfHeader(data)
+  # Removing the range from the file:
+  del data[l:r]
+
+  range_length = r - l
+  for phdr in elf.GetProgramHeaders():
+    # Any other program header intersecting the [l, r) range poses serious
+    # problem as this header needs to be split if possible. However since we are
+    # compressing part of program's code this is highly unlikely, albeit
+    # possible in worst case scenario.
+    # With that in mind we assert that such thing doesn't happen in our case.
+    if SegmentsIntersect(phdr.p_offset, phdr.FilePositionEnd(), l, r):
+      raise RuntimeError('Segment intersects with provided range')
+    if phdr.p_offset >= r:
+      phdr.p_offset -= range_length
+    # Per ELF standard: p_offset % p_align == p_vaddr % p_align.
+    # Since we moved the p_offset we could have broken this rule.
+    # To mitigate this issue we notice the following two facts:
+    # 1) range_length % ADDRESS_ALIGN == 0.
+    # 2) We can reduce the p_align without breaking the alignment.
+    # We reduce all p_align to be less or equal than ADDRESS_ALIGN and now
+    # range_length % p_align == 0, so the alignment remains valid.
+    # Our changes of p_align are perfectly legal per standard
+    # as long as p_align % PAGE_SIZE == 0.
+    if phdr.p_align > ADDRESS_ALIGN:
+      phdr.p_align = ADDRESS_ALIGN
+
+  for shdr in elf.GetSectionHeaders():
+    # Note that if the section overlaps with the cut range we are unable
+    # to adjust its size to match both file and virtual size of it. In such
+    # case we treat sh_size as memory size and don't adjust it, which may
+    # cause some tools treating sh_size as file size to stop working.
+    if shdr.sh_offset >= l:
+      if shdr.sh_offset < r:
+        raise RuntimeError('Section starts within the provided range')
+      else:
+        shdr.sh_offset -= range_length
+  if elf.e_phoff > l:
+    elf.e_phoff -= range_length
+  if elf.e_shoff > l:
+    elf.e_shoff -= range_length
+  elf.PatchData(data)
+
+
 def _ShrinkRangeToAlignVirtualAddress(data, l, r):
   virtual_l, virtual_r = _FileRangeToVirtualAddressRange(data, l, r)
   # LOAD segments borders are being rounded to the page size so we have to
@@ -356,6 +424,7 @@ def main():
 
   _CreateLoadForCompressedSection(data)
   _SplitLoadSegmentAndNullifyRange(data, left_range, right_range)
+  _CutRangeAndCorrectFile(data, left_range, right_range)
 
   with open(args.output, 'wb') as f:
     f.write(data)

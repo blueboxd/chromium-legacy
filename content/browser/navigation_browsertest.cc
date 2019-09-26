@@ -354,7 +354,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BrowserInitiatedNavigations) {
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL url(embedded_test_server()->GetURL("/title1.html"));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_FALSE(observer.last_initiator_origin().has_value());
@@ -370,7 +370,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BrowserInitiatedNavigations) {
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL url(embedded_test_server()->GetURL("/title2.html"));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_FALSE(observer.last_initiator_origin().has_value());
@@ -386,7 +386,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BrowserInitiatedNavigations) {
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL url = embedded_test_server()->GetURL("foo.com", "/title3.html");
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_FALSE(observer.last_initiator_origin().has_value());
@@ -406,7 +406,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL url(embedded_test_server()->GetURL("/simple_links.html"));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
     EXPECT_FALSE(observer.last_initiator_origin().has_value());
@@ -448,7 +448,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL url(embedded_test_server()->GetURL("/simple_links.html"));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
   }
@@ -506,7 +506,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, FailedNavigation) {
   {
     TestNavigationObserver observer(shell()->web_contents());
     GURL url(embedded_test_server()->GetURL("/title1.html"));
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     EXPECT_EQ(url, observer.last_navigation_url());
     EXPECT_TRUE(observer.last_navigation_succeeded());
   }
@@ -517,7 +517,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, FailedNavigation) {
     GURL error_url(embedded_test_server()->GetURL("/close-socket"));
     base::PostTask(FROM_HERE, {BrowserThread::IO},
                    base::BindOnce(&net::URLRequestFailedJob::AddUrlHandler));
-    NavigateToURL(shell(), error_url);
+    EXPECT_FALSE(NavigateToURL(shell(), error_url));
     EXPECT_EQ(error_url, observer.last_navigation_url());
     NavigationEntry* entry =
         shell()->web_contents()->GetController().GetLastCommittedEntry();
@@ -532,7 +532,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
   GURL url(embedded_test_server()->GetURL("/title1.html"));
   GURL view_source_url(content::kViewSourceScheme + std::string(":") +
                        url.spec());
-  NavigateToURL(shell(), view_source_url);
+  EXPECT_TRUE(NavigateToURL(shell(), view_source_url));
   EXPECT_EQ(url, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
 }
@@ -542,7 +542,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
                        ViewSourceNavigation_RendererInitiated) {
   TestNavigationObserver observer(shell()->web_contents());
   GURL kUrl(embedded_test_server()->GetURL("/simple_links.html"));
-  NavigateToURL(shell(), kUrl);
+  EXPECT_TRUE(NavigateToURL(shell(), kUrl));
   EXPECT_EQ(kUrl, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
 
@@ -572,7 +572,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
                        GoogleChromeNavigation_RendererInitiated) {
   TestNavigationObserver observer(shell()->web_contents());
   GURL kUrl(embedded_test_server()->GetURL("/simple_links.html"));
-  NavigateToURL(shell(), kUrl);
+  EXPECT_TRUE(NavigateToURL(shell(), kUrl));
   EXPECT_EQ(kUrl, observer.last_navigation_url());
   EXPECT_TRUE(observer.last_navigation_succeeded());
 
@@ -898,8 +898,8 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BackFollowedByReload) {
   // First, make two history entries.
   GURL url1(embedded_test_server()->GetURL("/title1.html"));
   GURL url2(embedded_test_server()->GetURL("/title2.html"));
-  NavigateToURL(shell(), url1);
-  NavigateToURL(shell(), url2);
+  EXPECT_TRUE(NavigateToURL(shell(), url1));
+  EXPECT_TRUE(NavigateToURL(shell(), url2));
 
   // Then execute a back navigation in Javascript followed by a reload.
   TestNavigationObserver navigation_observer(shell()->web_contents());
@@ -1084,7 +1084,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, RendererNavigationInitiator) {
   url::Origin starting_page_origin;
   starting_page_origin = starting_page_origin.Create(starting_page);
 
-  NavigateToURL(shell(), starting_page);
+  EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   GURL url(embedded_test_server()->GetURL("/title2.html"));
 
@@ -1101,7 +1101,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, RendererNavigationInitiator) {
 // navigated by Javascript from some starting page to another page.
 IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, SubFrameJsNavigationInitiator) {
   GURL starting_page(embedded_test_server()->GetURL("/frame_tree/top.html"));
-  NavigateToURL(shell(), starting_page);
+  EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -1142,7 +1142,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
   // Go to a page on a.com with an iframe that is on b.com
   GURL starting_page(embedded_test_server()->GetURL(
       "a.com", "/cross_site_iframe_factory.html?a(b)"));
-  NavigateToURL(shell(), starting_page);
+  EXPECT_TRUE(NavigateToURL(shell(), starting_page));
 
   // It is safe to obtain the root frame tree node here, as it doesn't change.
   FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
@@ -1254,7 +1254,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBaseBrowserTest,
   EXPECT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   DOMMessageQueue dom_message_queue(WebContents::FromRenderFrameHost(
       shell()->web_contents()->GetMainFrame()));
@@ -1729,7 +1729,8 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, OpenerNavigation_DownloadPolicy) {
               ->GetBrowserContext()
               ->GetDownloadManagerDelegate());
   delegate->SetDownloadBehaviorForTesting(download_dir.GetPath());
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), embedded_test_server()->GetURL("/title1.html")));
   WebContents* opener = shell()->web_contents();
 
   // Open a popup.
@@ -1771,8 +1772,8 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest,
               ->GetBrowserContext()
               ->GetDownloadManagerDelegate());
   delegate->SetDownloadBehaviorForTesting(download_dir.GetPath());
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
   WebContents* opener = shell()->web_contents();
 
   // Open a popup.
@@ -1814,7 +1815,7 @@ IN_PROC_BROWSER_TEST_P(NavigationDownloadBrowserTest,
   ASSERT_TRUE(embedded_test_server()->Start());
 
   GURL url(embedded_test_server()->GetURL("/title1.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // Block every iframe in WillProcessResponse.
   content::TestNavigationThrottleInserter throttle_inserter(
@@ -2141,7 +2142,7 @@ IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, BlockedSrcDocRendererInitiated) {
 // browser process. It means RenderFrameHostImpl::BeginNavigation() is called.
 IN_PROC_BROWSER_TEST_P(NavigationBrowserTest, AboutSrcDocUsesBeginNavigation) {
   GURL url(embedded_test_server()->GetURL("/title1.html"));
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // If DidStartNavigation is called before DidCommitProvisionalLoad, then it
   // means the navigation was driven by the browser process, otherwise by the

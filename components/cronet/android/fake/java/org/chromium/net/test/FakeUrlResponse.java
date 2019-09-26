@@ -110,7 +110,7 @@ public class FakeUrlResponse {
          * Sets the HTTP status code. The default value is 200.
          *
          * @param httpStatusCode for {@link UrlResponseInfo.getHttpStatusCode()}
-         * @return a builder with the corresponding HTTP status code set
+         * @return the builder with the corresponding HTTP status code set
          */
         public Builder setHttpStatusCode(int httpStatusCode) {
             mHttpStatusCode = httpStatusCode;
@@ -122,7 +122,7 @@ public class FakeUrlResponse {
          *
          * @param name  the name of the header key, for example, "location" for a redirect header
          * @param value the header value
-         * @return a builder with the corresponding header set
+         * @return the builder with the corresponding header set
          */
         public Builder addHeader(String name, String value) {
             mAllHeadersList.add(new AbstractMap.SimpleEntry<>(name, value));
@@ -133,7 +133,7 @@ public class FakeUrlResponse {
          * Sets result of {@link UrlResponseInfo.wasCached()}. The default wasCached value is false.
          *
          * @param wasCached for {@link UrlResponseInfo.wasCached()}
-         * @return a builder with the corresponding wasCached field set
+         * @return the builder with the corresponding wasCached field set
          */
         public Builder setWasCached(boolean wasCached) {
             mWasCached = wasCached;
@@ -145,7 +145,7 @@ public class FakeUrlResponse {
          * protocol is an empty string.
          *
          * @param negotiatedProtocol for {@link UrlResponseInfo.getNegotiatedProtocol()}
-         * @return a builder with the corresponding negotiatedProtocol field set
+         * @return the builder with the corresponding negotiatedProtocol field set
          */
         public Builder setNegotiatedProtocol(String negotiatedProtocol) {
             mNegotiatedProtocol = negotiatedProtocol;
@@ -157,7 +157,7 @@ public class FakeUrlResponse {
          * empty string.
          *
          * @param proxyServer for {@link UrlResponseInfo.getProxyServer()}
-         * @return a builder with the corresponding proxyServer field set
+         * @return the builder with the corresponding proxyServer field set
          */
         public Builder setProxyServer(String proxyServer) {
             mProxyServer = proxyServer;
@@ -167,8 +167,8 @@ public class FakeUrlResponse {
         /**
          * Sets the response body for a response. The default response body is an empty byte array.
          *
-         * @param responseBody all the information the server returns
-         * @return a builder with the corresponding responseBody field set
+         * @param body all the information the server returns
+         * @return the builder with the corresponding responseBody field set
          */
         public Builder setResponseBody(byte[] body) {
             mResponseBody = body;

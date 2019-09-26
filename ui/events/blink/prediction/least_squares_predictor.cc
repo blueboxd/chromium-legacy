@@ -100,7 +100,7 @@ bool LeastSquaresPredictor::GeneratePrediction(base::TimeTicks predict_time,
 
 base::TimeDelta LeastSquaresPredictor::TimeInterval() const {
   if (time_.size() > 1) {
-    return std::max(kMinimumTimeInterval,
+    return std::max(kMinTimeInterval,
                     (time_.back() - time_.front()) / (time_.size() - 1));
   }
   return kTimeInterval;

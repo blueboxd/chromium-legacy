@@ -47,8 +47,12 @@ class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
       const gfx::Size& natural_size) override;
   scoped_refptr<VideoFrame> GetFrame() override;
   bool IsExhausted() override;
-  VideoFrame* UnwrapFrame(const VideoFrame& wrapped_frame) override;
   void NotifyWhenFrameAvailable(base::OnceClosure cb) override;
+
+  // Returns the original frame of a wrapped frame. We need this method to
+  // determine whether the frame returned by GetFrame() is the same one after
+  // recycling, and bind destruction callback at original frames.
+  VideoFrame* UnwrapFrame(const VideoFrame& wrapped_frame);
 
  private:
   friend class PlatformVideoFramePoolTest;

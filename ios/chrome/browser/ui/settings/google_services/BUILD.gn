@@ -92,7 +92,6 @@ source_set("eg_tests") {
     "//components/prefs",
     "//components/strings",
     "//components/sync",
-    "//components/unified_consent",
     "//ios/chrome/app:app_internal",
     "//ios/chrome/app/strings",
     "//ios/chrome/browser",

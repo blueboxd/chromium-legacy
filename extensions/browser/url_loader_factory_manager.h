@@ -67,7 +67,8 @@ class URLLoaderFactoryManager {
       network::mojom::NetworkContext* network_context,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
-      const url::Origin& initiator_origin);
+      const url::Origin& initiator_origin,
+      const base::Optional<net::NetworkIsolationKey>& network_isolation_key);
 
   static void AddExtensionToAllowlistForTesting(const Extension& extension);
   static void RemoveExtensionFromAllowlistForTesting(

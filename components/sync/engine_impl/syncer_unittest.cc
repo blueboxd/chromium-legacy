@@ -279,7 +279,6 @@ class SyncerTest : public testing::Test,
     context_ = std::make_unique<SyncCycleContext>(
         mock_server_.get(), directory(), extensions_activity_.get(), listeners,
         debug_info_getter_.get(), model_type_registry_.get(),
-        true,  // enable keystore encryption
         "fake_invalidator_client_id", mock_server_->store_birthday(),
         "fake_bag_of_chips",
         /*poll_interval=*/base::TimeDelta::FromMinutes(30));

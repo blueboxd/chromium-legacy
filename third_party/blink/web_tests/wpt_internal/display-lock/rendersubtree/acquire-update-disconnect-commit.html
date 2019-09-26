@@ -35,7 +35,7 @@ function runTest() {
   const container = document.getElementById("container");
   setInvisible(container).then(() => {
     // Update, then disconnect the element, and commit.
-    const update_promise = container.displayLock.update();
+    const update_promise = container.updateRendering();
     container.remove();
     const commit_promise = setVisible(container);
 

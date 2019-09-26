@@ -39,8 +39,7 @@ class FakeInfobarBadgeTabHelper : public InfobarBadgeTabHelper {
 
   void AddInfobar(InfobarType infobar_type) {
     InfobarBadgeModel* new_badge =
-        [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type
-                                              accepted:NO];
+        [[InfobarBadgeModel alloc] initWithInfobarType:infobar_type];
     infobar_badge_models_[infobar_type] = new_badge;
     [delegate_ addInfobarBadge:new_badge];
   }
@@ -183,11 +182,11 @@ TEST_F(BadgeMediatorTest, BadgeMediatorTestAcceptedBadge) {
   AddAndActivateWebState(0, false);
   AddInfobar();
   ASSERT_TRUE(badge_consumer_.displayedBadge);
-  EXPECT_FALSE(badge_consumer_.displayedBadge.accepted);
+  EXPECT_NE(badge_consumer_.displayedBadge.badgeState, BadgeStateAccepted);
 
   GetFakeInfobarBadgeTabHelper()->UpdateBadgeForInfobarAccepted(
       InfobarType::kInfobarTypePasswordSave);
-  EXPECT_TRUE(badge_consumer_.displayedBadge.accepted);
+  EXPECT_EQ(badge_consumer_.displayedBadge.badgeState, BadgeStateAccepted);
 }
 
 // Test that the BadgeMediator adds an incognito badge when the webstatelist

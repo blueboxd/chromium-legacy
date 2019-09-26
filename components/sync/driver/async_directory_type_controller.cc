@@ -111,8 +111,6 @@ void AsyncDirectoryTypeController::StartAssociating(
   DCHECK_EQ(state_, MODEL_LOADED);
   state_ = ASSOCIATING;
 
-  // Store UserShare now while on UI thread to avoid potential race
-  // condition in StartAssociationWithSharedChangeProcessor.
   user_share_ = sync_service()->GetUserShare();
 
   start_callback_ = std::move(start_callback);

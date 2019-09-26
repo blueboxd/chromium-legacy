@@ -181,6 +181,8 @@ bool NinePieceImagePainter::Paint(GraphicsContext& graphics_context,
       document, 1, border_image_rect.size.ToLayoutSize()));
   scoped_refptr<Image> image =
       style_image->GetImage(observer, document, style, FloatSize(image_size));
+  if (!image)
+    return true;
 
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("devtools.timeline"), "PaintImage",
                "data",

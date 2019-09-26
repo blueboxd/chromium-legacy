@@ -94,6 +94,9 @@ class ErrorScreen : public BaseScreen,
   // Toggles the connection pending indicator.
   void ShowConnectingIndicator(bool show);
 
+  // Makes error persistent (e.g. non-closable).
+  void SetIsPersistentError(bool is_persistent);
+
   // Register a callback to be invoked when the user indicates that an attempt
   // to connect to the network should be made.
   ConnectRequestCallbackSubscription RegisterConnectRequestCallback(

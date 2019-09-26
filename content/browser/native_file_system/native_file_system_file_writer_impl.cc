@@ -34,7 +34,7 @@ quarantine::mojom::QuarantineFileResult AnnotateFileSync(
   return result;
 }
 
-// For safe browsing we need the hash and size of the file. That data is
+// For after write checks we need the hash and size of the file. That data is
 // calculated on a worker thread, and this struct is used to pass it back.
 struct HashResult {
   base::File::Error status;
@@ -292,22 +292,22 @@ void NativeFileSystemFileWriterImpl::CloseImpl(CloseCallback callback) {
 
   // Should the writer be destructed at this point, we want to allow the
   // close operation to run its course, so we should not purge the swap file.
-  // If the safe browsing check fails, the callback for that will clean up the
+  // If the after write check fails, the callback for that will clean up the
   // swap file even if the writer was destroyed at that point.
   state_ = State::kClosePending;
 
-  if (!require_safe_browsing_check() || !manager()->permission_context()) {
-    DidPassSafeBrowsingCheck(std::move(callback));
+  if (!RequireAfterWriteCheck() || !manager()->permission_context()) {
+    DidPassAfterWriteCheck(std::move(callback));
     return;
   }
 
   ComputeHashForSwapFile(base::BindOnce(
-      &NativeFileSystemFileWriterImpl::DoSafeBrowsingCheck,
+      &NativeFileSystemFileWriterImpl::DoAfterWriteCheck,
       weak_factory_.GetWeakPtr(), swap_url().path(), std::move(callback)));
 }
 
 // static
-void NativeFileSystemFileWriterImpl::DoSafeBrowsingCheck(
+void NativeFileSystemFileWriterImpl::DoAfterWriteCheck(
     base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
     const base::FilePath& swap_path,
     NativeFileSystemFileWriterImpl::CloseCallback callback,
@@ -333,22 +333,23 @@ void NativeFileSystemFileWriterImpl::DoSafeBrowsingCheck(
   item->size = size;
   item->frame_url = file_writer->context().url;
   item->has_user_gesture = file_writer->has_transient_user_activation_;
-  file_writer->manager()->permission_context()->PerformSafeBrowsingChecks(
+  file_writer->manager()->permission_context()->PerformAfterWriteChecks(
       std::move(item), file_writer->context().process_id,
       file_writer->context().frame_id,
-      base::BindOnce(&NativeFileSystemFileWriterImpl::DidSafeBrowsingCheck,
+      base::BindOnce(&NativeFileSystemFileWriterImpl::DidAfterWriteCheck,
                      file_writer, swap_path, std::move(callback)));
 }
 
 // static
-void NativeFileSystemFileWriterImpl::DidSafeBrowsingCheck(
+void NativeFileSystemFileWriterImpl::DidAfterWriteCheck(
     base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
     const base::FilePath& swap_path,
     NativeFileSystemFileWriterImpl::CloseCallback callback,
-    NativeFileSystemPermissionContext::SafeBrowsingResult result) {
+    NativeFileSystemPermissionContext::AfterWriteCheckResult result) {
   if (file_writer &&
-      result == NativeFileSystemPermissionContext::SafeBrowsingResult::kAllow) {
-    file_writer->DidPassSafeBrowsingCheck(std::move(callback));
+      result ==
+          NativeFileSystemPermissionContext::AfterWriteCheckResult::kAllow) {
+    file_writer->DidPassAfterWriteCheck(std::move(callback));
     return;
   }
 
@@ -364,7 +365,7 @@ void NativeFileSystemFileWriterImpl::DidSafeBrowsingCheck(
   return;
 }
 
-void NativeFileSystemFileWriterImpl::DidPassSafeBrowsingCheck(
+void NativeFileSystemFileWriterImpl::DidPassAfterWriteCheck(
     CloseCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // If the move operation succeeds, the path pointing to the swap file

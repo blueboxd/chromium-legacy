@@ -92,6 +92,7 @@ constexpr APIPermissionInfo::InitInfo permissions_to_register[] = {
      APIPermissionInfo::kFlagCannotBeOptional},
     {APIPermission::kPower, "power"},
     {APIPermission::kPrinterProvider, "printerProvider"},
+    {APIPermission::kPrintingMetrics, "printingMetrics"},
     {APIPermission::kSerial, "serial"},
     {APIPermission::kSocket, "socket", APIPermissionInfo::kFlagCannotBeOptional,
      &CreateAPIPermission<SocketPermission>},

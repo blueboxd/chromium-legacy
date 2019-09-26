@@ -1553,6 +1553,58 @@ TEST_F(
       empty_info);
   EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(), empty_info);
 }
+
+TEST_F(IdentityManagerTest,
+       UnconsentedPrimaryAccountTokenRevokedWithStaleCookies) {
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
+
+  // Add an unconsented primary account, incl. proper cookies.
+  AccountInfo account_info = MakeAccountAvailableWithCookies(
+      identity_manager(), test_url_loader_factory(), kTestEmail2, kTestGaiaId2);
+  EXPECT_EQ(kTestEmail2, account_info.email);
+
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(),
+            account_info);
+
+  // Make the cookies stale and remove the account.
+  signin::SetFreshnessOfAccountsInGaiaCookie(identity_manager(), false);
+  RemoveRefreshTokenForAccount(identity_manager(), account_info.account_id);
+  AccountsInCookieJarInfo cookie_info =
+      identity_manager()->GetAccountsInCookieJar();
+  ASSERT_FALSE(cookie_info.accounts_are_fresh);
+  // Unconsented account was removed.
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(),
+            CoreAccountInfo());
+}
+
+TEST_F(IdentityManagerTest,
+       UnconsentedPrimaryAccountTokenRevokedWithStaleCookiesMultipleAccounts) {
+  ClearPrimaryAccount(identity_manager(), ClearPrimaryAccountPolicy::DEFAULT);
+
+  // Add two accounts with cookies.
+  AccountInfo main_account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail2);
+  AccountInfo secondary_account_info =
+      MakeAccountAvailable(identity_manager(), kTestEmail3);
+  SetCookieAccounts(
+      identity_manager(), test_url_loader_factory(),
+      {{main_account_info.email, main_account_info.gaia},
+       {secondary_account_info.email, secondary_account_info.gaia}});
+
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(),
+            main_account_info);
+
+  // Make the cookies stale and remove the main account.
+  signin::SetFreshnessOfAccountsInGaiaCookie(identity_manager(), false);
+  RemoveRefreshTokenForAccount(identity_manager(),
+                               main_account_info.account_id);
+  AccountsInCookieJarInfo cookie_info =
+      identity_manager()->GetAccountsInCookieJar();
+  ASSERT_FALSE(cookie_info.accounts_are_fresh);
+  // Unconsented account was removed.
+  EXPECT_EQ(identity_manager()->GetUnconsentedPrimaryAccountInfo(),
+            CoreAccountInfo());
+}
 #endif
 
 TEST_F(IdentityManagerTest, CallbackSentOnRefreshTokenRemovalOfUnknownAccount) {

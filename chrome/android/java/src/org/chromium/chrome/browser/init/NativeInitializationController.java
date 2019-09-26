@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.init;
 
 import android.content.Intent;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
@@ -71,7 +70,7 @@ class NativeInitializationController {
         ThreadUtils.assertOnUiThread();
         assert mBackgroundTasksComplete == null;
         boolean fetchVariationsSeed = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
-                ContextUtils.getApplicationContext(), mActivityDelegate.getInitialIntent(), false);
+                mActivityDelegate.getInitialIntent(), false);
 
         mBackgroundTasksComplete = false;
         new AsyncInitTaskRunner() {

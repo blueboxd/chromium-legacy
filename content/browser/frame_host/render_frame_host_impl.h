@@ -66,6 +66,7 @@
 #include "net/base/network_isolation_key.h"
 #include "net/cookies/canonical_cookie.h"
 #include "net/http/http_response_headers.h"
+#include "services/device/public/mojom/sensor_provider.mojom.h"
 #include "services/device/public/mojom/wake_lock_context.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
@@ -93,6 +94,7 @@
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom-forward.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
+#include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host_factory.mojom.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
@@ -1074,14 +1076,30 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   void CreateLockManager(
       mojo::PendingReceiver<blink::mojom::LockManager> receiver);
+
   void GetFileChooser(
       mojo::PendingReceiver<blink::mojom::FileChooser> receiver);
+
+  void GetSensorProvider(
+      mojo::PendingReceiver<device::mojom::SensorProvider> receiver);
 
   void CreatePermissionService(
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver);
 
   void CreateWebBluetoothService(
       mojo::PendingReceiver<blink::mojom::WebBluetoothService> receiver);
+  void GetCredentialManager(
+      mojo::PendingReceiver<blink::mojom::CredentialManager> receiver);
+
+  void GetAuthenticator(
+      mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
+
+  void GetVirtualAuthenticatorManager(
+      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
+          receiver);
+
+  void GetPushMessaging(
+      mojo::PendingReceiver<blink::mojom::PushMessaging> receiver);
 
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
@@ -1593,15 +1611,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetFrameHostTestInterface(
       mojo::PendingReceiver<blink::mojom::FrameHostTestInterface> receiver)
       override;
-  void GetCredentialManager(
-      mojo::PendingReceiver<blink::mojom::CredentialManager> receiver) override;
-  void GetAuthenticator(
-      mojo::PendingReceiver<blink::mojom::Authenticator> receiver) override;
-  void GetPushMessaging(
-      mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override;
-  void GetVirtualAuthenticatorManager(
-      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
-          receiver) override;
 
   // Allows tests to disable the swapout event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).

@@ -288,6 +288,7 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       refresh_rate_(60.f),
       is_interlaced_(false),
       is_zoom_factor_from_ui_scale_(false),
+      from_native_platform_(false),
       native_(false),
       is_aspect_preserving_scaling_(false),
       clear_overscan_insets_(false),
@@ -310,6 +311,7 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       refresh_rate_(60.f),
       is_interlaced_(false),
       is_zoom_factor_from_ui_scale_(false),
+      from_native_platform_(false),
       native_(false),
       is_aspect_preserving_scaling_(false),
       clear_overscan_insets_(false),
@@ -361,11 +363,12 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
   bits_per_channel_ = native_info.bits_per_channel_;
   refresh_rate_ = native_info.refresh_rate_;
   is_interlaced_ = native_info.is_interlaced_;
+  native_ = native_info.native_;
 
   // Rotation, color_profile and overscan are given by preference,
   // or unit tests. Don't copy if this native_info came from
   // DisplayChangeObserver.
-  if (native_info.native())
+  if (native_info.from_native_platform())
     return;
   // Update the overscan_insets_in_dip_ either if the inset should be
   // cleared, or has non empty insts.

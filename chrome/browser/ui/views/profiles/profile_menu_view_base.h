@@ -95,7 +95,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   virtual void BuildMenu() = 0;
 
   // API to build the profile menu.
-  void SetIdentityInfo(const gfx::Image& image,
+  void SetIdentityInfo(const gfx::ImageSkia& image,
+                       const gfx::ImageSkia& badge,
                        const base::string16& title,
                        const base::string16& subtitle = base::string16());
   void SetSyncInfo(const base::string16& description,
@@ -108,7 +109,7 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
                                const base::string16& text,
                                base::RepeatingClosure action);
   void SetProfileHeading(const base::string16& heading);
-  void AddSelectableProfile(const gfx::Image& image,
+  void AddSelectableProfile(const gfx::ImageSkia& image,
                             const base::string16& name,
                             base::RepeatingClosure action);
   void AddProfileShortcutFeatureButton(const gfx::ImageSkia& icon,
@@ -122,6 +123,8 @@ class ProfileMenuViewBase : public content::WebContentsDelegate,
   // returned image, with the rest being padding around it.
   gfx::ImageSkia ImageForMenu(const gfx::VectorIcon& icon,
                               float icon_to_image_ratio = 1.0f);
+  gfx::ImageSkia ColoredImageForMenu(const gfx::VectorIcon& icon,
+                                     SkColor color);
 
   // Initializes a new group of menu items. A separator is added before them if
   // |add_separator| is true.

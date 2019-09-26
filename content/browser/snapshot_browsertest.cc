@@ -90,8 +90,8 @@ class SnapshotBrowserTest : public ContentBrowserTest {
         &SnapshotBrowserTest::HandleRequest, base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
 
-    ASSERT_NO_FATAL_FAILURE(content::NavigateToURL(
-        shell(), embedded_test_server()->GetURL("/test")));
+    ASSERT_TRUE(
+        NavigateToURL(shell(), embedded_test_server()->GetURL("/test")));
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRequest(

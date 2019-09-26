@@ -802,22 +802,27 @@ void NGBlockNode::CopyFragmentDataToLayoutBox(
 
   auto* block_flow = DynamicTo<LayoutBlockFlow>(box_);
   LayoutMultiColumnFlowThread* flow_thread = GetFlowThread(block_flow);
-  if (UNLIKELY(flow_thread)) {
-    PlaceChildrenInFlowThread(physical_fragment);
-  } else {
-    PhysicalOffset offset_from_start;
-    if (UNLIKELY(constraint_space.HasBlockFragmentation())) {
-      // Need to include any block space that this container has used in
-      // previous fragmentainers. The offset of children will be relative to
-      // the container, in flow thread coordinates, i.e. the model where
-      // everything is represented as one single strip, rather than being
-      // sliced and translated into columns.
 
-      // TODO(mstensho): writing modes
-      if (previous_break_token)
-        offset_from_start.top = previous_break_token->ConsumedBlockSize();
+  // Position the children inside the box. We skip this if display-lock prevents
+  // child layout.
+  if (!LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren)) {
+    if (UNLIKELY(flow_thread)) {
+      PlaceChildrenInFlowThread(physical_fragment);
+    } else {
+      PhysicalOffset offset_from_start;
+      if (UNLIKELY(constraint_space.HasBlockFragmentation())) {
+        // Need to include any block space that this container has used in
+        // previous fragmentainers. The offset of children will be relative to
+        // the container, in flow thread coordinates, i.e. the model where
+        // everything is represented as one single strip, rather than being
+        // sliced and translated into columns.
+
+        // TODO(mstensho): writing modes
+        if (previous_break_token)
+          offset_from_start.top = previous_break_token->ConsumedBlockSize();
+      }
+      PlaceChildrenInLayoutBox(physical_fragment, offset_from_start);
     }
-    PlaceChildrenInLayoutBox(physical_fragment, offset_from_start);
   }
 
   LayoutBlock* block = DynamicTo<LayoutBlock>(box_);

@@ -22,12 +22,10 @@
 <translation id="3256316712990552818">Kopierat till Chromium</translation>
 <translation id="3605252743693911722">Logga in i Chromium om du vill få dina bokmärken, lösenord med mera på alla dina enheter.</translation>
 <translation id="3805899903892079518">Chromium har inte åtkomst till dina foton eller videor. Aktivera åtkomst i iOS-inställningar &gt; Sekretess &gt; Foton.</translation>
-<translation id="4241912885070669028">Du håller på att logga ut från ett konto som hanteras av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Åtgärden raderar din data i Chromium från den här enheten, men den finns kvar på Google-kontot.</translation>
 <translation id="4555020257205549924">När den här funktionen har aktiverats visas alternativet i Chromium att översätta sidor som är skrivna på andra språk med hjälp av Google Översätt. <ph name="BEGIN_LINK" />Läs mer<ph name="END_LINK" /></translation>
 <translation id="4681781466797808448">Aktivera Chromium som skanner</translation>
 <translation id="4787850887676698916">Här visas flikar som du har öppnat i Chromium på andra enheter.</translation>
 <translation id="4999538639245140991">Din data i Chromium raderas från den här enheten eftersom du loggar ut från ett konto som hanteras av <ph name="SIGNOUT_MANAGED_DOMAIN" />. Din data finns kvar i Google-kontot.</translation>
-<translation id="5231355151045086930">Logga ut från Chromium</translation>
 <translation id="5862307444128926510">Välkommen till Chromium</translation>
 <translation id="5945387852661427312">Du håller på att logga in med ett konto som hanteras av <ph name="DOMAIN" /> vilket ger administratören kontroll över data i Chromium. Din data kopplas permanent till det här kontot. Om du loggar ut från Chromium raderas all din data från enheten, men den lagras fortfarande på Google-kontot.</translation>
 <translation id="6068866989048414399">Användarvillkor för Chromium</translation>

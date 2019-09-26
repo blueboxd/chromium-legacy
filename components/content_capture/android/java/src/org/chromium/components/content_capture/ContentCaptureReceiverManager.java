@@ -6,6 +6,7 @@ package org.chromium.components.content_capture;
 
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.content_public.browser.WebContents;
 
 import java.util.Arrays;
@@ -20,7 +21,7 @@ public class ContentCaptureReceiverManager {
     private ContentCaptureConsumer mContentCaptureConsumer;
 
     public static ContentCaptureReceiverManager createOrGet(WebContents webContents) {
-        return nativeCreateOrGet(webContents);
+        return ContentCaptureReceiverManagerJni.get().createOrGet(webContents);
     }
 
     @CalledByNative
@@ -51,8 +52,9 @@ public class ContentCaptureReceiverManager {
     @CalledByNative
     private void didRemoveContent(Object[] session, long[] data) {
         FrameSession frameSession = toFrameSession(session);
-        if (mContentCaptureConsumer != null)
+        if (mContentCaptureConsumer != null) {
             mContentCaptureConsumer.onContentRemoved(frameSession, data);
+        }
         if (sDump.booleanValue()) {
             Log.i(TAG, "Removed Content: %s", frameSession.get(0) + " " + Arrays.toString(data));
         }
@@ -71,5 +73,8 @@ public class ContentCaptureReceiverManager {
         return frameSession;
     }
 
-    private static native ContentCaptureReceiverManager nativeCreateOrGet(WebContents webContents);
+    @NativeMethods
+    interface Natives {
+        ContentCaptureReceiverManager createOrGet(WebContents webContents);
+    }
 }

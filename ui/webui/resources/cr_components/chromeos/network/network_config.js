@@ -35,15 +35,12 @@ const mojom = chromeos.networkConfig.mojom;
 Polymer({
   is: 'network-config',
 
-  behaviors: [I18nBehavior],
+  behaviors: [
+    CrNetworkListenerBehavior,
+    I18nBehavior,
+  ],
 
   properties: {
-    /**
-     * Interface for networkingPrivate calls, passed from host.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: Object,
-
     /** @type {!chromeos.networkConfig.mojom.GlobalPolicy|undefined} */
     globalPolicy_: Object,
 
@@ -133,7 +130,7 @@ Polymer({
 
     /**
      * Used to populate the 'Server CA certificate' dropdown.
-     * @private {!Array<!chrome.networkingPrivate.Certificate>}
+     * @private {!Array<!chromeos.networkConfig.mojom.NetworkCertificate>}
      */
     serverCaCerts_: {
       type: Array,
@@ -147,7 +144,7 @@ Polymer({
 
     /**
      * Used to populate the 'User certificate' dropdown.
-     * @private {!Array<!chrome.networkingPrivate.Certificate>}
+     * @private {!Array<!chromeos.networkConfig.mojom.NetworkCertificate>}
      */
     userCerts_: {
       type: Array,
@@ -206,8 +203,8 @@ Polymer({
     },
 
     /**
-     * VPN Type from vpnTypeItems_. Combines VPN.Type and
-     * VPN.IPsec.AuthenticationType.
+     * VPN Type from vpnTypeItems_. Combines vpn.type and
+     * vpn.ipSec.authenticationType.
      * @private {VPNConfigType|undefined}
      */
     vpnType_: String,
@@ -331,19 +328,7 @@ Polymer({
   /** @const */
   MIN_PASSPHRASE_LENGTH: 5,
 
-  /**
-   * Listener function for chrome.networkingPrivate.onCertificateListsChanged.
-   * @type {?function()}
-   * @private
-   */
-  certificateListsChangedListener_: null,
-
-  /**
-   * This UI will use both the networkingPrivate extension API and the
-   * networkConfig mojo API until we provide all of the required functionality
-   * in networkConfig. TODO(stevenjb): Remove use of networkingPrivate api.
-   * @private {?mojom.CrosNetworkConfigRemote}
-   */
+  /** @private {?mojom.CrosNetworkConfigRemote} */
   networkConfig_: null,
 
   /** @override */
@@ -354,21 +339,9 @@ Polymer({
 
   /** @override */
   attached: function() {
-    this.certificateListsChangedListener_ =
-        this.onCertificateListsChanged_.bind(this);
-    this.networkingPrivate.onCertificateListsChanged.addListener(
-        this.certificateListsChangedListener_);
     this.networkConfig_.getGlobalPolicy().then(response => {
       this.globalPolicy_ = response.result;
     });
-  },
-
-  /** @override */
-  detached: function() {
-    assert(this.certificateListsChangedListener_);
-    this.networkingPrivate.onCertificateListsChanged.removeListener(
-        this.certificateListsChangedListener_);
-    this.certificateListsChangedListener_ = null;
   },
 
   init: function() {
@@ -410,7 +383,7 @@ Polymer({
     this.hiddenNetworkWarning_ = this.showHiddenNetworkWarning_();
 
     this.updateIsConfigured_();
-    this.updateDeviceCertsOnly_();
+    this.onNetworkCertificatesChanged();
   },
 
   save: function() {
@@ -503,24 +476,26 @@ Polymer({
     return !!this.guid;
   },
 
-  /** @private */
-  onCertificateListsChanged_: function() {
-    this.networkingPrivate.getCertificateLists(function(certificateLists) {
+  /** CrNetworkListenerBehavior override */
+  onNetworkCertificatesChanged: function() {
+    this.networkConfig_.getNetworkCertificates().then(response => {
       const isOpenVpn = this.configProperties_.type == mojom.NetworkType.kVPN &&
           this.configProperties_.vpn.type == mojom.VpnType.kOpenVPN;
 
-      const caCerts = certificateLists.serverCaCertificates.slice();
+      const caCerts = response.serverCas.slice();
       if (!isOpenVpn) {
-        // 'Default' is the same as 'Do not check' except it sets
-        // eap.UseSystemCAs (which does not apply to OpenVPN).
+        // 'Default' is the same as 'Do not check' except that 'Default' sets
+        // eap.useSystemCas (which does not apply to OpenVPN).
         caCerts.unshift(this.getDefaultCert_(
+            chromeos.networkConfig.mojom.CertificateType.kServerCA,
             this.i18n('networkCAUseDefault'), DEFAULT_HASH));
       }
       caCerts.push(this.getDefaultCert_(
+          chromeos.networkConfig.mojom.CertificateType.kServerCA,
           this.i18n('networkCADoNotCheck'), DO_NOT_CHECK_HASH));
       this.set('serverCaCerts_', caCerts);
 
-      let userCerts = certificateLists.userCertificates.slice();
+      let userCerts = response.userCerts.slice();
       // Only hardware backed user certs are supported.
       userCerts.forEach(function(cert) {
         if (!cert.hardwareBacked) {
@@ -530,33 +505,39 @@ Polymer({
       if (isOpenVpn) {
         // OpenVPN allows but does not require a user certificate.
         userCerts.unshift(this.getDefaultCert_(
+            chromeos.networkConfig.mojom.CertificateType.kUserCert,
             this.i18n('networkNoUserCert'), NO_USER_CERT_HASH));
       }
       if (!userCerts.length) {
         userCerts = [this.getDefaultCert_(
+            chromeos.networkConfig.mojom.CertificateType.kUserCert,
             this.i18n('networkCertificateNoneInstalled'), NO_CERTS_HASH)];
       }
       this.set('userCerts_', userCerts);
 
       this.updateSelectedCerts_();
       this.updateCertError_();
-    }.bind(this));
+    });
   },
 
   /**
+   * @param {chromeos.networkConfig.mojom.CertificateType} type
    * @param {string} desc
    * @param {string} hash
-   * @return {!chrome.networkingPrivate.Certificate}
+   * @return {!chromeos.networkConfig.mojom.NetworkCertificate}
    * @private
    */
-  getDefaultCert_: function(desc, hash) {
+  getDefaultCert_: function(type, desc, hash) {
     return {
-      hardwareBacked: false,
+      type: type,
       hash: hash,
       issuedBy: desc,
       issuedTo: '',
-      isDefault: true,
-      deviceWide: false
+      pemOrId: '',
+      hardwareBacked: false,
+      // Default cert entries should always be shown, even in the login UI,
+      // so treat thiem as device-wide.
+      deviceWide: true,
     };
   },
 
@@ -667,7 +648,7 @@ Polymer({
 
   /** @private */
   onShareChanged_: function(event) {
-    this.updateDeviceCertsOnly_();
+    this.updateSelectedCerts_();
   },
 
   /**
@@ -830,7 +811,6 @@ Polymer({
     if (managedProperties.type == mojom.NetworkType.kVPN) {
       this.vpnType_ = this.getVpnTypeFromProperties_(this.configProperties_);
     }
-    this.onCertificateListsChanged_();
   },
 
   /**
@@ -860,7 +840,7 @@ Polymer({
 
   /**
    * Ensures that the appropriate EAP properties are created (or deleted when
-   * the EAP.Outer property changes.
+   * the eap.outer property changes.
    * @private
    */
   updateEapOuter_: function() {
@@ -885,7 +865,7 @@ Polymer({
       return;
     }
     const eap = this.eapProperties_;
-    const pem = eap && eap.ServerCAPEMs ? eap.ServerCAPEMs[0] : '';
+    const pem = eap && eap.serverCaPems ? eap.serverCaPems[0] : '';
     const certId =
         eap && eap.clientCertType == 'PKCS11Id' ? eap.clientCertPkcs11Id : '';
     this.setSelectedCerts_(pem, certId);
@@ -936,7 +916,7 @@ Polymer({
     if (opt_create) {
       return eap || {
         saveCredentials: false,
-        useSystemCas: true,
+        useSystemCas: false,
       };
     }
     return eap || null;
@@ -1050,7 +1030,6 @@ Polymer({
       };
     }
     this.updateCertError_();
-    this.onCertificateListsChanged_();
   },
 
   /** @private */
@@ -1059,7 +1038,7 @@ Polymer({
       return;
     }
     const ipSec = this.configProperties_.vpn.ipSec;
-    const pem = ipSec.serverCAPEMs && ipSec.serverCAPEMs[0];
+    const pem = ipSec.serverCaPems ? ipSec.serverCaPems[0] : undefined;
     const certId =
         ipSec.clientCertType == 'PKCS11Id' ? ipSec.clientCertPkcs11Id : '';
     this.setSelectedCerts_(pem, certId);
@@ -1119,7 +1098,7 @@ Polymer({
   setSelectedCerts_: function(pem, certId) {
     if (pem) {
       const serverCa = this.serverCaCerts_.find(function(cert) {
-        return cert.pem == pem;
+        return cert.pemOrId == pem;
       });
       if (serverCa) {
         this.selectedServerCaHash_ = serverCa.hash;
@@ -1129,10 +1108,10 @@ Polymer({
     if (certId) {
       // |certId| is in the format |slot:id| for EAP and IPSec and |id| for
       // OpenVPN certs.
-      // |userCerts_[i].PKCS11Id| is always in the format |slot:id|.
+      // |userCerts_[i].pemOrId| is always in the format |slot:id|.
       // Use a substring comparison to support both |certId| formats.
       const userCert = this.userCerts_.find(function(cert) {
-        return cert.PKCS11Id.indexOf(/** @type {string} */ (certId)) >= 0;
+        return cert.pemOrId.indexOf(/** @type {string} */ (certId)) >= 0;
       });
       if (userCert) {
         this.selectedUserCertHash_ = userCert.hash;
@@ -1143,10 +1122,10 @@ Polymer({
   },
 
   /**
-   * @param {!Array<!chrome.networkingPrivate.Certificate>} certs
+   * @param {!Array<!chromeos.networkConfig.mojom.NetworkCertificate>} certs
    * @param {string|undefined} hash
    * @private
-   * @return {!chrome.networkingPrivate.Certificate|undefined}
+   * @return {!chromeos.networkConfig.mojom.NetworkCertificate|undefined}
    */
   findCert_: function(certs, hash) {
     if (!hash) {
@@ -1164,30 +1143,53 @@ Polymer({
    * @private
    */
   updateSelectedCerts_: function() {
-    if (!this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_)) {
+    if (!this.serverCaCerts_.length || !this.userCerts_.length) {
+      return;
+    }
+    const eap = this.eapProperties_;
+
+    // Only device-wide certificates can be used for shared networks that
+    // require a certificate.
+    this.deviceCertsOnly_ =
+        this.shareNetwork_ && !!eap && eap.outer == 'EAP-TLS';
+
+    // Validate selected Server CA.
+    const caCert =
+        this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_);
+    if (!caCert || (this.deviceCertsOnly_ && !caCert.deviceWide)) {
       this.selectedServerCaHash_ = undefined;
     }
-    if (!this.selectedServerCaHash_ ||
-        this.selectedServerCaHash_ == DEFAULT_HASH) {
-      const eap = this.eapProperties_;
-      if (eap && eap.useSystemCas === false) {
-        this.selectedServerCaHash_ = DO_NOT_CHECK_HASH;
-      }
-    }
     if (!this.selectedServerCaHash_) {
-      // For unconfigured networks only, default to the first CA if available.
-      if (!this.guid && this.serverCaCerts_[0]) {
-        this.selectedServerCaHash_ = this.serverCaCerts_[0].hash;
+      if (eap && eap.useSystemCas) {
+        this.selectedServerCaHash_ = DEFAULT_HASH;
+      } else if (!this.guid && this.serverCaCerts_[0]) {
+        // For unconfigured networks, default to the first available
+        // certificate, or DO_NOT_CHECK (i.e. skip DEFAULT_HASH). See
+        /// onNetworkCertificatesChanged() for how certificates are added.
+        let cert = this.serverCaCerts_[0];
+        if (cert.hash == DEFAULT_HASH && this.serverCaCerts_[1]) {
+          cert = this.serverCaCerts_[1];
+        }
+        this.selectedServerCaHash_ = cert.hash;
       } else {
         this.selectedServerCaHash_ = DO_NOT_CHECK_HASH;
       }
     }
 
-    if (!this.findCert_(this.userCerts_, this.selectedUserCertHash_)) {
+    // Validate selected User cert.
+    const userCert =
+        this.findCert_(this.userCerts_, this.selectedUserCertHash_);
+    if (!userCert || (this.deviceCertsOnly_ && !userCert.deviceWide)) {
       this.selectedUserCertHash_ = undefined;
     }
-    if (!this.selectedUserCertHash_ && this.userCerts_[0]) {
-      this.selectedUserCertHash_ = this.userCerts_[0].hash;
+    if (!this.selectedUserCertHash_) {
+      for (let i = 0; i < this.userCerts_.length; ++i) {
+        const userCert = this.userCerts_[i];
+        if (userCert && (!this.deviceCertsOnly_ || userCert.deviceWide)) {
+          this.selectedUserCertHash_ = userCert.hash;
+          break;
+        }
+      }
     }
   },
 
@@ -1225,27 +1227,6 @@ Polymer({
   /** @private */
   updateIsConfigured_: function() {
     this.isConfigured_ = this.getIsConfigured_();
-  },
-
-  /** @private */
-  updateDeviceCertsOnly_: function() {
-    // Only device-wide certificates can be used for networks that require a
-    // certificate and are shared.
-    const eap = this.eapProperties_;
-    if (!this.shareNetwork_ || !eap || eap.outer != 'EAP-TLS') {
-      this.deviceCertsOnly_ = false;
-      return;
-    }
-    // Clear selection if certificate is not device-wide.
-    let cert = this.findCert_(this.userCerts_, this.selectedUserCertHash_);
-    if (cert && !cert.deviceWide) {
-      this.selectedUserCertHash_ = undefined;
-    }
-    cert = this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_);
-    if (cert && !(cert.deviceWide || cert.isDefault)) {
-      this.selectedServerCaHash_ = undefined;
-    }
-    this.deviceCertsOnly_ = true;
   },
 
   /**
@@ -1394,7 +1375,7 @@ Polymer({
         return false;
       }
       cert = this.findCert_(this.serverCaCerts_, this.selectedServerCaHash_);
-      if (!cert.deviceWide || !cert.isDefault) {
+      if (!cert.deviceWide) {
         return false;
       }
     }
@@ -1435,7 +1416,7 @@ Polymer({
     // it to true on a successful connection.
     delete propertiesToSet.autoConnect;
     if (this.guid) {
-      propertiesToSet.GUID = this.guid;
+      propertiesToSet.guid = this.guid;
     }
     const eap = this.getEap_(propertiesToSet);
     if (eap) {
@@ -1469,7 +1450,7 @@ Polymer({
       return [];
     }
     const serverCa = this.findCert_(this.serverCaCerts_, caHash);
-    return serverCa && serverCa.pem ? [serverCa.pem] : [];
+    return serverCa && serverCa.pemOrId ? [serverCa.pemOrId] : [];
   },
 
   /**
@@ -1483,7 +1464,7 @@ Polymer({
       return '';
     }
     const userCert = this.findCert_(this.userCerts_, userCertHash);
-    return (userCert && userCert.PKCS11Id) || '';
+    return (userCert && userCert.pemOrId) || '';
   },
 
   /**
@@ -1491,13 +1472,13 @@ Polymer({
    * @private
    */
   setEapProperties_: function(eap) {
-    eap.UseSystemCAs = this.selectedServerCaHash_ == DEFAULT_HASH;
+    eap.useSystemCas = this.selectedServerCaHash_ == DEFAULT_HASH;
 
-    eap.ServerCAPEMs = this.getServerCaPems_();
+    eap.serverCaPems = this.getServerCaPems_();
 
     const pkcs11Id = this.getUserCertPkcs11Id_();
-    eap.ClientCertType = pkcs11Id ? 'PKCS11Id' : 'None';
-    eap.ClientCertPKCS11Id = pkcs11Id || '';
+    eap.clientCertType = pkcs11Id ? 'PKCS11Id' : 'None';
+    eap.clientCertPKCS11Id = pkcs11Id || '';
   },
 
   /**

@@ -942,7 +942,7 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
       CreatePromotionHintCB(),
       base::BindOnce(&MediaCodecVideoDecoder::ForwardVideoFrame,
                      weak_factory_.GetWeakPtr(), reset_generation_,
-                     std::move(async_trace)));
+                     std::move(async_trace), base::TimeTicks::Now()));
   return true;
 }
 
@@ -959,9 +959,16 @@ void MediaCodecVideoDecoder::RunEosDecodeCb(int reset_generation) {
 void MediaCodecVideoDecoder::ForwardVideoFrame(
     int reset_generation,
     std::unique_ptr<ScopedAsyncTrace> async_trace,
+    base::TimeTicks started_at,
     scoped_refptr<VideoFrame> frame) {
   DVLOG(3) << __func__ << " : "
            << (frame ? frame->AsHumanReadableString() : "null");
+
+  // Record how long this frame was pending.
+  const base::TimeDelta duration = base::TimeTicks::Now() - started_at;
+  UMA_HISTOGRAM_CUSTOM_TIMES("Media.MCVD.ForwardVideoFrameTiming", duration,
+                             base::TimeDelta::FromMilliseconds(1),
+                             base::TimeDelta::FromMilliseconds(100), 25);
 
   // No |frame| indicates an error creating it.
   if (!frame) {

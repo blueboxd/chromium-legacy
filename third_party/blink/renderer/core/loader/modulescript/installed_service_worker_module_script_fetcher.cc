@@ -15,7 +15,9 @@ namespace blink {
 
 InstalledServiceWorkerModuleScriptFetcher::
     InstalledServiceWorkerModuleScriptFetcher(WorkerGlobalScope* global_scope)
-    : global_scope_(global_scope) {}
+    : global_scope_(global_scope) {
+  DCHECK(global_scope_->IsServiceWorkerGlobalScope());
+}
 
 void InstalledServiceWorkerModuleScriptFetcher::Fetch(
     FetchParameters& fetch_params,
@@ -24,8 +26,7 @@ void InstalledServiceWorkerModuleScriptFetcher::Fetch(
     ModuleGraphLevel level,
     ModuleScriptFetcher::Client* client) {
   DCHECK(global_scope_->IsContextThread());
-  InstalledScriptsManager* installed_scripts_manager =
-      global_scope_->GetThread()->GetInstalledScriptsManager();
+  auto* installed_scripts_manager = global_scope_->GetInstalledScriptsManager();
   DCHECK(installed_scripts_manager);
   DCHECK(installed_scripts_manager->IsScriptInstalled(fetch_params.Url()));
 

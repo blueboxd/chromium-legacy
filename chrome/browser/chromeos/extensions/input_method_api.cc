@@ -85,9 +85,6 @@ namespace extensions {
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateGetInputMethodConfigFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   std::unique_ptr<base::DictionaryValue> output(new base::DictionaryValue());
   output->SetBoolean("isPhysicalKeyboardAutocorrectEnabled", true);
   output->SetBoolean("isImeMenuActivated",
@@ -95,26 +92,18 @@ InputMethodPrivateGetInputMethodConfigFunction::Run() {
                          ->GetPrefs()
                          ->GetBoolean(prefs::kLanguageImeMenuActivated));
   return RespondNow(OneArgument(std::move(output)));
-#endif
 }
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateGetCurrentInputMethodFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
   return RespondNow(OneArgument(std::make_unique<base::Value>(
       manager->GetActiveIMEState()->GetCurrentInputMethod().id())));
-#endif
 }
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateSetCurrentInputMethodFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   std::unique_ptr<SetCurrentInputMethod::Params> params(
       SetCurrentInputMethod::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -131,14 +120,10 @@ InputMethodPrivateSetCurrentInputMethodFunction::Run() {
     }
   }
   return RespondNow(Error("Invalid input method id."));
-#endif
 }
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateGetInputMethodsFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   std::unique_ptr<base::ListValue> output(new base::ListValue());
   chromeos::input_method::InputMethodManager* manager =
       chromeos::input_method::InputMethodManager::Get();
@@ -157,14 +142,10 @@ InputMethodPrivateGetInputMethodsFunction::Run() {
     output->Append(std::move(val));
   }
   return RespondNow(OneArgument(std::move(output)));
-#endif
 }
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateFetchAllDictionaryWordsFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   SpellcheckService* spellcheck = SpellcheckServiceFactory::GetForContext(
       context_);
   if (!spellcheck) {
@@ -181,14 +162,10 @@ InputMethodPrivateFetchAllDictionaryWordsFunction::Run() {
     output->AppendString(*it);
   }
   return RespondNow(OneArgument(std::move(output)));
-#endif
 }
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateAddWordToDictionaryFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   std::unique_ptr<AddWordToDictionary::Params> params(
       AddWordToDictionary::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -211,14 +188,10 @@ InputMethodPrivateAddWordToDictionaryFunction::Run() {
   // - Leading/trailing whitespace.
   // - Empty.
   return RespondNow(Error("Unable to add invalid word to dictionary."));
-#endif
 }
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateGetEncryptSyncEnabledFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   syncer::SyncService* sync_service = ProfileSyncServiceFactory::GetForProfile(
       Profile::FromBrowserContext(browser_context()));
   if (!sync_service)
@@ -226,14 +199,10 @@ InputMethodPrivateGetEncryptSyncEnabledFunction::Run() {
   std::unique_ptr<base::Value> ret(new base::Value(
       sync_service->GetUserSettings()->IsEncryptEverythingEnabled()));
   return RespondNow(OneArgument(std::move(ret)));
-#endif
 }
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateSetXkbLayoutFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   std::unique_ptr<SetXkbLayout::Params> params(
       SetXkbLayout::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -242,14 +211,10 @@ InputMethodPrivateSetXkbLayoutFunction::Run() {
   chromeos::input_method::ImeKeyboard* keyboard = manager->GetImeKeyboard();
   keyboard->SetCurrentKeyboardLayoutByName(params->xkb_name);
   return RespondNow(NoArguments());
-#endif
 }
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateShowInputViewFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   auto* keyboard_client = ChromeKeyboardControllerClient::Get();
   if (!keyboard_client->is_keyboard_enabled()) {
     return RespondNow(Error(kErrorFailToShowInputView));
@@ -257,14 +222,10 @@ InputMethodPrivateShowInputViewFunction::Run() {
 
   keyboard_client->ShowKeyboard();
   return RespondNow(NoArguments());
-#endif
 }
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateOpenOptionsPageFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   std::unique_ptr<OpenOptionsPage::Params> params(
       OpenOptionsPage::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(params.get());
@@ -287,14 +248,10 @@ InputMethodPrivateOpenOptionsPageFunction::Run() {
     }
   }
   return RespondNow(NoArguments());
-#endif
 }
 
 ExtensionFunction::ResponseAction
 InputMethodPrivateGetSurroundingTextFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   ui::IMEInputContextHandlerInterface* input_context =
       ui::IMEBridge::Get()->GetInputContextHandler();
   if (!input_context)
@@ -340,13 +297,9 @@ InputMethodPrivateGetSurroundingTextFunction::Run() {
                                             text_after_end - text_after_start));
 
   return RespondNow(OneArgument(std::move(ret)));
-#endif
 }
 
 ExtensionFunction::ResponseAction InputMethodPrivateGetSettingFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   const auto params = GetSetting::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -359,13 +312,9 @@ ExtensionFunction::ResponseAction InputMethodPrivateGetSettingFunction::Run() {
   return RespondNow(
       OneArgument(result ? std::make_unique<base::Value>(result->Clone())
                          : std::make_unique<base::Value>()));
-#endif
 }
 
 ExtensionFunction::ResponseAction InputMethodPrivateSetSettingFunction::Run() {
-#if !defined(OS_CHROMEOS)
-  EXTENSION_FUNCTION_VALIDATE(false);
-#else
   const auto params = SetSetting::Params::Create(*args_);
   EXTENSION_FUNCTION_VALIDATE(params.get());
 
@@ -388,7 +337,6 @@ ExtensionFunction::ResponseAction InputMethodPrivateSetSettingFunction::Run() {
   }
 
   return RespondNow(NoArguments());
-#endif
 }
 
 ExtensionFunction::ResponseAction

@@ -140,10 +140,6 @@ struct URLResponseHead {
   // the ServiceWorker. Empty if the response isn't from the CacheStorage.
   string cache_storage_cache_name;
 
-  // Effective connection type when the resource was fetched. This is populated
-  // only for responses that correspond to main frame requests.
-  EffectiveConnectionType effective_connection_type;
-
   // Bitmask of status info of the SSL certificate. See cert_status_flags.h for
   // values.
   uint32 cert_status = 0;

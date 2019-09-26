@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">বিজ্ঞপ্তি কেন্দ্র, <ph name="UNREAD_NOTIFICATION_COUNT" />টি না পড়া বিজ্ঞপ্তি</translation>
 <translation id="4730374152663651037">ঘন ঘন ব্যবহার করা হয়</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{১ মাস বাকি}one{# মাস বাকি}other{# মাস বাকি}}</translation>
-<translation id="4841881773802181781">যোগ করা হচ্ছে</translation>
 <translation id="4881695831933465202">খুলুন</translation>
 <translation id="4888938634149558681">কল করুন</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{১ সেকেন্ড}one{# সেকেন্ড}other{# সেকেন্ড}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">ফাইল সেভ করুন</translation>
 <translation id="6656912866303152668"><ph name="TARGET_DEVICE_NAME" /> Chrome-এ সিঙ্ক করার ফিচার চালু করে রেখেছে কিনা দেখে নিন।</translation>
 <translation id="6699343763173986273">মিডিয়া পরবর্তী ট্র্যাক</translation>
-<translation id="673773751041746814">মোছা হচ্ছে</translation>
 <translation id="6779314412797872738">এখান থেকে আপনার Android ফোনে কোনও নম্বর পাঠাতে, সেটিংসে গিয়ে দুটি ডিভাইসের জন্য <ph name="TROUBLESHOOT_LINK" />।</translation>
 <translation id="6786750046913594791">ফোল্ডার বন্ধ করুন</translation>
 <translation id="6808150112686056157">মিডিয়া থামান</translation>

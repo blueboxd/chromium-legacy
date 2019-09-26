@@ -7,7 +7,7 @@
 #include <stdint.h>
 #include <utility>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -198,7 +198,7 @@ ScriptPromise NavigatorShare::share(ScriptState* script_state,
     }
 
     // See https://bit.ly/2S0zRAS for task types.
-    frame->GetInterfaceProvider().GetInterface(
+    frame->GetBrowserInterfaceBroker().GetInterface(
         service_remote_.BindNewPipeAndPassReceiver(
             frame->GetTaskRunner(TaskType::kMiscPlatformAPI)));
     service_remote_.set_disconnect_handler(WTF::Bind(

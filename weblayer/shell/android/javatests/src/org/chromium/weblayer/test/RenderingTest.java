@@ -32,11 +32,11 @@ public class RenderingTest {
         String url = "data:text,foo";
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.getBrowserFragmentImpl().setSupportsEmbedding(true).addCallback(
+            activity.getBrowserFragmentController().setSupportsEmbedding(true).addCallback(
                     (Boolean result) -> {
                         Assert.assertTrue(result);
-                        activity.getBrowserFragmentImpl().setSupportsEmbedding(false).addCallback(
-                                (Boolean result2) -> {
+                        activity.getBrowserFragmentController().setSupportsEmbedding(false)
+                                .addCallback((Boolean result2) -> {
                                     Assert.assertTrue(result2);
                                     mActivityTestRule.loadUrl(url);
                                     latch.countDown();
@@ -61,12 +61,12 @@ public class RenderingTest {
         CountDownLatch latch = new CountDownLatch(2);
         String url = "data:text,foo";
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.getBrowserFragmentImpl().setSupportsEmbedding(true).addCallback(
+            activity.getBrowserFragmentController().setSupportsEmbedding(true).addCallback(
                     (Boolean result) -> {
                         Assert.assertTrue(result);
                         latch.countDown();
                     });
-            activity.getBrowserFragmentImpl().setSupportsEmbedding(true).addCallback(
+            activity.getBrowserFragmentController().setSupportsEmbedding(true).addCallback(
                     (Boolean result) -> {
                         Assert.assertTrue(result);
                         latch.countDown();

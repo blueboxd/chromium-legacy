@@ -12,6 +12,12 @@ import org.chromium.chrome.browser.toolbar.bottom.BottomControlsCoordinator;
  * BottomControlsCoordinator.BottomControlsVisibilityController}.
  */
 public interface TabGroupUi {
+    /**
+     * Called by the ToolbarManager when the system back button is pressed.
+     * @return Whether or not the TabGroupUi consumed the event.
+     */
+    boolean onBackPressed();
+
     void initializeWithNative(ChromeActivity activity,
             BottomControlsCoordinator.BottomControlsVisibilityController visibilityController);
     void destroy();

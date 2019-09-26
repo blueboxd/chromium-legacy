@@ -615,6 +615,12 @@
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]
   },
+  "printingMetrics": {
+    "channel": "dev",
+    "platforms": ["chromeos"],
+    "extension_types": ["extension"],
+    "location": "policy"
+  },
   "privacy": {
     "channel": "stable",
     "extension_types": ["extension", "legacy_packaged_app"]

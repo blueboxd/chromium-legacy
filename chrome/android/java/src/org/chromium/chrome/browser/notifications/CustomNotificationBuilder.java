@@ -250,7 +250,7 @@ public class CustomNotificationBuilder extends NotificationBuilderBase {
 
         Drawable inputDrawable = new BitmapDrawable(resources, bitmap);
         Drawable outputDrawable = ApiCompatibilityUtils.getUserBadgedDrawableForDensity(
-                mContext, inputDrawable, null /* badgeLocation */, metrics.densityDpi);
+                inputDrawable, null /* badgeLocation */, metrics.densityDpi);
 
         // The input bitmap is immutable, so the output drawable will be a different instance from
         // the input drawable if the work profile badge was applied.

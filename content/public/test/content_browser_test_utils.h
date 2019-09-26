@@ -70,18 +70,21 @@ GURL GetTestUrl(const char* dir, const char* file);
 // |url|.  This is a browser-initiated navigation that simulates a user typing
 // |url| into the address bar.
 //
-// TODO(alexmos): any tests that use this function and expect successful
-// navigations should do EXPECT_TRUE(NavigateToURL()).
-bool NavigateToURL(Shell* window, const GURL& url);
+// Tests should ensure that NavigateToURL succeeds.  If the URL that will
+// eventually commit is different from |url|, such as with redirects, use the
+// version below which also takes the expected commit URL.  If the navigation
+// will not result in a commit, such as a download or a 204 response, use
+// NavigateToURLAndExpectNoCommit() instead.
+WARN_UNUSED_RESULT bool NavigateToURL(Shell* window, const GURL& url);
 
 // Same as above, but takes in an additional URL, |expected_commit_url|, to
 // which the navigation should eventually commit.  This is useful for cases
 // like redirects, where navigation starts on one URL but ends up committing a
 // different URL.  This function will return true if navigating to |url|
 // results in a successful commit to |expected_commit_url|.
-bool NavigateToURL(Shell* window,
-                   const GURL& url,
-                   const GURL& expected_commit_url);
+WARN_UNUSED_RESULT bool NavigateToURL(Shell* window,
+                                      const GURL& url,
+                                      const GURL& expected_commit_url);
 
 // Perform a renderer-initiated navigation of |window| to |url|, blocking
 // until the navigation finishes.  The navigation is done by assigning

@@ -49,6 +49,7 @@ class SystemTrayModel : public SystemTray {
       const base::string16& notification_body) override;
   void SetUpdateOverCellularAvailableIconVisible(bool visible) override;
   void ShowVolumeSliderBubble() override;
+  void ShowNetworkDetailedViewBubble(bool show_by_click) override;
 
   ClockModel* clock() { return clock_.get(); }
   EnterpriseDomainModel* enterprise_domain() {

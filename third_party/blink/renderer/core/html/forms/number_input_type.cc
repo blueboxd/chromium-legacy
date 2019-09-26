@@ -32,6 +32,7 @@
 #include "third_party/blink/renderer/core/html/forms/number_input_type.h"
 
 #include <limits>
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/events/before_text_inserted_event.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -266,12 +267,12 @@ String NumberInputType::BadInputText() const {
 }
 
 String NumberInputType::RangeOverflowText(const Decimal& maximum) const {
-  return GetLocale().QueryString(WebLocalizedString::kValidationRangeOverflow,
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_RANGE_OVERFLOW,
                                  LocalizeValue(Serialize(maximum)));
 }
 
 String NumberInputType::RangeUnderflowText(const Decimal& minimum) const {
-  return GetLocale().QueryString(WebLocalizedString::kValidationRangeUnderflow,
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_RANGE_UNDERFLOW,
                                  LocalizeValue(Serialize(minimum)));
 }
 

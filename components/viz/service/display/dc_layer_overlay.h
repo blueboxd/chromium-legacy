@@ -139,11 +139,25 @@ class VIZ_SERVICE_EXPORT DCLayerOverlayProcessor {
   int previous_frame_processed_overlay_count_ = 0;
   int current_frame_processed_overlay_count_ = 0;
 
-  // Store information about clipped punch-through rects in target space for
-  // non-root render passes. These rects are used to clear the corresponding
-  // areas in parent render passes.
-  base::flat_map<RenderPassId, std::vector<gfx::Rect>>
-      pass_punch_through_rects_;
+  struct RenderPassData {
+    RenderPassData();
+    RenderPassData(const RenderPassData& other);
+    ~RenderPassData();
+
+    // Store information about clipped punch-through rects in target space for
+    // non-root render passes. These rects are used to clear the corresponding
+    // areas in parent render passes.
+    std::vector<gfx::Rect> punch_through_rects;
+
+    // Output rects of child render passes that have backdrop filters in target
+    // space. These rects are used to determine if the overlay rect could be
+    // read by backdrop filters.
+    std::vector<gfx::Rect> backdrop_filter_rects;
+
+    // Whether this render pass has backdrop filters.
+    bool has_backdrop_filters = false;
+  };
+  base::flat_map<RenderPassId, RenderPassData> render_pass_data_;
 
   DISALLOW_COPY_AND_ASSIGN(DCLayerOverlayProcessor);
 };

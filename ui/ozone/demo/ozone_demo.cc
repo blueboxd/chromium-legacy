@@ -81,7 +81,6 @@ int main(int argc, char** argv) {
       ->SetCurrentLayoutByName("us");
 
   ui::OzonePlatform::InitializeForGPU(params);
-  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 
   std::unique_ptr<ui::OzoneGpuTestHelper> gpu_helper;
   if (!ui::OzonePlatform::GetInstance()

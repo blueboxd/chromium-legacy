@@ -4,6 +4,7 @@
 
 import("//chrome/common/features.gni")
 import("//tools/grit/grit_rule.gni")
+import("//tools/grit/repack.gni")
 
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
@@ -339,4 +340,15 @@ if (enable_webui_tab_strip) {
       "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
     ]
   }
+}
+
+repack("dev_ui_paks") {
+  output = "$root_gen_dir/chrome/dev_ui_page_resources.pak"
+
+  sources = [
+    "$root_gen_dir/chrome/bluetooth_internals_resources.pak",
+  ]
+  deps = [
+    "//chrome/browser/resources/bluetooth_internals:resources",
+  ]
 }

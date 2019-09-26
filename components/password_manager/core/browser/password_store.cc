@@ -328,12 +328,6 @@ void PasswordStore::RemoveSiteStats(const GURL& origin_domain) {
       base::BindOnce(&PasswordStore::RemoveSiteStatsImpl, this, origin_domain));
 }
 
-void PasswordStore::GetAllSiteStats(PasswordStoreConsumer* consumer) {
-  DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
-  PostStatsTaskAndReplyToConsumerWithResult(
-      consumer, base::BindOnce(&PasswordStore::GetAllSiteStatsImpl, this));
-}
-
 void PasswordStore::GetSiteStats(const GURL& origin_domain,
                                  PasswordStoreConsumer* consumer) {
   DCHECK(main_task_runner_->RunsTasksInCurrentSequence());
@@ -376,11 +370,6 @@ bool PasswordStore::ScheduleTask(base::OnceClosure task) {
   if (background_task_runner_)
     return background_task_runner_->PostTask(FROM_HERE, std::move(task));
   return false;
-}
-
-scoped_refptr<base::SequencedTaskRunner>
-PasswordStore::GetBackgroundTaskRunner() {
-  return background_task_runner_;
 }
 
 bool PasswordStore::IsAbleToSavePasswords() const {

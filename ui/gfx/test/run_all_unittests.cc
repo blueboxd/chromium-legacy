@@ -12,14 +12,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_paths.h"
+#include "ui/gfx/font_util.h"
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 #include "base/test/mock_chrome_application_mac.h"
-#endif
-
-#if defined(OS_WIN)
-#include <windows.h>
-#include "ui/gfx/win/direct_write.h"
 #endif
 
 #if !defined(OS_IOS)
@@ -51,13 +47,11 @@ class GfxTestSuite : public base::TestSuite {
     ASSERT_TRUE(base::PathService::Get(ui::UI_TEST_PAK, &ui_test_pak_path));
     ui::ResourceBundle::InitSharedInstanceWithPakPath(ui_test_pak_path);
 
-#if defined(OS_WIN)
-    gfx::win::InitializeDirectWrite();
-#endif
-
 #if defined(OS_FUCHSIA)
     skia::ConfigureTestFont();
 #endif
+
+    gfx::InitializeFonts();
   }
 
   void Shutdown() override {

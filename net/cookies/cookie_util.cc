@@ -419,25 +419,25 @@ CookieOptions::SameSiteCookieContext ComputeSameSiteContextForRequest(
   //   target a top-level browsing context.
   //
   // * Include both "strict" and "lax" same-site cookies if the request is
-  //   tagged with a flag allowing it and "lax" would have been allowed had
-  //   |http_method| been safe.
+  //   tagged with a flag allowing it.
   //
   //   Note that this can be the case for requests initiated by extensions,
   //   which need to behave as though they are made by the document itself,
   //   but appear like cross-site ones.
   //
   // * Otherwise, do not include same-site cookies.
+  if (attach_same_site_cookies)
+    return CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
+
   CookieOptions::SameSiteCookieContext same_site_context =
       ComputeSameSiteContext(url, site_for_cookies, initiator);
+
+  // If the method is safe, the context is Lax. Otherwise, make a note that
+  // the method is unsafe.
   if (same_site_context ==
-      CookieOptions::SameSiteCookieContext::SAME_SITE_LAX) {
-    if (attach_same_site_cookies) {
-      same_site_context =
-          CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT;
-    } else if (!net::HttpUtil::IsMethodSafe(http_method)) {
-      same_site_context =
-          CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE;
-    }
+          CookieOptions::SameSiteCookieContext::SAME_SITE_LAX &&
+      !net::HttpUtil::IsMethodSafe(http_method)) {
+    return CookieOptions::SameSiteCookieContext::SAME_SITE_LAX_METHOD_UNSAFE;
   }
   return same_site_context;
 }

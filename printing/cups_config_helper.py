@@ -31,7 +31,7 @@ def run_cups_config(cups_config, mode):
   and return those flags as a list."""
 
   cups = subprocess.Popen([cups_config, '--cflags', '--ldflags', '--libs'],
-                          stdout=subprocess.PIPE)
+                          stdout=subprocess.PIPE, universal_newlines=True)
   flags = cups.communicate()[0].strip()
 
   flags_subset = []
@@ -67,7 +67,7 @@ def main():
     sysroot = sys.argv[2]
     cups_config = os.path.join(sysroot, 'usr', 'bin', 'cups-config')
     if not os.path.exists(cups_config):
-      print 'cups-config not found: %s' % cups_config
+      print('cups-config not found: %s' % cups_config)
       return 1
   else:
     cups_config = 'cups-config'
@@ -91,13 +91,13 @@ def main():
 
   if gn_libs_output:
     # Strip "-l" from beginning of libs, quote, and surround in [ ].
-    print '['
+    print('[')
     for lib in flags:
       if lib[:2] == "-l":
-        print '"%s", ' % lib[2:]
-    print ']'
+        print('"%s", ' % lib[2:])
+    print(']')
   else:
-    print ' '.join(flags)
+    print(' '.join(flags))
 
   return 0
 

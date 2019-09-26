@@ -10,9 +10,9 @@
 #include <vector>
 
 #include "base/strings/string16.h"
+#include "base/strings/utf_string_conversions.h"
 #include "ui/accessibility/ax_role_properties.h"
 #include "ui/accessibility/ax_tree_manager_map.h"
-#include "ui/accessibility/platform/ax_platform_node_delegate.h"
 
 namespace ui {
 
@@ -23,6 +23,15 @@ enum class AXTextConcatenationBehavior {
   kAsInnerText,
   // Ignore any introduced line breaks, e.g. GetText = "ABC".
   kAsTextContent
+};
+
+class AXRangeScreenRectDelegate {
+ public:
+  virtual gfx::Rect GetInnerTextRangeBoundsRect(AXTreeID tree_id,
+                                                AXNode::AXID node_id,
+                                                int start_offset,
+                                                int end_offset) = 0;
+  virtual gfx::Rect GetBoundsRect(AXTreeID tree_id, AXNode::AXID node_id) = 0;
 };
 
 // A range delimited by two positions in the AXTree.
@@ -274,7 +283,8 @@ class AXRange {
 
   // Appends rects in screen coordinates of all anchor nodes that span between
   // anchor_ and focus_. Rects outside of the viewport are skipped.
-  std::vector<gfx::Rect> GetScreenRects() const {
+  std::vector<gfx::Rect> GetScreenRects(
+      AXRangeScreenRectDelegate* delegate) const {
     std::vector<gfx::Rect> rects;
 
     for (const AXRange& leaf_text_range : *this) {
@@ -291,10 +301,6 @@ class AXRange {
       }
 
       AXTreeID current_tree_id = current_line_start->tree_id();
-      AXTreeManager* manager =
-          AXTreeManagerMap::GetInstance().GetManager(current_tree_id);
-      AXPlatformNodeDelegate* current_anchor_delegate = manager->GetDelegate(
-          current_tree_id, current_line_start->anchor_id());
 
       // For text anchors, we retrieve the bounding rectangles of its text
       // content. For non-text anchors (such as checkboxes, images, etc.), we
@@ -302,14 +308,12 @@ class AXRange {
       gfx::Rect current_rect =
           (current_line_start->IsInLineBreak() ||
            current_line_start->IsInTextObject())
-              ? current_anchor_delegate->GetInnerTextRangeBoundsRect(
+              ? delegate->GetInnerTextRangeBoundsRect(
+                    current_tree_id, current_line_start->anchor_id(),
                     current_line_start->text_offset(),
-                    current_line_end->text_offset(),
-                    ui::AXCoordinateSystem::kScreen,
-                    ui::AXClippingBehavior::kClipped)
-              : current_anchor_delegate->GetBoundsRect(
-                    ui::AXCoordinateSystem::kScreen,
-                    ui::AXClippingBehavior::kClipped);
+                    current_line_end->text_offset())
+              : delegate->GetBoundsRect(current_tree_id,
+                                        current_line_start->anchor_id());
 
       // We only add rects that are visible within the current viewport.
       // If the bounding rectangle is outside the viewport, the kClipped

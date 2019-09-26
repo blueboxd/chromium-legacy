@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Центар за обавештења, непрочитаних обавештења: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ЧЕСТО КОРИШЋЕНЕ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Још 1 месец}one{Још # месец}few{Још # месеца}other{Још # месеци}}</translation>
-<translation id="4841881773802181781">Уметање</translation>
 <translation id="4881695831933465202">Отвори</translation>
 <translation id="4888938634149558681">Позови</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 секунда}one{# секунда}few{# секунде}other{# секунди}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Чување датотеке</translation>
 <translation id="6656912866303152668">Уверите се да је синхронизација за <ph name="TARGET_DEVICE_NAME" /> укључена на Chrome-у и пробајте да пошаљете поново.</translation>
 <translation id="6699343763173986273">Следећа песма медија</translation>
-<translation id="673773751041746814">Брисање</translation>
 <translation id="6779314412797872738">Да бисте послали број са овог уређаја на Android телефон, <ph name="TROUBLESHOOT_LINK" /> за оба уређаја у подешавањима.</translation>
 <translation id="6786750046913594791">Затворите директоријум</translation>
 <translation id="6808150112686056157">Заустављање медија</translation>

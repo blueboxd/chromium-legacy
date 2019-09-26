@@ -5,6 +5,7 @@
 #ifndef UI_EVENTS_BLINK_PREDICTION_KALMAN_PREDICTOR_H_
 #define UI_EVENTS_BLINK_PREDICTION_KALMAN_PREDICTOR_H_
 
+#include <deque>
 #include <vector>
 
 #include "ui/events/blink/prediction/input_predictor.h"
@@ -19,7 +20,9 @@ namespace ui {
 // be used to predict one dimension (x, y).
 class KalmanPredictor : public InputPredictor {
  public:
-  explicit KalmanPredictor();
+  enum class HeuristicsMode { kHeuristicsDisabled, kHeuristicsEnabled };
+
+  explicit KalmanPredictor(HeuristicsMode heuristics_mode);
   ~KalmanPredictor() override;
 
   const char* GetName() const override;
@@ -54,8 +57,16 @@ class KalmanPredictor : public InputPredictor {
   // Filter to smooth time intervals.
   KalmanFilter time_filter_;
 
-  // The last input point.
-  InputData last_point_;
+  // Most recent input data.
+  std::deque<InputData> last_points_;
+
+  // Maximum time interval between first and last events in last points queue.
+  static constexpr base::TimeDelta kMaxTimeInQueue =
+      base::TimeDelta::FromMilliseconds(40);
+
+  // Flag to determine heuristic behavior based on the accumulated angle between
+  // the last set of points.
+  const HeuristicsMode heuristics_mode_;
 
   DISALLOW_COPY_AND_ASSIGN(KalmanPredictor);
 };

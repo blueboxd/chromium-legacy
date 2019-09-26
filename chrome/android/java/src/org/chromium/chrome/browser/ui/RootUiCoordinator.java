@@ -11,7 +11,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.MenuOrKeyboardActionController;
 import org.chromium.chrome.browser.appmenu.AppMenuBlocker;
 import org.chromium.chrome.browser.appmenu.AppMenuCoordinator;
@@ -25,7 +24,6 @@ import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarObserver;
 import org.chromium.chrome.browser.lifecycle.Destroyable;
 import org.chromium.chrome.browser.lifecycle.InflationObserver;
-import org.chromium.chrome.browser.status_indicator.StatusIndicatorCoordinator;
 import org.chromium.chrome.browser.vr.VrModeObserver;
 import org.chromium.chrome.browser.vr.VrModuleProvider;
 import org.chromium.ui.base.DeviceFormFactor;
@@ -55,8 +53,6 @@ public class RootUiCoordinator
     private OverviewModeBehavior mOverviewModeBehavior;
     private OverviewModeBehavior.OverviewModeObserver mOverviewModeObserver;
 
-    private StatusIndicatorCoordinator mStatusIndicatorCoordinator;
-
     private VrModeObserver mVrModeObserver;
 
     /**
@@ -71,7 +67,9 @@ public class RootUiCoordinator
         mMenuOrKeyboardActionController = mActivity.getMenuOrKeyboardActionController();
         mMenuOrKeyboardActionController.registerMenuOrKeyboardActionHandler(this);
 
-        initLayoutManagerSupplierObserver();
+        mLayoutManagerSupplierCallback = this::onLayoutManagerAvailable;
+        mActivity.getLayoutManagerSupplier().addObserver(mLayoutManagerSupplierCallback);
+
         initOverviewModeSupplierObserver();
     }
 
@@ -80,6 +78,7 @@ public class RootUiCoordinator
         mMenuOrKeyboardActionController.unregisterMenuOrKeyboardActionHandler(this);
 
         mActivity.getLayoutManagerSupplier().removeObserver(mLayoutManagerSupplierCallback);
+
         if (mOverlayPanelManager != null) {
             mOverlayPanelManager.removeObserver(mOverlayPanelManagerObserver);
         }
@@ -175,40 +174,32 @@ public class RootUiCoordinator
         return true;
     }
 
-    // Private class methods
+    // Protected class methods
 
-    private void initLayoutManagerSupplierObserver() {
-        mLayoutManagerSupplierCallback = layoutManager -> {
-            if (mOverlayPanelManager != null) {
-                mOverlayPanelManager.removeObserver(mOverlayPanelManagerObserver);
-            }
-            mOverlayPanelManager = layoutManager.getOverlayPanelManager();
+    protected void onLayoutManagerAvailable(LayoutManager layoutManager) {
+        if (mOverlayPanelManager != null) {
+            mOverlayPanelManager.removeObserver(mOverlayPanelManagerObserver);
+        }
+        mOverlayPanelManager = layoutManager.getOverlayPanelManager();
 
-            if (mOverlayPanelManagerObserver == null) {
-                mOverlayPanelManagerObserver =
-                        new OverlayPanelManager.OverlayPanelManagerObserver() {
-                            @Override
-                            public void onOverlayPanelShown() {
-                                if (mFindToolbarManager != null) {
-                                    mFindToolbarManager.hideToolbar(false);
-                                }
-                            }
+        if (mOverlayPanelManagerObserver == null) {
+            mOverlayPanelManagerObserver = new OverlayPanelManager.OverlayPanelManagerObserver() {
+                @Override
+                public void onOverlayPanelShown() {
+                    if (mFindToolbarManager != null) {
+                        mFindToolbarManager.hideToolbar(false);
+                    }
+                }
 
-                            @Override
-                            public void onOverlayPanelHidden() {}
-                        };
-            }
+                @Override
+                public void onOverlayPanelHidden() {}
+            };
+        }
 
-            mOverlayPanelManager.addObserver(mOverlayPanelManagerObserver);
-
-            if (ChromeFeatureList.isEnabled(ChromeFeatureList.OFFLINE_INDICATOR_V2)) {
-                mStatusIndicatorCoordinator = new StatusIndicatorCoordinator();
-                layoutManager.setStatusIndicatorSceneOverlay(
-                        mStatusIndicatorCoordinator.getSceneLayer());
-            }
-        };
-        mActivity.getLayoutManagerSupplier().addObserver(mLayoutManagerSupplierCallback);
+        mOverlayPanelManager.addObserver(mOverlayPanelManagerObserver);
     }
+
+    // Private class methods
 
     private void initOverviewModeSupplierObserver() {
         if (mActivity.getOverviewModeBehaviorSupplier() != null) {

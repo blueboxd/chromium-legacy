@@ -630,85 +630,6 @@ std::vector<url::Origin> ChromeContentBrowserClientExtensionsPart::
 }
 
 // static
-bool ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
-    content::SiteInstance* site_instance,
-    const GURL& to_url,
-    bool* result) {
-  DCHECK(result);
-
-  // Using url::Origin is important to properly handle blob: and filesystem:
-  // URLs.
-  url::Origin to_origin = url::Origin::Create(to_url);
-  if (to_origin.scheme() != kExtensionScheme) {
-    // We're not responsible for protecting this resource.  Note that hosted
-    // apps fall into this category.
-    return false;
-  }
-
-  // Do not allow pages from the web or other extensions navigate to
-  // non-web-accessible extension resources.
-
-  ExtensionRegistry* registry =
-      ExtensionRegistry::Get(site_instance->GetBrowserContext());
-  const Extension* to_extension =
-      registry->enabled_extensions().GetByID(to_origin.host());
-  if (!to_extension) {
-    // Treat non-existent extensions the same as an extension without accessible
-    // resources.
-    *result = false;
-    return true;
-  }
-
-  GURL site_url(site_instance->GetSiteURL());
-  const Extension* from_extension =
-      registry->enabled_extensions().GetExtensionOrAppByURL(site_url);
-  if (from_extension && from_extension == to_extension) {
-    *result = true;
-    return true;
-  }
-
-  // Blob and filesystem URLs are never considered web-accessible.  See
-  // https://crbug.com/656752.
-  if (to_url.SchemeIsFileSystem() || to_url.SchemeIsBlob()) {
-    *result = false;
-    return true;
-  }
-
-  // Navigations from chrome://, chrome-search:// and devtools:// pages
-  // need to be allowed, even if |to_url| is not web-accessible. See
-  // https://crbug.com/662602.
-  //
-  // Note that this is intentionally done after the check for blob: and
-  // filesystem: URLs above, for consistency with the renderer-side checks
-  // which already disallow navigations from chrome URLs to blob/filesystem
-  // URLs.
-  if (site_url.SchemeIs(content::kChromeUIScheme) ||
-      site_url.SchemeIs(content::kChromeDevToolsScheme) ||
-      site_url.SchemeIs(chrome::kChromeSearchScheme)) {
-    *result = true;
-    return true;
-  }
-
-  // <webview> guests should be allowed to load only webview-accessible
-  // resources, but that check is done later in
-  // AllowCrossRendererResourceLoadHelper, so allow <webview> guests to proceed
-  // here and rely on that check instead.  See https://crbug.com/691941.
-  if (site_url.SchemeIs(content::kGuestScheme)) {
-    *result = true;
-    return true;
-  }
-
-  if (WebAccessibleResourcesInfo::IsResourceWebAccessible(to_extension,
-                                                          to_url.path())) {
-    *result = true;
-    return true;
-  }
-
-  *result = false;
-  return true;
-}
-
-// static
 std::unique_ptr<content::VpnServiceProxy>
 ChromeContentBrowserClientExtensionsPart::GetVpnServiceProxy(
     content::BrowserContext* browser_context) {
@@ -731,9 +652,11 @@ ChromeContentBrowserClientExtensionsPart::
         network::mojom::NetworkContext* network_context,
         mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
             header_client,
-        const url::Origin& request_initiator) {
+        const url::Origin& request_initiator,
+        const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
   return URLLoaderFactoryManager::CreateFactory(
-      process, network_context, header_client, request_initiator);
+      process, network_context, header_client, request_initiator,
+      network_isolation_key);
 }
 
 // static

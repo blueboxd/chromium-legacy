@@ -347,19 +347,32 @@
         return;
       }
 
-      chrome.networkingPrivate.startConnect(guid, () => {
-        const lastError = chrome.runtime.lastError;
-        if (!lastError)
-          return;
-        const message = lastError.message;
-        if (message == 'connecting' || message == 'connect-canceled' ||
-            message == 'connected' || message == 'Error.InvalidNetworkGuid') {
-          return;
+      const networkConfig =
+          network_config.MojoInterfaceProviderImpl.getInstance()
+              .getMojoServiceRemote();
+
+      networkConfig.startConnect(guid).then(response => {
+        switch (response.result) {
+          case mojom.StartConnectResult.kSuccess:
+            return;
+          case mojom.StartConnectResult.kInvalidGuid:
+          case mojom.StartConnectResult.kInvalidState:
+          case mojom.StartConnectResult.kCanceled:
+            // TODO(stevenjb/khorimoto): Consider handling these cases.
+            return;
+          case mojom.StartConnectResult.kNotConfigured:
+            if (!OncMojo.networkTypeIsMobile(networkState.type)) {
+              chrome.send('showNetworkConfig', [guid]);
+            } else {
+              console.error('Cellular network is not configured: ' + guid);
+            }
+            return;
+          case mojom.StartConnectResult.kBlocked:
+          case mojom.StartConnectResult.kUnknown:
+            console.error(
+                'startConnect failed for: ' + guid + ': ' + response.message);
+            return;
         }
-        console.error(
-            'networkingPrivate.startConnect error: ' + message +
-            ' For: ' + guid);
-        chrome.send('showNetworkConfig', [guid]);
       });
     },
 

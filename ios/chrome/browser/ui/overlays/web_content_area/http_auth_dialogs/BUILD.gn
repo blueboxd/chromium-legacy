@@ -50,7 +50,6 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays/common/alerts/test",
     "//ios/chrome/browser/ui/overlays/test",
-    "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test",
     "//ios/web/public",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

@@ -27,9 +27,11 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/extensions/launch_util.h"
+#include "chrome/browser/profiles/avatar_menu.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
+#include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
@@ -256,6 +258,13 @@ AppShimHost* ExtensionAppShimHandler::ProfileState::GetHost() const {
 
 bool ExtensionAppShimHandler::AppState::IsMultiProfile() const {
   return multi_profile_host.get();
+}
+
+std::unique_ptr<AvatarMenu> ExtensionAppShimHandler::Delegate::CreateAvatarMenu(
+    AvatarMenuObserver* observer) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return std::make_unique<AvatarMenu>(
+      &profile_manager->GetProfileAttributesStorage(), observer, nullptr);
 }
 
 base::FilePath ExtensionAppShimHandler::Delegate::GetFullProfilePath(
@@ -723,6 +732,18 @@ void ExtensionAppShimHandler::OnShimFocus(
   delegate_->LaunchApp(profile, extension, files);
 }
 
+void ExtensionAppShimHandler::OnShimSelectedProfile(
+    AppShimHost* host,
+    const base::FilePath& profile_path) {
+  // TODO(https://crbug.com/982024): Handle the case where the profile exists
+  // but is not loaded yet.
+  Profile* profile = delegate_->ProfileForPath(profile_path);
+  const Extension* extension =
+      delegate_->MaybeGetAppExtension(profile, host->GetAppId());
+  std::vector<base::FilePath> files;
+  delegate_->LaunchApp(profile, extension, files);
+}
+
 void ExtensionAppShimHandler::set_delegate(Delegate* delegate) {
   delegate_.reset(delegate);
 }
@@ -814,6 +835,62 @@ void ExtensionAppShimHandler::OnBrowserRemoved(Browser* browser) {
       }
     }
   }
+}
+
+void ExtensionAppShimHandler::OnBrowserSetLastActive(Browser* browser) {
+  // Defer creation of the avatar menu until the active browser window changes,
+  // to allow tests to override |delegate_|.
+  if (!avatar_menu_) {
+    avatar_menu_ = delegate_->CreateAvatarMenu(this);
+    return;
+  }
+  if (!avatar_menu_)
+    return;
+  avatar_menu_->ActiveBrowserChanged(browser);
+  for (auto& iter_app : apps_) {
+    AppState* app_state = iter_app.second.get();
+    if (app_state->IsMultiProfile())
+      UpdateHostProfileMenu(app_state->multi_profile_host.get());
+  }
+}
+
+void ExtensionAppShimHandler::OnAvatarMenuChanged(AvatarMenu* menu) {
+  if (!avatar_menu_)
+    return;
+  for (auto& iter_app : apps_) {
+    AppState* app_state = iter_app.second.get();
+    if (app_state->IsMultiProfile())
+      UpdateHostProfileMenu(app_state->multi_profile_host.get());
+  }
+}
+
+void ExtensionAppShimHandler::UpdateHostProfileMenu(AppShimHost* host) {
+  std::vector<chrome::mojom::ProfileMenuItemPtr> mojo_items;
+  for (size_t i = 0; i < avatar_menu_->GetNumberOfItems(); ++i) {
+    // TODO(https://crbug.com/982024): Skip profiles for which this extension
+    // is not installed.
+    auto mojo_item = chrome::mojom::ProfileMenuItem::New();
+    const AvatarMenu::Item& item = avatar_menu_->GetItemAt(i);
+    mojo_item->name = item.name;
+    mojo_item->menu_index = item.menu_index;
+    mojo_item->active = item.active;
+    mojo_item->profile_path = item.profile_path;
+    {
+      // Scale the icon as needed (see ProfileMenuController).
+      gfx::Image itemIcon;
+      AvatarMenu::GetImageForMenuButton(item.profile_path, &itemIcon);
+      static constexpr int kMenuAvatarIconSize = 38;
+      if (itemIcon.Width() > kMenuAvatarIconSize ||
+          itemIcon.Height() > kMenuAvatarIconSize) {
+        itemIcon = profiles::GetSizedAvatarIcon(itemIcon, /*is_rectangle=*/true,
+                                                kMenuAvatarIconSize,
+                                                kMenuAvatarIconSize);
+      }
+      mojo_item->icon = *itemIcon.ToImageSkia();
+    }
+    mojo_items.push_back(std::move(mojo_item));
+  }
+  host->GetAppShim()->UpdateProfileMenu(std::move(mojo_items));
 }
 
 ExtensionAppShimHandler::ProfileState*

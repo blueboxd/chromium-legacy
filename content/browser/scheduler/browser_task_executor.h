@@ -148,6 +148,7 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
 #endif  // DCHECK_IS_ON()
 
  private:
+  friend class BrowserIOThreadDelegate;
   friend class BrowserTaskExecutorTest;
 
   static void CreateInternal(
@@ -162,6 +163,10 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
   FRIEND_TEST_ALL_PREFIXES(BrowserTaskExecutorTest,
                            BestEffortTasksRunAfterStartup);
 
+  // For Get();
+  FRIEND_TEST_ALL_PREFIXES(BrowserTaskExecutorTest,
+                           RegisterExecutorForBothThreads);
+
   explicit BrowserTaskExecutor(
       std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler,
       std::unique_ptr<BrowserIOThreadDelegate> browser_io_thread_delegate);
@@ -169,6 +174,8 @@ class CONTENT_EXPORT BrowserTaskExecutor : public base::TaskExecutor {
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
       const base::TaskTraits& traits) const;
+
+  static BrowserTaskExecutor* Get();
 
   std::unique_ptr<BrowserUIThreadScheduler> browser_ui_thread_scheduler_;
   scoped_refptr<BrowserUIThreadScheduler::Handle> browser_ui_thread_handle_;

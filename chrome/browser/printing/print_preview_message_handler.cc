@@ -31,6 +31,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
+#include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "printing/nup_parameters.h"
 #include "printing/page_setup.h"
 #include "printing/print_job_constants.h"
@@ -166,9 +167,12 @@ void PrintPreviewMessageHandler::OnDidPreviewPage(
     // Use utility process to convert skia metafile to pdf.
     client->DoCompositePageToPdf(
         params.document_cookie, render_frame_host, content,
-        base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
-                       weak_ptr_factory_.GetWeakPtr(), page_number,
-                       params.document_cookie, ids));
+        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfPageDone,
+                           weak_ptr_factory_.GetWeakPtr(), page_number,
+                           params.document_cookie, ids),
+            mojom::PdfCompositor::Status::kCompositingFailure,
+            base::ReadOnlySharedMemoryRegion()));
   } else {
     NotifyUIPreviewPageReady(
         print_preview_ui, page_number, ids,
@@ -207,10 +211,13 @@ void PrintPreviewMessageHandler::OnMetafileReadyForPrinting(
 
     client->DoCompositeDocumentToPdf(
         params.document_cookie, render_frame_host, content,
-        base::BindOnce(&PrintPreviewMessageHandler::OnCompositePdfDocumentDone,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       params.expected_pages_count, params.document_cookie,
-                       ids));
+        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            base::BindOnce(
+                &PrintPreviewMessageHandler::OnCompositePdfDocumentDone,
+                weak_ptr_factory_.GetWeakPtr(), params.expected_pages_count,
+                params.document_cookie, ids),
+            mojom::PdfCompositor::Status::kCompositingFailure,
+            base::ReadOnlySharedMemoryRegion()));
   } else {
     NotifyUIPreviewDocumentReady(
         print_preview_ui, params.expected_pages_count, ids,
@@ -315,12 +322,14 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (status != mojom::PdfCompositor::Status::kSuccess) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
+    if (print_preview_ui)
+      print_preview_ui->OnPrintPreviewFailed(ids.request_id);
     return;
   }
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
 
@@ -353,8 +362,12 @@ void PrintPreviewMessageHandler::OnCompositePdfPageDone(
       client->DoNupPdfConvert(
           document_cookie, pages_per_sheet, print_preview_ui->page_size(),
           printable_area, std::move(pdf_page_regions),
-          base::BindOnce(&PrintPreviewMessageHandler::OnNupPdfConvertDone,
-                         weak_ptr_factory_.GetWeakPtr(), new_page_number, ids));
+          mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+              base::BindOnce(&PrintPreviewMessageHandler::OnNupPdfConvertDone,
+                             weak_ptr_factory_.GetWeakPtr(), new_page_number,
+                             ids),
+              mojom::PdfNupConverter::Status::CONVERSION_FAILURE,
+              base::ReadOnlySharedMemoryRegion()));
     }
   }
 }
@@ -365,12 +378,14 @@ void PrintPreviewMessageHandler::OnNupPdfConvertDone(
     mojom::PdfNupConverter::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (status != mojom::PdfNupConverter::Status::SUCCESS) {
     DLOG(ERROR) << "Nup pdf page conversion failed with error " << status;
+    if (print_preview_ui)
+      print_preview_ui->OnPrintPreviewFailed(ids.request_id);
     return;
   }
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
 
@@ -386,12 +401,14 @@ void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     mojom::PdfCompositor::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (status != mojom::PdfCompositor::Status::kSuccess) {
     DLOG(ERROR) << "Compositing pdf failed with error " << status;
+    if (print_preview_ui)
+      print_preview_ui->OnPrintPreviewFailed(ids.request_id);
     return;
   }
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
 
@@ -412,10 +429,13 @@ void PrintPreviewMessageHandler::OnCompositePdfDocumentDone(
     client->DoNupPdfDocumentConvert(
         document_cookie, pages_per_sheet, print_preview_ui->page_size(),
         printable_area, std::move(region),
-        base::BindOnce(&PrintPreviewMessageHandler::OnNupPdfDocumentConvertDone,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       (page_count + pages_per_sheet - 1) / pages_per_sheet,
-                       ids));
+        mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+            base::BindOnce(
+                &PrintPreviewMessageHandler::OnNupPdfDocumentConvertDone,
+                weak_ptr_factory_.GetWeakPtr(),
+                (page_count + pages_per_sheet - 1) / pages_per_sheet, ids),
+            mojom::PdfNupConverter::Status::CONVERSION_FAILURE,
+            base::ReadOnlySharedMemoryRegion()));
   }
 }
 
@@ -425,12 +445,14 @@ void PrintPreviewMessageHandler::OnNupPdfDocumentConvertDone(
     mojom::PdfNupConverter::Status status,
     base::ReadOnlySharedMemoryRegion region) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (status != mojom::PdfNupConverter::Status::SUCCESS) {
     DLOG(ERROR) << "Nup pdf document convert failed with error " << status;
+    if (print_preview_ui)
+      print_preview_ui->OnPrintPreviewFailed(ids.request_id);
     return;
   }
 
-  PrintPreviewUI* print_preview_ui = GetPrintPreviewUI(ids.ui_id);
   if (!print_preview_ui)
     return;
 

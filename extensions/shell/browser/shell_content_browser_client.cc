@@ -341,9 +341,11 @@ ShellContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     network::mojom::NetworkContext* network_context,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
-    const url::Origin& request_initiator) {
+    const url::Origin& request_initiator,
+    const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
   return URLLoaderFactoryManager::CreateFactory(
-      process, network_context, header_client, request_initiator);
+      process, network_context, header_client, request_initiator,
+      network_isolation_key);
 }
 
 std::string ShellContentBrowserClient::GetUserAgent() {

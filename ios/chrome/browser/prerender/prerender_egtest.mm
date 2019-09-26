@@ -8,6 +8,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/sys_string_conversions.h"
+#import "base/test/ios/wait_util.h"
 #import "ios/chrome/browser/ui/content_suggestions/ntp_home_constant.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
 #import "ios/chrome/browser/ui/omnibox/popup/omnibox_popup_truncating_label.h"
@@ -22,6 +23,9 @@
 #error "This file requires ARC support."
 #endif
 
+using base::test::ios::WaitUntilConditionOrTimeout;
+using base::test::ios::kWaitForPageLoadTimeout;
+
 namespace {
 const char kPageURL[] = "/test-page.html";
 const char kPageTitle[] = "Page title!";
@@ -29,6 +33,7 @@ const char kPageLoadedString[] = "Page loaded!";
 
 // Provides responses for redirect and changed window location URLs.
 std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
+    int* counter,
     const net::test_server::HttpRequest& request) {
   if (request.relative_url != kPageURL) {
     return nullptr;
@@ -39,6 +44,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   http_response->set_content("<html><head><title>" + std::string(kPageTitle) +
                              "</title></head><body>" +
                              std::string(kPageLoadedString) + "</body></html>");
+  (*counter)++;
   return std::move(http_response);
 }
 }  // namespace
@@ -59,16 +65,23 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
         @"Disabled for iPad due to alternate letters educational screen.");
   }
 
+  if ([ChromeEarlGrey isSlimNavigationManagerEnabled]) {
+    // TODO(crbug.com/834116): Fix and enable this test.
+    EARL_GREY_TEST_DISABLED(@"Prerender is not supported by slim-nav yet.");
+  }
+
   [ChromeEarlGrey clearBrowsingHistory];
   // Set server up.
+  int visitCounter = 0;
   self.testServer->RegisterRequestHandler(
-      base::BindRepeating(&StandardResponse));
+      base::BindRepeating(&StandardResponse, &visitCounter));
   GREYAssertTrue(self.testServer->Start(), @"Test server failed to start.");
   const GURL pageURL = self.testServer->GetURL(kPageURL);
   NSString* pageString = base::SysUTF8ToNSString(pageURL.GetContent());
 
   // Go to the page a couple of time so it shows as suggestion.
   [ChromeEarlGrey loadURL:pageURL];
+  GREYAssertEqual(1, visitCounter, @"The page should have been loaded once");
   [ChromeEarlGrey goBack];
   [[self class] closeAllTabs];
   [ChromeEarlGrey openNewTab];
@@ -80,6 +93,7 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText([pageString stringByAppendingString:@"\n"])];
   [ChromeEarlGrey waitForPageToFinishLoading];
+  GREYAssertEqual(2, visitCounter, @"The page should have been loaded twice");
   [[self class] closeAllTabs];
   [ChromeEarlGrey openNewTab];
 
@@ -91,6 +105,12 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
   [[EarlGrey selectElementWithMatcher:chrome_test_util::Omnibox()]
       performAction:grey_typeText(
                         [pageString substringToIndex:[pageString length] - 6])];
+
+  // Wait until prerender request reaches the server.
+  bool prerendered = WaitUntilConditionOrTimeout(kWaitForPageLoadTimeout, ^{
+    return visitCounter == 3;
+  });
+  GREYAssertTrue(prerendered, @"Prerender did not happen");
 
   // Make sure the omnibox is autocompleted.
   [[EarlGrey
@@ -111,6 +131,9 @@ std::unique_ptr<net::test_server::HttpResponse> StandardResponse(
                                        @"omnibox suggestion 0")),
                                    grey_sufficientlyVisible(), nil)]
       performAction:grey_tap()];
+
+  [ChromeEarlGrey waitForWebStateContainingText:kPageLoadedString];
+  GREYAssertEqual(3, visitCounter, @"Prerender should have been the last load");
 }
 
 @end

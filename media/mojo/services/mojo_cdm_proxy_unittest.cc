@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "base/test/gmock_callback_support.h"
+#include "base/test/gtest_util.h"
 #include "base/test/test_message_loop.h"
 #include "media/base/mock_filters.h"
 #include "media/cdm/cdm_proxy_context.h"
@@ -293,6 +294,11 @@ TEST_F(MojoCdmProxyTest, Initialize) {
 
 TEST_F(MojoCdmProxyTest, Initialize_Failure) {
   Initialize(Status::kFail);
+}
+
+TEST_F(MojoCdmProxyTest, Initialize_Twice) {
+  Initialize();
+  EXPECT_CHECK_DEATH(Initialize());
 }
 
 TEST_F(MojoCdmProxyTest, Process) {

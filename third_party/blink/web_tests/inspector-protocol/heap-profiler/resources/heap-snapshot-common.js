@@ -19,6 +19,11 @@
   await testRunner.loadScriptModule(
       '../../../../blink/renderer/devtools/front_end/heap_snapshot_worker/HeapSnapshotLoader.js');
 
+  // Expose the (de)serialize code from Common because the worker expects it on self.
+  // TODO(https://crbug.com/680046) Remove the dupe code below.
+  self.serializeUIString = Common.serializeUIString;
+  self.deserializeUIString = Common.deserializeUIString;
+
   async function takeHeapSnapshotInternal(command) {
     var loader = new HeapSnapshotWorker.HeapSnapshotLoader();
     function onChunk(messageObject) {

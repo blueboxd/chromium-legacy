@@ -30,6 +30,7 @@
 #include "base/task/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/branding_buildflags.h"
+#include "build/buildflag.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
 #include "chrome/browser/chrome_notification_types.h"
@@ -127,6 +128,7 @@
 #include "chrome/browser/ui/webui/help/help_utils_chromeos.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/constants/chromeos_constants.h"
 #include "chromeos/constants/chromeos_features.h"
@@ -685,8 +687,12 @@ void WizardController::ShowUpdateRequiredScreen() {
 }
 
 void WizardController::ShowAssistantOptInFlowScreen() {
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   UpdateStatusAreaVisibilityForScreen(AssistantOptInFlowScreenView::kScreenId);
   SetCurrentScreen(GetScreen(AssistantOptInFlowScreenView::kScreenId));
+#else
+  ShowMultiDeviceSetupScreen();
+#endif
 }
 
 void WizardController::ShowMultiDeviceSetupScreen() {

@@ -123,7 +123,7 @@ FlexRule GetDefaultFlexRule(
 FlexSpecification::FlexSpecification() : rule_(GetDefaultFlexRule()) {}
 
 FlexSpecification FlexSpecification::ForCustomRule(FlexRule rule) {
-  return FlexSpecification(std::move(rule), 1, 1);
+  return FlexSpecification(std::move(rule), 1, 1, LayoutAlignment::kStretch);
 }
 
 FlexSpecification FlexSpecification::ForSizeRule(
@@ -133,11 +133,17 @@ FlexSpecification FlexSpecification::ForSizeRule(
   return FlexSpecification(
       GetDefaultFlexRule(minimum_size_rule, maximum_size_rule,
                          adjust_height_for_width),
-      1, 1);
+      1, 1, LayoutAlignment::kStretch);
 }
 
-FlexSpecification::FlexSpecification(FlexRule rule, int order, int weight)
-    : rule_(std::move(rule)), order_(order), weight_(weight) {}
+FlexSpecification::FlexSpecification(FlexRule rule,
+                                     int order,
+                                     int weight,
+                                     LayoutAlignment alignment)
+    : rule_(std::move(rule)),
+      order_(order),
+      weight_(weight),
+      alignment_(alignment) {}
 
 FlexSpecification::FlexSpecification(const FlexSpecification& other) = default;
 
@@ -148,12 +154,17 @@ FlexSpecification::~FlexSpecification() = default;
 
 FlexSpecification FlexSpecification::WithWeight(int weight) const {
   DCHECK_GE(weight, 0);
-  return FlexSpecification(rule_, order_, weight);
+  return FlexSpecification(rule_, order_, weight, alignment_);
 }
 
 FlexSpecification FlexSpecification::WithOrder(int order) const {
   DCHECK_GE(order, 1);
-  return FlexSpecification(rule_, order, weight_);
+  return FlexSpecification(rule_, order, weight_, alignment_);
+}
+
+FlexSpecification FlexSpecification::WithAlignment(
+    LayoutAlignment alignment) const {
+  return FlexSpecification(rule_, order_, weight_, alignment);
 }
 
 // Inset1D ---------------------------------------------------------------------

@@ -2379,6 +2379,7 @@ class ChromeDriverSecureContextTest(ChromeDriverBaseTestWithWebServer):
 
   def setUp(self):
     self._driver = self.CreateDriver(
+        accept_insecure_certs=True,
         chrome_switches=['host-resolver-rules=MAP * 127.0.0.1'])
 
   def testAddVirtualAuthenticator(self):

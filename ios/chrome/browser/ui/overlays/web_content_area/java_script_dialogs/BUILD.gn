@@ -6,12 +6,8 @@ source_set("common") {
   sources = [
     "java_script_dialog_blocking_action.h",
     "java_script_dialog_blocking_action.mm",
-    "java_script_dialog_overlay_coordinator+subclassing.h",
-    "java_script_dialog_overlay_coordinator.h",
-    "java_script_dialog_overlay_coordinator.mm",
-    "java_script_dialog_overlay_mediator+subclassing.h",
-    "java_script_dialog_overlay_mediator.h",
-    "java_script_dialog_overlay_mediator.mm",
+    "java_script_overlay_mediator_util.h",
+    "java_script_overlay_mediator_util.mm",
   ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
@@ -27,6 +23,7 @@ source_set("common") {
     "//ios/chrome/browser/ui/dialogs",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays:coordinators",
+    "//ios/chrome/browser/ui/overlays/common/alerts",
     "//ui/base",
   ]
 }
@@ -51,6 +48,7 @@ source_set("alerts") {
     "//ios/chrome/browser/ui/alert_view_controller",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays:coordinators",
+    "//ios/chrome/browser/ui/overlays/common/alerts",
     "//ui/base",
   ]
 }
@@ -75,6 +73,7 @@ source_set("confirmations") {
     "//ios/chrome/browser/ui/alert_view_controller",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays:coordinators",
+    "//ios/chrome/browser/ui/overlays/common/alerts",
     "//ui/base",
   ]
 }
@@ -99,6 +98,7 @@ source_set("prompts") {
     "//ios/chrome/browser/ui/alert_view_controller",
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/overlays:coordinators",
+    "//ios/chrome/browser/ui/overlays/common/alerts",
     "//ui/base",
   ]
 }
@@ -106,12 +106,8 @@ source_set("prompts") {
 source_set("unit_tests") {
   testonly = true
   sources = [
-    "java_script_alert_overlay_coordinator_unittest.mm",
     "java_script_alert_overlay_mediator_unittest.mm",
-    "java_script_confirmation_overlay_coordinator_unittest.mm",
     "java_script_confirmation_overlay_mediator_unittest.mm",
-    "java_script_dialog_overlay_mediator_unittest.mm",
-    "java_script_prompt_overlay_coordinator_unittest.mm",
     "java_script_prompt_overlay_mediator_unittest.mm",
   ]
 
@@ -133,8 +129,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/ui/alert_view_controller/test",
     "//ios/chrome/browser/ui/dialogs",
     "//ios/chrome/browser/ui/elements",
+    "//ios/chrome/browser/ui/overlays/common/alerts/test",
     "//ios/chrome/browser/ui/overlays/test",
-    "//ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test",
     "//ios/web/public",
     "//ios/web/public/test",
     "//ios/web/public/test/fakes",

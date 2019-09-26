@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Sarthak Kukreti <sarthakkukreti@chromium.org>
 Date: Mon, 15 Jul 2019 17:23:45 -0700
-Subject: [PATCH 1/5] Call ioctl() with the correct signature on both Android
+Subject: [PATCH 1/6] Call ioctl() with the correct signature on both Android
  and stock Linux.
 
 This backports https://sqlite.org/src/info/68e12e063fe41bcd
@@ -32,5 +32,5 @@ index 52ef64116444..894c725b5265 100644
  }; /* End of the overrideable system calls */
  
 -- 
-2.22.0.657.g960e92d24f-goog
+2.23.0.351.gc4317032e6-goog
 

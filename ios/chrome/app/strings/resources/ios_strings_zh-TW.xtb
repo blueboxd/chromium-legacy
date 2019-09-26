@@ -235,7 +235,6 @@
 <translation id="430967081421617822">不限時間</translation>
 <translation id="4338650699862464074">將你造訪的網頁網址傳送給 Google。</translation>
 <translation id="4359125752503270327">這個網頁會在其他應用程式中開啟。</translation>
-<translation id="4370827530403103842">同步處理功能無法正常運作。請輕觸這裡以修正同步問題。</translation>
 <translation id="4375040482473363939">QR 圖碼搜尋</translation>
 <translation id="4378154925671717803">電話</translation>
 <translation id="441868831736628555">隱私權聲明</translation>
@@ -429,7 +428,6 @@
 <translation id="7006788746334555276">內容設定</translation>
 <translation id="7015203776128479407">尚未完成初始同步處理設定。已關閉同步功能。</translation>
 <translation id="7029809446516969842">密碼</translation>
-<translation id="7031882061095297553">同步處理</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7062545763355031412">接受並切換帳戶</translation>
 <translation id="7099761977003084116">最近開啟的分頁</translation>
@@ -438,7 +436,6 @@
 <translation id="7133798577887235672">完整名稱</translation>
 <translation id="7136892417564438900">無法使用相機</translation>
 <translation id="7159472599653637159">切換為行動版網站</translation>
-<translation id="7167621057293532233">資料類型</translation>
 <translation id="7173114856073700355">開啟設定</translation>
 <translation id="7189598951263744875">分享...</translation>
 <translation id="7192050974311852563">開始記錄</translation>
@@ -471,7 +468,6 @@
 <translation id="766891008101699113">如要以私密模式瀏覽網頁，請開啟新分頁。</translation>
 <translation id="7671141431838911305">安裝</translation>
 <translation id="7765158879357617694">移動</translation>
-<translation id="7769602470925380267">接受並登出</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
 <translation id="7781829728241885113">昨天</translation>
 <translation id="778855399387580014">在 Chrome 新分頁中進行搜尋。</translation>
@@ -506,7 +502,6 @@
 <translation id="8281781826761538115">預設 - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">新搜尋</translation>
 <translation id="8328777765163860529">關閉全部</translation>
-<translation id="8381750437846184350">控管 Google 使用您瀏覽記錄的方式，針對 Google 所提供的個人化搜尋服務、廣告內容和其他各項 Google 服務調整相關設定</translation>
 <translation id="8407669440184693619">找不到這個網站的密碼</translation>
 <translation id="842017693807136194">目前登入身分</translation>
 <translation id="8428045167754449968">鄉/鎮/市/區</translation>
@@ -561,7 +556,6 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">當機報告已送出。</translation>
 <translation id="952704832371081537">取消</translation>
-<translation id="976982866697960176">管理同步資料…</translation>
 <translation id="988141524645182168">其他裝置</translation>
 <translation id="989988560359834682">編輯地址</translation>
 <translation id="994757059139821576">文章建議</translation>

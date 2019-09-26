@@ -96,10 +96,6 @@ class EngineComponentsFactory {
       const std::string& dir_name,
       const base::RepeatingCallback<std::string()>& cache_guid_generator,
       const base::FilePath& backing_filepath) = 0;
-
-  // Returns the Switches struct that this object is using as configuration, if
-  // the implementation is making use of one.
-  virtual Switches GetSwitches() const = 0;
 };
 
 }  // namespace syncer

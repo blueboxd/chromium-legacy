@@ -212,6 +212,12 @@ class SyncTest : public InProcessBrowserTest {
   // Initializes sync clients and profiles if required and syncs each of them.
   virtual bool SetupSync() WARN_UNUSED_RESULT;
 
+  // This is similar to click the reset button on chrome.google.com/sync.
+  // Only takes effect when running with external servers.
+  // Please call this before setting anything. This method will clear all
+  // local profiles, browsers, etc.
+  void ResetSyncForPrimaryAccount();
+
   // Like SetupSync() but does not wait for the clients to be ready to sync.
   void SetupSyncNoWaitingForCompletion();
 
@@ -405,6 +411,8 @@ class SyncTest : public InProcessBrowserTest {
   // Internal routine for setting up sync.
   void SetupSyncInternal(SetupSyncMode setup_mode);
 
+  void ClearProfiles();
+
   // GAIA account used by the test case.
   std::string username_;
 
@@ -492,6 +500,10 @@ class SyncTest : public InProcessBrowserTest {
   // Indicates whether changes to a profile should also change the verifier
   // profile or not.
   bool use_verifier_;
+
+  // Indicates whether to use a new user data dir.
+  // Only used for external server tests with two clients.
+  bool use_new_user_data_dir_ = false;
 
   // Indicates the need to create Gaia user account at runtime. This can only
   // be set if tests are run against external servers with support for user

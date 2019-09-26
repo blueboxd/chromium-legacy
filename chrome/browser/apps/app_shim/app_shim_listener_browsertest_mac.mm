@@ -68,6 +68,8 @@ class TestShimClient : public chrome::mojom::AppShim {
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
   void SetBadgeLabel(const std::string& badge_label) override {}
+  void UpdateProfileMenu(std::vector<chrome::mojom::ProfileMenuItemPtr>
+                             profile_menu_items) override {}
 
  private:
   void OnShimConnectedDone(apps::AppShimLaunchResult result,
@@ -129,6 +131,7 @@ class AppShimListenerBrowserTest : public InProcessBrowserTest,
   // chrome::mojom::AppShimHost.
   void FocusApp(apps::AppShimFocusType focus_type,
                 const std::vector<base::FilePath>& files) override {}
+  void ProfileSelectedFromMenu(const base::FilePath& profile_path) override {}
 
   std::unique_ptr<base::RunLoop> runner_;
   mojo::Binding<chrome::mojom::AppShimHost> binding_;

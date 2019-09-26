@@ -17,6 +17,7 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_bootstrap_mac.h"
 #include "chrome/browser/apps/app_shim/app_shim_host_mac.h"
+#include "chrome/browser/profiles/avatar_menu_observer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "content/public/browser/notification_observer.h"
@@ -46,12 +47,15 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
                                 public AppShimHost::Client,
                                 public content::NotificationObserver,
                                 public AppLifetimeMonitor::Observer,
-                                public BrowserListObserver {
+                                public BrowserListObserver,
+                                public AvatarMenuObserver {
  public:
   class Delegate {
    public:
     virtual ~Delegate() {}
 
+    virtual std::unique_ptr<AvatarMenu> CreateAvatarMenu(
+        AvatarMenuObserver* observer);
     virtual base::FilePath GetFullProfilePath(
         const base::FilePath& relative_path);
     virtual bool ProfileExistsForPath(const base::FilePath& path);
@@ -131,6 +135,8 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   void OnShimFocus(AppShimHost* host,
                    AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override;
+  void OnShimSelectedProfile(AppShimHost* host,
+                             const base::FilePath& profile_path) override;
 
   // AppLifetimeMonitor::Observer overrides:
   void OnAppStart(content::BrowserContext* context,
@@ -150,6 +156,10 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   // BrowserListObserver overrides;
   void OnBrowserAdded(Browser* browser) override;
   void OnBrowserRemoved(Browser* browser) override;
+  void OnBrowserSetLastActive(Browser* browser) override;
+
+  // AvatarMenuObserver:
+  void OnAvatarMenuChanged(AvatarMenu* menu) override;
 
  protected:
   typedef std::set<Browser*> BrowserSet;
@@ -181,6 +191,9 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   // where the extension is disabled.
   void OnExtensionEnabled(std::unique_ptr<AppShimHostBootstrap> bootstrap);
 
+  // Update the profiles menu for the specified host.
+  void UpdateHostProfileMenu(AppShimHost* host);
+
   std::unique_ptr<Delegate> delegate_;
 
   // Retrieve the ProfileState for a given (Profile, Extension) pair. If one
@@ -192,6 +205,9 @@ class ExtensionAppShimHandler : public AppShimHostBootstrap::Client,
   std::map<std::string, std::unique_ptr<AppState>> apps_;
 
   content::NotificationRegistrar registrar_;
+
+  // The avatar menu instance used by all app shims.
+  std::unique_ptr<AvatarMenu> avatar_menu_;
 
   base::WeakPtrFactory<ExtensionAppShimHandler> weak_factory_;
 

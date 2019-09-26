@@ -26,6 +26,8 @@ class ImageSkia;
 
 class Profile;
 
+// TODO(crbug.com/1004708): Move Is*[Enabled|Allowed] functions to
+// CrostiniFeatures.
 namespace crostini {
 
 struct LinuxPackageInfo;
@@ -53,9 +55,6 @@ bool IsCrostiniAllowedForProfile(Profile* profile);
 // hardware, flags, etc, even if it is forbidden by the enterprise policy. The
 // UI uses this to indicate that crostini is available but disabled by policy.
 bool IsCrostiniUIAllowedForProfile(Profile* profile, bool check_policy = true);
-
-// Returns true if policy allows export import UI.
-bool IsCrostiniExportImportUIAllowedForProfile(Profile* profile);
 
 // Returns whether if Crostini has been enabled, i.e. the user has launched it
 // at least once and not deleted it.

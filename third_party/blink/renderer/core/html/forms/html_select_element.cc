@@ -31,6 +31,7 @@
 
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_element_or_long.h"
 #include "third_party/blink/renderer/bindings/core/v8/html_option_element_or_html_opt_group_element.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
@@ -151,8 +152,7 @@ String HTMLSelectElement::validationMessage() const {
   if (CustomError())
     return CustomValidationMessage();
   if (ValueMissing()) {
-    return GetLocale().QueryString(
-        WebLocalizedString::kValidationValueMissingForSelect);
+    return GetLocale().QueryString(IDS_FORM_VALIDATION_VALUE_MISSING_SELECT);
   }
   return String();
 }

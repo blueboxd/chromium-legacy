@@ -25,6 +25,33 @@
 
 namespace ui {
 
+class AXRangeScreenRectDelegateImpl : public AXRangeScreenRectDelegate {
+ public:
+  AXRangeScreenRectDelegateImpl(AXPlatformNodeTextRangeProviderWin* host)
+      : host_(host) {}
+
+  gfx::Rect GetInnerTextRangeBoundsRect(AXTreeID tree_id,
+                                        AXNode::AXID node_id,
+                                        int start_offset,
+                                        int end_offset) override {
+    AXPlatformNodeDelegate* delegate = host_->GetDelegate(tree_id, node_id);
+    DCHECK(delegate);
+    return delegate->GetInnerTextRangeBoundsRect(
+        start_offset, end_offset, ui::AXCoordinateSystem::kScreen,
+        ui::AXClippingBehavior::kClipped);
+  }
+
+  gfx::Rect GetBoundsRect(AXTreeID tree_id, AXNode::AXID node_id) override {
+    AXPlatformNodeDelegate* delegate = host_->GetDelegate(tree_id, node_id);
+    DCHECK(delegate);
+    return delegate->GetBoundsRect(ui::AXCoordinateSystem::kScreen,
+                                   ui::AXClippingBehavior::kClipped);
+  }
+
+ private:
+  AXPlatformNodeTextRangeProviderWin* host_;
+};
+
 AXPlatformNodeTextRangeProviderWin::AXPlatformNodeTextRangeProviderWin() {
   DVLOG(1) << __func__;
 }
@@ -412,7 +439,8 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetBoundingRectangles(
 
   *rectangles = nullptr;
   AXNodeRange range(start_->Clone(), end_->Clone());
-  std::vector<gfx::Rect> rects = range.GetScreenRects();
+  AXRangeScreenRectDelegateImpl rect_delegate(this);
+  std::vector<gfx::Rect> rects = range.GetScreenRects(&rect_delegate);
 
   // 4 array items per rect: left, top, width, height
   SAFEARRAY* safe_array = SafeArrayCreateVector(
@@ -699,16 +727,23 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::ScrollIntoView(
   const AXTreeManager* ax_tree_manager =
       AXTreeManagerMap::GetInstance().GetManager(common_ancestor_tree_id);
   DCHECK(ax_tree_manager);
-
+  AXNode* root_node = ax_tree_manager->GetRootAsAXNode();
+  const AXPlatformNode* root_platform_node =
+      owner_->GetDelegate()->GetFromTreeIDAndNodeID(common_ancestor_tree_id,
+                                                    root_node->id());
+  DCHECK(root_platform_node);
   const AXPlatformNodeDelegate* root_delegate =
-      ax_tree_manager->GetRootDelegate(common_ancestor_tree_id);
+      root_platform_node->GetDelegate();
   const gfx::Rect root_frame_bounds = root_delegate->GetBoundsRect(
       AXCoordinateSystem::kFrame, AXClippingBehavior::kUnclipped);
   UIA_VALIDATE_BOUNDS(root_frame_bounds);
 
+  const AXPlatformNode* common_ancestor_platform_node =
+      owner_->GetDelegate()->GetFromTreeIDAndNodeID(
+          common_ancestor_tree_id, common_ancestor_anchor->id());
+  DCHECK(common_ancestor_platform_node);
   AXPlatformNodeDelegate* common_ancestor_delegate =
-      ax_tree_manager->GetDelegate(common_ancestor_tree_id,
-                                   common_ancestor_anchor->id());
+      common_ancestor_platform_node->GetDelegate();
   DCHECK(common_ancestor_delegate);
   const gfx::Rect text_range_container_frame_bounds =
       common_ancestor_delegate->GetBoundsRect(AXCoordinateSystem::kFrame,
@@ -820,9 +855,12 @@ AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetDelegate(
 AXPlatformNodeDelegate* AXPlatformNodeTextRangeProviderWin::GetDelegate(
     const AXTreeID tree_id,
     const AXNode::AXID node_id) const {
-  AXTreeManager* manager = AXTreeManagerMap::GetInstance().GetManager(tree_id);
-  return manager ? manager->GetDelegate(tree_id, node_id)
-                 : owner()->GetDelegate();
+  AXPlatformNode* platform_node =
+      owner_->GetDelegate()->GetFromTreeIDAndNodeID(tree_id, node_id);
+  if (!platform_node)
+    return nullptr;
+
+  return platform_node->GetDelegate();
 }
 
 AXPlatformNodeTextRangeProviderWin::AXPositionInstance

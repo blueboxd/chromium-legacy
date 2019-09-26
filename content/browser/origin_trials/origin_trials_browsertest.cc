@@ -71,7 +71,7 @@ class OriginTrialsBrowserTest : public content::ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(OriginTrialsBrowserTest, Basic) {
-  NavigateToURL(shell(), GURL("https://example.test/basic.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("https://example.test/basic.html")));
   // Ensure we can invoke normalMethod(), which is only available when the
   // Frobulate OT is enabled.
   EXPECT_TRUE(content::ExecJs(shell()->web_contents()->GetMainFrame(),
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(OriginTrialsBrowserTest, Basic) {
 
 IN_PROC_BROWSER_TEST_F(OriginTrialsBrowserTest,
                        NonNavigationTrialNotActivatedAcrossNavigations) {
-  NavigateToURL(shell(), GURL("https://example.test/basic.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("https://example.test/basic.html")));
   EXPECT_TRUE(content::ExecJs(shell()->web_contents()->GetMainFrame(),
                               "internals.originTrialsTest().normalMethod();"));
   NavigateViaRenderer(shell()->web_contents(),
@@ -92,7 +92,8 @@ IN_PROC_BROWSER_TEST_F(OriginTrialsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(OriginTrialsBrowserTest, Navigation) {
-  NavigateToURL(shell(), GURL("https://example.test/navigation.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GURL("https://example.test/navigation.html")));
   // Ensure we can invoke navigationMethod(), which is only available when the
   // FrobulateNavigation OT is enabled.
   EXPECT_TRUE(
@@ -102,7 +103,8 @@ IN_PROC_BROWSER_TEST_F(OriginTrialsBrowserTest, Navigation) {
 
 IN_PROC_BROWSER_TEST_F(OriginTrialsBrowserTest,
                        NavigationTrialActivatedAcrossNavigations) {
-  NavigateToURL(shell(), GURL("https://example.test/navigation.html"));
+  EXPECT_TRUE(
+      NavigateToURL(shell(), GURL("https://example.test/navigation.html")));
   EXPECT_TRUE(
       content::ExecJs(shell()->web_contents()->GetMainFrame(),
                       "internals.originTrialsTest().navigationMethod();"));

@@ -90,6 +90,7 @@ const char kQuicHostWhitelist[] = "host_whitelist";
 const char kQuicEnableSocketRecvOptimization[] =
     "enable_socket_recv_optimization";
 const char kQuicVersion[] = "quic_version";
+const char kQuicFlags[] = "set_quic_flags";
 
 // AsyncDNS experiment dictionary name.
 const char kAsyncDnsFieldTrialName[] = "AsyncDNS";
@@ -548,6 +549,19 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
         session_params->quic_host_allowlist.clear();
         for (const std::string& host : host_vector) {
           session_params->quic_host_allowlist.insert(host);
+        }
+      }
+
+      std::string quic_flags;
+      if (quic_args->GetString(kQuicFlags, &quic_flags)) {
+        for (const auto& flag :
+             base::SplitString(quic_flags, ",", base::TRIM_WHITESPACE,
+                               base::SPLIT_WANT_ALL)) {
+          std::vector<std::string> tokens = base::SplitString(
+              flag, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
+          if (tokens.size() != 2)
+            continue;
+          SetQuicFlagByName(tokens[0], tokens[1]);
         }
       }
 

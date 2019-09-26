@@ -73,7 +73,7 @@ public abstract class FirstRunFlowSequencer  {
      */
     public void start() {
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-                || ApiCompatibilityUtils.isDemoUser(mActivity)) {
+                || ApiCompatibilityUtils.isDemoUser()) {
             onFlowIsKnown(null);
             return;
         }
@@ -228,16 +228,15 @@ public abstract class FirstRunFlowSequencer  {
 
     /**
      * Checks if the First Run needs to be launched.
-     * @param context The context.
      * @param fromIntent The intent that was used to launch Chrome.
      * @param preferLightweightFre Whether to prefer the Lightweight First Run Experience.
      * @return Whether the First Run Experience needs to be launched.
      */
     public static boolean checkIfFirstRunIsNecessary(
-            Context context, Intent fromIntent, boolean preferLightweightFre) {
+            Intent fromIntent, boolean preferLightweightFre) {
         // If FRE is disabled (e.g. in tests), proceed directly to the intent handling.
         if (CommandLine.getInstance().hasSwitch(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-                || ApiCompatibilityUtils.isDemoUser(context)) {
+                || ApiCompatibilityUtils.isDemoUser()) {
             return false;
         }
 
@@ -270,7 +269,7 @@ public abstract class FirstRunFlowSequencer  {
     public static boolean launch(Context caller, Intent fromIntent, boolean requiresBroadcast,
             boolean preferLightweightFre) {
         // Check if the user needs to go through First Run at all.
-        if (!checkIfFirstRunIsNecessary(caller, fromIntent, preferLightweightFre)) return false;
+        if (!checkIfFirstRunIsNecessary(fromIntent, preferLightweightFre)) return false;
 
         String intentUrl = IntentHandler.getUrlFromIntent(fromIntent);
         Uri uri = intentUrl != null ? Uri.parse(intentUrl) : null;

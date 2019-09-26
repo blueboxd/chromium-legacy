@@ -38,8 +38,6 @@ namespace {
 const int kHorizontalMargin = 10;
 const float kWindowAlphaValue = 0.96f;
 
-namespace {
-
 // A ClientView that overrides NonClientHitTest() so that the whole window area
 // acts as a window caption, except a rect specified using set_client_rect().
 // ScreenCaptureNotificationUIViews uses this class to make the notification bar
@@ -53,7 +51,7 @@ class NotificationBarClientView : public views::ClientView {
 
   void set_client_rect(const gfx::Rect& rect) { rect_ = rect; }
 
-  // views::ClientView overrides.
+  // views::ClientView:
   int NonClientHitTest(const gfx::Point& point) override {
     if (!bounds().Contains(point))
       return HTNOWHERE;
@@ -70,8 +68,6 @@ class NotificationBarClientView : public views::ClientView {
   DISALLOW_COPY_AND_ASSIGN(NotificationBarClientView);
 };
 
-}  // namespace
-
 // ScreenCaptureNotificationUI implementation using Views.
 class ScreenCaptureNotificationUIViews
     : public ScreenCaptureNotificationUI,
@@ -82,15 +78,15 @@ class ScreenCaptureNotificationUIViews
   explicit ScreenCaptureNotificationUIViews(const base::string16& text);
   ~ScreenCaptureNotificationUIViews() override;
 
-  // ScreenCaptureNotificationUI interface.
+  // ScreenCaptureNotificationUI:
   gfx::NativeViewId OnStarted(
       base::OnceClosure stop_callback,
       content::MediaStreamUI::SourceCallback source_callback) override;
 
-  // views::View overrides.
+  // views::View:
   void Layout() override;
 
-  // views::WidgetDelegateView overrides.
+  // views::WidgetDelegateView:
   void DeleteDelegate() override;
   views::ClientView* CreateClientView(views::Widget* widget) override;
   views::NonClientFrameView* CreateNonClientFrameView(
@@ -100,10 +96,10 @@ class ScreenCaptureNotificationUIViews
   bool ShouldShowCloseButton() const override;
   bool CanActivate() const override;
 
-  // views::ButtonListener interface.
+  // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::LinkListener interface.
+  // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
  private:
@@ -112,28 +108,22 @@ class ScreenCaptureNotificationUIViews
   // Helper to call |source_callback_|.
   void NotifySourceChange();
 
-  const base::string16 text_;
   base::OnceClosure stop_callback_;
   content::MediaStreamUI::SourceCallback source_callback_;
-  NotificationBarClientView* client_view_;
-  views::ImageView* gripper_;
-  views::Label* label_;
-  views::Button* source_button_;
-  views::Button* stop_button_;
-  views::Link* hide_link_;
+  NotificationBarClientView* client_view_ = nullptr;
+  views::ImageView* gripper_ = nullptr;
+  views::Label* label_ = nullptr;
+  views::Button* source_button_ = nullptr;
+  views::Button* stop_button_ = nullptr;
+  views::Link* hide_link_ = nullptr;
+  const base::string16 text_;
 
   DISALLOW_COPY_AND_ASSIGN(ScreenCaptureNotificationUIViews);
 };
 
 ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
     const base::string16& text)
-    : text_(text),
-      client_view_(nullptr),
-      gripper_(nullptr),
-      label_(nullptr),
-      source_button_(nullptr),
-      stop_button_(nullptr),
-      hide_link_(nullptr) {
+    : text_(text) {
   set_owned_by_client();
 
   SetLayoutManager(std::make_unique<views::BoxLayout>(

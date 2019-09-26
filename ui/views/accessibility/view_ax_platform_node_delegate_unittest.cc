@@ -368,6 +368,27 @@ TEST_F(ViewAXPlatformNodeDelegateTest, Navigation) {
   EXPECT_EQ(view_accessibility(view_ids[4])->GetIndexInParent(), 3);
 }
 
+TEST_F(ViewAXPlatformNodeDelegateTest, OverrideHasPopup) {
+  std::vector<View*> view_ids = SetUpExtraViews();
+
+  view_ids[1]->GetViewAccessibility().OverrideHasPopup(
+      ax::mojom::HasPopup::kTrue);
+  view_ids[2]->GetViewAccessibility().OverrideHasPopup(
+      ax::mojom::HasPopup::kMenu);
+
+  ui::AXNodeData node_data_0;
+  view_ids[0]->GetViewAccessibility().GetAccessibleNodeData(&node_data_0);
+  EXPECT_EQ(node_data_0.GetHasPopup(), ax::mojom::HasPopup::kFalse);
+
+  ui::AXNodeData node_data_1;
+  view_ids[1]->GetViewAccessibility().GetAccessibleNodeData(&node_data_1);
+  EXPECT_EQ(node_data_1.GetHasPopup(), ax::mojom::HasPopup::kTrue);
+
+  ui::AXNodeData node_data_2;
+  view_ids[2]->GetViewAccessibility().GetAccessibleNodeData(&node_data_2);
+  EXPECT_EQ(node_data_2.GetHasPopup(), ax::mojom::HasPopup::kMenu);
+}
+
 #if defined(USE_AURA)
 class DerivedTestView : public View {
  public:

@@ -403,6 +403,10 @@ void FuchsiaSecureStreamDecryptor::Decrypt(
   DecryptInternal(std::move(encrypted));
 }
 
+void FuchsiaSecureStreamDecryptor::Reset() {
+  ResetStream();
+}
+
 void FuchsiaSecureStreamDecryptor::AllocateOutputBuffers(
     const fuchsia::media::StreamBufferConstraints& stream_constraints) {
   if (complete_buffer_allocation_callback_) {

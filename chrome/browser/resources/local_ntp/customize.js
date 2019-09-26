@@ -2039,6 +2039,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
+      richerPicker.classList.remove(customize.CLASSES.MOUSE_NAV);
       if (event.keyCode === forwardArrowKey) {
         mvOption.focus();
       } else if (event.keyCode === customize.KEYCODES.DOWN) {
@@ -2067,6 +2068,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
+      richerPicker.classList.remove(customize.CLASSES.MOUSE_NAV);
       if (event.keyCode === backArrowKey) {
         clOption.focus();
       } else if (
@@ -2093,6 +2095,7 @@ customize.initCustomBackgrounds = function(showErrorNotification) {
       // Handle arrow key navigation.
       event.preventDefault();
       event.stopPropagation();
+      richerPicker.classList.remove(customize.CLASSES.MOUSE_NAV);
       if (event.keyCode === backArrowKey ||
           event.keyCode === customize.KEYCODES.UP) {
         mvOption.focus();

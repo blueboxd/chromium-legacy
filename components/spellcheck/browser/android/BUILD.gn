@@ -13,7 +13,9 @@ generate_jni("jni_headers") {
 android_library("java") {
   deps = [
     "//base:base_java",
+    "//base:jni_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   java_files = [ "java/src/org/chromium/components/spellcheck/SpellCheckerSessionBridge.java" ]
 }

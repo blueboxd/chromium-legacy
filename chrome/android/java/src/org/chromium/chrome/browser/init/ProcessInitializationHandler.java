@@ -18,7 +18,6 @@ import androidx.annotation.WorkerThread;
 
 import com.google.ipc.invalidation.external.client.android.service.AndroidLogger;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -415,7 +414,7 @@ public class ProcessInitializationHandler {
                             DownloadManagerService.getDownloadManagerService());
                 }
 
-                if (ApiCompatibilityUtils.isPrintingSupported()) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
                     String errorText = ContextUtils.getApplicationContext().getString(
                             R.string.error_printing_failed);
                     PrintingControllerImpl.create(new PrintDocumentAdapterWrapper(), errorText);

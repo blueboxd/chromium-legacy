@@ -68,19 +68,16 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
   // Client of this view.
   __weak id<FormSuggestionClient> client_;
   FormSuggestion* suggestion_;
-  BOOL userInteractionEnabled_;
 }
 
 - (id)initWithSuggestion:(FormSuggestion*)suggestion
                      index:(NSUInteger)index
-    userInteractionEnabled:(BOOL)userInteractionEnabled
             numSuggestions:(NSUInteger)numSuggestions
                     client:(id<FormSuggestionClient>)client {
   self = [super initWithFrame:CGRectZero];
   if (self) {
     suggestion_ = suggestion;
     client_ = client;
-    userInteractionEnabled_ = userInteractionEnabled;
 
     UIStackView* stackView = [[UIStackView alloc] initWithArrangedSubviews:@[]];
     stackView.axis = UILayoutConstraintAxisHorizontal;
@@ -113,9 +110,7 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
       [stackView addArrangedSubview:description];
     }
 
-    if (userInteractionEnabled_) {
-      [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
-    }
+    [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
 
     [self setClipsToBounds:YES];
     [self setUserInteractionEnabled:YES];
@@ -143,22 +138,16 @@ UILabel* TextLabel(NSString* text, UIColor* textColor, BOOL bold) {
 #pragma mark UIResponder
 
 - (void)touchesBegan:(NSSet*)touches withEvent:(UIEvent*)event {
-  if (userInteractionEnabled_) {
-    [self setBackgroundColor:[UIColor colorNamed:kGrey300Color]];
-  }
+  [self setBackgroundColor:[UIColor colorNamed:kGrey300Color]];
 }
 
 - (void)touchesCancelled:(NSSet*)touches withEvent:(UIEvent*)event {
-  if (userInteractionEnabled_) {
-    [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
-  }
+  [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
 }
 
 - (void)touchesEnded:(NSSet*)touches withEvent:(UIEvent*)event {
-  if (userInteractionEnabled_) {
-    [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
-    [client_ didSelectSuggestion:suggestion_];
-  }
+  [self setBackgroundColor:[UIColor colorNamed:kGrey100Color]];
+  [client_ didSelectSuggestion:suggestion_];
 }
 
 @end

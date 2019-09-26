@@ -8,6 +8,7 @@ cr.define('device_page_tests', function() {
     DevicePage: 'device page',
     Display: 'display',
     Keyboard: 'keyboard',
+    NightLight: 'night light',
     Pointers: 'pointers',
     Power: 'power',
     Stylus: 'stylus',
@@ -411,6 +412,26 @@ cr.define('device_page_tests', function() {
       return Promise.resolve(page);
     }
 
+    /** @param {number} n The number of the display to add. */
+    function addDisplay(n) {
+      const display = {
+        id: 'fakeDisplayId' + n,
+        name: 'fakeDisplayName' + n,
+        mirroring: '',
+        isPrimary: n == 1,
+        rotation: 0,
+        modes: [],
+        bounds: {
+          left: 0,
+          top: 0,
+          width: 1920,
+          height: 1080,
+        },
+        availableDisplayZoomFactors: [1, 1.25, 1.5, 2],
+      };
+      fakeSystemDisplay.addDisplayForTest(display);
+    }
+
     /**
      * @param {settings.IdleBehavior} idleBehavior
      * @param {boolean} idleControlled
@@ -720,25 +741,6 @@ cr.define('device_page_tests', function() {
     });
 
     test(assert(TestNames.Display), function() {
-      const addDisplay = function(n) {
-        const display = {
-          id: 'fakeDisplayId' + n,
-          name: 'fakeDisplayName' + n,
-          mirroring: '',
-          isPrimary: n == 1,
-          rotation: 0,
-          modes: [],
-          bounds: {
-            left: 0,
-            top: 0,
-            width: 1920,
-            height: 1080,
-          },
-          availableDisplayZoomFactors: [1, 1.25, 1.5, 2],
-        };
-        fakeSystemDisplay.addDisplayForTest(display);
-      };
-
       let displayPage;
       return Promise
           .all([
@@ -892,6 +894,33 @@ cr.define('device_page_tests', function() {
             pointerEvent('pointerup', 0);
             expectEquals(1.25, displayPage.selectedZoomPref_.value);
           });
+    });
+
+    test(assert(TestNames.NightLight), async function() {
+      // Set up a single display.
+      const displayPage =
+          await showAndGetDeviceSubpage('display', settings.routes.DISPLAY);
+      await fakeSystemDisplay.getInfoCalled.promise;
+      addDisplay(1);
+      fakeSystemDisplay.onDisplayChanged.callListeners();
+      await fakeSystemDisplay.getInfoCalled.promise;
+      await fakeSystemDisplay.getLayoutCalled.promise;
+      expectEquals(1, displayPage.displays.length);
+
+      // Night Light is off, so advanced controls are hidden.
+      expectFalse(!!displayPage.$$('#nightLightTemperatureDiv'));
+      expectFalse(!!displayPage.$$('#nightLightScheduleTypeDropDown'));
+
+      // Enable Night Light. Use an atomic update of |displayPage.prefs| so
+      // Polymer notices the change.
+      const newPrefs = getFakePrefs();
+      newPrefs.ash.night_light.enabled.value = true;
+      displayPage.prefs = newPrefs;
+      Polymer.dom.flush();
+
+      // Advanced Night Light controls are available.
+      expectTrue(!!displayPage.$$('#nightLightTemperatureDiv'));
+      expectTrue(!!displayPage.$$('#nightLightScheduleTypeDropDown'));
     });
 
     suite(assert(TestNames.Power), function() {

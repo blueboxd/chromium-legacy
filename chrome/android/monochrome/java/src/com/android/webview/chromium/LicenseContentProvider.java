@@ -16,7 +16,7 @@ import android.os.ParcelFileDescriptor;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
-import org.chromium.components.aboutui.CreditUtils;
+import org.chromium.components.aboutui.CreditUtilsJni;
 
 import java.io.FileNotFoundException;
 
@@ -55,7 +55,7 @@ public class LicenseContentProvider
                 }
             }
         });
-        CreditUtils.nativeWriteCreditsHtml(output.detachFd());
+        CreditUtilsJni.get().writeCreditsHtml(output.detachFd());
     }
 
     @Override

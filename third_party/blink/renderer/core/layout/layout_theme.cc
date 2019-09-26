@@ -24,6 +24,7 @@
 #include "build/build_config.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_rect.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -856,8 +857,7 @@ String LayoutTheme::FileListNameForWidth(Locale& locale,
 
   String string;
   if (file_list->IsEmpty()) {
-    string =
-        locale.QueryString(WebLocalizedString::kFileButtonNoFileSelectedLabel);
+    string = locale.QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
   } else if (file_list->length() == 1) {
     string = file_list->item(0)->name();
   } else {

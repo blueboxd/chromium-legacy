@@ -1553,7 +1553,6 @@ interface DisplayLockContext
     method acquire
     method commit
     method constructor
-    method update
     method updateAndCommit
 interface Document : Node
     attribute @@toStringTag
@@ -2098,6 +2097,7 @@ interface Element : Node
     method setAttributeNodeNS
     method setPointerCapture
     method toggleAttribute
+    method updateRendering
     method webkitMatchesSelector
     method webkitRequestFullScreen
     method webkitRequestFullscreen
@@ -4407,6 +4407,7 @@ interface IDBRequest : EventTarget
 interface IDBTransaction : EventTarget
     attribute @@toStringTag
     getter db
+    getter durability
     getter error
     getter mode
     getter objectStoreNames

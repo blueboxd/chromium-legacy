@@ -107,19 +107,17 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   String today_label_string;
   String other_date_label_string;
   if (parameters_->type == input_type_names::kMonth) {
-    today_label_string =
-        GetLocale().QueryString(WebLocalizedString::kThisMonthButtonLabel);
+    today_label_string = GetLocale().QueryString(IDS_FORM_THIS_MONTH_LABEL);
     other_date_label_string =
-        GetLocale().QueryString(WebLocalizedString::kOtherMonthLabel);
+        GetLocale().QueryString(IDS_FORM_OTHER_MONTH_LABEL);
   } else if (parameters_->type == input_type_names::kWeek) {
-    today_label_string =
-        GetLocale().QueryString(WebLocalizedString::kThisWeekButtonLabel);
+    today_label_string = GetLocale().QueryString(IDS_FORM_THIS_WEEK_LABEL);
     other_date_label_string =
-        GetLocale().QueryString(WebLocalizedString::kOtherWeekLabel);
+        GetLocale().QueryString(IDS_FORM_OTHER_WEEK_LABEL);
   } else {
     today_label_string = GetLocale().QueryString(IDS_FORM_CALENDAR_TODAY);
     other_date_label_string =
-        GetLocale().QueryString(WebLocalizedString::kOtherDateLabel);
+        GetLocale().QueryString(IDS_FORM_OTHER_DATE_LABEL);
   }
 
   AddString("<!DOCTYPE html><head><meta charset='UTF-8'><style>\n", data);

@@ -100,7 +100,7 @@ class TabSelectionEditorMediator
 
         mModel.set(
                 TabSelectionEditorProperties.TOOLBAR_NAVIGATION_LISTENER, mNavigationClickListener);
-        mModel.set(TabSelectionEditorProperties.TOOLBAR_GROUP_BUTTON_LISTENER,
+        mModel.set(TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_LISTENER,
                 mGroupButtonOnClickListener);
 
         mTabModelObserver = new TabModelSelectorTabModelObserver(mTabModelSelector) {
@@ -175,13 +175,32 @@ class TabSelectionEditorMediator
     }
 
     @Override
-    public void show() {
-        List<Tab> nonGroupedTabs = mTabModelSelector.getTabModelFilterProvider()
-                                           .getCurrentTabModelFilter()
-                                           .getTabsWithNoOtherRelatedTabs();
-        mResetHandler.resetWithListOfTabs(nonGroupedTabs);
+    public void show(List<Tab> tabs) {
+        mResetHandler.resetWithListOfTabs(tabs);
         mSelectionDelegate.setSelectionModeEnabledForZeroItems(true);
         mModel.set(TabSelectionEditorProperties.IS_VISIBLE, true);
+    }
+
+    @Override
+    public void configureToolbar(@Nullable String actionButtonText,
+            @Nullable View.OnClickListener actionButtonOnClickListener,
+            int actionButtonEnablingThreshold,
+            @Nullable View.OnClickListener navigationButtonOnClickListener) {
+        if (actionButtonText != null) {
+            mModel.set(TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_TEXT, actionButtonText);
+        }
+        if (actionButtonOnClickListener != null) {
+            mModel.set(TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_LISTENER,
+                    actionButtonOnClickListener);
+        }
+        if (actionButtonEnablingThreshold != -1) {
+            mModel.set(TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_ENABLING_THRESHOLD,
+                    actionButtonEnablingThreshold);
+        }
+        if (navigationButtonOnClickListener != null) {
+            mModel.set(TabSelectionEditorProperties.TOOLBAR_NAVIGATION_LISTENER,
+                    navigationButtonOnClickListener);
+        }
     }
 
     @Override

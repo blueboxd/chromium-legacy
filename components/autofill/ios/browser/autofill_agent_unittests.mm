@@ -36,7 +36,6 @@
 #endif
 
 using autofill::POPUP_ITEM_ID_CLEAR_FORM;
-using autofill::POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
 using autofill::POPUP_ITEM_ID_SHOW_ACCOUNT_CARDS;
 using base::test::ios::WaitUntilCondition;
 
@@ -379,8 +378,6 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
 
   // Make the suggestions available to AutofillAgent.
   std::vector<autofill::Suggestion> suggestions;
-  suggestions.push_back(
-      autofill::Suggestion("", "", "", POPUP_ITEM_ID_GOOGLE_PAY_BRANDING));
   suggestions.push_back(autofill::Suggestion("", "", "", 123));
   suggestions.push_back(autofill::Suggestion("", "", "", 321));
   suggestions.push_back(
@@ -410,15 +407,11 @@ TEST_F(AutofillAgentTests, onSuggestionsReady_ClearFormWithGPay) {
     return completion_handler_called;
   });
 
-  // GPay icon should appear as the first suggestion followed by "Clear Form".
-  // Otherwise, the order of suggestions should not change.
-  EXPECT_EQ(4U, completion_handler_suggestions.count);
-  EXPECT_EQ(POPUP_ITEM_ID_GOOGLE_PAY_BRANDING,
-            completion_handler_suggestions[0].identifier);
+  EXPECT_EQ(3U, completion_handler_suggestions.count);
   EXPECT_EQ(POPUP_ITEM_ID_CLEAR_FORM,
-            completion_handler_suggestions[1].identifier);
-  EXPECT_EQ(123, completion_handler_suggestions[2].identifier);
-  EXPECT_EQ(321, completion_handler_suggestions[3].identifier);
+            completion_handler_suggestions[0].identifier);
+  EXPECT_EQ(123, completion_handler_suggestions[1].identifier);
+  EXPECT_EQ(321, completion_handler_suggestions[2].identifier);
 }
 
 // Test that every frames are processed whatever is the order of pageloading

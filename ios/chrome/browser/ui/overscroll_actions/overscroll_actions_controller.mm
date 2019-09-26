@@ -32,8 +32,6 @@
 #error "This file requires ARC support."
 #endif
 
-using fullscreen::features::ViewportAdjustmentExperiment;
-
 namespace {
 // This enum is used to record the overscroll actions performed by the user on
 // the histogram named |OverscrollActions|.
@@ -571,12 +569,9 @@ NSString* const kOverscrollActionsDidEnd = @"OverscrollActionsDidStop";
 - (BOOL)viewportAdjustsContentInset {
   if (_webViewProxy.shouldUseViewContentInset)
     return YES;
-  ViewportAdjustmentExperiment experiment =
-      fullscreen::features::GetActiveViewportExperiment();
-  return experiment == ViewportAdjustmentExperiment::SMOOTH_SCROLLING &&
-         ios::GetChromeBrowserProvider()
-             ->GetFullscreenProvider()
-             ->IsInitialized();
+  return ios::GetChromeBrowserProvider()
+      ->GetFullscreenProvider()
+      ->IsInitialized();
 }
 
 - (void)recordMetricForTriggeredAction:(OverscrollAction)action {

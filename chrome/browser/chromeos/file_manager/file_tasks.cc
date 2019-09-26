@@ -20,7 +20,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/apps/app_service/app_launch_params.h"
 #include "chrome/browser/apps/launch_service/launch_service.h"
-#include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/arc_file_tasks.h"
@@ -476,10 +476,10 @@ bool IsFileHandlerEnabled(Profile* profile,
                           const apps::FileHandlerInfo& file_handler_info) {
   // Crostini deb files and backup files can be disabled by policy.
   if (file_handler_info.id == kInstallLinuxPackageHandlerId) {
-    return crostini::IsCrostiniRootAccessAllowed(profile);
+    return crostini::CrostiniFeatures::Get()->IsRootAccessAllowed(profile);
   }
   if (file_handler_info.id == kImportCrostiniImageHandlerId) {
-    return crostini::IsCrostiniExportImportUIAllowedForProfile(profile);
+    return crostini::CrostiniFeatures::Get()->IsExportImportUIAllowed(profile);
   }
   return true;
 }

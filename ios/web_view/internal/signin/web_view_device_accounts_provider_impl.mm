@@ -6,17 +6,16 @@
 
 #include "base/logging.h"
 #include "base/strings/sys_string_conversions.h"
-#include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
 #import "ios/web_view/public/cwv_identity.h"
+#import "ios/web_view/public/cwv_sync_controller_data_source.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
 
-WebViewDeviceAccountsProviderImpl::WebViewDeviceAccountsProviderImpl(
-    IOSWebViewSigninClient* signin_client)
-    : signin_client_(signin_client) {}
+WebViewDeviceAccountsProviderImpl::WebViewDeviceAccountsProviderImpl() =
+    default;
 
 WebViewDeviceAccountsProviderImpl::~WebViewDeviceAccountsProviderImpl() =
     default;
@@ -26,27 +25,42 @@ void WebViewDeviceAccountsProviderImpl::GetAccessToken(
     const std::string& client_id,
     const std::set<std::string>& scopes,
     AccessTokenCallback callback) {
-  // |sync_controller| may still be nil if this is called too early so
-  // |callback| will not be invoked. That's OK because this will be called again
-  // after |sync_controller| has been set.
-  CWVSyncController* sync_controller = signin_client_->GetSyncController();
-  [sync_controller fetchAccessTokenForScopes:scopes
-                                    callback:std::move(callback)];
+  NSMutableArray<NSString*>* scopes_array = [NSMutableArray array];
+  for (const auto& scope : scopes) {
+    [scopes_array addObject:base::SysUTF8ToNSString(scope)];
+  }
+
+  // AccessTokenCallback is non-copyable. Using __block allocates the memory
+  // directly in the block object at compilation time (instead of doing a
+  // copy). This is required to have correct interaction between move-only
+  // types and Objective-C blocks.
+  __block AccessTokenCallback scoped_callback = std::move(callback);
+  CWVIdentity* identity =
+      [[CWVIdentity alloc] initWithEmail:nil
+                                fullName:nil
+                                  gaiaID:base::SysUTF8ToNSString(gaia_id)];
+  [CWVSyncController.dataSource
+      fetchAccessTokenForIdentity:identity
+                           scopes:scopes_array
+                completionHandler:^(NSString* access_token,
+                                    NSDate* expiration_date, NSError* error) {
+                  std::move(scoped_callback)
+                      .Run(access_token, expiration_date, error);
+                }];
 }
 
 std::vector<DeviceAccountsProvider::AccountInfo>
 WebViewDeviceAccountsProviderImpl::GetAllAccounts() const {
-  // |sync_controller| may still be nil if this is called too early. That's OK
-  // because this will be called again after it has been set.
-  CWVSyncController* sync_controller = signin_client_->GetSyncController();
-  CWVIdentity* current_identity = sync_controller.currentIdentity;
-  if (current_identity) {
+  NSArray<CWVIdentity*>* identities =
+      [CWVSyncController.dataSource allKnownIdentities];
+  std::vector<AccountInfo> account_infos;
+  for (CWVIdentity* identity in identities) {
     AccountInfo account_info;
-    account_info.email = base::SysNSStringToUTF8(current_identity.email);
-    account_info.gaia = base::SysNSStringToUTF8(current_identity.gaiaID);
-    return {account_info};
+    account_info.email = base::SysNSStringToUTF8(identity.email);
+    account_info.gaia = base::SysNSStringToUTF8(identity.gaiaID);
+    account_infos.push_back(account_info);
   }
-  return {};
+  return account_infos;
 }
 
 AuthenticationErrorCategory

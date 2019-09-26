@@ -121,6 +121,8 @@ class WindowedAppShimLaunchObserver : public apps::ExtensionAppShimHandler {
   void OnShimFocus(AppShimHost* host,
                    apps::AppShimFocusType focus_type,
                    const std::vector<base::FilePath>& files) override {}
+  void OnShimSelectedProfile(AppShimHost* host,
+                             const base::FilePath& profile_path) override {}
 
  private:
   std::string app_mode_id_;

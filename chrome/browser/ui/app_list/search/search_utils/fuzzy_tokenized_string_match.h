@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_UI_APP_LIST_SEARCH_SEARCH_UTILS_FUZZY_TOKENIZED_STRING_MATCH_H_
 
 #include "ash/public/cpp/app_list/tokenized_string.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "ui/gfx/range/range.h"
 
@@ -32,6 +33,33 @@ class FuzzyTokenizedStringMatch {
   double relevance() const { return relevance_; }
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(FuzzyTokenizedStringMatchTest, PartialRatioTest);
+  FRIEND_TEST_ALL_PREFIXES(FuzzyTokenizedStringMatchTest, TokenSetRatioTest);
+  FRIEND_TEST_ALL_PREFIXES(FuzzyTokenizedStringMatchTest, TokenSortRatioTest);
+  FRIEND_TEST_ALL_PREFIXES(FuzzyTokenizedStringMatchTest, WeightedRatio);
+  // Finds the best ratio of shorter text with a part of longer text.
+  // This function assumes that TokenizedString is already normalized (converted
+  // to lower case). The return score is in range of [0, 1].
+  double PartialRatio(const base::string16& query, const base::string16& text);
+  // TokenSetRatio takes two sets of tokens, finds their intersection and
+  // differences. From the intersection and differences, it rewrites the |query|
+  // and |text| and find the similarity ratio between them. This function
+  // assumes that TokenizedString is already normalized (converted to lower
+  // case). Duplicates tokens will be removed for ratio computation.
+  double TokenSetRatio(const TokenizedString& query,
+                       const TokenizedString& text,
+                       bool partial);
+  // TokenSortRatio takes two set of tokens, sorts them and find the similarity
+  // between two sorted strings. This function assumes that TokenizedString is
+  // already normalized (converted to lower case)
+  double TokenSortRatio(const TokenizedString& query,
+                        const TokenizedString& text,
+                        bool partial);
+  // Combines scores from different ratio functions. This function assumes that
+  // TokenizedString is already normalized (converted to lower cases).
+  // The return score is in range of [0, 1].
+  double WeightedRatio(const TokenizedString& query,
+                       const TokenizedString& text);
   // Score in range of [0,1] representing how well the query matches the text.
   double relevance_ = 0;
   Hits hits_;

@@ -6,6 +6,8 @@ module chrome.mojom;
 
 import "components/remote_cocoa/common/application.mojom";
 import "mojo/public/mojom/base/file_path.mojom";
+import "mojo/public/mojom/base/string16.mojom";
+import "ui/gfx/image/mojom/image.mojom";
 import "url/mojom/url.mojom";
 
 [Native]
@@ -19,6 +21,24 @@ enum AppShimFocusType;
 
 [Native]
 enum AppShimAttentionType;
+
+// An entry in the profiles NSMenu.
+struct ProfileMenuItem {
+  // The name to display.
+  mojo_base.mojom.String16 name;
+
+  // The icon to display next to the name.
+  gfx.mojom.ImageSkia? icon;
+
+  // The index used to look up this item when selected.
+  uint32 menu_index;
+
+  // Whether or not this menu item is listed as selected.
+  bool active;
+
+  // The profile path to associate with this item.
+  mojo_base.mojom.FilePath profile_path;
+};
 
 // Interface through which the browser communicates to a shim process.
 interface AppShim {
@@ -37,6 +57,9 @@ interface AppShim {
 
   // Instructs the shim to set its badge label.
   SetBadgeLabel(string badge_label);
+
+  // Called to update the state of the profiles NSMenu.
+  UpdateProfileMenu(array<ProfileMenuItem> profile_menu_items);
 };
 
 // Interface through which the a process communicates to the browser process.
@@ -47,6 +70,9 @@ interface AppShimHost {
   // if the focus type indicates a reopen and there are no open windows.
   FocusApp(AppShimFocusType focus_type,
            array<mojo_base.mojom.FilePath> files);
+
+  // Called when a profile is selected from the profiles menu.
+  ProfileSelectedFromMenu(mojo_base.mojom.FilePath profile_path);
 };
 
 // Properties of an app shim that are specified when it connects to the browser

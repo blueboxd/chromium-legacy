@@ -20,8 +20,9 @@ class CC_EXPORT ScrollbarController {
   virtual ~ScrollbarController();
 
   InputHandlerPointerResult HandlePointerDown(
-      const gfx::PointF position_in_widget);
-  InputHandlerPointerResult HandleMouseMove(
+      const gfx::PointF position_in_widget,
+      const bool shift_modifier);
+  InputHandlerPointerResult HandlePointerMove(
       const gfx::PointF position_in_widget);
   InputHandlerPointerResult HandlePointerUp(
       const gfx::PointF position_in_widget);
@@ -73,13 +74,15 @@ class CC_EXPORT ScrollbarController {
   // Returns scroll offsets based on which ScrollbarPart was hit tested.
   gfx::ScrollOffset GetScrollOffsetForScrollbarPart(
       const ScrollbarPart scrollbar_part,
-      const ScrollbarOrientation orientation);
+      const ScrollbarOrientation orientation,
+      const bool shift_modifier);
 
   // Returns the rect for the ScrollbarPart.
   gfx::Rect GetRectForScrollbarPart(const ScrollbarPart scrollbar_part);
 
   LayerImpl* GetLayerHitByPoint(const gfx::PointF position_in_widget);
-  int GetScrollDeltaForScrollbarPart(ScrollbarPart scrollbar_part);
+  int GetScrollDeltaForScrollbarPart(const ScrollbarPart scrollbar_part,
+                                     const bool shift_modifier);
 
   // Makes position_in_widget relative to the scrollbar.
   gfx::PointF GetScrollbarRelativePosition(const gfx::PointF position_in_widget,
@@ -89,6 +92,14 @@ class CC_EXPORT ScrollbarController {
   // the thumb reaching the pointer or the pointer leaving (or re-entering) the
   // bounds.
   void RecomputeAutoscrollStateIfNeeded();
+
+  // Shift + click is expected to do a non-animated jump to a certain offset.
+  float GetScrollDeltaForShiftClick();
+
+  // Determines if the delta needs to be animated.
+  ui::input_types::ScrollGranularity Granularity(
+      const ScrollbarPart scrollbar_part,
+      bool shift_modifier);
 
   // Calculates the scroll_offset based on position_in_widget and
   // drag_anchor_relative_to_thumb_.

@@ -798,7 +798,7 @@ public abstract class ToolbarLayout
      */
     boolean back() {
         if (getLocationBar() != null) getLocationBar().setUrlBarFocus(false);
-        return mToolbarTabController != null ? mToolbarTabController.back() : false;
+        return mToolbarTabController != null && mToolbarTabController.back() != null;
     }
 
     /**

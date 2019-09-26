@@ -14,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/font_util.h"
 #include "ui/strings/grit/app_locale_settings.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/controls/styled_label.h"
@@ -29,7 +30,6 @@
 #include "base/win/windows_version.h"
 #include "ui/display/win/dpi.h"
 #include "ui/gfx/system_fonts_win.h"
-#include "ui/gfx/win/direct_write.h"
 #endif
 
 namespace {
@@ -51,8 +51,8 @@ class LayoutProviderTest : public testing::Test {
   static void SetUpTestSuite() {
 #if defined(OS_WIN)
     base::win::EnableHighDPISupport();
-    gfx::win::InitializeDirectWrite();
 #endif
+    gfx::InitializeFonts();
   }
 
  private:

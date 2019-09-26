@@ -671,7 +671,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundTracingManagerBrowserTest,
 
   background_tracing_helper.WaitForScenarioActivated();
 
-  NavigateToURL(shell(), GetTestUrl("", "about:blank"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "about:blank")));
 
   TestTriggerHelper trigger_helper;
   BackgroundTracingManager::GetInstance()->TriggerNamedEvent(

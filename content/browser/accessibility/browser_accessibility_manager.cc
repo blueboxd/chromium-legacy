@@ -1294,20 +1294,6 @@ ui::AXNode* BrowserAccessibilityManager::GetNodeFromTree(
   return nullptr;
 }
 
-ui::AXPlatformNodeDelegate* BrowserAccessibilityManager::GetDelegate(
-    const ui::AXTreeID tree_id,
-    const int32_t node_id) const {
-  auto* manager = BrowserAccessibilityManager::FromID(tree_id);
-  if (!manager)
-    return nullptr;
-
-  BrowserAccessibility* wrapper = manager->GetFromID(node_id);
-  if (wrapper)
-    return wrapper;
-
-  return nullptr;
-}
-
 AXTreeID BrowserAccessibilityManager::GetTreeID() const {
   return ax_tree_id();
 }
@@ -1356,15 +1342,6 @@ ui::AXNode* BrowserAccessibilityManager::GetParentNodeFromParentTreeAsAXNode()
   }
 
   return nullptr;
-}
-
-ui::AXPlatformNodeDelegate* BrowserAccessibilityManager::GetRootDelegate(
-    const ui::AXTreeID tree_id) const {
-  auto* manager = BrowserAccessibilityManager::FromID(tree_id);
-  if (!manager)
-    return nullptr;
-
-  return manager->GetRoot();
 }
 
 BrowserAccessibilityManager* BrowserAccessibilityManager::GetRootManager()

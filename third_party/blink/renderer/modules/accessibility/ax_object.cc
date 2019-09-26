@@ -391,6 +391,7 @@ const InternalRoleEntry kInternalRoles[] = {
     {ax::mojom::Role::kRow, "Row"},
     {ax::mojom::Role::kRuby, "Ruby"},
     {ax::mojom::Role::kRubyAnnotation, "RubyAnnotation"},
+    {ax::mojom::Role::kSection, "Section"},
     {ax::mojom::Role::kSvgRoot, "SVGRoot"},
     {ax::mojom::Role::kScrollBar, "ScrollBar"},
     {ax::mojom::Role::kScrollView, "ScrollView"},
@@ -439,6 +440,7 @@ const RoleEntry kReverseRoles[] = {
     {"menuitem", ax::mojom::Role::kMenuButton},
     {"menuitem", ax::mojom::Role::kMenuListOption},
     {"progressbar", ax::mojom::Role::kMeter},
+    {"region", ax::mojom::Role::kSection},
     {"textbox", ax::mojom::Role::kTextField},
     {"combobox", ax::mojom::Role::kComboBoxMenuButton},
     {"combobox", ax::mojom::Role::kTextFieldWithComboBox}};
@@ -828,6 +830,7 @@ bool AXObject::IsLandmarkRelated() const {
     case ax::mojom::Role::kNavigation:
     case ax::mojom::Role::kRegion:
     case ax::mojom::Role::kSearch:
+    case ax::mojom::Role::kSection:
       return true;
     default:
       return false;
@@ -3552,6 +3555,7 @@ bool AXObject::NameFromContents(bool recursive) const {
     case ax::mojom::Role::kRow:
     case ax::mojom::Role::kRuby:
     case ax::mojom::Role::kRubyAnnotation:
+    case ax::mojom::Role::kSection:
       result = recursive || (CanReceiveAccessibilityFocus() && !IsEditable());
       break;
 

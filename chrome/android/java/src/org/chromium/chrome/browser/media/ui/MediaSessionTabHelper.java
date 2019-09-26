@@ -327,9 +327,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             try {
                 URI uri = new URI(origin);
                 origin = UrlFormatter.formatUrlForSecurityDisplay(origin);
-            } catch (URISyntaxException | UnsatisfiedLinkError e) {
-                // UnstatisfiedLinkError can only happen in tests as the natives are not initialized
-                // yet.
+            } catch (URISyntaxException e) {
                 Log.e(TAG, "Unable to parse the origin from the URL. "
                                 + "Using the full URL instead.");
             }

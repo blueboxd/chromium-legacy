@@ -46,8 +46,9 @@ bool LoadValueEvents(const base::Value* value, ValueEvents* value_events) {
       case ArcValueEvent::Type::kSwapWait:
       case ArcValueEvent::Type::kGemObjects:
       case ArcValueEvent::Type::kGemSize:
-      case ArcValueEvent::Type::kGpuFreq:
-      case ArcValueEvent::Type::kCpuTemp:
+      case ArcValueEvent::Type::kGpuFrequency:
+      case ArcValueEvent::Type::kCpuTemperature:
+      case ArcValueEvent::Type::kCpuFrequency:
         break;
       default:
         return false;

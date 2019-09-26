@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Centre de notification, <ph name="UNREAD_NOTIFICATION_COUNT" /> notifications non lues</translation>
 <translation id="4730374152663651037">SOUVENT UTILISÉES</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 mois restant}one{# mois restant}other{# mois restants}}</translation>
-<translation id="4841881773802181781">Insertion</translation>
 <translation id="4881695831933465202">Ouvrir</translation>
 <translation id="4888938634149558681">Passer un appel</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 seconde}one{# seconde}other{# secondes}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Enregistrer le fichier</translation>
 <translation id="6656912866303152668">Assurez-vous que la synchronisation est activée dans Chrome sur votre <ph name="TARGET_DEVICE_NAME" />, puis réessayez.</translation>
 <translation id="6699343763173986273">Contenu multimédia : titre suivant</translation>
-<translation id="673773751041746814">Suppression</translation>
 <translation id="6779314412797872738">Pour envoyer un numéro vers votre téléphone Android, veuillez <ph name="TROUBLESHOOT_LINK" /> pour les deux appareils dans les paramètres.</translation>
 <translation id="6786750046913594791">Fermer le dossier</translation>
 <translation id="6808150112686056157">Contenu multimédia : arrêt</translation>

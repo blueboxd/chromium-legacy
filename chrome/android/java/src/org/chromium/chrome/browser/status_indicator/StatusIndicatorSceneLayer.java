@@ -31,21 +31,18 @@ class StatusIndicatorSceneLayer extends SceneOverlayLayer implements SceneOverla
     /** The resource ID used to reference the view bitmap in native. */
     private int mResourceId;
 
-    private boolean mIsVisible;
+    /** The {@link ViewResourceFrameLayout} that this scene layer represents. */
+    private ViewResourceFrameLayout mStatusIndicator;
 
-    /** Build a composited status view layer. */
-    public StatusIndicatorSceneLayer() {}
+    private boolean mIsVisible;
 
     /**
      * Build a composited status view layer.
-     * @param resourceManager A resource manager for dynamic resource creation.
      * @param statusIndicator The view used to generate the composited version.
      */
-    public StatusIndicatorSceneLayer(
-            ResourceManager resourceManager, ViewResourceFrameLayout statusIndicator) {
-        mResourceId = statusIndicator.getId();
-        resourceManager.getDynamicResourceLoader().registerResource(
-                mResourceId, statusIndicator.getResourceAdapter());
+    public StatusIndicatorSceneLayer(ViewResourceFrameLayout statusIndicator) {
+        mStatusIndicator = statusIndicator;
+        mResourceId = mStatusIndicator.getId();
     }
 
     /**

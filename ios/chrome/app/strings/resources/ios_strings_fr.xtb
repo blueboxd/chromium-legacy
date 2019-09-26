@@ -235,7 +235,6 @@
 <translation id="430967081421617822">Toutes les périodes</translation>
 <translation id="4338650699862464074">Envoie à Google les URL des pages que vous consultez.</translation>
 <translation id="4359125752503270327">Cette page va s'ouvrir dans une autre application.</translation>
-<translation id="4370827530403103842">La synchronisation ne fonctionne pas. Appuyez pour corriger.</translation>
 <translation id="4375040482473363939">Rechercher via un code QR</translation>
 <translation id="4378154925671717803">Téléphone</translation>
 <translation id="441868831736628555">Avis de confidentialité</translation>
@@ -429,7 +428,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7006788746334555276">Paramètres de contenu</translation>
 <translation id="7015203776128479407">La configuration de la synchronisation initiale n'était pas terminée. La synchronisation est désactivée.</translation>
 <translation id="7029809446516969842">Mots de passe</translation>
-<translation id="7031882061095297553">Synchroniser avec</translation>
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7062545763355031412">Accepter et changer de compte</translation>
 <translation id="7099761977003084116">Onglets récents</translation>
@@ -438,7 +436,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7133798577887235672">Nom complet</translation>
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
 <translation id="7159472599653637159">Voir version mobile</translation>
-<translation id="7167621057293532233">Types de données</translation>
 <translation id="7173114856073700355">Ouvrir les paramètres</translation>
 <translation id="7189598951263744875">Partager…</translation>
 <translation id="7192050974311852563">Démarrer la journalisation</translation>
@@ -471,7 +468,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="766891008101699113">Pour naviguer sur le Web en toute discrétion, ajoutez un onglet.</translation>
 <translation id="7671141431838911305">INSTALLER</translation>
 <translation id="7765158879357617694">Déplacer</translation>
-<translation id="7769602470925380267">Accepter et se déconnecter</translation>
 <translation id="7772032839648071052">Confirmer la phrase secrète</translation>
 <translation id="7781829728241885113">Hier</translation>
 <translation id="778855399387580014">Lancer une recherche dans un nouvel onglet Chrome.</translation>
@@ -506,7 +502,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="8281781826761538115">Par défaut : <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Nouvelle recherche</translation>
 <translation id="8328777765163860529">Tout fermer</translation>
-<translation id="8381750437846184350">Contrôlez la façon dont Google utilise votre historique de navigation pour personnaliser la recherche, les annonces et d'autres services Google.</translation>
 <translation id="8407669440184693619">Aucun mot de passe trouvé pour ce site</translation>
 <translation id="842017693807136194">Connecté avec</translation>
 <translation id="8428045167754449968">Ville</translation>
@@ -561,7 +556,6 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Le rapport d'erreur a bien été envoyé.</translation>
 <translation id="952704832371081537">Annuler</translation>
-<translation id="976982866697960176">Gérer les données synchronisées…</translation>
 <translation id="988141524645182168">Autres appareils</translation>
 <translation id="989988560359834682">Modifier l'adresse</translation>
 <translation id="994757059139821576">Suggestions d'articles</translation>

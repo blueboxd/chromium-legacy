@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">مركز الإشعارات، <ph name="UNREAD_NOTIFICATION_COUNT" /> من الإشعارات غير المقروءة</translation>
 <translation id="4730374152663651037">التطبيقات المستخدمة بشكل متكرر</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{يتبقى شهر واحد}zero{يتبقى # شهر}two{يتبقى شهرين (#)}few{يتبقى # أشهر}many{يتبقى # شهرًا}other{يتبقى # شهر}}</translation>
-<translation id="4841881773802181781">إدراج</translation>
 <translation id="4881695831933465202">فتح</translation>
 <translation id="4888938634149558681">إجراء مكالمة</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{ثانية واحدة}zero{# من الثواني}two{ثانيتان (#)}few{# ثوانٍ}many{# ثانية}other{# من الثواني}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">حفظ الملف</translation>
 <translation id="6656912866303152668">‏يُرجى التأكّد من تفعيل إعداد مزامنة الجهاز <ph name="TARGET_DEVICE_NAME" /> في Chrome، ثم محاولة الإرسال مرة أخرى.</translation>
 <translation id="6699343763173986273">المقطع الصوتي التالي للوسائط</translation>
-<translation id="673773751041746814">حذف</translation>
 <translation id="6779314412797872738">‏لإرسال رقم من هنا إلى هاتف Android، يمكنك <ph name="TROUBLESHOOT_LINK" /> لكلا الجهازين في الإعدادات.</translation>
 <translation id="6786750046913594791">إغلاق المجلد</translation>
 <translation id="6808150112686056157">إيقاف الوسائط</translation>

@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.components.gcm_driver.InstanceIDFlags;
 import org.chromium.components.gcm_driver.LazySubscriptionsManager;
@@ -77,7 +78,8 @@ public class InstanceIDBridge {
             }
             @Override
             protected void sendResultToNative(String id) {
-                nativeDidGetID(mNativeInstanceIDAndroid, requestId, id);
+                InstanceIDBridgeJni.get().didGetID(
+                        mNativeInstanceIDAndroid, InstanceIDBridge.this, requestId, id);
             }
         }.execute();
     }
@@ -92,7 +94,8 @@ public class InstanceIDBridge {
             }
             @Override
             protected void sendResultToNative(Long creationTime) {
-                nativeDidGetCreationTime(mNativeInstanceIDAndroid, requestId, creationTime);
+                InstanceIDBridgeJni.get().didGetCreationTime(
+                        mNativeInstanceIDAndroid, InstanceIDBridge.this, requestId, creationTime);
             }
         }.execute();
     }
@@ -131,7 +134,8 @@ public class InstanceIDBridge {
             }
             @Override
             protected void sendResultToNative(String token) {
-                nativeDidGetToken(mNativeInstanceIDAndroid, requestId, token);
+                InstanceIDBridgeJni.get().didGetToken(
+                        mNativeInstanceIDAndroid, InstanceIDBridge.this, requestId, token);
             }
         }.execute();
     }
@@ -161,7 +165,8 @@ public class InstanceIDBridge {
             }
             @Override
             protected void sendResultToNative(Boolean success) {
-                nativeDidDeleteToken(mNativeInstanceIDAndroid, requestId, success);
+                InstanceIDBridgeJni.get().didDeleteToken(
+                        mNativeInstanceIDAndroid, InstanceIDBridge.this, requestId, success);
             }
         }.execute();
     }
@@ -181,20 +186,11 @@ public class InstanceIDBridge {
             }
             @Override
             protected void sendResultToNative(Boolean success) {
-                nativeDidDeleteID(mNativeInstanceIDAndroid, requestId, success);
+                InstanceIDBridgeJni.get().didDeleteID(
+                        mNativeInstanceIDAndroid, InstanceIDBridge.this, requestId, success);
             }
         }.execute();
     }
-
-    private native void nativeDidGetID(long nativeInstanceIDAndroid, int requestId, String id);
-    private native void nativeDidGetCreationTime(
-            long nativeInstanceIDAndroid, int requestId, long creationTime);
-    private native void nativeDidGetToken(
-            long nativeInstanceIDAndroid, int requestId, String token);
-    private native void nativeDidDeleteToken(
-            long nativeInstanceIDAndroid, int requestId, boolean success);
-    private native void nativeDidDeleteID(
-            long nativeInstanceIDAndroid, int requestId, boolean success);
 
     /**
      * Custom {@link AsyncTask} wrapper. As usual, this performs work on a background thread, then
@@ -242,5 +238,19 @@ public class InstanceIDBridge {
                 sendResultToNative(result);
             }
         }
+    }
+
+    @NativeMethods
+    interface Natives {
+        void didGetID(
+                long nativeInstanceIDAndroid, InstanceIDBridge caller, int requestId, String id);
+        void didGetCreationTime(long nativeInstanceIDAndroid, InstanceIDBridge caller,
+                int requestId, long creationTime);
+        void didGetToken(
+                long nativeInstanceIDAndroid, InstanceIDBridge caller, int requestId, String token);
+        void didDeleteToken(long nativeInstanceIDAndroid, InstanceIDBridge caller, int requestId,
+                boolean success);
+        void didDeleteID(long nativeInstanceIDAndroid, InstanceIDBridge caller, int requestId,
+                boolean success);
     }
 }

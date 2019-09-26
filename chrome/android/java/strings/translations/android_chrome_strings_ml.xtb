@@ -526,7 +526,6 @@
 <translation id="4943872375798546930">ഫലങ്ങളൊന്നുമില്ല</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> നിങ്ങളുടെ സ്‌ക്രീൻ പങ്കിടുന്നു</translation>
 <translation id="4961107849584082341">ഈ പേജ് ഏത് ഭാഷയിലേക്കും വിവര്‍ത്തനം ചെയ്യുക</translation>
-<translation id="4961700429721424617"><ph name="MANAGED_DOMAIN" /> മാനേജ് ചെയ്യുന്ന അക്കൗണ്ടിൽ നിന്നും നിങ്ങൾ സൈൻ ഔട്ട് ചെയ്യുകയാണ്. ഇത് ഈ ഉപകരണത്തിൽ നിന്ന് നിങ്ങളുടെ Chrome വിവരങ്ങൾ ഇല്ലാതാക്കുമെങ്കിലും, Google അക്കൗണ്ടിൽ തുടർന്നും അവ ഉണ്ടായിരിക്കുന്നതാണ്.</translation>
 <translation id="4962975101802056554">ഉപകരണത്തിനുള്ള എല്ലാ അനുമതികളും അസാധുവാക്കുക</translation>
 <translation id="4970824347203572753">നിങ്ങളുടെ ലൊക്കേഷനിൽ ലഭ്യമല്ല</translation>
 <translation id="497421865427891073">മുന്നോട്ട് പോകുക</translation>
@@ -922,7 +921,6 @@ VR-ൽ പ്രവേശിക്കുന്നതിന് മുമ്പ്
 <translation id="7757787379047923882"><ph name="DEVICE_NAME" /> ഉപകരണത്തിൽ നിന്ന് പങ്കിട്ട ടെക്‌സ്റ്റ്</translation>
 <translation id="7762668264895820836">SD കാർഡ് <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">വിലാസം ചേർക്കുക</translation>
-<translation id="7769602470925380267">അംഗീകരിച്ചശേഷം, സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="7772032839648071052">പാസ്ഫ്രേസ് സ്ഥിരീകരിക്കുക</translation>
 <translation id="7772375229873196092"><ph name="APP_NAME" /> അടയ്‌ക്കുക</translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> പേയ്‌മെന്റ് രീതികളും}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 എന്നതും ‌മറ്റ് <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" /> പേയ്‌മെന്റ് രീതികളും}}</translation>

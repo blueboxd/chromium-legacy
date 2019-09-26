@@ -12,7 +12,10 @@ _jni_sources = [
 android_library("policy_java") {
   deps = [
     "//base:base_java",
+    "//base:jni_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+
   java_files =
       _jni_sources + [
         "java/src/org/chromium/policy/AbstractAppRestrictionsProvider.java",

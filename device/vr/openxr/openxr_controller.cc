@@ -237,38 +237,42 @@ mojom::VRPosePtr OpenXrController::GetPose(XrTime predicted_display_time,
     return nullptr;
   }
 
-  XrSpaceVelocity velocity = {XR_TYPE_SPACE_VELOCITY};
-  XrSpaceLocation space_location = {XR_TYPE_SPACE_LOCATION};
-  space_location.next = &velocity;
+  XrSpaceVelocity local_from_grip_speed = {XR_TYPE_SPACE_VELOCITY};
+  XrSpaceLocation local_from_grip = {XR_TYPE_SPACE_LOCATION};
+  local_from_grip.next = &local_from_grip_speed;
   if (XR_FAILED(xrLocateSpace(grip_pose_space_, local_space,
-                              predicted_display_time, &space_location))) {
+                              predicted_display_time, &local_from_grip))) {
     return nullptr;
   }
 
   mojom::VRPosePtr pose = mojom::VRPose::New();
 
-  if (space_location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
-    pose->position = gfx::Point3F(space_location.pose.position.x,
-                                  space_location.pose.position.y,
-                                  space_location.pose.position.z);
+  if (local_from_grip.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
+    pose->position = gfx::Point3F(local_from_grip.pose.position.x,
+                                  local_from_grip.pose.position.y,
+                                  local_from_grip.pose.position.z);
   }
 
-  if (space_location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+  if (local_from_grip.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
     pose->orientation = gfx::Quaternion(
-        space_location.pose.orientation.x, space_location.pose.orientation.y,
-        space_location.pose.orientation.z, space_location.pose.orientation.w);
+        local_from_grip.pose.orientation.x, local_from_grip.pose.orientation.y,
+        local_from_grip.pose.orientation.z, local_from_grip.pose.orientation.w);
   }
 
-  if (velocity.velocityFlags & XR_SPACE_VELOCITY_LINEAR_VALID_BIT) {
+  if (local_from_grip_speed.velocityFlags &
+      XR_SPACE_VELOCITY_LINEAR_VALID_BIT) {
     pose->linear_velocity =
-        gfx::Vector3dF(velocity.linearVelocity.x, velocity.linearVelocity.y,
-                       velocity.linearVelocity.z);
+        gfx::Vector3dF(local_from_grip_speed.linearVelocity.x,
+                       local_from_grip_speed.linearVelocity.y,
+                       local_from_grip_speed.linearVelocity.z);
   }
 
-  if (velocity.velocityFlags & XR_SPACE_VELOCITY_ANGULAR_VALID_BIT) {
+  if (local_from_grip_speed.velocityFlags &
+      XR_SPACE_VELOCITY_ANGULAR_VALID_BIT) {
     pose->angular_velocity =
-        gfx::Vector3dF(velocity.angularVelocity.x, velocity.angularVelocity.y,
-                       velocity.angularVelocity.z);
+        gfx::Vector3dF(local_from_grip_speed.angularVelocity.x,
+                       local_from_grip_speed.angularVelocity.y,
+                       local_from_grip_speed.angularVelocity.z);
   }
 
   return pose;

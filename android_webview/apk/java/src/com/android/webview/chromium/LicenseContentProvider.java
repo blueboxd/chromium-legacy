@@ -14,7 +14,7 @@ import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 
 import org.chromium.base.FileUtils;
-import org.chromium.components.aboutui.CreditUtils;
+import org.chromium.components.aboutui.CreditUtilsJni;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -50,7 +50,7 @@ public class LicenseContentProvider
     public void writeDataToPipe(
             ParcelFileDescriptor output, Uri uri, String mimeType, Bundle opts, String filename) {
         if (WebViewApkApplication.initializeNative()) {
-            CreditUtils.nativeWriteCreditsHtml(output.detachFd());
+            CreditUtilsJni.get().writeCreditsHtml(output.detachFd());
         } else {
             // Missing native library means we're the webview stub and licenses are stored as an
             // asset.

@@ -528,6 +528,8 @@ extern const char kAllowFileSelectionDialogs[];
 extern const char kDefaultTasksByMimeType[];
 extern const char kDefaultTasksBySuffix[];
 
+extern const char kSharedClipboardEnabled[];
+
 extern const char kSelectFileLastDirectory[];
 
 extern const char kExcludedSchemes[];

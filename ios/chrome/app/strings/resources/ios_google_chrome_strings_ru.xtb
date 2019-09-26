@@ -26,7 +26,6 @@
 <translation id="415767770115540173">Разрешите браузеру определять ваше местоположение и пользуйтесь дополнительными возможностями Chrome.</translation>
 <translation id="424864128008805179">Выйти из Chrome?</translation>
 <translation id="4523886039239821078">Некоторые дополнения вызывают сбой Chrome. Необходимо удалить:</translation>
-<translation id="4615174829807303908">Вы выходите из аккаунта, которым управляет администратор домена <ph name="SIGNOUT_MANAGED_DOMAIN" />. Все данные Chrome, хранящиеся на этом устройстве, будут удалены, но останутся в вашем аккаунте Google.</translation>
 <translation id="5389212809648216794">Google Chrome не может получить доступ к камере, поскольку она используется другим приложением.</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Ознакомьтесь с обновленными Условиями использования Chrome<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Откройте "Настройки &gt; Конфиденциальность &gt; Камера &gt; Chrome" и включите камеру.</translation>
@@ -45,7 +44,6 @@
 <translation id="7173660919484573146">Чтобы исключить несанкционированный доступ к паролям, Chrome использует функцию Face ID.</translation>
 <translation id="7265369419224458312">Просматривайте одни и те же вкладки на компьютере и мобильном устройстве. Для этого откройте меню браузера на компьютере и выберите пункт "Войти в Chrome".</translation>
 <translation id="7400722733683201933">О браузере Google Chrome</translation>
-<translation id="7437998757836447326">Выход из Chrome</translation>
 <translation id="756809126120519699">Данные Chrome удалены</translation>
 <translation id="7626032353295482388">Добро пожаловать в Chrome!</translation>
 <translation id="7698568245838009292">Приложению Chrome нужен доступ к камере</translation>

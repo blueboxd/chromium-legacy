@@ -27,6 +27,10 @@ struct NativeWebKeyboardEvent;
 class WebContents;
 }
 
+namespace ui {
+class AXPlatformNode;
+}
+
 namespace autofill {
 
 class AutofillPopupDelegate;
@@ -138,6 +142,10 @@ class AutofillPopupControllerImpl : public AutofillPopupController {
   // form control of the popup and popup itself has changed based on the popup's
   // show or hide action.
   void FireControlsChangedEvent(bool is_show);
+
+  // Gets the root AXPlatformNode for our web_contents_, which can be used
+  // to find the AXPlatformNode specifically for the autofill text field.
+  virtual ui::AXPlatformNode* GetRootAXPlatformNodeForWebContents();
 
  private:
 #if !defined(OS_ANDROID)

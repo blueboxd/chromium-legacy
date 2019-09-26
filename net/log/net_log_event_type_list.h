@@ -1997,6 +1997,36 @@ EVENT_TYPE(QUIC_SESSION_CLOSED)
 //  }
 EVENT_TYPE(QUIC_SESSION_CONNECTIVITY_PROBING_FINISHED)
 
+// Session sent a CRYPTO frame.
+//  {
+//    "encryption_level": <The quic::EncryptionLevel of the frame>,
+//    "data_length": <The length of the CRYPTO frame data>,
+//    "offset": <The offset of the CRYPTO frame>
+//  }
+EVENT_TYPE(QUIC_SESSION_CRYPTO_FRAME_SENT)
+
+// Session received a CRYPTO frame.
+//  {
+//    "encryption_level": <The quic::EncryptionLevel of the frame>,
+//    "data_length": <The length of the CRYPTO frame data>,
+//    "offset": <The offset of the CRYPTO frame>
+//  }
+EVENT_TYPE(QUIC_SESSION_CRYPTO_FRAME_RECEIVED)
+
+// Session sent a STOP_SENDING frame.
+//  {
+//    "stream_id": <The stream id>,
+//    "application_error_code": <The application error code>
+//  }
+EVENT_TYPE(QUIC_SESSION_STOP_SENDING_FRAME_SENT)
+
+// Session received a STOP_SENDING frame.
+//  {
+//    "stream_id": <The stream id>,
+//    "application_error_code": <The application error code>
+//  }
+EVENT_TYPE(QUIC_SESSION_STOP_SENDING_FRAME_RECEIVED)
+
 // ------------------------------------------------------------------------
 // QuicHttpStream
 // ------------------------------------------------------------------------

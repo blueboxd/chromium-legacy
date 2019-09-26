@@ -26,6 +26,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/html_text_area_element.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/css/style_change_reason.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -486,7 +487,7 @@ String HTMLTextAreaElement::validationMessage() const {
     return CustomValidationMessage();
 
   if (ValueMissing())
-    return GetLocale().QueryString(WebLocalizedString::kValidationValueMissing);
+    return GetLocale().QueryString(IDS_FORM_VALIDATION_VALUE_MISSING);
 
   if (TooLong()) {
     return GetLocale().ValidationMessageTooLongText(value().length(),

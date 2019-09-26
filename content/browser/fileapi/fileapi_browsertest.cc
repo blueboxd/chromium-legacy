@@ -23,7 +23,7 @@ IN_PROC_BROWSER_TEST_F(FileAPIBrowserTest, FileInputChooserParams) {
   EXPECT_TRUE(base::PathService::Get(base::DIR_TEMP, &file));
   file = file.AppendASCII("bar");
 
-  NavigateToURL(shell(), GetTestUrl(".", "file_input.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl(".", "file_input.html")));
 
   // Click on the <input type=file> element to launch the file upload picker.
   {

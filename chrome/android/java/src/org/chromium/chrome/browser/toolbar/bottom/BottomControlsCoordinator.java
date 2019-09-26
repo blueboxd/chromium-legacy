@@ -207,6 +207,14 @@ public class BottomControlsCoordinator {
     }
 
     /**
+     * Handles system back press action if needed.
+     * @return Whether or not the back press event is consumed here.
+     */
+    public boolean onBackPressed() {
+        return mTabGroupUi != null && mTabGroupUi.onBackPressed();
+    }
+
+    /**
      * @param layout The {@link ToolbarSwipeLayout} that the bottom controls will hook into. This
      *               allows the bottom controls to provide the layout with scene layers with the
      *               bottom controls' texture.

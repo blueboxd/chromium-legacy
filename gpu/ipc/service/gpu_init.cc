@@ -508,7 +508,6 @@ void GpuInit::InitializeInProcess(base::CommandLine* command_line,
       ui::OzonePlatform::GetInstance()
           ->GetSurfaceFactoryOzone()
           ->GetSupportedFormatsForTexturing();
-  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
   bool needs_more_info = true;
 #if !defined(IS_CHROMECAST)

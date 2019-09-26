@@ -95,8 +95,6 @@ void PopulateResourceResponse(net::URLRequest* request,
   response->head.was_in_prefetch_cache =
       !(request->load_flags() & net::LOAD_PREFETCH) &&
       response_info.unused_since_prefetch;
-  response->head.effective_connection_type =
-      net::EFFECTIVE_CONNECTION_TYPE_UNKNOWN;
 
   if (is_load_timing_enabled)
     request->GetLoadTimingInfo(&response->head.load_timing);

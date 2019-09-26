@@ -51,6 +51,9 @@ class ErrorScreenView {
   // Updates visibility of the label indicating we're reconnecting.
   virtual void SetShowConnectingIndicator(bool value) = 0;
 
+  // Makes error persistent (e.g. non-closable).
+  virtual void SetIsPersistentError(bool is_persistent) = 0;
+
   // Sets current UI state of the screen.
   virtual void SetUIState(NetworkError::UIState ui_state) = 0;
 };
@@ -75,6 +78,7 @@ class ErrorScreenHandler : public BaseScreenHandler, public ErrorScreenView {
   void SetGuestSigninAllowed(bool value) override;
   void SetOfflineSigninAllowed(bool value) override;
   void SetShowConnectingIndicator(bool value) override;
+  void SetIsPersistentError(bool is_persistent) override;
   void SetUIState(NetworkError::UIState ui_state) override;
 
   // WebUIMessageHandler:

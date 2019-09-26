@@ -8,10 +8,6 @@ interface DisplayLockContext {
   // Returns a promise that resolves when the lock is acquired.
   [CallWith=ScriptState] Promise<any> acquire(optional DisplayLockOptions options);
 
-  // Causes co-operative updates to happen on the locked subtree.
-  // Returns a promise that resolves when the update is finished.
-  [CallWith=ScriptState] Promise<any> update();
-
   // Commits the locked subtree, which releases the lock and updates any
   // necessary lifecycle phases.
   // Returns a promise that resolves when the commit is finished.

@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Pranešimų centras, neskaitytų pranešimų: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">DAŽNAI NAUDOJAMOS PROGRAMOS</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Liko 1 mėnuo}one{Liko # mėnuo}few{Liko # mėnesiai}many{Liko # mėnesio}other{Liko # mėnesių}}</translation>
-<translation id="4841881773802181781">Įterpimas</translation>
 <translation id="4881695831933465202">Atidaryti</translation>
 <translation id="4888938634149558681">Skambinti</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekundė}one{# sekundė}few{# sekundės}many{# sekundės}other{# sekundžių}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Išsaugoti failą</translation>
 <translation id="6656912866303152668">Įsitikinkite, kad įrenginio „<ph name="TARGET_DEVICE_NAME" />“ naršyklėje „Chrome“ įjungtas sinchronizavimas, tada bandykite siųsti dar kartą.</translation>
 <translation id="6699343763173986273">Kitas medijos takelis</translation>
-<translation id="673773751041746814">Trynimas</translation>
 <translation id="6779314412797872738">Jei norite iš čia į „Android“ telefoną išsiųsti numerį, nustatymuose<ph name="TROUBLESHOOT_LINK" /> abiejuose įrenginiuose.</translation>
 <translation id="6786750046913594791">Uždaryti aplanką</translation>
 <translation id="6808150112686056157">Sustabdyti mediją</translation>

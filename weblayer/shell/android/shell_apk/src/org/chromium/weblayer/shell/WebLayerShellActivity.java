@@ -7,15 +7,12 @@ package org.chromium.weblayer.shell;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentTransaction;
 import android.text.InputType;
 import android.text.TextUtils;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.view.ViewGroup.LayoutParams;
 import android.view.inputmethod.EditorInfo;
 import android.widget.EditText;
@@ -26,7 +23,7 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
 import org.chromium.weblayer.BrowserController;
-import org.chromium.weblayer.BrowserFragmentImpl;
+import org.chromium.weblayer.BrowserFragmentController;
 import org.chromium.weblayer.BrowserObserver;
 import org.chromium.weblayer.Profile;
 import org.chromium.weblayer.WebLayer;
@@ -38,32 +35,18 @@ public class WebLayerShellActivity extends FragmentActivity {
     private static final String TAG = "WebLayerShell";
 
     private Profile mProfile;
-    private BrowserFragmentImpl mBrowserFragment;
+    private BrowserFragmentController mBrowserFragmentController;
     private BrowserController mBrowserController;
     private EditText mUrlView;
     private ProgressBar mLoadProgressBar;
     private View mMainView;
 
-    public static class ShellFragment extends Fragment {
-        private BrowserFragmentImpl mBrowserFragment;
-
-        ShellFragment(BrowserFragmentImpl browserFragment) {
-            mBrowserFragment = browserFragment;
-        }
-
-        @Override
-        public View onCreateView(
-                LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-            return mBrowserFragment.onCreateView();
-        }
-    }
-
     public BrowserController getBrowserController() {
         return mBrowserController;
     }
 
-    public BrowserFragmentImpl getBrowserFragmentImpl() {
-        return mBrowserFragment;
+    public BrowserFragmentController getBrowserFragmentController() {
+        return mBrowserFragmentController;
     }
 
     @Override
@@ -118,15 +101,16 @@ public class WebLayerShellActivity extends FragmentActivity {
         topContentsContainer.addView(mLoadProgressBar, progressLayoutParams);
 
         mProfile = WebLayer.getInstance().createProfile(null);
-        mBrowserFragment = mProfile.createBrowserFragment(this);
-        mBrowserController = mBrowserFragment.getBrowserController();
+
+        mBrowserFragmentController = mProfile.createBrowserFragmentController(this);
 
         FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.add(viewId, new ShellFragment(mBrowserFragment));
+        transaction.add(viewId, mBrowserFragmentController.getFragment());
         transaction.commit();
 
-        mBrowserFragment.setTopView(topContentsContainer);
+        mBrowserFragmentController.setTopView(topContentsContainer);
 
+        mBrowserController = mBrowserFragmentController.getBrowserController();
         String startupUrl = getUrlFromIntent(getIntent());
         if (TextUtils.isEmpty(startupUrl)) {
             startupUrl = "http://google.com";
@@ -154,7 +138,7 @@ public class WebLayerShellActivity extends FragmentActivity {
     @Override
     protected void onDestroy() {
         if (mProfile != null) mProfile.destroy();
-        if (mBrowserFragment != null) mBrowserFragment.destroy();
+        if (mBrowserFragmentController != null) mBrowserFragmentController.destroy();
         super.onDestroy();
     }
 

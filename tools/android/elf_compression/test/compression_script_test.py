@@ -141,6 +141,33 @@ class CompressionScriptTest(unittest.TestCase):
     self.assertEqual(
         compress_section.MatchVaddrAlignment(1024, 2049, 1024), 1025)
 
+  def testSegmentContains(self):
+    """Tests for SegmentContains method of the script."""
+    self.assertTrue(compress_section.SegmentContains(0, 3, 0, 1))
+    self.assertTrue(compress_section.SegmentContains(0, 3, 0, 2))
+    self.assertTrue(compress_section.SegmentContains(0, 3, 0, 3))
+    self.assertTrue(compress_section.SegmentContains(0, 3, 1, 2))
+    self.assertTrue(compress_section.SegmentContains(0, 3, 1, 3))
+
+    self.assertFalse(compress_section.SegmentContains(0, 1, 0, 3))
+    self.assertFalse(compress_section.SegmentContains(0, 3, 0, 4))
+    self.assertFalse(compress_section.SegmentContains(0, 3, -1, 4))
+    self.assertFalse(compress_section.SegmentContains(0, 3, -1, 2))
+    self.assertFalse(compress_section.SegmentContains(0, 3, 2, 4))
+    self.assertFalse(compress_section.SegmentContains(0, 3, 3, 4))
+    self.assertFalse(compress_section.SegmentContains(0, 3, -1, 0))
+
+  def testSegmentsIntersect(self):
+    """Tests for SegmentIntersect method of the script."""
+    self.assertTrue(compress_section.SegmentsIntersect(0, 3, 0, 3))
+    self.assertTrue(compress_section.SegmentsIntersect(0, 3, -1, 1))
+    self.assertTrue(compress_section.SegmentsIntersect(0, 3, 2, 4))
+    self.assertTrue(compress_section.SegmentsIntersect(0, 3, 1, 2))
+
+    self.assertFalse(compress_section.SegmentsIntersect(0, 3, 4, 6))
+    self.assertFalse(compress_section.SegmentsIntersect(0, 3, -1, 0))
+    self.assertFalse(compress_section.SegmentsIntersect(0, 3, 3, 5))
+
 
 if __name__ == '__main__':
   unittest.main()

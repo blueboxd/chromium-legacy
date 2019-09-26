@@ -65,7 +65,10 @@ class HintsFetcher {
 
   // Record whether the host was covered by a hints fetch and any returned
   // hints would not have expired.
-  static void RecordHintsFetcherCoverage(PrefService* pref_serivce,
+  static void RecordHintsFetcherCoverage(PrefService* pref_service,
+                                         const std::string& host,
+                                         const base::Clock* clock);
+  static void RecordHintsFetcherCoverage(PrefService* pref_service,
                                          const std::string& host);
 
  private:

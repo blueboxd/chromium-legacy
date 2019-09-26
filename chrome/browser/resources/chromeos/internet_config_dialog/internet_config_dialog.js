@@ -14,15 +14,6 @@ Polymer({
   behaviors: [I18nBehavior],
 
   properties: {
-    /**
-     * Interface for networkingPrivate calls.
-     * @type {NetworkingPrivate}
-     */
-    networkingPrivate: {
-      type: Object,
-      value: chrome.networkingPrivate,
-    },
-
     /** @private */
     shareAllowEnable_: {
       type: Boolean,

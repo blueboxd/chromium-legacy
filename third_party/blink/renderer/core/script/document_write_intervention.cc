@@ -187,9 +187,8 @@ bool MaybeDisallowFetchForDocWrittenScript(FetchParameters& params,
   document.Loader()->DidObserveLoadingBehavior(
       WebLoadingBehaviorFlag::kWebLoadingBehaviorDocumentWriteBlock);
 
-  if (!ShouldDisallowFetch(
-          settings, GetNetworkStateNotifier().ConnectionType(),
-          document.GetFrame()->Client()->GetEffectiveConnectionType())) {
+  if (!ShouldDisallowFetch(settings, GetNetworkStateNotifier().ConnectionType(),
+                           GetNetworkStateNotifier().EffectiveType())) {
     AddWarningHeader(&params);
     return false;
   }

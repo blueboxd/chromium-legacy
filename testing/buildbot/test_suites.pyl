@@ -457,7 +457,7 @@
       },
     },
 
-    'chromeos_device_kevin_tests': {
+    'chromeos_device_tests': {
       'base_unittests': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.base_unittests.filter',
@@ -4685,10 +4685,9 @@
     },
 
     'skia_renderer_fyi_gtests': {
-      'skia_renderer_browser_tests': {
-        'args': [
-          '--enable-features=UseSkiaRenderer',
-          '--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.browser_tests.filter',
+      'non_skia_renderer_browser_tests': {
+      'args': [
+          '--disable-features=UseSkiaRenderer',
         ],
         'swarming': {
           'shards': 10,
@@ -4970,7 +4969,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'version:1.7',
+              'revision': '4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C',
             }
           ]
         },
@@ -4988,7 +4987,7 @@
             {
               "cipd_package": 'chromium/android_webview/tools/cts_archive',
               'location': 'android_webview/tools/cts_archive',
-              'revision': 'version:1.7',
+              'revision': '4kDr36wBuZtvbfaEin4U4oeFD7oAuN0flkWDImKBts4C',
             }
           ]
         },
@@ -5570,17 +5569,6 @@
       'gpu_angle_white_box_gtests',
       'gpu_common_gtests',
       'gpu_desktop_specific_gtests',
-      'gpu_gles2_conform_gtests',
-      'gpu_swiftshader_gtests',
-    ],
-
-    'gpu_fyi_linux_skia_renderer_gtests': [
-      'gpu_angle_end2end_gtests',
-      'gpu_angle_unit_gtests',
-      'gpu_angle_white_box_gtests',
-      'gpu_common_gtests',
-      'gpu_desktop_specific_gtests',
-      'gpu_fyi_vulkan_gtests',
       'gpu_gles2_conform_gtests',
       'gpu_swiftshader_gtests',
     ],

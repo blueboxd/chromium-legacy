@@ -4348,6 +4348,9 @@
     <message name="IDS_SETTINGS_USERS_ADD_USERS_EMAIL" desc="Label for the email input field for adding users.">
       Email address
     </message>
+    <message name="IDS_SETTINGS_USER_EXISTS_ERROR" desc="Error message for attempting to add a user that already exists">
+      This user already exists
+    </message>
   </if>
 
   <!-- Parental Controls -->

@@ -64,11 +64,6 @@ bool IsPublicSuffixDomainMatch(const std::string& url1,
 // registry-controlled domain part.
 std::string GetRegistryControlledDomain(const GURL& signon_realm);
 
-// Returns the organization-identifying name of the host of |url|, that is, the
-// first domain name label below the effective TLD. Returns the empty string for
-// URLs where these concepts are ill-defined, as well as for invalid URLs.
-std::string GetOrganizationIdentifyingName(const GURL& url);
-
 }  // namespace password_manager
 
 #endif  // COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_PSL_MATCHING_HELPER_H_

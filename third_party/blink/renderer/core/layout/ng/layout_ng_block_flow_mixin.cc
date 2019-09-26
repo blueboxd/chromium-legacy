@@ -86,6 +86,9 @@ const NGPhysicalBoxFragment* LayoutNGBlockFlowMixin<Base>::CurrentFragment()
 
 template <typename Base>
 void LayoutNGBlockFlowMixin<Base>::AddLayoutOverflowFromChildren() {
+  if (Base::LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
+    return;
+
   // |ComputeOverflow()| calls this, which is called from
   // |CopyFragmentDataToLayoutBox()| and |RecalcOverflow()|.
   // Add overflow from the last layout cycle.

@@ -760,7 +760,7 @@ def main():
     cmake_args += ['-DCOMPILER_RT_ENABLE_IOS=ON',
                    '-DSANITIZER_MIN_OSX_VERSION=10.7']
 
-  # TODO(crbug.com/41866): Use -DLLVM_EXTERNAL_PROJECTS instead.
+  # TODO(crbug.com/962988): Use -DLLVM_EXTERNAL_PROJECTS instead.
   CreateChromeToolsShim()
 
   if os.path.exists(LLVM_BUILD_DIR):

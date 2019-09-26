@@ -25,9 +25,9 @@ public class TabSelectionEditorLayoutBinder {
             } else {
                 view.hide();
             }
-        } else if (TabSelectionEditorProperties.TOOLBAR_GROUP_BUTTON_LISTENER == propertyKey) {
+        } else if (TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_LISTENER == propertyKey) {
             view.getToolbar().setActionButtonOnClickListener(
-                    model.get(TabSelectionEditorProperties.TOOLBAR_GROUP_BUTTON_LISTENER));
+                    model.get(TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_LISTENER));
         } else if (TabSelectionEditorProperties.TOOLBAR_NAVIGATION_LISTENER == propertyKey) {
             view.getToolbar().setNavigationOnClickListener(
                     model.get(TabSelectionEditorProperties.TOOLBAR_NAVIGATION_LISTENER));
@@ -42,6 +42,13 @@ public class TabSelectionEditorLayoutBinder {
         } else if (TabSelectionEditorProperties.TOOLBAR_TEXT_APPEARANCE == propertyKey) {
             view.getToolbar().setTextAppearance(
                     model.get(TabSelectionEditorProperties.TOOLBAR_TEXT_APPEARANCE));
+        } else if (TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_TEXT == propertyKey) {
+            view.getToolbar().setActionButtonText(
+                    model.get(TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_TEXT));
+        } else if (TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_ENABLING_THRESHOLD
+                == propertyKey) {
+            view.getToolbar().setActionButtonEnablingThreshold(model.get(
+                    TabSelectionEditorProperties.TOOLBAR_ACTION_BUTTON_ENABLING_THRESHOLD));
         }
     }
 }

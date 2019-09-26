@@ -7,6 +7,7 @@ package org.chromium.components.dom_distiller.core;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Wrapper for native dom_distiller::DomDistillerService.
@@ -20,7 +21,7 @@ public final class DomDistillerService {
     private DomDistillerService(long nativeDomDistillerAndroidServicePtr) {
         mDomDistillerServiceAndroid = nativeDomDistillerAndroidServicePtr;
         mDistilledPagePrefs = new DistilledPagePrefs(
-                nativeGetDistilledPagePrefsPtr(mDomDistillerServiceAndroid));
+                DomDistillerServiceJni.get().getDistilledPagePrefsPtr(mDomDistillerServiceAndroid));
     }
 
     public DistilledPagePrefs getDistilledPagePrefs() {
@@ -28,11 +29,13 @@ public final class DomDistillerService {
     }
 
     public boolean hasEntry(String entryId) {
-        return nativeHasEntry(mDomDistillerServiceAndroid, entryId);
+        return DomDistillerServiceJni.get().hasEntry(
+                mDomDistillerServiceAndroid, DomDistillerService.this, entryId);
     }
 
     public String getUrlForEntry(String entryId) {
-        return nativeGetUrlForEntry(mDomDistillerServiceAndroid, entryId);
+        return DomDistillerServiceJni.get().getUrlForEntry(
+                mDomDistillerServiceAndroid, DomDistillerService.this, entryId);
     }
 
     @CalledByNative
@@ -41,9 +44,12 @@ public final class DomDistillerService {
         return new DomDistillerService(nativeDomDistillerServiceAndroid);
     }
 
-    private native boolean nativeHasEntry(long nativeDomDistillerServiceAndroid, String entryId);
-    private native String nativeGetUrlForEntry(
-            long nativeDomDistillerServiceAndroid, String entryId);
-    private static native long nativeGetDistilledPagePrefsPtr(
-            long nativeDomDistillerServiceAndroid);
+    @NativeMethods
+    interface Natives {
+        boolean hasEntry(
+                long nativeDomDistillerServiceAndroid, DomDistillerService caller, String entryId);
+        String getUrlForEntry(
+                long nativeDomDistillerServiceAndroid, DomDistillerService caller, String entryId);
+        long getDistilledPagePrefsPtr(long nativeDomDistillerServiceAndroid);
+    }
 }

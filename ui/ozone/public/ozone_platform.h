@@ -186,19 +186,30 @@ class COMPONENT_EXPORT(OZONE) OzonePlatform {
 
   // The GPU-specific portion of Ozone would typically run in a sandboxed
   // process for additional security. Some startup might need to wait until
-  // after the sandbox has been configured. The embedder should use this method
-  // to specify that the sandbox is configured and that GPU-side setup should
-  // complete. A default do-nothing implementation is provided to permit
-  // platform implementations to ignore sandboxing and any associated launch
-  // ordering issues.
+  // after the sandbox has been configured.
+  // When the GPU is in a separate process, the embedder should call this method
+  // after it has configured (or failed to configure) the sandbox so that the
+  // GPU-side setup is completed. If the GPU is in-process, there is no
+  // sandboxing and the embedder should not call this method.
+  // A default do-nothing implementation is provided to permit platform
+  // implementations to ignore sandboxing and any associated launch ordering
+  // issues.
   virtual void AfterSandboxEntry();
 
  protected:
-  static bool has_initialized_ui();
+  bool has_initialized_ui() const { return initialized_ui_; }
+  bool has_initialized_gpu() const { return initialized_gpu_; }
+
+  bool single_process() const { return single_process_; }
 
  private:
   virtual void InitializeUI(const InitParams& params) = 0;
   virtual void InitializeGPU(const InitParams& params) = 0;
+
+  bool initialized_ui_ = false;
+  bool initialized_gpu_ = false;
+
+  bool single_process_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OzonePlatform);
 };

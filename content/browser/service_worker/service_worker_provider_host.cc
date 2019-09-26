@@ -403,8 +403,10 @@ ServiceWorkerProviderHost::GetRemoteControllerServiceWorker() {
   return remote_controller;
 }
 
-void ServiceWorkerProviderHost::UpdateUrls(const GURL& url,
-                                           const GURL& site_for_cookies) {
+void ServiceWorkerProviderHost::UpdateUrls(
+    const GURL& url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin) {
   DCHECK(IsProviderForClient());
   DCHECK(!url.has_ref());
   DCHECK(!controller());
@@ -412,6 +414,8 @@ void ServiceWorkerProviderHost::UpdateUrls(const GURL& url,
   GURL previous_url = url_;
   url_ = url;
   site_for_cookies_ = site_for_cookies;
+  top_frame_origin_ = top_frame_origin;
+
   if (previous_url != url) {
     // Revoke the token on URL change since any service worker holding the token
     // may no longer be the potential controller of this frame and shouldn't
@@ -463,6 +467,13 @@ const GURL& ServiceWorkerProviderHost::site_for_cookies() const {
   if (IsProviderForClient())
     return site_for_cookies_;
   return running_hosted_version_->script_url();
+}
+
+base::Optional<url::Origin> ServiceWorkerProviderHost::top_frame_origin()
+    const {
+  if (IsProviderForClient())
+    return top_frame_origin_;
+  return url::Origin::Create(running_hosted_version_->script_url());
 }
 
 void ServiceWorkerProviderHost::UpdateController(bool notify_controllerchange) {
@@ -599,13 +610,13 @@ bool ServiceWorkerProviderHost::AllowServiceWorker(const GURL& scope,
   DCHECK(IsContextAlive());
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     return GetContentClient()->browser()->AllowServiceWorkerOnUI(
-        scope, site_for_cookies(), script_url,
+        scope, site_for_cookies(), top_frame_origin(), script_url,
         context_->wrapper()->browser_context(),
         base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
                             render_process_id_, frame_id()));
   } else {
     return GetContentClient()->browser()->AllowServiceWorkerOnIO(
-        scope, site_for_cookies(), script_url,
+        scope, site_for_cookies(), top_frame_origin(), script_url,
         context_->wrapper()->resource_context(),
         base::BindRepeating(&WebContentsImpl::FromRenderFrameHostID,
                             render_process_id_, frame_id()));

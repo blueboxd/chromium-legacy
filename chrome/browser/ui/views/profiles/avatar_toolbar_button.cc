@@ -104,6 +104,8 @@ AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
   // and LabelButton image/label placement is still flipped like usual.
   EnableCanvasFlippingForRTLUI(false);
 
+  GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
+
   Init();
 
 #if defined(OS_CHROMEOS)

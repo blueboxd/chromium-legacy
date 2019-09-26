@@ -55,9 +55,6 @@ Polymer({
       notify: true,
     },
 
-    /** @private {string} */
-    searchTerm_: String,
-
     /** @type {string} */
     label: {
       type: String,
@@ -68,13 +65,16 @@ Polymer({
     updateValueOnInput: Boolean,
 
     /** @private {boolean} */
-    dropdownRefitPending_: Boolean,
-
-    /** @private {boolean} */
     showLoading: {
       type: Boolean,
       value: false,
     },
+
+    /** @private {string} */
+    searchTerm_: String,
+
+    /** @private {boolean} */
+    dropdownRefitPending_: Boolean,
   },
 
   listeners: {

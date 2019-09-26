@@ -1818,22 +1818,37 @@ void EventSender::TextZoomOut() {
 
 void EventSender::ZoomPageIn() {
   for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
-    view_proxy->GetWidget()->SetZoomLevelForTesting(
-        view_proxy->webview()->ZoomLevel() + 1);
+    // Only set page zoom on main frames. Any RenderViews that exist for
+    // a proxy main frame will hear about the change as a side effect of
+    // changing the main frame.
+    if (view_proxy->GetMainRenderFrame()) {
+      view_proxy->GetWidget()->SetZoomLevelForTesting(
+          view_proxy->webview()->ZoomLevel() + 1);
+    }
   }
 }
 
 void EventSender::ZoomPageOut() {
   for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
-    view_proxy->GetWidget()->SetZoomLevelForTesting(
-        view_proxy->webview()->ZoomLevel() - 1);
+    // Only set page zoom on main frames. Any RenderViews that exist for
+    // a proxy main frame will hear about the change as a side effect of
+    // changing the main frame.
+    if (view_proxy->GetMainRenderFrame()) {
+      view_proxy->GetWidget()->SetZoomLevelForTesting(
+          view_proxy->webview()->ZoomLevel() - 1);
+    }
   }
 }
 
 void EventSender::SetPageZoomFactor(double zoom_factor) {
   for (WebViewTestProxy* view_proxy : interfaces()->GetWindowList()) {
-    view_proxy->GetWidget()->SetZoomLevelForTesting(std::log(zoom_factor) /
-                                                    std::log(1.2));
+    // Only set page zoom on main frames. Any RenderViews that exist for
+    // a proxy main frame will hear about the change as a side effect of
+    // changing the main frame.
+    if (view_proxy->GetMainRenderFrame()) {
+      view_proxy->GetWidget()->SetZoomLevelForTesting(std::log(zoom_factor) /
+                                                      std::log(1.2));
+    }
   }
 }
 

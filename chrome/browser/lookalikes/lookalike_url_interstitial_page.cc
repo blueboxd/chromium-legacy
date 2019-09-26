@@ -87,18 +87,14 @@ void LookalikeUrlInterstitialPage::PopulateInterstitialStrings(
   security_interstitials::common_string_util::PopulateDarkModeDisplaySetting(
       load_time_data);
 
-  load_time_data->SetString(
-      "tabTitle",
-      l10n_util::GetStringFUTF16(
-          IDS_LOOKALIKE_URL_TITLE,
-          security_interstitials::common_string_util::GetFormattedHostName(
-              request_url())));
+  const base::string16 hostname =
+      security_interstitials::common_string_util::GetFormattedHostName(
+          request_url());
+  load_time_data->SetString("tabTitle", l10n_util::GetStringFUTF16(
+                                            IDS_LOOKALIKE_URL_TITLE, hostname));
   load_time_data->SetString(
       "heading",
-      l10n_util::GetStringFUTF16(
-          IDS_LOOKALIKE_URL_HEADING,
-          security_interstitials::common_string_util::GetFormattedHostName(
-              request_url())));
+      l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_HEADING, hostname));
   load_time_data->SetString(
       "primaryParagraph",
       l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH));
@@ -106,7 +102,7 @@ void LookalikeUrlInterstitialPage::PopulateInterstitialStrings(
       "proceedButtonText", l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_IGNORE));
   load_time_data->SetString(
       "primaryButtonText",
-      l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_CONTINUE));
+      l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_CONTINUE, hostname));
 }
 
 void LookalikeUrlInterstitialPage::OnInterstitialClosing() {

@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/one_shot_event.h"
 #include "chrome/browser/web_applications/components/pending_app_manager.h"
+#include "ui/gfx/geometry/size.h"
 #include "url/gurl.h"
 
 namespace base {
@@ -55,6 +56,11 @@ struct SystemAppInfo {
   // If specified, the apps in |uninstall_and_replace| will have their data
   // migrated to this System App.
   std::vector<AppId> uninstall_and_replace;
+
+  // Minimum window size in DIPs. Empty if the app does not have a minimum.
+  // TODO(https://github.com/w3c/manifest/issues/436): Replace with PWA manifest
+  // properties for window size.
+  gfx::Size minimum_window_size;
 };
 
 // Installs, uninstalls, and updates System Web Apps.
@@ -104,6 +110,10 @@ class SystemWebAppManager {
   // Returns whether |app_id| points to an installed System App.
   bool IsSystemWebApp(const AppId& app_id) const;
 
+  // Returns the minimum window size for |app_id| or an empty size if the app
+  // doesn't specify a minimum.
+  gfx::Size GetMinimumWindowSize(const AppId& app_id) const;
+
   const base::OneShotEvent& on_apps_synchronized() const {
     return *on_apps_synchronized_;
   }
@@ -126,6 +136,8 @@ class SystemWebAppManager {
   UpdatePolicy update_policy_;
 
   base::flat_map<SystemAppType, SystemAppInfo> system_app_infos_;
+
+  base::flat_map<AppId, SystemAppType> app_id_to_app_type_;
 
   PrefService* pref_service_;
 

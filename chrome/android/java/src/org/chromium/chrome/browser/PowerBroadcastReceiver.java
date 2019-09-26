@@ -44,7 +44,7 @@ public class PowerBroadcastReceiver extends BroadcastReceiver {
     static class PowerManagerHelper {
         /** @return whether the screen is on or not. */
         public boolean isScreenOn(Context context) {
-            return ApiCompatibilityUtils.isInteractive(context);
+            return ApiCompatibilityUtils.isInteractive();
         }
     }
 

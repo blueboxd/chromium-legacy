@@ -140,7 +140,7 @@ element
                 AXRole: AXInlineTextBox "element"
                 AXRole: AXInlineTextBox "
 "
-        AXRole: AXRegion
+        AXRole: AXSection
             AXRole: AXHeaderAsNonLandmark
                 AXRole: AXHeading "Most important heading here"
                     AXRole: AXStaticText "Most important heading here"

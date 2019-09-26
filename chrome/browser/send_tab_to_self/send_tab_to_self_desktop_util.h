@@ -37,11 +37,13 @@ const char kTabMenu[] = "TabMenu";
 
 enum SendTabToSelfMenuType { kTab, kOmnibox, kContent, kLink };
 
-// Adds a new entry to SendTabToSelfModel when user clicks a target device.
+// Adds a new entry to SendTabToSelfModel when user clicks a target device. Will
+// not show a confirmation notification if |show_notification| is false.
 void CreateNewEntry(content::WebContents* tab,
                     const std::string& target_device_name,
                     const std::string& target_device_guid,
-                    const GURL& link_url = GURL());
+                    const GURL& link_url = GURL(),
+                    bool show_notification = true);
 
 // Adds a new entry to SendTabToSelfModel when user clicks the single valid
 // device. Will be called when GetValidDeviceCount() == 1.

@@ -57,7 +57,6 @@ namespace blink {
 
 class ConsoleMessageStorage;
 class InspectorTaskRunner;
-class InstalledScriptsManager;
 class WorkerBackingThread;
 class WorkerInspectorController;
 class WorkerOrWorkletGlobalScope;
@@ -212,11 +211,6 @@ class CORE_EXPORT WorkerThread : public Thread::TaskObserver {
   ExitCode GetExitCodeForTesting() LOCKS_EXCLUDED(mutex_);
   scoped_refptr<base::SingleThreadTaskRunner> GetParentTaskRunnerForTesting() {
     return parent_thread_default_task_runner_;
-  }
-
-  // For ServiceWorkerScriptStreaming. Returns nullptr otherwise.
-  virtual InstalledScriptsManager* GetInstalledScriptsManager() {
-    return nullptr;
   }
 
   scheduler::WorkerScheduler* GetScheduler();

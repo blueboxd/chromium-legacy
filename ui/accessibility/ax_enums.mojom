@@ -271,6 +271,7 @@ enum Role {
   kScrollView,
   kSearch,
   kSearchBox,
+  kSection,
   kSlider,
   kSliderThumb,
   kSpinButton,

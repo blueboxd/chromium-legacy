@@ -184,7 +184,6 @@ class OzonePlatformGbm : public OzonePlatform {
     //   3. multi-process mode where host and viz components communicate
     //      via mojo IPC.
 
-    single_process_ = args.single_process;
     using_mojo_ = args.using_mojo;
     host_thread_ = base::PlatformThread::CurrentRef();
 
@@ -263,14 +262,19 @@ class OzonePlatformGbm : public OzonePlatform {
           std::make_unique<DrmOverlayManagerGpu>(drm_thread_proxy_.get());
     }
 
-    if (using_mojo_ && single_process_ &&
-        host_thread_ == base::PlatformThread::CurrentRef()) {
-      CHECK(host_drm_device_) << "Mojo single-thread mode requires "
-                                 "InitializeUI to be called first.";
+    // If gpu is in a separate process, rest of the initialization happens after
+    // entering the sandbox.
+    if (!single_process())
+      return;
 
-      // One-thread execution does not permit use of the sandbox.
-      AfterSandboxEntry();
+    // In single process/mojo mode we need to make sure DrainBindingRequest is
+    // executed on this thread before we start the drm device.
+    const bool block_for_drm_thread = using_mojo_;
+    StartDrmThread(block_for_drm_thread);
 
+    if (using_mojo_ && host_thread_ == base::PlatformThread::CurrentRef()) {
+      CHECK(has_initialized_ui()) << "Mojo single-thread mode requires "
+                                     "InitializeUI to be called first.";
       // Connect host and gpu here since OnGpuServiceLaunched() is not called in
       // the single-threaded mode.
       ui::ozone::mojom::DrmDevicePtr drm_device_ptr;
@@ -286,21 +290,28 @@ class OzonePlatformGbm : public OzonePlatform {
   }
 
   // The DRM thread needs to be started late because we need to wait for the
-  // sandbox to start. This entry point in the Ozne API gives platforms
+  // sandbox to start. This entry point in the Ozone API gives platforms
   // flexibility in handing this requirement.
   void AfterSandboxEntry() override {
-    CHECK(drm_thread_proxy_) << "AfterSandboxEntry before InitializeForGPU is "
-                                "invalid startup order.\n";
-    if (using_mojo_ && single_process_) {
-      // In single process/mojo mode we need to make sure DrainBindingRequest
-      // is executed on this thread before we start the drm device.
+    DCHECK(!single_process());
+    CHECK(has_initialized_gpu()) << "AfterSandboxEntry before InitializeForGPU "
+                                    "is invalid startup order.";
+
+    const bool block_for_drm_thread = false;
+    StartDrmThread(block_for_drm_thread);
+  }
+
+ private:
+  // Starts the DRM thread. |blocking| determines if the call should be blocked
+  // until the thread is started.
+  void StartDrmThread(bool blocking) {
+    if (blocking) {
       base::WaitableEvent done_event;
       drm_thread_proxy_->StartDrmThread(base::BindOnce(
           &base::WaitableEvent::Signal, base::Unretained(&done_event)));
       done_event.Wait();
       DrainBindingRequests();
     } else {
-      // Defer the actual startup of the DRM thread to here.
       auto safe_binding_resquest_drainer = CreateSafeOnceCallback(
           base::BindOnce(&OzonePlatformGbm::DrainBindingRequests,
                          weak_factory_.GetWeakPtr()));
@@ -309,9 +320,7 @@ class OzonePlatformGbm : public OzonePlatform {
     }
   }
 
- private:
   bool using_mojo_ = false;
-  bool single_process_ = false;
 
   // Objects in the GPU process.
   std::unique_ptr<DrmThreadProxy> drm_thread_proxy_;

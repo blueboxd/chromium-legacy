@@ -23,7 +23,8 @@ namespace send_tab_to_self {
 void CreateNewEntry(content::WebContents* tab,
                     const std::string& target_device_name,
                     const std::string& target_device_guid,
-                    const GURL& link_url) {
+                    const GURL& link_url,
+                    bool show_notification) {
   DCHECK(tab);
 
   GURL shared_url = link_url;
@@ -59,6 +60,9 @@ void CreateNewEntry(content::WebContents* tab,
 
   const SendTabToSelfEntry* entry =
       model->AddEntry(shared_url, title, navigation_time, target_device_guid);
+
+  if (!show_notification)
+    return;
 
   if (entry) {
     DesktopNotificationHandler(profile).DisplaySendingConfirmation(

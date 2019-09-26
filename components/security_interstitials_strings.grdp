@@ -65,17 +65,17 @@
   </message>
 
   <!-- Lookalike URL warning -->
-  <message name="IDS_LOOKALIKE_URL_TITLE" desc="Tab title. Context: the requested URL might be trying to trick the user since it looks like a more popular URL.">
-    Continue to <ph name="DOMAIN">$1<ex>example.com</ex></ph>?
+  <message name="IDS_LOOKALIKE_URL_TITLE" desc="Tab title. Context: the requested URL might be trying to trick the user since it looks like a more popular URL. This interstitial points the user to the safe site instead.">
+    Did you mean <ph name="DOMAIN">$1<ex>example.com</ex></ph>?
   </message>
-  <message name="IDS_LOOKALIKE_URL_HEADING" desc="Large heading. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL.">
-    Continue to &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN">$1<ex>example.com</ex></ph>&lt;/a&gt;?
+  <message name="IDS_LOOKALIKE_URL_HEADING" desc="Large heading. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL. This interstitial points the user to the safe site instead.">
+    Did you mean &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN">$1<ex>example.com</ex></ph>&lt;/a&gt;?
   </message>
   <message name="IDS_LOOKALIKE_URL_IGNORE" desc="Button text. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL. This button dismisses the interstitial and navigates to the originally-requested URL.">
     Ignore
   </message>
   <message name="IDS_LOOKALIKE_URL_CONTINUE" desc="Button text. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL. This button dismisses the interstitial and navigates to the suggested (safe) URL.">
-    Continue
+    Go to <ph name="DOMAIN">$1<ex>example.com</ex></ph>
   </message>
   <message name="IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH" desc="Main paragraph of an error message. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL.">
     The site you just tried to visit looks fake. Attackers sometimes mimic sites by making small, hard-to-see changes to the URL.

@@ -132,8 +132,10 @@ void SharedWorkerServiceImpl::ConnectToWorker(
   RenderFrameHost* main_frame =
       render_frame_host->frame_tree_node()->frame_tree()->GetMainFrame();
   if (!GetContentClient()->browser()->AllowSharedWorker(
-          info->url, main_frame->GetLastCommittedURL(), info->name,
-          constructor_origin,
+          info->url,
+          // TODO(crbug.com/989926): Get an actual site_for_cookies.
+          main_frame->GetLastCommittedURL(),
+          main_frame->GetLastCommittedOrigin(), info->name, constructor_origin,
           WebContentsImpl::FromRenderFrameHostID(client_process_id, frame_id)
               ->GetBrowserContext(),
           client_process_id, frame_id)) {

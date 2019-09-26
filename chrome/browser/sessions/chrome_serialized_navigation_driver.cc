@@ -15,6 +15,28 @@
 #include "content/public/common/page_state.h"
 #endif
 
+namespace {
+
+#if defined(OS_ANDROID)
+// Mutates |navigation| so that it targets |new_destination_url| and has no
+// referrer information.
+void ChangeDestination(const GURL& new_destination_url,
+                       sessions::SerializedNavigationEntry* navigation) {
+  navigation->set_virtual_url(new_destination_url);
+  navigation->set_original_request_url(new_destination_url);
+  navigation->set_encoded_page_state(
+      content::PageState::CreateFromURL(new_destination_url).ToEncodedData());
+
+  // Make sure the referrer stored in the PageState (above) and in the
+  // SerializedNavigationEntry (below) are in-sync.
+  navigation->set_referrer_url(GURL());
+  navigation->set_referrer_policy(
+      static_cast<int>(network::mojom::ReferrerPolicy::kDefault));
+}
+#endif  // defined(OS_ANDROID)
+
+}  // namespace
+
 ChromeSerializedNavigationDriver::~ChromeSerializedNavigationDriver() {}
 
 // static
@@ -49,21 +71,12 @@ void ChromeSerializedNavigationDriver::Sanitize(
   if (navigation->virtual_url().SchemeIs(content::kChromeUIScheme) &&
       (navigation->virtual_url().host_piece() == chrome::kChromeUIWelcomeHost ||
        navigation->virtual_url().host_piece() == chrome::kChromeUINewTabHost)) {
-    navigation->set_virtual_url(GURL(chrome::kChromeUINativeNewTabURL));
-    navigation->set_original_request_url(navigation->virtual_url());
-    navigation->set_encoded_page_state(
-        content::PageState::CreateFromURL(navigation->virtual_url())
-            .ToEncodedData());
+    ChangeDestination(GURL(chrome::kChromeUINativeNewTabURL), navigation);
   }
 
   if (navigation->virtual_url().SchemeIs(content::kChromeUIScheme) &&
       navigation->virtual_url().host_piece() == chrome::kChromeUIHistoryHost) {
-    // Rewrite the old history Web UI to the new android native history.
-    navigation->set_virtual_url(GURL(chrome::kChromeUINativeHistoryURL));
-    navigation->set_original_request_url(navigation->virtual_url());
-    navigation->set_encoded_page_state(
-        content::PageState::CreateFromURL(navigation->virtual_url())
-            .ToEncodedData());
+    ChangeDestination(GURL(chrome::kChromeUINativeHistoryURL), navigation);
   }
 #endif  // defined(OS_ANDROID)
 }

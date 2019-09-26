@@ -133,7 +133,7 @@ class IndexedDBBrowserTest : public ContentBrowserTest,
 
     base::string16 expected_title16(ASCIIToUTF16(expected_string));
     TitleWatcher title_watcher(shell->web_contents(), expected_title16);
-    NavigateToURL(shell, url);
+    EXPECT_TRUE(NavigateToURL(shell, url));
     EXPECT_EQ(expected_title16, title_watcher.WaitAndGetTitle());
   }
 
@@ -1021,7 +1021,7 @@ IN_PROC_BROWSER_TEST_F(
 
   // Start on a different URL to force a new renderer process.
   Shell* new_shell = CreateBrowser();
-  NavigateToURL(new_shell, GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(new_shell, GURL(url::kAboutBlankURL)));
   NavigateAndWaitForTitle(new_shell, "version_change_blocked.html", "#tab2",
                           "setVersion(3) blocked");
 

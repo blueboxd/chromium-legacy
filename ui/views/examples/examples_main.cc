@@ -27,6 +27,7 @@
 #include "ui/base/ui_base_paths.h"
 #include "ui/compositor/test/in_process_context_factory.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/font_util.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/init/gl_factory.h"
 #include "ui/views/examples/example_base.h"
@@ -44,7 +45,6 @@
 
 #if defined(OS_WIN)
 #include "ui/base/win/scoped_ole_initializer.h"
-#include "ui/gfx/win/direct_write.h"
 #endif
 
 #if defined(USE_X11)
@@ -110,9 +110,7 @@ int main(int argc, char** argv) {
   base::PowerMonitor::Initialize(
       std::make_unique<base::PowerMonitorDeviceSource>());
 
-#if defined(OS_WIN)
-  gfx::win::InitializeDirectWrite();
-#endif
+  gfx::InitializeFonts();
 
 #if defined(USE_AURA)
   std::unique_ptr<aura::Env> env = aura::Env::CreateInstance();

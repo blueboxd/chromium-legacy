@@ -373,8 +373,9 @@ bool AccessibilityLandmarkPredicate(BrowserAccessibility* start,
     case ax::mojom::Role::kContentInfo:
     case ax::mojom::Role::kMain:
     case ax::mojom::Role::kNavigation:
-    case ax::mojom::Role::kSearch:
     case ax::mojom::Role::kRegion:
+    case ax::mojom::Role::kSearch:
+    case ax::mojom::Role::kSection:
       return true;
     default:
       return false;

@@ -60,12 +60,6 @@ class MEDIA_GPU_EXPORT DmabufVideoFramePool {
   // would be dropped immediately.
   virtual void NotifyWhenFrameAvailable(base::OnceClosure cb) = 0;
 
-  // Returns the original frame of a wrapped frame. We need this method to
-  // determine whether the frame returned by GetFrame() is the same one after
-  // recycling, and bind destruction callback at original frames.
-  // TODO(akahuang): Find a way to avoid this method.
-  virtual VideoFrame* UnwrapFrame(const VideoFrame& wrapped_frame) = 0;
-
  protected:
   scoped_refptr<base::SequencedTaskRunner> parent_task_runner_;
 };

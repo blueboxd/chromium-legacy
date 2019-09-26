@@ -13,5 +13,7 @@ android_library("aboutui_java") {
   java_files = [ "java/src/org/chromium/components/aboutui/CreditUtils.java" ]
   deps = [
     "//base:base_java",
+    "//base:jni_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 }

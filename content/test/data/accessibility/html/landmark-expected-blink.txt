@@ -57,7 +57,7 @@ rootWebArea
 ++++++headerAsNonLandmark
 ++++++++staticText name='This should NOT have banner role.'
 ++++++++++inlineTextBox name='This should NOT have banner role.'
-++++region
+++++section
 ++++++headerAsNonLandmark
 ++++++++staticText name='This should NOT have banner role.'
 ++++++++++inlineTextBox name='This should NOT have banner role.'
@@ -101,7 +101,7 @@ rootWebArea
 ++++++++headerAsNonLandmark
 ++++++++++staticText name='This should NOT have banner role.'
 ++++++++++++inlineTextBox name='This should NOT have banner role.'
-++++region
+++++section
 ++++++genericContainer ignored
 ++++++++headerAsNonLandmark
 ++++++++++staticText name='This should NOT have banner role.'
@@ -148,7 +148,7 @@ rootWebArea
 ++++++footerAsNonLandmark
 ++++++++staticText name='This should NOT have footer role.'
 ++++++++++inlineTextBox name='This should NOT have footer role.'
-++++region
+++++section
 ++++++footerAsNonLandmark
 ++++++++staticText name='This should NOT have footer role.'
 ++++++++++inlineTextBox name='This should NOT have footer role.'
@@ -192,7 +192,7 @@ rootWebArea
 ++++++++footerAsNonLandmark
 ++++++++++staticText name='This should NOT have footer role.'
 ++++++++++++inlineTextBox name='This should NOT have footer role.'
-++++region
+++++section
 ++++++genericContainer ignored
 ++++++++footerAsNonLandmark
 ++++++++++staticText name='This should NOT have footer role.'

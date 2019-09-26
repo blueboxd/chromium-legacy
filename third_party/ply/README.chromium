@@ -6,6 +6,9 @@ License File: LICENSE
 Security Critical: no
 Version: 3.11
 
+PLY is used by (at least) the Mojo python bindings, the PPAPI
+IDL generator, and the Blink IDL generator.
+
 This directory contains a copy of these ply-3.11 components:
 
 README            ply-3.11/README.md

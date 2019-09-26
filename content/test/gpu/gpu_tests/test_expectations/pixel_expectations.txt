@@ -222,6 +222,7 @@ crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors
 crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
 crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
 crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_VP9 [ Skip ]
+crbug.com/991291 [ android skia-renderer use-vulkan ] Pixel_Video_BackdropFilter [ Skip ]
 
 # Fails when the browser features SkiaRenderer & GL are enabled on Android.
 # The more specific matching criteria is to prevent collisions with other expectations.
@@ -234,7 +235,6 @@ crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_
 crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_180 [ Skip ]
 crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_270 [ Skip ]
 crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_FourColors_Rot_90 [ Skip ]
-crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_MP4_Rounded_Corner [ Skip ]
 crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_Video_VP9 [ Skip ]
 crbug.com/969864 [ android skia-renderer use-gl no-use-vulkan ] Pixel_WebGL2_BlitFramebuffer_Result_Displayed [ Skip ]
 
@@ -261,5 +261,5 @@ crbug.com/983600 [ mojave amd-0x6821 ] Pixel_CSSFilterEffects_NoOverlays [ Retry
 # Producing incorrect image on Win10 Intel HD 630 w/ 26.20.100.6912 drivers.
 crbug.com/997313 [ win intel-0x5912 ] Pixel_WebGL_PremultipliedAlpha_False [ Failure ]
 
-# Rounded corner pixel test fails on Android vulkan.
-crbug.com/1007019 [ android skia-renderer use-vulkan ] Pixel_Video_MP4_Rounded_Corner [ Failure ]
+# Rounded corner pixel test fails on Android SkiaRenderer.
+crbug.com/1007019 [ android skia-renderer ] Pixel_Video_MP4_Rounded_Corner [ Skip ]

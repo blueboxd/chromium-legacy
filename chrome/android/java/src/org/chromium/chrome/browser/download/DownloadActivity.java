@@ -8,14 +8,12 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.os.Bundle;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.SnackbarActivity;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinator;
 import org.chromium.chrome.browser.download.home.DownloadManagerCoordinatorFactory;
 import org.chromium.chrome.browser.download.home.DownloadManagerUiConfig;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
-import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.modaldialog.AppModalPresenter;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlConstants;
@@ -109,15 +107,6 @@ public class DownloadActivity extends SnackbarActivity implements ModalDialogMan
     @Override
     public ModalDialogManager getModalDialogManager() {
         return mModalDialogManager;
-    }
-
-    @VisibleForTesting
-    DownloadManagerUi getDownloadManagerUiForTests() {
-        // TODO(856383): Generalize/fix download home tests for the new DownloadManagerCoordinator.
-        if (mDownloadCoordinator instanceof DownloadManagerUi) {
-            return (DownloadManagerUi) mDownloadCoordinator;
-        }
-        return null;
     }
 
     public AndroidPermissionDelegate getAndroidPermissionDelegate() {

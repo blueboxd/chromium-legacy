@@ -458,8 +458,7 @@ String FileInputType::DefaultToolTip(const InputTypeView&) const {
   FileList* file_list = file_list_.Get();
   unsigned list_size = file_list->length();
   if (!list_size) {
-    return GetLocale().QueryString(
-        WebLocalizedString::kFileButtonNoFileSelectedLabel);
+    return GetLocale().QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
   }
 
   StringBuilder names;

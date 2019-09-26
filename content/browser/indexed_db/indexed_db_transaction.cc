@@ -540,9 +540,13 @@ void IndexedDBTransaction::CloseOpenCursorBindings() {
 
 void IndexedDBTransaction::CloseOpenCursors() {
   IDB_TRACE1("IndexedDBTransaction::CloseOpenCursors", "txn.id", id());
-  for (auto* cursor : open_cursors_)
-    cursor->Close();
+
+  // IndexedDBCursor::Close() indirectly mutates |open_cursors_|, when it calls
+  // IndexedDBTransaction::UnregisterOpenCursor().
+  std::set<IndexedDBCursor*> open_cursors = std::move(open_cursors_);
   open_cursors_.clear();
+  for (auto* cursor : open_cursors)
+    cursor->Close();
 }
 
 void IndexedDBTransaction::AddPendingObserver(

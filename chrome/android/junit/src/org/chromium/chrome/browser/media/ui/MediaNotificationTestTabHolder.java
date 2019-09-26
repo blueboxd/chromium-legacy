@@ -4,17 +4,19 @@
 
 package org.chromium.chrome.browser.media.ui;
 
+import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 
 import android.graphics.Bitmap;
 
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.favicon.LargeIconBridge;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.components.url_formatter.UrlFormatterJni;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.NavigationHandle;
 import org.chromium.content_public.browser.WebContents;
@@ -26,6 +28,8 @@ import java.util.Set;
  * Utility class for holding a Tab and relevant objects for media notification tests.
  */
 public class MediaNotificationTestTabHolder {
+    @Mock
+    UrlFormatter.Natives mUrlFormatterJniMock;
     @Mock
     WebContents mWebContents;
     @Mock
@@ -47,24 +51,20 @@ public class MediaNotificationTestTabHolder {
         }
     }
 
-    public MediaNotificationTestTabHolder(int tabId, String url, String title) {
+    public MediaNotificationTestTabHolder(int tabId, String url, String title, JniMocker mocker) {
         MockitoAnnotations.initMocks(this);
+        mocker.mock(UrlFormatterJni.TEST_HOOKS, mUrlFormatterJniMock);
+        // We don't want this matcher to match the current value of mUrl. Wrapping it in a matcher
+        // allows us to match on the updated value of mUrl.
+        when(mUrlFormatterJniMock.formatUrlForSecurityDisplay(
+                     argThat(urlArg -> urlArg.equals(mUrl))))
+                .thenAnswer(invocation -> mUrl);
 
         when(mTab.getWebContents()).thenReturn(mWebContents);
         when(mTab.getId()).thenReturn(tabId);
         when(mTab.isIncognito()).thenReturn(false);
-        when(mTab.getTitle()).thenAnswer(new Answer<String>() {
-            @Override
-            public String answer(InvocationOnMock invocation) {
-                return mTitle;
-            }
-        });
-        when(mTab.getUrl()).thenAnswer(new Answer<String>() {
-            @Override
-            public String answer(InvocationOnMock invocation) {
-                return mUrl;
-            }
-        });
+        when(mTab.getTitle()).thenAnswer(invocation -> mTitle);
+        when(mTab.getUrl()).thenAnswer(invocation -> mUrl);
 
         MediaSessionTabHelper.sOverriddenMediaSession = mMediaSession;
         mMediaSessionTabHelper = new MediaSessionTabHelper(mTab);

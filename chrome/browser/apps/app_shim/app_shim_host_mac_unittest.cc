@@ -58,6 +58,8 @@ class TestingAppShim : public chrome::mojom::AppShim {
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override {}
   void SetUserAttention(apps::AppShimAttentionType attention_type) override {}
   void SetBadgeLabel(const std::string& badge_label) override {}
+  void UpdateProfileMenu(std::vector<chrome::mojom::ProfileMenuItemPtr>
+                             profile_menu_items) override {}
 
   bool received_launch_done_result_ = false;
   apps::AppShimLaunchResult launch_done_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
@@ -171,6 +173,8 @@ class AppShimHostTest : public testing::Test,
                    const std::vector<base::FilePath>& file) override {
     ++focus_count_;
   }
+  void OnShimSelectedProfile(AppShimHost* host,
+                             const base::FilePath& profile_path) override {}
 
   apps::AppShimLaunchResult launch_result_ = apps::APP_SHIM_LAUNCH_SUCCESS;
   int launch_count_ = 0;

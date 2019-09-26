@@ -140,7 +140,8 @@ ContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     network::mojom::NetworkContext* network_context,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
-    const url::Origin& request_initiator) {
+    const url::Origin& request_initiator,
+    const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
   return network::mojom::URLLoaderFactoryPtrInfo();
 }
 
@@ -298,7 +299,8 @@ bool ContentBrowserClient::AllowAppCache(const GURL& manifest_url,
 
 bool ContentBrowserClient::AllowServiceWorkerOnIO(
     const GURL& scope,
-    const GURL& first_party,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
     ResourceContext* context,
     base::RepeatingCallback<WebContents*()> wc_getter) {
@@ -307,7 +309,8 @@ bool ContentBrowserClient::AllowServiceWorkerOnIO(
 
 bool ContentBrowserClient::AllowServiceWorkerOnUI(
     const GURL& scope,
-    const GURL& first_party,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
     BrowserContext* context,
     base::RepeatingCallback<WebContents*()> wc_getter) {
@@ -316,7 +319,8 @@ bool ContentBrowserClient::AllowServiceWorkerOnUI(
 
 bool ContentBrowserClient::AllowSharedWorker(
     const GURL& worker_url,
-    const GURL& main_frame_url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin,
     const std::string& name,
     const url::Origin& constructor_origin,
     BrowserContext* context,

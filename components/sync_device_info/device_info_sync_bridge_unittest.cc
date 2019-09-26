@@ -950,6 +950,35 @@ TEST_F(DeviceInfoSyncBridgeTest, ApplyStopSyncChangesWithKeepData) {
   EXPECT_TRUE(bridge()->IsPulseTimerRunningForTest());
 }
 
+TEST_F(DeviceInfoSyncBridgeTest, ExpireOldEntriesUponStartup) {
+  InitializeAndMergeInitialData();
+  ASSERT_EQ(1u, bridge()->GetAllDeviceInfo().size());
+  ASSERT_EQ(1, change_count());
+  ASSERT_FALSE(ReadAllFromStore().empty());
+
+  const DeviceInfoSpecifics specifics_old =
+      CreateSpecifics(1, base::Time::Now() - base::TimeDelta::FromDays(57));
+  const DeviceInfoSpecifics specifics_fresh =
+      CreateSpecifics(1, base::Time::Now() - base::TimeDelta::FromDays(55));
+  auto error = bridge()->ApplySyncChanges(
+      bridge()->CreateMetadataChangeList(),
+      EntityAddList({specifics_old, specifics_fresh}));
+
+  ASSERT_FALSE(error);
+  ASSERT_EQ(2u, bridge()->GetAllDeviceInfo().size());
+  ASSERT_EQ(2, change_count());
+
+  // Reloading from storage should expire the old remote entity (but keep the
+  // fresh one).
+  RestartBridge();
+  EXPECT_EQ(2u, bridge()->GetAllDeviceInfo().size());
+  // Make sure this is well persisted to the DB store.
+  EXPECT_THAT(ReadAllFromStore(),
+              UnorderedElementsAre(
+                  Pair(local_device()->GetLocalDeviceInfo()->guid(), _),
+                  Pair(specifics_fresh.cache_guid(), _)));
+}
+
 }  // namespace
 
 }  // namespace syncer

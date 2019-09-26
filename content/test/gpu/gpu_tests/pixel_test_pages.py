@@ -62,7 +62,9 @@ class PixelTestPage(object):
     # action here is "CrashGpuProcess" then it would be defined in a
     # "_CrashGpuProcess" method in PixelIntegrationTest.
     self.optional_action = optional_action
-    # Whatever other settings a test need to specify.
+    # These are used to pass additional arguments to the test harness.
+    # VideoPathTraceTest and OverlayModeTest support the following boolean
+    # arguments: expect_yuy2, zero_copy, video_is_rotated, and no_overlay.
     self.other_args = other_args
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
@@ -466,6 +468,13 @@ class PixelTestPages(object):
         revision=0, # Golden image revision is not used
         tolerance=tolerance_vp9,
         expected_colors=_FOUR_COLOR_VIDEO_240x135_EXPECTED_COLORS),
+
+      PixelTestPage(
+        'pixel_video_backdrop_filter.html',
+        base_name + '_Video_BackdropFilter',
+        test_rect=[0, 0, 240, 135],
+        revision=1,
+        tolerance=tolerance),
 
       PixelTestPage(
         'pixel_webgl_premultiplied_alpha_false.html',
@@ -1238,8 +1247,6 @@ class PixelTestPages(object):
       # All bots are connected with a power source, however, we want to to test
       # with the code path that's enabled with battery power.
       '--disable_vp_scaling=1']
-    browser_args_Underlay = browser_args + [
-      '--enable-features=DirectCompositionUnderlays']
     browser_args_Nonroot = browser_args +[
       '--enable-features=DirectCompositionNonrootOverlays,' +
       'DirectCompositionUnderlays']
@@ -1250,9 +1257,6 @@ class PixelTestPages(object):
     browser_args_YUY2 = browser_args + [
       '--disable-features=DirectCompositionPreferNV12Overlays']
     browser_args_DXVA = browser_args + [
-      '--disable-features=D3D11VideoDecoder']
-    browser_args_Underlay_DXVA = browser_args + [
-      '--enable-features=DirectCompositionUnderlays',
       '--disable-features=D3D11VideoDecoder']
 
     tolerance_dc = 5
@@ -1562,7 +1566,7 @@ class PixelTestPages(object):
         base_name + '_DirectComposition_Underlay',
         test_rect=[0, 0, 240, 136],
         revision=0, # Golden image revision is not used
-        browser_args=browser_args_Underlay,
+        browser_args=browser_args,
         tolerance=tolerance_dc,
         expected_colors=[
           {
@@ -1602,7 +1606,7 @@ class PixelTestPages(object):
         base_name + '_DirectComposition_Underlay_DXVA',
         test_rect=[0, 0, 240, 136],
         revision=0, # Golden image revision is not used
-        browser_args=browser_args_Underlay_DXVA,
+        browser_args=browser_args_DXVA,
         tolerance=tolerance_dc,
         expected_colors=[
           {
@@ -1642,7 +1646,7 @@ class PixelTestPages(object):
         base_name + '_DirectComposition_Underlay_Fullsize',
         test_rect=[0, 0, 960, 540],
         revision=0, # Golden image revision is not used
-        browser_args=browser_args_Underlay,
+        browser_args=browser_args,
         other_args={'zero_copy': True},
         tolerance=tolerance_dc,
         expected_colors=[
@@ -1764,5 +1768,14 @@ class PixelTestPages(object):
         test_rect=[0, 0, 240, 135],
         revision=0,
         browser_args=browser_args,
+        tolerance=tolerance_dc),
+
+      PixelTestPage(
+        'pixel_video_backdrop_filter.html',
+        base_name + '_DirectComposition_Video_BackdropFilter',
+        test_rect=[0, 0, 240, 135],
+        revision=1,
+        browser_args=browser_args,
+        other_args={'no_overlay': True},
         tolerance=tolerance_dc),
       ]

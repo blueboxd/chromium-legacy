@@ -18,6 +18,7 @@
 #include "media/gpu/android/codec_buffer_wait_coordinator.h"
 #include "media/gpu/android/maybe_render_early_manager.h"
 #include "media/gpu/android/mock_codec_image.h"
+#include "media/gpu/android/mock_shared_image_video_provider.h"
 #include "media/gpu/android/shared_image_video_provider.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -37,32 +38,6 @@ class MockMaybeRenderEarlyManager : public MaybeRenderEarlyManager {
   MOCK_METHOD1(SetSurfaceBundle, void(scoped_refptr<CodecSurfaceBundle>));
   MOCK_METHOD1(AddCodecImage, void(scoped_refptr<CodecImageHolder>));
   MOCK_METHOD0(MaybeRenderEarly, void());
-};
-
-class MockSharedImageVideoProvider : public SharedImageVideoProvider {
- public:
-  MockSharedImageVideoProvider() : spec_(gfx::Size(0, 0)) {}
-
-  void Initialize(GpuInitCB gpu_init_cb) { Initialize_(gpu_init_cb); }
-
-  MOCK_METHOD1(Initialize_, void(GpuInitCB& gpu_init_cb));
-
-  void RequestImage(ImageReadyCB cb,
-                    const ImageSpec& spec,
-                    scoped_refptr<gpu::TextureOwner> texture_owner) override {
-    cb_ = std::move(cb);
-    spec_ = spec;
-    texture_owner_ = std::move(texture_owner);
-
-    MockRequestImage();
-  }
-
-  MOCK_METHOD0(MockRequestImage, void());
-
-  // Most recent arguments to RequestImage.
-  ImageReadyCB cb_;
-  ImageSpec spec_;
-  scoped_refptr<gpu::TextureOwner> texture_owner_;
 };
 
 class MockYCbCrHelper : public YCbCrHelper, public DestructionObservable {
@@ -122,6 +97,9 @@ class VideoFrameFactoryImplTest : public testing::Test {
     ASSERT_TRUE(
         VideoFrame::IsValidConfig(PIXEL_FORMAT_ARGB, VideoFrame::STORAGE_OPAQUE,
                                   coded_size, visible_rect, natural_size));
+
+    // Save a copy in case the test wants it.
+    output_buffer_raw_ = output_buffer.get();
 
     // We should get a call to the output callback, but no calls to the
     // provider.
@@ -241,7 +219,7 @@ TEST_F(VideoFrameFactoryImplTest, CreateVideoFrameSucceeds) {
   auto record = MakeImageRecord(&release_cb_called_flag);
   scoped_refptr<CodecImage> codec_image(
       record.codec_image_holder->codec_image_raw());
-  std::move(image_provider_raw_->cb_).Run(std::move(record));
+  image_provider_raw_->ProvideOneRequestedImage(&record);
   base::RunLoop().RunUntilIdle();
   EXPECT_NE(frame, nullptr);
 
@@ -271,7 +249,7 @@ TEST_F(VideoFrameFactoryImplTest, DoesNotCallYCbCrHelperIfNotVulkan) {
   RequestVideoFrame();
   auto image_record = MakeImageRecord();
   image_record.is_vulkan = false;
-  std::move(image_provider_raw_->cb_).Run(std::move(image_record));
+  image_provider_raw_->ProvideOneRequestedImage(&image_record);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -283,7 +261,7 @@ TEST_F(VideoFrameFactoryImplTest, DoesCallYCbCrHelperIfVulkan) {
               MockGetYCbCrInfo(image_record.codec_image_holder))
       .Times(1);
   image_record.is_vulkan = true;
-  std::move(image_provider_raw_->cb_).Run(std::move(image_record));
+  image_provider_raw_->ProvideOneRequestedImage(&image_record);
   base::RunLoop().RunUntilIdle();
 
   // Provide YCbCrInfo.  It should provide the VideoFrame too.
@@ -307,7 +285,7 @@ TEST_F(VideoFrameFactoryImplTest, DoesCallYCbCrHelperIfVulkan) {
   if (ycbcr_helper_raw_)
     EXPECT_CALL(*ycbcr_helper_raw_, MockGetYCbCrInfo(_)).Times(0);
   EXPECT_CALL(output_cb_, Run(_)).Times(1);
-  std::move(image_provider_raw_->cb_).Run(std::move(other_image_record));
+  image_provider_raw_->ProvideOneRequestedImage(&other_image_record);
   base::RunLoop().RunUntilIdle();
 }
 

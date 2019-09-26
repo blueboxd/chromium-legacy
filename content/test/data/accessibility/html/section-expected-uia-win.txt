@@ -1,3 +1,5 @@
 document
-++group
+++group ControlType='UIA_GroupControlTypeId'
 ++++description Name='This is a section element.'
+++region ControlType='UIA_GroupControlTypeId' LocalizedControlType='section' Name='section'
+++++description Name='This is a named section element.'

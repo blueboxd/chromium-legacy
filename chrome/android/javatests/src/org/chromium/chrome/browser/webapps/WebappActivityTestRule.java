@@ -159,7 +159,7 @@ public class WebappActivityTestRule extends ChromeActivityTestRule<WebappActivit
      * Executing window.open() through a click on a link, as it needs user gesture to avoid Chrome
      * blocking it as a popup.
      */
-    static public void jsWindowOpen(ChromeActivity activity, String url) throws Exception {
+    public static void jsWindowOpen(ChromeActivity activity, String url) throws Exception {
         String injectedHtml = String.format("var aTag = document.createElement('testId');"
                         + "aTag.id = 'testId';"
                         + "aTag.innerHTML = 'Click Me!';"

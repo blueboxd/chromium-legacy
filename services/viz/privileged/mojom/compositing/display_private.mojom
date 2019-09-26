@@ -85,7 +85,7 @@ interface DisplayClient {
   // Creates a LayeredWindowUpdater implementation to draw into a layered
   // window.
   [EnableIf=is_win]
-  CreateLayeredWindowUpdater(LayeredWindowUpdater& layered_window_updater);
+  CreateLayeredWindowUpdater(pending_receiver<LayeredWindowUpdater> receiver);
 
   // Notifies that a swap has occurred and provides information about the pixel
   // size of the swapped frame.

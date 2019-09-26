@@ -794,6 +794,9 @@ TEST(PermissionsTest, PermissionMessages) {
   // and don't require a prompt, i.e. they're restricted to location 'policy'.
   skip.insert(APIPermission::kEnterprisePlatformKeys);
   skip.insert(APIPermission::kEnterpriseDeviceAttributes);
+  // TODO (crbug/992889): Remove this when permission warning strings will be
+  // added.
+  skip.insert(APIPermission::kPrintingMetrics);
 
   // TODO(erikkay) add a string for this permission.
   skip.insert(APIPermission::kBackground);

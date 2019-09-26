@@ -11,6 +11,8 @@
 #include "components/viz/common/display/use_layered_window.h"
 #include "components/viz/common/resources/resource_sizes.h"
 #include "components/viz/service/display_embedder/output_device_backing.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/viz/privileged/mojom/compositing/layered_window_updater.mojom.h"
 #include "skia/ext/platform_canvas.h"
@@ -179,7 +181,7 @@ class SoftwareOutputDeviceWinProxy : public SoftwareOutputDeviceWinBase {
  public:
   SoftwareOutputDeviceWinProxy(
       HWND hwnd,
-      mojom::LayeredWindowUpdaterPtr layered_window_updater);
+      mojo::PendingRemote<mojom::LayeredWindowUpdater> layered_window_updater);
   ~SoftwareOutputDeviceWinProxy() override = default;
 
   // SoftwareOutputDevice implementation.
@@ -194,7 +196,7 @@ class SoftwareOutputDeviceWinProxy : public SoftwareOutputDeviceWinBase {
   // Runs |swap_ack_callback_| after draw has happened.
   void DrawAck();
 
-  mojom::LayeredWindowUpdaterPtr layered_window_updater_;
+  mojo::Remote<mojom::LayeredWindowUpdater> layered_window_updater_;
 
   std::unique_ptr<SkCanvas> canvas_;
   bool waiting_on_draw_ack_ = false;
@@ -205,7 +207,7 @@ class SoftwareOutputDeviceWinProxy : public SoftwareOutputDeviceWinBase {
 
 SoftwareOutputDeviceWinProxy::SoftwareOutputDeviceWinProxy(
     HWND hwnd,
-    mojom::LayeredWindowUpdaterPtr layered_window_updater)
+    mojo::PendingRemote<mojom::LayeredWindowUpdater> layered_window_updater)
     : SoftwareOutputDeviceWinBase(hwnd),
       layered_window_updater_(std::move(layered_window_updater)) {
   DCHECK(layered_window_updater_.is_bound());
@@ -293,9 +295,9 @@ std::unique_ptr<SoftwareOutputDevice> CreateSoftwareOutputDeviceWin(
 
     // Setup mojom::LayeredWindowUpdater implementation in the browser process
     // to draw to the HWND.
-    mojom::LayeredWindowUpdaterPtr layered_window_updater;
+    mojo::PendingRemote<mojom::LayeredWindowUpdater> layered_window_updater;
     display_client->CreateLayeredWindowUpdater(
-        mojo::MakeRequest(&layered_window_updater));
+        layered_window_updater.InitWithNewPipeAndPassReceiver());
 
     return std::make_unique<SoftwareOutputDeviceWinProxy>(
         hwnd, std::move(layered_window_updater));

@@ -8,6 +8,7 @@ import android.content.Context;
 import android.os.RemoteException;
 
 import org.chromium.weblayer_private.aidl.APICallException;
+import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
 import org.chromium.weblayer_private.aidl.IProfile;
 import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
@@ -43,10 +44,14 @@ public final class Profile {
         }
     }
 
-    public BrowserFragmentImpl createBrowserFragment(Context context) {
+    public BrowserFragmentController createBrowserFragmentController(Context context) {
         try {
-            return new BrowserFragmentImpl(mImpl.createBrowserController(
-                    ObjectWrapper.wrap(WebLayer.createRemoteContext(context))));
+            BrowserFragment fragment = new BrowserFragment();
+            IBrowserFragmentController browserFragmentImpl =
+                    mImpl.createBrowserFragmentController(fragment.asIRemoteFragmentClient(),
+                            ObjectWrapper.wrap(WebLayer.createRemoteContext(context)));
+            fragment.setRemoteFragment(browserFragmentImpl.getRemoteFragment());
+            return new BrowserFragmentController(browserFragmentImpl, fragment);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

@@ -757,10 +757,6 @@ void TestDriver::MakeTestAllocations() {
 
   base::PlatformThread::SetName(kThreadName);
 
-  // Warm up the sampler. Once enabled it may need to see up to 1MB of
-  // allocations to start sampling.
-  leaks_.push_back(new char[base::PoissonAllocationSampler::kWarmupInterval]);
-
   // In sampling mode, only sampling allocations are relevant.
   if (!IsRecordingAllAllocations()) {
     leaks_.reserve(kSamplingAllocCount);

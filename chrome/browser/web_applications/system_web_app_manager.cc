@@ -63,6 +63,9 @@ base::flat_map<SystemAppType, SystemAppInfo> CreateSystemWebApps() {
     infos[SystemAppType::SETTINGS].uninstall_and_replace = {
         app_list::kInternalAppIdSettings};
   }
+  // Large enough to see the heading text "Settings" in the top-left.
+  infos[SystemAppType::SETTINGS].minimum_window_size = {300, 100};
+
   if (SystemWebAppManager::IsAppEnabled(SystemAppType::TERMINAL)) {
     constexpr char kChromeTerminalPWAURL[] = "chrome://terminal/html/pwa.html";
     infos[SystemAppType::TERMINAL].install_url = GURL(kChromeTerminalPWAURL);
@@ -194,6 +197,17 @@ bool SystemWebAppManager::IsSystemWebApp(const AppId& app_id) const {
       app_id, ExternalInstallSource::kSystemInstalled);
 }
 
+gfx::Size SystemWebAppManager::GetMinimumWindowSize(const AppId& app_id) const {
+  auto app_type_it = app_id_to_app_type_.find(app_id);
+  if (app_type_it == app_id_to_app_type_.end())
+    return gfx::Size();
+  const SystemAppType& app_type = app_type_it->second;
+  auto app_info_it = system_app_infos_.find(app_type);
+  if (app_info_it == system_app_infos_.end())
+    return gfx::Size();
+  return app_info_it->second.minimum_window_size;
+}
+
 void SystemWebAppManager::SetSystemAppsForTesting(
     base::flat_map<SystemAppType, SystemAppInfo> system_apps) {
   system_app_infos_ = std::move(system_apps);
@@ -228,6 +242,15 @@ void SystemWebAppManager::OnAppsSynchronized(
 
   RecordExternalAppInstallResultCode(kInstallResultHistogramName,
                                      install_results);
+
+  // Build the map from installed app id to app type.
+  for (const auto& it : system_app_infos_) {
+    const SystemAppType& app_type = it.first;
+    base::Optional<AppId> app_id =
+        registrar_->LookupExternalAppId(it.second.install_url);
+    if (app_id.has_value())
+      app_id_to_app_type_[app_id.value()] = app_type;
+  }
 
   // May be called more than once in tests.
   if (!on_apps_synchronized_->is_signaled())

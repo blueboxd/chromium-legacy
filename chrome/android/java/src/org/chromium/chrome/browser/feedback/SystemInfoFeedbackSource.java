@@ -9,7 +9,6 @@ import android.os.Environment;
 import android.os.StatFs;
 import android.util.Pair;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.CollectionUtil;
 import org.chromium.base.LocaleUtils;
 import org.chromium.base.annotations.JNINamespace;
@@ -46,11 +45,11 @@ public class SystemInfoFeedbackSource extends AsyncFeedbackSourceAdapter<StatFs>
 
         StatFs statFs = getResult();
         if (statFs != null) {
-            long blockSize = ApiCompatibilityUtils.getBlockSize(statFs);
-            long availSpace = ConversionUtils.bytesToMegabytes(
-                    ApiCompatibilityUtils.getAvailableBlocks(statFs) * blockSize);
-            long totalSpace = ConversionUtils.bytesToMegabytes(
-                    ApiCompatibilityUtils.getBlockCount(statFs) * blockSize);
+            long blockSize = statFs.getBlockSizeLong();
+            long availSpace =
+                    ConversionUtils.bytesToMegabytes(statFs.getAvailableBlocksLong() * blockSize);
+            long totalSpace =
+                    ConversionUtils.bytesToMegabytes(statFs.getBlockCountLong() * blockSize);
 
             feedback.put("Available Storage (MB)", Long.toString(availSpace));
             feedback.put("Total Storage (MB)", Long.toString(totalSpace));

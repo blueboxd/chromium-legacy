@@ -13,6 +13,7 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/sequenced_task_runner.h"
+#include "build/build_config.h"
 #include "content/browser/cache_storage/cache_storage_histogram_utils.h"
 #include "content/browser/cache_storage/cache_storage_operation.h"
 #include "content/public/common/content_features.h"
@@ -24,8 +25,17 @@ namespace {
 // Maximum parallel shared operations.  This constant was selected via
 // experimentation.  We tried 4, 16, and 64 for the limit.  16 was clearly
 // better than 4, but 64 was did not provide significant further benefit.
+// TODO(crbug/1007994): Enable parallel shared operations on android after
+//                      performance regressions are addressed.
+#if defined(OS_ANDROID)
+constexpr int kDefaultMaxSharedOps = 1;
+#else
+constexpr int kDefaultMaxSharedOps = 16;
+#endif
+
 const base::FeatureParam<int> kCacheStorageMaxSharedOps{
-    &features::kCacheStorageParallelOps, "max_shared_ops", 16};
+    &features::kCacheStorageParallelOps, "max_shared_ops",
+    kDefaultMaxSharedOps};
 
 }  // namespace
 

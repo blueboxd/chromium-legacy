@@ -677,7 +677,7 @@ struct EAPConfigProperties {
   bool save_credentials = false;
   array<string>? server_ca_pems;
   string? subject_match;
-  bool use_system_cas = true;
+  bool use_system_cas = false;
 };
 
 // Subset of currently implemented config properties in the UI. Additional

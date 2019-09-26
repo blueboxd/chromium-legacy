@@ -124,27 +124,4 @@ std::string GetRegistryControlledDomain(const GURL& signon_realm) {
       net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 }
 
-std::string GetOrganizationIdentifyingName(const GURL& url) {
-  if (!url.is_valid())
-    return std::string();
-
-  const std::string organization_and_registrar =
-      net::registry_controlled_domains::GetDomainAndRegistry(
-          url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-  const size_t registrar_length =
-      net::registry_controlled_domains::GetRegistryLength(
-          url, net::registry_controlled_domains::INCLUDE_UNKNOWN_REGISTRIES,
-          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
-
-  if (organization_and_registrar.empty() || !registrar_length ||
-      registrar_length == std::string::npos) {
-    return std::string();
-  }
-
-  // No CHECK, std::string::substr gracefully handles an underflow there.
-  DCHECK_LT(registrar_length, organization_and_registrar.size());
-  return organization_and_registrar.substr(
-      0, organization_and_registrar.size() - registrar_length - 1);
-}
-
 }  // namespace password_manager

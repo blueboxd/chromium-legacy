@@ -300,6 +300,7 @@ class TranslatePrefs {
   // Stores and retrieves the last-observed translate target language. Used to
   // determine which target language to offer in future.
   void SetRecentTargetLanguage(const std::string& target_language);
+  void ResetRecentTargetLanguage();
   std::string GetRecentTargetLanguage() const;
 
   // Gets the value for the pref that represents how often the

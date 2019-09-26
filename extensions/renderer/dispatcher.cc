@@ -558,9 +558,10 @@ void Dispatcher::WillDestroyServiceWorkerContextOnWorkerThread(
     int64_t service_worker_version_id,
     const GURL& service_worker_scope,
     const GURL& script_url) {
-  if (!ExtensionsRendererClient::Get()
-           ->ExtensionAPIEnabledForServiceWorkerScript(service_worker_scope,
-                                                       script_url)) {
+  // Note that using ExtensionAPIEnabledForServiceWorkerScript() won't work here
+  // as RendererExtensionRegistry might have already unloaded this extension.
+  // Use the existence of ServiceWorkerData as the source of truth instead.
+  if (!WorkerThreadDispatcher::GetServiceWorkerData()) {
     // If extension APIs in service workers aren't enabled, we just need to
     // remove the context.
     g_worker_script_context_set.Get().Remove(v8_context, script_url);

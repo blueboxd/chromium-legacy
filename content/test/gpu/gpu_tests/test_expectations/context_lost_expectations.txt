@@ -1,11 +1,11 @@
 # tags: [ android linux lion mac mountainlion win win7 win8 win10]
 # tags: [ debug ]
-# tags: [ amd-0x6779 nvidia qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 ]
+# tags: [ amd-0x6613 nvidia qualcomm-adreno-(tm)-418 qualcomm-adreno-(tm)-420 ]
 # tags: [ asan no-asan ]
 # results: [ Failure RetryOnFailure Skip ]
 
-# AMD Radeon 6450
-crbug.com/479975 [ linux amd-0x6779 ] ContextLost_WebGLContextLostFromGPUProcessExit [ Failure ]
+# Linux AMD R7 240
+crbug.com/1008125 [ linux amd-0x6613 ] ContextLost_WebGL2Blocked [ Skip ]
 
 # Win7 bots
 crbug.com/603329 [ win7 ] ContextLost_WebGLContextLostFromGPUProcessExit [ RetryOnFailure ]

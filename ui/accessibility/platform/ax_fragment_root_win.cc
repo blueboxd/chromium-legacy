@@ -264,6 +264,16 @@ AXFragmentRootWin::GetTargetForNativeAccessibilityEvent() {
   return widget_;
 }
 
+AXPlatformNode* AXFragmentRootWin::GetFromTreeIDAndNodeID(
+    const ui::AXTreeID& ax_tree_id,
+    int32_t node_id) {
+  AXPlatformNodeDelegate* child_delegate = GetChildNodeDelegate();
+  if (child_delegate)
+    return child_delegate->GetFromTreeIDAndNodeID(ax_tree_id, node_id);
+
+  return nullptr;
+}
+
 AXPlatformNodeDelegate* AXFragmentRootWin::GetChildNodeDelegate() {
   gfx::NativeViewAccessible child = delegate_->GetChildOfAXFragmentRoot();
   if (child)

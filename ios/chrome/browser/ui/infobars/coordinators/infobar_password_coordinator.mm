@@ -99,7 +99,7 @@
     // from memory.
     self.delegate->RemoveInfoBar();
     _passwordInfoBarDelegate = nil;
-    [self.infobarContainer childCoordinatorStopped:self.infobarType];
+    [self.infobarContainer childCoordinatorStopped:self];
   }
 }
 

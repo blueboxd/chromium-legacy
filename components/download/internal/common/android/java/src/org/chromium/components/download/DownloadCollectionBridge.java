@@ -12,6 +12,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 /**
  * Helper class for publishing download files to the public download collection.
@@ -296,7 +297,7 @@ public class DownloadCollectionBridge {
      * @return number of days for an intermediate download to expire.
      */
     public static int getExpirationDurationInDays() {
-        return nativeGetExpirationDurationInDays();
+        return DownloadCollectionBridgeJni.get().getExpirationDurationInDays();
     }
 
     /**
@@ -309,5 +310,8 @@ public class DownloadCollectionBridge {
         return getDownloadCollectionBridge().getDisplayNameForUri(downloadUri);
     }
 
-    private static native int nativeGetExpirationDurationInDays();
+    @NativeMethods
+    interface Natives {
+        int getExpirationDurationInDays();
+    }
 }

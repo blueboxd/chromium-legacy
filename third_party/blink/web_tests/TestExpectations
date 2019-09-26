@@ -3226,6 +3226,16 @@ crbug.com/1002514 external/wpt/web-share/share-sharePromise-internal-slot.https.
 crbug.com/618969 external/wpt/css/css-grid/subgrid/ [ Skip ]
 
 # ====== New tests from wpt-importer added here ======
+crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/textarea-pre-wrap-013.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/textarea-pre-wrap-013.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text/white-space/textarea-pre-wrap-013.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/pre-wrap-018.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/pre-wrap-019.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/pre-wrap-019.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text/white-space/pre-wrap-019.html [ Failure ]
+crbug.com/626703 [ Linux ] external/wpt/css/css-text/white-space/textarea-pre-wrap-012.html [ Failure ]
+crbug.com/626703 [ Mac ] external/wpt/css/css-text/white-space/textarea-pre-wrap-012.html [ Failure ]
+crbug.com/626703 [ Win ] external/wpt/css/css-text/white-space/textarea-pre-wrap-012.html [ Failure ]
 crbug.com/626703 [ Win7 ] external/wpt/pointerevents/pointerevent_touch-action-pan-y-css_touch.html [ Timeout ]
 crbug.com/626703 [ Win10 ] external/wpt/payment-request/payment-request-hasenrolledinstrument-method.tentative.https.html [ Failure Timeout ]
 crbug.com/626703 [ Linux ] external/wpt/css/motion/offset-path-ray-contain-003.html [ Failure ]

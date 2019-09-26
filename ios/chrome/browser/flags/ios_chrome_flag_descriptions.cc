@@ -29,12 +29,6 @@ const char kAutofillCreditCardUploadDescription[] =
     "Offers uploading Autofilled credit cards to Google Payments after form "
     "submission.";
 
-const char kAutofillDownstreamUseGooglePayBrandingOniOSName[] =
-    "Enable Google Pay branding when offering credit card downstream";
-const char kAutofillDownstreamUseGooglePayBrandingOniOSDescription[] =
-    "When enabled, shows the Google Pay logo animation when showing payments"
-    "credit card suggestions in downstream keyboard accessory";
-
 const char kAutofillEnableCompanyNameName[] =
     "Enable Autofill Company Name field";
 const char kAutofillEnableCompanyNameDescription[] =
@@ -204,11 +198,10 @@ const char kFindInPageiFrameName[] = "Find in Page in iFrames.";
 const char kFindInPageiFrameDescription[] =
     "When enabled, Find In Page will search in iFrames.";
 
-const char kFullscreenViewportAdjustmentExperimentName[] =
-    "Fullscreen Viewport Adjustment Mode";
-const char kFullscreenViewportAdjustmentExperimentDescription[] =
-    "The different ways in which the web view's viewport is updated for scroll "
-    "events.  The default option updates the web view's frame.";
+const char kFullscreenSmoothScrollingName[] = "Fullscreen Smooth Scrolling";
+const char kFullscreenSmoothScrollingDescription[] =
+    "When enabled, the web view's insets are updated for scoll events. If "
+    "disabled, the the web view's frame are updated.";
 
 const char kIgnoresViewportScaleLimitsName[] = "Ignore Viewport Scale Limits";
 const char kIgnoresViewportScaleLimitsDescription[] =

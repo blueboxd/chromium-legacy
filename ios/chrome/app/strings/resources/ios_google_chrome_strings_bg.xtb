@@ -26,7 +26,6 @@
 <translation id="415767770115540173">Подобрете практическата си работа с Google в Chrome въз основа на местоположението ви.</translation>
 <translation id="424864128008805179">Искате ли да излезете от Chrome?</translation>
 <translation id="4523886039239821078">Някои добавки водят до срив на Chrome. Моля, деинсталирайте:</translation>
-<translation id="4615174829807303908">Излизате от профил, управляван от <ph name="SIGNOUT_MANAGED_DOMAIN" />. Данните ви в Chrome ще се изтрият от това устройство, но ще останат в профила ви в Google.</translation>
 <translation id="5389212809648216794">Google Chrome не може да използва камерата ви, защото е заета от друго приложение</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Прегледайте актуализираните Общи условия на Chrome.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Отворете „Settings“ &gt; „Privacy“ &gt; „Camera“ &gt; „Google Chrome“ и включете камерата.</translation>
@@ -45,7 +44,6 @@
 <translation id="7173660919484573146">Chrome използва Face ID, за да обезпечи упълномощен достъп до паролите ви.</translation>
 <translation id="7265369419224458312">Осъществявайте оттук достъп до разделите, които сте отворили на компютъра си. Трябва само да стартирате Chrome на компютъра си и да изберете „Вход в Chrome…“ от менюто.</translation>
 <translation id="7400722733683201933">Всичко за Google Chrome</translation>
-<translation id="7437998757836447326">Изход от Chrome</translation>
 <translation id="756809126120519699">Данните в Chrome са изчистени</translation>
 <translation id="7626032353295482388">Добре дошли в Chrome</translation>
 <translation id="7698568245838009292">Chrome иска достъп до камерата</translation>

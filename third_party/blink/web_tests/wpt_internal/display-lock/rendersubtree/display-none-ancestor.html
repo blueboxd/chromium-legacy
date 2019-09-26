@@ -37,7 +37,7 @@ function runTest() {
   locked.id = "locked";
   setInvisible(locked).then(() => {
     container.appendChild(locked);
-    locked.displayLock.update().then(() => {
+    locked.updateRendering().then(() => {
       // Make container visible & force style + layout.
       container.style = "display:block";
       container.offsetTop;

@@ -5,10 +5,9 @@
 #ifndef IOS_CHROME_BROWSER_UI_SETTINGS_LANGUAGE_LANGUAGE_SETTINGS_HISTOGRAMS_H_
 #define IOS_CHROME_BROWSER_UI_SETTINGS_LANGUAGE_LANGUAGE_SETTINGS_HISTOGRAMS_H_
 
-// UMA histogram names. These constants are repeated in LanguagesManager.java.
-const char kLanguageSettingsPageImpressionHistogram[] =
-    "LanguageSettings.PageImpression";
-const char kLanguageSettingsActionsHistogram[] = "LanguageSettings.Actions";
+// UMA histogram names.
+extern const char kLanguageSettingsPageImpressionHistogram[];
+extern const char kLanguageSettingsActionsHistogram[];
 
 // Enum for the LanguageSettings.PageImpression histogram. These constants are
 // repeated in LanguagesManager.java.

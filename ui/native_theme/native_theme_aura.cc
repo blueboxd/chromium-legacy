@@ -50,7 +50,7 @@ const SkScalar kSliderTrackHeight = 8.f;
 const int kSliderThumbSize = 16;
 const SkScalar kSliderThumbBorderWidth = 1.f;
 const SkScalar kSliderThumbBorderHoveredWidth = 1.f;
-const SkScalar kMenuListArrowStrokeWidth = 1.f;
+const SkScalar kMenuListArrowStrokeWidth = 2.f;
 // The "dash" is 8x2 px by default (the checkbox is 13x13 px).
 const SkScalar kIndeterminateInsetWidthRatio = (13 - 8) / 2.0f / 13;
 const SkScalar kIndeterminateInsetHeightRatio = (13 - 2) / 2.0f / 13;
@@ -900,7 +900,7 @@ void NativeThemeAura::PaintMenuList(cc::PaintCanvas* canvas,
   flags.setStrokeWidth(kMenuListArrowStrokeWidth);
 
   float arrow_width = menu_list.arrow_size;
-  int arrow_height = arrow_width * 0.6;
+  int arrow_height = arrow_width * 0.5;
   gfx::Rect arrow(menu_list.arrow_x, menu_list.arrow_y - (arrow_height / 2),
                   arrow_width, arrow_height);
   arrow.Intersect(rect);

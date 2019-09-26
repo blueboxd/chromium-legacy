@@ -306,7 +306,7 @@ public class SigninManager
      *         Google Play Services installed.
      */
     public boolean isSigninSupported() {
-        return !ApiCompatibilityUtils.isDemoUser(mContext) && isGooglePlayServicesPresent(mContext)
+        return !ApiCompatibilityUtils.isDemoUser() && isGooglePlayServicesPresent(mContext)
                 && !SigninManagerJni.get().isMobileIdentityConsistencyEnabled();
     }
 

@@ -2467,7 +2467,7 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
     const base::Optional<url::Origin>& origin,
     network::mojom::CrossOriginEmbedderPolicy embedder_policy,
     const WebPreferences* preferences,
-    base::Optional<net::NetworkIsolationKey> network_isolation_key,
+    const base::Optional<net::NetworkIsolationKey>& network_isolation_key,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
         header_client,
     network::mojom::URLLoaderFactoryRequest request,
@@ -2485,7 +2485,8 @@ void RenderProcessHostImpl::CreateURLLoaderFactoryInternal(
   if (origin.has_value()) {
     embedder_provided_factory =
         GetContentClient()->browser()->CreateURLLoaderFactoryForNetworkRequests(
-            this, network_context, &header_client, origin.value());
+            this, network_context, &header_client, origin.value(),
+            network_isolation_key);
   }
   if (embedder_provided_factory) {
     mojo::FuseInterface(std::move(request),

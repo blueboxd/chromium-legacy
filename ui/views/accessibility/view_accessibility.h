@@ -69,6 +69,7 @@ class VIEWS_EXPORT ViewAccessibility {
   void OverrideIsIgnored(bool value);
   void OverrideBounds(const gfx::RectF& bounds);
   void OverrideDescribedBy(View* described_by_view);
+  void OverrideHasPopup(const ax::mojom::HasPopup has_popup);
 
   // Override indexes used by some screen readers when describing elements in a
   // menu, list, etc. If not specified, a view's index in its parent and its

@@ -32,6 +32,7 @@
 #include <memory>
 #include <utility>
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/dom/events/scoped_event_queue.h"
 #include "third_party/blink/renderer/core/dom/node_computed_style.h"
@@ -395,7 +396,7 @@ String InputType::TypeMismatchText() const {
 }
 
 String InputType::ValueMissingText() const {
-  return GetLocale().QueryString(WebLocalizedString::kValidationValueMissing);
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_VALUE_MISSING);
 }
 
 std::pair<String, String> InputType::ValidationMessage(
@@ -471,12 +472,12 @@ std::pair<String, String> InputType::ValidationMessage(
     String localized_candidate2 = LocalizeValue(Serialize(candidate2));
     if (candidate1 < candidate2) {
       return std::make_pair(
-          GetLocale().QueryString(WebLocalizedString::kValidationStepMismatch,
+          GetLocale().QueryString(IDS_FORM_VALIDATION_STEP_MISMATCH,
                                   localized_candidate1, localized_candidate2),
           g_empty_string);
     }
     return std::make_pair(
-        GetLocale().QueryString(WebLocalizedString::kValidationStepMismatch,
+        GetLocale().QueryString(IDS_FORM_VALIDATION_STEP_MISMATCH,
                                 localized_candidate2, localized_candidate1),
         g_empty_string);
   }

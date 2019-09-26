@@ -66,7 +66,7 @@ class TestFrameInterfaceBinder : public mojom::WebContentsFrameBindingSetTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(WebContentsBindingSetBrowserTest, OverrideForTesting) {
-  NavigateToURL(shell(), GURL("data:text/html,ho hum"));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("data:text/html,ho hum")));
 
   // Ensure that we can add a WebContentsFrameBindingSet and then override its
   // request handler.

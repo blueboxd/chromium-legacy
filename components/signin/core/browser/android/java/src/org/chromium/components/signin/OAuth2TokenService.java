@@ -16,6 +16,7 @@ import org.chromium.base.StrictModeContext;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.net.NetworkChangeNotifier;
 
@@ -134,19 +135,22 @@ public final class OAuth2TokenService
             String username, String scope, final long nativeCallback) {
         Account account = getAccountOrNullFromUsername(username);
         if (account == null) {
-            ThreadUtils.postOnUiThread(() -> nativeOAuth2TokenFetched(null, false, nativeCallback));
+            ThreadUtils.postOnUiThread(()
+                                               -> OAuth2TokenServiceJni.get().oAuth2TokenFetched(
+                                                       null, false, nativeCallback));
             return;
         }
         String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
         getAccessToken(account, oauth2Scope, new GetAccessTokenCallback() {
             @Override
             public void onGetTokenSuccess(String token) {
-                nativeOAuth2TokenFetched(token, false, nativeCallback);
+                OAuth2TokenServiceJni.get().oAuth2TokenFetched(token, false, nativeCallback);
             }
 
             @Override
             public void onGetTokenFailure(boolean isTransientError) {
-                nativeOAuth2TokenFetched(null, isTransientError, nativeCallback);
+                OAuth2TokenServiceJni.get().oAuth2TokenFetched(
+                        null, isTransientError, nativeCallback);
             }
         });
     }
@@ -282,7 +286,8 @@ public final class OAuth2TokenService
             // change (re-signin or sign out signed-in account).
             currentlySignedInAccount = null;
         }
-        nativeUpdateAccountList(mNativeOAuth2TokenServiceDelegate, currentlySignedInAccount);
+        OAuth2TokenServiceJni.get().updateAccountList(mNativeOAuth2TokenServiceDelegate,
+                OAuth2TokenService.this, currentlySignedInAccount);
     }
 
     private boolean isSignedInAccountChanged(String signedInAccountName) {
@@ -391,8 +396,10 @@ public final class OAuth2TokenService
         }
     }
 
-    private static native void nativeOAuth2TokenFetched(
-            String authToken, boolean isTransientError, long nativeCallback);
-    private native void nativeUpdateAccountList(
-            long nativeOAuth2TokenServiceDelegateAndroid, String currentlySignedInAccount);
+    @NativeMethods
+    interface Natives {
+        void oAuth2TokenFetched(String authToken, boolean isTransientError, long nativeCallback);
+        void updateAccountList(long nativeOAuth2TokenServiceDelegateAndroid,
+                OAuth2TokenService caller, String currentlySignedInAccount);
+    }
 }

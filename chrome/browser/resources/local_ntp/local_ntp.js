@@ -73,6 +73,8 @@ const CLASSES = {
   // Applies styles to dialogs used in customization.
   CUSTOMIZE_DIALOG: 'customize-dialog',
   DELAYED_HIDE_NOTIFICATION: 'mv-notice-delayed-hide',
+  DISMISSABLE: 'dismissable',
+  DISMISS_ICON: 'dismiss-icon',
   DISMISS_PROMO: 'dismiss-promo',
   // Extended and elevated style for customization entry point.
   ENTRY_POINT_ENHANCED: 'ep-enhanced',
@@ -913,15 +915,22 @@ function injectPromo(promo) {
   }
 
   if (promo.promoId) {
-    const dismiss = document.createElement('button');
-    dismiss.classList.add(CLASSES.DISMISS_PROMO);
-    dismiss.title = configData.translatedStrings.dismissPromo;
-    dismiss.onclick = e => {
+    const icon = document.createElement('button');
+    icon.classList.add(CLASSES.DISMISS_ICON);
+
+    icon.title = configData.translatedStrings.dismissPromo;
+    icon.onclick = e => {
       ntpApiHandle.blocklistPromo(promo.promoId);
       promoContainer.remove();
       window.removeEventListener('resize', showPromoIfNotOverlapping);
     };
+
+    const dismiss = document.createElement('div');
+    dismiss.classList.add(CLASSES.DISMISS_PROMO);
+    dismiss.appendChild(icon);
+
     promoContainer.querySelector('div').appendChild(dismiss);
+    promoContainer.classList.add(CLASSES.DISMISSABLE);
   }
 
   // The the MV tiles are already loaded show the promo immediately.

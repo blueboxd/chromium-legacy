@@ -40,7 +40,7 @@ class BlobUrlBrowserTest : public ContentBrowserTest {
 IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToUniqueOriginBlob) {
   // Use a data URL to obtain a test page in a unique origin. The page
   // contains a link to a "blob:null/SOME-GUID-STRING" URL.
-  NavigateToURL(
+  EXPECT_TRUE(NavigateToURL(
       shell(),
       GURL("data:text/html,<body><script>"
            "var link = document.body.appendChild(document.createElement('a'));"
@@ -48,7 +48,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToUniqueOriginBlob) {
            "link.href = URL.createObjectURL(new Blob(['potato']));"
            "link.target = '_blank';"
            "link.id = 'click_me';"
-           "</script></body>"));
+           "</script></body>")));
 
   // Click the link.
   ShellAddedObserver new_shell_observer;
@@ -75,7 +75,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToSameOriginBlob) {
   // Using an http page, click a link that opens a popup to a same-origin blob.
   GURL url = embedded_test_server()->GetURL("chromium.org", "/title1.html");
   url::Origin origin = url::Origin::Create(url);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   ShellAddedObserver new_shell_observer;
   EXPECT_TRUE(ExecuteScript(
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, LinkToSameOriginBlobWithAuthority) {
   // that has a spoofy authority section applied. This should be blocked.
   GURL url = embedded_test_server()->GetURL("chromium.org", "/title1.html");
   url::Origin origin = url::Origin::Create(url);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   ShellAddedObserver new_shell_observer;
   EXPECT_TRUE(ExecuteScript(
@@ -146,7 +146,7 @@ IN_PROC_BROWSER_TEST_F(BlobUrlBrowserTest, ReplaceStateToAddAuthorityToBlob) {
   // an authority to the inner URL, which would be spoofy.
   GURL url = embedded_test_server()->GetURL("chromium.org", "/title1.html");
   url::Origin origin = url::Origin::Create(url);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   ShellAddedObserver new_shell_observer;
   EXPECT_TRUE(ExecuteScript(

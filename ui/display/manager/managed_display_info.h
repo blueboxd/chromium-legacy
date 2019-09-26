@@ -244,6 +244,11 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   void set_native(bool native) { native_ = native; }
   bool native() const { return native_; }
 
+  void set_from_native_platform(bool from_native_platform) {
+    from_native_platform_ = from_native_platform;
+  }
+  bool from_native_platform() const { return from_native_platform_; }
+
   const ManagedDisplayModeList& display_modes() const { return display_modes_; }
   // Sets the display mode list. The mode list will be sorted for the
   // display.
@@ -342,6 +347,9 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   bool is_zoom_factor_from_ui_scale_;
 
   // True if this comes from native platform (DisplayChangeObserver).
+  bool from_native_platform_;
+
+  // True if current mode is native mode of the display.
   bool native_;
 
   // True if the display is configured to preserve the aspect ratio. When the

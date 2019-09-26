@@ -18,14 +18,15 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 class TabGridIphItemCoordinator {
     private final PropertyModelChangeProcessor mModelChangeProcessor;
     private final TabGridIphItemMediator mMediator;
+    private final TabGridIphItemView mIphItemView;
 
     TabGridIphItemCoordinator(Context context, TabListRecyclerView contentView, ViewGroup parent) {
         PropertyModel iphItemPropertyModel = new PropertyModel(TabGridIphItemProperties.ALL_KEYS);
         LayoutInflater.from(context).inflate(R.layout.iph_card_item_layout, parent, true);
-        TabGridIphItemView iphItemView = parent.findViewById(R.id.tab_grid_iph_item);
+        mIphItemView = parent.findViewById(R.id.tab_grid_iph_item);
 
         mModelChangeProcessor = PropertyModelChangeProcessor.create(iphItemPropertyModel,
-                new TabGridIphItemViewBinder.ViewHolder(contentView, iphItemView),
+                new TabGridIphItemViewBinder.ViewHolder(contentView, mIphItemView),
                 TabGridIphItemViewBinder::bind);
 
         mMediator = new TabGridIphItemMediator(iphItemPropertyModel);
@@ -42,5 +43,6 @@ class TabGridIphItemCoordinator {
     /** Destroy the IPH component. */
     public void destroy() {
         mModelChangeProcessor.destroy();
+        mIphItemView.destroy();
     }
 }

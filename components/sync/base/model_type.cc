@@ -374,14 +374,6 @@ int GetSpecificsFieldNumberFromModelType(ModelType model_type) {
   return kModelTypeInfoMap[model_type].specifics_field_number;
 }
 
-FullModelTypeSet ToFullModelTypeSet(ModelTypeSet in) {
-  FullModelTypeSet out;
-  for (ModelType type : in) {
-    out.Put(type);
-  }
-  return out;
-}
-
 // Note: keep this consistent with GetModelType in entry.cc!
 ModelType GetModelType(const sync_pb::SyncEntity& sync_entity) {
   ModelType specifics_type = GetModelTypeFromSpecifics(sync_entity.specifics());

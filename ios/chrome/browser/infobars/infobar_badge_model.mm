@@ -18,17 +18,17 @@
 @end
 
 @implementation InfobarBadgeModel
-// Synthesized from protocol.
+// Synthesized from BadgeItem.
 @synthesize tappable = _tappable;
-// Synthesized from protocol.
-@synthesize accepted = _accepted;
+// Synthesized from BadgeItem.
+@synthesize badgeState = _badgeState;
 
-- (instancetype)initWithInfobarType:(InfobarType)type accepted:(BOOL)accepted {
+- (instancetype)initWithInfobarType:(InfobarType)type {
   self = [super init];
   if (self) {
     _tappable = YES;
     _infobarType = type;
-    _accepted = accepted;
+    _badgeState = BadgeStateNone;
   }
   return self;
 }

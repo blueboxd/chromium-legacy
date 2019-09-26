@@ -103,7 +103,6 @@ class CORE_EXPORT DisplayLockContext final
   // JavaScript interface implementation. See display_lock_context.idl for
   // description.
   ScriptPromise acquire(ScriptState*, DisplayLockOptions*);
-  ScriptPromise update(ScriptState*);
   ScriptPromise commit(ScriptState*);
   ScriptPromise updateAndCommit(ScriptState*);
 
@@ -113,6 +112,8 @@ class CORE_EXPORT DisplayLockContext final
   void StartAcquire();
   // Initiate a commit.
   void StartCommit();
+  // Update rendering of the subtree.
+  ScriptPromise UpdateRendering(ScriptState*);
 
   // Lifecycle observation / state functions.
   bool ShouldStyle(DisplayLockLifecycleTarget) const;

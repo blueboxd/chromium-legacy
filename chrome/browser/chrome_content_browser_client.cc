@@ -337,7 +337,6 @@
 #include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom.h"
-#include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/widevine/cdm/buildflags.h"
 #include "ui/base/buildflags.h"
@@ -1608,11 +1607,13 @@ ChromeContentBrowserClient::CreateURLLoaderFactoryForNetworkRequests(
     network::mojom::NetworkContext* network_context,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
-    const url::Origin& request_initiator) {
+    const url::Origin& request_initiator,
+    const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   return ChromeContentBrowserClientExtensionsPart::
-      CreateURLLoaderFactoryForNetworkRequests(
-          process, network_context, header_client, request_initiator);
+      CreateURLLoaderFactoryForNetworkRequests(process, network_context,
+                                               header_client, request_initiator,
+                                               network_isolation_key);
 #else
   return network::mojom::URLLoaderFactoryPtrInfo();
 #endif
@@ -1664,13 +1665,6 @@ bool ChromeContentBrowserClient::CanCommitURL(
 bool ChromeContentBrowserClient::ShouldAllowOpenURL(
     content::SiteInstance* site_instance,
     const GURL& url) {
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  bool result;
-  if (ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL(
-          site_instance, url, &result))
-    return result;
-#endif
-
   // Do not allow chrome://chrome-signin navigate to other chrome:// URLs, since
   // the signin page may host untrusted web content.
   GURL from_url = site_instance->GetSiteURL();
@@ -2357,11 +2351,13 @@ bool ChromeContentBrowserClient::AllowAppCache(
 
 bool ChromeContentBrowserClient::AllowServiceWorkerOnIO(
     const GURL& scope,
-    const GURL& first_party_url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
     content::ResourceContext* context,
     base::RepeatingCallback<content::WebContents*()> wc_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  GURL first_party_url = top_frame_origin ? top_frame_origin->GetURL() : GURL();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Check if this is an extension-related service worker, and, if so, if it's
@@ -2388,9 +2384,8 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnIO(
   bool allow_javascript = (setting == CONTENT_SETTING_ALLOW);
 
   // Check if cookies are allowed.
-  bool allow_serviceworker =
-      io_data->GetCookieSettings()->IsCookieAccessAllowed(scope,
-                                                          first_party_url);
+  bool allow_cookies = io_data->GetCookieSettings()->IsCookieAccessAllowed(
+      scope, site_for_cookies, top_frame_origin);
   // Record access to database for potential display in UI.
   // Only post the task if this is for a specific tab.
   if (!wc_getter.is_null()) {
@@ -2398,18 +2393,20 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnIO(
         FROM_HERE, {BrowserThread::UI},
         base::BindOnce(&TabSpecificContentSettings::ServiceWorkerAccessed,
                        std::move(wc_getter), scope, !allow_javascript,
-                       !allow_serviceworker));
+                       !allow_cookies));
   }
-  return allow_javascript && allow_serviceworker;
+  return allow_javascript && allow_cookies;
 }
 
 bool ChromeContentBrowserClient::AllowServiceWorkerOnUI(
     const GURL& scope,
-    const GURL& first_party_url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin,
     const GURL& script_url,
     content::BrowserContext* context,
     base::RepeatingCallback<content::WebContents*()> wc_getter) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  GURL first_party_url = top_frame_origin ? top_frame_origin->GetURL() : GURL();
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   // Check if this is an extension-related service worker, and, if so, if it's
@@ -2438,7 +2435,7 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnUI(
   // Check if cookies are allowed.
   bool allow_cookies =
       CookieSettingsFactory::GetForProfile(profile)->IsCookieAccessAllowed(
-          scope, first_party_url);
+          scope, site_for_cookies, top_frame_origin);
 
   // Record access to database for potential display in UI.
   // Only post the task if this is for a specific tab.
@@ -2451,7 +2448,8 @@ bool ChromeContentBrowserClient::AllowServiceWorkerOnUI(
 
 bool ChromeContentBrowserClient::AllowSharedWorker(
     const GURL& worker_url,
-    const GURL& main_frame_url,
+    const GURL& site_for_cookies,
+    const base::Optional<url::Origin>& top_frame_origin,
     const std::string& name,
     const url::Origin& constructor_origin,
     content::BrowserContext* context,
@@ -2462,7 +2460,8 @@ bool ChromeContentBrowserClient::AllowSharedWorker(
   // Check if cookies are allowed.
   bool allow =
       CookieSettingsFactory::GetForProfile(Profile::FromBrowserContext(context))
-          ->IsCookieAccessAllowed(worker_url, main_frame_url);
+          ->IsCookieAccessAllowed(worker_url, site_for_cookies,
+                                  top_frame_origin);
 
   TabSpecificContentSettings::SharedWorkerAccessed(
       render_process_id, render_frame_id, worker_url, name, constructor_origin,
@@ -4457,8 +4456,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 #endif
 
 #if defined(OS_ANDROID)
-  frame_interfaces_parameterized_->AddInterface(base::Bind(
-      &ForwardToJavaWebContentsRegistry<blink::mojom::ShareService>));
 #if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
   frame_interfaces_parameterized_->AddInterface(base::Bind(
       &ForwardToJavaWebContentsRegistry<blink::mojom::SpatialNavigationHost>));

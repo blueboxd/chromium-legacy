@@ -60,13 +60,13 @@ class InputPredictor {
   static constexpr base::TimeDelta kTimeInterval =
       base::TimeDelta::FromMilliseconds(8);
   // Minimum time interval between events.
-  static constexpr base::TimeDelta kMinimumTimeInterval =
+  static constexpr base::TimeDelta kMinTimeInterval =
       base::TimeDelta::FromMillisecondsD(2.5);
 
-  // Maximum amount of prediction when resampling
+  // Maximum amount of prediction when resampling.
   static constexpr base::TimeDelta kMaxResampleTime =
       base::TimeDelta::FromMilliseconds(20);
-  // Maximum time delta for prediction
+  // Maximum time delta for prediction.
   static constexpr base::TimeDelta kMaxPredictionTime =
       base::TimeDelta::FromMilliseconds(25);
 };

@@ -18,7 +18,6 @@ class ChromeBrowserMainPartsLinux : public ChromeBrowserMainPartsPosix {
   ~ChromeBrowserMainPartsLinux() override;
 
   // ChromeBrowserMainParts overrides.
-  void ToolkitInitialized() override;
   void PreProfileInit() override;
   void PostProfileInit() override;
   void PostMainMessageLoopStart() override;

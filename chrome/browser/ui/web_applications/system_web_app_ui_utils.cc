@@ -7,6 +7,7 @@
 #include <string>
 #include <utility>
 
+#include "base/logging.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "chrome/browser/ui/extensions/application_launch.h"
+#include "chrome/browser/ui/web_applications/app_browser_controller.h"
 #include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/system_web_app_manager.h"
 #include "chrome/browser/web_applications/web_app_provider.h"
@@ -107,6 +109,29 @@ Browser* FindSystemWebAppBrowser(Profile* profile, SystemAppType app_type) {
   }
 
   return nullptr;
+}
+
+bool IsSystemWebApp(Browser* browser) {
+  DCHECK(browser);
+  return browser->app_controller() &&
+         browser->app_controller()->IsForSystemWebApp();
+}
+
+gfx::Size GetSystemWebAppMinimumWindowSize(Browser* browser) {
+  DCHECK(browser);
+  if (!browser->app_controller())
+    return gfx::Size();  // Not an app.
+
+  base::Optional<AppId> app_id = browser->app_controller()->GetAppId();
+  if (!app_id)
+    return gfx::Size();
+
+  auto* provider = WebAppProvider::Get(browser->profile());
+  if (!provider)
+    return gfx::Size();
+
+  return provider->system_web_app_manager().GetMinimumWindowSize(
+      app_id.value());
 }
 
 }  // namespace web_app

@@ -1083,13 +1083,13 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
       BackForwardCacheImpl::TEST_ASSUMES_NO_CACHING);
 
   // Navigate to a page that would normally be cacheable.
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("a.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("a.com", "/title1.html")));
   RenderFrameDeletedObserver delete_observer_rfh_a(current_frame_host());
 
   // Navigate away.
-  NavigateToURL(shell(),
-                embedded_test_server()->GetURL("b.com", "/title1.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
 
   // The page should be deleted (not cached).
   delete_observer_rfh_a.WaitUntilDeleted();
@@ -1672,27 +1672,7 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest, FetchWhileStoring) {
   // 3) Go back to A.
   web_contents()->GetController().GoBack();
   EXPECT_TRUE(WaitForLoadStop(shell()->web_contents()));
-  EXPECT_FALSE(delete_observer_rfh_a.deleted());
-  EXPECT_EQ(current_frame_host(), rfh_a);
-
-  // TODO(https://crbug.com/996267). Consider evicting the page or closing the
-  // connection.
-  EXPECT_EQ("TheResponse", EvalJs(rfh_a, R"(
-    new Promise(async resolve => {
-      if (my_fetch == undefined) {
-        resolve("undefined");
-        return;
-      }
-
-      try {
-        response = await my_fetch;
-        text = await response.text();
-        resolve(text);
-      } catch (exception) {
-        resolve("error");
-      }
-    });
-  )"));
+  EXPECT_TRUE(delete_observer_rfh_a.deleted());
 }
 
 // Only HTTP/HTTPS main document can enter the BackForwardCache.

@@ -68,10 +68,6 @@ void ServiceWorkerThread::ClearWorkerBackingThread() {
   worker_backing_thread_ = nullptr;
 }
 
-InstalledScriptsManager* ServiceWorkerThread::GetInstalledScriptsManager() {
-  return installed_scripts_manager_.get();
-}
-
 void ServiceWorkerThread::TerminateForTesting() {
   global_scope_proxy_->TerminateWorkerContext();
   WorkerThread::TerminateForTesting();
@@ -127,9 +123,9 @@ void ServiceWorkerThread::RunInstalledModuleScriptOnWorkerThread(
 
 WorkerOrWorkletGlobalScope* ServiceWorkerThread::CreateWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params) {
-  return ServiceWorkerGlobalScope::Create(this, std::move(creation_params),
-                                          std::move(cache_storage_remote_),
-                                          time_origin_);
+  return ServiceWorkerGlobalScope::Create(
+      this, std::move(creation_params), std::move(installed_scripts_manager_),
+      std::move(cache_storage_remote_), time_origin_);
 }
 
 }  // namespace blink

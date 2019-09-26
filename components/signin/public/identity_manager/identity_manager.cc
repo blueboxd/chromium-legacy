@@ -478,17 +478,34 @@ IdentityManager::ComputeUnconsentedPrimaryAccountInfo() const {
   return base::nullopt;
 #else
   AccountsInCookieJarInfo cookie_info = GetAccountsInCookieJar();
-  if (!cookie_info.accounts_are_fresh)
-    return base::nullopt;
+
+  if (AreRefreshTokensLoaded() && GetAccountsWithRefreshTokens().empty())
+    return CoreAccountInfo();
 
   std::vector<gaia::ListedAccount> cookie_accounts =
       cookie_info.signed_in_accounts;
-  if (cookie_accounts.empty())
+  if (cookie_info.accounts_are_fresh && cookie_accounts.empty())
     return CoreAccountInfo();
 
-  if (!AreRefreshTokensLoaded())
+  if (!AreRefreshTokensLoaded() || !cookie_info.accounts_are_fresh) {
+    // If cookies or tokens are not loaded, it is not possible to fully compute
+    // the unconsented primary account. However, if the current unconsented
+    // primary account is no longer valid, it has to be removed.
+    CoreAccountId current_account = GetUnconsentedPrimaryAccountId();
+    if (!current_account.empty()) {
+      if (AreRefreshTokensLoaded() &&
+          !HasAccountWithRefreshToken(current_account)) {
+        return CoreAccountInfo();
+      }
+      if (cookie_info.accounts_are_fresh &&
+          cookie_accounts[0].id != current_account) {
+        return CoreAccountInfo();
+      }
+    }
     return base::nullopt;
+  }
 
+  // At this point, cookies and tokens are loaded and neither are empty.
   const CoreAccountId first_account_id = cookie_accounts[0].id;
   if (!HasAccountWithRefreshToken(first_account_id))
     return CoreAccountInfo();

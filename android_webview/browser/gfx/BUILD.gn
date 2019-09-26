@@ -64,6 +64,7 @@ source_set("gfx") {
     "//android_webview:browser_jni_headers",
     "//base",
     "//components/ui_devtools:buildflags",
+    "//components/viz/service",
     "//content/public/browser",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/service",

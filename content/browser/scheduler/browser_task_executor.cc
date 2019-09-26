@@ -74,7 +74,9 @@ BrowserTaskExecutor::BrowserTaskExecutor(
       browser_io_thread_delegate_(std::move(browser_io_thread_delegate)),
       browser_io_thread_handle_(browser_io_thread_delegate_->CreateHandle()) {}
 
-BrowserTaskExecutor::~BrowserTaskExecutor() = default;
+BrowserTaskExecutor::~BrowserTaskExecutor() {
+  base::SetTaskExecutorForCurrentThread(nullptr);
+}
 
 // static
 void BrowserTaskExecutor::Create() {
@@ -104,9 +106,19 @@ void BrowserTaskExecutor::CreateInternal(
   g_browser_task_executor->browser_ui_thread_handle_
       ->EnableAllExceptBestEffortQueues();
 
+  // Here we register the BrowserTaskExecutor for the UI thread; registration
+  // for the IO thread happens in BrowserIOThreadDelegate::BindToCurrentThread.
+  base::SetTaskExecutorForCurrentThread(g_browser_task_executor);
+
 #if defined(OS_ANDROID)
   base::PostTaskAndroid::SignalNativeSchedulerReady();
 #endif
+}
+
+// static
+BrowserTaskExecutor* BrowserTaskExecutor::Get() {
+  DCHECK(g_browser_task_executor);
+  return g_browser_task_executor;
 }
 
 // static
@@ -114,13 +126,15 @@ void BrowserTaskExecutor::ResetForTesting() {
 #if defined(OS_ANDROID)
   base::PostTaskAndroid::SignalNativeSchedulerShutdown();
 #endif
-
   if (g_browser_task_executor) {
+    RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
+    RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
     base::UnregisterTaskExecutorForTesting(
         BrowserTaskTraitsExtension::kExtensionId);
     delete g_browser_task_executor;
     g_browser_task_executor = nullptr;
   }
+  base::SetTaskExecutorForCurrentThread(nullptr);
 }
 
 // static
@@ -164,6 +178,12 @@ void BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(
           ->ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
       break;
     case BrowserThread::IO: {
+      // In tests there may not be a functional IO thread.
+      if (!g_browser_task_executor->browser_io_thread_delegate_ ||
+          !g_browser_task_executor->browser_io_thread_delegate_
+               ->browser_task_executor_present()) {
+        return;
+      }
       g_browser_task_executor->browser_io_thread_handle_
           ->ScheduleRunAllPendingTasksForTesting(run_loop.QuitClosure());
       break;

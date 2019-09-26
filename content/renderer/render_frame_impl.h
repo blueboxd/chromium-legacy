@@ -89,7 +89,6 @@
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_object.mojom.h"
 #include "third_party/blink/public/mojom/use_counter/css_property_id.mojom.h"
-#include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_focus_type.h"
 #include "third_party/blink/public/platform/web_loading_behavior_flag.h"
 #include "third_party/blink/public/platform/web_media_player.h"
@@ -775,9 +774,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void ForwardResourceTimingToParent(
       const blink::WebResourceTimingInfo& info) override;
   void DispatchLoad() override;
-  blink::WebEffectiveConnectionType GetEffectiveConnectionType() override;
-  void SetEffectiveConnectionTypeForTesting(
-      blink::WebEffectiveConnectionType) override;
   blink::WebURLRequest::PreviewsState GetPreviewsStateForFrame() const override;
   void DidBlockNavigation(const blink::WebURL& blocked_url,
                           const blink::WebURL& initiator_url,
@@ -1636,11 +1632,6 @@ class CONTENT_EXPORT RenderFrameImpl
   // TODO(sclittle): Consider moving this into Blink to be owned and managed by
   // LocalFrame or another class around there.
   PreviewsState previews_state_;
-
-  // Effective connection type when the document of this frame was fetched.
-  // TODO(sclittle): Consider moving this into Blink to be owned and managed by
-  // LocalFrame or another class around there.
-  blink::WebEffectiveConnectionType effective_connection_type_;
 
   // Whether or not this RenderFrame is currently pasting.
   bool is_pasting_;

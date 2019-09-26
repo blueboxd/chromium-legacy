@@ -14,7 +14,6 @@ import androidx.annotation.Nullable;
 import androidx.browser.customtabs.CustomTabsService;
 import androidx.browser.customtabs.CustomTabsSessionToken;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.init.ProcessInitializationHandler;
@@ -114,8 +113,8 @@ public class CustomTabsConnectionService extends CustomTabsService {
 
     private boolean isFirstRunDone() {
         if (mBindIntent == null) return true;
-        boolean firstRunNecessary = FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
-                ContextUtils.getApplicationContext(), mBindIntent, false);
+        boolean firstRunNecessary =
+                FirstRunFlowSequencer.checkIfFirstRunIsNecessary(mBindIntent, false);
         if (!firstRunNecessary) {
             mBindIntent = null;
             return true;

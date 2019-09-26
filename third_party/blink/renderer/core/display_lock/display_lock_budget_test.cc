@@ -485,7 +485,7 @@ TEST_F(DisplayLockBudgetTest, YieldingBudgetMarksNextPhase) {
   {
     auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
     ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->update(script_state);
+    element->getDisplayLockForBindings()->UpdateRendering(script_state);
     ResetBudget(std::move(budget_owned), element->GetDisplayLockContext());
   }
 
@@ -579,7 +579,7 @@ TEST_F(DisplayLockBudgetTest, UpdateHappensInLifecycleOnly) {
   {
     auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
     ScriptState::Scope scope(script_state);
-    element->getDisplayLockForBindings()->update(script_state);
+    element->getDisplayLockForBindings()->UpdateRendering(script_state);
     ResetBudget(std::move(budget_owned), element->GetDisplayLockContext());
   }
 

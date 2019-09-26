@@ -55,12 +55,6 @@ const PaymentRequestData kPaymentRequestData[]{
     {autofill::kVisaCard, "visa", IDR_AUTOFILL_CC_VISA, IDS_AUTOFILL_CC_VISA},
 };
 
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-const PaymentRequestData kGooglePayBrandingRequestData = {
-    "googlePay", "googlePay", IDR_AUTOFILL_GOOGLE_PAY,
-    IDS_AUTOFILL_CC_GOOGLE_PAY};
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
-
 const PaymentRequestData kGenericPaymentRequestData = {
     autofill::kGenericCard, "generic", IDR_AUTOFILL_CC_GENERIC,
     IDS_AUTOFILL_CC_GENERIC};
@@ -523,11 +517,6 @@ const PaymentRequestData& GetPaymentRequestData(
     if (issuer_network == data.issuer_network)
       return data;
   }
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
-  if (issuer_network == kGooglePayBrandingRequestData.issuer_network) {
-    return kGooglePayBrandingRequestData;
-  }
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return kGenericPaymentRequestData;
 }
 

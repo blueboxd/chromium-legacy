@@ -251,7 +251,7 @@ void TranslatePrefs::RemoveFromLanguageList(const std::string& input_language) {
     // data so that Chrome won't try to translate to it next time Translate is
     // triggered.
     if (chrome_language == GetRecentTargetLanguage())
-      SetRecentTargetLanguage("");
+      ResetRecentTargetLanguage();
 
     languages.erase(it);
     PurgeUnsupportedLanguagesInLanguageFamily(chrome_language, &languages);
@@ -787,6 +787,10 @@ bool TranslatePrefs::ShouldAutoTranslate(const std::string& original_language,
 void TranslatePrefs::SetRecentTargetLanguage(
     const std::string& target_language) {
   prefs_->SetString(kPrefTranslateRecentTarget, target_language);
+}
+
+void TranslatePrefs::ResetRecentTargetLanguage() {
+  SetRecentTargetLanguage("");
 }
 
 std::string TranslatePrefs::GetRecentTargetLanguage() const {

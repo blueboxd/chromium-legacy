@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/credentialmanager/credential_manager.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/bindings/core/v8/v8_gc_controller.h"
@@ -21,7 +22,6 @@
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/testing/gc_object_liveness_observer.h"
-#include "third_party/blink/renderer/core/testing/test_document_interface_broker.h"
 #include "third_party/blink/renderer/core/typed_arrays/dom_array_buffer.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential.h"
 #include "third_party/blink/renderer/modules/credentialmanager/credential_creation_options.h"
@@ -99,30 +99,6 @@ class MockCredentialManager : public mojom::blink::CredentialManager {
   DISALLOW_COPY_AND_ASSIGN(MockCredentialManager);
 };
 
-class MockCredentialManagerDocumentInterfaceBroker
-    : public TestDocumentInterfaceBroker {
- public:
-  MockCredentialManagerDocumentInterfaceBroker(
-      mojom::blink::DocumentInterfaceBroker* document_interface_broker,
-      mojo::PendingReceiver<mojom::blink::DocumentInterfaceBroker> receiver,
-      MockCredentialManager* mock_credential_manager)
-      : TestDocumentInterfaceBroker(document_interface_broker,
-                                    std::move(receiver)),
-        mock_credential_manager_(mock_credential_manager) {}
-
-  void GetCredentialManager(
-      mojo::PendingReceiver<::blink::mojom::blink::CredentialManager> receiver)
-      override {
-    mock_credential_manager_->Bind(std::move(receiver));
-  }
-
-  void GetAuthenticator(
-      mojo::PendingReceiver<mojom::blink::Authenticator> receiver) override {}
-
- private:
-  MockCredentialManager* mock_credential_manager_;
-};
-
 class CredentialManagerTestingContext {
   STACK_ALLOCATED();
 
@@ -132,12 +108,23 @@ class CredentialManagerTestingContext {
       : dummy_context_(KURL("https://example.test")) {
     dummy_context_.GetDocument().SetSecureContextStateForTesting(
         SecureContextState::kSecure);
-    mojo::PendingRemote<mojom::blink::DocumentInterfaceBroker> doc;
-    broker_ = std::make_unique<MockCredentialManagerDocumentInterfaceBroker>(
-        &dummy_context_.GetFrame().GetDocumentInterfaceBroker(),
-        doc.InitWithNewPipeAndPassReceiver(), mock_credential_manager);
-    dummy_context_.GetFrame().SetDocumentInterfaceBrokerForTesting(
-        doc.PassPipe());
+
+    dummy_context_.GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
+        ::blink::mojom::blink::CredentialManager::Name_,
+        WTF::BindRepeating(
+            [](MockCredentialManager* mock_credential_manager,
+               mojo::ScopedMessagePipeHandle handle) {
+              mock_credential_manager->Bind(
+                  mojo::PendingReceiver<
+                      ::blink::mojom::blink::CredentialManager>(
+                      std::move(handle)));
+            },
+            WTF::Unretained(mock_credential_manager)));
+  }
+
+  ~CredentialManagerTestingContext() {
+    dummy_context_.GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
+        ::blink::mojom::blink::CredentialManager::Name_, {});
   }
 
   Document* GetDocument() { return &dummy_context_.GetDocument(); }
@@ -146,7 +133,6 @@ class CredentialManagerTestingContext {
 
  private:
   V8TestingScope dummy_context_;
-  std::unique_ptr<MockCredentialManagerDocumentInterfaceBroker> broker_;
 };
 
 }  // namespace

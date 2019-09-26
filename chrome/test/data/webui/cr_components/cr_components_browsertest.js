@@ -95,7 +95,6 @@ CrComponentsNetworkConfigTest.prototype = {
     '//ui/webui/resources/js/promise_resolver.js',
     '../fake_chrome_event.js',
     '../chromeos/networking_private_constants.js',
-    '../chromeos/fake_networking_private.js',
     '../chromeos/fake_network_config_mojom.js',
     '../chromeos/cr_onc_strings.js',
     'network_config_test.js',

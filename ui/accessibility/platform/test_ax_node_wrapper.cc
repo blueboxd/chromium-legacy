@@ -285,6 +285,15 @@ AXPlatformNode* TestAXNodeWrapper::GetFromNodeID(int32_t id) {
   return nullptr;
 }
 
+AXPlatformNode* TestAXNodeWrapper::GetFromTreeIDAndNodeID(
+    const ui::AXTreeID& ax_tree_id,
+    int32_t id) {
+  // TestAXNodeWrapper only supports one accessibility tree.
+  // Additional work would need to be done to support multiple trees.
+  CHECK_EQ(GetTreeData().tree_id, ax_tree_id);
+  return GetFromNodeID(id);
+}
+
 int TestAXNodeWrapper::GetIndexInParent() {
   return node_ ? int{node_->index_in_parent()} : -1;
 }
@@ -583,6 +592,7 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForLandmarkType() const {
       return base::ASCIIToUTF16("content information");
 
     case ax::mojom::Role::kRegion:
+    case ax::mojom::Role::kSection:
       if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
         return base::ASCIIToUTF16("region");
       FALLTHROUGH;
@@ -638,11 +648,21 @@ base::string16 TestAXNodeWrapper::GetLocalizedStringForRoleDescription() const {
     case ax::mojom::Role::kHeaderAsNonLandmark:
       return base::ASCIIToUTF16("header");
 
+    case ax::mojom::Role::kMark:
+      return base::ASCIIToUTF16("highlight");
+
     case ax::mojom::Role::kMeter:
       return base::ASCIIToUTF16("meter");
 
     case ax::mojom::Role::kSearchBox:
       return base::ASCIIToUTF16("search box");
+
+    case ax::mojom::Role::kSection: {
+      if (data.HasStringAttribute(ax::mojom::StringAttribute::kName))
+        return base::ASCIIToUTF16("section");
+
+      return {};
+    }
 
     case ax::mojom::Role::kStatus:
       return base::ASCIIToUTF16("output");

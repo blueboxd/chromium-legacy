@@ -52,6 +52,7 @@ js_library("network_config") {
   deps = [
     "//chromeos/services/network_config/public/mojom:mojom_js_library_for_compile",
     "//ui/webui/resources/cr_components/chromeos/network:mojo_interface_provider",
+    "//ui/webui/resources/cr_elements/chromeos/network:cr_network_listener_behavior",
     "//ui/webui/resources/js:assert",
     "//ui/webui/resources/js:i18n_behavior",
   ]

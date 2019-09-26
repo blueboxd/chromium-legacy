@@ -37,7 +37,7 @@ const base::Feature kAImageReaderMediaPlayer{"AImageReaderMediaPlayer",
 // and using overlays on Android.
 // Note that the feature only works with VizDisplayCompositor enabled.
 const base::Feature kAndroidSurfaceControl{"AndroidSurfaceControl",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
+                                           base::FEATURE_ENABLED_BY_DEFAULT};
 #endif
 
 // Enable GPU Rasterization by default. This can still be overridden by

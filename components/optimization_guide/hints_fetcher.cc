@@ -69,6 +69,14 @@ void HintsFetcher::SetTimeClockForTesting(const base::Clock* time_clock) {
 // static
 void HintsFetcher::RecordHintsFetcherCoverage(PrefService* pref_service,
                                               const std::string& host) {
+  HintsFetcher::RecordHintsFetcherCoverage(pref_service, host,
+                                           base::DefaultClock::GetInstance());
+}
+
+// static
+void HintsFetcher::RecordHintsFetcherCoverage(PrefService* pref_service,
+                                              const std::string& host,
+                                              const base::Clock* time_clock) {
   DictionaryPrefUpdate hosts_fetched(
       pref_service, prefs::kHintsFetcherHostsSuccessfullyFetched);
   base::Optional<double> value =
@@ -83,7 +91,7 @@ void HintsFetcher::RecordHintsFetcherCoverage(PrefService* pref_service,
       base::TimeDelta::FromSecondsD(*value));
   UMA_HISTOGRAM_BOOLEAN(
       "OptimizationGuide.HintsFetcher.NavigationHostCoveredByFetch",
-      host_valid_time > base::Time::Now());
+      host_valid_time > time_clock->Now());
 }
 
 bool HintsFetcher::FetchOptimizationGuideServiceHints(

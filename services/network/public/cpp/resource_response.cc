@@ -70,7 +70,6 @@ ResourceResponseHead::ResourceResponseHead(
   service_worker_ready_time = url_response_head->service_worker_ready_time;
   is_in_cache_storage = url_response_head->is_in_cache_storage;
   cache_storage_cache_name = url_response_head->cache_storage_cache_name;
-  effective_connection_type = url_response_head->effective_connection_type;
   cert_status = url_response_head->cert_status;
   ssl_info = url_response_head->ssl_info;
   cors_exposed_header_names = url_response_head->cors_exposed_header_names;
@@ -136,7 +135,6 @@ scoped_refptr<ResourceResponse> ResourceResponse::DeepCopy() const {
   new_response->head.service_worker_ready_time = head.service_worker_ready_time;
   new_response->head.is_in_cache_storage = head.is_in_cache_storage;
   new_response->head.cache_storage_cache_name = head.cache_storage_cache_name;
-  new_response->head.effective_connection_type = head.effective_connection_type;
   new_response->head.cert_status = head.cert_status;
   new_response->head.ssl_info = head.ssl_info;
   new_response->head.cors_exposed_header_names = head.cors_exposed_header_names;
@@ -189,10 +187,9 @@ ResourceResponseHead::operator mojom::URLResponseHeadPtr() const {
       proxy_server, was_fetched_via_service_worker,
       was_fallback_required_by_service_worker, url_list_via_service_worker,
       response_type, service_worker_start_time, service_worker_ready_time,
-      is_in_cache_storage, cache_storage_cache_name, effective_connection_type,
-      cert_status, ssl_info, cors_exposed_header_names,
-      did_service_worker_navigation_preload, should_report_corb_blocking,
-      async_revalidation_requested, did_mime_sniff,
+      is_in_cache_storage, cache_storage_cache_name, cert_status, ssl_info,
+      cors_exposed_header_names, did_service_worker_navigation_preload,
+      should_report_corb_blocking, async_revalidation_requested, did_mime_sniff,
       is_signed_exchange_inner_response, was_in_prefetch_cache,
       intercepted_by_plugin, is_legacy_tls_version, auth_challenge_info,
       content_security_policy, request_start, response_start, origin_policy,

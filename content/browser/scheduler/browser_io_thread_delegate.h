@@ -28,12 +28,20 @@ class CONTENT_EXPORT BrowserIOThreadDelegate : public base::Thread::Delegate {
  public:
   using Handle = BrowserTaskQueues::Handle;
 
+  // Normally, creating a BrowserIOThreadDelegate relies on a
+  // BrowserTaskExecutor already existing to register it as the executor for the
+  // current (IO) thread. However, some tests create it in isolation, so we need
+  // to disable registering the executor to pass checks.
+  enum class BrowserTaskExecutorPresent { kYes, kNoForTesting };
+
   static std::unique_ptr<BrowserIOThreadDelegate> CreateForTesting(
       base::sequence_manager::SequenceManager* sequence_manager) {
     return base::WrapUnique(new BrowserIOThreadDelegate(sequence_manager));
   }
 
-  BrowserIOThreadDelegate();
+  explicit BrowserIOThreadDelegate(
+      BrowserTaskExecutorPresent browser_task_executor_present =
+          BrowserTaskExecutorPresent::kYes);
   ~BrowserIOThreadDelegate() override;
 
   scoped_refptr<base::SingleThreadTaskRunner> GetDefaultTaskRunner() override;
@@ -46,6 +54,10 @@ class CONTENT_EXPORT BrowserIOThreadDelegate : public base::Thread::Delegate {
   // Call this before handing this over to a base::Thread to allow blocking in
   // tests.
   void SetAllowBlockingForTesting() { allow_blocking_for_testing_ = true; }
+
+  bool browser_task_executor_present() const {
+    return browser_task_executor_present_ == BrowserTaskExecutorPresent::kYes;
+  }
 
   scoped_refptr<Handle> CreateHandle() { return task_queues_->GetHandle(); }
 
@@ -64,6 +76,8 @@ class CONTENT_EXPORT BrowserIOThreadDelegate : public base::Thread::Delegate {
 
   std::unique_ptr<BrowserTaskQueues> task_queues_;
   scoped_refptr<base::SingleThreadTaskRunner> default_task_runner_;
+
+  const BrowserTaskExecutorPresent browser_task_executor_present_;
 };
 
 }  // namespace content

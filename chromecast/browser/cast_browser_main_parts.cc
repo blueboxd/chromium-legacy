@@ -432,22 +432,9 @@ void CastBrowserMainParts::ToolkitInitialized() {
 #endif  // defined(USE_AURA)
 
 #if defined(OS_LINUX)
-  // Without this call, the FontConfig library gets implicitly initialized
-  // on the first call to FontConfig. Since it's not safe to initialize it
-  // concurrently from multiple threads, we explicitly initialize it here
-  // to prevent races when there are multiple renderer's querying the library:
-  // http://crbug.com/404311
-  // Also, implicit initialization can cause a long delay on the first
-  // rendering if the font cache has to be regenerated for some reason. Doing it
-  // explicitly here helps in cases where the browser process is starting up in
-  // the background (resources have not yet been granted to cast) since it
-  // prevents the long delay the user would have seen on first rendering. Note
-  // that future calls to FcInit() are safe no-ops per the FontConfig interface.
   base::FilePath dir_module;
   base::PathService::Get(base::DIR_MODULE, &dir_module);
   base::FilePath dir_font = dir_module.Append("fonts");
-
-  FcInit();
 
   const FcChar8 *dir_font_char8 = reinterpret_cast<const FcChar8*>(dir_font.value().data());
   if (FcConfigAppFontAddDir(nullptr, dir_font_char8) == FcFalse) {

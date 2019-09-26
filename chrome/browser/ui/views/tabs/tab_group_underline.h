@@ -6,15 +6,17 @@
 #define CHROME_BROWSER_UI_VIEWS_TABS_TAB_GROUP_UNDERLINE_H_
 
 #include "chrome/browser/ui/tabs/tab_group_id.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
-#include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "ui/views/view.h"
+
+class TabStrip;
 
 // View for tab group underlines in the tab strip, which are markers of group
 // members. There is one underline for each group, which is included in the tab
 // strip flow and positioned across all tabs in the group.
 class TabGroupUnderline : public views::View {
  public:
+  static constexpr int kStrokeThickness = 2;
+
   TabGroupUnderline(TabStrip* tab_strip, TabGroupId group);
 
   TabGroupId group() const { return group_; }
@@ -26,18 +28,18 @@ class TabGroupUnderline : public views::View {
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:
-  TabStrip* const tab_strip_;
-  const TabGroupId group_;
-
   // The underline color is the group color.
-  SkColor GetColor();
+  SkColor GetColor() const;
 
   // The underline starts at the left edge of the header chip.
-  int GetStart();
+  int GetStart() const;
 
   // The underline ends at the right edge of the last grouped tab's close
   // button.
-  int GetEnd();
+  int GetEnd() const;
+
+  TabStrip* const tab_strip_;
+  const TabGroupId group_;
 
   DISALLOW_COPY_AND_ASSIGN(TabGroupUnderline);
 };

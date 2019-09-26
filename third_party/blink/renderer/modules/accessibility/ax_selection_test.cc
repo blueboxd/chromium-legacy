@@ -1122,13 +1122,14 @@ TEST_F(AccessibilitySelectionTest, SelectEachConsecutiveCharacterInTextField) {
   ASSERT_NE(nullptr, input);
   ASSERT_TRUE(IsTextControl(input));
   TextControlElement& text_control = ToTextControl(*input);
-  ASSERT_LE(1u, text_control.value().length());
+  ASSERT_LE(1u, text_control.InnerEditorValue().length());
 
   const AXObject* ax_input = GetAXObjectByElementId("input");
   ASSERT_NE(nullptr, ax_input);
   ASSERT_EQ(ax::mojom::Role::kTextField, ax_input->RoleValue());
 
-  for (unsigned int i = 0; i < text_control.value().length() - 1; ++i) {
+  for (unsigned int i = 0; i < text_control.InnerEditorValue().length() - 1;
+       ++i) {
     AXSelection::Builder builder;
     AXSelection ax_selection =
         builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, i))
@@ -1137,7 +1138,7 @@ TEST_F(AccessibilitySelectionTest, SelectEachConsecutiveCharacterInTextField) {
 
     testing::Message message;
     message << "While selecting forward character "
-            << char{text_control.value()[i]} << " at position " << i
+            << char{text_control.InnerEditorValue()[i]} << " at position " << i
             << " in text field.";
     SCOPED_TRACE(message);
     EXPECT_TRUE(ax_selection.Select());
@@ -1147,7 +1148,7 @@ TEST_F(AccessibilitySelectionTest, SelectEachConsecutiveCharacterInTextField) {
     EXPECT_EQ("forward", text_control.selectionDirection());
   }
 
-  for (unsigned int i = text_control.value().length(); i > 0; --i) {
+  for (unsigned int i = text_control.InnerEditorValue().length(); i > 0; --i) {
     AXSelection::Builder builder;
     AXSelection ax_selection =
         builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, i))
@@ -1156,7 +1157,83 @@ TEST_F(AccessibilitySelectionTest, SelectEachConsecutiveCharacterInTextField) {
 
     testing::Message message;
     message << "While selecting backward character "
-            << char{text_control.value()[i]} << " at position " << i
+            << char{text_control.InnerEditorValue()[i]} << " at position " << i
+            << " in text field.";
+    SCOPED_TRACE(message);
+    EXPECT_TRUE(ax_selection.Select());
+
+    EXPECT_EQ(i - 1, text_control.selectionStart());
+    EXPECT_EQ(i, text_control.selectionEnd());
+    EXPECT_EQ("backward", text_control.selectionDirection());
+  }
+}
+
+TEST_F(AccessibilitySelectionTest,
+       SelectEachConsecutiveCharacterInEmailFieldWithInvalidAddress) {
+  GetPage().GetSettings().SetScriptEnabled(true);
+  String valid_email = "valid@example.com";
+  SetBodyInnerHTML(R"HTML(
+      <input id="input" type="email" value=)HTML" +
+                   valid_email + R"HTML(>
+      )HTML");
+
+  // Add three spaces to the start of the address to make it invalid.
+  Element* const script_element =
+      GetDocument().CreateRawElement(html_names::kScriptTag);
+  ASSERT_NE(nullptr, script_element);
+  script_element->setTextContent(R"SCRIPT(
+      let input = document.querySelector('input');
+      input.focus();
+      input.value = input.value.padStart(3, ' ');
+      input.selectionStart = 0;
+      input.selectionEnd = input.value.length;
+      )SCRIPT");
+  GetDocument().body()->AppendChild(script_element);
+  UpdateAllLifecyclePhasesForTest();
+
+  Element* const input = GetDocument().QuerySelector("input");
+  ASSERT_NE(nullptr, input);
+  ASSERT_TRUE(IsTextControl(input));
+  TextControlElement& text_control = ToTextControl(*input);
+  // The "value" attribute should not contain the extra spaces.
+  ASSERT_EQ(valid_email.length(), text_control.value().length());
+
+  const AXObject* ax_input = GetAXObjectByElementId("input");
+  ASSERT_NE(nullptr, ax_input);
+  ASSERT_EQ(ax::mojom::Role::kTextField, ax_input->RoleValue());
+
+  // The address can still be navigated using cursor left / right, even though
+  // it's invalid.
+  for (unsigned int i = 0; i < text_control.InnerEditorValue().length() - 1;
+       ++i) {
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, i))
+            .SetExtent(AXPosition::CreatePositionInTextObject(*ax_input, i + 1))
+            .Build();
+
+    testing::Message message;
+    message << "While selecting forward character "
+            << char{text_control.InnerEditorValue()[i]} << " at position " << i
+            << " in text field.";
+    SCOPED_TRACE(message);
+    EXPECT_TRUE(ax_selection.Select());
+
+    EXPECT_EQ(i, text_control.selectionStart());
+    EXPECT_EQ(i + 1, text_control.selectionEnd());
+    EXPECT_EQ("forward", text_control.selectionDirection());
+  }
+
+  for (unsigned int i = text_control.InnerEditorValue().length(); i > 0; --i) {
+    AXSelection::Builder builder;
+    AXSelection ax_selection =
+        builder.SetBase(AXPosition::CreatePositionInTextObject(*ax_input, i))
+            .SetExtent(AXPosition::CreatePositionInTextObject(*ax_input, i - 1))
+            .Build();
+
+    testing::Message message;
+    message << "While selecting backward character "
+            << char{text_control.InnerEditorValue()[i]} << " at position " << i
             << " in text field.";
     SCOPED_TRACE(message);
     EXPECT_TRUE(ax_selection.Select());

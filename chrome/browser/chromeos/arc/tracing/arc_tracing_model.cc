@@ -313,7 +313,7 @@ bool HandleGpuFreq(ValueEvents* value_events,
     return false;
   }
 
-  value_events->emplace_back(timestamp, ArcValueEvent::Type::kGpuFreq,
+  value_events->emplace_back(timestamp, ArcValueEvent::Type::kGpuFrequency,
                              new_freq);
   return true;
 }

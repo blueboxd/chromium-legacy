@@ -356,7 +356,8 @@ class CONTENT_EXPORT ContentBrowserClient {
       network::mojom::NetworkContext* network_context,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
-      const url::Origin& request_initiator);
+      const url::Origin& request_initiator,
+      const base::Optional<net::NetworkIsolationKey>& network_isolation_key);
 
   // Returns a list additional WebUI schemes, if any.  These additional schemes
   // act as aliases to the chrome: scheme.  The additional schemes may or may
@@ -541,9 +542,14 @@ class CONTENT_EXPORT ContentBrowserClient {
                              BrowserContext* context);
 
   // Allows the embedder to control if a service worker is allowed at the given
-  // |scope| and can be accessed from |first_party|. This function is called
-  // whenever an attempt is made to create or access the persistent state of the
-  // registration, or to start the service worker.
+  // |scope| and can be accessed from |site_for_cookies| and |top_frame_origin|.
+  // |site_for_cookies| is used to determine whether the request is done in a
+  // third-party context. |top_frame_origin| is used to check if any
+  // content_setting affects this request. Only calls that are made within the
+  // context of a tab can provide a proper |top_frame_origin|, otherwise the
+  // scope of the service worker is used.
+  // This function is called whenever an attempt is made to create or access the
+  // persistent state of the registration, or to start the service worker.
   //
   // If non-empty, |script_url| is the script of the service worker that is
   // attempted to be registered or started. If it's empty, an attempt is being
@@ -555,14 +561,16 @@ class CONTENT_EXPORT ContentBrowserClient {
   // This is called on the IO thread.
   virtual bool AllowServiceWorkerOnIO(
       const GURL& scope,
-      const GURL& first_party,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       ResourceContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter);
   // Same but for the UI thread.
   virtual bool AllowServiceWorkerOnUI(
       const GURL& scope,
-      const GURL& first_party,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       BrowserContext* context,
       base::RepeatingCallback<WebContents*()> wc_getter);
@@ -570,13 +578,15 @@ class CONTENT_EXPORT ContentBrowserClient {
   // Allow the embedder to control if a Shared Worker can be connected from a
   // given tab.
   // This is called on the UI thread.
-  virtual bool AllowSharedWorker(const GURL& worker_url,
-                                 const GURL& main_frame_url,
-                                 const std::string& name,
-                                 const url::Origin& constructor_origin,
-                                 BrowserContext* context,
-                                 int render_process_id,
-                                 int render_frame_id);
+  virtual bool AllowSharedWorker(
+      const GURL& worker_url,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin,
+      const std::string& name,
+      const url::Origin& constructor_origin,
+      BrowserContext* context,
+      int render_process_id,
+      int render_frame_id);
 
   // Allow the embedder to control if a page/worker with |scheme| URL can create
   // a cross-origin shared workers.

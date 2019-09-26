@@ -60,7 +60,8 @@ class FindRequestManagerTest : public ContentBrowserTest,
   // Navigates to |url| and waits for it to finish loading.
   void LoadAndWait(const std::string& url) {
     TestNavigationObserver navigation_observer(contents());
-    NavigateToURL(shell(), embedded_test_server()->GetURL("a.com", url));
+    EXPECT_TRUE(
+        NavigateToURL(shell(), embedded_test_server()->GetURL("a.com", url)));
     ASSERT_TRUE(navigation_observer.last_navigation_succeeded());
   }
 
@@ -429,7 +430,7 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_AddFrame) {
 // matches.
 IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(AddFrameAfterNoMatches)) {
   TestNavigationObserver navigation_observer(contents());
-  NavigateToURL(shell(), GURL("about:blank"));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
 
   auto default_options = blink::mojom::FindOptions::New();
@@ -622,7 +623,7 @@ IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, DetachFrameWithMatch) {
 
 IN_PROC_BROWSER_TEST_F(FindRequestManagerTest, MAYBE(FindInPage_Issue644448)) {
   TestNavigationObserver navigation_observer(contents());
-  NavigateToURL(shell(), GURL("about:blank"));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL("about:blank")));
   EXPECT_TRUE(navigation_observer.last_navigation_succeeded());
 
   auto default_options = blink::mojom::FindOptions::New();

@@ -65,7 +65,6 @@ class MockAutofillAgent : public AutofillAgent {
                       password_autofill_agent,
                       password_generation_agent,
                       registry) {
-    ON_CALL(*this, IsUserGesture()).WillByDefault(Return(true));
   }
 
   ~MockAutofillAgent() override {}
@@ -76,8 +75,6 @@ class MockAutofillAgent : public AutofillAgent {
     run_loop_->Run();
     run_loop_.reset();
   }
-
-  MOCK_CONST_METHOD0(IsUserGesture, bool());
 
  private:
   void DidAssociateFormControlsDynamically() override {
@@ -100,8 +97,7 @@ ChromeRenderViewTest::ChromeRenderViewTest()
       chrome_render_thread_(NULL) {
 }
 
-ChromeRenderViewTest::~ChromeRenderViewTest() {
-}
+ChromeRenderViewTest::~ChromeRenderViewTest() = default;
 
 void ChromeRenderViewTest::SetUp() {
   ChromeUnitTestSuite::InitializeProviders();
@@ -175,16 +171,6 @@ void ChromeRenderViewTest::InitChromeContentRendererClient(
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   client->InitSpellCheck();
 #endif
-}
-
-void ChromeRenderViewTest::EnableUserGestureSimulationForAutofill() {
-  EXPECT_CALL(*(static_cast<MockAutofillAgent*>(autofill_agent_)),
-              IsUserGesture()).WillRepeatedly(Return(true));
-}
-
-void ChromeRenderViewTest::DisableUserGestureSimulationForAutofill() {
-  EXPECT_CALL(*(static_cast<MockAutofillAgent*>(autofill_agent_)),
-              IsUserGesture()).WillRepeatedly(Return(false));
 }
 
 void ChromeRenderViewTest::WaitForAutofillDidAssociateFormControl() {

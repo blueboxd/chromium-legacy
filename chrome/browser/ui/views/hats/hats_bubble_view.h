@@ -62,7 +62,7 @@ class HatsBubbleView : public views::BubbleDialogDelegateView {
   void OnWidgetDestroying(views::Widget* widget) override;
 
   // views::View:
-  void Layout() override;
+  void OnBoundsChanged(const gfx::Rect& previous_bounds) override;
 
  private:
   HatsBubbleView(Browser* browser,

@@ -15,6 +15,7 @@ constexpr int kMediaListMaxHeight = 478;
 }  // anonymous namespace
 
 MediaNotificationListView::MediaNotificationListView() {
+  SetBackgroundColor(SK_ColorTRANSPARENT);
   SetContents(std::make_unique<views::View>());
   contents()->SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical));

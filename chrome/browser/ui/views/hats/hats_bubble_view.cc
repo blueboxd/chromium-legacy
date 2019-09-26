@@ -172,15 +172,17 @@ void HatsBubbleView::OnWidgetDestroying(views::Widget* widget) {
   instance_ = nullptr;
 }
 
-void HatsBubbleView::Layout() {
+void HatsBubbleView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
   auto* frame_view = GetBubbleFrameView();
   if (frame_view && frame_view->title()) {
     // Align bubble content to the beginning of the title text.
     gfx::Point point(frame_view->title()->x(), 0);
     views::View::ConvertPointToTarget(frame_view, GetWidget()->client_view(),
                                       &point);
-    SetX(point.x());
+    auto dialog_margins = margins();
+    dialog_margins.set_left(point.x());
+    set_margins(dialog_margins);
   }
 
-  views::BubbleDialogDelegateView::Layout();
+  views::BubbleDialogDelegateView::OnBoundsChanged(previous_bounds);
 }

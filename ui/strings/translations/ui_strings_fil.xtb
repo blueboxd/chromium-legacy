@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Notification Center, <ph name="UNREAD_NOTIFICATION_COUNT" /> (na) hindi pa nababasang notification</translation>
 <translation id="4730374152663651037">MADALAS GAMITIN</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 buwan ang natitira}one{# buwan ang natitira}other{# na buwan ang natitira}}</translation>
-<translation id="4841881773802181781">Paglagay</translation>
 <translation id="4881695831933465202">Buksan</translation>
 <translation id="4888938634149558681">Tumawag</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 segundo}one{# segundo}other{# na segundo}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">I-save ang File</translation>
 <translation id="6656912866303152668">Tiyaking naka-on sa <ph name="TARGET_DEVICE_NAME" /> ang pag-sync sa Chrome, at pagkatapos ay subukang ipadala ulit.</translation>
 <translation id="6699343763173986273">Susunod na Track ng Media</translation>
-<translation id="673773751041746814">Pag-delete</translation>
 <translation id="6779314412797872738">Para magpadala ng numero sa iyong Android phone mula rito, <ph name="TROUBLESHOOT_LINK" /> para sa parehong device sa mga setting.</translation>
 <translation id="6786750046913594791">Isara ang folder</translation>
 <translation id="6808150112686056157">Media Ihinto</translation>

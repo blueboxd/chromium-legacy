@@ -28,11 +28,14 @@ public class SmokeTest {
         WebLayerShellActivity activity = mActivityTestRule.launchShellWithUrl("about:blank");
         Assert.assertNotNull(activity);
 
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { activity.getBrowserFragmentController().setSupportsEmbedding(true); });
+
         CountDownLatch latch = new CountDownLatch(1);
         String url = "data:text,foo";
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            activity.getBrowserFragmentImpl().setSupportsEmbedding(true).addCallback(
+            activity.getBrowserFragmentController().setSupportsEmbedding(true).addCallback(
                     (Boolean result) -> {
                         Assert.assertTrue(result);
                         mActivityTestRule.loadUrl(url);

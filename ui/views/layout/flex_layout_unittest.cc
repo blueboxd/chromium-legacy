@@ -1859,6 +1859,69 @@ TEST_F(FlexLayoutTest,
   EXPECT_EQ(kLargeSize, child2->size());
 }
 
+TEST_F(FlexLayoutTest, Layout_Flex_TwoChildViews_FlexAlignment_Start) {
+  const FlexSpecification float_start =
+      FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferred,
+                                     MaximumFlexSizeRule::kUnbounded)
+          .WithAlignment(LayoutAlignment::kStart);
+
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetInteriorMargin(Insets(5));
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(5));
+  View* child1 = AddChild(Size(10, 10));
+  AddChild(Size(10, 10));
+  child1->SetProperty(views::kFlexBehaviorKey, float_start);
+
+  host_->SetSize(Size(50, 20));
+  const std::vector<Rect> expected_bounds{{5, 5, 10, 10}, {35, 5, 10, 10}};
+  EXPECT_EQ(expected_bounds, GetChildBounds());
+}
+
+TEST_F(FlexLayoutTest, Layout_Flex_TwoChildViews_FlexAlignment_End) {
+  const FlexSpecification float_start =
+      FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferred,
+                                     MaximumFlexSizeRule::kUnbounded)
+          .WithAlignment(LayoutAlignment::kEnd);
+
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetInteriorMargin(Insets(5));
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(5));
+  View* child1 = AddChild(Size(10, 10));
+  AddChild(Size(10, 10));
+  child1->SetProperty(views::kFlexBehaviorKey, float_start);
+
+  host_->SetSize(Size(50, 20));
+  const std::vector<Rect> expected_bounds{{20, 5, 10, 10}, {35, 5, 10, 10}};
+  EXPECT_EQ(expected_bounds, GetChildBounds());
+}
+
+TEST_F(FlexLayoutTest, Layout_Flex_TwoChildViews_FlexAlignment_Center) {
+  const FlexSpecification float_start =
+      FlexSpecification::ForSizeRule(MinimumFlexSizeRule::kPreferred,
+                                     MaximumFlexSizeRule::kUnbounded)
+          .WithAlignment(LayoutAlignment::kCenter);
+
+  layout_->SetOrientation(LayoutOrientation::kHorizontal);
+  layout_->SetCollapseMargins(true);
+  layout_->SetInteriorMargin(Insets(5));
+  layout_->SetMainAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetCrossAxisAlignment(LayoutAlignment::kStart);
+  layout_->SetDefault(views::kMarginsKey, gfx::Insets(5));
+  View* child1 = AddChild(Size(10, 10));
+  AddChild(Size(10, 10));
+  child1->SetProperty(views::kFlexBehaviorKey, float_start);
+
+  host_->SetSize(Size(50, 20));
+  const std::vector<Rect> expected_bounds{{12, 5, 10, 10}, {35, 5, 10, 10}};
+  EXPECT_EQ(expected_bounds, GetChildBounds());
+}
+
 TEST_F(FlexLayoutTest, Layout_FlexRule_CustomFlexRule) {
   constexpr int kFullSize = 50;
   constexpr int kHalfSize = 25;

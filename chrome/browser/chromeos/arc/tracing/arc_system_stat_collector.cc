@@ -4,14 +4,20 @@
 
 #include "chrome/browser/chromeos/arc/tracing/arc_system_stat_collector.h"
 
+#include <fcntl.h>
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "base/bind.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
+#include "base/files/scoped_file.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
 #include "base/task/post_task.h"
 #include "base/task_runner_util.h"
+#include "base/threading/scoped_blocking_call.h"
 #include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "chrome/browser/chromeos/arc/tracing/arc_system_model.h"
@@ -24,6 +30,20 @@ namespace {
 // Interval to update system stats.
 constexpr base::TimeDelta kSystemStatUpdateInterval =
     base::TimeDelta::FromMilliseconds(10);
+
+const base::FilePath::CharType kZramPath[] =
+    FILE_PATH_LITERAL("/sys/block/zram0/stat");
+const base::FilePath::CharType kMemoryInfoPath[] =
+    FILE_PATH_LITERAL("/proc/meminfo");
+#if defined(ARCH_CPU_ARM_FAMILY)
+const base::FilePath::CharType kGemInfoPath[] =
+    FILE_PATH_LITERAL("/run/debugfs_gpu/exynos_gem_objects");
+#else
+const base::FilePath::CharType kGemInfoPath[] =
+    FILE_PATH_LITERAL("/run/debugfs_gpu/i915_gem_objects");
+#endif
+const base::FilePath::CharType kCpuFrequencyPath[] =
+    FILE_PATH_LITERAL("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq");
 
 bool IsWhitespace(char c) {
   return c == ' ' || c == '\t' || c == '\n';
@@ -90,6 +110,15 @@ const base::FilePath& GetCpuTemperaturePathOnFileThread() {
   return instance->path();
 }
 
+enum SystemReader {
+  kZram = 0,
+  kMemoryInfo,
+  kGemInfo,
+  kCpuTemperature,
+  kCpuFrequency,
+  kTotal
+};
+
 }  // namespace
 
 struct ArcSystemStatCollector::Sample {
@@ -102,6 +131,59 @@ struct ArcSystemStatCollector::Sample {
   int gem_objects = 0;
   int gem_size_kb = 0;
   int cpu_temperature = std::numeric_limits<int>::min();
+  int cpu_frequency = 0;
+};
+
+struct ArcSystemStatCollector::SystemReadersContext {
+  // Creates and initializes |SystemReadersContext|. Must be called on
+  // background thread.
+  static std::unique_ptr<SystemReadersContext> InitOnBackgroundThread() {
+    std::unique_ptr<SystemReadersContext> context =
+        std::make_unique<SystemReadersContext>();
+
+    context->system_readers[SystemReader::kZram].reset(
+        open(kZramPath, O_RDONLY));
+    if (!context->system_readers[SystemReader::kZram].is_valid()) {
+      LOG(ERROR) << "Failed to open zram stat file: " << kZramPath;
+    }
+
+    context->system_readers[SystemReader::kMemoryInfo].reset(
+        open(kMemoryInfoPath, O_RDONLY));
+    if (!context->system_readers[SystemReader::kMemoryInfo].is_valid()) {
+      LOG(ERROR) << "Failed to open mem info file: " << kMemoryInfoPath;
+    }
+
+    context->system_readers[SystemReader::kGemInfo].reset(
+        open(kGemInfoPath, O_RDONLY));
+    if (!context->system_readers[SystemReader::kGemInfo].is_valid()) {
+      LOG(ERROR) << "Failed to open gem info file: " << kGemInfoPath;
+    }
+
+    const base::FilePath& cpu_temp_path = GetCpuTemperaturePathOnFileThread();
+    context->system_readers[SystemReader::kCpuTemperature].reset(
+        open(cpu_temp_path.value().c_str(), O_RDONLY));
+    if (!context->system_readers[SystemReader::kCpuTemperature].is_valid()) {
+      LOG(ERROR) << "Failed to open cpu temperature file: " << cpu_temp_path.value();
+    }
+
+    context->system_readers[SystemReader::kCpuFrequency].reset(
+        open(kCpuFrequencyPath, O_RDONLY));
+    if (!context->system_readers[SystemReader::kCpuFrequency].is_valid()) {
+      LOG(ERROR) << "Failed to open cpu frequency file: " << kCpuFrequencyPath;
+    }
+
+    return context;
+  }
+
+  // Releases |context|. Must be called on background thread.
+  static void FreeOnBackgroundThread(
+      std::unique_ptr<ArcSystemStatCollector::SystemReadersContext> context) {
+    DCHECK(context);
+    context.reset();
+  }
+
+  base::ScopedFD system_readers[SystemReader::kTotal];
+  RuntimeFrame current_frame;
 };
 
 // static
@@ -114,11 +196,13 @@ constexpr int ArcSystemStatCollector::kMemInfoColumns[];
 constexpr int ArcSystemStatCollector::kGemInfoColumns[];
 
 // static
-constexpr int ArcSystemStatCollector::kCpuTempInfoColumns[];
+constexpr int ArcSystemStatCollector::kOneValueColumns[];
 
 ArcSystemStatCollector::ArcSystemStatCollector() {}
 
-ArcSystemStatCollector::~ArcSystemStatCollector() = default;
+ArcSystemStatCollector::~ArcSystemStatCollector() {
+  FreeSystemReadersContext();
+}
 
 void ArcSystemStatCollector::Start(const base::TimeDelta& max_interval) {
   const size_t sample_count =
@@ -131,17 +215,19 @@ void ArcSystemStatCollector::Start(const base::TimeDelta& max_interval) {
 
   background_task_runner_ = base::CreateSequencedTaskRunner(
       {base::ThreadPool(), base::MayBlock(), base::TaskPriority::USER_VISIBLE});
-  timer_.Start(
-      FROM_HERE, kSystemStatUpdateInterval,
-      base::BindRepeating(&ArcSystemStatCollector::ScheduleSystemStatUpdate,
-                          base::Unretained(this)));
+
+  base::PostTaskAndReplyWithResult(
+      background_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&SystemReadersContext::InitOnBackgroundThread),
+      base::BindOnce(&ArcSystemStatCollector::OnInitOnUiThread,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 void ArcSystemStatCollector::Stop() {
   weak_ptr_factory_.InvalidateWeakPtrs();
   background_task_runner_.reset();
   timer_.Stop();
-  request_scheduled_ = false;
+  FreeSystemReadersContext();
 }
 
 void ArcSystemStatCollector::Flush(const base::TimeTicks& min_timestamp,
@@ -165,7 +251,9 @@ void ArcSystemStatCollector::Flush(const base::TimeTicks& min_timestamp,
   ArcValueEventTrimmer swap_wait(&system_model->memory_events(),
                                  ArcValueEvent::Type::kSwapWait);
   ArcValueEventTrimmer cpu_temperature(&system_model->memory_events(),
-                                       ArcValueEvent::Type::kCpuTemp);
+                                       ArcValueEvent::Type::kCpuTemperature);
+  ArcValueEventTrimmer cpu_frequency(&system_model->memory_events(),
+                                     ArcValueEvent::Type::kCpuFrequency);
   while (sample_index < write_index_) {
     const Sample& sample = samples_[sample_index % samples_.size()];
     ++sample_index;
@@ -184,6 +272,8 @@ void ArcSystemStatCollector::Flush(const base::TimeTicks& min_timestamp,
     swap_wait.MaybeAdd(timestamp, sample.swap_waiting_time_ms);
     if (sample.cpu_temperature > std::numeric_limits<int>::min())
       cpu_temperature.MaybeAdd(timestamp, sample.cpu_temperature);
+    if (sample.cpu_frequency > 0)
+      cpu_frequency.MaybeAdd(timestamp, sample.cpu_frequency);
   }
   // Trimmer may break time sequence for events of different types. However
   // time sequence of events of the same type should be preserved.
@@ -195,114 +285,151 @@ void ArcSystemStatCollector::Flush(const base::TimeTicks& min_timestamp,
 }
 
 void ArcSystemStatCollector::ScheduleSystemStatUpdate() {
-  if (request_scheduled_) {
+  if (!context_) {
     if (missed_update_warning_left_-- > 0)
       LOG(WARNING) << "Dropping update, already pending";
     return;
   }
-  base::TaskRunner* task_runner = background_task_runner_.get();
   base::PostTaskAndReplyWithResult(
-      task_runner, FROM_HERE,
-      base::BindOnce(&ArcSystemStatCollector::ReadSystemStatOnBackgroundThread),
+      background_task_runner_.get(), FROM_HERE,
+      base::BindOnce(&ArcSystemStatCollector::ReadSystemStatOnBackgroundThread,
+                     std::move(context_)),
       base::BindOnce(&ArcSystemStatCollector::UpdateSystemStatOnUiThread,
                      weak_ptr_factory_.GetWeakPtr()));
-  request_scheduled_ = true;
+}
+
+void ArcSystemStatCollector::FreeSystemReadersContext() {
+  if (!context_)
+    return;
+  base::PostTask(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(&SystemReadersContext::FreeOnBackgroundThread,
+                     std::move(context_)));
+}
+
+void ArcSystemStatCollector::OnInitOnUiThread(
+    std::unique_ptr<ArcSystemStatCollector::SystemReadersContext> context) {
+  DCHECK(!context_ && context);
+  context_ = std::move(context);
+
+  timer_.Start(
+      FROM_HERE, kSystemStatUpdateInterval,
+      base::BindRepeating(&ArcSystemStatCollector::ScheduleSystemStatUpdate,
+                          base::Unretained(this)));
 }
 
 // static
-ArcSystemStatCollector::RuntimeFrame
-ArcSystemStatCollector::ReadSystemStatOnBackgroundThread() {
-  const base::FilePath zram_stat_path(
-      FILE_PATH_LITERAL("/sys/block/zram0/stat"));
-  const base::FilePath mem_info_path(FILE_PATH_LITERAL("/proc/meminfo"));
-
-  ArcSystemStatCollector::RuntimeFrame current_frame;
-  if (!ParseStatFile(zram_stat_path, kZramStatColumns,
-                     current_frame.zram_stat)) {
-    memset(current_frame.zram_stat, 0, sizeof(current_frame.zram_stat));
+std::unique_ptr<ArcSystemStatCollector::SystemReadersContext>
+ArcSystemStatCollector::ReadSystemStatOnBackgroundThread(
+    std::unique_ptr<SystemReadersContext> context) {
+  DCHECK(context);
+  if (!context->system_readers[SystemReader::kZram].is_valid() ||
+      !ParseStatFile(context->system_readers[SystemReader::kZram].get(),
+                     kZramStatColumns, context->current_frame.zram_stat)) {
+    memset(context->current_frame.zram_stat, 0,
+           sizeof(context->current_frame.zram_stat));
     static bool error_reported = false;
     if (!error_reported) {
-      LOG(ERROR) << "Failed to read zram stat file: " << zram_stat_path.value();
+      LOG(ERROR) << "Failed to read zram stat file: " << kZramPath;
       error_reported = true;
     }
   }
 
-  if (!ParseStatFile(mem_info_path, kMemInfoColumns, current_frame.mem_info)) {
-    memset(current_frame.mem_info, 0, sizeof(current_frame.mem_info));
+  if (!context->system_readers[SystemReader::kMemoryInfo].is_valid() ||
+      !ParseStatFile(context->system_readers[SystemReader::kMemoryInfo].get(),
+                     kMemInfoColumns, context->current_frame.mem_info)) {
+    memset(context->current_frame.mem_info, 0,
+           sizeof(context->current_frame.mem_info));
     static bool error_reported = false;
     if (!error_reported) {
-      LOG(ERROR) << "Failed to read mem info file: " << mem_info_path.value();
+      LOG(ERROR) << "Failed to read mem info file: " << kMemoryInfoPath;
       error_reported = true;
     }
   }
 
-#if defined(ARCH_CPU_ARM_FAMILY)
-  const base::FilePath gem_info_path(
-      FILE_PATH_LITERAL("/run/debugfs_gpu/exynos_gem_objects"));
-#else
-  const base::FilePath gem_info_path(
-      FILE_PATH_LITERAL("/run/debugfs_gpu/i915_gem_objects"));
-#endif
-  if (!ParseStatFile(gem_info_path, kGemInfoColumns, current_frame.gem_info)) {
-    memset(current_frame.gem_info, 0, sizeof(current_frame.gem_info));
+  if (!context->system_readers[SystemReader::kGemInfo].is_valid() ||
+      !ParseStatFile(context->system_readers[SystemReader::kGemInfo].get(),
+                     kGemInfoColumns, context->current_frame.gem_info)) {
+    memset(context->current_frame.gem_info, 0,
+           sizeof(context->current_frame.gem_info));
     static bool error_reported = false;
     if (!error_reported) {
-      LOG(ERROR) << "Failed to read gem info file: " << gem_info_path.value();
+      LOG(ERROR) << "Failed to read gem info file: " << kGemInfoPath;
       error_reported = true;
     }
   }
 
-  const base::FilePath& cpu_temp_path = GetCpuTemperaturePathOnFileThread();
-  if (cpu_temp_path.empty() ||
-      !ParseStatFile(cpu_temp_path, kCpuTempInfoColumns,
-                     &current_frame.cpu_temperature_)) {
-    current_frame.cpu_temperature_ = std::numeric_limits<int>::min();
+  if (!context->system_readers[SystemReader::kCpuTemperature].is_valid() ||
+      !ParseStatFile(
+          context->system_readers[SystemReader::kCpuTemperature].get(),
+          kOneValueColumns, &context->current_frame.cpu_temperature)) {
+    context->current_frame.cpu_temperature = std::numeric_limits<int>::min();
+    static bool error_reported = false;
+    if (!error_reported) {
+      LOG(ERROR) << "Failed to read cpu temperature : "
+                 << GetCpuTemperaturePathOnFileThread();
+      error_reported = true;
+    }
   }
 
-  return current_frame;
+  if (!context->system_readers[SystemReader::kCpuFrequency].is_valid() ||
+      !ParseStatFile(context->system_readers[SystemReader::kCpuFrequency].get(),
+                     kOneValueColumns, &context->current_frame.cpu_frequency)) {
+    context->current_frame.cpu_frequency = 0;
+    static bool error_reported = false;
+    if (!error_reported) {
+      LOG(ERROR) << "Failed to read cpu frequency : " << kCpuFrequencyPath;
+      error_reported = true;
+    }
+  }
+
+  return context;
 }
 
 void ArcSystemStatCollector::UpdateSystemStatOnUiThread(
-    RuntimeFrame current_frame) {
-  DCHECK(request_scheduled_);
-  request_scheduled_ = false;
+    std::unique_ptr<SystemReadersContext> context) {
+  DCHECK(!context_ && context);
   DCHECK(!samples_.empty());
   Sample& current_sample = samples_[write_index_ % samples_.size()];
   current_sample.timestamp = base::TimeTicks::Now();
-  current_sample.mem_total_kb = current_frame.mem_info[0];
-  // Total - available.
+  current_sample.mem_total_kb = context->current_frame.mem_info[0];
+  // kTotal - available.
   current_sample.mem_used_kb =
-      current_frame.mem_info[0] - current_frame.mem_info[1];
-  current_sample.gem_objects = current_frame.gem_info[0];
-  current_sample.gem_size_kb = current_frame.gem_info[1] / 1024;
+      context->current_frame.mem_info[0] - context->current_frame.mem_info[1];
+  current_sample.gem_objects = context->current_frame.gem_info[0];
+  current_sample.gem_size_kb = context->current_frame.gem_info[1] / 1024;
 
   // We calculate delta, so ignore first update.
   if (write_index_) {
     current_sample.swap_sectors_read =
-        current_frame.zram_stat[0] - previous_frame_.zram_stat[0];
+        context->current_frame.zram_stat[0] - previous_frame_.zram_stat[0];
     current_sample.swap_sectors_write =
-        current_frame.zram_stat[1] - previous_frame_.zram_stat[1];
+        context->current_frame.zram_stat[1] - previous_frame_.zram_stat[1];
     current_sample.swap_waiting_time_ms =
-        current_frame.zram_stat[2] - previous_frame_.zram_stat[2];
+        context->current_frame.zram_stat[2] - previous_frame_.zram_stat[2];
   }
-  current_sample.cpu_temperature = current_frame.cpu_temperature_;
+  current_sample.cpu_temperature = context->current_frame.cpu_temperature;
+  current_sample.cpu_frequency = context->current_frame.cpu_frequency;
   DCHECK_GE(current_sample.swap_sectors_read, 0);
   DCHECK_GE(current_sample.swap_sectors_write, 0);
   DCHECK_GE(current_sample.swap_waiting_time_ms, 0);
   DCHECK_GE(current_sample.mem_total_kb, 0);
   DCHECK_GE(current_sample.mem_used_kb, 0);
-  previous_frame_ = current_frame;
+  previous_frame_ = context->current_frame;
   ++write_index_;
+
+  context_ = std::move(context);
 }
 
-bool ParseStatFile(const base::FilePath& path,
-                   const int* columns,
-                   int64_t* output) {
+bool ParseStatFile(int fd, const int* columns, int64_t* output) {
   char buffer[128];
-  const int read = base::ReadFile(path, buffer, sizeof(buffer) - 1);
-  if (read < 0)
+  if (lseek(fd, 0, SEEK_SET))
     return false;
-  buffer[read] = 0;
+  const int read_bytes = read(fd, buffer, sizeof(buffer) - 1);
+  if (read_bytes < 0)
+    return false;
+  buffer[read_bytes] = 0;
   int column_index = 0;
   const char* scan = buffer;
   while (true) {

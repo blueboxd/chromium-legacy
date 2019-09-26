@@ -80,6 +80,10 @@ void ErrorScreenHandler::SetShowConnectingIndicator(bool value) {
   CallJS("login.ErrorMessageScreen.showConnectingIndicator", value);
 }
 
+void ErrorScreenHandler::SetIsPersistentError(bool is_persistent) {
+  CallJS("login.ErrorMessageScreen.setIsPersistentError", is_persistent);
+}
+
 void ErrorScreenHandler::SetUIState(NetworkError::UIState ui_state) {
   CallJS("login.ErrorMessageScreen.setUIState", static_cast<int>(ui_state));
 }

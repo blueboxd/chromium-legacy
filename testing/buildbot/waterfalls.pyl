@@ -53,12 +53,30 @@
           ],
         },
       },
+      'chromeos-eve-google-rel': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+        'test_suites': {
+          'gtest_tests': 'chromeos_device_tests',
+        },
+        'swarming': {
+          'dimension_sets': [
+            {
+              'os': 'ChromeOS',
+              'device_type': 'eve',
+              'pool': 'luci.chrome.cros-dut',
+            },
+          ],
+        },
+        'os_type': 'chromeos'
+      },
       'chromeos-kevin-google-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
         ],
         'test_suites': {
-          'gtest_tests': 'chromeos_device_kevin_tests',
+          'gtest_tests': 'chromeos_device_tests',
         },
         'swarming': {
           'dimension_sets': [
@@ -641,26 +659,15 @@
   {
     'name': 'chromium.android.fyi',
     'machines': {
-      'Android WebView O NetworkService (dbg)': {
+      'Android WebView P FYI (rel)': {
+        'mixins': [
+          'pie_fleet',
+          'walleye',
+        ],
         'test_suites': {
           'gtest_tests': 'webview_cts_tests_gtest',
         },
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_webview_CTS_test.filter',
-          '--enable-features=NetworkService,NetworkServiceInProcess',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'device_os': 'OPR3.170623.008',
-              'device_os_flavor': 'google',
-              'device_type': 'marlin',
-              'os': 'Android',
-            },
-          ],
-        },
         'use_swarming': True,
-        'use_android_presentation': True,
         'os_type': 'android',
       },
       'Memory Infra Tester': {
@@ -769,7 +776,7 @@
           ],
         },
         'test_suites': {
-          'gtest_tests': 'chromeos_device_kevin_tests',
+          'gtest_tests': 'chromeos_device_tests',
           'isolated_scripts': 'chromeos_remote_device_isolated_tests',
         },
         'os_type': 'chromeos',
@@ -2758,7 +2765,7 @@
           'linux_intel_hd_630',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_linux_skia_renderer_gtests',
+          'gtest_tests': 'gpu_fyi_vulkan_gtests',
           'isolated_scripts': 'gpu_blink_web_tests',
           'gpu_telemetry_tests': 'gpu_skia_renderer_telemetry_tests',
         },
@@ -2770,7 +2777,7 @@
           'linux_nvidia_quadro_p400',
         ],
         'test_suites': {
-          'gtest_tests': 'gpu_fyi_linux_skia_renderer_gtests',
+          'gtest_tests': 'gpu_fyi_vulkan_gtests',
           'isolated_scripts': 'gpu_blink_web_tests',
           'gpu_telemetry_tests': 'gpu_skia_renderer_telemetry_tests',
         },
@@ -4413,6 +4420,7 @@
         ],
         'test_suites': {
           'gtest_tests': 'android_lollipop_marshmallow_gtests',
+          'junit_tests': 'chromium_junit_tests',
           'isolated_scripts': 'marshmallow_isolated_scripts',
         },
         'os_type': 'android',

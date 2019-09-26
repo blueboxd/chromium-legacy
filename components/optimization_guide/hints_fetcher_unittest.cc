@@ -124,7 +124,8 @@ class HintsFetcherTest : public testing::Test {
   }
 
   void SimulateNavigation(const std::string& host) {
-    HintsFetcher::RecordHintsFetcherCoverage(pref_service(), host);
+    HintsFetcher::RecordHintsFetcherCoverage(pref_service(), host,
+                                             GetMockClock());
   }
 
  private:
@@ -214,9 +215,14 @@ TEST_F(HintsFetcherTest, HintsFetchSuccessfulHostsRecorded) {
   base::Optional<double> value;
   for (const std::string& host : hosts) {
     value = hosts_fetched->FindDoubleKey(HashHostForDictionary(host));
-    EXPECT_EQ(base::Time::FromDeltaSinceWindowsEpoch(
-                  base::TimeDelta::FromSecondsD(*value)),
-              GetMockClock()->Now() + base::TimeDelta::FromDays(7));
+    // This reduces the necessary precision for the check on the expiry time for
+    // the hosts stored in the pref. The exact time is not necessary, being
+    // within 10 minutes is acceptable.
+    EXPECT_NEAR((base::Time::FromDeltaSinceWindowsEpoch(
+                     base::TimeDelta::FromSecondsD(*value)) -
+                 GetMockClock()->Now())
+                    .InMinutes(),
+                base::TimeDelta::FromDays(7).InMinutes(), 10);
   }
 }
 

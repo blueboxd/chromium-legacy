@@ -274,15 +274,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, WindowOpenInvalidExtension) {
   GURL start_url = extension->GetResourceURL("/test.html");
   ui_test_utils::NavigateToURL(browser(), start_url);
   WebContents* newtab = nullptr;
-  bool new_page_in_same_process = true;
+  bool new_page_in_same_process = false;
   bool expect_success = false;
+  GURL broken_extension_url(
+      "chrome-extension://thisissurelynotavalidextensionid/newtab.html");
   ASSERT_NO_FATAL_FAILURE(OpenWindow(
       browser()->tab_strip_model()->GetActiveWebContents(),
-      GURL("chrome-extension://thisissurelynotavalidextensionid/newtab.html"),
-      new_page_in_same_process, expect_success, &newtab));
+      broken_extension_url, new_page_in_same_process, expect_success, &newtab));
 
-  // This is expected to redirect to about:blank.
-  EXPECT_EQ(GURL(url::kAboutBlankURL), newtab->GetLastCommittedURL());
+  EXPECT_EQ(broken_extension_url,
+            newtab->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(content::PAGE_TYPE_ERROR,
+            newtab->GetController().GetLastCommittedEntry()->GetPageType());
 }
 
 // Tests that calling window.open from the newtab page to an extension URL
@@ -334,7 +337,9 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   content::WebContents* newtab = controller->GetWebContents();
   ASSERT_TRUE(newtab);
 
-  EXPECT_NE(extension_url, newtab->GetMainFrame()->GetLastCommittedURL());
+  EXPECT_EQ(content::PAGE_TYPE_ERROR,
+            newtab->GetController().GetLastCommittedEntry()->GetPageType());
+  EXPECT_EQ(extension_url, newtab->GetMainFrame()->GetLastCommittedURL());
   EXPECT_FALSE(newtab->GetMainFrame()->GetSiteInstance()->GetSiteURL().SchemeIs(
       extensions::kExtensionScheme));
 }

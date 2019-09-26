@@ -16,6 +16,7 @@ namespace input_prediction {
 
 const char kScrollPredictorNameLsq[] = "lsq";
 const char kScrollPredictorNameKalman[] = "kalman";
+const char kScrollPredictorNameKalmanHeuristic[] = "kalman_heuristic";
 const char kScrollPredictorNameLinearFirst[] = "linear_first";
 const char kScrollPredictorNameLinearSecond[] = "linear_second";
 const char kScrollPredictorNameLinearResampling[] = "linear_resampling";
@@ -35,6 +36,9 @@ PredictorType PredictorFactory::GetPredictorTypeFromName(
     return PredictorType::kScrollPredictorTypeLsq;
   else if (predictor_name == input_prediction::kScrollPredictorNameKalman)
     return PredictorType::kScrollPredictorTypeKalman;
+  else if (predictor_name ==
+           input_prediction::kScrollPredictorNameKalmanHeuristic)
+    return PredictorType::kScrollPredictorTypeKalmanHeuristic;
   else if (predictor_name == input_prediction::kScrollPredictorNameLinearFirst)
     return PredictorType::kScrollPredictorTypeLinearFirst;
   else if (predictor_name == input_prediction::kScrollPredictorNameLinearSecond)
@@ -50,7 +54,11 @@ std::unique_ptr<InputPredictor> PredictorFactory::GetPredictor(
   else if (predictor_type == PredictorType::kScrollPredictorTypeLsq)
     return std::make_unique<LeastSquaresPredictor>();
   else if (predictor_type == PredictorType::kScrollPredictorTypeKalman)
-    return std::make_unique<KalmanPredictor>();
+    return std::make_unique<KalmanPredictor>(
+        KalmanPredictor::HeuristicsMode::kHeuristicsDisabled);
+  else if (predictor_type == PredictorType::kScrollPredictorTypeKalmanHeuristic)
+    return std::make_unique<KalmanPredictor>(
+        KalmanPredictor::HeuristicsMode::kHeuristicsEnabled);
   else if (predictor_type == PredictorType::kScrollPredictorTypeLinearFirst)
     return std::make_unique<LinearPredictor>(
         LinearPredictor::EquationOrder::kFirstOrder);

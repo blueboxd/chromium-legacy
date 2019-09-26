@@ -44,8 +44,8 @@ class Node(object):
   def __init__(self):
     self.children = []        # A list of child elements
     self.mixed_content = []   # A list of u'' and/or child elements (this
-                              # duplicates 'children' but
-                              # is needed to preserve markup-type content).
+    # duplicates 'children' but
+    # is needed to preserve markup-type content).
     self.name = u''           # The name of this element
     self.attrs = {}           # The set of attributes (keys to values)
     self.parent = None        # Our parent unless we are the root element.
@@ -614,7 +614,7 @@ class Node(object):
       The data in gzipped or brotli compressed format. If the format is
       unspecified then this returns the data uncompressed.
     '''
-    if self.attrs.get('compress') in ('gzip', 'true'):
+    if self.attrs.get('compress') == 'gzip':
       # We only use rsyncable compression on Linux.
       # We exclude ChromeOS since ChromeOS bots are Linux based but do not have
       # the --rsyncable option built in for gzip. See crbug.com/617950.

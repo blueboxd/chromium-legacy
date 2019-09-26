@@ -411,10 +411,6 @@ class CONTENT_EXPORT BrowserAccessibilityManager : public ui::AXTreeObserver,
   // AXTreeManager implementation.
   ui::AXNode* GetNodeFromTree(ui::AXTreeID tree_id,
                               int32_t node_id) const override;
-  ui::AXPlatformNodeDelegate* GetDelegate(const ui::AXTreeID tree_id,
-                                          const int32_t node_id) const override;
-  ui::AXPlatformNodeDelegate* GetRootDelegate(
-      const ui::AXTreeID tree_id) const override;
   AXTreeID GetTreeID() const override;
   AXTreeID GetParentTreeID() const override;
   ui::AXNode* GetRootAsAXNode() const override;

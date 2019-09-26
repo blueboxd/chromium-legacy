@@ -1,3 +1,1 @@
 -org.chromium.android_webview.test.AwAutofillTest.testJavascriptNotTriggerSelectControlChangeNotification
--org.chromium.android_webview.test.AwAutofillTest.testSelectControlChangeStartAutofillSession
--org.chromium.android_webview.test.AwAutofillTest.testSelectControlChangeNotification

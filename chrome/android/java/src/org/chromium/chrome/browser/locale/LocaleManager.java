@@ -259,7 +259,7 @@ public class LocaleManager {
             }
         };
         if (TemplateUrlServiceFactory.get().isDefaultSearchManaged()
-                || ApiCompatibilityUtils.isDemoUser(activity)) {
+                || ApiCompatibilityUtils.isDemoUser()) {
             finalizeInternalCallback.onResult(true);
             return;
         }

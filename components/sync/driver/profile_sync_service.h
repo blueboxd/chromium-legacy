@@ -348,9 +348,6 @@ class ProfileSyncService : public SyncService,
   // Tell the sync server that this client has disabled sync.
   void RemoveClientFromServer() const;
 
-  // Check if previous shutdown is shutdown cleanly.
-  void ReportPreviousSessionMemoryWarningCount();
-
   // Estimates and records memory usage histograms per type.
   void RecordMemoryUsageHistograms();
 

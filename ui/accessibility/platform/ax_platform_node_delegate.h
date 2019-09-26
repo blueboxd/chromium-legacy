@@ -25,6 +25,7 @@
 #include "ui/accessibility/ax_position.h"
 #include "ui/accessibility/ax_text_boundary.h"
 #include "ui/accessibility/ax_text_utils.h"
+#include "ui/accessibility/ax_tree_id.h"
 #include "ui/accessibility/platform/ax_unique_id.h"
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/native_widget_types.h"
@@ -219,7 +220,14 @@ class AX_EXPORT AXPlatformNodeDelegate {
   // Get whether this node is in web content.
   virtual bool IsWebContent() const = 0;
 
+  // Get another node from this same tree.
   virtual AXPlatformNode* GetFromNodeID(int32_t id) = 0;
+
+  // Get a node from a different tree using a tree ID and node ID.
+  // Note that this is only guaranteed to work if the other tree is of the
+  // same type, i.e. it won't work between web and views or vice-versa.
+  virtual AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
+                                                 int32_t id) = 0;
 
   // Given a node ID attribute (one where IsNodeIdIntAttribute is true), return
   // a target nodes for which this delegate's node has that relationship

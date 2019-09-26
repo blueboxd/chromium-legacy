@@ -288,6 +288,9 @@ std::string GetEquivalentAriaRoleString(const ax::mojom::Role role) {
       return "radio";
     case ax::mojom::Role::kRegion:
       return "region";
+    case ax::mojom::Role::kSection:
+      // A <section> element uses the 'region' ARIA role mapping.
+      return "region";
     case ax::mojom::Role::kSlider:
       return "slider";
     case ax::mojom::Role::kTime:

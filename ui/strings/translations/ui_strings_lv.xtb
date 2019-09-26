@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Paziņojumu centrs, <ph name="UNREAD_NOTIFICATION_COUNT" /> nelasīts(-i) paziņojums(-i)</translation>
 <translation id="4730374152663651037">BIEŽI IZMANTOTĀS</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Atlicis 1 mēnesis}zero{Atlikuši # mēneši}one{Atlicis # mēnesis}other{Atlikuši # mēneši}}</translation>
-<translation id="4841881773802181781">Ievietošana</translation>
 <translation id="4881695831933465202">Atvērt</translation>
 <translation id="4888938634149558681">Zvanīt</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunde}zero{# sekundes}one{# sekunde}other{# sekundes}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Saglabāt failu</translation>
 <translation id="6656912866303152668">Gādājiet, lai ierīces <ph name="TARGET_DEVICE_NAME" /> pārlūkprogrammā Chrome ir ieslēgta sinhronizācija, un pēc tam mēģiniet nosūtīt saturu vēlreiz.</translation>
 <translation id="6699343763173986273">Multivide — nākamā dziesma</translation>
-<translation id="673773751041746814">Dzēšana</translation>
 <translation id="6779314412797872738">Lai no šejienes uz Android tālruni nosūtītu numuru, <ph name="TROUBLESHOOT_LINK" /> abām iestatījumos esošajām ierīcēm.</translation>
 <translation id="6786750046913594791">Aizvērt mapi</translation>
 <translation id="6808150112686056157">Multivide — pārtraukt</translation>

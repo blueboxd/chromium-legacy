@@ -326,6 +326,13 @@ class APP_LIST_EXPORT ContentsView : public views::View,
   // If true, SetActiveState immediately.
   bool set_active_state_without_animation_ = false;
 
+  // If set, the app list page that was used to determine the search box
+  // placement when the contents view layout was last updated for app list view
+  // state (either using UpdateYPositionAndOpacity() or AnimateToViewState()).
+  // Used primarily to determine the initial search box position when animating
+  // to a new app list view state.
+  base::Optional<ash::AppListState> target_page_for_last_view_state_update_;
+
   base::ObserverList<SearchBoxUpdateObserver> search_box_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentsView);

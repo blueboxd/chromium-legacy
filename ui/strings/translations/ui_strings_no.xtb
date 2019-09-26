@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Varselsenter, <ph name="UNREAD_NOTIFICATION_COUNT" /> uleste varsler</translation>
 <translation id="4730374152663651037">OFTE BRUKT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 måned igjen}other{# måneder igjen}}</translation>
-<translation id="4841881773802181781">Innsetting</translation>
 <translation id="4881695831933465202">Åpne</translation>
 <translation id="4888938634149558681">Ring</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekund}other{# sekunder}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Lagre fil</translation>
 <translation id="6656912866303152668">Kontrollér at <ph name="TARGET_DEVICE_NAME" /> har synkronisering påslått i Chrome, og prøv deretter å sende på nytt.</translation>
 <translation id="6699343763173986273">Media – neste spor</translation>
-<translation id="673773751041746814">Sletting</translation>
 <translation id="6779314412797872738">For å sende numre herfra til Android-telefonen din, <ph name="TROUBLESHOOT_LINK" /> for begge enhetene i innstillingene.</translation>
 <translation id="6786750046913594791">Lukk mappen</translation>
 <translation id="6808150112686056157">Media – stopp</translation>

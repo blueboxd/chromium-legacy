@@ -54,6 +54,10 @@ class AppShimHost : public chrome::mojom::AppShimHost {
     virtual void OnShimFocus(AppShimHost* host,
                              apps::AppShimFocusType focus_type,
                              const std::vector<base::FilePath>& files) = 0;
+
+    // Invoked when a profile is selected from the menu bar.
+    virtual void OnShimSelectedProfile(AppShimHost* host,
+                                       const base::FilePath& profile_path) = 0;
   };
 
   AppShimHost(Client* client,
@@ -105,6 +109,7 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // chrome::mojom::AppShimHost.
   void FocusApp(apps::AppShimFocusType focus_type,
                 const std::vector<base::FilePath>& files) override;
+  void ProfileSelectedFromMenu(const base::FilePath& profile_path) override;
 
   // Weak, owns |this|.
   Client* const client_;

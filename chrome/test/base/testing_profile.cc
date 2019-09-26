@@ -746,6 +746,10 @@ Profile* TestingProfile::GetOffTheRecordProfile() {
   return incognito_profile_.get();
 }
 
+void TestingProfile::DestroyOffTheRecordProfile() {
+  incognito_profile_.reset();
+}
+
 bool TestingProfile::HasOffTheRecordProfile() {
   return incognito_profile_.get() != nullptr;
 }

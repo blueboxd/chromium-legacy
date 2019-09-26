@@ -75,6 +75,7 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       'setErrorState',
       'showConnectingIndicator',
       'setErrorStateNetwork',
+      'setIsPersistentError',
     ],
 
     // Error screen initial UI state.
@@ -83,12 +84,18 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
     // Error screen initial error state.
     error_state_: ERROR_STATE.UNKNOWN,
 
+    // True if it is forbidden to close the error message.
+    is_persistent_error_: false,
+
     /**
      * Whether the screen can be closed.
+     * |is_persistent_error_| prevents error screen to be closable even
+     * if there are some user pods.
+     * (E.g. out of OOBE process on the sign-in screen).
      * @type {boolean}
      */
     get closable() {
-      return Oobe.getInstance().hasUserPods;
+      return Oobe.getInstance().hasUserPods && !this.is_persistent_error_;
     },
 
     /**
@@ -255,6 +262,8 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
      */
     onBeforeHide: function() {
       Oobe.getInstance().setSigninUIState(SIGNIN_UI_STATE.HIDDEN);
+      // Reset property to the default state.
+      this.setIsPersistentError(false);
     },
 
     /**
@@ -376,5 +385,12 @@ login.createScreen('ErrorMessageScreen', 'error-message', function() {
       if (this.closable)
         Oobe.showUserPods();
     },
+
+    /**
+     * Makes error message non-closable.
+     */
+    setIsPersistentError: function(is_persistent) {
+      this.is_persistent_error_ = is_persistent;
+    }
   };
 });

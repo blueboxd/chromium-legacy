@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">מרכז הודעות, <ph name="UNREAD_NOTIFICATION_COUNT" /> הודעות שלא נקראו</translation>
 <translation id="4730374152663651037">בשימוש לעתים קרובות</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{נותר חודש אחד}two{נותרו חודשיים}many{נותרו # חודשים}other{נותרו # חודשים}}</translation>
-<translation id="4841881773802181781">הוספה</translation>
 <translation id="4881695831933465202">פתיחה</translation>
 <translation id="4888938634149558681">התקשרות</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{שנייה אחת}two{# שניות}many{# שניות}other{# שניות}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">שמור קובץ</translation>
 <translation id="6656912866303152668">‏יש לוודא שהסנכרון עם <ph name="TARGET_DEVICE_NAME" /> הופעל ב-Chrome, ולאחר מכן לנסות את השליחה שוב.</translation>
 <translation id="6699343763173986273">הרצועה הבאה במדיה</translation>
-<translation id="673773751041746814">מחיקה</translation>
 <translation id="6779314412797872738">‏כדי לשלוח מכאן מספר לטלפון ה-Android שלך, יש <ph name="TROUBLESHOOT_LINK" /> בהגדרות של שני המכשירים.</translation>
 <translation id="6786750046913594791">סגור את התיקייה</translation>
 <translation id="6808150112686056157">עצור מדיה</translation>

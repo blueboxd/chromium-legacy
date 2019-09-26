@@ -69,7 +69,7 @@ class CommandlineStartupTracingTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(CommandlineStartupTracingTest, TestStartupTracing) {
-  NavigateToURL(shell(), GetTestUrl("", "title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "title1.html")));
   WaitForCondition(base::BindRepeating([]() {
                      return !TracingController::GetInstance()->IsTracing();
                    }),
@@ -143,7 +143,7 @@ IN_PROC_BROWSER_TEST_F(StartupTracingInProcessTest, TestFilledStartupBuffer) {
       config, wait_for_tracing.QuitClosure());
   wait_for_tracing.Run();
 
-  NavigateToURL(shell(), GetTestUrl("", "title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "title1.html")));
 
   base::RunLoop wait_for_stop;
   TracingControllerImpl::GetInstance()->StopTracing(
@@ -183,7 +183,7 @@ class BackgroundStartupTracingTest : public ContentBrowserTest {
 #define MAYBE_TestStartupTracing TestStartupTracing
 #endif
 IN_PROC_BROWSER_TEST_F(BackgroundStartupTracingTest, MAYBE_TestStartupTracing) {
-  NavigateToURL(shell(), GetTestUrl("", "title1.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl("", "title1.html")));
 
   EXPECT_FALSE(tracing::TraceStartupConfig::GetInstance()->IsEnabled());
   EXPECT_FALSE(TracingController::GetInstance()->IsTracing());

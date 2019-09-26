@@ -32,14 +32,28 @@ class TabSelectionEditorCoordinator {
      */
     interface TabSelectionEditorController {
         /**
-         * Shows the TabSelectionEditor.
+         * Shows the TabSelectionEditor with the given {@link Tab}s.
+         * @param tabs List of {@link Tab}s to show.
          */
-        void show();
+        void show(List<Tab> tabs);
 
         /**
          * @return Whether or not the TabSelectionEditor consumed the event.
          */
         boolean handleBackPressed();
+
+        /**
+         * Configure the Toolbar for TabSelectionEditor. The default button text is "Group".
+         * @param actionButtonText Button text for the action button.
+         * @param actionButtonOnClickListener Click listener for the action button.
+         * @param actionButtonEnablingThreshold The minimum threshold to enable the action button.
+         *         If it's -1 use the default value.
+         * @param navigationButtonOnClickListener Click listener for the navigation button.
+         */
+        void configureToolbar(@Nullable String actionButtonText,
+                @Nullable View.OnClickListener actionButtonOnClickListener,
+                int actionButtonEnablingThreshold,
+                @Nullable View.OnClickListener navigationButtonOnClickListener);
     }
 
     private final Context mContext;

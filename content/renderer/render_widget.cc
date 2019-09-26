@@ -485,7 +485,7 @@ RenderWidget::RenderWidget(int32_t widget_routing_id,
 }
 
 RenderWidget::~RenderWidget() {
-  DCHECK(!webwidget_internal_) << "Leaking our WebWidget!";
+  DCHECK(!webwidget_) << "Leaking our WebWidget!";
   DCHECK(closed_)
       << " RenderWidget must be destroyed via RenderWidget::Close()";
 
@@ -529,6 +529,8 @@ void RenderWidget::InitForChildLocalRoot(
 
 void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
   DCHECK(for_child_local_root_frame_);
+  DCHECK_EQ(widget.get(), this);  // This method takes ownership of |this|.
+
   PrepareForClose();
 
   // The RenderWidget may be deattached from JS, which in turn may be called
@@ -541,7 +543,7 @@ void RenderWidget::CloseForFrame(std::unique_ptr<RenderWidget> widget) {
 }
 
 void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
-  DCHECK(!webwidget_internal_);
+  DCHECK(!webwidget_);
   DCHECK_NE(routing_id_, MSG_ROUTING_NONE);
 
   RenderThreadImpl* render_thread_impl = RenderThreadImpl::current();
@@ -589,7 +591,7 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
       std::make_unique<TextInputClientObserver>(for_frame() ? this : nullptr);
 #endif
 
-  webwidget_internal_ = web_widget;
+  webwidget_ = web_widget;
   webwidget_mouse_lock_target_.reset(new WebWidgetLockTarget(this));
   mouse_lock_dispatcher_.reset(new RenderWidgetMouseLockDispatcher(this));
 
@@ -760,7 +762,40 @@ void RenderWidget::PrepareForClose() {
   if (input_event_queue_)
     input_event_queue_->ClearClient();
 
-  CloseWebWidget();
+  // If the browser has not sent OnDisableDeviceEmulation, we have an emulator
+  // hanging out still. Destroying it must happen *after* the IPC route is
+  // removed so that another IPC does not arrive and re-create the emulator
+  // during closing.
+  //
+  // This destruction is normally part of an IPC and expects objects to be alive
+  // that would be alive while the IPC route is active such as the
+  // |layer_tree_view_|. So we ensure that it is the first thing to be
+  // destroyed here before deleting things from the RenderWidget or the
+  // delegate().
+  //
+  // TODO(danakj): The emulator could reset to non-emulated values in an
+  // explicit method call (instead of in the destructor) that occurs when
+  // emulation is disabled, but does not need to occur during RenderWidget
+  // closing. Then we would not have to destroy this so carefully.
+  //
+  // Screen metrics emulation can only be set by the local main frame render
+  // widget.
+  if (delegate_)
+    page_properties_->SetScreenMetricsEmulator(nullptr);
+
+  // TODO(https://crbug.com/995981): This logic is very confusing and should be
+  // fixed. When RenderWidget is owned by a RenderViewImpl, its lifetime is tied
+  // to the RenderViewImpl. In that case the RenderViewImpl takes responsibility
+  // for closing the WebWidget when the main frame is detached.
+  //
+  // For all other RenderWidgets, the RenderWidget is destroyed at the same
+  // time as the WebWidget, and the RenderWidget takes responsibility for doing
+  // that here.
+  if (!delegate())
+    webwidget_->Close();
+  webwidget_ = nullptr;
+
+  close_weak_ptr_factory_.InvalidateWeakPtrs();
 }
 
 void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
@@ -2027,44 +2062,6 @@ void RenderWidget::Close(std::unique_ptr<RenderWidget> widget) {
   DCHECK_EQ(widget.get(), this);
 }
 
-void RenderWidget::CloseWebWidget() {
-  // If the browser has not sent OnDisableDeviceEmulation, we have an emulator
-  // hanging out still. Destroying it must happen *after* the IPC route is
-  // removed so that another IPC does not arrive and re-create the emulator
-  // during closing.
-  //
-  // This destruction is normally part of an IPC and expects objects to be alive
-  // that would be alive while the IPC route is active such as the
-  // |layer_tree_view_|. So we ensure that it is the first thing to be
-  // destroyed here before deleting things from the RenderWidget or the
-  // delegate().
-  //
-  // TODO(danakj): The emulator could reset to non-emulated values in an
-  // explicit method call (instead of in the destructor) that occurs when
-  // emulation is disabled, but does not need to occur during RenderWidget
-  // closing. Then we would not have to destroy this so carefully.
-  //
-  // Screen metrics emulation can only be set by the local main frame render
-  // widget.
-  if (delegate_)
-    page_properties_->SetScreenMetricsEmulator(nullptr);
-
-  // TODO(https://crbug.com/995981): This logic is very confusing and should be
-  // fixed. When the RenderWidget is associated with a RenderView,
-  // webwidget_internal_ points to an instance of WebView. This is owned by the
-  // RenderView, which also owns the RenderWidget and is calling into this
-  // method. We do nothing here and let RenderView destroy the WebView.
-  //
-  // For all other RenderWidgets, webwidget_internal_ points at a 'real'
-  // instance of a WebWidget which is owned by the RenderWidget. In this case,
-  // we must close the webwidget.
-  if (!delegate())
-    webwidget_internal_->Close();
-  webwidget_internal_ = nullptr;
-
-  close_weak_ptr_factory_.InvalidateWeakPtrs();
-}
-
 blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
   // TODO(danakj): Remove this check and don't call this method for non-frames.
   if (!for_frame())
@@ -2073,7 +2070,7 @@ blink::WebFrameWidget* RenderWidget::GetFrameWidget() const {
   // check for a null WebWidget.
   if (closing_)
     return nullptr;
-  return static_cast<blink::WebFrameWidget*>(webwidget_internal_);
+  return static_cast<blink::WebFrameWidget*>(webwidget_);
 }
 
 bool RenderWidget::IsForProvisionalFrame() const {
@@ -2081,9 +2078,9 @@ bool RenderWidget::IsForProvisionalFrame() const {
     return false;
   // No widget here means the main frame is remote and there is no
   // provisional frame at the moment.
-  if (!webwidget_internal_)
+  if (!webwidget_)
     return false;
-  auto* frame_widget = static_cast<blink::WebFrameWidget*>(webwidget_internal_);
+  auto* frame_widget = static_cast<blink::WebFrameWidget*>(webwidget_);
   return frame_widget->LocalRoot()->IsProvisional();
 }
 
@@ -3929,13 +3926,13 @@ base::WeakPtr<RenderWidget> RenderWidget::AsWeakPtr() {
   return weak_ptr_factory_.GetWeakPtr();
 }
 
-void RenderWidget::SetWebWidgetInternal(blink::WebWidget* web_widget) {
+void RenderWidget::SetWebWidgetInternal(blink::WebWidget* webwidget) {
   // TODO(https://crbug.com/995981): This method should not need to exist, since
   // we should be creating and destroying a RenderWidget along with the
   // WebWidget.
-  if (web_widget)
-    web_widget->SetAnimationHost(layer_tree_view_->animation_host());
-  webwidget_internal_ = web_widget;
+  if (webwidget)
+    webwidget->SetAnimationHost(layer_tree_view_->animation_host());
+  webwidget_ = webwidget;
 }
 
 }  // namespace content

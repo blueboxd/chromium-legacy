@@ -29,6 +29,7 @@
 #import "third_party/blink/public/platform/mac/web_sandbox_support.h"
 #import "third_party/blink/public/platform/platform.h"
 #import "third_party/blink/public/resources/grit/blink_resources.h"
+#import "third_party/blink/public/strings/grit/blink_strings.h"
 #import "third_party/blink/renderer/core/css_value_keywords.h"
 #import "third_party/blink/renderer/core/fileapi/file_list.h"
 #import "third_party/blink/renderer/core/html_names.h"
@@ -1003,8 +1004,7 @@ String LayoutThemeMac::FileListNameForWidth(Locale& locale,
 
   String str_to_truncate;
   if (file_list->IsEmpty()) {
-    str_to_truncate =
-        locale.QueryString(WebLocalizedString::kFileButtonNoFileSelectedLabel);
+    str_to_truncate = locale.QueryString(IDS_FORM_FILE_NO_FILE_LABEL);
   } else if (file_list->length() == 1) {
     File* file = file_list->item(0);
     if (file->GetUserVisibility() == File::kIsUserVisible)

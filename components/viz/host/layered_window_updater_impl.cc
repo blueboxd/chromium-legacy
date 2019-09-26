@@ -15,8 +15,8 @@ namespace viz {
 
 LayeredWindowUpdaterImpl::LayeredWindowUpdaterImpl(
     HWND hwnd,
-    mojom::LayeredWindowUpdaterRequest request)
-    : hwnd_(hwnd), binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<mojom::LayeredWindowUpdater> receiver)
+    : hwnd_(hwnd), receiver_(this, std::move(receiver)) {}
 
 LayeredWindowUpdaterImpl::~LayeredWindowUpdaterImpl() = default;
 

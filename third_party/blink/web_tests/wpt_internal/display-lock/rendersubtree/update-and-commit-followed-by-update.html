@@ -1,7 +1,7 @@
 <!doctype HTML>
 <html class="reftest-wait">
 <meta charset="utf8">
-<title>Display Locking: updateAndCommit, update</title>
+<title>Display Locking: displayLock.updateAndCommit, update</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
 <link rel="match" href="pass-container-with-child-ref.html">
@@ -41,7 +41,7 @@ function runTest() {
     document.body.appendChild(container);
 
     const first_promise = container.displayLock.updateAndCommit();
-    const second_promise = container.displayLock.update();
+    const second_promise = container.updateRendering();
     Promise.all([first_promise, second_promise]).then(() => finishTest("PASS"));
   });
 }

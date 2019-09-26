@@ -78,7 +78,7 @@ async_test((t) => {
 
     construct(document.getElementById("large"));
 
-    container.displayLock.update().then(() => {
+    container.updateRendering().then(() => {
       measureInUpdate();
       setVisible(container).then(() => {
         measureInCommit();

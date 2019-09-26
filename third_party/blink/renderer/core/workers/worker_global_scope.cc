@@ -282,27 +282,6 @@ bool WorkerGlobalScope::FetchClassicImportedScript(
     KURL* out_response_url,
     String* out_source_code,
     std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data) {
-  // InstalledScriptsManager is now used only for starting installed service
-  // workers.
-  // TODO(nhiroki): Consider moving this into ServiceWorkerGlobalScope.
-  InstalledScriptsManager* installed_scripts_manager =
-      GetThread()->GetInstalledScriptsManager();
-  if (installed_scripts_manager &&
-      installed_scripts_manager->IsScriptInstalled(script_url)) {
-    DCHECK(IsServiceWorkerGlobalScope());
-    std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
-        installed_scripts_manager->GetScriptData(script_url);
-    if (!script_data)
-      return false;
-    *out_response_url = script_url;
-    *out_source_code = script_data->TakeSourceText();
-    *out_cached_meta_data = script_data->TakeMetaData();
-    // TODO(shimazu): Add appropriate probes for inspector.
-    return true;
-  }
-
-  // If the script wasn't provided by the InstalledScriptsManager, load from
-  // ResourceLoader.
   ExecutionContext* execution_context = GetExecutionContext();
   WorkerClassicScriptLoader* classic_script_loader =
       MakeGarbageCollected<WorkerClassicScriptLoader>();

@@ -98,6 +98,8 @@ jumbo_component("gfx") {
     "font_render_params_linux.cc",
     "font_render_params_mac.cc",
     "font_render_params_win.cc",
+    "font_util.cc",
+    "font_util.h",
     "gdi_util.cc",
     "gdi_util.h",
     "half_float.cc",

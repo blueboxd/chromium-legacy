@@ -47,6 +47,9 @@ class ProfileSyncServiceHarness {
   // Signs in to a primary account without actually enabling sync the feature.
   bool SignInPrimaryAccount();
 
+  // This is similar to click the reset button on chrome.google.com/sync.
+  void ResetSyncForPrimaryAccount();
+
 #if !defined(OS_CHROMEOS)
   // Signs out of the primary account. ChromeOS doesn't have the concept of
   // sign-out, so this only exists on other platforms.

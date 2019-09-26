@@ -947,8 +947,7 @@ bool ChildProcessSecurityPolicyImpl::CanRedirectToURL(const GURL& url) {
 }
 
 bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
-                                                  const GURL& url,
-                                                  bool check_origin_locks) {
+                                                  const GURL& url) {
   if (!url.is_valid())
     return false;  // Can't commit invalid URLs.
 
@@ -966,17 +965,13 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
       return false;
 
     url::Origin origin = url::Origin::Create(url);
-    return origin.opaque() ||
-           CanCommitURL(child_id, GURL(origin.Serialize()), check_origin_locks);
+    return origin.opaque() || CanCommitURL(child_id, GURL(origin.Serialize()));
   }
 
   // With site isolation, a URL from a site may only be committed in a process
   // dedicated to that site.  This check will ensure that |url| can't commit if
-  // the process is locked to a different site.  Note that this check is only
-  // effective for processes that are locked to a site, but even with strict
-  // site isolation, currently not all processes are locked (e.g., extensions
-  // or <webview> tags - see ShouldLockToOrigin()).
-  if (check_origin_locks && !CanAccessDataForOrigin(child_id, url))
+  // the process is locked to a different site.
+  if (!CanAccessDataForOrigin(child_id, url))
     return false;
 
   {
@@ -999,43 +994,6 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
     // allowed to commit the URL.
     return state->second->CanCommitURL(url);
   }
-}
-
-bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
-                                                  const GURL& url) {
-  return CanCommitURL(child_id, url, true /* check_origin_lock */);
-}
-
-bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
-                                                          const GURL& url) {
-  if (!url.is_valid())
-    return false;  // Can't set invalid URLs as origin headers.
-
-  // about:srcdoc cannot be used as an origin
-  if (url.IsAboutSrcdoc())
-    return false;
-
-  // If this process can commit |url|, it can use |url| as an origin for
-  // outbound requests.
-  //
-  // TODO(alexmos): This should eventually also check the origin lock, but
-  // currently this is not done due to certain corner cases involving HTML
-  // imports and web tests that simulate requests from isolated worlds.  See
-  // https://crbug.com/515309.
-  if (CanCommitURL(child_id, url, false /* check_origin_lock */))
-    return true;
-
-  // Allow schemes which may come from scripts executing in isolated worlds;
-  // XHRs issued by such scripts reflect the script origin rather than the
-  // document origin.
-  {
-    base::AutoLock lock(lock_);
-    if (base::Contains(schemes_okay_to_appear_as_origin_headers_,
-                       url.scheme())) {
-      return true;
-    }
-  }
-  return false;
 }
 
 bool ChildProcessSecurityPolicyImpl::CanReadFile(int child_id,

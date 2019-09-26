@@ -10964,7 +10964,7 @@ TEST_F(LayerTreeHostImplTest, SingleGSUForScrollbarThumbDragPerFrame) {
 
   // MouseDown on the thumb should not produce a scroll.
   InputHandlerPointerResult result =
-      host_impl_->MouseDown(gfx::PointF(350, 18));
+      host_impl_->MouseDown(gfx::PointF(350, 18), /*shift_modifier*/ false);
   EXPECT_EQ(result.scroll_offset.y(), 0u);
 
   // The first request for a GSU should be processed as expected.
@@ -12450,7 +12450,7 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   animation_task_.Reset();
 
   // Only the MouseMove's location will affect the overlay scrollbar.
-  host_impl_->MouseDown(gfx::PointF(60, 50));
+  host_impl_->MouseDown(gfx::PointF(60, 50), /*shift_modifier*/ false);
   host_impl_->MouseMoveAt(gfx::Point(60, 50));
   host_impl_->MouseUp(gfx::PointF(60, 50));
 
@@ -12461,14 +12461,14 @@ void LayerTreeHostImplTest::SetupMouseMoveAtTestScrollbarStates(
   host_impl_->MouseMoveAt(gfx::Point(40, 150));
   animation_task_.Reset();
 
-  host_impl_->MouseDown(gfx::PointF(40, 150));
+  host_impl_->MouseDown(gfx::PointF(40, 150), /*shift_modifier*/ false);
   host_impl_->MouseUp(gfx::PointF(40, 150));
   EXPECT_TRUE(animation_task_.is_null());
 
   // Near scrollbar_1, then mouse down and unregister
   // scrollbar_2_animation_controller, then mouse up should not cause crash.
   host_impl_->MouseMoveAt(gfx::Point(40, 150));
-  host_impl_->MouseDown(gfx::PointF(40, 150));
+  host_impl_->MouseDown(gfx::PointF(40, 150), /*shift_modifier*/ false);
   host_impl_->UnregisterScrollbarAnimationController(root_scroll->element_id());
   host_impl_->MouseUp(gfx::PointF(40, 150));
 }

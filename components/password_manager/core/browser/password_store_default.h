@@ -25,15 +25,6 @@ class PasswordStoreDefault : public PasswordStore {
 
   void ShutdownOnUIThread() override;
 
-#if defined(USE_X11)
-  // Dispose the current |login_db_| and use |login_db|. |login_db| is expected
-  // to have been initialised. A null value is equivalent to a database which
-  // can't be opened.
-  // TODO(crbug.com/571003) This is only used to migrate Linux to an encrypted
-  // LoginDatabase.
-  void SetLoginDB(std::unique_ptr<LoginDatabase> login_db);
-#endif  // defined(USE_X11)
-
   // To be used only for testing or in subclasses.
   LoginDatabase* login_db() const { return login_db_.get(); }
 

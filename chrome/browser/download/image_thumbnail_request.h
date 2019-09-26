@@ -5,11 +5,14 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_IMAGE_THUMBNAIL_REQUEST_H_
 #define CHROME_BROWSER_DOWNLOAD_IMAGE_THUMBNAIL_REQUEST_H_
 
-#include <string>
+#include <vector>
 
-#include "base/files/file_path.h"
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/image_decoder.h"
+
+namespace base {
+class FilePath;
+}
 
 // Helper class to generate thumbnail for a given local image file with a given
 // max size. Must be invoked on the browser thread.
@@ -31,7 +34,7 @@ class ImageThumbnailRequest : public ImageDecoder::ImageRequest {
 
   void OnDecodeImageFailed() override;
 
-  void OnLoadComplete(const std::string& data);
+  void OnLoadComplete(const std::vector<uint8_t>& data);
 
   void FinishRequest(SkBitmap thumbnail);
 

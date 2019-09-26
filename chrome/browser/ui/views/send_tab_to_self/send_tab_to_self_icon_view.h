@@ -28,17 +28,21 @@ class SendTabToSelfIconView : public PageActionIconView {
   SkColor GetTextColor() const override;
   base::string16 GetTextForTooltipAndAccessibleName() const override;
 
+  // gfx::AnimationDelegate:
+  void AnimationEnded(const gfx::Animation* animation) override;
+
  protected:
   // PageActionIconView:
   void OnExecuting(PageActionIconView::ExecuteSource execute_source) override;
   const gfx::VectorIcon& GetVectorIcon() const override;
 
  private:
+  enum class AnimationState { kNotShown, kShowing, kShown };
+
   SendTabToSelfBubbleController* GetController() const;
-  // gfx::AnimationDelegate:
-  void AnimationEnded(const gfx::Animation* animation) override;
-  // Whether the animation has been shown.
-  bool was_animation_shown_ = false;
+
+  // Indicates the current state of the initial "Send" animation.
+  AnimationState initial_animation_state_ = AnimationState::kNotShown;
 
   DISALLOW_COPY_AND_ASSIGN(SendTabToSelfIconView);
 };

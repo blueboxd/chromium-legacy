@@ -45,7 +45,7 @@ class IdleTest : public ContentBrowserTest {
 }  // namespace
 
 IN_PROC_BROWSER_TEST_F(IdleTest, Start) {
-  NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), GetTestUrl(nullptr, "simple_page.html")));
 
   auto mock_time_provider = std::make_unique<NiceMock<MockIdleTimeProvider>>();
   auto* rph = static_cast<RenderProcessHostImpl*>(

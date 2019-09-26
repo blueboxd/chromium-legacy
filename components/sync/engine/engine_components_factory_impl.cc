@@ -56,9 +56,8 @@ std::unique_ptr<SyncCycleContext> EngineComponentsFactoryImpl::BuildContext(
     base::TimeDelta poll_interval) {
   return std::make_unique<SyncCycleContext>(
       connection_manager, directory, extensions_activity, listeners,
-      debug_info_getter, model_type_registry,
-      switches_.encryption_method == ENCRYPTION_KEYSTORE,
-      invalidation_client_id, store_birthday, bag_of_chips, poll_interval);
+      debug_info_getter, model_type_registry, invalidation_client_id,
+      store_birthday, bag_of_chips, poll_interval);
 }
 
 std::unique_ptr<syncable::DirectoryBackingStore>
@@ -75,11 +74,6 @@ EngineComponentsFactoryImpl::BuildDirectoryBackingStore(
     NOTREACHED();
     return std::unique_ptr<syncable::DirectoryBackingStore>();
   }
-}
-
-EngineComponentsFactory::Switches EngineComponentsFactoryImpl::GetSwitches()
-    const {
-  return switches_;
 }
 
 }  // namespace syncer

@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Értesítési központ, <ph name="UNREAD_NOTIFICATION_COUNT" /> olvasatlan értesítés</translation>
 <translation id="4730374152663651037">GYAKRAN HASZNÁLT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{hátralévő idő: 1 hónap}other{hátralévő idő: # hónap}}</translation>
-<translation id="4841881773802181781">Beszúrás</translation>
 <translation id="4881695831933465202">Megnyitás</translation>
 <translation id="4888938634149558681">Hívás indítása</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 másodperc}other{# másodperc}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Fájl mentése</translation>
 <translation id="6656912866303152668">Győződjön meg arról, hogy a(z) <ph name="TARGET_DEVICE_NAME" /> szinkronizálása be van kapcsolva a Chrome-ban, majd próbálja újra.</translation>
 <translation id="6699343763173986273">Következő szám</translation>
-<translation id="673773751041746814">Törlés</translation>
 <translation id="6779314412797872738">Ha innen szeretne számot küldeni Android-telefonjára, <ph name="TROUBLESHOOT_LINK" /> a beállításokban mindkét eszközén.</translation>
 <translation id="6786750046913594791">Mappa bezárása</translation>
 <translation id="6808150112686056157">Leállítás</translation>

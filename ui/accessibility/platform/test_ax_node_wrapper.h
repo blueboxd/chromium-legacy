@@ -82,6 +82,8 @@ class TestAXNodeWrapper : public AXPlatformNodeDelegateBase {
   gfx::NativeViewAccessible GetFocus() override;
   bool IsMinimized() const override;
   AXPlatformNode* GetFromNodeID(int32_t id) override;
+  AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
+                                         int32_t id) override;
   int GetIndexInParent() override;
   bool IsTable() const override;
   base::Optional<int> GetTableRowCount() const override;

@@ -130,6 +130,10 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   // Returns true if this object can fire events.
   virtual bool CanFireEvents() const;
 
+  // Return the AXPlatformNode corresponding to this node, if applicable
+  // on this platform.
+  virtual ui::AXPlatformNode* GetAXPlatformNode() const;
+
   // Returns the number of children of this object, or 0 if PlatformIsLeaf()
   // returns true.
   virtual uint32_t PlatformChildCount() const;
@@ -469,6 +473,8 @@ class CONTENT_EXPORT BrowserAccessibility : public ui::AXPlatformNodeDelegate {
   gfx::NativeViewAccessible HitTestSync(int x, int y) override;
   gfx::NativeViewAccessible GetFocus() override;
   ui::AXPlatformNode* GetFromNodeID(int32_t id) override;
+  ui::AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
+                                             int32_t id) override;
   int GetIndexInParent() override;
   gfx::AcceleratedWidget GetTargetForNativeAccessibilityEvent() override;
 

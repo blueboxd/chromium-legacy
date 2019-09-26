@@ -67,7 +67,7 @@ class AccessibilityTreeLinkageWinBrowserTest
 };
 
 IN_PROC_BROWSER_TEST_P(AccessibilityTreeLinkageWinBrowserTest, Linkage) {
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   GetParentWindow()->SetProperty(
       aura::client::kParentNativeViewAccessibleKey,

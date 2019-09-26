@@ -48,6 +48,7 @@ class MockErrorScreenView : public ErrorScreenView {
   MOCK_METHOD1(SetOfflineSigninAllowed, void(bool value));
   MOCK_METHOD1(SetShowConnectingIndicator, void(bool value));
   MOCK_METHOD1(SetUIState, void(NetworkError::UIState ui_state));
+  MOCK_METHOD1(SetIsPersistentError, void(bool is_persistent));
 
  private:
   ErrorScreen* screen_ = nullptr;

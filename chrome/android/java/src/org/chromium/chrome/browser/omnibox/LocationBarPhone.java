@@ -128,12 +128,6 @@ public class LocationBarPhone extends LocationBarLayout {
         // This offset is only required when the focus animation is running.
         if (!hasFocus) return 0;
 
-        // The offset is only required when the fakebox on the NTP is showing.
-        if (mToolbarDataProvider.getNewTabPageForCurrentTab() != null
-                && !mToolbarDataProvider.getNewTabPageForCurrentTab().isLocationBarShownInNTP()) {
-            return 0;
-        }
-
         // We're on the NTP with the fakebox showing.
         // The value returned changes based on if the layout is LTR OR RTL.
         // For LTR, the value is negative because we are making space on the left-hand side.
@@ -173,7 +167,7 @@ public class LocationBarPhone extends LocationBarLayout {
                         - mStatusView.getEndPaddingPixelSizeForState(false));
 
         if (!hasFocus && mToolbarDataProvider.getNewTabPageForCurrentTab() != null
-                && mToolbarDataProvider.getNewTabPageForCurrentTab().isLocationBarShownInNTP()) {
+                && mIconView.getVisibility() == VISIBLE) {
             // When:
             // 1. unfocusing the LocationBar on the NTP.
             // 2. scrolling the fakebox to the LocationBar on the NTP.

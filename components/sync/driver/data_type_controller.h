@@ -97,10 +97,6 @@ class DataTypeController : public base::SupportsWeakPtr<DataTypeController> {
   using TypeMap = std::map<ModelType, std::unique_ptr<DataTypeController>>;
   using TypeVector = std::vector<std::unique_ptr<DataTypeController>>;
 
-  // Returns true if the start result should trigger an unrecoverable error.
-  // Public so unit tests can use this function as well.
-  static bool IsUnrecoverableResult(ConfigureResult result);
-
   // Returns true if the datatype started successfully.
   static bool IsSuccessfulResult(ConfigureResult result);
 

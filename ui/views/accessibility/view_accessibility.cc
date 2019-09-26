@@ -152,6 +152,9 @@ void ViewAccessibility::GetAccessibleNodeData(ui::AXNodeData* data) const {
         ax::mojom::StringAttribute::kDescription));
   }
 
+  if (custom_data_.GetHasPopup() != ax::mojom::HasPopup::kFalse)
+    data->SetHasPopup(custom_data_.GetHasPopup());
+
   static const ax::mojom::IntAttribute kOverridableIntAttributes[]{
       ax::mojom::IntAttribute::kPosInSet,
       ax::mojom::IntAttribute::kSetSize,
@@ -255,6 +258,10 @@ void ViewAccessibility::OverrideDescribedBy(View* described_by_view) {
       described_by_view->GetViewAccessibility().GetUniqueId().Get();
   custom_data_.AddIntListAttribute(ax::mojom::IntListAttribute::kDescribedbyIds,
                                    {described_by_id});
+}
+
+void ViewAccessibility::OverrideHasPopup(const ax::mojom::HasPopup has_popup) {
+  custom_data_.SetHasPopup(has_popup);
 }
 
 void ViewAccessibility::OverridePosInSet(int pos_in_set, int set_size) {

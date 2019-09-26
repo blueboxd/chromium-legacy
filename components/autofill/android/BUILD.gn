@@ -100,10 +100,12 @@ android_library("autofill_java") {
 android_library("provider_java") {
   deps = [
     "//base:base_java",
+    "//base:jni_java",
     "//components/autofill/core/common/mojom:mojo_types_java",
     "//content/public/android:content_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   java_files = [
     "java/src/org/chromium/components/autofill/AutofillProvider.java",
     "java/src/org/chromium/components/autofill/FormData.java",

@@ -2060,15 +2060,15 @@ bool ServiceWorkerVersion::IsStartWorkerAllowed() const {
   // tab, pass a null callback as WebContents getter.
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     if (!GetContentClient()->browser()->AllowServiceWorkerOnUI(
-            scope_, scope_, script_url_, context_->wrapper()->browser_context(),
-            base::NullCallback())) {
+            scope_, scope_, url::Origin::Create(scope_), script_url_,
+            context_->wrapper()->browser_context(), base::NullCallback())) {
       return false;
     }
   } else {
     // resource_context() can return null in unit tests.
     if ((context_->wrapper()->resource_context() &&
          !GetContentClient()->browser()->AllowServiceWorkerOnIO(
-             scope_, scope_, script_url_,
+             scope_, scope_, url::Origin::Create(scope_), script_url_,
              context_->wrapper()->resource_context(), base::NullCallback()))) {
       return false;
     }

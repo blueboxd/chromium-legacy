@@ -4,7 +4,7 @@
 <title>Display Locking: update while disconnected</title>
 <link rel="author" title="Vladimir Levin" href="mailto:vmpstr@chromium.org">
 <link rel="help" href="https://github.com/WICG/display-locking">
-<link rel="match" href="update-while-disconnected-ref.html">
+<link rel="match" href="pass-ref.html">
 <script src="/common/reftest-wait.js"></script>
 <script src="resources/utils.js"></script>
 
@@ -22,9 +22,9 @@ function runTest() {
   container.id = "container";
 
   setInvisible(container).then(() => {
-    container.displayLock.update().then(
-      () => { finishTest("FAIL"); },
-      (e) => { finishTest("PASS " + e.message); });
+    container.updateRendering().then(
+      () => { finishTest("PASS"); },
+      (e) => { finishTest("FAIL " + e.message); });
   });
 }
 

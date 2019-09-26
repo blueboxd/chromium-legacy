@@ -147,6 +147,7 @@ callback ScrollStateCallback = void (ScrollState scrollState);
     [RuntimeEnabled=DisplayLocking, ImplementedAs=getDisplayLockForBindings] readonly attribute DisplayLockContext displayLock;
     // Declarative display locking.
     [RuntimeEnabled=DisplayLocking, CEReactions, CustomElementCallbacks, Reflect] attribute DOMString renderSubtree;
+    [RuntimeEnabled=DisplayLocking, CallWith=ScriptState] Promise<any> updateRendering();
 
     // Element Timing
     [RuntimeEnabled=ElementTiming, Affects=Nothing, CEReactions, Reflect=elementtiming] attribute DOMString elementTiming;

@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Pusat Pemberitahuan, <ph name="UNREAD_NOTIFICATION_COUNT" /> pemberitahuan belum dibaca</translation>
 <translation id="4730374152663651037">KERAP DIGUNAKAN</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Berbaki 1 bulan}other{Berbaki # bulan}}</translation>
-<translation id="4841881773802181781">Penyisipan</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4888938634149558681">Buat panggilan</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 saat}other{# saat}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Simpan Fail</translation>
 <translation id="6656912866303152668">Pastikan penyegerakan <ph name="TARGET_DEVICE_NAME" /> telah dihidupkan dalam Chrome, kemudian cuba hantar lagi.</translation>
 <translation id="6699343763173986273">Lagu Media Seterusnya</translation>
-<translation id="673773751041746814">Pemadaman</translation>
 <translation id="6779314412797872738">Untuk menghantar nombor dari sini ke telefon Android anda, <ph name="TROUBLESHOOT_LINK" /> untuk kedua-dua peranti dalam tetapan.</translation>
 <translation id="6786750046913594791">Tutup folder</translation>
 <translation id="6808150112686056157">Media Berhenti</translation>

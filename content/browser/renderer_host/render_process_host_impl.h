@@ -757,7 +757,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
       const base::Optional<url::Origin>& origin,
       network::mojom::CrossOriginEmbedderPolicy embedder_policy,
       const WebPreferences* preferences,
-      base::Optional<net::NetworkIsolationKey> network_isolation_key,
+      const base::Optional<net::NetworkIsolationKey>& network_isolation_key,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>
           header_client,
       network::mojom::URLLoaderFactoryRequest request,

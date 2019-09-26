@@ -23,7 +23,7 @@ async_test((t) => {
     await acquire_promise;
     t.step(() => assert_true(container.displayLock.locked, "context after acquire finishes is locked"));
 
-    const update_promise = container.displayLock.update();
+    const update_promise = container.updateRendering();
     t.step(() => assert_true(container.displayLock.locked, "context during update is locked"));
 
     await update_promise;

@@ -29,10 +29,25 @@ const EMAIL_REGEX = new RegExp(
     '^\\s*([\\w\\.!#\\$%&\'\\*\\+-\\/=\\?\\^`\\{\\|\\}~]+)@' +
     '([A-Za-z0-9\-]{2,63}\\..+)\\s*$');
 
+/** @enum {number} */
+const UserAddError = {
+  NO_ERROR: 0,
+  INVALID_EMAIL: 1,
+  USER_EXISTS: 2,
+};
+
 Polymer({
   is: 'settings-users-add-user-dialog',
 
+  behaviors: [I18nBehavior],
+
   properties: {
+    /** @private */
+    errorCode_: {
+      type: Number,
+      value: UserAddError.NO_ERROR,
+    },
+
     /** @private */
     isEmail_: {
       type: Boolean,
@@ -45,6 +60,8 @@ Polymer({
       value: true,
     },
   },
+
+  usersPrivate_: chrome.usersPrivate,
 
   open: function() {
     this.$.addUserInput.value = '';
@@ -74,11 +91,20 @@ Polymer({
       userEmail = emailMatches[1] + '@' + emailMatches[2];
     }
 
-    chrome.usersPrivate.addWhitelistedUser(
-        userEmail,
-        /* callback */ function(success) {});
-    this.$.addUserInput.value = '';
-    this.$.dialog.close();
+    this.usersPrivate_.isWhitelistedUser(userEmail, doesUserExist => {
+      if (doesUserExist) {
+        // This user email had been saved previously
+        this.errorCode_ = UserAddError.USER_EXISTS;
+        return;
+      }
+
+      this.$.dialog.close();
+      this.usersPrivate_.addWhitelistedUser(
+          userEmail,
+          /* callback */ function(success) {});
+
+      this.$.addUserInput.value = '';
+    });
   },
 
   /**
@@ -99,6 +125,13 @@ Polymer({
     const input = this.$.addUserInput.value;
     this.isEmail_ = NAME_ONLY_REGEX.test(input) || EMAIL_REGEX.test(input);
     this.isEmpty_ = input.length == 0;
+
+    if (!this.isEmail_ && !this.isEmpty_) {
+      this.errorCode_ = UserAddError.INVALID_EMAIL;
+      return;
+    }
+
+    this.errorCode_ = UserAddError.NO_ERROR;
   },
 
   /**
@@ -106,7 +139,20 @@ Polymer({
    * @return {boolean}
    */
   shouldShowError_: function() {
-    return !this.isEmail_ && !this.isEmpty_;
+    return this.errorCode_ != UserAddError.NO_ERROR;
+  },
+
+  /**
+   * @private
+   * @return {string}
+   */
+  getErrorString_: function(errorCode_) {
+    if (errorCode_ == UserAddError.USER_EXISTS) {
+      return this.i18n('userExistsError');
+    }
+    //TODO errorString for UserAddError.INVALID_EMAIL crbug/1007481
+
+    return '';
   },
 });
 

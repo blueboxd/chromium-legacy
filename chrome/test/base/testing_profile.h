@@ -304,7 +304,7 @@ class TestingProfile : public Profile {
   ProfileType GetProfileType() const override;
 
   Profile* GetOffTheRecordProfile() override;
-  void DestroyOffTheRecordProfile() override {}
+  void DestroyOffTheRecordProfile() override;
   bool HasOffTheRecordProfile() override;
   Profile* GetOriginalProfile() override;
   const Profile* GetOriginalProfile() const override;

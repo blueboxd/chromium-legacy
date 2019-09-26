@@ -350,9 +350,7 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
                                 CWVSyncController* syncController =
                                     weakSelf.webView.configuration
                                         .syncController;
-                                [syncController
-                                    startSyncWithIdentity:identity
-                                               dataSource:_authService];
+                                [syncController startSyncWithIdentity:identity];
                               }]];
   }
 
@@ -745,9 +743,8 @@ NSString* const kWebViewShellJavaScriptDialogTextFieldAccessibiltyIdentifier =
   NSLog(@"%@:%@", NSStringFromSelector(_cmd), error);
 }
 
-- (void)syncController:(CWVSyncController*)syncController
-    didStopSyncWithReason:(CWVStopSyncReason)reason {
-  NSLog(@"%@:%ld", NSStringFromSelector(_cmd), (long)reason);
+- (void)syncControllerDidStopSync:(CWVSyncController*)syncController {
+  NSLog(@"%@", NSStringFromSelector(_cmd));
 }
 
 @end

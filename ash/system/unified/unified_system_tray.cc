@@ -208,6 +208,11 @@ void UnifiedSystemTray::ShowAudioDetailedViewBubble() {
   bubble_->ShowAudioDetailedView();
 }
 
+void UnifiedSystemTray::ShowNetworkDetailedViewBubble(bool show_by_click) {
+  ShowBubble(show_by_click);
+  bubble_->ShowNetworkDetailedView(true /* force */);
+}
+
 void UnifiedSystemTray::SetTrayBubbleHeight(int height) {
   ui_delegate_->SetTrayBubbleHeight(height);
 }

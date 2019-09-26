@@ -152,6 +152,10 @@ void AppShimHost::FocusApp(apps::AppShimFocusType focus_type,
   client_->OnShimFocus(this, focus_type, files);
 }
 
+void AppShimHost::ProfileSelectedFromMenu(const base::FilePath& profile_path) {
+  client_->OnShimSelectedProfile(this, profile_path);
+}
+
 base::FilePath AppShimHost::GetProfilePath() const {
   return profile_path_;
 }

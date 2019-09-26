@@ -60,14 +60,13 @@
     "gtest_tests": [
       {
         "args": [
-          "--enable-features=UseSkiaRenderer",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/skia_renderer.browser_tests.filter"
+          "--disable-features=UseSkiaRenderer"
         ],
         "merge": {
           "args": [],
           "script": "//testing/merge_scripts/standard_gtest_merge.py"
         },
-        "name": "skia_renderer_browser_tests",
+        "name": "non_skia_renderer_browser_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
           "dimension_sets": [

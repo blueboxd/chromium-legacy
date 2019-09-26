@@ -75,14 +75,15 @@ Polymer({
   /**
    * Returns a localized label for |item|. If |this.key| is set, |item| is
    * expected to be an enum and the key is used to convert it to a string.
-   * @param {string|number|!chrome.networkingPrivate.Certificate} item
+   * @param {string|number|!chromeos.networkConfig.mojom.NetworkCertificate}
+   *     item
    * @return {string}
    * @private
    */
   getItemLabel_: function(item) {
     if (this.certList) {
       return this.getCertificateName_(
-          /** @type {chrome.networkingPrivate.Certificate}*/ (item));
+          /** @type {chromeos.networkConfig.mojom.NetworkCertificate}*/ (item));
     }
     let value;
     if (this.key) {
@@ -105,26 +106,29 @@ Polymer({
   },
 
   /**
-   * @param {string|!chrome.networkingPrivate.Certificate} item
+   * @param {string|!chromeos.networkConfig.mojom.NetworkCertificate} item
    * @return {string}
    * @private
    */
   getItemValue_: function(item) {
     if (this.certList) {
-      return /** @type {chrome.networkingPrivate.Certificate}*/ (item).hash;
+      return /** @type {chromeos.networkConfig.mojom.NetworkCertificate}*/ (
+                 item)
+          .hash;
     }
     return /** @type {string} */ (item);
   },
 
   /**
-   * @param {string|!chrome.networkingPrivate.Certificate} item
+   * @param {string|!chromeos.networkConfig.mojom.NetworkCertificate} item
    * @return {boolean}
    * @private
    */
   getItemEnabled_: function(item) {
     if (this.certList) {
-      const cert = /** @type {chrome.networkingPrivate.Certificate}*/ (item);
-      if (this.deviceCertsOnly && !(cert.deviceWide || cert.isDefault)) {
+      const cert =
+          /** @type {chromeos.networkConfig.mojom.NetworkCertificate}*/ (item);
+      if (this.deviceCertsOnly && !cert.deviceWide) {
         return false;
       }
       return !!cert.hash;
@@ -133,7 +137,7 @@ Polymer({
   },
 
   /**
-   * @param {!chrome.networkingPrivate.Certificate} certificate
+   * @param {!chromeos.networkConfig.mojom.NetworkCertificate} certificate
    * @return {string}
    * @private
    */

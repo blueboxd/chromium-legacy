@@ -16,8 +16,7 @@ namespace syncer {
 
 class TestEngineComponentsFactory : public EngineComponentsFactory {
  public:
-  explicit TestEngineComponentsFactory(const Switches& switches,
-                                       StorageOption option,
+  explicit TestEngineComponentsFactory(StorageOption option,
                                        StorageOption* storage_used);
   ~TestEngineComponentsFactory() override;
 
@@ -45,10 +44,7 @@ class TestEngineComponentsFactory : public EngineComponentsFactory {
       const base::RepeatingCallback<std::string()>& cache_guid_generator,
       const base::FilePath& backing_filepath) override;
 
-  Switches GetSwitches() const override;
-
  private:
-  const Switches switches_;
   const StorageOption storage_override_;
   StorageOption* storage_used_;
 

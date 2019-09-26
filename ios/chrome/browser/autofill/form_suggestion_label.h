@@ -17,11 +17,8 @@ extern NSString* const kFormSuggestionLabelAccessibilityIdentifier;
 @interface FormSuggestionLabel : UIView
 
 // Designated initializer. Initializes with |client| for |suggestion|.
-// |userInteractionEnabled| is a boolean that denotes whether user interaction
-// is enabled on the suggestion.
 - (instancetype)initWithSuggestion:(FormSuggestion*)suggestion
                              index:(NSUInteger)index
-            userInteractionEnabled:(BOOL)userInteractionEnabled
                     numSuggestions:(NSUInteger)numSuggestions
                             client:(id<FormSuggestionClient>)client
     NS_DESIGNATED_INITIALIZER;

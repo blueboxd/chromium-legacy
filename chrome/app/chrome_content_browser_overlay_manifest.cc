@@ -166,7 +166,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
 #if defined(BROWSER_MEDIA_CONTROLS_MENU)
                 blink::mojom::MediaControlsMenuHost,
 #endif
-                blink::mojom::ShareService,
 #if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
                 blink::mojom::SpatialNavigationHost,
 #endif

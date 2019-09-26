@@ -21,9 +21,10 @@ public interface ResponseMatcher {
      * @param url the URL the {@link UrlRequest} is connecting to
      * @param httpMethod the HTTP method the {@link UrlRequest} is connecting with
      * @param headers the {@link UrlRequest} headers
+     * @param body the body of the request
      * @return a {@link FakeUrlResponse} if there is a matching response, or {@code null} otherwise
      */
     @Nullable
     FakeUrlResponse getMatchingResponse(
-            String url, String httpMethod, List<Map.Entry<String, String>> headers);
+            String url, String httpMethod, List<Map.Entry<String, String>> headers, byte[] body);
 }

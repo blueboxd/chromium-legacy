@@ -1136,6 +1136,10 @@ const FeatureEntry::FeatureParam kResamplingInputEventsLSQEnabled[] = {
     {"predictor", ui::input_prediction::kScrollPredictorNameLsq}};
 const FeatureEntry::FeatureParam kResamplingInputEventsKalmanEnabled[] = {
     {"predictor", ui::input_prediction::kScrollPredictorNameKalman}};
+const FeatureEntry::FeatureParam
+    kResamplingInputEventsKalmanHeuristicEnabled[] = {
+        {"predictor",
+         ui::input_prediction::kScrollPredictorNameKalmanHeuristic}};
 const FeatureEntry::FeatureParam kResamplingInputEventsLinearFirstEnabled[] = {
     {"predictor", ui::input_prediction::kScrollPredictorNameLinearFirst}};
 const FeatureEntry::FeatureParam kResamplingInputEventsLinearSecondEnabled[] = {
@@ -1152,6 +1156,9 @@ const FeatureEntry::FeatureVariation kResamplingInputEventsFeatureVariations[] =
      {ui::input_prediction::kScrollPredictorNameKalman,
       kResamplingInputEventsKalmanEnabled,
       base::size(kResamplingInputEventsKalmanEnabled), nullptr},
+     {ui::input_prediction::kScrollPredictorNameKalmanHeuristic,
+      kResamplingInputEventsKalmanHeuristicEnabled,
+      base::size(kResamplingInputEventsKalmanHeuristicEnabled), nullptr},
      {ui::input_prediction::kScrollPredictorNameLinearFirst,
       kResamplingInputEventsLinearFirstEnabled,
       base::size(kResamplingInputEventsLinearFirstEnabled), nullptr},
@@ -4606,6 +4613,10 @@ const FeatureEntry kFeatureEntries[] = {
      kOsAndroid,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxRemoveSuggestionsFromClipboard)},
 #endif  // defined(OS_ANDROID)
+
+    {"percent-based-scrolling", flag_descriptions::kPercentBasedScrollingName,
+     flag_descriptions::kPercentBasedScrollingDescription, kOsAll,
+     FEATURE_VALUE_TYPE(features::kPercentBasedScrolling)},
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

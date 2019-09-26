@@ -78,6 +78,9 @@ class ASH_EXPORT UnifiedSystemTray : public TrayBackgroundView,
   // Shows main bubble with audio settings detailed view.
   void ShowAudioDetailedViewBubble();
 
+  // Shows main bubble with network settings detailed view.
+  void ShowNetworkDetailedViewBubble(bool show_by_click);
+
   // Return the bounds of the bubble in the screen.
   gfx::Rect GetBubbleBoundsInScreen() const;
 

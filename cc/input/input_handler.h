@@ -198,8 +198,8 @@ class CC_EXPORT InputHandler {
 
   virtual InputHandlerPointerResult MouseMoveAt(
       const gfx::Point& mouse_position) = 0;
-  virtual InputHandlerPointerResult MouseDown(
-      const gfx::PointF& mouse_position) = 0;
+  virtual InputHandlerPointerResult MouseDown(const gfx::PointF& mouse_position,
+                                              bool shift_modifier) = 0;
   virtual InputHandlerPointerResult MouseUp(
       const gfx::PointF& mouse_position) = 0;
   virtual void MouseLeave() = 0;

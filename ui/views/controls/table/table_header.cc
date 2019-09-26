@@ -57,10 +57,6 @@ TableHeader::TableHeader(TableView* table) : table_(table) {}
 
 TableHeader::~TableHeader() = default;
 
-void TableHeader::Layout() {
-  SetBounds(x(), y(), table_->width(), GetPreferredSize().height());
-}
-
 void TableHeader::OnPaint(gfx::Canvas* canvas) {
   ui::NativeTheme* theme = GetNativeTheme();
   const SkColor text_color =

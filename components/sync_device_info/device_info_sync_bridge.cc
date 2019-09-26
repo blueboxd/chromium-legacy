@@ -43,6 +43,8 @@ using ClientIdToSpecifics =
 
 namespace {
 
+constexpr base::TimeDelta kExpirationThreshold = base::TimeDelta::FromDays(56);
+
 // Find the timestamp for the last time this |device_info| was edited.
 Time GetLastUpdateTime(const DeviceInfoSpecifics& specifics) {
   if (specifics.has_last_updated_timestamp()) {
@@ -209,6 +211,7 @@ base::Optional<ModelError> DeviceInfoSyncBridge::ApplySyncChanges(
     }
 
     if (change->type() == EntityChange::ACTION_DELETE) {
+      // This should never get exercised as no client issues tombstones.
       has_changes |= DeleteSpecifics(guid, batch.get());
     } else {
       const DeviceInfoSpecifics& specifics =
@@ -444,6 +447,7 @@ void DeviceInfoSyncBridge::OnReadAllMetadata(
   // This probably isn't strictly needed, but in case the cache_guid has changed
   // we save the new one to prefs.
   device_info_prefs_->AddLocalCacheGuid(local_cache_guid_);
+  ExpireOldEntries();
   ReconcileLocalAndStored();
 }
 
@@ -554,6 +558,33 @@ int DeviceInfoSyncBridge::CountActiveDevices(const Time now) const {
   }
 
   return max_overlapping_sum;
+}
+
+void DeviceInfoSyncBridge::ExpireOldEntries() {
+  const base::Time expiration_threshold =
+      base::Time::Now() - kExpirationThreshold;
+  std::unordered_set<std::string> cache_guids_to_expire;
+  // Just collecting cache guids to expire to avoid modifying |all_data_| via
+  // DeleteSpecifics() while iterating over it.
+  for (const auto& pair : all_data_) {
+    const std::string& cache_guid = pair.first;
+    if (cache_guid != local_cache_guid_ &&
+        GetLastUpdateTime(*pair.second) < expiration_threshold) {
+      cache_guids_to_expire.insert(cache_guid);
+    }
+  }
+
+  if (cache_guids_to_expire.empty()) {
+    return;
+  }
+
+  std::unique_ptr<WriteBatch> batch = store_->CreateWriteBatch();
+  for (const std::string& cache_guid : cache_guids_to_expire) {
+    DeleteSpecifics(cache_guid, batch.get());
+    batch->GetMetadataChangeList()->ClearMetadata(cache_guid);
+    change_processor()->UntrackEntityForStorageKey(cache_guid);
+  }
+  CommitAndNotify(std::move(batch), /*should_notify=*/true);
 }
 
 }  // namespace syncer

@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Benachrichtigungscenter, <ph name="UNREAD_NOTIFICATION_COUNT" /> ungelesene Benachrichtigungen</translation>
 <translation id="4730374152663651037">HÄUFIG VERWENDET</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{noch 1 Monat}other{noch # Monate}}</translation>
-<translation id="4841881773802181781">Einfügen</translation>
 <translation id="4881695831933465202">Öffnen</translation>
 <translation id="4888938634149558681">Anrufen</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 Sekunde}other{# Sekunden}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Datei speichern</translation>
 <translation id="6656912866303152668">Prüfen Sie, ob auf "<ph name="TARGET_DEVICE_NAME" />" die Synchronisierung in Chrome aktiviert ist, und versuchen Sie es dann noch einmal.</translation>
 <translation id="6699343763173986273">Medien – nächster Titel</translation>
-<translation id="673773751041746814">Löschen</translation>
 <translation id="6779314412797872738">Wenn Sie eine Nummer von diesem Gerät an Ihr Android-Smartphone senden möchten, müssen Sie für beide Geräte in den Einstellungen die <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">Ordner schließen</translation>
 <translation id="6808150112686056157">Medien – Stopp</translation>

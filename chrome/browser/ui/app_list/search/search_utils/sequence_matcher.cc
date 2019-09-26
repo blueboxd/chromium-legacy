@@ -26,8 +26,8 @@ SequenceMatcher::Match::Match(int pos_first, int pos_second, int len)
   DCHECK_GE(length, 0);
 }
 
-SequenceMatcher::SequenceMatcher(const std::string& first_string,
-                                 const std::string& second_string)
+SequenceMatcher::SequenceMatcher(const base::string16& first_string,
+                                 const base::string16& second_string)
     : first_string_(first_string),
       second_string_(second_string),
       dp_common_string_(second_string.size() + 1, 0) {

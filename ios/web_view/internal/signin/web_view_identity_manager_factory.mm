@@ -61,22 +61,16 @@ WebViewIdentityManagerFactory::BuildServiceInstanceFor(
   WebViewBrowserState* browser_state =
       WebViewBrowserState::FromBrowserState(context);
 
-  // Clearing the sign in state on start up greatly simplifies the management of
-  // ChromeWebView's signin state.
-  PrefService* pref_service = browser_state->GetPrefs();
-  pref_service->ClearPref(prefs::kGoogleServicesAccountId);
-  pref_service->ClearPref(prefs::kGoogleServicesConsentedToSync);
-
   IOSWebViewSigninClient* client =
       WebViewSigninClientFactory::GetForBrowserState(browser_state);
 
   signin::IdentityManagerBuildParams params;
   params.account_consistency = signin::AccountConsistencyMethod::kDisabled;
   params.device_accounts_provider =
-      std::make_unique<WebViewDeviceAccountsProviderImpl>(client);
+      std::make_unique<WebViewDeviceAccountsProviderImpl>();
   params.image_decoder = image_fetcher::CreateIOSImageDecoder();
   params.local_state = ApplicationContext::GetInstance()->GetLocalState();
-  params.pref_service = pref_service;
+  params.pref_service = browser_state->GetPrefs();
   params.profile_path = base::FilePath();
   params.signin_client = client;
 

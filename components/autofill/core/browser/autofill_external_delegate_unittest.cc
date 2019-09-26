@@ -36,7 +36,6 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/geometry/rect.h"
 
-using autofill::features::kAutofillDownstreamUseGooglePayBrandingOniOS;
 using base::ASCIIToUTF16;
 using testing::_;
 
@@ -768,54 +767,6 @@ TEST_F(AutofillExternalDelegateUnitTest, ShouldShowGooglePayIcon) {
   external_delegate_->OnSuggestionsReturned(
       kQueryId, autofill_item, /*autoselect_first_suggestion=*/false, true);
 }
-
-#if defined(OS_IOS)
-TEST_F(AutofillExternalDelegateUnitTest, ShouldShowGooglePayIconOniOS) {
-  // Turn on feature flag.
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndEnableFeature(
-      kAutofillDownstreamUseGooglePayBrandingOniOS);
-  IssueOnQuery(kQueryId);
-
-  auto element_icons =
-      testing::ElementsAre("googlePay", std::string(), "googlePay");
-  EXPECT_CALL(autofill_client_,
-              ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons),
-                                false, PopupType::kPersonalInformation, _));
-
-  std::vector<Suggestion> autofill_item;
-  autofill_item.push_back(Suggestion());
-  autofill_item[0].frontend_id = kAutofillProfileId;
-
-  // This should call ShowAutofillPopup.
-  external_delegate_->OnSuggestionsReturned(
-      kQueryId, autofill_item, /*autoselect_first_suggestion=*/false, true);
-}
-
-TEST_F(AutofillExternalDelegateUnitTest,
-       ShouldNotShowGooglePayIconOniOSIfExperimentOff) {
-  // Turn on feature flag.
-  base::test::ScopedFeatureList scoped_feature_list_;
-  scoped_feature_list_.InitAndDisableFeature(
-      kAutofillDownstreamUseGooglePayBrandingOniOS);
-  IssueOnQuery(kQueryId);
-
-  auto element_icons = testing::ElementsAre(
-      std::string(),
-      std::string() /* Autofill setting item does not have icon. */);
-  EXPECT_CALL(autofill_client_,
-              ShowAutofillPopup(_, _, SuggestionVectorIconsAre(element_icons),
-                                false, PopupType::kPersonalInformation, _));
-
-  std::vector<Suggestion> autofill_item;
-  autofill_item.push_back(Suggestion());
-  autofill_item[0].frontend_id = kAutofillProfileId;
-
-  // This should call ShowAutofillPopup.
-  external_delegate_->OnSuggestionsReturned(
-      kQueryId, autofill_item, /*autoselect_first_suggestion=*/false, false);
-}
-#endif  // defined(OS_IOS)
 
 TEST_F(AutofillExternalDelegateUnitTest,
        ShouldNotShowGooglePayIconIfSuggestionsContainLocalCards) {

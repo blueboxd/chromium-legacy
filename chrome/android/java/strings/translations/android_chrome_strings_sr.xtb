@@ -526,7 +526,6 @@ Google налог можда има друге облике историје п�
 <translation id="4943872375798546930">Нема резултата</translation>
 <translation id="4958708863221495346"><ph name="URL_OF_THE_CURRENT_TAB" /> дели екран</translation>
 <translation id="4961107849584082341">Преведите ову страницу на било који језик</translation>
-<translation id="4961700429721424617">Одјављујете се са налога којим управља <ph name="MANAGED_DOMAIN" />. Тако бришете Chrome податке са овог уређаја, али ће подаци остати на Google налогу.</translation>
 <translation id="4962975101802056554">Опозовите све дозволе за уређај</translation>
 <translation id="4970824347203572753">Није доступно на вашој локацији</translation>
 <translation id="497421865427891073">Кретање унапред</translation>
@@ -922,7 +921,6 @@ Google налог можда има друге облике историје п�
 <translation id="7757787379047923882">Текст дељен са уређаја <ph name="DEVICE_NAME" /></translation>
 <translation id="7762668264895820836">SD картица <ph name="SD_CARD_NUMBER" /></translation>
 <translation id="7764225426217299476">Додајте адресу</translation>
-<translation id="7769602470925380267">Прихватам, одјави ме</translation>
 <translation id="7772032839648071052">Потврди приступну фразу</translation>
 <translation id="7772375229873196092">Затвори <ph name="APP_NAME" /></translation>
 <translation id="7774809984919390718">{PAYMENT_METHOD,plural, =1{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}one{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}few{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}other{<ph name="PAYMENT_METHOD_PREVIEW" />\u2026 и још <ph name="NUMBER_OF_ADDITIONAL_PAYMENT_METHODS" />}}</translation>

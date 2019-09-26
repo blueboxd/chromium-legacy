@@ -75,6 +75,7 @@ TEST_F(BrowserMainLoopTest, CreateThreadsInSingleProcess) {
                     {base::ThreadPool(), base::TaskPriority::USER_VISIBLE}),
             base::SysInfo::NumberOfProcessors() - 1);
   browser_main_loop.ShutdownThreadsAndCleanUp();
+  BrowserTaskExecutor::ResetForTesting();
 }
 
 TEST_F(BrowserMainLoopTest,
@@ -104,6 +105,7 @@ TEST_F(BrowserMainLoopTest,
   content::RunAllPendingInMessageLoop(BrowserThread::IO);
 
   browser_main_loop.ShutdownThreadsAndCleanUp();
+  BrowserTaskExecutor::ResetForTesting();
 }
 
 }  // namespace content

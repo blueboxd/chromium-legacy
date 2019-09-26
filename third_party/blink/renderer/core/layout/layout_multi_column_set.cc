@@ -540,6 +540,9 @@ void LayoutMultiColumnSet::ComputeVisualOverflow(
 }
 
 void LayoutMultiColumnSet::AddVisualOverflowFromChildren() {
+  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
+    return;
+
   // It's useless to calculate overflow if we haven't determined the page
   // logical height yet.
   if (!IsPageLogicalHeightKnown())
@@ -554,6 +557,9 @@ void LayoutMultiColumnSet::AddVisualOverflowFromChildren() {
 }
 
 void LayoutMultiColumnSet::AddLayoutOverflowFromChildren() {
+  if (LayoutBlockedByDisplayLock(DisplayLockLifecycleTarget::kChildren))
+    return;
+
   // It's useless to calculate overflow if we haven't determined the page
   // logical height yet.
   if (!IsPageLogicalHeightKnown())

@@ -617,6 +617,16 @@ mojom::ManagedStringPtr GetManagedString(const base::Value* dict,
   return nullptr;
 }
 
+mojom::ManagedStringPtr GetRequiredManagedString(const base::Value* dict,
+                                                 const char* key) {
+  mojom::ManagedStringPtr result = GetManagedString(dict, key);
+  if (!result) {
+    // Return an empty string with no policy source.
+    result = mojom::ManagedString::New();
+  }
+  return result;
+}
+
 mojom::ManagedStringListPtr GetManagedStringList(const base::Value* dict,
                                                  const char* key) {
   const base::Value* v = dict->FindKey(key);
@@ -744,8 +754,13 @@ mojom::ManagedProxyLocationPtr GetManagedProxyLocation(const base::Value* dict,
   if (!location_dict)
     return nullptr;
   auto proxy_location = mojom::ManagedProxyLocation::New();
-  proxy_location->host = GetManagedString(location_dict, ::onc::proxy::kHost);
+  proxy_location->host =
+      GetRequiredManagedString(location_dict, ::onc::proxy::kHost);
   proxy_location->port = GetManagedInt32(location_dict, ::onc::proxy::kPort);
+  if (!proxy_location->port) {
+    NET_LOG(ERROR) << "ProxyLocation: No port: " << *location_dict;
+    return nullptr;
+  }
   return proxy_location;
 }
 
@@ -763,7 +778,7 @@ void SetProxyLocation(const char* key,
 mojom::ManagedProxySettingsPtr GetManagedProxySettings(
     const base::Value* dict) {
   auto proxy_settings = mojom::ManagedProxySettings::New();
-  proxy_settings->type = GetManagedString(dict, ::onc::proxy::kType);
+  proxy_settings->type = GetRequiredManagedString(dict, ::onc::proxy::kType);
   const base::Value* manual_dict = GetDictionary(dict, ::onc::proxy::kManual);
   if (manual_dict) {
     auto manual_proxy_settings = mojom::ManagedManualProxySettings::New();
@@ -807,7 +822,7 @@ mojom::ManagedApnPropertiesPtr GetManagedApnProperties(const base::Value* dict,
   }
   auto apn = mojom::ManagedApnProperties::New();
   apn->access_point_name =
-      GetManagedString(apn_dict, ::onc::cellular_apn::kAccessPointName);
+      GetRequiredManagedString(apn_dict, ::onc::cellular_apn::kAccessPointName);
   CHECK(apn->access_point_name);
   apn->authentication =
       GetManagedString(apn_dict, ::onc::cellular_apn::kAuthentication);
@@ -988,7 +1003,7 @@ mojom::ManagedIPSecPropertiesPtr GetManagedIPSecProperties(
     return ipsec;
   }
   ipsec->authentication_type =
-      GetManagedString(ipsec_dict, ::onc::ipsec::kAuthenticationType);
+      GetRequiredManagedString(ipsec_dict, ::onc::ipsec::kAuthenticationType);
   ipsec->client_cert_pattern = GetManagedCertificatePattern(
       ipsec_dict, ::onc::client_cert::kClientCertPattern);
   ipsec->client_cert_pkcs11_id =
@@ -1295,37 +1310,43 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
 
       vpn->auto_connect = GetManagedBoolean(vpn_dict, ::onc::vpn::kAutoConnect);
       vpn->host = GetManagedString(vpn_dict, ::onc::vpn::kHost);
-      vpn->ip_sec = GetManagedIPSecProperties(vpn_dict, ::onc::vpn::kIPsec);
-      vpn->l2tp = GetManagedL2TPProperties(vpn_dict, ::onc::vpn::kL2TP);
-      vpn->open_vpn =
-          GetManagedOpenVPNProperties(vpn_dict, ::onc::vpn::kOpenVPN);
 
-      if (vpn->type == mojom::VpnType::kExtension ||
-          vpn->type == mojom::VpnType::kArc) {
-        const base::Value* third_party_dict =
-            vpn_dict->FindKey(::onc::vpn::kThirdPartyVpn);
-        if (third_party_dict) {
-          vpn->provider_id = GetManagedString(
-              third_party_dict, ::onc::third_party_vpn::kExtensionID);
-          base::Optional<std::string> provider_name = GetString(
-              third_party_dict, ::onc::third_party_vpn::kProviderName);
-          if (provider_name)
-            vpn->provider_name = *provider_name;
-          if (vpn->provider_id && vpn->provider_name.empty()) {
-            vpn->provider_name = GetVpnProviderName(
-                vpn_providers, vpn->provider_id->active_value);
+      switch (vpn->type) {
+        case mojom::VpnType::kL2TPIPsec:
+          vpn->ip_sec = GetManagedIPSecProperties(vpn_dict, ::onc::vpn::kIPsec);
+          vpn->l2tp = GetManagedL2TPProperties(vpn_dict, ::onc::vpn::kL2TP);
+          break;
+        case mojom::VpnType::kOpenVPN:
+          vpn->open_vpn =
+              GetManagedOpenVPNProperties(vpn_dict, ::onc::vpn::kOpenVPN);
+          break;
+        case mojom::VpnType::kExtension:
+        case mojom::VpnType::kArc:
+          const base::Value* third_party_dict =
+              vpn_dict->FindKey(::onc::vpn::kThirdPartyVpn);
+          if (third_party_dict) {
+            vpn->provider_id = GetManagedString(
+                third_party_dict, ::onc::third_party_vpn::kExtensionID);
+            base::Optional<std::string> provider_name = GetString(
+                third_party_dict, ::onc::third_party_vpn::kProviderName);
+            if (provider_name)
+              vpn->provider_name = *provider_name;
+            if (vpn->provider_id && vpn->provider_name.empty()) {
+              vpn->provider_name = GetVpnProviderName(
+                  vpn_providers, vpn->provider_id->active_value);
+            }
+          } else {
+            // Lookup VPN provider details from the NetworkState.
+            const NetworkState::VpnProviderInfo* vpn_provider =
+                network_state->vpn_provider();
+            if (vpn_provider) {
+              vpn->provider_id = mojom::ManagedString::New();
+              vpn->provider_id->active_value = vpn_provider->id;
+              vpn->provider_name =
+                  GetVpnProviderName(vpn_providers, vpn_provider->id);
+            }
           }
-        } else {
-          // Lookup VPN provider details from the NetworkState.
-          const NetworkState::VpnProviderInfo* vpn_provider =
-              network_state->vpn_provider();
-          if (vpn_provider) {
-            vpn->provider_id = mojom::ManagedString::New();
-            vpn->provider_id->active_value = vpn_provider->id;
-            vpn->provider_name =
-                GetVpnProviderName(vpn_providers, vpn_provider->id);
-          }
-        }
+          break;
       }
       result->vpn = std::move(vpn);
       break;
@@ -1355,7 +1376,7 @@ mojom::ManagedPropertiesPtr ManagedPropertiesToMojo(
           GetManagedBoolean(wifi_dict, ::onc::wifi::kHiddenSSID);
       wifi->roam_threshold =
           GetManagedInt32(wifi_dict, ::onc::wifi::kRoamThreshold);
-      wifi->ssid = GetManagedString(wifi_dict, ::onc::wifi::kSSID);
+      wifi->ssid = GetRequiredManagedString(wifi_dict, ::onc::wifi::kSSID);
       CHECK(wifi->ssid);
       wifi->signal_strength = GetInt32(wifi_dict, ::onc::wifi::kSignalStrength);
       wifi->tethering_state =

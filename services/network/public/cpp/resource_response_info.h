@@ -157,10 +157,6 @@ struct COMPONENT_EXPORT(NETWORK_CPP) ResourceResponseInfo {
   // the ServiceWorker. Empty if the response isn't from the CacheStorage.
   std::string cache_storage_cache_name;
 
-  // Effective connection type when the resource was fetched. This is populated
-  // only for responses that correspond to main frame requests.
-  net::EffectiveConnectionType effective_connection_type;
-
   // Bitmask of status info of the SSL certificate. See cert_status_flags.h for
   // values.
   net::CertStatus cert_status;

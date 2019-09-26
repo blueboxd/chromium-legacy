@@ -17,6 +17,8 @@
 #include "ui/views/background.h"
 #include "ui/views/view.h"
 
+constexpr int TabGroupUnderline::kStrokeThickness;
+
 TabGroupUnderline::TabGroupUnderline(TabStrip* tab_strip, TabGroupId group)
     : tab_strip_(tab_strip), group_(group) {
   UpdateVisuals();
@@ -30,24 +32,24 @@ void TabGroupUnderline::OnPaint(gfx::Canvas* canvas) {
 void TabGroupUnderline::UpdateVisuals() {
   SkColor color = GetColor();
 
-  int start_x = GetStart();
-  int end_x = GetEnd();
+  const int start_x = GetStart();
+  const int end_x = GetEnd();
 
-  int start_y = tab_strip_->bounds().height() - 1;
-  constexpr int kStrokeWidth = 2;
+  const int start_y = tab_strip_->bounds().height() - 1;
 
-  SetBounds(start_x, start_y - kStrokeWidth, end_x - start_x, kStrokeWidth);
+  SetBounds(start_x, start_y - kStrokeThickness, end_x - start_x,
+            kStrokeThickness);
   SetBackground(views::CreateSolidBackground(color));
 }
 
-SkColor TabGroupUnderline::GetColor() {
+SkColor TabGroupUnderline::GetColor() const {
   const TabGroupVisualData* data =
       tab_strip_->controller()->GetVisualDataForGroup(group_);
 
   return data->color();
 }
 
-int TabGroupUnderline::GetStart() {
+int TabGroupUnderline::GetStart() const {
   const gfx::Rect group_header_bounds =
       tab_strip_->group_header(group_)->bounds();
 
@@ -55,7 +57,7 @@ int TabGroupUnderline::GetStart() {
   return group_header_bounds.x() + kInset;
 }
 
-int TabGroupUnderline::GetEnd() {
+int TabGroupUnderline::GetEnd() const {
   const std::vector<int> tabs_in_group =
       tab_strip_->controller()->ListTabsInGroup(group_);
   const int last_tab_index = tabs_in_group[tabs_in_group.size() - 1];

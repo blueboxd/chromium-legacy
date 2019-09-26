@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Centrum oznámení – nepřečtená oznámení: <ph name="UNREAD_NOTIFICATION_COUNT" /></translation>
 <translation id="4730374152663651037">ČASTO POUŽÍVANÉ</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{zbývá 1 měsíc}few{zbývají # měsíce}many{zbývá # měsíce}other{zbývá # měsíců}}</translation>
-<translation id="4841881773802181781">Vložení</translation>
 <translation id="4881695831933465202">Otevřít</translation>
 <translation id="4888938634149558681">Volat</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunda}few{# sekundy}many{# sekundy}other{# sekund}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Uložit soubor</translation>
 <translation id="6656912866303152668">Zkontrolujte, zda je v Chromu na zařízení <ph name="TARGET_DEVICE_NAME" /> zapnutá synchronizace, a poté zkuste odeslání opakovat.</translation>
 <translation id="6699343763173986273">Média – další skladba</translation>
-<translation id="673773751041746814">Smazání</translation>
 <translation id="6779314412797872738">Chcete-li si odsud poslat číslo na telefon Android, v nastavení obou zařízení <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">Zavřít složku</translation>
 <translation id="6808150112686056157">Média – zastavit</translation>

@@ -116,9 +116,9 @@ void LinearPredictor::GeneratePredictionSecondOrder(float pred_dt,
 
 base::TimeDelta LinearPredictor::TimeInterval() const {
   if (events_queue_.size() > 1) {
-    return std::max(kMinimumTimeInterval, (events_queue_.back().time_stamp -
-                                           events_queue_.front().time_stamp) /
-                                              (events_queue_.size() - 1));
+    return std::max(kMinTimeInterval, (events_queue_.back().time_stamp -
+                                       events_queue_.front().time_stamp) /
+                                          (events_queue_.size() - 1));
   }
   return kTimeInterval;
 }

@@ -32,6 +32,7 @@
 #include "cc/input/snap_selection_strategy.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
 #include "third_party/blink/renderer/bindings/core/v8/dictionary.h"
+#include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/bindings/core/v8/scroll_into_view_options_or_boolean.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html.h"
 #include "third_party/blink/renderer/bindings/core/v8/string_or_trusted_html_or_trusted_script_or_trusted_script_url_or_trusted_url.h"
@@ -4523,6 +4524,16 @@ DisplayLockContext* Element::GetDisplayLockContext() const {
 DisplayLockContext& Element::EnsureDisplayLockContext() {
   return *EnsureElementRareData().EnsureDisplayLockContext(
       this, GetExecutionContext());
+}
+
+ScriptPromise Element::updateRendering(ScriptState* script_state) {
+  auto* context = GetDisplayLockContext();
+  if (context)
+    return context->UpdateRendering(script_state);
+  auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  auto promise = resolver->Promise();
+  resolver->Resolve();
+  return promise;
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()

@@ -34,12 +34,6 @@ bool IsSyncAccountCredential(const autofill::PasswordForm& form,
                              const syncer::SyncService* sync_service,
                              const signin::IdentityManager* identity_manager);
 
-// If |form| doesn't match GAIA sign-on realm or enterprise-specified password
-// protection URL, returns false. Otherwise, return true.
-bool ShouldSavePasswordHash(const autofill::PasswordForm& form,
-                            const signin::IdentityManager* identity_manager,
-                            PrefService* prefs);
-
 // If |username| matches sync account.
 bool IsSyncAccountEmail(const std::string& username,
                         const signin::IdentityManager* identity_manager);

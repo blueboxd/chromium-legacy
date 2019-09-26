@@ -2184,48 +2184,13 @@ TEST_F(ClientTagBasedModelTypeProcessorTest,
 // Tests that the processor reports an error for updates with a version GC
 // directive that are received for types that support incremental updates.
 TEST_F(ClientTagBasedModelTypeProcessorTest,
-       ShouldApplyGarbageCollectionByVersion) {
+       ShouldNotApplyGarbageCollectionByVersion) {
   InitializeToReadyState();
 
   ExpectError();
   sync_pb::GarbageCollectionDirective garbage_collection_directive;
   garbage_collection_directive.set_version_watermark(2);
   worker()->UpdateWithGarbageCollection(garbage_collection_directive);
-}
-
-// Tests that ClientTagBasedModelTypeProcessor can do garbage collection by age.
-// Create 2 entries, one is 15-days-old, another is 5-days-old. Check if sync
-// will delete 15-days-old entry when server set expired age is 10 days.
-TEST_F(ClientTagBasedModelTypeProcessorTest,
-       ShouldApplyGarbageCollectionByAge) {
-  InitializeToReadyState();
-
-  // Create 2 entries, one is 15-days-old, another is 5-days-old.
-  std::unique_ptr<EntityData> entity_data =
-      bridge()->GenerateEntityData(kKey1, kValue1);
-  entity_data->modification_time =
-      base::Time::Now() - base::TimeDelta::FromDays(15);
-  WriteItemAndAck(kKey1, std::move(entity_data));
-  entity_data = bridge()->GenerateEntityData(kKey2, kValue2);
-  entity_data->modification_time =
-      base::Time::Now() - base::TimeDelta::FromDays(5);
-  WriteItemAndAck(kKey2, std::move(entity_data));
-
-  // Verify entries are created correctly.
-  EXPECT_EQ(2U, ProcessorEntityCount());
-  EXPECT_EQ(2U, db()->metadata_count());
-  EXPECT_EQ(2U, db()->data_count());
-  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
-
-  // Expired the entries which are older than 10 days.
-  sync_pb::GarbageCollectionDirective garbage_collection_directive;
-  garbage_collection_directive.set_age_watermark_in_days(10);
-  worker()->UpdateWithGarbageCollection(garbage_collection_directive);
-
-  EXPECT_EQ(1U, ProcessorEntityCount());
-  EXPECT_EQ(1U, db()->metadata_count());
-  EXPECT_EQ(2U, db()->data_count());
-  EXPECT_EQ(0U, worker()->GetNumPendingCommits());
 }
 
 TEST_F(ClientTagBasedModelTypeProcessorTest,

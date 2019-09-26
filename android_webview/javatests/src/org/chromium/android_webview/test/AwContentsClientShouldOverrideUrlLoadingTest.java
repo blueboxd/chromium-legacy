@@ -1084,7 +1084,7 @@ public class AwContentsClientShouldOverrideUrlLoadingTest {
         verifyShouldOverrideUrlLoadingInPopup(popupPath, popupPath + "/");
     }
 
-    private final static String BAD_SCHEME = "badscheme://";
+    private static final String BAD_SCHEME = "badscheme://";
 
     // AwContentsClient handling an invalid network scheme
     private static class BadSchemeClient extends TestAwContentsClient {

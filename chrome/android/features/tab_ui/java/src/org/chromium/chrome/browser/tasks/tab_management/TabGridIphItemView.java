@@ -4,7 +4,10 @@
 
 package org.chromium.chrome.browser.tasks.tab_management;
 
+import android.app.Activity;
+import android.content.ComponentCallbacks;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Animatable;
 import android.graphics.drawable.BitmapDrawable;
@@ -16,6 +19,7 @@ import android.support.graphics.drawable.AnimatedVectorDrawableCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.content.res.AppCompatResources;
 import android.util.AttributeSet;
+import android.util.DisplayMetrics;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -34,6 +38,11 @@ import org.chromium.ui.widget.ChromeImageView;
  * Represents a view that works as the entrance for IPH in GridTabSwitcher.
  */
 public class TabGridIphItemView extends FrameLayout {
+    private final int mDialogSideMargin;
+    private final int mDialogTextSideMargin;
+    private final int mDialogTextTopMarginPortrait;
+    private final int mDialogTextTopMarginLandscape;
+    private final Context mContext;
     private View mIphDialogView;
     private TextView mShowIPHDialogButton;
     private TextView mCloseIPHDialogButton;
@@ -45,29 +54,43 @@ public class TabGridIphItemView extends FrameLayout {
     private PopupWindow mIphWindow;
     private Animatable mIphAnimation;
     private Animatable2Compat.AnimationCallback mAnimationCallback;
+    private MarginLayoutParams mDialogMarginParams;
+    private MarginLayoutParams mTitleTextMarginParams;
+    private MarginLayoutParams mDescriptionTextMarginParams;
+    private MarginLayoutParams mCloseButtonMarginParams;
+    private ComponentCallbacks mComponentCallbacks;
 
     public TabGridIphItemView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        mContext = context;
+        mDialogSideMargin =
+                (int) mContext.getResources().getDimension(R.dimen.tab_grid_iph_dialog_side_margin);
+        mDialogTextSideMargin = (int) mContext.getResources().getDimension(
+                R.dimen.tab_grid_iph_dialog_text_side_margin);
+        mDialogTextTopMarginPortrait = (int) mContext.getResources().getDimension(
+                R.dimen.tab_grid_iph_dialog_text_top_margin_portrait);
+        mDialogTextTopMarginLandscape = (int) mContext.getResources().getDimension(
+                R.dimen.tab_grid_iph_dialog_text_top_margin_landscape);
     }
 
     @Override
     protected void onFinishInflate() {
         super.onFinishInflate();
 
-        FrameLayout backgroundView = new FrameLayout(getContext());
-        mIphDialogView =
-                LayoutInflater.from(getContext())
-                        .inflate(R.layout.iph_drag_and_drop_dialog_layout, backgroundView, false);
+        FrameLayout backgroundView = new FrameLayout(mContext);
+        mIphDialogView = LayoutInflater.from(mContext).inflate(
+                R.layout.iph_drag_and_drop_dialog_layout, backgroundView, false);
         mShowIPHDialogButton = findViewById(R.id.show_me_button);
         mCloseIPHEntranceButton = findViewById(R.id.close_iph_button);
         mIphIntroduction = findViewById(R.id.iph_description);
         Drawable closeButtonDrawable = getScaledCloseImageDrawable();
         mCloseIPHEntranceButton.setImageDrawable(closeButtonDrawable);
-        mCloseIPHDialogButton =
-                mIphDialogView.findViewById(R.id.iph_drag_and_drop_dialog_close_button);
+        mCloseIPHDialogButton = mIphDialogView.findViewById(R.id.close_button);
         mIphDrawable =
                 ((ImageView) mIphDialogView.findViewById(R.id.animation_drawable)).getDrawable();
         mIphAnimation = (Animatable) mIphDrawable;
+        TextView iphDialogTitleText = mIphDialogView.findViewById(R.id.title);
+        TextView iphDialogDescriptionText = mIphDialogView.findViewById(R.id.description);
         mAnimationCallback = new Animatable2Compat.AnimationCallback() {
             @Override
             public void onAnimationEnd(Drawable drawable) {
@@ -78,7 +101,23 @@ public class TabGridIphItemView extends FrameLayout {
         backgroundView.addView(mIphDialogView);
         mIphWindow = new PopupWindow(backgroundView, ViewGroup.LayoutParams.MATCH_PARENT,
                 ViewGroup.LayoutParams.MATCH_PARENT);
-        mScrimView = new ScrimView(getContext(), null, backgroundView);
+        mScrimView = new ScrimView(mContext, null, backgroundView);
+        mDialogMarginParams = (MarginLayoutParams) mIphDialogView.getLayoutParams();
+        mTitleTextMarginParams = (MarginLayoutParams) iphDialogTitleText.getLayoutParams();
+        mDescriptionTextMarginParams =
+                (MarginLayoutParams) iphDialogDescriptionText.getLayoutParams();
+        mCloseButtonMarginParams = (MarginLayoutParams) mCloseIPHDialogButton.getLayoutParams();
+
+        mComponentCallbacks = new ComponentCallbacks() {
+            @Override
+            public void onConfigurationChanged(Configuration newConfig) {
+                updateMargins(newConfig.orientation);
+            }
+
+            @Override
+            public void onLowMemory() {}
+        };
+        mContext.registerComponentCallbacks(mComponentCallbacks);
     }
 
     /**
@@ -134,6 +173,7 @@ public class TabGridIphItemView extends FrameLayout {
         if (mScrimParams != null) {
             mScrimView.showScrim(mScrimParams);
         }
+        updateMargins(mContext.getResources().getConfiguration().orientation);
         mIphWindow.showAtLocation((View) getParent(), Gravity.CENTER, 0, 0);
         AnimatedVectorDrawableCompat.registerAnimationCallback(mIphDrawable, mAnimationCallback);
         mIphAnimation.start();
@@ -148,6 +188,40 @@ public class TabGridIphItemView extends FrameLayout {
         Bitmap closeBitmap = ((BitmapDrawable) closeDrawable).getBitmap();
         return new BitmapDrawable(
                 getResources(), Bitmap.createScaledBitmap(closeBitmap, size, size, true));
+    }
+
+    private void updateMargins(int orientation) {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        ((Activity) getContext()).getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenHeight = displayMetrics.heightPixels;
+
+        int dialogHeight =
+                (int) mContext.getResources().getDimension(R.dimen.tab_grid_iph_dialog_height);
+        // Dynamically setup the top margin base on screen height, the minimum top margin is
+        // specified in case the screen height is smaller than or too close to dialog height.
+        int updatedDialogTopMargin = Math.max((screenHeight - dialogHeight) / 2,
+                (int) mContext.getResources().getDimension(R.dimen.tab_grid_iph_dialog_top_margin));
+
+        int dialogTopMargin;
+        int dialogSideMargin;
+        int textTopMargin;
+        if (orientation == Configuration.ORIENTATION_PORTRAIT) {
+            dialogTopMargin = updatedDialogTopMargin;
+            dialogSideMargin = mDialogSideMargin;
+            textTopMargin = mDialogTextTopMarginPortrait;
+        } else {
+            dialogTopMargin = mDialogSideMargin;
+            dialogSideMargin = updatedDialogTopMargin;
+            textTopMargin = mDialogTextTopMarginLandscape;
+        }
+        mDialogMarginParams.setMargins(
+                dialogSideMargin, dialogTopMargin, dialogSideMargin, dialogTopMargin);
+        mTitleTextMarginParams.setMargins(
+                mDialogTextSideMargin, textTopMargin, mDialogTextSideMargin, textTopMargin);
+        mDescriptionTextMarginParams.setMargins(
+                mDialogTextSideMargin, 0, mDialogTextSideMargin, textTopMargin);
+        mCloseButtonMarginParams.setMargins(
+                mDialogTextSideMargin, textTopMargin, mDialogTextSideMargin, textTopMargin);
     }
 
     /**
@@ -173,5 +247,12 @@ public class TabGridIphItemView extends FrameLayout {
         ApiCompatibilityUtils.setImageTintList(mCloseIPHEntranceButton,
                 TabUiColorProvider.getActionButtonTintList(
                         mCloseIPHEntranceButton.getContext(), isIncognito));
+    }
+
+    /**
+     * Destroy any members that needs clean up.
+     */
+    public void destroy() {
+        mContext.unregisterComponentCallbacks(mComponentCallbacks);
     }
 }

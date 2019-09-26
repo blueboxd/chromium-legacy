@@ -14,6 +14,13 @@ function stringToMojoString16(string) {
 class MockCredentialManager {
   constructor() {
     this.reset();
+
+    this.interceptor_ = new MojoInterfaceInterceptor(
+      blink.mojom.CredentialManager.$interfaceName, "context", true);
+    this.interceptor_.oninterfacerequest = e => {
+      this.bindHandleToReceiver(e.handle);
+    };
+    this.interceptor_.start();
   }
 
   bindHandleToReceiver(handle) {
@@ -71,6 +78,13 @@ class MockCredentialManager {
 class MockAuthenticator {
   constructor() {
     this.reset();
+
+    this.interceptor_ = new MojoInterfaceInterceptor(
+      blink.mojom.Authenticator.$interfaceName, "context", true);
+    this.interceptor_.oninterfacerequest = e => {
+      this.bindHandleToReceiver(e.handle);
+    };
+    this.interceptor_.start();
   }
 
   bindHandleToReceiver(handle) {
@@ -192,12 +206,3 @@ class MockAuthenticator {
 
 var mockAuthenticator = new MockAuthenticator();
 var mockCredentialManager = new MockCredentialManager();
-
-setDocumentInterfaceBrokerOverrides({
-  getAuthenticator: request => {
-    mockAuthenticator.bindHandleToReceiver(request.handle);
-  },
-  getCredentialManager: request => {
-    mockCredentialManager.bindHandleToReceiver(request.handle);
-  }
-});

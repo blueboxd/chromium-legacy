@@ -28,8 +28,6 @@
 #error "This file requires ARC support."
 #endif
 
-using fullscreen::features::ViewportAdjustmentExperiment;
-
 FullscreenWebStateObserver::FullscreenWebStateObserver(
     FullscreenController* controller,
     FullscreenModel* model,
@@ -83,18 +81,13 @@ void FullscreenWebStateObserver::DidFinishNavigation(
   // - For normal pages, using |contentInset| breaks the layout of fixed-
   //   position DOM elements, so top padding must be accomplished by updating
   //   the WKWebView's frame.
-  bool force_content_inset =
-      fullscreen::features::GetActiveViewportExperiment() ==
-      ViewportAdjustmentExperiment::CONTENT_INSET;
   bool is_pdf = web_state->GetContentsMimeType() == "application/pdf";
-  bool use_content_inset = force_content_inset || is_pdf;
   id<CRWWebViewProxy> web_view_proxy = web_state->GetWebViewProxy();
-  web_view_proxy.shouldUseViewContentInset = use_content_inset;
+  web_view_proxy.shouldUseViewContentInset = is_pdf;
 
-  model_->SetResizesScrollView(!use_content_inset &&
-                               !ios::GetChromeBrowserProvider()
-                                    ->GetFullscreenProvider()
-                                    ->IsInitialized());
+  model_->SetResizesScrollView(!is_pdf && !ios::GetChromeBrowserProvider()
+                                               ->GetFullscreenProvider()
+                                               ->IsInitialized());
 
   // Only reset the model for document-changing navigations or same-document
   // navigations that update the visible URL.

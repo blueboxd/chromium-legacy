@@ -1166,7 +1166,7 @@ TEST_P(TabStripTest, DiscontinuousGroup) {
   EXPECT_EQ(first_slot_x, headers[0]->x());
 }
 
-TEST_P(TabStripTest, DeleteTabGroupHeaderWhenEmpty) {
+TEST_P(TabStripTest, DeleteTabGroupHeaderAndUnderlineWhenEmpty) {
   tab_strip_->AddTabAt(0, TabRendererData(), false);
   tab_strip_->AddTabAt(1, TabRendererData(), false);
   base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
@@ -1175,8 +1175,10 @@ TEST_P(TabStripTest, DeleteTabGroupHeaderWhenEmpty) {
   controller_->MoveTabIntoGroup(0, base::nullopt);
 
   EXPECT_EQ(1u, ListGroupHeaders().size());
+  EXPECT_EQ(1u, ListGroupUnderlines().size());
   controller_->MoveTabIntoGroup(1, base::nullopt);
   EXPECT_EQ(0u, ListGroupHeaders().size());
+  EXPECT_EQ(0u, ListGroupUnderlines().size());
 }
 
 TEST_P(TabStripTest, GroupUnderlineBasics) {
@@ -1195,25 +1197,11 @@ TEST_P(TabStripTest, GroupUnderlineBasics) {
   // Update underline manually in the absence of a real Paint cycle.
   underline->UpdateVisuals();
   constexpr int kInset = 20;
-  constexpr int kStrokeWidth = 2;
   EXPECT_EQ(underline->x(), kInset);
   EXPECT_GT(underline->width(), 0);
   EXPECT_EQ(underline->bounds().right(),
             tab_strip_->tab_at(0)->bounds().right() - kInset);
-  EXPECT_EQ(underline->height(), kStrokeWidth);
-}
-
-TEST_P(TabStripTest, DeleteTabGroupUnderlineWhenEmpty) {
-  tab_strip_->AddTabAt(0, TabRendererData(), false);
-  tab_strip_->AddTabAt(1, TabRendererData(), false);
-  base::Optional<TabGroupId> group = TabGroupId::GenerateNew();
-  controller_->MoveTabIntoGroup(0, group);
-  controller_->MoveTabIntoGroup(1, group);
-  controller_->MoveTabIntoGroup(0, base::nullopt);
-
-  EXPECT_EQ(1u, ListGroupUnderlines().size());
-  controller_->MoveTabIntoGroup(1, base::nullopt);
-  EXPECT_EQ(0u, ListGroupUnderlines().size());
+  EXPECT_EQ(underline->height(), TabGroupUnderline::kStrokeThickness);
 }
 
 TEST_P(TabStripTest, ChangingLayoutTypeResizesTabs) {

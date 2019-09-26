@@ -92,6 +92,13 @@
             android:layout_height="wrap_content" />
 
         <ViewStub
+            android:id="@+id/status_indicator_stub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inflatedId="@+id/status_indicator"
+            android:layout="@layout/status_indicator_container" />
+
+        <ViewStub
             android:id="@+id/empty_container_stub"
             android:inflatedId="@+id/empty_container"
             android:layout="@layout/empty_background_view_tablet"

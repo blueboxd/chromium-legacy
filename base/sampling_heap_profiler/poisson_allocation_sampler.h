@@ -35,10 +35,6 @@ class BASE_EXPORT PoissonAllocationSampler {
  public:
   enum AllocatorType : uint32_t { kMalloc, kPartitionAlloc, kBlinkGC };
 
-  // When the sampler is just enabled it needs to see up to that amount
-  // of allocation sizes before it starts recording samples.
-  static constexpr size_t kWarmupInterval = 1 << 20;  // 1MB.
-
   class SamplesObserver {
    public:
     virtual ~SamplesObserver() = default;

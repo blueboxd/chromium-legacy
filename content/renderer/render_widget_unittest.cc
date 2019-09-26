@@ -187,7 +187,6 @@ class InteractiveRenderWidget : public RenderWidget {
         mojo::PendingReceiver<mojom::WidgetInputHandler>(),
         mock_input_handler_host_->BindNewPipeAndPassRemote());
   }
-  ~InteractiveRenderWidget() override { webwidget_internal_ = nullptr; }
 
   void SendInputEvent(const blink::WebInputEvent& event,
                       HandledEventCallback callback) {

@@ -26,7 +26,6 @@
 <translation id="415767770115540173">Asukohapõhised andmed tagavad teile parema Google Chrome'i kasutuskogemuse.</translation>
 <translation id="424864128008805179">Kas logida Chrome'ist välja?</translation>
 <translation id="4523886039239821078">Mõned pistikprogrammid põhjustavad Chrome'i kokkujooksmise. Desinstallige need:</translation>
-<translation id="4615174829807303908">Logite välja kontolt, mida haldab <ph name="SIGNOUT_MANAGED_DOMAIN" />. Selle tulemusel kustutatakse seadmes olevad Chrome'i andmed, kuid need jäävad alles teie Google'i kontole.</translation>
 <translation id="5389212809648216794">Google Chrome ei saa kaamerat kasutada, kuna seda kasutab muu rakendus</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />Vaadake üle Chrome'i värskendatud teenusetingimused.<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">Tehke valikud Seaded &gt; Privaatsus &gt; Kaamera &gt; Google Chrome ja lülitage kaamera sisse.</translation>
@@ -45,7 +44,6 @@
 <translation id="7173660919484573146">Chrome kasutab paroolide volitatud juurdepääsu kontrollimiseks Face ID-d.</translation>
 <translation id="7265369419224458312">Hankige juurdepääs arvutis avatud vahelehtedele siit. Lihtsalt avage arvutis Chrome, minge menüüsse ja valige käsk „Logi Chrome'i sisse ...”</translation>
 <translation id="7400722733683201933">Google Chrome'i kohta</translation>
-<translation id="7437998757836447326">Chrome'ist väljalogimine</translation>
 <translation id="756809126120519699">Chrome'i andmed kustutati</translation>
 <translation id="7626032353295482388">Tere tulemast Chrome'i</translation>
 <translation id="7698568245838009292">Chrome soovib juurdepääsu kaamerale</translation>

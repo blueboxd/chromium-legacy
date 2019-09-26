@@ -21,7 +21,7 @@ namespace net {
 // to |net_log|.
 class NET_EXPORT_PRIVATE QuicHttp3Logger : public quic::Http3DebugVisitor {
  public:
-  QuicHttp3Logger(const NetLogWithSource& net_log);
+  explicit QuicHttp3Logger(const NetLogWithSource& net_log);
 
   ~QuicHttp3Logger() override;
 

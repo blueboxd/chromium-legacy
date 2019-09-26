@@ -5,7 +5,7 @@ rootWebArea
 ++++++++paragraph
 ++++++++++staticText name='footer inside article.'
 ++++++++++++inlineTextBox name='footer inside article.'
-++++region
+++++section
 ++++++footerAsNonLandmark
 ++++++++paragraph
 ++++++++++staticText name='footer inside section.'

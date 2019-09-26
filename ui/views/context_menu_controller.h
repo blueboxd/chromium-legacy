@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_CONTEXT_MENU_CONTROLLER_H_
 #define UI_VIEWS_CONTEXT_MENU_CONTROLLER_H_
 
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "ui/base/ui_base_types.h"
 #include "ui/views/views_export.h"
 
@@ -28,6 +30,8 @@ class View;
 // implementation for mouse processing.
 class VIEWS_EXPORT ContextMenuController {
  public:
+  ContextMenuController();
+
   // Invoked to show the context menu for |source|. |point| is in screen
   // coordinates. This method also prevents reentrant calls.
   void ShowContextMenuForView(View* source,
@@ -35,7 +39,7 @@ class VIEWS_EXPORT ContextMenuController {
                               ui::MenuSourceType source_type);
 
  protected:
-  virtual ~ContextMenuController() = default;
+  virtual ~ContextMenuController();
 
  private:
   // Subclasses should override this method.
@@ -48,6 +52,10 @@ class VIEWS_EXPORT ContextMenuController {
   // spins a nested message loop that processes input events, which may attempt
   // to trigger another context menu.
   bool is_opening_ = false;
+
+  base::WeakPtrFactory<ContextMenuController> weak_factory_{this};
+
+  DISALLOW_COPY_AND_ASSIGN(ContextMenuController);
 };
 
 }  // namespace views

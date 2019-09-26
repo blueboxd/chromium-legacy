@@ -96,6 +96,11 @@ class ASH_PUBLIC_EXPORT SystemTray {
   // Shows the volume slider bubble shown at the right bottom of screen.
   virtual void ShowVolumeSliderBubble() = 0;
 
+  // Shows the network detailed view bubble at the right bottom of the primary
+  // display. Set |show_by_click| to true if bubble is shown by mouse or gesture
+  // click (it is used e.g. for timing histograms).
+  virtual void ShowNetworkDetailedViewBubble(bool show_by_click) = 0;
+
  protected:
   SystemTray();
   virtual ~SystemTray();

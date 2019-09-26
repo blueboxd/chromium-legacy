@@ -1009,7 +1009,7 @@ class BBJSONGenerator(object):
         bot_names.add(l[l.rindex('/') + 1:l.rindex('"')])
     return bot_names
 
-  def get_bots_that_do_not_actually_exist(self):
+  def get_builders_that_do_not_actually_exist(self):
     # Some of the bots on the chromium.gpu.fyi waterfall in particular
     # are defined only to be mirrored into trybots, and don't actually
     # exist on any of the waterfalls or consoles.
@@ -1049,14 +1049,14 @@ class BBJSONGenerator(object):
       'win32-dbg',
       'win-archive-dbg',
       'win32-archive-dbg',
-      # Defined in internal configs.
-      'chromeos-amd64-generic-google-rel',
-      'chromeos-betty-google-rel',
-      'chromeos-betty-pi-arc-google-rel',
-      'chromeos-kevin-google-rel',
       # code coverage, see https://crbug.com/1000367.
       'linux-chromeos-coverage-rel-dummy',
     ]
+
+  def get_internal_waterfalls(self):
+    # Similar to get_builders_that_do_not_actually_exist above, but for
+    # waterfalls defined in internal configs.
+    return ['chrome']
 
   def check_input_file_consistency(self, verbose=False):
     self.check_input_files_sorting(verbose)
@@ -1067,10 +1067,14 @@ class BBJSONGenerator(object):
 
     # All bots should exist.
     bot_names = self.get_valid_bot_names()
-    bots_that_dont_exist = self.get_bots_that_do_not_actually_exist()
+    internal_waterfalls = self.get_internal_waterfalls()
+    builders_that_dont_exist = self.get_builders_that_do_not_actually_exist()
     for waterfall in self.waterfalls:
+      # TODO(crbug.com/991417): Remove the need for this exception.
+      if waterfall['name'] in internal_waterfalls:
+        continue  # pragma: no cover
       for bot_name in waterfall['machines']:
-        if bot_name in bots_that_dont_exist:
+        if bot_name in builders_that_dont_exist:
           continue  # pragma: no cover
         if bot_name not in bot_names:
           if waterfall['name'] in ['client.v8.chromium', 'client.v8.fyi']:
@@ -1131,7 +1135,7 @@ class BBJSONGenerator(object):
         if removal not in all_bots:
           missing_bots.add(removal)
 
-    missing_bots = missing_bots - set(bots_that_dont_exist)
+    missing_bots = missing_bots - set(builders_that_dont_exist)
     if missing_bots:
       raise BBGenErr('The following nonexistent machines were referenced in '
                      'the test suite exceptions: ' + str(missing_bots))

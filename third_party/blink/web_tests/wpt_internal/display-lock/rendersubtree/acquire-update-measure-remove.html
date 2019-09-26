@@ -69,7 +69,7 @@ function runTest() {
   setInvisible(container).then(() => {
     construct(container);
     document.getElementById("empty").appendChild(container);
-    container.displayLock.update().then(measureAndRemove).then(takeScreenshot);
+    container.updateRendering().then(measureAndRemove).then(takeScreenshot);
   });
 }
 

@@ -1323,6 +1323,8 @@ Unknown properties are collapsed to zero. -->
   <int value="6" label="User exited the tab switcher"/>
   <int value="7" label="User exited fullscreen mode"/>
   <int value="8" label="User navigated backward in the tab's history"/>
+  <int value="9"
+      label="User used back press to exit tab group dialog from tab strip"/>
 </enum>
 
 <enum name="AndroidApiLevel">
@@ -4921,7 +4923,7 @@ Unknown properties are collapsed to zero. -->
   <int value="92" label="OBSOLETE_WC_RENDERER_DID_NAVIGATE_BAD_SECURITY_INFO"/>
   <int value="93" label="OBSOLETE_BDH_DUPLICATE_REQUEST_DEVICE_ID"/>
   <int value="94" label="CSDH_INVALID_ORIGIN"/>
-  <int value="95" label="RDH_ILLEGAL_ORIGIN"/>
+  <int value="95" label="OBSOLETE_RDH_ILLEGAL_ORIGIN"/>
   <int value="96" label="OBSOLETE_RDH_UNAUTHORIZED_HEADER_REQUEST"/>
   <int value="97" label="RDH_INVALID_URL"/>
   <int value="98" label="OBSOLETE_BDH_CHARACTERISTIC_ALREADY_SUBSCRIBED"/>
@@ -13102,6 +13104,7 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="Failed too many overlays"/>
   <int value="9" label="Failed no hw overlay support (deprecated)"/>
   <int value="10" label="Failed quad has rounded corners"/>
+  <int value="11" label="Failed read by backdrop filters"/>
 </enum>
 
 <enum name="DeclarativeAPIFunctionType">
@@ -18124,6 +18127,7 @@ Called by update_net_error_codes.py.-->
   <int value="607" label="DeviceLoginScreenVirtualKeyboardEnabled"/>
   <int value="608" label="CloudExtensionRequestEnabled"/>
   <int value="609" label="DeviceLoginScreenSystemInfoEnforced"/>
+  <int value="610" label="SharedClipboardEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -19224,6 +19228,7 @@ Called by update_net_error_codes.py.-->
   <int value="440"
       label="ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT"/>
   <int value="441" label="LOGIN_STATE_ON_SESSION_STATE_CHANGED"/>
+  <int value="442" label="PRINTING_METRICS_ON_PRINT_JOB_FINISHED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -20674,6 +20679,7 @@ Called by update_net_error_codes.py.-->
   <int value="1383" label="AUTOTESTPRIVATE_TAKESCREENSHOTFORDISPLAY"/>
   <int value="1384" label="AUTOFILLPRIVATE_SETCREDITCARDFIDOAUTHENABLEDSTATE"/>
   <int value="1385" label="USERSPRIVATE_ISWHITELISTEDUSER"/>
+  <int value="1386" label="PRINTINGMETRICS_GETPRINTJOBS"/>
 </enum>
 
 <enum name="ExtensionIconState">
@@ -21217,6 +21223,7 @@ Called by update_net_error_codes.py.-->
   <int value="220" label="kLogin"/>
   <int value="221" label="kLoginScreenStorage"/>
   <int value="222" label="kLoginState"/>
+  <int value="223" label="kPrintingMetrics"/>
 </enum>
 
 <enum name="ExtensionServiceVerifyAllSuccess">
@@ -36623,6 +36630,7 @@ from previous Chrome versions.
   <int value="288012253" label="CrostiniFiles:enabled"/>
   <int value="288755982"
       label="AutofillEnableLocalCardMigrationForNonSyncUser:enabled"/>
+  <int value="291389947" label="PercentBasedScrolling:disabled"/>
   <int value="291482671" label="ExperimentalFlingAnimation:disabled"/>
   <int value="292560715" label="ViewsCastDialog:disabled"/>
   <int value="293134455" label="AutofillSendBillingCustomerNumber:disabled"/>
@@ -36771,6 +36779,7 @@ from previous Chrome versions.
   <int value="479906041" label="RunAllFlashInAllowMode:disabled"/>
   <int value="480544447" label="NonValidatingReloadOnRefreshContentV2:enabled"/>
   <int value="481506759" label="ServiceWorkerScriptStreaming:enabled"/>
+  <int value="482232604" label="PercentBasedScrolling:enabled"/>
   <int value="492113129" label="ExperimentalAppBanners:enabled"/>
   <int value="492985975" label="use-monitor-color-space"/>
   <int value="493903641" label="disable-appcontainer"/>

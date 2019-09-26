@@ -4,7 +4,6 @@
 
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_confirmation_overlay_mediator.h"
 
-#include "base/strings/sys_string_conversions.h"
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/overlay_response.h"
@@ -12,8 +11,7 @@
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_consumer.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_blocking_action.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator+subclassing.h"
-#include "ios/chrome/grit/ios_strings.h"
+#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_overlay_mediator_util.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -21,12 +19,25 @@
 #endif
 
 @interface JavaScriptConfirmationOverlayMediator ()
-// The confirmation config.
+@property(nonatomic, readonly) OverlayRequest* request;
 @property(nonatomic, readonly)
     JavaScriptConfirmationOverlayRequestConfig* config;
+
+// Sets the OverlayResponse using the user's selection from the confirmation UI.
+- (void)setConfirmationResponse:(BOOL)dialogConfirmed;
 @end
 
 @implementation JavaScriptConfirmationOverlayMediator
+
+- (instancetype)initWithRequest:(OverlayRequest*)request {
+  if (self = [super init]) {
+    _request = request;
+    DCHECK(_request);
+    // Verify that the request is configured for JavaScript confirmations.
+    DCHECK(_request->GetConfig<JavaScriptConfirmationOverlayRequestConfig>());
+  }
+  return self;
+}
 
 #pragma mark - Accessors
 
@@ -34,10 +45,30 @@
   return self.request->GetConfig<JavaScriptConfirmationOverlayRequestConfig>();
 }
 
-- (void)setConsumer:(id<AlertConsumer>)consumer {
-  if (self.consumer == consumer)
-    return;
-  [super setConsumer:consumer];
+#pragma mark - Response helpers
+
+// Sets the OverlayResponse using the user's selection from the confirmation UI.
+- (void)setConfirmationResponse:(BOOL)dialogConfirmed {
+  self.request->set_response(
+      OverlayResponse::CreateWithInfo<
+          JavaScriptConfirmationOverlayResponseInfo>(dialogConfirmed));
+}
+
+@end
+
+@implementation JavaScriptConfirmationOverlayMediator (Subclassing)
+
+- (NSString*)alertTitle {
+  return GetJavaScriptDialogTitle(self.config->source(),
+                                  self.config->message());
+}
+
+- (NSString*)alertMessage {
+  return GetJavaScriptDialogMessage(self.config->source(),
+                                    self.config->message());
+}
+
+- (NSArray<AlertAction*>*)alertActions {
   __weak __typeof__(self) weakSelf = self;
   NSMutableArray* actions = [@[
     [AlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
@@ -57,31 +88,11 @@
                                stopDialogForMediator:strongSelf];
                          }],
   ] mutableCopy];
-  AlertAction* blockingAction = GetBlockingAlertAction(self);
+  AlertAction* blockingAction =
+      GetBlockingAlertAction(self, self.config->source());
   if (blockingAction)
     [actions addObject:blockingAction];
-  [self.consumer setActions:actions];
-}
-
-#pragma mark - Response helpers
-
-// Sets the OverlayResponse using the user's selection from the confirmation UI.
-- (void)setConfirmationResponse:(BOOL)dialogConfirmed {
-  self.request->set_response(
-      OverlayResponse::CreateWithInfo<
-          JavaScriptConfirmationOverlayResponseInfo>(dialogConfirmed));
-}
-
-@end
-
-@implementation JavaScriptConfirmationOverlayMediator (Subclassing)
-
-- (const JavaScriptDialogSource&)requestSource {
-  return self.config->source();
-}
-
-- (const std::string&)requestMessage {
-  return self.config->message();
+  return actions;
 }
 
 @end

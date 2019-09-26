@@ -11,11 +11,15 @@
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "services/tracing/public/cpp/perfetto/shared_memory.h"
+#include "services/tracing/public/cpp/traced_process_impl.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/commit_data_request.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/shared_memory_arbiter.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/startup_trace_writer_registry.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/core/trace_writer.h"
 #include "third_party/perfetto/include/perfetto/ext/tracing/ipc/producer_ipc_client.h"
+#include "third_party/perfetto/include/perfetto/protozero/scattered_heap_buffer.h"
+#include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
+#include "third_party/perfetto/protos/perfetto/common/track_event_descriptor.pbzero.h"
 
 namespace tracing {
 namespace {
@@ -81,6 +85,24 @@ void AndroidSystemProducer::NewDataSourceAdded(
   new_registration.set_will_notify_on_start(true);
   new_registration.set_will_notify_on_stop(true);
   new_registration.set_handles_incremental_state_clear(true);
+
+  // Add categories to the DataSourceDescriptor.
+  protozero::ScatteredHeapBuffer buffer;
+  protozero::ScatteredStreamWriter stream(&buffer);
+  perfetto::protos::pbzero::TrackEventDescriptor proto;
+  proto.Reset(&stream);
+  buffer.set_writer(&stream);
+
+  std::set<std::string> category_set;
+  tracing::TracedProcessImpl::GetInstance()->GetCategories(&category_set);
+  for (const std::string& s : category_set) {
+    proto.add_available_categories(s.c_str());
+  }
+
+  auto raw_proto = buffer.StitchSlices();
+  std::string track_event_descriptor_raw(raw_proto.begin(), raw_proto.end());
+  new_registration.set_track_event_descriptor_raw(track_event_descriptor_raw);
+
   service_->RegisterDataSource(new_registration);
 }
 

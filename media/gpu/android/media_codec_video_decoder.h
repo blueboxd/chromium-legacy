@@ -181,9 +181,11 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder : public VideoDecoder {
 
   // Forwards |frame| via |output_cb_| if |reset_generation| matches
   // |reset_generation_|.  |async_trace| is the (optional) scoped trace that
-  // started when we dequeued the corresponding output buffer.
+  // started when we dequeued the corresponding output buffer.  |started_at| is
+  // the wall clock time at which we dequeued the output buffer.
   void ForwardVideoFrame(int reset_generation,
                          std::unique_ptr<ScopedAsyncTrace> async_trace,
+                         base::TimeTicks started_at,
                          scoped_refptr<VideoFrame> frame);
 
   // Starts draining the codec by queuing an EOS if required. It skips the drain

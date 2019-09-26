@@ -21,7 +21,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/scoped_observer.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
-#include "chrome/browser/ui/app_list/search/logging/search_ranking_event_logger.h"
+#include "chrome/browser/ui/app_list/search/search_result_ranker/search_ranking_event_logger.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/search_engines/template_url_service_observer.h"
 #include "components/user_manager/user_manager.h"

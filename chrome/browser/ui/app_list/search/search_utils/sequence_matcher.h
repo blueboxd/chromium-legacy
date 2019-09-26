@@ -31,8 +31,8 @@ class SequenceMatcher {
     // Length of the common substring.
     int length;
   };
-  SequenceMatcher(const std::string& first_string,
-                  const std::string& second_string);
+  SequenceMatcher(const base::string16& first_string,
+                  const base::string16& second_string);
 
   ~SequenceMatcher() = default;
 
@@ -59,8 +59,8 @@ class SequenceMatcher {
   std::vector<Match> GetMatchingBlocks();
 
  private:
-  std::string first_string_;
-  std::string second_string_;
+  base::string16 first_string_;
+  base::string16 second_string_;
   double edit_distance_ratio_ = -1.0;
   double block_matching_ratio_ = -1.0;
   std::vector<Match> matching_blocks_;

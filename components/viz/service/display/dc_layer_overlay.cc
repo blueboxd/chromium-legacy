@@ -43,7 +43,8 @@ enum DCLayerResult {
   DC_LAYER_FAILED_TOO_MANY_OVERLAYS,
   DC_LAYER_FAILED_NO_HW_OVERLAY_SUPPORT,  // deprecated
   DC_LAYER_FAILED_ROUNDED_CORNERS,
-  kMaxValue = DC_LAYER_FAILED_ROUNDED_CORNERS,
+  DC_LAYER_FAILED_BACKDROP_FILTERS,
+  kMaxValue = DC_LAYER_FAILED_BACKDROP_FILTERS,
 };
 
 enum : size_t {
@@ -52,8 +53,19 @@ enum : size_t {
   kUVPlaneResourceIndex = 1,
 };
 
+// This returns the smallest rectangle in target space that contains the quad.
+gfx::RectF ClippedQuadRectangle(const DrawQuad* quad) {
+  gfx::RectF quad_rect = cc::MathUtil::MapClippedRect(
+      quad->shared_quad_state->quad_to_target_transform,
+      gfx::RectF(quad->rect));
+  if (quad->shared_quad_state->is_clipped)
+    quad_rect.Intersect(gfx::RectF(quad->shared_quad_state->clip_rect));
+  return quad_rect;
+}
+
 DCLayerResult FromYUVQuad(const YUVVideoDrawQuad* quad,
                           const gfx::Transform& transform_to_root_target,
+                          const std::vector<gfx::Rect>& backdrop_filter_rects,
                           bool has_hw_overlay_support,
                           int current_frame_processed_overlay_count,
                           DisplayResourceProvider* resource_provider,
@@ -94,6 +106,12 @@ DCLayerResult FromYUVQuad(const YUVVideoDrawQuad* quad,
     // Rounded corner on overlays are not supported.
     if (!quad->shared_quad_state->rounded_corner_bounds.IsEmpty())
       return DC_LAYER_FAILED_ROUNDED_CORNERS;
+
+    auto quad_target_rect = gfx::ToEnclosingRect(ClippedQuadRectangle(quad));
+    for (const auto& filter_target_rect : backdrop_filter_rects) {
+      if (filter_target_rect.Intersects(quad_target_rect))
+        return DC_LAYER_FAILED_BACKDROP_FILTERS;
+    }
   }
 
   // Direct composition path only supports single NV12 buffer, or two buffers
@@ -130,10 +148,12 @@ DCLayerResult FromYUVQuad(const YUVVideoDrawQuad* quad,
   return DC_LAYER_SUCCESS;
 }
 
-DCLayerResult FromTextureQuad(const TextureDrawQuad* quad,
-                              const gfx::Transform& transform_to_root_target,
-                              DisplayResourceProvider* resource_provider,
-                              DCLayerOverlay* dc_layer) {
+DCLayerResult FromTextureQuad(
+    const TextureDrawQuad* quad,
+    const gfx::Transform& transform_to_root_target,
+    const std::vector<gfx::Rect>& backdrop_filter_rects,
+    DisplayResourceProvider* resource_provider,
+    DCLayerOverlay* dc_layer) {
   // Check that resources are overlay compatible first so that subsequent
   // assumptions are valid.
   for (const auto& resource : quad->resources) {
@@ -145,15 +165,19 @@ DCLayerResult FromTextureQuad(const TextureDrawQuad* quad,
     return DC_LAYER_FAILED_QUAD_BLEND_MODE;
 
   if (!quad->shared_quad_state->quad_to_target_transform
-           .Preserves2dAxisAlignment() &&
-      !base::FeatureList::IsEnabled(
-          features::kDirectCompositionComplexOverlays)) {
+           .Preserves2dAxisAlignment()) {
     return DC_LAYER_FAILED_COMPLEX_TRANSFORM;
   }
 
   // Rounded corner on overlays are not supported.
   if (!quad->shared_quad_state->rounded_corner_bounds.IsEmpty())
     return DC_LAYER_FAILED_ROUNDED_CORNERS;
+
+  auto quad_target_rect = gfx::ToEnclosingRect(ClippedQuadRectangle(quad));
+  for (const auto& filter_target_rect : backdrop_filter_rects) {
+    if (filter_target_rect.Intersects(quad_target_rect))
+      return DC_LAYER_FAILED_BACKDROP_FILTERS;
+  }
 
   dc_layer->resources[kTextureResourceIndex] = quad->resource_id();
   dc_layer->z_order = 1;
@@ -203,16 +227,6 @@ DCLayerResult IsUnderlayAllowed(const QuadList::Iterator& it,
     }
   }
   return DC_LAYER_SUCCESS;
-}
-
-// This returns the smallest rectangle in target space that contains the quad.
-gfx::RectF ClippedQuadRectangle(const DrawQuad* quad) {
-  gfx::RectF quad_rect = cc::MathUtil::MapClippedRect(
-      quad->shared_quad_state->quad_to_target_transform,
-      gfx::RectF(quad->rect));
-  if (quad->shared_quad_state->is_clipped)
-    quad_rect.Intersect(gfx::RectF(quad->shared_quad_state->clip_rect));
-  return quad_rect;
 }
 
 // Any occluding quads in the quad list on top of the overlay/underlay
@@ -298,6 +312,11 @@ DCLayerOverlay& DCLayerOverlay::operator=(const DCLayerOverlay& other) =
     default;
 DCLayerOverlay::~DCLayerOverlay() = default;
 
+DCLayerOverlayProcessor::RenderPassData::RenderPassData() = default;
+DCLayerOverlayProcessor::RenderPassData::RenderPassData(
+    const RenderPassData& other) = default;
+DCLayerOverlayProcessor::RenderPassData::~RenderPassData() = default;
+
 DCLayerOverlayProcessor::DCLayerOverlayProcessor(
     const OutputSurface::Capabilities& capabilities,
     const RendererSettings& settings)
@@ -315,7 +334,7 @@ void DCLayerOverlayProcessor::Process(
     RenderPassList* render_passes,
     gfx::Rect* damage_rect,
     DCLayerOverlayList* dc_layer_overlays) {
-  pass_punch_through_rects_.clear();
+  render_pass_data_.clear();
   for (auto& pass : *render_passes) {
     bool is_root = (pass == render_passes->back());
     ProcessRenderPass(resource_provider, display_rect, pass.get(), is_root,
@@ -338,12 +357,21 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
   const RenderPassDrawQuad* rpdq = RenderPassDrawQuad::MaterialCast(*it);
 
   ++it;
-  // Check if this quad is broken to avoid corrupting pass_info.
+  // Check if this quad is broken to avoid corrupting |render_pass_data_|.
   if (rpdq->render_pass_id == render_pass->id)
     return it;
-  // |pass_punch_through_rects_| will be empty unless non-root overlays are
-  // enabled.
-  if (!pass_punch_through_rects_.count(rpdq->render_pass_id))
+
+  // This will be filled in for all render passes even non-root overlays are
+  // disabled.
+  const auto& render_pass_data = render_pass_data_[rpdq->render_pass_id];
+  if (render_pass_data.has_backdrop_filters) {
+    render_pass_data_[render_pass->id].backdrop_filter_rects.push_back(
+        gfx::ToEnclosingRect(ClippedQuadRectangle(rpdq)));
+  }
+
+  // |punch_through_rects| will be empty unless non-root overlays are enabled.
+  const auto& punch_through_rects = render_pass_data.punch_through_rects;
+  if (punch_through_rects.empty())
     return it;
 
   // Punch holes through for all child video quads that will be displayed in
@@ -386,8 +414,6 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
   // color mask in solid color draw quad which we don't have today. Another
   // difficulty is undoing the SrcOver blending in child render passes if any
   // render pass above has a non-supported blend mode.
-  const auto& punch_through_rects =
-      pass_punch_through_rects_[rpdq->render_pass_id];
   const SharedQuadState* original_shared_quad_state = rpdq->shared_quad_state;
 
   // Copy shared state from RPDQ to get the same clip rect.
@@ -417,7 +443,8 @@ QuadList::Iterator DCLayerOverlayProcessor::ProcessRenderPassDrawQuad(
 
     // Add transformed info to list in case this renderpass is included in
     // another pass.
-    pass_punch_through_rects_[render_pass->id].push_back(clipped_quad_rect);
+    render_pass_data_[render_pass->id].punch_through_rects.push_back(
+        clipped_quad_rect);
   }
   return it;
 }
@@ -442,7 +469,7 @@ void DCLayerOverlayProcessor::InsertDebugBorderDrawQuads(
   }
 
   const auto& punch_through_rects =
-      pass_punch_through_rects_[root_render_pass->id];
+      render_pass_data_[root_render_pass->id].punch_through_rects;
 
   auto it = quad_list.InsertBeforeAndInvalidateAllPointers<DebugBorderDrawQuad>(
       quad_list.begin(), punch_through_rects.size());
@@ -472,6 +499,15 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
   gfx::Rect this_frame_overlay_rect;
   gfx::Rect this_frame_underlay_rect;
 
+  // Always fill in |has_backdrop_filters| even if non-root overlays are
+  // disabled because it's needed to reject overlays that are read by backdrop
+  // filters.  Note that the backdrop filter rejection doesn't work properly for
+  // overlays that are in non-root render passes since we can't determine if
+  // there's an indirect ancestor render pass which has child RPDQs that could
+  // read this quad's output.
+  render_pass_data_[render_pass->id].has_backdrop_filters =
+      !render_pass->backdrop_filters.IsEmpty();
+
   QuadList* quad_list = &render_pass->quad_list;
   auto next_it = quad_list->begin();
   for (auto it = quad_list->begin(); it != quad_list->end(); it = next_it) {
@@ -489,16 +525,19 @@ void DCLayerOverlayProcessor::ProcessRenderPass(
     DCLayerResult result;
     switch (it->material) {
       case DrawQuad::Material::kYuvVideoContent:
-        result = FromYUVQuad(YUVVideoDrawQuad::MaterialCast(*it),
-                             render_pass->transform_to_root_target,
-                             has_hw_overlay_support_,
-                             current_frame_processed_overlay_count_,
-                             resource_provider, &dc_layer);
+        result = FromYUVQuad(
+            YUVVideoDrawQuad::MaterialCast(*it),
+            render_pass->transform_to_root_target,
+            render_pass_data_[render_pass->id].backdrop_filter_rects,
+            has_hw_overlay_support_, current_frame_processed_overlay_count_,
+            resource_provider, &dc_layer);
         break;
       case DrawQuad::Material::kTextureContent:
-        result = FromTextureQuad(TextureDrawQuad::MaterialCast(*it),
-                                 render_pass->transform_to_root_target,
-                                 resource_provider, &dc_layer);
+        result = FromTextureQuad(
+            TextureDrawQuad::MaterialCast(*it),
+            render_pass->transform_to_root_target,
+            render_pass_data_[render_pass->id].backdrop_filter_rects,
+            resource_provider, &dc_layer);
         break;
       default:
         result = DC_LAYER_FAILED_UNSUPPORTED_QUAD;
@@ -722,7 +761,7 @@ void DCLayerOverlayProcessor::ProcessForUnderlay(
   // Propagate the punched holes up the chain of render passes. Punch through
   // rects are in quad target (child render pass) space, and are transformed to
   // RPDQ target (parent render pass) in ProcessRenderPassDrawQuad().
-  pass_punch_through_rects_[render_pass->id].push_back(
+  render_pass_data_[render_pass->id].punch_through_rects.push_back(
       gfx::ToEnclosingRect(ClippedQuadRectangle(*it)));
 }
 

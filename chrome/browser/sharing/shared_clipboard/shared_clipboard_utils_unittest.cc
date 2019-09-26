@@ -16,7 +16,9 @@
 #include "chrome/browser/sharing/sharing_service_factory.h"
 #include "chrome/browser/sharing/sharing_sync_preference.h"
 #include "chrome/browser/sharing/vapid_key_manager.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/prefs/pref_service.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,6 +114,14 @@ TEST_F(SharedClipboardUtilsTest, ClipboardProtocol_ShowMenu) {
 TEST_F(SharedClipboardUtilsTest, NoSharingService_DoNotShowMenu) {
   scoped_feature_list_.InitAndEnableFeature(kSharedClipboardUI);
   create_service_ = false;
+  EXPECT_FALSE(
+      ShouldOfferSharedClipboard(&profile_, base::ASCIIToUTF16(kText)));
+}
+
+TEST_F(SharedClipboardUtilsTest, EnterprisePolicy_Disabled) {
+  scoped_feature_list_.InitAndEnableFeature(kSharedClipboardUI);
+  // Set the enterprise policy to false:
+  profile_.GetPrefs()->SetBoolean(prefs::kSharedClipboardEnabled, false);
   EXPECT_FALSE(
       ShouldOfferSharedClipboard(&profile_, base::ASCIIToUTF16(kText)));
 }

@@ -149,7 +149,14 @@ class AX_EXPORT AXPlatformNodeDelegateBase : public AXPlatformNodeDelegate {
   // Get whether this node is in web content.
   bool IsWebContent() const override;
 
+  // Get another node from this same tree.
   AXPlatformNode* GetFromNodeID(int32_t id) override;
+
+  // Get a node from a different tree using a tree ID and node ID.
+  // Note that this is only guaranteed to work if the other tree is of the
+  // same type, i.e. it won't work between web and views or vice-versa.
+  AXPlatformNode* GetFromTreeIDAndNodeID(const ui::AXTreeID& ax_tree_id,
+                                         int32_t id) override;
 
   // Given a node ID attribute (one where IsNodeIdIntAttribute is true), return
   // a target nodes for which this delegate's node has that relationship

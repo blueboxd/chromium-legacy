@@ -125,9 +125,12 @@ void StreamProcessorHelper::Reset() {
     return;
   }
 
-  processor_->CloseCurrentStream(stream_lifetime_ordinal_,
-                                 /*release_input_buffers=*/false,
-                                 /*release_output_buffers=*/false);
+  if (processor_ && active_stream_) {
+    processor_->CloseCurrentStream(stream_lifetime_ordinal_,
+                                   /*release_input_buffers=*/false,
+                                   /*release_output_buffers=*/false);
+  }
+
   stream_lifetime_ordinal_ += 2;
   active_stream_ = false;
   input_packets_.clear();

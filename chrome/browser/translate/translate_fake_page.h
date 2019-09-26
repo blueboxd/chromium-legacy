@@ -36,7 +36,8 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/navigation_simulator.h"
 #include "content/public/test/test_renderer_host.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "url/gurl.h"
 
 class FakePageImpl : public translate::mojom::Page {
@@ -44,7 +45,7 @@ class FakePageImpl : public translate::mojom::Page {
   FakePageImpl();
   ~FakePageImpl() override;
 
-  translate::mojom::PagePtr BindToNewPagePtr();
+  mojo::PendingRemote<translate::mojom::Page> BindToNewPageRemote();
 
   // translate::mojom::Page implementation.
   void Translate(
@@ -68,7 +69,7 @@ class FakePageImpl : public translate::mojom::Page {
 
  private:
   TranslateCallback translate_callback_pending_;
-  mojo::Binding<translate::mojom::Page> binding_;
+  mojo::Receiver<translate::mojom::Page> receiver_{this};
   DISALLOW_COPY_AND_ASSIGN(FakePageImpl);
 };
 

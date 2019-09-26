@@ -41,7 +41,7 @@ const AXPosition AXPosition::CreatePositionBeforeObject(
   AXPosition position(*parent);
   position.text_offset_or_child_index_ = child.IndexInParent();
 #if DCHECK_IS_ON()
-  std::string failure_reason;
+  String failure_reason;
   DCHECK(position.IsValid(&failure_reason)) << failure_reason;
 #endif
   return position.AsUnignoredPosition(adjustment_behavior);
@@ -66,7 +66,7 @@ const AXPosition AXPosition::CreatePositionAfterObject(
   AXPosition position(*parent);
   position.text_offset_or_child_index_ = child.IndexInParent() + 1;
 #if DCHECK_IS_ON()
-  std::string failure_reason;
+  String failure_reason;
   DCHECK(position.IsValid(&failure_reason)) << failure_reason;
 #endif
   return position.AsUnignoredPosition(adjustment_behavior);
@@ -83,7 +83,7 @@ const AXPosition AXPosition::CreateFirstPositionInObject(
     AXPosition position(container);
     position.text_offset_or_child_index_ = 0;
 #if DCHECK_IS_ON()
-    std::string failure_reason;
+    String failure_reason;
     DCHECK(position.IsValid(&failure_reason)) << failure_reason;
 #endif
     return position.AsUnignoredPosition(adjustment_behavior);
@@ -100,7 +100,7 @@ const AXPosition AXPosition::CreateFirstPositionInObject(
   AXPosition position(*unignored_container);
   position.text_offset_or_child_index_ = 0;
 #if DCHECK_IS_ON()
-  std::string failure_reason;
+  String failure_reason;
   DCHECK(position.IsValid(&failure_reason)) << failure_reason;
 #endif
   return position.AsUnignoredPosition(adjustment_behavior);
@@ -117,7 +117,7 @@ const AXPosition AXPosition::CreateLastPositionInObject(
     AXPosition position(container);
     position.text_offset_or_child_index_ = position.MaxTextOffset();
 #if DCHECK_IS_ON()
-    std::string failure_reason;
+    String failure_reason;
     DCHECK(position.IsValid(&failure_reason)) << failure_reason;
 #endif
     return position.AsUnignoredPosition(adjustment_behavior);
@@ -134,7 +134,7 @@ const AXPosition AXPosition::CreateLastPositionInObject(
   AXPosition position(*unignored_container);
   position.text_offset_or_child_index_ = unignored_container->ChildCount();
 #if DCHECK_IS_ON()
-  std::string failure_reason;
+  String failure_reason;
   DCHECK(position.IsValid(&failure_reason)) << failure_reason;
 #endif
   return position.AsUnignoredPosition(adjustment_behavior);
@@ -155,7 +155,7 @@ const AXPosition AXPosition::CreatePositionInTextObject(
   position.text_offset_or_child_index_ = offset;
   position.affinity_ = affinity;
 #if DCHECK_IS_ON()
-  std::string failure_reason;
+  String failure_reason;
   DCHECK(position.IsValid(&failure_reason)) << failure_reason;
 #endif
   return position.AsUnignoredPosition(adjustment_behavior);
@@ -240,7 +240,7 @@ const AXPosition AXPosition::FromPosition(
     ax_position.text_offset_or_child_index_ = offset;
     ax_position.affinity_ = affinity;
 #if DCHECK_IS_ON()
-    std::string failure_reason;
+    String failure_reason;
     DCHECK(ax_position.IsValid(&failure_reason)) << failure_reason;
 #endif
     return ax_position;
@@ -416,43 +416,51 @@ TextAffinity AXPosition::Affinity() const {
   return affinity_;
 }
 
-bool AXPosition::IsValid(std::string* failure_reason) const {
+bool AXPosition::IsValid(String* failure_reason) const {
   if (!container_object_) {
     if (failure_reason)
-      *failure_reason += "\nPosition invalid: no container object";
+      *failure_reason = "\nPosition invalid: no container object.";
     return false;
   }
   if (container_object_->IsDetached()) {
     if (failure_reason)
-      *failure_reason += "\nPosition invalid: detached container object";
+      *failure_reason = "\nPosition invalid: detached container object.";
     return false;
   }
   if (!container_object_->GetDocument()) {
-    if (failure_reason)
-      *failure_reason += "\nPosition invalid: no document for container object";
+    if (failure_reason) {
+      *failure_reason = "\nPosition invalid: no document for container object.";
+    }
     return false;
   }
+
   // Some container objects, such as those for CSS "::before" and "::after"
   // text, don't have associated DOM nodes.
   if (container_object_->GetNode() &&
       !container_object_->GetNode()->isConnected()) {
     if (failure_reason) {
-      *failure_reason +=
-          "\nPosition invalid: container object node is disconnected";
+      *failure_reason =
+          "\nPosition invalid: container object node is disconnected.";
     }
     return false;
   }
 
   if (IsTextPosition()) {
     if (text_offset_or_child_index_ > MaxTextOffset()) {
-      if (failure_reason)
-        *failure_reason += "\nPosition invalid: text offset too large";
+      if (failure_reason) {
+        *failure_reason = String::Format(
+            "\nPosition invalid: text offset too large.\n%d vs. %d",
+            text_offset_or_child_index_, MaxTextOffset());
+      }
       return false;
     }
   } else {
     if (text_offset_or_child_index_ > container_object_->ChildCount()) {
-      if (failure_reason)
-        *failure_reason += "\nPosition invalid: child index too large";
+      if (failure_reason) {
+        *failure_reason = String::Format(
+            "\nPosition invalid: child index too large.\n%d vs. %d",
+            text_offset_or_child_index_, container_object_->ChildCount());
+      }
       return false;
     }
   }
@@ -726,7 +734,7 @@ const AXPosition AXPosition::AsValidDOMPosition(
     }
   }
 #if DCHECK_IS_ON()
-  std::string failure_reason;
+  String failure_reason;
   DCHECK(position.IsValid(&failure_reason)) << failure_reason;
 #endif
   return position.AsValidDOMPosition(adjustment_behavior);
@@ -869,7 +877,7 @@ const AXObject* AXPosition::FindNeighboringUnignoredObject(
 
 bool operator==(const AXPosition& a, const AXPosition& b) {
 #if DCHECK_IS_ON()
-  std::string failure_reason;
+  String failure_reason;
   DCHECK(a.IsValid(&failure_reason) && b.IsValid(&failure_reason))
       << failure_reason;
 #endif
@@ -890,7 +898,7 @@ bool operator!=(const AXPosition& a, const AXPosition& b) {
 
 bool operator<(const AXPosition& a, const AXPosition& b) {
 #if DCHECK_IS_ON()
-  std::string failure_reason;
+  String failure_reason;
   DCHECK(a.IsValid(&failure_reason) && b.IsValid(&failure_reason))
       << failure_reason;
 #endif
@@ -931,7 +939,7 @@ bool operator<=(const AXPosition& a, const AXPosition& b) {
 
 bool operator>(const AXPosition& a, const AXPosition& b) {
 #if DCHECK_IS_ON()
-  std::string failure_reason;
+  String failure_reason;
   DCHECK(a.IsValid(&failure_reason) && b.IsValid(&failure_reason))
       << failure_reason;
 #endif

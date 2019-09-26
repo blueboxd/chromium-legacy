@@ -14,8 +14,7 @@
 #import "ios/chrome/browser/ui/alert_view_controller/test/fake_alert_consumer.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test/java_script_dialog_overlay_mediator_test.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/test/alert_overlay_mediator_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest_mac.h"
@@ -32,20 +31,20 @@ NSString* const kFakeUserInput = @"Fake User Input";
 
 // Fake version of the mediator data source.
 @interface FakePromptOverlayMediatorDataSource
-    : NSObject <JavaScriptPromptOverlayMediatorDataSource>
+    : NSObject <AlertOverlayMediatorDataSource>
 @property(nonatomic, copy) NSString* promptInput;
 @end
 
 @implementation FakePromptOverlayMediatorDataSource
 
-- (NSString*)promptInputForMediator:(JavaScriptPromptOverlayMediator*)mediator {
+- (NSString*)textFieldInputForMediator:(AlertOverlayMediator*)mediator
+                        textFieldIndex:(NSUInteger)index {
   return self.promptInput;
 }
 
 @end
 
-class JavaScriptPromptOverlayMediatorTest
-    : public JavaScriptDialogOverlayMediatorTest {
+class JavaScriptPromptOverlayMediatorTest : public AlertOverlayMediatorTest {
  public:
   JavaScriptPromptOverlayMediatorTest()
       : url_("https://chromium.test"),
@@ -56,11 +55,11 @@ class JavaScriptPromptOverlayMediatorTest
   }
 
   // Creates a mediator and sets it for testing.
-  void CreateMediator() {
+  void CreateMediator(bool is_main_frame = true) {
     request_ =
         OverlayRequest::CreateWithConfig<JavaScriptPromptOverlayRequestConfig>(
-            JavaScriptDialogSource(&web_state_, url_, /*is_main_frame=*/true),
-            message_, default_prompt_value_);
+            JavaScriptDialogSource(&web_state_, url_, is_main_frame), message_,
+            default_prompt_value_);
     JavaScriptPromptOverlayMediator* mediator =
         [[JavaScriptPromptOverlayMediator alloc]
             initWithRequest:request_.get()];
@@ -110,7 +109,7 @@ TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetupMainFrame) {
 
 // Tests that the consumer values are set correctly for prompts from iframes.
 TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetupIframe) {
-  CreateMediator();
+  CreateMediator(/*is_main_frame=*/false);
 
   // Verify the consumer values.
   EXPECT_NSEQ(base::SysUTF8ToNSString(message()), consumer().message);
@@ -134,7 +133,7 @@ TEST_F(JavaScriptPromptOverlayMediatorTest, PromptSetupWithBlockingOption) {
   CreateMediator();
 
   // Verify the consumer values.
-  EXPECT_NSEQ(base::SysUTF8ToNSString(message()), consumer().message);
+  EXPECT_NSEQ(base::SysUTF8ToNSString(message()), consumer().title);
   ASSERT_EQ(1U, consumer().textFieldConfigurations.count);
   EXPECT_NSEQ(base::SysUTF8ToNSString(default_prompt_value()),
               consumer().textFieldConfigurations[0].text);

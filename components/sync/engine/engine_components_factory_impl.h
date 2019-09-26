@@ -45,8 +45,6 @@ class EngineComponentsFactoryImpl : public EngineComponentsFactory {
       const base::RepeatingCallback<std::string()>& cache_guid_generator,
       const base::FilePath& backing_filepath) override;
 
-  Switches GetSwitches() const override;
-
  private:
   const Switches switches_;
   DISALLOW_COPY_AND_ASSIGN(EngineComponentsFactoryImpl);

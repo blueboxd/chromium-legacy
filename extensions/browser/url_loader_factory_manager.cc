@@ -312,10 +312,13 @@ network::mojom::URLLoaderFactoryPtrInfo CreateURLLoaderFactory(
     network::mojom::NetworkContext* network_context,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
-    const Extension& extension) {
+    const Extension& extension,
+    const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
   // Compute relaxed CORB config to be used by |extension|.
   network::mojom::URLLoaderFactoryParamsPtr params =
       network::mojom::URLLoaderFactoryParams::New();
+
+  params->network_isolation_key = network_isolation_key;
 
   // Setup factory bound allow list that overwrites per-profile common list
   // to allow tab specific permissions only for this newly created factory.
@@ -518,7 +521,8 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
     network::mojom::NetworkContext* network_context,
     mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
         header_client,
-    const url::Origin& initiator_origin) {
+    const url::Origin& initiator_origin,
+    const base::Optional<net::NetworkIsolationKey>& network_isolation_key) {
   content::BrowserContext* browser_context = process->GetBrowserContext();
   const ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
   DCHECK(registry);  // CreateFactory shouldn't happen during shutdown.
@@ -555,7 +559,7 @@ network::mojom::URLLoaderFactoryPtrInfo URLLoaderFactoryManager::CreateFactory(
   if (!IsSpecialURLLoaderFactoryRequired(*extension, factory_user))
     return network::mojom::URLLoaderFactoryPtrInfo();
   return CreateURLLoaderFactory(process, network_context, header_client,
-                                *extension);
+                                *extension, network_isolation_key);
 }
 
 // static

@@ -373,18 +373,6 @@ void AutofillExternalDelegate::ApplyAutofillOptions(
 #endif
   }
 
-// On iOS, GooglePayIcon comes at the begining and hence prepended to the list.
-#if defined(OS_IOS)
-  if (base::FeatureList::IsEnabled(
-          features::kAutofillDownstreamUseGooglePayBrandingOniOS) &&
-      is_all_server_suggestions) {
-    Suggestion googlepay_icon;
-    googlepay_icon.icon = "googlePay";
-    googlepay_icon.frontend_id = POPUP_ITEM_ID_GOOGLE_PAY_BRANDING;
-    suggestions->insert(suggestions->begin(), googlepay_icon);
-  }
-#endif
-
 #if defined(OS_ANDROID)
   if (IsKeyboardAccessoryEnabled()) {
     suggestions->back().icon = "settings";

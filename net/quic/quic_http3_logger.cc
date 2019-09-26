@@ -17,31 +17,13 @@ namespace net {
 
 namespace {
 
-base::Value NetLogPeerControlStreamParams(quic::QuicStreamId id) {
-  base::DictionaryValue dict;
-  dict.SetInteger("stream_id", id);
-  return std::move(dict);
-}
-
-base::Value NetLogPeerQpackEncoderStreamParams(quic::QuicStreamId id) {
-  base::DictionaryValue dict;
-  dict.SetInteger("stream_id", id);
-  return std::move(dict);
-}
-
-base::Value NetLogPeerQpackDecoderStreamParams(quic::QuicStreamId id) {
-  base::DictionaryValue dict;
-  dict.SetInteger("stream_id", id);
-  return std::move(dict);
-}
-
 base::Value NetLogSettingsParams(const quic::SettingsFrame& frame) {
-  base::DictionaryValue dict;
+  base::Value dict(base::Value::Type::DICTIONARY);
   // TODO(renjietang): Use string literal for setting identifiers.
   for (auto setting : frame.values) {
-    dict.SetInteger(base::NumberToString(setting.first), setting.second);
+    dict.SetIntKey(base::NumberToString(setting.first), setting.second);
   }
-  return std::move(dict);
+  return dict;
 }
 
 }  // namespace
@@ -54,26 +36,27 @@ QuicHttp3Logger::~QuicHttp3Logger() {}
 void QuicHttp3Logger::OnPeerControlStreamCreated(quic::QuicStreamId stream_id) {
   if (!net_log_.IsCapturing())
     return;
-  net_log_.AddEvent(NetLogEventType::HTTP3_PEER_CONTROL_STREAM_CREATED,
-                    [&] { return NetLogPeerControlStreamParams(stream_id); });
+  net_log_.AddEventWithIntParams(
+      NetLogEventType::HTTP3_PEER_CONTROL_STREAM_CREATED, "stream_id",
+      stream_id);
 }
 
 void QuicHttp3Logger::OnPeerQpackEncoderStreamCreated(
     quic::QuicStreamId stream_id) {
   if (!net_log_.IsCapturing())
     return;
-  net_log_.AddEvent(
-      NetLogEventType::HTTP3_PEER_QPACK_ENCODER_STREAM_CREATED,
-      [&] { return NetLogPeerQpackEncoderStreamParams(stream_id); });
+  net_log_.AddEventWithIntParams(
+      NetLogEventType::HTTP3_PEER_QPACK_ENCODER_STREAM_CREATED, "stream_id",
+      stream_id);
 }
 
 void QuicHttp3Logger::OnPeerQpackDecoderStreamCreated(
     quic::QuicStreamId stream_id) {
   if (!net_log_.IsCapturing())
     return;
-  net_log_.AddEvent(
-      NetLogEventType::HTTP3_PEER_QPACK_DECODER_STREAM_CREATED,
-      [&] { return NetLogPeerQpackDecoderStreamParams(stream_id); });
+  net_log_.AddEventWithIntParams(
+      NetLogEventType::HTTP3_PEER_QPACK_DECODER_STREAM_CREATED, "stream_id",
+      stream_id);
 }
 
 void QuicHttp3Logger::OnSettingsFrame(const quic::SettingsFrame& frame) {

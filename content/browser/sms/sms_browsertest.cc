@@ -97,7 +97,7 @@ class SmsBrowserTest : public ContentBrowserTest {
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   shell()->web_contents()->SetDelegate(&delegate_);
 
@@ -139,7 +139,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Receive) {
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   shell()->web_contents()->SetDelegate(&delegate_);
 
@@ -194,7 +194,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, AtMostOnePendingSmsRequest) {
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
@@ -227,7 +227,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
                                         ukm_loop.QuitClosure());
 
   // Reload the page.
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   ukm_loop.Run();
 
@@ -238,7 +238,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Reload) {
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Close) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
@@ -278,8 +278,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsSameOrigin) {
 
   GURL url = GetTestUrl(nullptr, "simple_page.html");
 
-  NavigateToURL(tab1, url);
-  NavigateToURL(tab2, url);
+  EXPECT_TRUE(NavigateToURL(tab1, url));
+  EXPECT_TRUE(NavigateToURL(tab2, url));
 
   std::string script = R"(
     navigator.sms.receive().then(({content}) => {
@@ -394,8 +394,8 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
   GURL url1 = https_server.GetURL("a.com", "/simple_page.html");
   GURL url2 = https_server.GetURL("b.com", "/simple_page.html");
 
-  NavigateToURL(tab1, url1);
-  NavigateToURL(tab2, url2);
+  EXPECT_TRUE(NavigateToURL(tab1, url1));
+  EXPECT_TRUE(NavigateToURL(tab2, url2));
 
   std::string script = R"(
     navigator.sms.receive().then(({content}) => {
@@ -471,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, TwoTabsDifferentOrigin) {
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(
@@ -502,7 +502,7 @@ IN_PROC_BROWSER_TEST_F(SmsBrowserTest, SmsReceivedAfterTabIsClosed) {
 
 IN_PROC_BROWSER_TEST_F(SmsBrowserTest, Cancels) {
   GURL url = GetTestUrl(nullptr, "simple_page.html");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   auto* provider = new NiceMock<MockSmsProvider>();
   BrowserMainLoop::GetInstance()->SetSmsProviderForTesting(

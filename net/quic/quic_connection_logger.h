@@ -11,7 +11,6 @@
 #include <string>
 
 #include "base/macros.h"
-#include "base/timer/timer.h"
 #include "net/base/ip_endpoint.h"
 #include "net/base/net_export.h"
 #include "net/base/network_change_notifier.h"
@@ -70,6 +69,8 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnDuplicatePacket(quic::QuicPacketNumber packet_number) override;
   void OnProtocolVersionMismatch(quic::ParsedQuicVersion version) override;
   void OnPacketHeader(const quic::QuicPacketHeader& header) override;
+  void OnCryptoFrame(const quic::QuicCryptoFrame& frame) override;
+  void OnStopSendingFrame(const quic::QuicStopSendingFrame& frame) override;
   void OnStreamFrame(const quic::QuicStreamFrame& frame) override;
   void OnStopWaitingFrame(const quic::QuicStopWaitingFrame& frame) override;
   void OnRstStreamFrame(const quic::QuicRstStreamFrame& frame) override;
@@ -110,8 +111,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // For connections longer than 21 received packets, this call will calculate
   // the overall packet loss rate, and record it into a histogram.
   void RecordAggregatePacketLossRate() const;
-
-  void UpdateIsCapturing();
 
   NetLogWithSource net_log_;
   quic::QuicSpdySession* session_;  // Unowned.
@@ -175,10 +174,6 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   // Receives notifications regarding the performance of the underlying socket
   // for the QUIC connection. May be null.
   const std::unique_ptr<SocketPerformanceWatcher> socket_performance_watcher_;
-  // Lower the overhead of checking whether logging is active, by
-  // periodically polling and caching the result of net_log_.IsCapturing().
-  bool net_log_is_capturing_;
-  base::RepeatingTimer timer_;
 
   DISALLOW_COPY_AND_ASSIGN(QuicConnectionLogger);
 };

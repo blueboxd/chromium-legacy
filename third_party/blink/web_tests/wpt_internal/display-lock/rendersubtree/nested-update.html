@@ -46,7 +46,7 @@ async function runTest() {
     setInvisible(inner)]);
   // Dirty the inner layout
   inner.appendChild(document.createElement("div"));
-  inner.displayLock.update().then(
+  inner.updateRendering().then(
     () => { finishTest("FAIL"); },
     (e) => { finishTest("PASS " + e.message); });
 }

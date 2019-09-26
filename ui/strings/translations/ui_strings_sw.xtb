@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Kituo cha Arifa, arifa <ph name="UNREAD_NOTIFICATION_COUNT" /> ambazo hujasoma</translation>
 <translation id="4730374152663651037">ZINAZOTUMIKA SANA</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Umesalia mwezi 1}other{Imesalia miezi #}}</translation>
-<translation id="4841881773802181781">Uwekaji</translation>
 <translation id="4881695831933465202">Fungua</translation>
 <translation id="4888938634149558681">Piga simu</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{Sekunde 1}other{Sekunde #}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Hifadhi Faili</translation>
 <translation id="6656912866303152668">Hakikisha kwamba umewasha kipengele cha usawazishaji katika <ph name="TARGET_DEVICE_NAME" /> kwenye Chrome kisha ujaribu kutuma tena.</translation>
 <translation id="6699343763173986273">Wimbo Unaofuata kwenye Media</translation>
-<translation id="673773751041746814">Ufutaji</translation>
 <translation id="6779314412797872738">Ili utume nambari kutoka hapa hadi kwenye simu yako ya Android, <ph name="TROUBLESHOOT_LINK" /> kwenye vifaa vyote viwili katika mipangilio.</translation>
 <translation id="6786750046913594791">Funga Folda</translation>
 <translation id="6808150112686056157">Simamisha Media</translation>

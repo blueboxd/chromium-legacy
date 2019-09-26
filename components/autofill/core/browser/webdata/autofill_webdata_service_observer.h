@@ -23,13 +23,6 @@ class AutofillWebDataServiceObserverOnDBSequence {
   // the WebDatabase.
   virtual void CreditCardChanged(const CreditCardChange& change) {}
 
-  // Called on DB sequence when multiple Autofill entries have been modified by
-  // Sync.
-  // TODO(crbug.com/900607): Remove AutofillMultipleChangedBySync() from
-  // AutofillWebDataServiceObserverOnDBSequence once USS for wallet_metadata
-  // launches.
-  virtual void AutofillMultipleChangedBySync() {}
-
  protected:
   virtual ~AutofillWebDataServiceObserverOnDBSequence() {}
 };

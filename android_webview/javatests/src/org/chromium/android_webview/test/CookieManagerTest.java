@@ -71,7 +71,7 @@ public class CookieManagerTest {
     private TestAwContentsClient mContentsClient;
     private AwContents mAwContents;
 
-    private final static String SECURE_COOKIE_HISTOGRAM_NAME = "Android.WebView.SecureCookieAction";
+    private static final String SECURE_COOKIE_HISTOGRAM_NAME = "Android.WebView.SecureCookieAction";
 
     @Before
     public void setUp() throws Exception {

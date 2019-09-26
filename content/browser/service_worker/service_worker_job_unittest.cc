@@ -1005,7 +1005,7 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
 
   // Make an in-scope client.
   ServiceWorkerProviderHost* client = CreateControllee();
-  client->UpdateUrls(in_scope, in_scope);
+  client->UpdateUrls(in_scope, in_scope, url::Origin::Create(in_scope));
 
   // Make an in-scope reserved client.
   std::unique_ptr<ServiceWorkerProviderHostAndInfo> host_and_info =
@@ -1013,11 +1013,13 @@ TEST_F(ServiceWorkerJobTest, AddRegistrationToMatchingProviderHosts) {
                                          /*are_ancestors_secure=*/true);
   base::WeakPtr<ServiceWorkerProviderHost> reserved_client =
       std::move(host_and_info->host);
-  reserved_client->UpdateUrls(in_scope, in_scope);
+  reserved_client->UpdateUrls(in_scope, in_scope,
+                              url::Origin::Create(in_scope));
 
   // Make an out-scope client.
   ServiceWorkerProviderHost* out_scope_client = CreateControllee();
-  out_scope_client->UpdateUrls(out_scope, out_scope);
+  out_scope_client->UpdateUrls(out_scope, out_scope,
+                               url::Origin::Create(out_scope));
 
   // Make a new registration.
   GURL script("https://www.example.com/service_worker.js");

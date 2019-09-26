@@ -59,7 +59,7 @@ async_test(async (t) => {
 
   // update() should trigger style & layout update in the locked tree. The ax objects might get replaced,
   // but the structure should stay the same.
-  await locked.displayLock.update();
+  await locked.updateRendering();
   axLocked = axElementById("locked");
   t.step(() => { assert_equals(axLocked.childrenCount, 7, "Child count after update"); });
 

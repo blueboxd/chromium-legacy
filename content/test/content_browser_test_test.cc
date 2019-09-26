@@ -56,7 +56,7 @@ IN_PROC_BROWSER_TEST_F(ContentBrowserTest, MANUAL_RendererCrash) {
       shell()->web_contents()->GetMainFrame()->GetProcess(),
       content::RenderProcessHostWatcher::WATCH_FOR_PROCESS_EXIT);
 
-  NavigateToURL(shell(), GetWebUIURL("crash"));
+  EXPECT_FALSE(NavigateToURL(shell(), GetWebUIURL("crash")));
   renderer_shutdown_observer.Wait();
 
   EXPECT_FALSE(renderer_shutdown_observer.did_exit_normally());
@@ -232,7 +232,7 @@ class ContentBrowserTestSanityTest : public ContentBrowserTest {
 
     base::string16 expected_title(base::ASCIIToUTF16("OK"));
     TitleWatcher title_watcher(shell()->web_contents(), expected_title);
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
     base::string16 title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expected_title, title);
   }

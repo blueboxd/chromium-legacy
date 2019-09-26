@@ -74,6 +74,13 @@ void BASE_EXPORT RegisterTaskExecutor(uint8_t extension_id,
                                       TaskExecutor* task_executor);
 void BASE_EXPORT UnregisterTaskExecutorForTesting(uint8_t extension_id);
 
+// Stores the provided TaskExecutor in TLS for the current thread, to be used by
+// tasks with the CurrentThread() trait.
+void BASE_EXPORT SetTaskExecutorForCurrentThread(TaskExecutor* task_executor);
+
+// Returns the task executor registered for the current thread.
+BASE_EXPORT TaskExecutor* GetTaskExecutorForCurrentThread();
+
 // Determines whether a registered TaskExecutor will handle tasks with the given
 // |traits| and, if so, returns a pointer to it. Otherwise, returns |nullptr|.
 TaskExecutor* GetRegisteredTaskExecutorForTraits(const TaskTraits& traits);

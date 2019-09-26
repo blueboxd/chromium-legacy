@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/win/registry.h"
-#include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/singleton_hwnd_observer.h"
 
 namespace gfx {

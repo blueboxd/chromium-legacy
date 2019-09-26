@@ -88,6 +88,8 @@ const char* const kModelIdsBlacklistedForMediaFoundation[] = {
     "1943:2253",
     // Dell E5440
     "0c45:64d0", "0c45:64d2",
+    // Dell E7440
+    "1bcf:2985",
     // Lenovo Thinkpad Model 20CG0006FMZ front and rear cameras, see
     // also https://crbug.com/924528
     "04ca:7047", "04ca:7048",

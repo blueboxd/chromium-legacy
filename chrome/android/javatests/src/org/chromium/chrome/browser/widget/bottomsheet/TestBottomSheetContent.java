@@ -30,15 +30,20 @@ public class TestBottomSheetContent implements BottomSheetContent {
     /** Whether this content is browser specific. */
     private boolean mHasCustomLifecycle;
 
+    /** Whether this content's peek state is enabled. */
+    private boolean mPeekStateEnabled;
+
     /**
      * @param context A context to inflate views with.
      * @param priority The content's priority.
      * @param hasCustomLifecycle Whether the content is browser specific.
+     * @param peekStateEnabled Whether the content's peek state is enabled.
      */
-    public TestBottomSheetContent(
-            Context context, @ContentPriority int priority, boolean hasCustomLifecycle) {
+    public TestBottomSheetContent(Context context, @ContentPriority int priority,
+            boolean hasCustomLifecycle, boolean peekStateEnabled) {
         mPriority = priority;
         mHasCustomLifecycle = hasCustomLifecycle;
+        mPeekStateEnabled = peekStateEnabled;
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mToolbarView = new View(context);
             ViewGroup.LayoutParams params =
@@ -52,6 +57,24 @@ public class TestBottomSheetContent implements BottomSheetContent {
             mContentView.setLayoutParams(params);
             mToolbarView.setBackground(new ColorDrawable(Color.WHITE));
         });
+    }
+
+    /**
+     * @param context A context to inflate views with.
+     * @param priority The content's priority.
+     * @param hasCustomLifecycle Whether the content is browser specific.
+     */
+    public TestBottomSheetContent(
+            Context context, @ContentPriority int priority, boolean hasCustomLifecycle) {
+        this(context, priority, hasCustomLifecycle, true);
+    }
+
+    /**
+     * @param context A context to inflate views with.
+     * @param peekStateEnabled Whether the content's peek state is enabled.
+     */
+    public TestBottomSheetContent(Context context, boolean peekStateEnabled) {
+        this(/*TestBottomSheetContent(*/ context, ContentPriority.LOW, false, peekStateEnabled);
     }
 
     @Override
@@ -85,7 +108,7 @@ public class TestBottomSheetContent implements BottomSheetContent {
 
     @Override
     public boolean isPeekStateEnabled() {
-        return true;
+        return mPeekStateEnabled;
     }
 
     @Override

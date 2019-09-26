@@ -824,7 +824,6 @@ class VideoEncodeAcceleratorTestEnvironment : public ::testing::Environment {
     ui::OzonePlatform::InitParams params;
     params.single_process = true;
     ui::OzonePlatform::InitializeForGPU(params);
-    ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
     done->Signal();
   }
 #endif

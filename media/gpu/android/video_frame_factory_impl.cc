@@ -109,6 +109,11 @@ void VideoFrameFactoryImpl::Initialize(OverlayMode overlay_mode,
 void VideoFrameFactoryImpl::SetSurfaceBundle(
     scoped_refptr<CodecSurfaceBundle> surface_bundle) {
   scoped_refptr<CodecImageGroup> image_group;
+
+  // Increase the generation ID used by the shared image provider, since we're
+  // changing the TextureOwner.  This is temporary.  See ImageSpec.
+  image_spec_.generation_id++;
+
   if (!surface_bundle) {
     // Clear everything, just so we're not holding a reference.
     codec_buffer_wait_coordinator_ = nullptr;
@@ -154,7 +159,8 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
     return;
   }
 
-  SharedImageVideoProvider::ImageSpec spec(coded_size);
+  // Update the current spec to match the size.
+  image_spec_.size = coded_size;
 
   auto image_ready_cb = base::BindOnce(
       &VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady,
@@ -164,7 +170,7 @@ void VideoFrameFactoryImpl::CreateVideoFrame(
       enable_threaded_texture_mailboxes_, gpu_task_runner_);
 
   image_provider_->RequestImage(
-      std::move(image_ready_cb), spec,
+      std::move(image_ready_cb), image_spec_,
       codec_buffer_wait_coordinator_
           ? codec_buffer_wait_coordinator_->texture_owner()
           : nullptr);
@@ -194,6 +200,9 @@ void VideoFrameFactoryImpl::CreateVideoFrame_OnImageReady(
   // on the gpu main thread here, but it's okay since CodecImage is not being
   // used at this point.  Alternatively, we could post it, or hand it off to the
   // MaybeRenderEarlyManager to save a post.
+  //
+  // When we remove the output buffer management from CodecImage, then that's
+  // what we'd have a reference to here rather than CodecImage.
   record.codec_image_holder->codec_image_raw()->Initialize(
       std::move(output_buffer), codec_buffer_wait_coordinator,
       std::move(promotion_hint_cb));
@@ -261,18 +270,6 @@ void VideoFrameFactoryImpl::CreateVideoFrame_Finish(
   mailbox_holders[0] = gpu::MailboxHolder(record.mailbox, gpu::SyncToken(),
                                           GL_TEXTURE_EXTERNAL_OES);
 
-  // TODO(liberato): We should set the promotion hint cb here on the image.  We
-  // should also set the output buffer params; we shouldn't send the output
-  // buffer to the gpu thread, since the codec image isn't in use anyway.  We
-  // can access it on any thread.  We'll also need to get new images when we
-  // switch texture owners.  That's left for future work.
-
-  // TODO(liberato): When we switch to a pool, we need to provide some way to
-  // call MaybeRenderEarly that doesn't depend on |release_cb|.  I suppose we
-  // could get a RepeatingCallback that's a "reuse cb", that we'd attach to the
-  // VideoFrame's release cb, since we have to wait for the sync token anyway.
-  // That would run on the gpu thread, and could MaybeRenderEarly.
-
   gfx::Rect visible_rect(coded_size);
 
   auto frame = VideoFrame::WrapNativeTextures(
@@ -334,12 +331,24 @@ void VideoFrameFactoryImpl::CreateVideoFrame_Finish(
 void VideoFrameFactoryImpl::RunAfterPendingVideoFrames(
     base::OnceClosure closure) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  // Hop through |gpu_task_runner_| to ensure it comes after pending frames.
-  // TODO(liberato): If we're using a pool for SharedImageVideo, then this
-  // doesn't really make much sense.  SharedImageVideoProvider should do this
-  // for us instead.
-  gpu_task_runner_->PostTaskAndReply(FROM_HERE, base::DoNothing(),
-                                     std::move(closure));
+
+  // Run |closure| after we receive an image from |image_provider_|.  We don't
+  // need the image, but it guarantees that it's ordered after all previous
+  // requests have been fulfilled.
+
+  auto image_ready_cb = base::BindOnce(
+      [](base::OnceClosure closure,
+         SharedImageVideoProvider::ImageRecord record) {
+        // Ignore |record| since we don't actually need an image.
+        std::move(closure).Run();
+      },
+      std::move(closure));
+
+  image_provider_->RequestImage(
+      std::move(image_ready_cb), image_spec_,
+      codec_buffer_wait_coordinator_
+          ? codec_buffer_wait_coordinator_->texture_owner()
+          : nullptr);
 }
 
 }  // namespace media

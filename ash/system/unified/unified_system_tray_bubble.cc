@@ -183,6 +183,15 @@ void UnifiedSystemTrayBubble::ShowAudioDetailedView() {
   controller_->ShowAudioDetailedView();
 }
 
+void UnifiedSystemTrayBubble::ShowNetworkDetailedView(bool force) {
+  if (!bubble_widget_)
+    return;
+
+  DCHECK(unified_view_);
+  DCHECK(controller_);
+  controller_->ShowNetworkDetailedView(force);
+}
+
 void UnifiedSystemTrayBubble::UpdateBubble() {
   if (!bubble_widget_)
     return;

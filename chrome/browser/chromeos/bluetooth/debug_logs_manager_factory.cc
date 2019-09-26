@@ -65,3 +65,7 @@ KeyedService* DebugLogsManagerFactory::BuildServiceInstanceFor(
 
   return new DebugLogsManagerService(profile);
 }
+
+bool DebugLogsManagerFactory::ServiceIsCreatedWithBrowserContext() const {
+  return true;
+}

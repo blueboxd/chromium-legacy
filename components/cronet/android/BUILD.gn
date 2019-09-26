@@ -925,6 +925,7 @@ if (!is_component_build) {
   android_library("cronet_common_javatests") {
     testonly = true
     java_files = [
+      "test/javatests/src/org/chromium/net/TestUploadDataProvider.java",
       "test/javatests/src/org/chromium/net/TestUrlRequestCallback.java",
       "test/javatests/src/org/chromium/net/CronetTestRule.java",
     ]
@@ -1005,7 +1006,6 @@ if (!is_component_build) {
       "test/javatests/src/org/chromium/net/TestDrivenDataProvider.java",
       "test/javatests/src/org/chromium/net/TestNetworkQualityRttListener.java",
       "test/javatests/src/org/chromium/net/TestNetworkQualityThroughputListener.java",
-      "test/javatests/src/org/chromium/net/TestUploadDataProvider.java",
       "test/javatests/src/org/chromium/net/UploadDataProvidersTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/CronetBufferedOutputStreamTest.java",
       "test/javatests/src/org/chromium/net/urlconnection/CronetChunkedOutputStreamTest.java",

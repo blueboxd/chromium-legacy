@@ -122,10 +122,6 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   // Ask the syncer to check for updates for the specified types.
   void DoRefreshTypes(ModelTypeSet types);
 
-  // Invoked if we failed to download the necessary control types at startup.
-  // Invokes SyncEngine::HandleControlTypesDownloadRetry.
-  void OnControlTypesDownloadRetry();
-
   // Called to perform tasks which require the control data to be downloaded.
   // This includes refreshing encryption, etc.
   void DoInitialProcessControlTypes();
@@ -147,7 +143,6 @@ class SyncEngineBackend : public base::RefCountedThreadSafe<SyncEngineBackend>,
   void DoFinishConfigureDataTypes(
       ModelTypeSet types_to_config,
       const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task);
-  void DoRetryConfiguration(const base::Closure& retry_callback);
 
   // Set the base request context to use when making HTTP calls.
   // This method will add a reference to the context to persist it

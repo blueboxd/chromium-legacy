@@ -19,9 +19,7 @@
 #import "ios/web_view/internal/cwv_user_content_controller_internal.h"
 #import "ios/web_view/internal/cwv_web_view_internal.h"
 #include "ios/web_view/internal/passwords/web_view_password_store_factory.h"
-#include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #include "ios/web_view/internal/signin/web_view_identity_manager_factory.h"
-#include "ios/web_view/internal/signin/web_view_signin_client_factory.h"
 #include "ios/web_view/internal/signin/web_view_signin_error_controller_factory.h"
 #import "ios/web_view/internal/sync/cwv_sync_controller_internal.h"
 #import "ios/web_view/internal/sync/web_view_profile_sync_service_factory.h"
@@ -162,18 +160,15 @@ CWVWebViewConfiguration* gIncognitoConfiguration = nil;
     SigninErrorController* signinErrorController =
         ios_web_view::WebViewSigninErrorControllerFactory::GetForBrowserState(
             self.browserState);
+    autofill::PersonalDataManager* personalDataManager =
+        ios_web_view::WebViewPersonalDataManagerFactory::GetForBrowserState(
+            self.browserState);
 
     _syncController =
         [[CWVSyncController alloc] initWithSyncService:syncService
                                        identityManager:identityManager
-                                 signinErrorController:signinErrorController];
-
-    // Set the newly created CWVSyncController on IOSWebViewSigninClient to
-    // so access tokens can be fetched.
-    IOSWebViewSigninClient* signinClient =
-        ios_web_view::WebViewSigninClientFactory::GetForBrowserState(
-            self.browserState);
-    signinClient->SetSyncController(_syncController);
+                                 signinErrorController:signinErrorController
+                                   personalDataManager:personalDataManager];
   }
   return _syncController;
 }

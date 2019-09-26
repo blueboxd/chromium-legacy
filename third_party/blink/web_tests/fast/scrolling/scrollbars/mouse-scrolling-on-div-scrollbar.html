@@ -132,6 +132,35 @@ window.onload = () => {
     await waitForCompositorCommit();
     resetScrollOffset(standardDivFast);
 
+    // Testing forward scroll on vertical scrollbar.
+    let x = standardRectFast.right - BUTTON_WIDTH / 2;
+    let y = standardRectFast.top + 50;
+    await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
+    assert_equals(standardDivFast.scrollTop, 617, "Shift + click forward didn't scroll.");
+
+    // Testing backward scroll on vertical scrollbar.
+    x = standardRectFast.right - BUTTON_WIDTH / 2;
+    y = standardRectFast.top + 30;
+    await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
+    assert_equals(standardDivFast.scrollTop, 160, "Shift + click backward didn't scroll.");
+
+    // Testing forward scroll on horizontal scrollbar.
+    x = standardRectFast.left + 50;
+    y = standardRectFast.bottom - BUTTON_WIDTH / 2;
+    await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
+    assert_equals(standardDivFast.scrollLeft, 617, "Shift + click forward didn't scroll.");
+
+    // Testing backward scroll on horizontal scrollbar.
+    x = standardRectFast.left + 30;
+    y = standardRectFast.bottom - BUTTON_WIDTH / 2;
+    await mouseClickOn(x, y, /*left_click*/0, /*modifier*/ "Shift");
+    assert_equals(standardDivFast.scrollLeft, 160, "Shift + click backward didn't scroll.");
+  }, "Test shift + click on non-custom composited scrollbars.");
+
+  promise_test (async () => {
+    await waitForCompositorCommit();
+    resetScrollOffset(standardDivFast);
+
     // Testing the vertical scrollbar thumb.
     let x = standardRectFast.right - TRACK_WIDTH / 2;
     let y = standardRectFast.top + BUTTON_WIDTH + 5;

@@ -359,7 +359,7 @@ void DoSafeBrowsingCheckOnUIThread(
       std::move(item), std::move(callback));
 }
 
-ChromeNativeFileSystemPermissionContext::SafeBrowsingResult
+ChromeNativeFileSystemPermissionContext::AfterWriteCheckResult
 InterpretSafeBrowsingResult(safe_browsing::DownloadCheckResult result) {
   using Result = safe_browsing::DownloadCheckResult;
   switch (result) {
@@ -369,7 +369,7 @@ InterpretSafeBrowsingResult(safe_browsing::DownloadCheckResult result) {
     case Result::UNKNOWN:
     case Result::SAFE:
     case Result::WHITELISTED_BY_POLICY:
-      return ChromeNativeFileSystemPermissionContext::SafeBrowsingResult::
+      return ChromeNativeFileSystemPermissionContext::AfterWriteCheckResult::
           kAllow;
 
     case Result::DANGEROUS:
@@ -377,17 +377,17 @@ InterpretSafeBrowsingResult(safe_browsing::DownloadCheckResult result) {
     case Result::DANGEROUS_HOST:
     case Result::POTENTIALLY_UNWANTED:
     case Result::BLOCKED_PASSWORD_PROTECTED:
-      return ChromeNativeFileSystemPermissionContext::SafeBrowsingResult::
+      return ChromeNativeFileSystemPermissionContext::AfterWriteCheckResult::
           kBlock;
 
     // This shouldn't be returned for Native File System write checks.
     case Result::ASYNC_SCANNING:
       NOTREACHED();
-      return ChromeNativeFileSystemPermissionContext::SafeBrowsingResult::
+      return ChromeNativeFileSystemPermissionContext::AfterWriteCheckResult::
           kAllow;
   }
   NOTREACHED();
-  return ChromeNativeFileSystemPermissionContext::SafeBrowsingResult::kBlock;
+  return ChromeNativeFileSystemPermissionContext::AfterWriteCheckResult::kBlock;
 }
 
 }  // namespace
@@ -666,11 +666,11 @@ void ChromeNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
                      std::move(callback)));
 }
 
-void ChromeNativeFileSystemPermissionContext::PerformSafeBrowsingChecks(
+void ChromeNativeFileSystemPermissionContext::PerformAfterWriteChecks(
     std::unique_ptr<content::NativeFileSystemWriteItem> item,
     int process_id,
     int frame_id,
-    base::OnceCallback<void(SafeBrowsingResult)> callback) {
+    base::OnceCallback<void(AfterWriteCheckResult)> callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   base::PostTask(
       FROM_HERE, {content::BrowserThread::UI},
@@ -678,7 +678,8 @@ void ChromeNativeFileSystemPermissionContext::PerformSafeBrowsingChecks(
           &DoSafeBrowsingCheckOnUIThread, process_id, frame_id, std::move(item),
           base::BindOnce(
               [](scoped_refptr<base::TaskRunner> task_runner,
-                 base::OnceCallback<void(SafeBrowsingResult result)> callback,
+                 base::OnceCallback<void(AfterWriteCheckResult result)>
+                     callback,
                  safe_browsing::DownloadCheckResult result) {
                 task_runner->PostTask(
                     FROM_HERE,

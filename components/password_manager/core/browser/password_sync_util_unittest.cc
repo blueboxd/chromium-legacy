@@ -149,58 +149,6 @@ class PasswordSyncUtilEnterpriseTest : public SyncUsernameTestBase {
   TestingPrefServiceSimple prefs_;
 };
 
-TEST_F(PasswordSyncUtilEnterpriseTest, ShouldSavePasswordHash) {
-  prefs_.SetString(prefs::kPasswordProtectionChangePasswordURL,
-                   "https://pwchange.mydomain.com/");
-  base::ListValue login_url;
-  login_url.AppendString("https://login.mydomain.com/");
-  prefs_.Set(prefs::kPasswordProtectionLoginURLs, login_url);
-  const struct {
-    PasswordForm form;
-    std::string fake_sync_username;
-    bool expected_result;
-  } kTestCases[] = {
-      {SimpleNonGaiaForm("sync_user@mydomain.com",
-                         "https://pwchange.mydomain.com/"),
-       "sync_user@mydomain.com", true},
-      {SimpleNonGaiaForm("sync_user@mydomain.com",
-                         "https://login.mydomain.com/"),
-       "sync_user@mydomain.com", true},
-      {SimpleNonGaiaForm("non_sync_user@mydomain.com",
-                         "https://pwchange.mydomain.com/"),
-       "sync_user@mydomain.com", false},
-      {SimpleNonGaiaForm("non_sync_user@mydomain.com",
-                         "https://login.mydomain.com/"),
-       "sync_user@mydomain.com", false},
-      {SimpleNonGaiaForm("sync_user", "https://pwchange.mydomain.com/"),
-       "sync_user@mydomain.com", true},
-      {SimpleNonGaiaForm("sync_user", "https://login.mydomain.com/"),
-       "sync_user@mydomain.com", true},
-      {SimpleNonGaiaForm("non_sync_user", "https://pwchange.mydomain.com/"),
-       "sync_user@mydomain.com", false},
-      {SimpleNonGaiaForm("non_sync_user", "https://login.mydomain.com/"),
-       "sync_user@mydomain.com", false},
-      {SimpleNonGaiaForm("", "https://pwchange.mydomain.com/"),
-       "sync_user@mydomain.com", false},
-      {SimpleNonGaiaForm("", "https://login.mydomain.com/"),
-       "sync_user@mydomain.com", false},
-      {SimpleNonGaiaForm("sync_user@mydomain.com", "https://otherdomain.com/"),
-       "sync_user@mydomain.com", false},
-      {SimpleNonGaiaForm("sync_user", "https://otherdomain.com/"),
-       "sync_user@mydomain.com", false},
-  };
-
-  for (bool syncing_passwords : {false, true}) {
-    for (size_t i = 0; i < base::size(kTestCases); ++i) {
-      SCOPED_TRACE(testing::Message() << "i=" << i);
-      SetSyncingPasswords(syncing_passwords);
-      FakeSigninAs(kTestCases[i].fake_sync_username);
-      EXPECT_EQ(kTestCases[i].expected_result,
-                ShouldSavePasswordHash(kTestCases[i].form, identity_manager(),
-                                       &prefs_));
-    }
-  }
-}
 #endif  // SYNC_PASSWORD_REUSE_DETECTION_ENABLED
 
 }  // namespace sync_util

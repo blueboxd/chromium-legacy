@@ -53,7 +53,8 @@ gfx::Vector2dF ScrollbarController::GetThumbRelativePoint(
 // Performs hit test and prepares scroll deltas that will be used by GSB and
 // GSU.
 InputHandlerPointerResult ScrollbarController::HandlePointerDown(
-    const gfx::PointF position_in_widget) {
+    const gfx::PointF position_in_widget,
+    bool shift_modifier) {
   LayerImpl* layer_impl = GetLayerHitByPoint(position_in_widget);
 
   // If a non-custom scrollbar layer was not found, we return early as there is
@@ -73,19 +74,13 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
   const ScrollbarPart scrollbar_part =
       GetScrollbarPartFromPointerDown(position_in_widget);
   scroll_result.scroll_offset = GetScrollOffsetForScrollbarPart(
-      scrollbar_part, currently_captured_scrollbar_->orientation());
+      scrollbar_part, currently_captured_scrollbar_->orientation(),
+      shift_modifier);
   last_known_pointer_position_ = position_in_widget;
   scrollbar_scroll_is_active_ = true;
-  if (scrollbar_part == ScrollbarPart::THUMB) {
-    scroll_result.scroll_units =
-        ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+  if (scrollbar_part == ScrollbarPart::THUMB)
     drag_anchor_relative_to_thumb_ = GetThumbRelativePoint(position_in_widget);
-  } else {
-    // TODO(arakeri): This needs to be updated to kLine once cc implements
-    // handling it. crbug.com/959441
-    scroll_result.scroll_units =
-        ui::input_types::ScrollGranularity::kScrollByPixel;
-  }
+  scroll_result.scroll_units = Granularity(scrollbar_part, shift_modifier);
 
   if (!scroll_result.scroll_offset.IsZero()) {
     // Thumb drag is the only scrollbar manipulation that cannot produce an
@@ -106,6 +101,54 @@ InputHandlerPointerResult ScrollbarController::HandlePointerDown(
                           kInitialAutoscrollTimerDelay);
   }
   return scroll_result;
+}
+
+ui::input_types::ScrollGranularity ScrollbarController::Granularity(
+    const ScrollbarPart scrollbar_part,
+    const bool shift_modifier) {
+  const bool shift_click_on_scrollbar_track =
+      shift_modifier && (scrollbar_part == ScrollbarPart::FORWARD_TRACK ||
+                         scrollbar_part == ScrollbarPart::BACK_TRACK);
+  if (shift_click_on_scrollbar_track || scrollbar_part == ScrollbarPart::THUMB)
+    return ui::input_types::ScrollGranularity::kScrollByPrecisePixel;
+
+  // TODO(arakeri): This needs to be updated to kLine once cc implements
+  // handling it. crbug.com/959441
+  return ui::input_types::ScrollGranularity::kScrollByPixel;
+}
+
+float ScrollbarController::GetScrollDeltaForShiftClick() {
+  layer_tree_host_impl_->active_tree()->UpdateScrollbarGeometries();
+
+  bool clipped = false;
+  const gfx::PointF pointer_position_in_layer =
+      GetScrollbarRelativePosition(last_known_pointer_position_, &clipped);
+
+  if (clipped)
+    return 0;
+
+  const ScrollbarOrientation orientation =
+      currently_captured_scrollbar_->orientation();
+  const float pointer_location = orientation == ScrollbarOrientation::VERTICAL
+                                     ? pointer_position_in_layer.y()
+                                     : pointer_position_in_layer.x();
+
+  // During a shift + click, the pointers current location (on the track) needs
+  // to be considered as the center of the thumb and the thumb origin needs to
+  // be calculated based on that. This will ensure that when shift + click is
+  // processed, the thumb will be centered on the pointer.
+  const int thumb_length = currently_captured_scrollbar_->ThumbLength();
+  const float desired_thumb_origin = pointer_location - thumb_length / 2.f;
+
+  const gfx::Rect thumb_rect(
+      currently_captured_scrollbar_->ComputeThumbQuadRect());
+  const float current_thumb_origin =
+      orientation == ScrollbarOrientation::VERTICAL ? thumb_rect.y()
+                                                    : thumb_rect.x();
+
+  const float delta =
+      round(std::abs(desired_thumb_origin - current_thumb_origin));
+  return delta * GetScrollerToScrollbarRatio();
 }
 
 gfx::ScrollOffset ScrollbarController::GetScrollOffsetForDragPosition(
@@ -141,7 +184,7 @@ gfx::ScrollOffset ScrollbarController::GetScrollOffsetForDragPosition(
 }
 
 // Performs hit test and prepares scroll deltas that will be used by GSU.
-InputHandlerPointerResult ScrollbarController::HandleMouseMove(
+InputHandlerPointerResult ScrollbarController::HandlePointerMove(
     const gfx::PointF position_in_widget) {
   last_known_pointer_position_ = position_in_widget;
   RecomputeAutoscrollStateIfNeeded();
@@ -437,7 +480,8 @@ LayerImpl* ScrollbarController::GetLayerHitByPoint(
 }
 
 int ScrollbarController::GetScrollDeltaForScrollbarPart(
-    ScrollbarPart scrollbar_part) {
+    const ScrollbarPart scrollbar_part,
+    const bool shift_modifier) {
   int scroll_delta = 0;
   int viewport_length = 0;
   LayerImpl* owner_scroll_layer = nullptr;
@@ -449,6 +493,10 @@ int ScrollbarController::GetScrollDeltaForScrollbarPart(
       break;
     case ScrollbarPart::BACK_TRACK:
     case ScrollbarPart::FORWARD_TRACK:
+      if (shift_modifier) {
+        scroll_delta = GetScrollDeltaForShiftClick();
+        break;
+      }
       owner_scroll_layer =
           layer_tree_host_impl_->active_tree()->ScrollableLayerByElementId(
               currently_captured_scrollbar_->scroll_element_id());
@@ -514,8 +562,10 @@ gfx::Rect ScrollbarController::GetRectForScrollbarPart(
 // orientation.
 gfx::ScrollOffset ScrollbarController::GetScrollOffsetForScrollbarPart(
     const ScrollbarPart scrollbar_part,
-    const ScrollbarOrientation orientation) {
-  float scroll_delta = GetScrollDeltaForScrollbarPart(scrollbar_part);
+    const ScrollbarOrientation orientation,
+    const bool shift_modifier) {
+  float scroll_delta =
+      GetScrollDeltaForScrollbarPart(scrollbar_part, shift_modifier);
 
   // See CreateScrollStateForGesture for more information on how these values
   // will be interpreted.

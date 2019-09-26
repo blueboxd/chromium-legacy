@@ -8,6 +8,10 @@
 
 namespace views {
 
+ContextMenuController::ContextMenuController() = default;
+
+ContextMenuController::~ContextMenuController() = default;
+
 void ContextMenuController::ShowContextMenuForView(
     View* source,
     const gfx::Point& point,
@@ -15,9 +19,18 @@ void ContextMenuController::ShowContextMenuForView(
   // Use a boolean flag to early-exit out of re-entrant behavior.
   if (is_opening_)
     return;
-  base::AutoReset<bool> auto_reset_is_opening(&is_opening_, true);
+
+  // We might get deleted while showing the context menu (including as a result
+  // of showing it). If so, we need to make sure we're not accessing
+  // |is_opening_|.
+  auto weak_ptr = weak_factory_.GetWeakPtr();
 
   ShowContextMenuForViewImpl(source, point, source_type);
+
+  if (!weak_ptr)
+    return;
+
+  is_opening_ = false;
 }
 
 }  // namespace views

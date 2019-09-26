@@ -34,7 +34,6 @@ class VIEWS_EXPORT TableHeader : public views::View {
                                TableView::AdvanceDirection direction);
 
   // views::View overrides.
-  void Layout() override;
   void OnPaint(gfx::Canvas* canvas) override;
   const char* GetClassName() const override;
   gfx::Size CalculatePreferredSize() const override;

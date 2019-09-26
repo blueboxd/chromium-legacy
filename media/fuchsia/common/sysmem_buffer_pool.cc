@@ -63,7 +63,10 @@ SysmemBufferPool::SysmemBufferPool(
   });
 }
 
-SysmemBufferPool::~SysmemBufferPool() = default;
+SysmemBufferPool::~SysmemBufferPool() {
+  if (collection_)
+    collection_->Close();
+}
 
 fuchsia::sysmem::BufferCollectionTokenPtr SysmemBufferPool::TakeToken() {
   DCHECK(!shared_tokens_.empty());

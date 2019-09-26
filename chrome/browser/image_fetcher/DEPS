@@ -2,6 +2,6 @@ include_rules = [
   # TODO(crbug/973821): Temporary until profiles is moved to chrome/lib.
   "+chrome/android/public/profiles",
 
-  "+chrome/lib/util/public",
+  "+chrome/browser/util",
   "+content/public/android/java/src/org/chromium/content_public",
 ]

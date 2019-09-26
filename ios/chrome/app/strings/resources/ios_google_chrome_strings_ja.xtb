@@ -26,7 +26,6 @@
 <translation id="415767770115540173">ユーザーの場所に基づいてChromeでGoogleを使いやすくします。</translation>
 <translation id="424864128008805179">Chrome からログアウトしますか？</translation>
 <translation id="4523886039239821078">アドオンが原因でChromeがクラッシュしました。次をアンインストールしてください:</translation>
-<translation id="4615174829807303908"><ph name="SIGNOUT_MANAGED_DOMAIN" /> で管理されているアカウントからログアウトします。Chrome データはこのデバイスから削除されますが、Google アカウントで保持されます。</translation>
 <translation id="5389212809648216794">カメラは別のアプリが使用中のため、Google Chrome では使用できません</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />最新の Chrome 利用規約を確認してください。<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">[設定] &gt; [プライバシー] &gt; [カメラ] &gt; [Google Chrome] の順に選択し、カメラをオンにします。</translation>
@@ -45,7 +44,6 @@
 <translation id="7173660919484573146">Chrome では Face ID の使用により、パスワードへの認証されたアクセスのみが許可されます。</translation>
 <translation id="7265369419224458312">パソコンで開いたタブにこちらからアクセスできます。パソコンでChromeを開き、メニューから[Chromeにログイン]を選択してください。</translation>
 <translation id="7400722733683201933">Google Chrome について</translation>
-<translation id="7437998757836447326">Chrome からログアウト</translation>
 <translation id="756809126120519699">Chrome データの消去完了</translation>
 <translation id="7626032353295482388">Chrome へようこそ</translation>
 <translation id="7698568245838009292">Chrome がカメラへのアクセス許可を求めています</translation>

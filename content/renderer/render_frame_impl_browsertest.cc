@@ -50,7 +50,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/frame/frame_host_test_interface.mojom.h"
-#include "third_party/blink/public/platform/web_effective_connection_type.h"
 #include "third_party/blink/public/platform/web_runtime_features.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
@@ -156,11 +155,6 @@ class RenderFrameImplTest : public RenderViewTest {
 
   void SetPreviewsState(RenderFrameImpl* frame, PreviewsState previews_state) {
     frame->previews_state_ = previews_state;
-  }
-
-  void SetEffectionConnectionType(RenderFrameImpl* frame,
-                                  blink::WebEffectiveConnectionType type) {
-    frame->effective_connection_type_ = type;
   }
 
   TestRenderFrame* GetMainRenderFrame() {
@@ -307,72 +301,6 @@ TEST_F(RenderFrameImplTest, LocalChildFrameWasShown) {
 
   EXPECT_FALSE(frame_widget()->is_hidden());
   EXPECT_TRUE(observer.visible());
-}
-
-// Test that effective connection type only updates for new main frame
-// documents.
-TEST_F(RenderFrameImplTest, EffectiveConnectionType) {
-  EXPECT_EQ(blink::WebEffectiveConnectionType::kTypeUnknown,
-            frame()->GetEffectiveConnectionType());
-  EXPECT_EQ(blink::WebEffectiveConnectionType::kTypeUnknown,
-            GetMainRenderFrame()->GetEffectiveConnectionType());
-
-  const struct {
-    blink::WebEffectiveConnectionType type;
-  } tests[] = {{blink::WebEffectiveConnectionType::kTypeUnknown},
-               {blink::WebEffectiveConnectionType::kType2G},
-               {blink::WebEffectiveConnectionType::kType4G}};
-
-  for (size_t i = 0; i < base::size(tests); ++i) {
-    SetEffectionConnectionType(GetMainRenderFrame(), tests[i].type);
-    SetEffectionConnectionType(frame(), tests[i].type);
-
-    EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
-    EXPECT_EQ(tests[i].type,
-              GetMainRenderFrame()->GetEffectiveConnectionType());
-
-    blink::WebHistoryItem item;
-    item.Initialize();
-
-    // The main frame's and subframe's effective connection type should stay the
-    // same on same-document navigations.
-    frame()->DidFinishSameDocumentNavigation(item, blink::kWebStandardCommit,
-                                             false /* content_initiated */);
-    EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
-    GetMainRenderFrame()->DidFinishSameDocumentNavigation(
-        item, blink::kWebStandardCommit, false /* content_initiated */);
-    EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
-
-    // The subframe's effective connection type should not be reset on commit.
-    NavigationState* navigation_state = NavigationState::FromDocumentLoader(
-        frame()->GetWebFrame()->GetDocumentLoader());
-    navigation_state->set_was_within_same_document(false);
-
-    mojo::PendingRemote<blink::mojom::DocumentInterfaceBroker>
-        stub_document_interface_broker;
-    frame()->DidCommitProvisionalLoad(
-        item, blink::kWebStandardCommit,
-        stub_document_interface_broker.InitWithNewPipeAndPassReceiver()
-            .PassPipe());
-    EXPECT_EQ(tests[i].type, frame()->GetEffectiveConnectionType());
-
-    // The main frame's effective connection type should be reset on commit.
-    navigation_state = NavigationState::FromDocumentLoader(
-        GetMainRenderFrame()->GetWebFrame()->GetDocumentLoader());
-    navigation_state->set_was_within_same_document(false);
-
-    stub_document_interface_broker.reset();
-    GetMainRenderFrame()->DidCommitProvisionalLoad(
-        item, blink::kWebStandardCommit,
-        stub_document_interface_broker.InitWithNewPipeAndPassReceiver()
-            .PassPipe());
-    EXPECT_EQ(blink::WebEffectiveConnectionType::kTypeUnknown,
-              GetMainRenderFrame()->GetEffectiveConnectionType());
-
-    // The subframe would be deleted here after a cross-document navigation.
-    // It happens to be left around in this test because this does not simulate
-    // the frame detach.
-  }
 }
 
 TEST_F(RenderFrameImplTest, SaveImageFromDataURL) {
@@ -784,15 +712,6 @@ class TestSimpleDocumentInterfaceBrokerImpl
       override {
     binder_callback_.Run(std::move(receiver));
   }
-  void GetCredentialManager(
-      mojo::PendingReceiver<blink::mojom::CredentialManager>) override {}
-  void GetAuthenticator(
-      mojo::PendingReceiver<blink::mojom::Authenticator> receiver) override {}
-  void GetPushMessaging(
-      mojo::PendingReceiver<blink::mojom::PushMessaging> receiver) override {}
-  void GetVirtualAuthenticatorManager(
-      mojo::PendingReceiver<blink::test::mojom::VirtualAuthenticatorManager>
-          receiver) override {}
 
   mojo::Receiver<blink::mojom::DocumentInterfaceBroker> receiver_{this};
   BinderCallback binder_callback_;

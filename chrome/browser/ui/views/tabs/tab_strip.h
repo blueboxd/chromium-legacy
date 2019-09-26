@@ -25,6 +25,7 @@
 #include "chrome/browser/ui/views/tabs/tab_animation_state.h"
 #include "chrome/browser/ui/views/tabs/tab_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_drag_context.h"
+#include "chrome/browser/ui/views/tabs/tab_group_header.h"
 #include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/material_design/material_design_controller_observer.h"
@@ -43,7 +44,6 @@
 class NewTabButton;
 class StackedTabStripLayout;
 class Tab;
-class TabGroupHeader;
 class TabGroupUnderline;
 class TabGroupId;
 class TabHoverCardBubbleView;
@@ -200,7 +200,9 @@ class TabStrip : public views::AccessiblePaneView,
   Tab* tab_at(int index) const { return tabs_.view_at(index); }
 
   // Returns the TabGroupHeader with ID |id|.
-  TabGroupHeader* group_header(TabGroupId id) { return GetGroupHeaders()[id]; }
+  TabGroupHeader* group_header(TabGroupId id) {
+    return group_headers_[id].get();
+  }
 
   // Returns the NewTabButton.
   NewTabButton* new_tab_button() { return new_tab_button_; }

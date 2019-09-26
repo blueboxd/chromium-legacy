@@ -54,7 +54,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         doCallRealMethod()
                 .when(mMockForegroundServiceUtils)
                 .startForegroundService(any(Intent.class));
-        mTabHolder = new MediaNotificationTestTabHolder(TAB_ID_1, "about:blank", "title1");
+        mTabHolder = createMediaNotificationTestTabHolder(TAB_ID_1, "about:blank", "title1");
     }
 
     @Test
@@ -136,7 +136,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         mTabHolder.simulateMediaSessionStateChanged(false, false);
 
         MediaNotificationTestTabHolder newTabHolder =
-                new MediaNotificationTestTabHolder(TAB_ID_2, "about:blank", "title2");
+                createMediaNotificationTestTabHolder(TAB_ID_2, "about:blank", "title2");
 
         newTabHolder.simulateMediaSessionStateChanged(true, false);
         newTabHolder.simulateTitleUpdated("title3");
@@ -160,7 +160,7 @@ public class MediaNotificationTitleUpdatedTest extends MediaNotificationManagerT
         assertEquals("title1", getDisplayedTitle());
 
         MediaNotificationTestTabHolder newTabHolder =
-                new MediaNotificationTestTabHolder(TAB_ID_2, "about:blank", "title2");
+                createMediaNotificationTestTabHolder(TAB_ID_2, "about:blank", "title2");
 
         newTabHolder.simulateMediaSessionStateChanged(true, false);
         newTabHolder.simulateTitleUpdated("title3");

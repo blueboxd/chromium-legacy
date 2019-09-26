@@ -1,7 +1,7 @@
 From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
 From: Darwin Huang <huangdarwin@chromium.org>
 Date: Wed, 17 Jul 2019 15:24:25 -0700
-Subject: [PATCH 4/5] Fix incorrect assert
+Subject: [PATCH 4/6] Fix incorrect assert
 
 Backports https://www.sqlite.org/src/info/59c9e73f86b89ee1
 
@@ -29,5 +29,5 @@ index c0ae8f00922e..23cb6bb3b083 100644
    if( pPage->nOverflow || sz+2>pPage->nFree ){
      if( pTemp ){
 -- 
-2.22.0.657.g960e92d24f-goog
+2.23.0.351.gc4317032e6-goog
 

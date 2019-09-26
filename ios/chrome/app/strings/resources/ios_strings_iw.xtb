@@ -235,7 +235,6 @@
 <translation id="430967081421617822">משחר ההיסטוריה</translation>
 <translation id="4338650699862464074">‏שליחת כתובות URL של דפים שנכנסת אליהם אל Google.</translation>
 <translation id="4359125752503270327">הדף הזה ייפתח ביישום אחר.</translation>
-<translation id="4370827530403103842">הסנכרון לא עובד. הקש כאן לתיקון.</translation>
 <translation id="4375040482473363939">‏חיפוש של קוד QR</translation>
 <translation id="4378154925671717803">טלפון</translation>
 <translation id="441868831736628555">הודעת פרטיות</translation>
@@ -429,7 +428,6 @@
 <translation id="7006788746334555276">הגדרות תוכן</translation>
 <translation id="7015203776128479407">הגדרת הסנכרון הראשונית לא הושלמה. הסנכרון מושבת.</translation>
 <translation id="7029809446516969842">סיסמאות</translation>
-<translation id="7031882061095297553">סינכרון עם</translation>
 <translation id="7053983685419859001">חסימה</translation>
 <translation id="7062545763355031412">קבל והחלף חשבונות</translation>
 <translation id="7099761977003084116">כרטיסיות אחרונות</translation>
@@ -438,7 +436,6 @@
 <translation id="7133798577887235672">שם מלא</translation>
 <translation id="7136892417564438900">המצלמה לא זמינה</translation>
 <translation id="7159472599653637159">בקש אתר שמותאם לנייד</translation>
-<translation id="7167621057293532233">סוגי נתונים</translation>
 <translation id="7173114856073700355">פתיחת ההגדרות</translation>
 <translation id="7189598951263744875">שיתוף...</translation>
 <translation id="7192050974311852563">התחלת רישום ביומן</translation>
@@ -471,7 +468,6 @@
 <translation id="766891008101699113">כדי לגלוש באינטרנט בפרטיות צריך להוסיף כרטיסייה חדשה.</translation>
 <translation id="7671141431838911305">התקנה</translation>
 <translation id="7765158879357617694">העברה</translation>
-<translation id="7769602470925380267">קבל וצא מהחשבון</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
 <translation id="7781829728241885113">אתמול</translation>
 <translation id="778855399387580014">‏חיפוש בכרטיסיית Chrome חדשה.</translation>
@@ -506,7 +502,6 @@
 <translation id="8281781826761538115">ברירת מחדל - <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">חיפוש חדש</translation>
 <translation id="8328777765163860529">סגור הכל</translation>
-<translation id="8381750437846184350">‏בידיך השליטה איך Google משתמשת בהיסטוריית הגלישה שלך לצורך התאמה אישית של חיפוש Google, מודעות Google ושירותי Google אחרים</translation>
 <translation id="8407669440184693619">לא נמצאו סיסמאות בשביל האתר הזה</translation>
 <translation id="842017693807136194">מחובר באמצעות</translation>
 <translation id="8428045167754449968">עיר / יישוב</translation>
@@ -561,7 +556,6 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">דוח הקריסה נשלח.</translation>
 <translation id="952704832371081537">ביטול</translation>
-<translation id="976982866697960176">ניהול נתונים מסונכרנים…</translation>
 <translation id="988141524645182168">מכשירים אחרים</translation>
 <translation id="989988560359834682">ערוך כתובת</translation>
 <translation id="994757059139821576">מאמרים מוצעים</translation>

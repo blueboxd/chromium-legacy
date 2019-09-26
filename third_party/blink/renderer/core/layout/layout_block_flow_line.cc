@@ -2033,8 +2033,12 @@ void LayoutBlockFlow::LayoutInlineChildren(bool relayout_children,
       // |LayoutIfNeeded| should not mark itself and its ancestors to
       // |NeedsLayout|.
       for (const LayoutObject* parent = atomic_inline_child;
-           parent && parent != this; parent = parent->Parent())
-        DCHECK(!parent->NeedsLayout());
+           parent && parent != this; parent = parent->Parent()) {
+        DCHECK(!parent->SelfNeedsLayout());
+        DCHECK(!parent->NeedsLayout() ||
+               parent->LayoutBlockedByDisplayLock(
+                   DisplayLockLifecycleTarget::kChildren));
+      }
 #endif
     }
 

@@ -247,7 +247,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "device.mojom.GamepadMonitor",
                   "device.mojom.Geolocation",
                   "device.mojom.NFC",
-                  "device.mojom.SensorProvider",
                   "device.mojom.VibrationManager",
                   "device.mojom.VRService",
                   "discardable_memory.mojom.DiscardableSharedMemoryManager",

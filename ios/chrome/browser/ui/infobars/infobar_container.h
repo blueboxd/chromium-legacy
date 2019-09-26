@@ -7,19 +7,20 @@
 
 #import <Foundation/Foundation.h>
 
-enum class InfobarType;
+@class InfobarCoordinator;
 
 // Protocol for the InfobarCoordinators to communicate with the InfobarContainer
 // Coordinator.
 @protocol InfobarContainer
 
-// Informs the InfobarContainer Coordinator that its child coordinator of type
-// |infobarType| has dismissed its banner.
-- (void)childCoordinatorBannerWasDismissed:(InfobarType)infobarType;
+// Informs the InfobarContainerCoordinator that |infobarCoordinator| has
+// dismissed its banner.
+- (void)childCoordinatorBannerWasDismissed:
+    (InfobarCoordinator*)infobarCoordinator;
 
-// Informs the InfobarContainer Coordinator that its child coordinator of type
-// |infobarType| has stopped.
-- (void)childCoordinatorStopped:(InfobarType)infobarType;
+// Informs the InfobarContainerCoordinator that |infobarCoordinator| has
+// stopped.
+- (void)childCoordinatorStopped:(InfobarCoordinator*)infobarCoordinator;
 
 @end
 

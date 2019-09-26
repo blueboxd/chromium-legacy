@@ -21,14 +21,14 @@
 // Synthesized from protocol.
 @synthesize tappable = _tappable;
 // Sythesized from protocol.
-@synthesize accepted = _accepted;
+@synthesize badgeState = _badgeState;
 
 - (instancetype)initWithBadgeType:(BadgeType)badgeType {
   self = [super init];
   if (self) {
     _badgeType = badgeType;
     _tappable = NO;
-    _accepted = NO;
+    _badgeState = BadgeStateNone;
   }
   return self;
 }

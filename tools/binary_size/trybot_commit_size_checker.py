@@ -118,7 +118,7 @@ def _CreateMethodCountDelta(symbols):
   lines, net_added = _SymbolDiffHelper(symbols)
   details = 'Refer to Dex Method Diff for list of added/removed methods.'
 
-  return lines, _SizeDelta('Dex Methods', 'methods',
+  return lines, _SizeDelta('Dex Methods Count', 'methods',
                            _MAX_DEX_METHOD_COUNT_INCREASE, net_added, details)
 
 
@@ -156,6 +156,12 @@ def _CreateUncompressedPakSizeDeltas(symbols):
                  _MAX_PAK_INCREASE, pak.after_symbol.size, None)
       for pak in pak_symbols
   ]
+
+
+def _FormatSign(number):
+  if number > 0:
+    return '+{}'.format(number)
+  return '{}'.format(number)
 
 
 def main():
@@ -288,7 +294,8 @@ PASSING:
       continue
     listing = {
         'name': delta.name,
-        'delta': '{} {}'.format(delta.actual, delta.units),
+        'delta': '{} {}'.format(_FormatSign(delta.actual), delta.units),
+        'limit': '{} {}'.format(_FormatSign(delta.expected), delta.units),
         'allowed': delta.IsAllowable(),
     }
     binary_size_listings.append(listing)

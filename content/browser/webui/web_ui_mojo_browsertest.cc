@@ -309,7 +309,7 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
     g_got_message = false;
     base::RunLoop run_loop;
     factory()->set_run_loop(&run_loop);
-    NavigateToURL(shell(), test_url);
+    EXPECT_TRUE(NavigateToURL(shell(), test_url));
     // RunLoop is quit when message received from page.
     run_loop.Run();
     EXPECT_TRUE(g_got_message);
@@ -321,7 +321,7 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
     g_got_message = false;
     base::RunLoop other_run_loop;
     factory()->set_run_loop(&other_run_loop);
-    NavigateToURL(other_shell, test_url);
+    EXPECT_TRUE(NavigateToURL(other_shell, test_url));
     // RunLoop is quit when message received from page.
     other_run_loop.Run();
     EXPECT_TRUE(g_got_message);
@@ -349,7 +349,7 @@ IN_PROC_BROWSER_TEST_F(WebUIMojoTest, EndToEndPing) {
     g_got_message = false;
     base::RunLoop other_run_loop;
     factory()->set_run_loop(&other_run_loop);
-    NavigateToURL(other_shell, test_url);
+    EXPECT_TRUE(NavigateToURL(other_shell, test_url));
     // RunLoop is quit when message received from page.
     other_run_loop.Run();
     EXPECT_TRUE(g_got_message);

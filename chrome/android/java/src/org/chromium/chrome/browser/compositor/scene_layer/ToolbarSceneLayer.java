@@ -49,6 +49,9 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
     /** A LayoutRenderHost for accessing drawing information about the toolbar. */
     private LayoutRenderHost mRenderHost;
 
+    /** The static Y offset for the cases where there is a another cc layer above the toolbar. */
+    private int mStaticYOffset;
+
     /**
      * @param context An Android context to use.
      * @param provider A LayoutProvider for accessing the current layout.
@@ -59,6 +62,14 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         mContext = context;
         mLayoutProvider = provider;
         mRenderHost = renderHost;
+    }
+
+    /**
+     * Set a static Y offset for the toolbar.
+     * @param staticYOffset The Y offset in pixels.
+     */
+    public void setStaticYOffset(int staticYOffset) {
+        mStaticYOffset = staticYOffset;
     }
 
     /**
@@ -114,7 +125,8 @@ public class ToolbarSceneLayer extends SceneOverlayLayer implements SceneOverlay
         ToolbarSceneLayerJni.get().updateToolbarLayer(mNativePtr, ToolbarSceneLayer.this,
                 resourceManager, R.id.control_container, browserControlsBackgroundColor,
                 textBoxResourceId, browserControlsUrlBarAlpha, textBoxColor,
-                fullscreenManager.getTopControlOffset(), windowHeight, useTexture, showShadow);
+                fullscreenManager.getTopControlOffset() + mStaticYOffset, windowHeight, useTexture,
+                showShadow);
 
         if (mProgressBarDrawingInfo == null) return;
         ToolbarSceneLayerJni.get().updateProgressBar(mNativePtr, ToolbarSceneLayer.this,

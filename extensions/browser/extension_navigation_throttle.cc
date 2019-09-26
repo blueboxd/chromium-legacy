@@ -133,9 +133,6 @@ ExtensionNavigationThrottle::WillStartOrRedirectRequest() {
   const url::Origin& initiator_origin =
       navigation_handle()->GetInitiatorOrigin().value();
 
-  // TODO(lukasza): https://crbug.com/1003957: Get rid of duplication with
-  // ChromeContentBrowserClientExtensionsPart::ShouldAllowOpenURL.
-
   // Navigations from chrome://, devtools:// or chrome-search:// pages need to
   // be allowed, even if the target |url| is not web-accessible.  See
   // https://crbug.com/662602.

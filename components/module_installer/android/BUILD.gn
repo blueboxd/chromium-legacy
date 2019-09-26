@@ -29,8 +29,6 @@ android_library("module_installer_java") {
   srcjar_deps = [ ":module_installer_build_config" ]
 
   jar_excluded_patterns = [ "*/ModuleInstallerConfig.class" ]
-
-  jacoco_never_instrument = true
 }
 
 android_library("module_installer_test_java") {

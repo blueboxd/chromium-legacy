@@ -28,7 +28,7 @@ class FakeDisplayClient : public mojom::DisplayClient {
 
 #if defined(OS_WIN)
   void CreateLayeredWindowUpdater(
-      mojom::LayeredWindowUpdaterRequest request) override;
+      mojo::PendingReceiver<mojom::LayeredWindowUpdater> receiver) override;
 #endif
 
 #if defined(USE_X11)

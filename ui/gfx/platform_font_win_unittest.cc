@@ -18,7 +18,6 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/platform_font_skia.h"
-#include "ui/gfx/win/direct_write.h"
 #include "ui/gfx/win/scoped_set_map_mode.h"
 
 namespace gfx {

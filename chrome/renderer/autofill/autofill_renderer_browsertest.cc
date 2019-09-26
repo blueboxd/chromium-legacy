@@ -389,16 +389,12 @@ TEST_F(AutofillRendererTest, IgnoreNonUserGestureTextFieldChanges) {
   while (!full_name.Focused())
     GetMainFrame()->View()->AdvanceFocus(false);
 
-  // Not a user gesture, so no IPC message to browser.
-  DisableUserGestureSimulationForAutofill();
   ASSERT_FALSE(fake_driver_.called_field_change());
   full_name.SetValue("Alice", true);
   GetMainFrame()->AutofillClient()->TextFieldDidChange(full_name);
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(fake_driver_.called_field_change());
 
-  // A user gesture will send a message to the browser.
-  EnableUserGestureSimulationForAutofill();
   SimulateUserInputChangeForElement(&full_name, "Alice");
   ASSERT_TRUE(fake_driver_.called_field_change());
 }

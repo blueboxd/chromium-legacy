@@ -55,6 +55,7 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
     private final TabGridDialogCoordinator mTabGridDialogCoordinator;
     private final TabSelectionEditorCoordinator mTabSelectionEditorCoordinator;
     private final UndoGroupSnackbarController mUndoGroupSnackbarController;
+    private final TabModelSelector mTabModelSelector;
 
     private final MenuOrKeyboardActionController
             .MenuOrKeyboardActionHandler mTabSwitcherMenuActionHandler =
@@ -62,7 +63,10 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                 @Override
                 public boolean handleMenuOrKeyboardAction(int id, boolean fromMenu) {
                     if (id == R.id.menu_group_tabs) {
-                        mTabSelectionEditorCoordinator.getController().show();
+                        mTabSelectionEditorCoordinator.getController().show(
+                                mTabModelSelector.getTabModelFilterProvider()
+                                        .getCurrentTabModelFilter()
+                                        .getTabsWithNoOtherRelatedTabs());
                         RecordUserAction.record("MobileMenuGroupTabs");
                         return true;
                     }
@@ -78,6 +82,8 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
             MenuOrKeyboardActionController menuOrKeyboardActionController,
             SnackbarManager.SnackbarManageable snackbarManageable, ViewGroup container,
             @TabListCoordinator.TabListMode int mode) {
+        mTabModelSelector = tabModelSelector;
+
         PropertyModel containerViewModel = new PropertyModel(TabListContainerProperties.ALL_KEYS);
 
         mTabSelectionEditorCoordinator = new TabSelectionEditorCoordinator(
@@ -121,7 +127,8 @@ public class TabSwitcherCoordinator implements Destroyable, TabSwitcher,
                 mTabListCoordinator.getContainerView(), TabListContainerViewBinder::bind);
 
         if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()
-                && mode == TabListCoordinator.TabListMode.GRID) {
+                && mode == TabListCoordinator.TabListMode.GRID
+                && !FeatureUtilities.isStartSurfaceEnabled()) {
             mTabGridIphItemCoordinator = new TabGridIphItemCoordinator(
                     context, mTabListCoordinator.getContainerView(), container);
             mMediator.setIphProvider(mTabGridIphItemCoordinator.getIphProvider());

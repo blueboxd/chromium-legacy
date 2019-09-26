@@ -114,7 +114,7 @@ class MODULES_EXPORT AXPosition final {
 
   // Verifies if the anchor is present and if it's set to a live object with a
   // connected node.
-  bool IsValid(std::string* failure_reason = nullptr) const;
+  bool IsValid(String* failure_reason = nullptr) const;
 
   operator bool() const { return IsValid(); }
 

@@ -58,7 +58,6 @@
 #include "chrome/browser/component_updater/crl_set_component_installer.h"
 #include "chrome/browser/component_updater/file_type_policies_component_installer.h"
 #include "chrome/browser/component_updater/mei_preload_component_installer.h"
-#include "chrome/browser/component_updater/on_device_head_suggest_component_installer.h"
 #include "chrome/browser/component_updater/optimization_hints_component_installer.h"
 #include "chrome/browser/component_updater/origin_trials_component_installer.h"
 #include "chrome/browser/component_updater/pepper_flash_component_installer.h"
@@ -128,6 +127,7 @@
 #include "chrome/installer/util/google_update_settings.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/crl_set_remover.h"
+#include "components/component_updater/installer_policies/on_device_head_suggest_component_installer.h"
 #include "components/device_event_log/device_event_log.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/google/core/common/google_util.h"
@@ -489,7 +489,8 @@ void RegisterComponentsForUpdate(PrefService* profile_prefs) {
 #endif
 
   RegisterSubresourceFilterComponent(cus);
-  RegisterOnDeviceHeadSuggestComponent(cus);
+  RegisterOnDeviceHeadSuggestComponent(
+      cus, g_browser_process->GetApplicationLocale());
   RegisterOptimizationHintsComponent(cus, profile_prefs);
 
   base::FilePath path;

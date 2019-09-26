@@ -820,11 +820,6 @@ void AutofillAgent::HidePopup() {
   GetAutofillDriver()->HidePopup();
 }
 
-bool AutofillAgent::IsUserGesture() const {
-  return WebUserGestureIndicator::IsProcessingUserGesture(
-      render_frame()->GetWebFrame());
-}
-
 void AutofillAgent::DidAssociateFormControlsDynamically() {
   // If the control flow is here than the document was at least loaded. The
   // whole page doesn't have to be loaded.

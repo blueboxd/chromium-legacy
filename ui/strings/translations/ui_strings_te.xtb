@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">నోటిఫికేషన్ కేంద్రం, <ph name="UNREAD_NOTIFICATION_COUNT" /> చదవని నోటిఫికేషన్‌లు</translation>
 <translation id="4730374152663651037">తరచుగా ఉపయోగించేవి</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 నెల మిగిలి ఉంది}other{# నెలలు మిగిలి ఉన్నాయి}}</translation>
-<translation id="4841881773802181781">చొప్పించడం</translation>
 <translation id="4881695831933465202">తెరువు</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 సెకను}other{# సెకన్లు}}</translation>
 <translation id="4971687151119236543">మీడియా మునుపటి ట్రాక్</translation>
@@ -164,7 +163,6 @@
 <translation id="6620110761915583480">ఫైల్‌ను సేవ్ చేయి</translation>
 <translation id="6656912866303152668">Chromeతో <ph name="TARGET_DEVICE_NAME" /> సింక్ చేయబడి ఉందని నిర్ధారించుకుని, ఆపై మళ్లీ పంపే ప్రయత్నం చేయండి.</translation>
 <translation id="6699343763173986273">మీడియా తరువాత ట్రాక్</translation>
-<translation id="673773751041746814">తొలగింపు</translation>
 <translation id="6779314412797872738">దీని నుండి మీ ఫోన్‌కు Android నంబర్‌ను పంపడానికి, రెండు పరికరాలలోని సెట్టింగ్‌లలో "<ph name="TROUBLESHOOT_LINK" />".</translation>
 <translation id="6786750046913594791">ఫోల్డర్‌ను మూసివేయండి</translation>
 <translation id="6808150112686056157">మీడియా ఆపివేయి</translation>

@@ -12,10 +12,10 @@
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/alert_view_controller.h"
 #import "ios/chrome/browser/ui/elements/text_field_configuration.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_mediator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/overlay_request_coordinator_delegate.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_blocking_action.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_coordinator+subclassing.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator+subclassing.h"
+#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_overlay_mediator_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 
@@ -27,11 +27,24 @@ NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier =
     @"JavaScriptPromptTextFieldAccessibiltyIdentifier";
 
 @interface JavaScriptPromptOverlayMediator ()
-// The confirmation config.
+@property(nonatomic, readonly) OverlayRequest* request;
 @property(nonatomic, readonly) JavaScriptPromptOverlayRequestConfig* config;
+
+// Sets the OverlayResponse using the user input |textInput| from the prompt UI.
+- (void)setPromptResponse:(NSString*)textInput;
 @end
 
 @implementation JavaScriptPromptOverlayMediator
+
+- (instancetype)initWithRequest:(OverlayRequest*)request {
+  if (self = [super init]) {
+    _request = request;
+    DCHECK(_request);
+    // Verify that the request is configured for JavaScript prompts.
+    DCHECK(_request->GetConfig<JavaScriptPromptOverlayRequestConfig>());
+  }
+  return self;
+}
 
 #pragma mark - Accessors
 
@@ -39,48 +52,8 @@ NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier =
   return self.request->GetConfig<JavaScriptPromptOverlayRequestConfig>();
 }
 
-- (void)setConsumer:(id<AlertConsumer>)consumer {
-  if (self.consumer == consumer)
-    return;
-  [super setConsumer:consumer];
-  [self.consumer setMessage:base::SysUTF8ToNSString(self.config->message())];
-  __weak __typeof__(self) weakSelf = self;
-  NSArray* actions = @[
-    [AlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
-                           style:UIAlertActionStyleDefault
-                         handler:^(AlertAction* action) {
-                           __typeof__(self) strongSelf = weakSelf;
-                           NSString* input = [strongSelf.dataSource
-                               promptInputForMediator:strongSelf];
-                           [strongSelf setPromptResponse:input ? input : @""];
-                           [strongSelf.delegate
-                               stopDialogForMediator:strongSelf];
-                         }],
-    [AlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
-                           style:UIAlertActionStyleCancel
-                         handler:^(AlertAction* action) {
-                           [weakSelf.delegate stopDialogForMediator:weakSelf];
-                         }],
-  ];
-  AlertAction* blockingAction = GetBlockingAlertAction(self);
-  if (blockingAction)
-    actions = [actions arrayByAddingObject:blockingAction];
-  [self.consumer setActions:actions];
-
-  NSString* defaultPromptValue =
-      base::SysUTF8ToNSString(self.config->default_prompt_value());
-  [self.consumer setTextFieldConfigurations:@[
-    [[TextFieldConfiguration alloc]
-                   initWithText:defaultPromptValue
-                    placeholder:nil
-        accessibilityIdentifier:kJavaScriptPromptTextFieldAccessibiltyIdentifier
-                secureTextEntry:NO]
-  ]];
-}
-
 #pragma mark - Response helpers
 
-// Sets the OverlayResponse using the user input from the prompt UI.
 - (void)setPromptResponse:(NSString*)textInput {
   self.request->set_response(
       OverlayResponse::CreateWithInfo<JavaScriptPromptOverlayResponseInfo>(
@@ -91,12 +64,51 @@ NSString* const kJavaScriptPromptTextFieldAccessibiltyIdentifier =
 
 @implementation JavaScriptPromptOverlayMediator (Subclassing)
 
-- (const JavaScriptDialogSource&)requestSource {
-  return self.config->source();
+- (NSString*)alertTitle {
+  return GetJavaScriptDialogTitle(self.config->source(),
+                                  self.config->message());
 }
 
-- (const std::string&)requestMessage {
-  return self.config->message();
+- (NSString*)alertMessage {
+  return GetJavaScriptDialogMessage(self.config->source(),
+                                    self.config->message());
+}
+
+- (NSArray<TextFieldConfiguration*>*)alertTextFieldConfigurations {
+  NSString* defaultPromptValue =
+      base::SysUTF8ToNSString(self.config->default_prompt_value());
+  return @[ [[TextFieldConfiguration alloc]
+                 initWithText:defaultPromptValue
+                  placeholder:nil
+      accessibilityIdentifier:kJavaScriptPromptTextFieldAccessibiltyIdentifier
+              secureTextEntry:NO] ];
+}
+
+- (NSArray<AlertAction*>*)alertActions {
+  __weak __typeof__(self) weakSelf = self;
+  NSArray* actions = @[
+    [AlertAction actionWithTitle:l10n_util::GetNSString(IDS_OK)
+                           style:UIAlertActionStyleDefault
+                         handler:^(AlertAction* action) {
+                           __typeof__(self) strongSelf = weakSelf;
+                           NSString* input = [strongSelf.dataSource
+                               textFieldInputForMediator:strongSelf
+                                          textFieldIndex:0];
+                           [strongSelf setPromptResponse:input ? input : @""];
+                           [strongSelf.delegate
+                               stopDialogForMediator:strongSelf];
+                         }],
+    [AlertAction actionWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                           style:UIAlertActionStyleCancel
+                         handler:^(AlertAction* action) {
+                           [weakSelf.delegate stopDialogForMediator:weakSelf];
+                         }],
+  ];
+  AlertAction* blockingAction =
+      GetBlockingAlertAction(self, self.config->source());
+  if (blockingAction)
+    actions = [actions arrayByAddingObject:blockingAction];
+  return actions;
 }
 
 @end

@@ -235,7 +235,6 @@
 <translation id="430967081421617822">Все время</translation>
 <translation id="4338650699862464074">Отправлять URL страниц, которые вы посещаете, в Google.</translation>
 <translation id="4359125752503270327">Страница откроется в другом приложении.</translation>
-<translation id="4370827530403103842">Синхронизация не работает. Нажмите, чтобы исправить.</translation>
 <translation id="4375040482473363939">Поиск по QR-коду</translation>
 <translation id="4378154925671717803">Телефон</translation>
 <translation id="441868831736628555">Примечание о конфиденциальности</translation>
@@ -429,7 +428,6 @@
 <translation id="7006788746334555276">Настройки контента</translation>
 <translation id="7015203776128479407">Первоначальная настройка синхронизации не завершена. Синхронизация выключена.</translation>
 <translation id="7029809446516969842">Пароли</translation>
-<translation id="7031882061095297553">Выберите аккаунт</translation>
 <translation id="7053983685419859001">Блокировать</translation>
 <translation id="7062545763355031412">Принять и переключиться</translation>
 <translation id="7099761977003084116">Недавние вкладки</translation>
@@ -438,7 +436,6 @@
 <translation id="7133798577887235672">Полное имя</translation>
 <translation id="7136892417564438900">Камера недоступна</translation>
 <translation id="7159472599653637159">Мобильная версия</translation>
-<translation id="7167621057293532233">Типы данных</translation>
 <translation id="7173114856073700355">Открыть настройки</translation>
 <translation id="7189598951263744875">Поделиться…</translation>
 <translation id="7192050974311852563">Начать запись журнала</translation>
@@ -471,7 +468,6 @@
 <translation id="766891008101699113">Чтобы просматривать веб-страницы анонимно, откройте новую вкладку.</translation>
 <translation id="7671141431838911305">УСТАНОВИТЬ</translation>
 <translation id="7765158879357617694">Переместить</translation>
-<translation id="7769602470925380267">Принять и выйти</translation>
 <translation id="7772032839648071052">Подтвердите кодовую фразу</translation>
 <translation id="7781829728241885113">Вчера</translation>
 <translation id="778855399387580014">Запускайте поиск в новой вкладке Chrome.</translation>
@@ -506,7 +502,6 @@
 <translation id="8281781826761538115">Язык по умолчанию: <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Новый поиск</translation>
 <translation id="8328777765163860529">Закрыть все</translation>
-<translation id="8381750437846184350">Укажите, как Google может использовать историю браузера для персонализации Поиска, Рекламы и других сервисов.</translation>
 <translation id="8407669440184693619">Паролей для этого сайта не найдено</translation>
 <translation id="842017693807136194">Выполнен вход через</translation>
 <translation id="8428045167754449968">Город</translation>
@@ -561,7 +556,6 @@
 <translation id="9203116392574189331">Handoff</translation>
 <translation id="9223358826628549784">Отчет отправлен</translation>
 <translation id="952704832371081537">Отмена</translation>
-<translation id="976982866697960176">Управление синхронизированными данными</translation>
 <translation id="988141524645182168">Другие устройства</translation>
 <translation id="989988560359834682">Изменение адреса</translation>
 <translation id="994757059139821576">Рекомендуемые статьи</translation>

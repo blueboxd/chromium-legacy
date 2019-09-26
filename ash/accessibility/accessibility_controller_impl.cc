@@ -882,6 +882,7 @@ void AccessibilityControllerImpl::ToggleDictationFromSource(
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Dictation"));
   UserMetricsRecorder::RecordUserToggleDictation(source);
 
+  SetDictationEnabled(true);
   ToggleDictation();
 }
 

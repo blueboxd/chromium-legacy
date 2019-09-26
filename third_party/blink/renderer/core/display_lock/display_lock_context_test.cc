@@ -1581,7 +1581,7 @@ TEST_F(DisplayLockContextTest, DisconnectedWhileUpdating) {
   auto* script_state = ToScriptStateForMainWorld(GetDocument().GetFrame());
   {
     ScriptState::Scope scope(script_state);
-    container->GetDisplayLockContext()->update(script_state);
+    container->GetDisplayLockContext()->UpdateRendering(script_state);
   }
   auto budget = base::WrapUnique(
       new StrictYieldingDisplayLockBudget(container->GetDisplayLockContext()));

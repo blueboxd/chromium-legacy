@@ -406,8 +406,7 @@ public class SearchWidgetProvider extends AppWidgetProvider {
     }
 
     static boolean shouldShowFullString() {
-        boolean freIsNotNecessary = !FirstRunFlowSequencer.checkIfFirstRunIsNecessary(
-                getDelegate().getContext(), null, false);
+        boolean freIsNotNecessary = !FirstRunFlowSequencer.checkIfFirstRunIsNecessary(null, false);
         boolean noNeedToCheckForSearchDialog =
                 !LocaleManager.getInstance().needToCheckForSearchEnginePromo();
         return freIsNotNecessary && noNeedToCheckForSearchDialog;

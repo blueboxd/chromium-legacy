@@ -12,14 +12,10 @@
 #include "base/macros.h"
 #include "components/signin/public/identity_manager/ios/device_accounts_provider.h"
 
-class IOSWebViewSigninClient;
-
 // Implementation of DeviceAccountsProvider.
 class WebViewDeviceAccountsProviderImpl : public DeviceAccountsProvider {
  public:
-  // |signin_client| used to fetch access tokens.
-  explicit WebViewDeviceAccountsProviderImpl(
-      IOSWebViewSigninClient* signin_client);
+  WebViewDeviceAccountsProviderImpl();
   ~WebViewDeviceAccountsProviderImpl() override;
 
   // ios::DeviceAccountsProvider
@@ -33,9 +29,6 @@ class WebViewDeviceAccountsProviderImpl : public DeviceAccountsProvider {
       NSError* error) const override;
 
  private:
-  // Used to obtain access tokens in |GetAccessToken|.
-  IOSWebViewSigninClient* const signin_client_ = nullptr;
-
   DISALLOW_COPY_AND_ASSIGN(WebViewDeviceAccountsProviderImpl);
 };
 

@@ -179,6 +179,8 @@ class FuchsiaVideoDecoder : public VideoDecoder,
   int GetMaxDecodeRequests() const override;
 
  private:
+  bool InitializeDecryptor(CdmContext* cdm_context);
+
   // FuchsiaSecureStreamDecryptor::Client implementation.
   void OnDecryptorOutputPacket(StreamProcessorHelper::IoPacket packet) override;
   void OnDecryptorEndOfStreamPacket() override;
@@ -324,31 +326,14 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                      InitCB init_cb,
                                      const OutputCB& output_cb,
                                      const WaitingCB& waiting_cb) {
+  DCHECK(decode_callbacks_.empty());
+
   auto done_callback = BindToCurrentLoop(std::move(init_cb));
 
-  if (!DropInputQueue(DecodeStatus::ABORTED))
-    return;
-
-  if (config.is_encrypted()) {
-    // Caller makes sure |cdm_context| is available if the stream is encrypted.
-    if (!cdm_context) {
-      LOG(ERROR) << "No cdm context for encrypted stream.";
-      std::move(done_callback).Run(false);
-      return;
-    }
-
-    // If Cdm is not FuchsiaCdm then fail initialization to allow decoder
-    // selector to choose DecryptingDemuxerStream, which will handle the
-    // decryption and pass the clear stream to this decoder.
-    FuchsiaCdmContext* fuchsia_cdm = cdm_context->GetFuchsiaCdmContext();
-    if (!fuchsia_cdm) {
-      DVLOG(1) << "FuchsiaVideoDecoder is compatible only with Fuchsia CDM.";
-      std::move(done_callback).Run(false);
-      return;
-    }
-
-    decryptor_ = fuchsia_cdm->CreateSecureDecryptor(this);
-  }
+  // There should be no pending decode request, so DropInputQueue() is not
+  // expected to fail.
+  bool result = DropInputQueue(DecodeStatus::ABORTED);
+  DCHECK(result);
 
   output_cb_ = output_cb;
   container_pixel_aspect_ratio_ = config.GetPixelAspectRatio();
@@ -356,27 +341,38 @@ void FuchsiaVideoDecoder::Initialize(const VideoDecoderConfig& config,
   // If we already have |decoder_| that was initializes for the same codec then
   // keep using it.
   if (decoder_ && current_codec_ == config.codec()) {
-    // Input buffers can be in one of the following states here:
-    // 1. Input buffer constraints are empty, i.e. OnInputConstraints() event
-    //   hasn't been received yet. Input buffers will be allocated once
-    //   OnInputConstraints() is received.
-    // 2. Input buffers are being created.
-    // 3. Input buffers exist.
-    // 4. Input buffers were destroyed by DropInputQueue() call above (which is
-    //   required for encrypted streams).
-    //
-    // In the last case we need to re-initialize input buffers by calling
-    // OnInputConstraints().
-    if (decoder_input_constraints_.has_value() &&
-        !input_buffer_collection_creator_ && !input_buffer_collection_) {
-      OnInputConstraints(std::move(decoder_input_constraints_).value());
+    bool have_decryptor = decryptor_ != nullptr;
+    if (have_decryptor != config.is_encrypted()) {
+      // If decryption mode has changed then we need to re-initialize input
+      // buffers.
+      ReleaseInputBuffers();
+      decryptor_.reset();
+
+      // Initialize decryptor for encrypted streams.
+      if (config.is_encrypted() && !InitializeDecryptor(cdm_context)) {
+        std::move(done_callback).Run(false);
+        return;
+      }
+
+      // If we haven't received input constraints yet then input buffers will be
+      // initialized later when OnInputConstraints() is received.
+      if (decoder_input_constraints_.has_value()) {
+        OnInputConstraints(std::move(decoder_input_constraints_).value());
+      }
     }
 
     std::move(done_callback).Run(true);
     return;
   }
 
+  decryptor_.reset();
   decoder_.Unbind();
+
+  // Initialize decryptor for encrypted streams.
+  if (config.is_encrypted() && !InitializeDecryptor(cdm_context)) {
+    std::move(done_callback).Run(false);
+    return;
+  }
 
   // Reset IO buffers since we won't be able to re-use them.
   ReleaseInputBuffers();
@@ -481,6 +477,29 @@ int FuchsiaVideoDecoder::GetMaxDecodeRequests() const {
   // Add one extra request to be able to send new InputBuffer immediately after
   // OnFreeInputPacket().
   return num_input_buffers_ + 1;
+}
+
+bool FuchsiaVideoDecoder::InitializeDecryptor(CdmContext* cdm_context) {
+  DCHECK(!decryptor_);
+
+  // Caller makes sure |cdm_context| is available if the stream is encrypted.
+  if (!cdm_context) {
+    DLOG(ERROR) << "No cdm context for encrypted stream.";
+    return false;
+  }
+
+  // If Cdm is not FuchsiaCdm then fail initialization to allow decoder
+  // selector to choose DecryptingDemuxerStream, which will handle the
+  // decryption and pass the clear stream to this decoder.
+  FuchsiaCdmContext* fuchsia_cdm = cdm_context->GetFuchsiaCdmContext();
+  if (!fuchsia_cdm) {
+    DLOG(ERROR) << "FuchsiaVideoDecoder is compatible only with Fuchsia CDM.";
+    return false;
+  }
+
+  decryptor_ = fuchsia_cdm->CreateSecureDecryptor(this);
+
+  return true;
 }
 
 void FuchsiaVideoDecoder::OnDecryptorOutputPacket(
@@ -917,11 +936,8 @@ bool FuchsiaVideoDecoder::DropInputQueue(DecodeStatus status) {
     active_stream_ = false;
   }
 
-  // Input buffers have to be re-initialized for encrypted streams.
-  if (decryptor_) {
-    decryptor_.reset();
-    ReleaseInputBuffers();
-  }
+  if (decryptor_)
+    decryptor_->Reset();
 
   in_flight_input_packets_.clear();
 

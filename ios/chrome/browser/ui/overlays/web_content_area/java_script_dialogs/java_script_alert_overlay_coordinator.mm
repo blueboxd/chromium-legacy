@@ -6,8 +6,8 @@
 
 #import "ios/chrome/browser/overlays/public/overlay_request.h"
 #import "ios/chrome/browser/overlays/public/web_content_area/java_script_alert_overlay.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/alert_overlay_coordinator+subclassing.h"
 #import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_alert_overlay_mediator.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_coordinator+subclassing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -25,7 +25,7 @@
 
 @implementation JavaScriptAlertOverlayCoordinator (Subclassing)
 
-- (JavaScriptDialogOverlayMediator*)newMediator {
+- (AlertOverlayMediator*)newMediator {
   return [[JavaScriptAlertOverlayMediator alloc] initWithRequest:self.request];
 }
 

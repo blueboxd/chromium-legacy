@@ -545,21 +545,23 @@ XrResult OpenXrApiWrapper::GetHeadPose(
 
   XrResult xr_result;
 
-  XrSpaceLocation location = {XR_TYPE_SPACE_LOCATION};
-  RETURN_IF_XR_FAILED(xrLocateSpace(
-      view_space_, local_space_, frame_state_.predictedDisplayTime, &location));
+  XrSpaceLocation view_from_local = {XR_TYPE_SPACE_LOCATION};
+  RETURN_IF_XR_FAILED(xrLocateSpace(view_space_, local_space_,
+                                    frame_state_.predictedDisplayTime,
+                                    &view_from_local));
 
-  if (location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
+  if (view_from_local.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) {
     *orientation = gfx::Quaternion(
-        location.pose.orientation.x, location.pose.orientation.y,
-        location.pose.orientation.z, location.pose.orientation.w);
+        view_from_local.pose.orientation.x, view_from_local.pose.orientation.y,
+        view_from_local.pose.orientation.z, view_from_local.pose.orientation.w);
   } else {
     *orientation = base::nullopt;
   }
 
-  if (location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
-    *position = gfx::Point3F(location.pose.position.x, location.pose.position.y,
-                             location.pose.position.z);
+  if (view_from_local.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT) {
+    *position = gfx::Point3F(view_from_local.pose.position.x,
+                             view_from_local.pose.position.y,
+                             view_from_local.pose.position.z);
   } else {
     *position = base::nullopt;
   }
@@ -668,10 +670,11 @@ XrResult OpenXrApiWrapper::GetStageBounds(XrExtent2Df* stage_bounds) const {
                                        stage_bounds);
 }
 
-bool OpenXrApiWrapper::GetStageParameters(XrExtent2Df* stage_bounds,
-                                          gfx::Transform* transform) const {
+bool OpenXrApiWrapper::GetStageParameters(
+    XrExtent2Df* stage_bounds,
+    gfx::Transform* local_from_stage) const {
   DCHECK(stage_bounds);
-  DCHECK(transform);
+  DCHECK(local_from_stage);
   DCHECK(HasSession());
 
   if (!HasSpace(XR_REFERENCE_SPACE_TYPE_LOCAL))
@@ -683,25 +686,33 @@ bool OpenXrApiWrapper::GetStageParameters(XrExtent2Df* stage_bounds,
   if (XR_FAILED(GetStageBounds(stage_bounds)))
     return false;
 
-  XrSpaceLocation location = {XR_TYPE_SPACE_LOCATION};
+  XrSpaceLocation local_from_stage_location = {XR_TYPE_SPACE_LOCATION};
   if (FAILED(xrLocateSpace(local_space_, stage_space_,
-                           frame_state_.predictedDisplayTime, &location)) ||
-      !(location.locationFlags & XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) ||
-      !(location.locationFlags & XR_SPACE_LOCATION_POSITION_VALID_BIT)) {
+                           frame_state_.predictedDisplayTime,
+                           &local_from_stage_location)) ||
+      !(local_from_stage_location.locationFlags &
+        XR_SPACE_LOCATION_ORIENTATION_VALID_BIT) ||
+      !(local_from_stage_location.locationFlags &
+        XR_SPACE_LOCATION_POSITION_VALID_BIT)) {
     return false;
   }
 
   // Convert the orientation and translation given by runtime into a
   // transformation matrix.
-  gfx::DecomposedTransform seat_to_standing_decomp;
-  seat_to_standing_decomp.quaternion =
-      gfx::Quaternion(location.pose.orientation.x, location.pose.orientation.y,
-                      location.pose.orientation.z, location.pose.orientation.w);
-  seat_to_standing_decomp.translate[0] = location.pose.position.x;
-  seat_to_standing_decomp.translate[1] = location.pose.position.y;
-  seat_to_standing_decomp.translate[2] = location.pose.position.z;
+  gfx::DecomposedTransform local_from_stage_decomp;
+  local_from_stage_decomp.quaternion =
+      gfx::Quaternion(local_from_stage_location.pose.orientation.x,
+                      local_from_stage_location.pose.orientation.y,
+                      local_from_stage_location.pose.orientation.z,
+                      local_from_stage_location.pose.orientation.w);
+  local_from_stage_decomp.translate[0] =
+      local_from_stage_location.pose.position.x;
+  local_from_stage_decomp.translate[1] =
+      local_from_stage_location.pose.position.y;
+  local_from_stage_decomp.translate[2] =
+      local_from_stage_location.pose.position.z;
 
-  *transform = gfx::ComposeTransform(seat_to_standing_decomp);
+  *local_from_stage = gfx::ComposeTransform(local_from_stage_decomp);
   return true;
 }
 

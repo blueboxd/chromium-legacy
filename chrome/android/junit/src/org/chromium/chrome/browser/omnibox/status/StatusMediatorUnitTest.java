@@ -141,6 +141,18 @@ public final class StatusMediatorUnitTest {
         Assert.assertEquals(0, mModel.get(StatusProperties.STATUS_ICON_RES));
     }
 
+    @Test
+    @Features.EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
+    public void searchEngineLogo_tintAppliedToLoupe() {
+        setupSearchEngineLogoForTesting(true, true, true, false);
+        Mockito.doReturn(false).when(mToolbarCommonPropertiesModel).isIncognito();
+
+        mMediator.setUrlHasFocus(true);
+        mMediator.setShowIconsWhenUrlFocused(true);
+        mMediator.setSecurityIconTint(11);
+        Assert.assertEquals(11, mModel.get(StatusProperties.STATUS_ICON_TINT_RES));
+    }
+
     private void setupSearchEngineLogoForTesting(
             boolean shouldShowLogo, boolean showGoogle, boolean loupeEverywhere, boolean validUrl) {
         Mockito.doReturn(shouldShowLogo).when(mDelegate).shouldShowSearchEngineLogo(false);

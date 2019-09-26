@@ -13,6 +13,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/task/post_task.h"
 #include "base/time/time.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -81,21 +82,19 @@ void CrostiniExportImport::Shutdown() {
 }
 
 void CrostiniExportImport::ExportContainer(content::WebContents* web_contents) {
-  if (!IsCrostiniExportImportUIAllowedForProfile(profile_)) {
-    return;
-  }
   OpenFileDialog(ExportImportType::EXPORT, web_contents);
 }
 
 void CrostiniExportImport::ImportContainer(content::WebContents* web_contents) {
-  if (!IsCrostiniExportImportUIAllowedForProfile(profile_)) {
-    return;
-  }
   OpenFileDialog(ExportImportType::IMPORT, web_contents);
 }
 
 void CrostiniExportImport::OpenFileDialog(ExportImportType type,
                                           content::WebContents* web_contents) {
+  if (!crostini::CrostiniFeatures::Get()->IsExportImportUIAllowed(profile_)) {
+    return;
+  }
+
   ui::SelectFileDialog::Type file_selector_mode;
   unsigned title = 0;
   base::FilePath default_path;
@@ -160,7 +159,7 @@ void CrostiniExportImport::Start(
     ContainerId container_id,
     base::FilePath path,
     CrostiniManager::CrostiniResultCallback callback) {
-  if (!IsCrostiniExportImportUIAllowedForProfile(profile_)) {
+  if (!crostini::CrostiniFeatures::Get()->IsExportImportUIAllowed(profile_)) {
     return std::move(callback).Run(CrostiniResult::NOT_ALLOWED);
   }
   auto* notification = CrostiniExportImportNotification::Create(

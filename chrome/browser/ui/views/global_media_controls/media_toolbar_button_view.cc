@@ -17,6 +17,7 @@
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/ink_drop.h"
 #include "ui/views/controls/button/button_controller.h"
 
@@ -39,6 +40,7 @@ MediaToolbarButtonView::MediaToolbarButtonView(
   EnableCanvasFlippingForRTLUI(false);
   SetTooltipText(
       l10n_util::GetStringUTF16(IDS_GLOBAL_MEDIA_CONTROLS_ICON_TOOLTIP_TEXT));
+  GetViewAccessibility().OverrideHasPopup(ax::mojom::HasPopup::kMenu);
 
   ToolbarButton::Init();
 

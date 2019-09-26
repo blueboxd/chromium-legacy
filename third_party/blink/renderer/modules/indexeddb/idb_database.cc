@@ -37,6 +37,7 @@
 #include "third_party/blink/renderer/bindings/modules/v8/v8_idb_observer_callback.h"
 #include "third_party/blink/renderer/core/dom/events/event_queue.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
+#include "third_party/blink/renderer/modules/indexed_db_names.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_any.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_event_dispatcher.h"
 #include "third_party/blink/renderer/modules/indexeddb/idb_index.h"
@@ -433,9 +434,9 @@ IDBTransaction* IDBDatabase::transaction(
       mojom::IDBTransactionDurability::Default;
   if (options) {
     DCHECK(RuntimeEnabledFeatures::IDBRelaxedDurabilityEnabled());
-    if (options->durability() == "relaxed") {
+    if (options->durability() == indexed_db_names::kRelaxed) {
       durability = mojom::IDBTransactionDurability::Relaxed;
-    } else if (options->durability() == "strict") {
+    } else if (options->durability() == indexed_db_names::kStrict) {
       durability = mojom::IDBTransactionDurability::Strict;
     }
   }
@@ -446,7 +447,7 @@ IDBTransaction* IDBDatabase::transaction(
 
   return IDBTransaction::CreateNonVersionChange(
       script_state, std::move(transaction_backend), transaction_id, scope, mode,
-      this);
+      durability, this);
 }
 
 void IDBDatabase::ForceClose() {

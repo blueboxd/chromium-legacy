@@ -23,9 +23,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/strings/string16.h"
-#include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "base/timer/timer.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/content_export.h"
@@ -65,10 +63,6 @@
 #include "third_party/blink/public/web/web_memory_statistics.h"
 #include "ui/gfx/native_widget_types.h"
 
-#if defined(OS_MACOSX)
-#include "third_party/blink/public/platform/mac/web_scrollbar_theme.h"
-#endif
-
 class SkBitmap;
 
 namespace blink {
@@ -81,8 +75,6 @@ class Thread;
 }
 
 namespace cc {
-class BeginFrameSource;
-class SyntheticBeginFrameSource;
 class TaskGraphRunner;
 }
 
@@ -94,20 +86,11 @@ namespace gpu {
 class GpuChannelHost;
 }
 
-namespace IPC {
-class MessageFilter;
-}
-
 namespace media {
 class GpuVideoAcceleratorFactories;
 }
 
-namespace v8 {
-class Extension;
-}
-
 namespace viz {
-class BeginFrameSource;
 class ContextProviderCommandBuffer;
 class Gpu;
 class RasterContextProvider;
@@ -359,11 +342,6 @@ class CONTENT_EXPORT RenderThreadImpl
   // instances shared based on configured audio parameters.  Lazily created on
   // first call.
   AudioRendererMixerManager* GetAudioRendererMixerManager();
-
-#if defined(OS_WIN)
-  void PreCacheFontCharacters(const LOGFONT& log_font,
-                              const base::string16& str);
-#endif
 
   class UnfreezableMessageFilter : public IPC::MessageFilter {
    public:

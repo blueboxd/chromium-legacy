@@ -126,6 +126,9 @@ class FuchsiaSecureStreamDecryptor : public FuchsiaStreamDecryptorBase {
 
   void Decrypt(scoped_refptr<DecoderBuffer> encrypted);
 
+  // Drops all pending decryption requests.
+  void Reset();
+
  private:
   // StreamProcessorHelper::Client overrides.
   void AllocateOutputBuffers(const fuchsia::media::StreamBufferConstraints&

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/android/compositor/scene_layer/status_indicator_scene_layer.h"
 
-#include "cc/layers/solid_color_layer.h"
+#include "cc/layers/ui_resource_layer.h"
 #include "chrome/android/chrome_jni_headers/StatusIndicatorSceneLayer_jni.h"
 
 using base::android::JavaParamRef;
@@ -17,14 +17,13 @@ StatusIndicatorSceneLayer::StatusIndicatorSceneLayer(
     const JavaRef<jobject>& jobj)
     : SceneLayer(env, jobj),
       view_container_(cc::Layer::Create()),
-      view_layer_(cc::SolidColorLayer::Create()) {
+      view_layer_(cc::UIResourceLayer::Create()) {
   layer()->SetIsDrawable(true);
 
   view_container_->SetIsDrawable(true);
   view_container_->SetMasksToBounds(true);
 
   view_layer_->SetIsDrawable(true);
-  view_layer_->SetBackgroundColor(SK_ColorRED);
   view_container_->AddChild(view_layer_);
 }
 
@@ -35,12 +34,22 @@ void StatusIndicatorSceneLayer::UpdateStatusIndicatorLayer(
     const base::android::JavaParamRef<jobject>& object,
     const base::android::JavaParamRef<jobject>& jresource_manager,
     jint view_resource_id) {
-  // This is temporary as the size should come from the resource.
-  view_container_->SetBounds(gfx::Size(1440, 70));
+  ui::ResourceManager* resource_manager =
+      ui::ResourceManagerImpl::FromJavaObject(jresource_manager);
+  ui::Resource* resource = resource_manager->GetResource(
+      ui::ANDROID_RESOURCE_TYPE_DYNAMIC, view_resource_id);
+
+  // If the resource isn't available, don't bother doing anything else.
+  if (!resource)
+    return;
+
+  view_layer_->SetUIResourceId(resource->ui_resource()->id());
+
+  view_container_->SetBounds(resource->size());
   view_container_->SetPosition(gfx::PointF(0, 0));
 
   // The view's layer should be the same size as the texture.
-  view_layer_->SetBounds(gfx::Size(gfx::Size(1440, 70)));
+  view_layer_->SetBounds(resource->size());
   view_layer_->SetPosition(gfx::PointF(0, 0));
 }
 
@@ -57,6 +66,18 @@ void StatusIndicatorSceneLayer::SetContentTree(
     layer_->AddChild(content_tree->layer());
     layer_->AddChild(view_container_);
   }
+
+  // Propagate the background color up from the content layer.
+  should_show_background_ = content_tree->ShouldShowBackground();
+  background_color_ = content_tree->GetBackgroundColor();
+}
+
+SkColor StatusIndicatorSceneLayer::GetBackgroundColor() {
+  return background_color_;
+}
+
+bool StatusIndicatorSceneLayer::ShouldShowBackground() {
+  return should_show_background_;
 }
 
 static jlong JNI_StatusIndicatorSceneLayer_Init(

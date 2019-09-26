@@ -7,8 +7,6 @@ package org.chromium.chrome.browser.download.home;
 import android.app.Activity;
 import android.content.ComponentName;
 
-import org.chromium.chrome.browser.ChromeFeatureList;
-import org.chromium.chrome.browser.download.ui.DownloadManagerUi;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.snackbar.SnackbarManager;
 import org.chromium.ui.modaldialog.ModalDialogManager;
@@ -27,12 +25,7 @@ public class DownloadManagerCoordinatorFactory {
     public static DownloadManagerCoordinator create(Activity activity,
             DownloadManagerUiConfig config, SnackbarManager snackbarManager,
             ComponentName parentComponent, ModalDialogManager modalDialogManager) {
-        if (ChromeFeatureList.isEnabled(ChromeFeatureList.DOWNLOAD_HOME_V2)) {
-            return new DownloadManagerCoordinatorImpl(Profile.getLastUsedProfile(), activity,
-                    config, snackbarManager, modalDialogManager);
-        } else {
-            return new DownloadManagerUi(activity, config.isOffTheRecord, parentComponent,
-                    config.isSeparateActivity, snackbarManager);
-        }
+        return new DownloadManagerCoordinatorImpl(Profile.getLastUsedProfile(), activity, config,
+                snackbarManager, modalDialogManager);
     }
 }

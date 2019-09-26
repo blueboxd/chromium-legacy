@@ -6,9 +6,15 @@ import("//build/buildflag_header.gni")
 import("//build/config/android/rules.gni")
 import("//chrome/android/modules/buildflags.gni")
 
+android_resources("java_resources") {
+  resource_dirs = [ "java/res" ]
+  custom_package = "org.chromium.chrome.features.test_dummy"
+}
+
 android_library("java") {
   deps = [
     ":base_module_java",
+    ":java_resources",
     "//base:base_java",
     "//chrome/android/features/test_dummy/public:java",
     "//third_party/android_deps:android_support_v7_appcompat_java",

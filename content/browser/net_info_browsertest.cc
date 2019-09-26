@@ -177,7 +177,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, VerifyNetworkStateInitialized) {
   net::NetworkChangeNotifier::DisableForTest disable_for_test;
   MockNetworkChangeNotifierWifi mock_notifier;
 
-  NavigateToURL(shell(), content::GetTestUrl("", "net_info.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), content::GetTestUrl("", "net_info.html")));
   EXPECT_TRUE(RunScriptExtractBool("getOnLine()"));
   EXPECT_EQ("wifi", RunScriptExtractString("getType()"));
   EXPECT_EQ(net::NetworkChangeNotifier::GetMaxBandwidthMbpsForConnectionSubtype(
@@ -188,7 +188,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, VerifyNetworkStateInitialized) {
 // Make sure that type changes in the browser make their way to
 // navigator.connection.type.
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkChangePlumbsToNavigator) {
-  NavigateToURL(shell(), content::GetTestUrl("", "net_info.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), content::GetTestUrl("", "net_info.html")));
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_WIFI,
                     net::NetworkChangeNotifier::SUBTYPE_WIFI_N);
   EXPECT_EQ("wifi", RunScriptExtractString("getType()"));
@@ -207,7 +207,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, NetworkChangePlumbsToNavigator) {
 // Make sure that type changes in the browser make their way to
 // navigator.isOnline.
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, IsOnline) {
-  NavigateToURL(shell(), content::GetTestUrl("", "net_info.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), content::GetTestUrl("", "net_info.html")));
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET,
                     net::NetworkChangeNotifier::SUBTYPE_GIGABIT_ETHERNET);
   EXPECT_TRUE(RunScriptExtractBool("getOnLine()"));
@@ -224,7 +224,7 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, IsOnline) {
 IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest, TwoRenderViewsInOneProcess) {
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_ETHERNET,
                     net::NetworkChangeNotifier::SUBTYPE_GIGABIT_ETHERNET);
-  NavigateToURL(shell(), content::GetTestUrl("", "net_info.html"));
+  EXPECT_TRUE(NavigateToURL(shell(), content::GetTestUrl("", "net_info.html")));
   EXPECT_TRUE(RunScriptExtractBool("getOnLine()"));
 
   SetConnectionType(net::NetworkChangeNotifier::CONNECTION_NONE,

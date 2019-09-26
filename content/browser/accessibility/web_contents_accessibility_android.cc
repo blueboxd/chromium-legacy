@@ -196,16 +196,17 @@ base::LazyInstance<base::string16>::Leaky g_all_search_keys =
 
 bool SectionPredicate(BrowserAccessibility* start, BrowserAccessibility* node) {
   switch (node->GetRole()) {
-    case ax::mojom::Role::kArticle:
     case ax::mojom::Role::kApplication:
+    case ax::mojom::Role::kArticle:
     case ax::mojom::Role::kBanner:
     case ax::mojom::Role::kComplementary:
     case ax::mojom::Role::kContentInfo:
     case ax::mojom::Role::kHeading:
     case ax::mojom::Role::kMain:
     case ax::mojom::Role::kNavigation:
-    case ax::mojom::Role::kSearch:
     case ax::mojom::Role::kRegion:
+    case ax::mojom::Role::kSearch:
+    case ax::mojom::Role::kSection:
       return true;
     default:
       return false;

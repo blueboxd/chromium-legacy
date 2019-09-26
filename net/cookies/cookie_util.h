@@ -97,6 +97,9 @@ NET_EXPORT std::string SerializeRequestCookieLine(
 // the user directly interacting with the browser UI, e.g. entering a URL
 // or selecting a bookmark.
 //
+// If |attach_same_site_cookies| is specified, all SameSite cookies will be
+// attached.
+//
 // See also documentation for corresponding methods on net::URLRequest.
 //
 // |http_method| is used to enforce the requirement that, in a context that's

@@ -39,7 +39,7 @@ async_test((t) => {
     await acquire_promise;
 
     target.scrollIntoView();
-    let update_promise = container.displayLock.update();
+    let update_promise = container.updateRendering();
     await update_promise;
     t.step(() => assert_false(container.displayLock.locked, "context after update & activation is unlocked"));
     t.done();

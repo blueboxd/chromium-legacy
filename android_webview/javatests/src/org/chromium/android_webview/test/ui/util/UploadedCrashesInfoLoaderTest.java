@@ -33,10 +33,10 @@ import java.util.List;
 @RunWith(AwJUnit4ClassRunner.class)
 @OnlyRunIn(SINGLE_PROCESS)
 public class UploadedCrashesInfoLoaderTest {
-    private final static String TEST_UPLOAD_TIME_STR = "1234567890";
-    private final static long TEST_UPLOAD_TIME = Long.parseLong(TEST_UPLOAD_TIME_STR);
-    private final static String TEST_UPLOAD_ID = "0123456789abcdef";
-    private final static String TEST_LOCAL_ID = "fedcba9876543210";
+    private static final String TEST_UPLOAD_TIME_STR = "1234567890";
+    private static final long TEST_UPLOAD_TIME = Long.parseLong(TEST_UPLOAD_TIME_STR);
+    private static final String TEST_UPLOAD_ID = "0123456789abcdef";
+    private static final String TEST_LOCAL_ID = "fedcba9876543210";
 
     private File mLogFile;
 

@@ -132,6 +132,7 @@ void ContentsView::Init(AppListModel* model) {
 }
 
 void ContentsView::ResetForShow() {
+  target_page_for_last_view_state_update_ = base::nullopt;
   GetAppsContainerView()->ResetForShowApps();
   // SearchBoxView::ResetForShow() before SetActiveState(). It clears the search
   // query internally, which can show the search results page through
@@ -752,6 +753,8 @@ void ContentsView::UpdateYPositionAndOpacity() {
     GetAppsContainerView()->UpdateYPositionAndOpacity(apps_container_progress,
                                                       restore_opacity);
   }
+
+  target_page_for_last_view_state_update_ = current_state;
 }
 
 void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
@@ -822,23 +825,38 @@ void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
   // offset and apply the transform to the whole contents view.
   const gfx::Rect target_search_box_bounds =
       GetSearchBoxBoundsForViewState(target_page, target_view_state);
-  const gfx::Rect current_search_box_bounds =
-      GetSearchBoxExpectedBoundsForProgress(
-          target_page,
-          app_list_view_->GetAppListTransitionProgress(
-              AppListView::kProgressFlagWithTransform |
-              (target_page == ash::AppListState::kStateSearchResults
-                   ? AppListView::kProgressFlagSearchResults
-                   : AppListView::kProgressFlagNone)));
-
-  const int y_offset =
-      current_search_box_bounds.y() - target_search_box_bounds.y();
 
   SearchBoxView* search_box = GetSearchBoxView();
   const gfx::Rect target_search_box_widget_bounds =
       search_box->GetViewBoundsForSearchBoxContentsBounds(
           ConvertRectToWidgetWithoutTransform(target_search_box_bounds));
   search_box->GetWidget()->SetBounds(target_search_box_widget_bounds);
+
+  // Even though the target bounds are calculated for the target page, use the
+  // last page for which app list view state was updated - in case page
+  // transition is in progress, the total search box position change can be
+  // described as composite of:
+  // 1.  Change in contents view padding due to app list view state change.
+  // 2.  Change in contents view padding due to page change.
+  // Only the first part is expected to be handled by this animation, and this
+  // uses the last used page as reference.
+  // The second change will be handled by the page transition animation.
+  const ash::AppListState selected_page =
+      target_page_for_last_view_state_update_.value_or(
+          GetStateForPageIndex(pagination_model_.selected_page()));
+  const int progress_baseline_flag =
+      selected_page == ash::AppListState::kStateSearchResults
+          ? AppListView::kProgressFlagSearchResults
+          : AppListView::kProgressFlagNone;
+  const gfx::Rect current_search_box_bounds =
+      GetSearchBoxExpectedBoundsForProgress(
+          selected_page, app_list_view_->GetAppListTransitionProgress(
+                             AppListView::kProgressFlagWithTransform |
+                             progress_baseline_flag));
+
+  const int y_offset =
+      current_search_box_bounds.y() -
+      GetSearchBoxBoundsForViewState(selected_page, target_view_state).y();
 
   // For search box, animate the search_box view layer instead of the widget
   // layer to avoid conflict with pagination model transitions (which update the
@@ -857,6 +875,7 @@ void ContentsView::AnimateToViewState(ash::AppListViewState target_view_state,
   GetAppsContainerView()->UpdateYPositionAndOpacity(
       AppListView::GetTransitionProgressForState(target_view_state),
       target_view_state != ash::AppListViewState::kClosed /*restore_opacity*/);
+  target_page_for_last_view_state_update_ = target_page;
 
   // Schedule expand arrow repaint to ensure the view picks up the new target
   // state.

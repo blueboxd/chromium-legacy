@@ -9,6 +9,15 @@
 
 #import "ios/chrome/browser/ui/badges/badge_type.h"
 
+// States for the InfobarBadge.
+typedef NS_ENUM(NSInteger, BadgeState) {
+  // The badge is not accepted.
+  BadgeStateNone = 0,
+  // The Infobar Badge is accepted. e.g. The Infobar was accepted/confirmed, and
+  // the Infobar action has taken place.
+  BadgeStateAccepted,
+};
+
 // Holds properties and values the UI needs to configure a badge button.
 @protocol BadgeItem
 
@@ -19,8 +28,8 @@
 - (BOOL)isFullScreen;
 // Some badges may not be tappable if there is no action associated with it.
 @property(nonatomic, assign, readonly, getter=isTappable) BOOL tappable;
-// Whether this badge is in an accepted state.
-@property(nonatomic, assign, getter=isAccepted) BOOL accepted;
+// The BadgeState of the badge.
+@property(nonatomic, assign) BadgeState badgeState;
 
 @end
 

@@ -47,6 +47,21 @@ class BrowserTaskExecutorTest : public testing::Test {
 using StrictMockTask =
     testing::StrictMock<base::MockCallback<base::RepeatingCallback<void()>>>;
 
+TEST_F(BrowserTaskExecutorTest, RegisterExecutorForBothThreads) {
+  base::PostTask(FROM_HERE, {BrowserThread::UI}, base::BindOnce([]() {
+                   EXPECT_EQ(BrowserTaskExecutor::Get(),
+                             base::GetTaskExecutorForCurrentThread());
+                 }));
+
+  base::PostTask(FROM_HERE, {BrowserThread::IO}, base::BindOnce([]() {
+                   EXPECT_EQ(BrowserTaskExecutor::Get(),
+                             base::GetTaskExecutorForCurrentThread());
+                 }));
+
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::UI);
+  BrowserTaskExecutor::RunAllPendingTasksOnThreadForTesting(BrowserThread::IO);
+}
+
 TEST_F(BrowserTaskExecutorTest, RunAllPendingTasksForTestingOnUI) {
   StrictMockTask task_1;
   StrictMockTask task_2;
@@ -179,7 +194,9 @@ class BrowserTaskExecutorWithCustomSchedulerTest : public testing::Test {
               QueueType::kDefault));
       BrowserTaskExecutor::CreateForTesting(
           std::move(browser_ui_thread_scheduler),
-          std::make_unique<BrowserIOThreadDelegate>());
+          std::make_unique<BrowserIOThreadDelegate>(
+              BrowserIOThreadDelegate::BrowserTaskExecutorPresent::
+                  kNoForTesting));
     }
   };
 

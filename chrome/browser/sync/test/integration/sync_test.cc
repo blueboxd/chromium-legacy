@@ -357,7 +357,7 @@ bool SyncTest::CreateProfile(int index) {
   base::FilePath profile_path;
 
   base::ScopedAllowBlockingForTesting allow_blocking;
-  if (UsingExternalServers() && num_clients_ > 1) {
+  if (UsingExternalServers() && (num_clients_ > 1 || use_new_user_data_dir_)) {
     scoped_temp_dirs_.push_back(std::make_unique<base::ScopedTempDir>());
     // For multi profile UI signin, profile paths should be outside user data
     // dir to allow signing-in multiple profiles to same account. Otherwise, we
@@ -844,8 +844,17 @@ void SyncTest::SetupSyncInternal(SetupSyncMode setup_mode) {
   }
 }
 
+void SyncTest::ClearProfiles() {
+  profiles_.clear();
+  profile_delegates_.clear();
+  scoped_temp_dirs_.clear();
+  browsers_.clear();
+  clients_.clear();
+}
+
 bool SyncTest::SetupSync() {
   base::ScopedAllowBlockingForTesting allow_blocking;
+
   SetupSyncInternal(/*setup_mode=*/WAIT_FOR_SYNC_SETUP_TO_COMPLETE);
 
   // Because clients may modify sync data as part of startup (for example
@@ -970,6 +979,25 @@ std::unique_ptr<KeyedService> SyncTest::CreateProfileInvalidationProvider(
               -> std::unique_ptr<invalidation::InvalidationService> {
             return std::make_unique<invalidation::FakeInvalidationService>();
           }));
+}
+
+void SyncTest::ResetSyncForPrimaryAccount() {
+  if (UsingExternalServers()) {
+    base::ScopedAllowBlockingForTesting allow_blocking;
+    // For external server testing, we need to have a clean account.
+    // The following code will sign in one chrome browser, get
+    // the client id and access token, then clean the server data.
+    int old_num_clients = num_clients_;
+    int old_use_new_user_data_dir = use_new_user_data_dir_;
+    use_new_user_data_dir_ = true;
+    num_clients_ = 1;
+    SetupSyncInternal(/*setup_mode=*/WAIT_FOR_SYNC_SETUP_TO_COMPLETE);
+    GetClient(0)->ResetSyncForPrimaryAccount();
+    GetClient(0)->StopSyncServiceAndClearData();
+    ClearProfiles();
+    use_new_user_data_dir_ = old_use_new_user_data_dir;
+    num_clients_ = old_num_clients;
+  }
 }
 
 void SyncTest::SetUpOnMainThread() {

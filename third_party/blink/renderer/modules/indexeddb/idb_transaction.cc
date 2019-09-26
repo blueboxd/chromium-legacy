@@ -52,12 +52,14 @@ IDBTransaction* IDBTransaction::CreateNonVersionChange(
     int64_t id,
     const HashSet<String>& scope,
     mojom::IDBTransactionMode mode,
+    mojom::IDBTransactionDurability durability,
     IDBDatabase* db) {
   DCHECK_NE(mode, mojom::IDBTransactionMode::VersionChange);
   DCHECK(!scope.IsEmpty()) << "Non-version transactions should operate on a "
                               "well-defined set of stores";
-  return MakeGarbageCollected<IDBTransaction>(
-      script_state, std::move(transaction_backend), id, scope, mode, db);
+  return MakeGarbageCollected<IDBTransaction>(script_state,
+                                              std::move(transaction_backend),
+                                              id, scope, mode, durability, db);
 }
 
 IDBTransaction* IDBTransaction::CreateVersionChange(
@@ -78,12 +80,14 @@ IDBTransaction::IDBTransaction(
     int64_t id,
     const HashSet<String>& scope,
     mojom::IDBTransactionMode mode,
+    mojom::IDBTransactionDurability durability,
     IDBDatabase* db)
     : ContextLifecycleObserver(ExecutionContext::From(script_state)),
       transaction_backend_(std::move(transaction_backend)),
       id_(id),
       database_(db),
       mode_(mode),
+      durability_(durability),
       scope_(scope),
       event_queue_(
           MakeGarbageCollected<EventQueue>(ExecutionContext::From(script_state),
@@ -122,6 +126,7 @@ IDBTransaction::IDBTransaction(
       database_(db),
       open_db_request_(open_db_request),
       mode_(mojom::IDBTransactionMode::VersionChange),
+      durability_(mojom::IDBTransactionDurability::Default),
       state_(kInactive),
       old_database_metadata_(old_metadata),
       event_queue_(
@@ -493,6 +498,21 @@ const String& IDBTransaction::mode() const {
 
   NOTREACHED();
   return indexed_db_names::kReadonly;
+}
+
+const String& IDBTransaction::durability() const {
+  switch (durability_) {
+    case mojom::IDBTransactionDurability::Default:
+      return indexed_db_names::kDefault;
+
+    case mojom::IDBTransactionDurability::Strict:
+      return indexed_db_names::kStrict;
+
+    case mojom::IDBTransactionDurability::Relaxed:
+      return indexed_db_names::kRelaxed;
+  }
+
+  NOTREACHED();
 }
 
 DOMStringList* IDBTransaction::objectStoreNames() const {

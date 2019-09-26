@@ -389,6 +389,12 @@ ui::AXPlatformNode* ViewAXPlatformNodeDelegate::GetFromNodeID(int32_t id) {
   return PlatformNodeFromNodeID(id);
 }
 
+ui::AXPlatformNode* ViewAXPlatformNodeDelegate::GetFromTreeIDAndNodeID(
+    const ui::AXTreeID& ax_tree_id,
+    int32_t id) {
+  return nullptr;
+}
+
 bool ViewAXPlatformNodeDelegate::AccessibilityPerformAction(
     const ui::AXActionData& data) {
   return view()->HandleAccessibleAction(data);

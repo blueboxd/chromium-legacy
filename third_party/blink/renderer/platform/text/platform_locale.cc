@@ -34,6 +34,7 @@
 
 #include "base/macros.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/platform/text/date_time_format.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
@@ -218,7 +219,7 @@ String Locale::QueryString(int resource_id,
 
 String Locale::ValidationMessageTooLongText(unsigned value_length,
                                             int max_length) {
-  return QueryString(WebLocalizedString::kValidationTooLong,
+  return QueryString(IDS_FORM_VALIDATION_TOO_LONG,
                      ConvertToLocalizedNumber(String::Number(value_length)),
                      ConvertToLocalizedNumber(String::Number(max_length)));
 }
@@ -237,7 +238,7 @@ String Locale::ValidationMessageTooShortText(unsigned value_length,
 }
 
 String Locale::WeekFormatInLDML() {
-  String templ = QueryString(WebLocalizedString::kWeekFormatTemplate);
+  String templ = QueryString(IDS_FORM_INPUT_WEEK_TEMPLATE);
   // Converts a string like "Week $2, $1" to an LDML date format pattern like
   // "'Week 'ww', 'yyyy".
   StringBuilder builder;

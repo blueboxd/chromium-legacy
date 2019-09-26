@@ -46,12 +46,11 @@ namespace ios_web_view {
 
 namespace {
 syncer::ModelTypeSet GetDisabledTypes() {
-  // Only want credit card autofill for now.
-  // TODO(crbug.com/906910): Remove syncer::AUTOFILL_PROFILE and
-  // syncer::PASSWORDS as well once they are ready.
   syncer::ModelTypeSet disabled_types = syncer::UserTypes();
   disabled_types.Remove(syncer::AUTOFILL_WALLET_DATA);
   disabled_types.Remove(syncer::AUTOFILL_WALLET_METADATA);
+  disabled_types.Remove(syncer::AUTOFILL_PROFILE);
+  disabled_types.Remove(syncer::PASSWORDS);
   return disabled_types;
 }
 }  // namespace

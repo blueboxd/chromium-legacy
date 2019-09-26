@@ -4,7 +4,10 @@
 
 package org.chromium.net.test;
 
+import android.util.Log;
+
 import androidx.annotation.GuardedBy;
+import androidx.annotation.VisibleForTesting;
 
 import org.chromium.net.CronetException;
 import org.chromium.net.InlineExecutionProhibitedException;
@@ -12,6 +15,8 @@ import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UrlResponseInfo;
 import org.chromium.net.impl.CallbackExceptionImpl;
 import org.chromium.net.impl.CronetExceptionImpl;
+import org.chromium.net.impl.JavaUploadDataSinkBase;
+import org.chromium.net.impl.JavaUrlRequestUtils;
 import org.chromium.net.impl.JavaUrlRequestUtils.CheckedRunnable;
 import org.chromium.net.impl.JavaUrlRequestUtils.DirectPreventingExecutor;
 import org.chromium.net.impl.JavaUrlRequestUtils.State;
@@ -19,6 +24,8 @@ import org.chromium.net.impl.Preconditions;
 import org.chromium.net.impl.UrlRequestBase;
 import org.chromium.net.impl.UrlResponseInfoImpl;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
@@ -28,12 +35,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
+import java.util.concurrent.RejectedExecutionException;
 
 /**
  * Fake UrlRequest that retrieves responses from the associated FakeCronetController. Used for
  * testing Cronet usage on Android.
  */
 final class FakeUrlRequest extends UrlRequestBase {
+    private static final int DEFAULT_UPLOAD_BUFFER_SIZE = 8192;
+    // Used for logging errors.
+    private static final String TAG = FakeUrlRequest.class.getSimpleName();
     // Callback used to report responses to the client.
     private final Callback mCallback;
     // The {@link Executor} provided by the user to be used for callbacks.
@@ -46,6 +57,8 @@ final class FakeUrlRequest extends UrlRequestBase {
     private final FakeCronetEngine mFakeCronetEngine;
     // Source of thread safety for this class.
     private final Object mLock = new Object();
+    // True if direct execution is allowed for this request.
+    private final boolean mAllowDirectExecutor;
     // The chain of URL's this request has received.
     @GuardedBy("mLock")
     private final List<String> mUrlChain = new ArrayList<>();
@@ -58,6 +71,19 @@ final class FakeUrlRequest extends UrlRequestBase {
     // The {@link FakeUrlResponse} for the current URL.
     @GuardedBy("mLock")
     private FakeUrlResponse mCurrentFakeResponse;
+    // The body of the request from UploadDataProvider.
+    @GuardedBy("mLock")
+    private byte[] mRequestBody;
+    // The {@link UploadDataProvider} to retrieve a request body from.
+    @GuardedBy("mLock")
+    private UploadDataProvider mUploadDataProvider;
+    // The executor to call the {@link UploadDataProvider}'s callback methods with.
+    @GuardedBy("mLock")
+    private Executor mUploadExecutor;
+    // The {@link UploadDataSink} for the {@link UploadDataProvider}.
+    @GuardedBy("mLock")
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    FakeDataSink mFakeDataSink;
     // The {@link UrlResponseInfo} for the current request.
     @GuardedBy("mLock")
     private UrlResponseInfo mUrlResponseInfo;
@@ -66,7 +92,10 @@ final class FakeUrlRequest extends UrlRequestBase {
     private ByteBuffer mResponse;
     // The HTTP method used by this request to establish a connection.
     @GuardedBy("mLock")
-    private String mHttpMethod = "GET";
+    private String mHttpMethod;
+    // True after the {@link UploadDataProvider} for this request has been closed.
+    @GuardedBy("mLock")
+    private boolean mUploadProviderClosed;
 
     @GuardedBy("mLock")
     @State
@@ -84,7 +113,7 @@ final class FakeUrlRequest extends UrlRequestBase {
     /**
      * Used to map from HTTP status codes to the corresponding human-readable text.
      */
-    private final static Map<Integer, String> HTTP_STATUS_CODE_TO_TEXT;
+    private static final Map<Integer, String> HTTP_STATUS_CODE_TO_TEXT;
     static {
         Map<Integer, String> httpCodeMap = new HashMap<>();
         httpCodeMap.put(100, "Continue");
@@ -172,13 +201,26 @@ final class FakeUrlRequest extends UrlRequestBase {
         mCurrentUrl = url;
         mFakeCronetController = fakeCronetController;
         mFakeCronetEngine = fakeCronetEngine;
+        mAllowDirectExecutor = allowDirectExecutor;
     }
 
     @Override
     public void setUploadDataProvider(UploadDataProvider uploadDataProvider, Executor executor) {
+        if (uploadDataProvider == null) {
+            throw new NullPointerException("Invalid UploadDataProvider.");
+        }
         synchronized (mLock) {
+            if (!checkHasContentTypeHeader()) {
+                throw new IllegalArgumentException(
+                        "Requests with upload data must have a Content-Type.");
+            }
             checkNotStarted();
-            // TODO(kirchman) Implement UploadDataProvider.
+            if (mHttpMethod == null) {
+                mHttpMethod = "POST";
+            }
+            mUploadExecutor =
+                    mAllowDirectExecutor ? executor : new DirectPreventingExecutor(executor);
+            mUploadDataProvider = uploadDataProvider;
         }
     }
 
@@ -229,11 +271,17 @@ final class FakeUrlRequest extends UrlRequestBase {
                     transitionedState = true;
                 } finally {
                     if (!transitionedState) {
-                        mFakeCronetEngine.onRequestDestroyed();
+                        cleanup();
                     }
                 }
                 mUrlChain.add(mCurrentUrl);
-                fakeConnect();
+                if (mUploadDataProvider != null) {
+                    mFakeDataSink =
+                            new FakeDataSink(mUploadExecutor, mExecutor, mUploadDataProvider);
+                    mFakeDataSink.start(/* firstTime= */ true);
+                } else {
+                    fakeConnect();
+                }
             } else {
                 throw new IllegalStateException("This request's CronetEngine is already shutdown.");
             }
@@ -247,8 +295,8 @@ final class FakeUrlRequest extends UrlRequestBase {
     @GuardedBy("mLock")
     private void fakeConnect() {
         mAdditionalStatusDetails = Status.WAITING_FOR_RESPONSE;
-        mCurrentFakeResponse =
-                mFakeCronetController.getResponse(mCurrentUrl, mHttpMethod, mAllHeadersList);
+        mCurrentFakeResponse = mFakeCronetController.getResponse(
+                mCurrentUrl, mHttpMethod, mAllHeadersList, mRequestBody);
         int responseCode = mCurrentFakeResponse.getHttpStatusCode();
         mUrlResponseInfo = new UrlResponseInfoImpl(
                 Collections.unmodifiableList(new ArrayList<>(mUrlChain)), responseCode,
@@ -261,6 +309,7 @@ final class FakeUrlRequest extends UrlRequestBase {
         if (responseCode >= 300 && responseCode < 400) {
             processRedirectResponse();
         } else {
+            closeUploadDataProvider();
             final UrlResponseInfo info = mUrlResponseInfo;
             transitionStates(State.STARTED, State.AWAITING_READ);
             executeCheckedRunnable(new CheckedRunnable() {
@@ -373,7 +422,12 @@ final class FakeUrlRequest extends UrlRequestBase {
     public void followRedirect() {
         synchronized (mLock) {
             transitionStates(State.AWAITING_FOLLOW_REDIRECT, State.STARTED);
-            fakeConnect();
+            if (mFakeDataSink != null) {
+                mFakeDataSink = new FakeDataSink(mUploadExecutor, mExecutor, mUploadDataProvider);
+                mFakeDataSink.start(/* firstTime= */ false);
+            } else {
+                fakeConnect();
+            }
         }
     }
 
@@ -395,7 +449,7 @@ final class FakeUrlRequest extends UrlRequestBase {
     @Override
     public void getStatus(final StatusListener listener) {
         synchronized (mLock) {
-            int extraStatus = this.mAdditionalStatusDetails;
+            int extraStatus = mAdditionalStatusDetails;
 
             @StatusValues
             final int status;
@@ -478,7 +532,7 @@ final class FakeUrlRequest extends UrlRequestBase {
      *
      * @param checkedRunnable the runnable to execute
      */
-    private void executeCheckedRunnable(CheckedRunnable checkedRunnable) {
+    private void executeCheckedRunnable(JavaUrlRequestUtils.CheckedRunnable checkedRunnable) {
         try {
             mUserExecutor.execute(new Runnable() {
                 @Override
@@ -493,7 +547,8 @@ final class FakeUrlRequest extends UrlRequestBase {
             });
         } catch (InlineExecutionProhibitedException e) {
             // Don't try to fail using the {@code mUserExecutor} because it produced this error.
-            tryToFailWithException(new CronetExceptionImpl("Direct executor not allowed", e));
+            tryToFailWithException(
+                    new CronetExceptionImpl("Exception posting task to executor", e));
         }
     }
 
@@ -517,10 +572,166 @@ final class FakeUrlRequest extends UrlRequestBase {
                 return false; // Already in a terminal state
             default: {
                 mState = terminalState;
-                mFakeCronetEngine.onRequestDestroyed();
+                cleanup();
                 return true;
             }
         }
+    }
+
+    @GuardedBy("mLock")
+    private void cleanup() {
+        closeUploadDataProvider();
+        mFakeCronetEngine.onRequestDestroyed();
+    }
+
+    /**
+     * Executed only once after the request has finished using the {@link UploadDataProvider}.
+     * Closes the {@link UploadDataProvider} if it exists and has not already been closed.
+     */
+    @GuardedBy("mLock")
+    private void closeUploadDataProvider() {
+        if (mUploadDataProvider != null && !mUploadProviderClosed) {
+            try {
+                mUploadExecutor.execute(uploadErrorSetting(new CheckedRunnable() {
+                    @Override
+                    public void run() throws Exception {
+                        synchronized (mLock) {
+                            mUploadDataProvider.close();
+                            mUploadProviderClosed = true;
+                        }
+                    }
+                }));
+            } catch (RejectedExecutionException e) {
+                Log.e(TAG, "Exception when closing uploadDataProvider", e);
+            }
+        }
+    }
+
+    /**
+     * Wraps a {@link CheckedRunnable} in a runnable that will attempt to fail the request if there
+     * is an exception.
+     *
+     * @param delegate the {@link CheckedRunnable} to try to run
+     * @return a {@link Runnable} that wraps the delegate runnable.
+     */
+    private Runnable uploadErrorSetting(final CheckedRunnable delegate) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    delegate.run();
+                } catch (Throwable t) {
+                    enterUploadErrorState(t);
+                }
+            }
+        };
+    }
+
+    /**
+     * Fails the request with an error. Called when uploading the request body using an
+     * {@link UploadDataProvider} fails.
+     *
+     * @param error the error that caused this request to fail which should be returned to the
+     *              {@link UrlRequest.Callback}
+     */
+    private void enterUploadErrorState(final Throwable error) {
+        synchronized (mLock) {
+            mUserExecutor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    tryToFailWithException(new CronetExceptionImpl(
+                            "Exception received from UploadDataProvider", error));
+                }
+            });
+        }
+    }
+
+    /**
+     * Adapted from {@link JavaUrlRequest.OutputStreamDataSink}. Stores the received message in a
+     * {@link ByteArrayOutputStream} and transfers it to the {@code mRequestBody} when the response
+     * has been fully acquired.
+     */
+    @VisibleForTesting(otherwise = VisibleForTesting.PRIVATE)
+    final class FakeDataSink extends JavaUploadDataSinkBase {
+        private final ByteArrayOutputStream mTotalUploadStream = new ByteArrayOutputStream();
+
+        FakeDataSink(final Executor userExecutor, Executor executor, UploadDataProvider provider) {
+            super(userExecutor, executor, provider);
+        }
+
+        @Override
+        public Runnable getErrorSettingRunnable(JavaUrlRequestUtils.CheckedRunnable runnable) {
+            return new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        runnable.run();
+                    } catch (Throwable t) {
+                        mUserExecutor.execute(new Runnable() {
+                            @Override
+                            public void run() {
+                                tryToFailWithException(new CronetExceptionImpl("System error", t));
+                            }
+                        });
+                    }
+                }
+            };
+        }
+
+        @Override
+        protected Runnable getUploadErrorSettingRunnable(
+                JavaUrlRequestUtils.CheckedRunnable runnable) {
+            return uploadErrorSetting(runnable);
+        }
+
+        @Override
+        protected void processUploadError(final Throwable error) {
+            enterUploadErrorState(error);
+        }
+
+        @Override
+        protected int processSuccessfulRead(ByteBuffer buffer) throws IOException {
+            mTotalUploadStream.write(buffer.array(), buffer.arrayOffset(), buffer.remaining());
+            return buffer.remaining();
+        }
+
+        /**
+         * Terminates the upload stage of the request. Writes the received bytes to the byte array:
+         * {@code mRequestBody}. Connects to the current URL for this request.
+         */
+        @Override
+        protected void finish() throws IOException {
+            synchronized (mLock) {
+                mRequestBody = mTotalUploadStream.toByteArray();
+                fakeConnect();
+            }
+        }
+
+        @Override
+        protected void initializeRead() throws IOException {
+            // Nothing to do before every read in this implementation.
+        }
+
+        @Override
+        protected void initializeStart(long totalBytes) {
+            // Nothing to do to initialize the upload in this implementation.
+        }
+    }
+
+    /**
+     * Verifies that the "content-type" header is present. Must be checked before an
+     * {@link UploadDataProvider} is premitted to be set.
+     *
+     * @return true if the "content-type" header is present in the request headers.
+     */
+    @GuardedBy("mLock")
+    private boolean checkHasContentTypeHeader() {
+        for (Map.Entry<String, String> entry : mAllHeadersList) {
+            if (entry.getKey().equalsIgnoreCase("content-type")) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**

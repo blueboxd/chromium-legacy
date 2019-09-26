@@ -382,14 +382,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
       bool present,
       WebSuddenTerminationDisablerType) {}
 
-  // Effective connection type when this frame was loaded.
-  virtual WebEffectiveConnectionType GetEffectiveConnectionType() {
-    return WebEffectiveConnectionType::kTypeUnknown;
-  }
-  // Overrides the effective connection type for testing.
-  virtual void SetEffectiveConnectionTypeForTesting(
-      WebEffectiveConnectionType) {}
-
   // Returns the PreviewsState active for the frame.
   virtual WebURLRequest::PreviewsState GetPreviewsStateForFrame() const {
     return WebURLRequest::kPreviewsUnspecified;

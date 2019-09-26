@@ -98,6 +98,15 @@ class MEDIA_GPU_EXPORT CodecImage
                            int display_y,
                            int display_width,
                            int display_height) override;
+  // If we re-use one CodecImage with different output buffers, then we must
+  // not claim to have mutable state.  Otherwise, CopyTexImage is only called
+  // once.  For pooled shared images, this must return false.  For single-use
+  // images, it works either way.
+  bool HasMutableState() const override;
+
+  // Notify us that we're no longer in-use for display, and may be pointed at
+  // another output buffer via a call to Initialize.
+  void NotifyUnused();
 
   // gpu::StreamTextureSharedImageInterface implementation.
   void ReleaseResources() override;

@@ -91,7 +91,8 @@ class AcceptHeaderTest : public ContentBrowserTest {
 };
 
 IN_PROC_BROWSER_TEST_F(AcceptHeaderTest, Check) {
-  NavigateToURL(shell(), embedded_test_server()->GetURL("/accept-header.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("/accept-header.html")));
 
   // ResourceType::kMainFrame
   EXPECT_EQ(

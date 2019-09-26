@@ -26,7 +26,6 @@
 <translation id="415767770115540173">รับประสบการณ์การใช้งาน Google ที่ดีขึ้นใน Chrome โดยอิงตามตำแหน่งของคุณ</translation>
 <translation id="424864128008805179">ต้องการออกจากระบบ Chrome ไหม</translation>
 <translation id="4523886039239821078">ส่วนเสริมบางรายการทำให้ Chrome ขัดข้อง โปรดถอนการติดตั้ง</translation>
-<translation id="4615174829807303908">คุณกำลังออกจากระบบบัญชีที่จัดการโดย <ph name="SIGNOUT_MANAGED_DOMAIN" /> การออกจากระบบจะลบข้อมูล Chrome ของคุณออกจากอุปกรณ์เครื่องนี้ แต่ข้อมูลจะยังคงอยู่ในบัญชี Google</translation>
 <translation id="5389212809648216794">Google Chrome ไม่สามารถใช้กล้องถ่ายรูปเนื่องจากแอปพลิเคชันอื่นใช้งานอยู่</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />อ่านข้อกำหนดในการให้บริการของ Chrome ที่อัปเดต<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">เปิดการตั้งค่า &gt; ความเป็นส่วนตัว &gt; กล้อง &gt; Google Chrome เพื่อเปิดกล้องถ่ายรูป</translation>
@@ -45,7 +44,6 @@
 <translation id="7173660919484573146">Chrome ใช้ Face ID เพื่อยืนยันสิทธิ์ในการเข้าถึงรหัสผ่าน</translation>
 <translation id="7265369419224458312">เข้าถึงแท็บที่คุณเปิดไว้ในคอมพิวเตอร์ได้ที่นี่ เพียงเปิด Chrome บนคอมพิวเตอร์ของคุณ ไปที่เมนู แล้วเลือก “ลงชื่อเข้าใช้ Chrome…”</translation>
 <translation id="7400722733683201933">เกี่ยวกับ Google Chrome</translation>
-<translation id="7437998757836447326">ออกจากระบบ Chrome</translation>
 <translation id="756809126120519699">ล้างข้อมูล Chrome แล้ว</translation>
 <translation id="7626032353295482388">ยินดีต้อนรับสู่ Chrome</translation>
 <translation id="7698568245838009292">Chrome ต้องการเข้าถึงกล้องถ่ายรูป</translation>

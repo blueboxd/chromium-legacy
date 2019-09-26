@@ -724,7 +724,6 @@ void ClientTagBasedModelTypeProcessor::OnUpdateReceived(
     error = OnFullUpdateReceived(model_type_state, std::move(updates));
   } else {
     error = OnIncrementalUpdateReceived(model_type_state, std::move(updates));
-    ExpireEntriesIfNeeded(model_type_state.progress_marker());
   }
 
   if (error) {
@@ -1342,49 +1341,6 @@ bool ClientTagBasedModelTypeProcessor::IsModelReadyToSyncForTest() const {
   return model_ready_to_sync_;
 }
 
-void ClientTagBasedModelTypeProcessor::ExpireEntriesIfNeeded(
-    const sync_pb::DataTypeProgressMarker& progress_marker) {
-  if (!progress_marker.has_gc_directive())
-    return;
-
-  const sync_pb::GarbageCollectionDirective& new_gc_directive =
-      progress_marker.gc_directive();
-  std::unique_ptr<MetadataChangeList> metadata_changes =
-      bridge_->CreateMetadataChangeList();
-  bool has_expired_changes = false;
-
-  if (new_gc_directive.has_age_watermark_in_days()) {
-    DCHECK(new_gc_directive.age_watermark_in_days());
-    // For saving resource purpose(ex. cpu, battery), We round up garbage
-    // collection age to day, so we only run GC once a day if server did not
-    // change the |age_watermark_in_days|.
-    base::Time to_be_expired =
-        base::Time::Now().LocalMidnight() -
-        base::TimeDelta::FromDays(new_gc_directive.age_watermark_in_days());
-    if (cached_gc_directive_aged_out_day_ != to_be_expired) {
-      ExpireEntriesByAge(new_gc_directive.age_watermark_in_days(),
-                         metadata_changes.get());
-      cached_gc_directive_aged_out_day_ = to_be_expired;
-      has_expired_changes = true;
-    }
-  }
-
-  if (has_expired_changes)
-    bridge_->ApplySyncChanges(std::move(metadata_changes), EntityChangeList());
-}
-
-void ClientTagBasedModelTypeProcessor::ClearMetadataForEntries(
-    const std::vector<std::string>& storage_key_to_be_deleted,
-    MetadataChangeList* metadata_changes) {
-  for (const std::string& key : storage_key_to_be_deleted) {
-    metadata_changes->ClearMetadata(key);
-    auto iter = storage_key_to_tag_hash_.find(key);
-    DCHECK(iter != storage_key_to_tag_hash_.end());
-    entities_.erase(iter->second);
-    storage_key_to_tag_hash_.erase(key);
-  }
-}
-
 void ClientTagBasedModelTypeProcessor::ExpireAllEntries(
     MetadataChangeList* metadata_changes) {
   DCHECK(metadata_changes);
@@ -1397,27 +1353,14 @@ void ClientTagBasedModelTypeProcessor::ExpireAllEntries(
     }
   }
 
-  ClearMetadataForEntries(storage_key_to_be_deleted, metadata_changes);
-}
-
-void ClientTagBasedModelTypeProcessor::ExpireEntriesByAge(
-    int32_t age_watermark_in_days,
-    MetadataChangeList* metadata_changes) {
-  DCHECK(metadata_changes);
-
-  base::Time to_be_expired =
-      base::Time::Now() - base::TimeDelta::FromDays(age_watermark_in_days);
-  std::vector<std::string> storage_key_to_be_deleted;
-  for (const auto& kv : entities_) {
-    ProcessorEntity* entity = kv.second.get();
-    if (!entity->IsUnsynced() &&
-        ProtoTimeToTime(entity->metadata().modification_time()) <=
-            to_be_expired) {
-      storage_key_to_be_deleted.push_back(entity->storage_key());
-    }
+  // Delete selected keys while not iterating over |entities_|.
+  for (const std::string& key : storage_key_to_be_deleted) {
+    metadata_changes->ClearMetadata(key);
+    auto iter = storage_key_to_tag_hash_.find(key);
+    DCHECK(iter != storage_key_to_tag_hash_.end());
+    entities_.erase(iter->second);
+    storage_key_to_tag_hash_.erase(iter);
   }
-
-  ClearMetadataForEntries(storage_key_to_be_deleted, metadata_changes);
 }
 
 void ClientTagBasedModelTypeProcessor::RemoveEntity(
@@ -1432,7 +1375,6 @@ void ClientTagBasedModelTypeProcessor::ResetState(
     SyncStopMetadataFate metadata_fate) {
   // This should reset all mutable fields (except for |bridge_|).
   worker_.reset();
-  cached_gc_directive_aged_out_day_ = base::Time::FromDoubleT(0);
 
   switch (metadata_fate) {
     case KEEP_METADATA:

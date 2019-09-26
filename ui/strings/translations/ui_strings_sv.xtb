@@ -111,7 +111,6 @@
 <translation id="4724120544754982507"><ph name="UNREAD_NOTIFICATION_COUNT" /> olästa aviseringar i meddelandecentret</translation>
 <translation id="4730374152663651037">OFTA ANVÄNDA</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 månad kvar}other{# månader kvar}}</translation>
-<translation id="4841881773802181781">Infogning</translation>
 <translation id="4881695831933465202">Öppna</translation>
 <translation id="4888938634149558681">Ring</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekund}other{# sekunder}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Spara fil</translation>
 <translation id="6656912866303152668">Kontrollera att synkronisering är aktiverat i Chrome på <ph name="TARGET_DEVICE_NAME" /> och försök skicka igen.</translation>
 <translation id="6699343763173986273">Nästa spår</translation>
-<translation id="673773751041746814">Borttagning</translation>
 <translation id="6779314412797872738"><ph name="TROUBLESHOOT_LINK" /> i inställningarna för båda enheterna om du vill skicka ett nummer till Android-telefonen härifrån.</translation>
 <translation id="6786750046913594791">Stäng mappen</translation>
 <translation id="6808150112686056157">Stoppa</translation>

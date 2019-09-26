@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Pusat Notifikasi, <ph name="UNREAD_NOTIFICATION_COUNT" /> notifikasi belum dibaca</translation>
 <translation id="4730374152663651037">SERING DIGUNAKAN</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 bulan lagi}other{# bulan lagi}}</translation>
-<translation id="4841881773802181781">Penyisipan</translation>
 <translation id="4881695831933465202">Buka</translation>
 <translation id="4888938634149558681">Telepon</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 detik}other{# detik}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Simpan File</translation>
 <translation id="6656912866303152668">Pastikan <ph name="TARGET_DEVICE_NAME" /> telah mengaktifkan sinkronisasi di Chrome, dan coba kirim lagi.</translation>
 <translation id="6699343763173986273">Lacak Media Berikutnya</translation>
-<translation id="673773751041746814">Penghapusan</translation>
 <translation id="6779314412797872738">Untuk mengirim nomor dari sini ke ponsel Android Anda, <ph name="TROUBLESHOOT_LINK" /> untuk kedua perangkat di setelan.</translation>
 <translation id="6786750046913594791">Tutup folder</translation>
 <translation id="6808150112686056157">Hentikan Media</translation>

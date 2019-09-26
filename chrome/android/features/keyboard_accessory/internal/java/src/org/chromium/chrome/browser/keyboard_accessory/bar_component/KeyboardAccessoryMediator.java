@@ -133,7 +133,6 @@ class KeyboardAccessoryMediator
             case PopupItemId.ITEM_ID_CLEAR_FORM:
             case PopupItemId.ITEM_ID_CREDIT_CARD_SIGNIN_PROMO:
             case PopupItemId.ITEM_ID_ALL_SAVED_PASSWORDS_ENTRY:
-            case PopupItemId.ITEM_ID_GOOGLE_PAY_BRANDING:
             case PopupItemId.ITEM_ID_GENERATE_PASSWORD_ENTRY:
             case PopupItemId.ITEM_ID_SHOW_ACCOUNT_CARDS:
             case PopupItemId.ITEM_ID_AUTOFILL_OPTIONS:

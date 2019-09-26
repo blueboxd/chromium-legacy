@@ -3808,6 +3808,12 @@
     ]
   },
 
+  "SharedClipboardEnabled" : {
+    "os": ["win", "linux", "mac", "chromeos", "android"],
+    "test_policy": { "SharedClipboardEnabled": false },
+    "pref_mappings": [{ "pref": "browser.shared_clipboard_enabled" }]
+  },
+
   "----- Chrome OS device policies ---------------------------------------": {},
 
   "DevicePolicyRefreshRate": {

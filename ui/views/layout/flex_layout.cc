@@ -469,6 +469,14 @@ void FlexLayout::CalculateChildBounds(const SizeBounds& size_bounds,
       FlexChildData& flex_child = data->child_data[i];
       NormalizedRect actual = flex_child.actual_bounds;
       actual.Offset(start.main(), start.cross());
+      if (actual.size_main() > flex_child.preferred_size.main() &&
+          flex_child.flex.alignment() != LayoutAlignment::kStretch) {
+        Span container{actual.origin_main(), actual.size_main()};
+        Span new_main{0, flex_child.preferred_size.main()};
+        new_main.Align(container, flex_child.flex.alignment());
+        actual.set_origin_main(new_main.start());
+        actual.set_size_main(new_main.length());
+      }
       child_layout.bounds = Denormalize(orientation(), actual);
     }
   }

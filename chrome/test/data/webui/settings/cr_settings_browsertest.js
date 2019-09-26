@@ -2495,6 +2495,8 @@ CrSettingsAddUsersTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTestCrOS.prototype.extraLibraries.concat([
+    '../fake_chrome_event.js',
+    'chromeos/fake_users_private.js',
     'chromeos/add_users_tests.js',
   ]),
 };

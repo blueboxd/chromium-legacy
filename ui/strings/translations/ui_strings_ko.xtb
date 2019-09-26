@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">알림 센터, 읽지 않은 알림 <ph name="UNREAD_NOTIFICATION_COUNT" />개</translation>
 <translation id="4730374152663651037">자주 사용하는 앱</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1개월 남음}other{#개월 남음}}</translation>
-<translation id="4841881773802181781">삽입</translation>
 <translation id="4881695831933465202">열기</translation>
 <translation id="4888938634149558681">전화 걸기</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1초}other{#초}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">파일 저장</translation>
 <translation id="6656912866303152668"><ph name="TARGET_DEVICE_NAME" />에서 Chrome 동기화가 사용 설정되어 있는지 확인한 다음 다시 보내 보세요.</translation>
 <translation id="6699343763173986273">미디어 다음 트랙</translation>
-<translation id="673773751041746814">삭제</translation>
 <translation id="6779314412797872738">여기에서 Android 휴대전화로 번호를 전송하려면 두 기기 모두 설정에서 <ph name="TROUBLESHOOT_LINK" />하세요.</translation>
 <translation id="6786750046913594791">폴더 닫기</translation>
 <translation id="6808150112686056157">미디어 중지</translation>

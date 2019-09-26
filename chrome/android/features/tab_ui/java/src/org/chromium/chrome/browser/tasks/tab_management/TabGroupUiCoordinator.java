@@ -36,7 +36,7 @@ import java.util.List;
  */
 public class TabGroupUiCoordinator
         implements TabGroupUiMediator.ResetHandler, TabGroupUi, PauseResumeWithNativeObserver {
-    final static String COMPONENT_NAME = "TabStrip";
+    static final String COMPONENT_NAME = "TabStrip";
     private final Context mContext;
     private final PropertyModel mTabStripToolbarModel;
     private final ThemeColorProvider mThemeColorProvider;
@@ -81,9 +81,11 @@ public class TabGroupUiCoordinator
                 TabProperties.UiType.STRIP, null,
                 mTabStripToolbarCoordinator.getTabListContainerView(), null, true, COMPONENT_NAME);
 
-        if (FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled()) {
-            // TODO(yuezhanggg): find a way to enable interactions between grid tab switcher and the
-            // dialog here.
+        boolean isTabGroupsUiImprovementsEnabled =
+                FeatureUtilities.isTabGroupsAndroidUiImprovementsEnabled();
+        if (isTabGroupsUiImprovementsEnabled) {
+            // TODO(crbug.com/972217): find a way to enable interactions between grid tab switcher
+            // and the dialog here.
             mTabGridSheetCoordinator = null;
 
             mTabGridDialogCoordinator =
@@ -99,7 +101,10 @@ public class TabGroupUiCoordinator
 
         mMediator = new TabGroupUiMediator(visibilityController, this, mTabStripToolbarModel,
                 tabModelSelector, activity,
-                ((ChromeTabbedActivity) activity).getOverviewModeBehavior(), mThemeColorProvider);
+                ((ChromeTabbedActivity) activity).getOverviewModeBehavior(), mThemeColorProvider,
+                isTabGroupsUiImprovementsEnabled ? mTabGridDialogCoordinator.getDialogController()
+                                                 : null);
+
         mActivityLifecycleDispatcher = activity.getLifecycleDispatcher();
         mActivityLifecycleDispatcher.register(this);
 
@@ -130,6 +135,14 @@ public class TabGroupUiCoordinator
         } else {
             mTabGridDialogCoordinator.resetWithListOfTabs(tabs);
         }
+    }
+
+    /**
+     * TabGroupUi implementation.
+     */
+    @Override
+    public boolean onBackPressed() {
+        return mMediator.onBackPressed();
     }
 
     /**

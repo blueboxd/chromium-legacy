@@ -176,11 +176,8 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
                             SMILTime minimum_time,
                             bool equals_minimum_ok) const;
 
-  enum IntervalSelector { kFirstInterval, kNextInterval };
-
-  SMILInterval ResolveInterval(IntervalSelector) const;
+  SMILInterval ResolveInterval(SMILTime begin_after, SMILTime end_after) const;
   bool ResolveFirstInterval();
-  base::Optional<SMILInterval> ResolveNextInterval();
   SMILTime ResolveActiveEnd(SMILTime resolved_begin,
                             SMILTime resolved_end) const;
   SMILTime RepeatingDuration() const;

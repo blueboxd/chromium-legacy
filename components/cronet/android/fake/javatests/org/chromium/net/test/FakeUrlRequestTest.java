@@ -5,11 +5,13 @@
 package org.chromium.net.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.times;
 
+import static org.chromium.net.CronetTestRule.assertContains;
 import static org.chromium.net.TestUrlRequestCallback.ResponseStep.ON_CANCELED;
 
 import android.content.Context;
@@ -27,11 +29,17 @@ import org.mockito.Mockito;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.net.CronetEngine;
 import org.chromium.net.InlineExecutionProhibitedException;
+import org.chromium.net.TestUploadDataProvider;
 import org.chromium.net.TestUrlRequestCallback;
+import org.chromium.net.UploadDataProvider;
+import org.chromium.net.UploadDataProviders;
+import org.chromium.net.UploadDataSink;
 import org.chromium.net.UrlRequest.Status;
 import org.chromium.net.UrlRequest.StatusListener;
 
+import java.io.IOException;
 import java.net.URI;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -39,6 +47,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.atomic.AtomicBoolean;
+
 /**
  * Test functionality of FakeUrlRequest.
  */
@@ -61,6 +70,27 @@ public class FakeUrlRequestTest {
             }
         });
         foundStatus.block();
+    }
+
+    private class EchoBodyResponseMatcher implements ResponseMatcher {
+        private final String mUrl;
+
+        EchoBodyResponseMatcher(String url) {
+            mUrl = url;
+        }
+
+        EchoBodyResponseMatcher() {
+            this(null);
+        }
+
+        @Override
+        public FakeUrlResponse getMatchingResponse(String url, String httpMethod,
+                List<Map.Entry<String, String>> headers, byte[] body) {
+            if (mUrl == null || mUrl.equals(url)) {
+                return new FakeUrlResponse.Builder().setResponseBody(body).build();
+            }
+            return null;
+        }
     }
 
     @Before
@@ -170,14 +200,15 @@ public class FakeUrlRequestTest {
                 (FakeUrlRequest) mFakeCronetEngine
                         .newUrlRequestBuilder("url", callback, callback.getExecutor())
                         .build();
-        String testMethod = "POST";
-
+        String testMethod = "PUT";
+        // Use an atomic because it is set in an inner class. We do not actually need atomic for a
+        // multi-threaded operation here.
         AtomicBoolean foundMethod = new AtomicBoolean();
 
         mFakeCronetController.addResponseMatcher(new ResponseMatcher() {
             @Override
-            public FakeUrlResponse getMatchingResponse(
-                    String url, String httpMethod, List<Map.Entry<String, String>> headers) {
+            public FakeUrlResponse getMatchingResponse(String url, String httpMethod,
+                    List<Map.Entry<String, String>> headers, byte[] body) {
                 assertEquals(testMethod, httpMethod);
                 foundMethod.set(true);
                 // It doesn't matter if a response is actually returned.
@@ -206,11 +237,13 @@ public class FakeUrlRequestTest {
         String headerKey = "HEADERNAME";
         String headerValue = "HEADERVALUE";
         request.addHeader(headerKey, headerValue);
+        // Use an atomic because it is set in an inner class. We do not actually need atomic for a
+        // multi-threaded operation here.
         AtomicBoolean foundEntry = new AtomicBoolean();
         mFakeCronetController.addResponseMatcher(new ResponseMatcher() {
             @Override
-            public FakeUrlResponse getMatchingResponse(
-                    String url, String httpMethod, List<Map.Entry<String, String>> headers) {
+            public FakeUrlResponse getMatchingResponse(String url, String httpMethod,
+                    List<Map.Entry<String, String>> headers, byte[] body) {
                 assertEquals(1, headers.size());
                 assertEquals(headerKey, headers.get(0).getKey());
                 assertEquals(headerValue, headers.get(0).getValue());
@@ -463,15 +496,19 @@ public class FakeUrlRequestTest {
         TestUrlRequestCallback callback = Mockito.spy(new TestUrlRequestCallback());
         FakeUrlRequest request = (FakeUrlRequest) mFakeCronetEngine
                                          .newUrlRequestBuilder("", callback, callback.getExecutor())
+                                         .addHeader("Content-Type", "useless/string")
                                          .build();
-        request.setUploadDataProvider(null, null);
+        String body = "body";
+        request.setUploadDataProvider(
+                UploadDataProviders.create(body.getBytes()), callback.getExecutor());
         request.start();
         // Must wait for the request to prevent a race in the State since it is reported in the
         // error.
         callback.blockForDone();
 
         try {
-            request.setUploadDataProvider(null, null);
+            request.setUploadDataProvider(
+                    UploadDataProviders.create(body.getBytes()), callback.getExecutor());
             fail("UploadDataProvider cannot be changed after request has started");
         } catch (IllegalStateException e) {
             assertEquals("Request is already started. State is: 7", e.getMessage());
@@ -776,5 +813,784 @@ public class FakeUrlRequestTest {
         callback.blockForDone();
 
         assertEquals(404, callback.mResponseInfo.getHttpStatusCode());
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadSetDataProviderChecksForNullUploadDataProvider() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        try {
+            builder.setUploadDataProvider(null, callback.getExecutor());
+            fail("Exception not thrown");
+        } catch (NullPointerException e) {
+            assertEquals("Invalid UploadDataProvider.", e.getMessage());
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadSetDataProviderChecksForContentTypeHeader() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        try {
+            builder.build().start();
+            fail("Exception not thrown");
+        } catch (IllegalArgumentException e) {
+            assertEquals("Requests with upload data must have a Content-Type.", e.getMessage());
+        }
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadWithEmptyBody() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+
+        assertNotNull(callback.mResponseInfo);
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("", callback.mResponseAsString);
+        dataProvider.assertClosed();
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadSync() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        String body = "test";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+        dataProvider.addRead(body.getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(4, dataProvider.getUploadedLength());
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("test", callback.mResponseAsString);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadSyncReadWrongState() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        String body = "test";
+        callback.setAutoAdvance(false);
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+
+        // Add a redirect response so the request keeps the UploadDataProvider open while waiting
+        // to follow the redirect.
+        mFakeCronetController.addRedirectResponse("newUrl", url);
+        dataProvider.addRead(body.getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        FakeUrlRequest request = (FakeUrlRequest) builder.build();
+        request.start();
+        callback.waitForNextStep();
+        try {
+            request.mFakeDataSink.onReadSucceeded(false);
+            fail("Cannot read before upload has started");
+        } catch (IllegalStateException e) {
+            assertEquals("onReadSucceeded() called when not awaiting a read result; in state: 2",
+                    e.getMessage());
+        }
+        request.cancel();
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadSyncRewindWrongState() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        String body = "test";
+        callback.setAutoAdvance(false);
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+
+        // Add a redirect response so the request keeps the UploadDataProvider open while waiting
+        // to follow the redirect.
+        mFakeCronetController.addRedirectResponse("newUrl", url);
+        dataProvider.addRead(body.getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        FakeUrlRequest request = (FakeUrlRequest) builder.build();
+        request.start();
+        callback.waitForNextStep();
+        try {
+            request.mFakeDataSink.onRewindSucceeded();
+            fail("Cannot rewind before upload has started");
+        } catch (IllegalStateException e) {
+            assertEquals("onRewindSucceeded() called when not awaiting a rewind; in state: 2",
+                    e.getMessage());
+        }
+        request.cancel();
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadMultiplePiecesSync() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+        dataProvider.addRead("Y".getBytes());
+        dataProvider.addRead("et ".getBytes());
+        dataProvider.addRead("another ".getBytes());
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(16, dataProvider.getUploadedLength());
+        assertEquals(4, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("Yet another test", callback.mResponseAsString);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadMultiplePiecesAsync() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.ASYNC, callback.getExecutor());
+        dataProvider.addRead("Y".getBytes());
+        dataProvider.addRead("et ".getBytes());
+        dataProvider.addRead("another ".getBytes());
+        dataProvider.addRead("test".getBytes());
+
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(16, dataProvider.getUploadedLength());
+        assertEquals(4, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("Yet another test", callback.mResponseAsString);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadChangesDefaultMethod() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new ResponseMatcher() {
+            @Override
+            public FakeUrlResponse getMatchingResponse(String url, String httpMethod,
+                    List<Map.Entry<String, String>> headers, byte[] body) {
+                return new FakeUrlResponse.Builder().setResponseBody(httpMethod.getBytes()).build();
+            }
+        });
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("POST", callback.mResponseAsString);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadWithSetMethod() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new ResponseMatcher() {
+            @Override
+            public FakeUrlResponse getMatchingResponse(String url, String httpMethod,
+                    List<Map.Entry<String, String>> headers, byte[] body) {
+                return new FakeUrlResponse.Builder().setResponseBody(httpMethod.getBytes()).build();
+            }
+        });
+        final String method = "PUT";
+        builder.setHttpMethod(method);
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("PUT", callback.mResponseAsString);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadRedirectSync() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String redirectUrl = "redirectUrl";
+        String echoBodyUrl = "echobody";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        redirectUrl, callback, callback.getExecutor());
+        mFakeCronetController.addRedirectResponse(echoBodyUrl, redirectUrl);
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher(echoBodyUrl));
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        // 1 read call before the rewind, 1 after.
+        assertEquals(2, dataProvider.getNumReadCalls());
+        assertEquals(1, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("test", callback.mResponseAsString);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadRedirectAsync() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String redirectUrl = "redirectUrl";
+        String echoBodyUrl = "echobody";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        redirectUrl, callback, callback.getExecutor());
+        mFakeCronetController.addRedirectResponse(echoBodyUrl, redirectUrl);
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher(echoBodyUrl));
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.ASYNC, callback.getExecutor());
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        // 1 read call before the rewind, 1 after.
+        assertEquals(2, dataProvider.getNumReadCalls());
+        assertEquals(1, dataProvider.getNumRewindCalls());
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("test", callback.mResponseAsString);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadWithBadLength() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor()) {
+            @Override
+            public long getLength() throws IOException {
+                return 1;
+            }
+
+            @Override
+            public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
+                    throws IOException {
+                byteBuffer.put("12".getBytes());
+                uploadDataSink.onReadSucceeded(false);
+            }
+        };
+
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains("Read upload data length 2 exceeds expected length 1",
+                callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadWithBadLengthBufferAligned() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor()) {
+            @Override
+            public long getLength() throws IOException {
+                return 8191;
+            }
+
+            @Override
+            public void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
+                    throws IOException {
+                byteBuffer.put("0123456789abcdef".getBytes());
+                uploadDataSink.onReadSucceeded(false);
+            }
+        };
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains("Read upload data length 8192 exceeds expected length 8191",
+                callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadLengthFailSync() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.setLengthFailure();
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(0, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains("Sync length failure", callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadReadFailSync() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.setReadFailure(
+                /* readFailIndex= */ 0, TestUploadDataProvider.FailMode.CALLBACK_SYNC);
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains("Sync read failure", callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadReadFailAsync() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.setReadFailure(
+                /* readFailIndex= */ 0, TestUploadDataProvider.FailMode.CALLBACK_ASYNC);
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains("Async read failure", callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadReadFailThrown() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.setReadFailure(/* readFailIndex= */ 0, TestUploadDataProvider.FailMode.THROWN);
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains("Thrown read failure", callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    /** This test uses a direct executor for upload, and non direct for callbacks */
+    @Test
+    @SmallTest
+    public void testDirectExecutorUploadProhibitedByDefault() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        Executor myExecutor = new Executor() {
+            @Override
+            public void execute(Runnable command) {
+                command.run();
+            }
+        };
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, myExecutor);
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, myExecutor);
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+
+        assertEquals(0, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains("Inline execution is prohibited for this request",
+                callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    /** This test uses a direct executor for callbacks, and non direct for upload */
+    @Test
+    @SmallTest
+    public void testDirectExecutorProhibitedByDefault() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        Executor myExecutor = new Executor() {
+            @Override
+            public void execute(Runnable command) {
+                command.run();
+            }
+        };
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, myExecutor);
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        // This will never be read, but if the length is 0, read may never be
+        // called.
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(0, dataProvider.getNumRewindCalls());
+
+        assertContains("Exception posting task to executor", callback.mError.getMessage());
+        assertContains("Inline execution is prohibited for this request",
+                callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+        dataProvider.assertClosed();
+    }
+
+    @Test
+    @SmallTest
+    public void testDirectExecutorAllowed() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        callback.setAllowDirectExecutor(true);
+        Executor myExecutor = new Executor() {
+            @Override
+            public void execute(Runnable command) {
+                command.run();
+            }
+        };
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+        UploadDataProvider dataProvider = UploadDataProviders.create("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, myExecutor);
+        builder.addHeader("Content-Type", "useless/string");
+        builder.allowDirectExecutor();
+        builder.build().start();
+        callback.blockForDone();
+
+        if (callback.mOnErrorCalled) {
+            throw callback.mError;
+        }
+
+        assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
+        assertEquals("test", callback.mResponseAsString);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadRewindFailSync() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String redirectUrl = "redirectUrl";
+        String echoBodyUrl = "echobody";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        redirectUrl, callback, callback.getExecutor());
+        mFakeCronetController.addRedirectResponse(echoBodyUrl, redirectUrl);
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher(echoBodyUrl));
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.setRewindFailure(TestUploadDataProvider.FailMode.CALLBACK_SYNC);
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(1, dataProvider.getNumRewindCalls());
+
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains("Sync rewind failure", callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadRewindFailAsync() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String redirectUrl = "redirectUrl";
+        String echoBodyUrl = "echobody";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        redirectUrl, callback, callback.getExecutor());
+        mFakeCronetController.addRedirectResponse(echoBodyUrl, redirectUrl);
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher(echoBodyUrl));
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.ASYNC, callback.getExecutor());
+        dataProvider.setRewindFailure(TestUploadDataProvider.FailMode.CALLBACK_ASYNC);
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(1, dataProvider.getNumRewindCalls());
+
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains("Async rewind failure", callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadRewindFailThrown() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String redirectUrl = "redirectUrl";
+        String echoBodyUrl = "echobody";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        redirectUrl, callback, callback.getExecutor());
+        mFakeCronetController.addRedirectResponse(echoBodyUrl, redirectUrl);
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher(echoBodyUrl));
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.setRewindFailure(TestUploadDataProvider.FailMode.THROWN);
+        dataProvider.addRead("test".getBytes());
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals(1, dataProvider.getNumRewindCalls());
+
+        assertContains("Exception received from UploadDataProvider", callback.mError.getMessage());
+        assertContains("Thrown rewind failure", callback.mError.getCause().getMessage());
+        assertEquals(null, callback.mResponseInfo);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadChunked() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        dataProvider.addRead("test hello".getBytes());
+        dataProvider.setChunked(true);
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+
+        assertEquals(-1, dataProvider.getUploadedLength());
+
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        // 1 read call for one data chunk.
+        assertEquals(1, dataProvider.getNumReadCalls());
+        assertEquals("test hello", callback.mResponseAsString);
+    }
+
+    @Test
+    @SmallTest
+    public void testUploadChunkedLastReadZeroLengthBody() throws Exception {
+        TestUrlRequestCallback callback = new TestUrlRequestCallback();
+        String url = "url";
+        FakeUrlRequest.Builder builder =
+                (FakeUrlRequest.Builder) mFakeCronetEngine.newUrlRequestBuilder(
+                        url, callback, callback.getExecutor());
+        mFakeCronetController.addResponseMatcher(new EchoBodyResponseMatcher());
+
+        TestUploadDataProvider dataProvider = new TestUploadDataProvider(
+                TestUploadDataProvider.SuccessCallbackMode.SYNC, callback.getExecutor());
+        // Add 3 reads. The last read has a 0-length body.
+        dataProvider.addRead("hello there".getBytes());
+        dataProvider.addRead("!".getBytes());
+        dataProvider.addRead("".getBytes());
+        dataProvider.setChunked(true);
+        builder.setUploadDataProvider(dataProvider, callback.getExecutor());
+        builder.addHeader("Content-Type", "useless/string");
+
+        assertEquals(-1, dataProvider.getUploadedLength());
+
+        builder.build().start();
+        callback.blockForDone();
+        dataProvider.assertClosed();
+
+        // 2 read call for the first two data chunks, and 1 for final chunk.
+        assertEquals(3, dataProvider.getNumReadCalls());
+        assertEquals("hello there!", callback.mResponseAsString);
     }
 }

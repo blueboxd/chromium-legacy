@@ -553,7 +553,10 @@ void TouchEventConverterEvdev::ReportEvents(base::TimeTicks timestamp) {
   if (false_touch_finder_)
     false_touch_finder_->HandleTouches(events_, timestamp);
   std::bitset<kNumTouchEvdevSlots> hold, suppress;
-  palm_detection_filter_->Filter(events_, timestamp, &hold, &suppress);
+  {
+    SCOPED_UMA_HISTOGRAM_TIMER(kPalmFilterTimerEventName);
+    palm_detection_filter_->Filter(events_, timestamp, &hold, &suppress);
+  }
   for (size_t i = 0; i < events_.size(); i++) {
     InProgressTouchEvdev* event = &events_[i];
     if (IsPalm(*event)) {
@@ -683,4 +686,6 @@ const char TouchEventConverterEvdev::kHoldCountAtReleaseEventName[] =
     "Ozone.TouchEventConverterEvdev.HoldCountAtRelease";
 const char TouchEventConverterEvdev::kHoldCountAtCancelEventName[] =
     "Ozone.TouchEventConverterEvdev.HoldCountAtCancel";
+const char TouchEventConverterEvdev::kPalmFilterTimerEventName[] =
+    "Ozone.TouchEventConverterEvdev.PalmDetectionFilterTime";
 }  // namespace ui

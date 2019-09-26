@@ -29,7 +29,7 @@
 #include "gpu/command_buffer/service/sync_point_manager.h"
 #include "gpu/command_buffer/service/transfer_buffer_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "testing/perf/perf_test.h"
+#include "testing/perf/perf_result_reporter.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_context_stub.h"
 #include "ui/gl/gl_share_group.h"
@@ -351,8 +351,8 @@ class RecordReplayContext : public GpuControl {
 // and then a number of performance capturing runs.
 class PerfIterator {
  public:
-  PerfIterator(std::string name, int runs, int iterations)
-      : name_(std::move(name)), runs_(runs), iterations_(iterations) {
+  PerfIterator(std::string story, int runs, int iterations)
+      : story_(std::move(story)), runs_(runs), iterations_(iterations) {
     // When running under linux-perf, we try to isolate the microbenchmark
     // performance:
     // 1- sleep 1 second after warmup so that one can skip perf for
@@ -385,7 +385,9 @@ class PerfIterator {
     } else if (!for_linux_perf_) {
       time = base::TimeTicks::Now();
       double ns = (time - run_start_time_).InNanoseconds() / iterations_;
-      perf_test::PrintResult(name_, "", "wall_time", ns, "ns", true);
+      perf_test::PerfResultReporter reporter("Decoder.", story_);
+      reporter.RegisterImportantMetric("draw_wall_time", "ns");
+      reporter.AddResult("draw_wall_time", ns);
     }
     if (runs_ == 0) {
       if (for_linux_perf_)
@@ -400,7 +402,7 @@ class PerfIterator {
 
   static constexpr int kWarmupIterations = 2;
 
-  std::string name_;
+  std::string story_;
   base::TimeTicks run_start_time_;
   int runs_;
   int iterations_;
@@ -565,8 +567,7 @@ TEST_F(DecoderPerfTest, BasicDraw) {
   }
 
   StartReplay();
-  PerfIterator iterator("decoder_basic_draw_100", kDefaultRuns,
-                        kDefaultIterations);
+  PerfIterator iterator("basic_draw_100", kDefaultRuns, kDefaultIterations);
   while (iterator.Iterate())
     Replay();
 }
@@ -616,8 +617,7 @@ TEST_F(DecoderPerfTest, TextureDraw) {
   }
 
   StartReplay();
-  PerfIterator iterator("decoder_texture_draw_100", kDefaultRuns,
-                        kDefaultIterations);
+  PerfIterator iterator("texture_draw_100", kDefaultRuns, kDefaultIterations);
   while (iterator.Iterate())
     Replay();
 }
@@ -694,8 +694,7 @@ TEST_F(DecoderPerfTest, ProgramDraw) {
   }
 
   StartReplay();
-  PerfIterator iterator("decoder_program_draw_100", kDefaultRuns,
-                        kDefaultIterations);
+  PerfIterator iterator("program_draw_100", kDefaultRuns, kDefaultIterations);
   while (iterator.Iterate())
     Replay();
 }

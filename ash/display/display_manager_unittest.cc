@@ -2068,6 +2068,71 @@ TEST_F(DisplayManagerTest, ResolutionChangeInUnifiedMode) {
   EXPECT_EQ("1200x600", active_mode.size().ToString());
 }
 
+TEST_F(DisplayManagerTest, RotateExternalDisplayWithNonNativeMode) {
+  const int64_t internal_display_id = 5;
+  const int64_t external_id = 11;
+  const display::ManagedDisplayInfo internal_display_info =
+      display::ManagedDisplayInfo::CreateFromSpecWithID(
+          "1920x1080#1280x720|640x480%60", internal_display_id);
+  // Create an external display with a different origin to avoid triggering HW
+  // mirroring.
+  display::ManagedDisplayInfo external_display_info =
+      display::ManagedDisplayInfo::CreateFromSpecWithID(
+          "1+1-1280x720#1280x720|640x480%60", external_id);
+
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+
+  display_info_list.push_back(internal_display_info);
+  display_info_list.push_back(external_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+
+  EXPECT_EQ(2U, display_manager()->num_connected_displays());
+  EXPECT_EQ(internal_display_id,
+            display::Screen::GetScreen()->GetPrimaryDisplay().id());
+
+  display::ManagedDisplayMode active_mode;
+  EXPECT_TRUE(
+      display_manager()->GetActiveModeForDisplayId(external_id, &active_mode));
+  EXPECT_TRUE(active_mode.native());
+
+  const auto& modes = external_display_info.display_modes();
+  EXPECT_TRUE(display::test::SetDisplayResolution(
+      display_manager(), external_id, modes[0].size()));
+  display_manager()->UpdateDisplays();
+
+  EXPECT_TRUE(
+      display_manager()->GetActiveModeForDisplayId(external_id, &active_mode));
+  EXPECT_FALSE(active_mode.native());
+
+  // Rotate the display.
+  display_manager()->SetDisplayRotation(
+      external_id, display::Display::ROTATE_90,
+      display::Display::RotationSource::ACTIVE);
+
+  // Refresh |external_display_info| since we have rotated the display.
+  external_display_info = display_manager()->GetDisplayInfo(external_id);
+
+  // Disconnect the external display.
+  display_info_list.clear();
+  display_info_list.push_back(internal_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  EXPECT_EQ(1U, display_manager()->num_connected_displays());
+
+  // Reconnect the external display.
+  display_info_list.push_back(external_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+
+  EXPECT_EQ(2U, display_manager()->num_connected_displays());
+
+  // Verify the display maintains the rotation.
+  auto external_info = display_manager()->GetDisplayInfo(external_id);
+  EXPECT_EQ(display::Display::ROTATE_90, external_info.GetActiveRotation());
+}
+
 TEST_F(DisplayManagerTest, UpdateMouseCursorAfterRotateZoom) {
   // Make sure just rotating will not change native location.
   UpdateDisplay("300x200,200x150");

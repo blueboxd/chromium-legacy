@@ -4,8 +4,6 @@
 
 #include "chrome/browser/chrome_browser_main_linux.h"
 
-#include <fontconfig/fontconfig.h>
-
 #include <memory>
 #include <string>
 #include <utility>
@@ -42,15 +40,6 @@ ChromeBrowserMainPartsLinux::ChromeBrowserMainPartsLinux(
     : ChromeBrowserMainPartsPosix(parameters, startup_data) {}
 
 ChromeBrowserMainPartsLinux::~ChromeBrowserMainPartsLinux() {
-}
-
-void ChromeBrowserMainPartsLinux::ToolkitInitialized() {
-  // Explicitly initialize Fontconfig early on to prevent races later due to
-  // implicit initialization in response to threads' first calls to Fontconfig:
-  // http://crbug.com/404311
-  FcInit();
-
-  ChromeBrowserMainPartsPosix::ToolkitInitialized();
 }
 
 void ChromeBrowserMainPartsLinux::PreProfileInit() {

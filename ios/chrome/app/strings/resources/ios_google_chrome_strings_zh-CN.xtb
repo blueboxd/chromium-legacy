@@ -26,7 +26,6 @@
 <translation id="415767770115540173">要在 Chrome 中获得更好的 Google 使用体验，需要用到您的位置信息。</translation>
 <translation id="424864128008805179">退出 Chrome？</translation>
 <translation id="4523886039239821078">部分插件导致 Chrome 崩溃，请卸载这些插件：</translation>
-<translation id="4615174829807303908">您正要退出由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 管理的帐号。退出后，您的 Chrome 数据将从这台设备上删除，但仍会保留在您的 Google 帐号中。</translation>
 <translation id="5389212809648216794">由于另一个应用正在使用您的相机，因此 Google Chrome 无法使用</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />查看新版 Chrome 服务条款。<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">打开“设置”&gt;“隐私”&gt;“相机”&gt;“Google Chrome”，然后开启相机。</translation>
@@ -45,7 +44,6 @@
 <translation id="7173660919484573146">Chrome 会使用 Face ID 来确保对您密码的访问均已获授权。</translation>
 <translation id="7265369419224458312">您可直接在此处使用您在计算机上打开的标签页。只需在计算机上打开 Chrome，转到菜单，然后选择“登录 Chrome…”即可</translation>
 <translation id="7400722733683201933">关于Google Chrome</translation>
-<translation id="7437998757836447326">退出 Chrome</translation>
 <translation id="756809126120519699">已清除 Chrome 数据</translation>
 <translation id="7626032353295482388">欢迎使用 Chrome</translation>
 <translation id="7698568245838009292">Chrome 想要访问相机</translation>

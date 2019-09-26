@@ -56,7 +56,7 @@ class BASE_EXPORT Version {
   int CompareToWildcardString(StringPiece wildcard_string) const;
 
   // Return the string representation of this version.
-  const std::string GetString() const;
+  std::string GetString() const;
 
   const std::vector<uint32_t>& components() const { return components_; }
 

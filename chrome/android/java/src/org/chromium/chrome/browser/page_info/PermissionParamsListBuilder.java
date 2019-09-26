@@ -95,7 +95,7 @@ class PermissionParamsListBuilder {
             } else if (shouldShowNotificationsDisabledWarning(permission)) {
                 permissionParams.warningTextResource =
                         R.string.page_info_android_permission_blocked;
-                intentOverride = ApiCompatibilityUtils.getNotificationSettingsIntent(mContext);
+                intentOverride = ApiCompatibilityUtils.getNotificationSettingsIntent();
             } else if (!hasAndroidPermission(permission.type)) {
                 permissionParams.warningTextResource =
                         R.string.page_info_android_permission_blocked;

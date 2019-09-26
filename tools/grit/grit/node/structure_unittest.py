@@ -115,25 +115,6 @@ class StructureUnittest(unittest.TestCase):
         os.path.join(test_data_root, 'test_text.txt'), util.BINARY),
                      decompressed_data)
 
-  def testCompressTrue(self):
-    test_data_root = util.PathFromRoot('grit/testdata')
-    root = util.ParseGrdForUnittest(
-        '''
-        <structures>
-          <structure name="TEST_TXT" file="test_text.txt"
-                   compress="true" type="chrome_html" />
-        </structures>''',
-        base_dir=test_data_root)
-    node, = root.GetChildrenOfType(structure.StructureNode)
-    node.RunPreSubstitutionGatherer()
-    compressed = node.GetDataPackValue(lang='en', encoding=1)
-
-    decompressed_data = zlib.decompress(compressed, 16 + zlib.MAX_WBITS)
-    self.assertEqual(
-        util.ReadFile(
-            os.path.join(test_data_root, 'test_text.txt'), util.BINARY),
-        decompressed_data)
-
   def testCompressBrotli(self):
     test_data_root = util.PathFromRoot('grit/testdata')
     root = util.ParseGrdForUnittest(

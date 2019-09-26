@@ -137,6 +137,9 @@ class MEDIA_GPU_EXPORT VideoFrameFactoryImpl : public VideoFrameFactory {
   // Optional helper to get the Vulkan YCbCrInfo.
   base::SequenceBound<YCbCrHelper> ycbcr_helper_;
 
+  // The current image spec that we'll use to request images.
+  SharedImageVideoProvider::ImageSpec image_spec_;
+
   SEQUENCE_CHECKER(sequence_checker_);
 
   base::WeakPtrFactory<VideoFrameFactoryImpl> weak_factory_{this};

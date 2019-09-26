@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/ui/web_applications/system_web_app_ui_utils.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/service_manager_connection.h"
@@ -423,6 +424,14 @@ void BrowserNonClientFrameViewAsh::GetAccessibleNodeData(
 }
 
 gfx::Size BrowserNonClientFrameViewAsh::GetMinimumSize() const {
+  // System web apps (e.g. Settings) may have a fixed minimum size.
+  Browser* browser = browser_view()->browser();
+  if (web_app::IsSystemWebApp(browser)) {
+    gfx::Size minimum_size = web_app::GetSystemWebAppMinimumWindowSize(browser);
+    if (!minimum_size.IsEmpty())
+      return minimum_size;
+  }
+
   gfx::Size min_client_view_size(frame()->client_view()->GetMinimumSize());
   const int min_frame_width = frame_header_->GetMinimumHeaderWidth();
   int min_width = std::max(min_frame_width, min_client_view_size.width());

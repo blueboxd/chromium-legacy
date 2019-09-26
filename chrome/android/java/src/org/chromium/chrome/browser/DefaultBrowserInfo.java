@@ -38,7 +38,7 @@ import java.util.concurrent.RejectedExecutionException;
  * A utility class for querying information about the default browser setting.
  */
 public final class DefaultBrowserInfo {
-    private static final String SAMPLE_URL = "https://www.madeupdomainforcheck123.com/";
+    private static final String SAMPLE_URL = "https://www.madeupdomainforcheck123.chrome/";
 
     /**
      * A list of potential default browser states.  To add a type to this list please update

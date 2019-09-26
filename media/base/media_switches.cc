@@ -304,15 +304,8 @@ const base::Feature kFallbackAfterDecodeError{"FallbackAfterDecodeError",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Show toolbar button that opens dialog for controlling media sessions.
-const base::Feature kGlobalMediaControls {
-  "GlobalMediaControls",
-#if defined(OS_WIN) || defined(OS_MACOSX) || \
-    (defined(OS_LINUX) && !defined(OS_CHROMEOS))
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
+const base::Feature kGlobalMediaControls{"GlobalMediaControls",
+                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Enable new cpu load estimator. Intended for evaluation in local
 // testing and origin-trial.
@@ -484,6 +477,11 @@ const base::Feature kHlsPlayer{"HlsPlayer", base::FEATURE_ENABLED_BY_DEFAULT};
 // needed, except for some Android TV devices.
 const base::Feature kUseAudioLatencyFromHAL{"UseAudioLatencyFromHAL",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
+
+// Enable pooling of SharedImageVideo objects for use by MCVD, to save a hop to
+// the GPU main thread during VideoFrame construction.
+const base::Feature kUsePooledSharedImageVideoProvider{
+    "UsePooledSharedImageVideoProvider", base::FEATURE_DISABLED_BY_DEFAULT};
 
 #endif  // defined(OS_ANDROID)
 

@@ -12,6 +12,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
 #include "build/branding_buildflags.h"
+#include "build/buildflag.h"
 #include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/extensions/quick_unlock_private/quick_unlock_private_api.h"
@@ -40,6 +41,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/recommend_apps_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/signin_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/terms_of_service_screen_handler.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "chromeos/dbus/update_engine_client.h"
@@ -279,6 +281,10 @@ void HandleAppDownloadingScreen() {
 // screen is shown, and how the setup progresses after the screen. The actual
 // assistant opt-in flow is tested separately.
 void HandleAssistantOptInScreen() {
+#if !BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+  return;
+#endif
+
   OobeScreenWaiter(AssistantOptInFlowScreenView::kScreenId).Wait();
   LOG(INFO) << "OobeInteractiveUITest: Switched to 'assistant-optin' screen.";
 

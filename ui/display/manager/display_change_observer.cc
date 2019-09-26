@@ -298,7 +298,7 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
 
   new_info.set_panel_orientation(snapshot->panel_orientation());
   new_info.set_sys_path(snapshot->sys_path());
-  new_info.set_native(true);
+  new_info.set_from_native_platform(true);
 
   float device_scale_factor = 1.0f;
   // Sets dpi only if the screen size is not blacklisted.
@@ -309,6 +309,7 @@ ManagedDisplayInfo DisplayChangeObserver::CreateManagedDisplayInfo(
   constexpr gfx::Size k225DisplaySizeHack(3000, 2000);
 
   if (snapshot->type() == DISPLAY_CONNECTION_TYPE_INTERNAL) {
+    new_info.set_native(true);
     // TODO(oshima): This is a stopgap hack to deal with b/74845106.
     // Remove this hack when it's resolved.
     if (mode_info->size() == k225DisplaySizeHack)

@@ -4,7 +4,8 @@
 
 package org.chromium.weblayer_private.aidl;
 
-import org.chromium.weblayer_private.aidl.IBrowserController;
+import org.chromium.weblayer_private.aidl.IBrowserFragmentController;
+import org.chromium.weblayer_private.aidl.IRemoteFragmentClient;
 import org.chromium.weblayer_private.aidl.IObjectWrapper;
 
 interface IProfile {
@@ -13,8 +14,11 @@ interface IProfile {
   void clearBrowsingData() = 1;
 
   /**
-   * Creates a new IBrowserController.
+   * Creates a new IBrowserFragmentController.
+   * @param fragmentClient IRemoteFragmentClient that will host the Fragment implemented on the
+   * weblayer side.
    * @param context Context that refers the the weblayer implementation
    */
-  IBrowserController createBrowserController(in IObjectWrapper context) = 2;
+  IBrowserFragmentController createBrowserFragmentController(
+          in IRemoteFragmentClient fragmentClient, in IObjectWrapper context) = 2;
 }

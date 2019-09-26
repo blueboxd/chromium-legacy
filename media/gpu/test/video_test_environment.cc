@@ -56,7 +56,6 @@ VideoTestEnvironment::VideoTestEnvironment() {
   params.single_process = true;
   ui::OzonePlatform::InitializeForUI(params);
   ui::OzonePlatform::InitializeForGPU(params);
-  ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 
   // Initialize the Ozone GPU helper. If this is not done an error will occur:
   // "Check failed: drm. No devices available for buffer allocation."

@@ -7,6 +7,7 @@ package org.chromium.components.safe_browsing;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.lang.reflect.InvocationTargetException;
@@ -53,9 +54,10 @@ public final class SafeBrowsingApiBridge {
                     @Override
                     public void onUrlCheckDone(
                             long callbackId, int resultStatus, String metadata, long checkDelta) {
-                        nativeOnUrlCheckDone(callbackId, resultStatus, metadata, checkDelta);
+                        SafeBrowsingApiBridgeJni.get().onUrlCheckDone(
+                                callbackId, resultStatus, metadata, checkDelta);
                     }
-                }, nativeAreLocalBlacklistsEnabled());
+                }, SafeBrowsingApiBridgeJni.get().areLocalBlacklistsEnabled());
         return initSuccesssful ? handler : null;
     }
 
@@ -97,13 +99,15 @@ public final class SafeBrowsingApiBridge {
         return matched;
     }
 
-    private static native boolean nativeAreLocalBlacklistsEnabled();
-    private static native void nativeOnUrlCheckDone(
-            long callbackId, int resultStatus, String metadata, long checkDelta);
-
     // Histograms
     private static void recordAllowlistLookupTimeInMs(long lookupTimeInMs) {
         RecordHistogram.recordTimesHistogram(
                 "SB2.RemoteCall.LocalAllowlistLookupTime", lookupTimeInMs);
+    }
+
+    @NativeMethods
+    interface Natives {
+        boolean areLocalBlacklistsEnabled();
+        void onUrlCheckDone(long callbackId, int resultStatus, String metadata, long checkDelta);
     }
 }

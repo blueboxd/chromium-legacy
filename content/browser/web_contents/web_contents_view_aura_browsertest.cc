@@ -85,7 +85,7 @@ class WebContentsViewAuraTest : public ContentBrowserTest {
       test_url = GURL(url);
     else
       test_url = GURL(embedded_test_server()->GetURL(url));
-    NavigateToURL(shell(), test_url);
+    EXPECT_TRUE(NavigateToURL(shell(), test_url));
 
     frame_observer_ = std::make_unique<RenderFrameSubmissionObserver>(
         shell()->web_contents());

@@ -165,26 +165,6 @@ void AllStatus::SetInvalidatorClientId(
   status_.invalidator_client_id = invalidator_client_id;
 }
 
-void AllStatus::IncrementNudgeCounter(NudgeSource source) {
-  ScopedStatusLock lock(this);
-  switch (source) {
-    case NUDGE_SOURCE_LOCAL_REFRESH:
-      status_.nudge_source_local_refresh++;
-      return;
-    case NUDGE_SOURCE_LOCAL:
-      status_.nudge_source_local++;
-      return;
-    case NUDGE_SOURCE_NOTIFICATION:
-      status_.nudge_source_notification++;
-      return;
-    case NUDGE_SOURCE_UNKNOWN:
-      break;
-  }
-  // If we're here, the source is most likely
-  // NUDGE_SOURCE_UNKNOWN. That shouldn't happen.
-  NOTREACHED();
-}
-
 void AllStatus::SetLocalBackendFolder(const std::string& folder) {
   ScopedStatusLock lock(this);
   status_.local_sync_folder = folder;

@@ -265,8 +265,8 @@ bool OpenXrRenderLoop::UpdateEye(const XrView& view,
 bool OpenXrRenderLoop::UpdateStageParameters() {
   bool changed = false;
   XrExtent2Df stage_bounds;
-  gfx::Transform transform;
-  if (openxr_->GetStageParameters(&stage_bounds, &transform)) {
+  gfx::Transform local_from_stage;
+  if (openxr_->GetStageParameters(&stage_bounds, &local_from_stage)) {
     if (!current_display_info_->stage_parameters) {
       current_display_info_->stage_parameters = mojom::VRStageParameters::New();
       changed = true;
@@ -281,8 +281,9 @@ bool OpenXrRenderLoop::UpdateStageParameters() {
     }
 
     if (current_display_info_->stage_parameters->standing_transform !=
-        transform) {
-      current_display_info_->stage_parameters->standing_transform = transform;
+        local_from_stage) {
+      current_display_info_->stage_parameters->standing_transform =
+          local_from_stage;
       changed = true;
     }
   } else if (current_display_info_->stage_parameters) {

@@ -13,17 +13,14 @@
       cr-dialog::part(dialog) {
         width: 320px;
       }
-
-      cr-input {
-        --cr-input-error-display: none;
-      }
     </style>
     <cr-dialog id="dialog" close-text="$i18n{close}">
       <div slot="title">$i18n{addUsers}</div>
       <div slot="body">
         <cr-input id="addUserInput" label="$i18n{addUsersEmail}"
-            invalid="[[shouldShowError_(isEmail_, isEmpty_)]]"
-            on-value-changed="onInput_" autofocus>
+            invalid="[[shouldShowError_(errorCode_)]]"
+            on-value-changed="onInput_"
+            error-message="[[getErrorString_(errorCode_)]]" autofocus>
         </cr-input>
       </div>
       <div slot="button-container">

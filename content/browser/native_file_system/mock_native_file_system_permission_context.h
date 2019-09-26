@@ -62,16 +62,16 @@ class MockNativeFileSystemPermissionContext
            int frame_id,
            base::OnceCallback<void(SensitiveDirectoryResult)>& callback));
 
-  void PerformSafeBrowsingChecks(
+  void PerformAfterWriteChecks(
       std::unique_ptr<NativeFileSystemWriteItem> item,
       int process_id,
       int frame_id,
-      base::OnceCallback<void(SafeBrowsingResult)> callback) override;
-  MOCK_METHOD4(PerformSafeBrowsingChecks_,
+      base::OnceCallback<void(AfterWriteCheckResult)> callback) override;
+  MOCK_METHOD4(PerformAfterWriteChecks_,
                void(NativeFileSystemWriteItem* item,
                     int process_id,
                     int frame_id,
-                    base::OnceCallback<void(SafeBrowsingResult)>& callback));
+                    base::OnceCallback<void(AfterWriteCheckResult)>& callback));
 
   MOCK_METHOD1(CanRequestWritePermission, bool(const url::Origin& origin));
 };

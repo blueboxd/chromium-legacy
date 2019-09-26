@@ -91,7 +91,7 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   void SetFrames(HeapVector<K>& keyframes);
 
   CompositeOperation Composite() const { return composite_; }
-  void SetComposite(CompositeOperation composite) { composite_ = composite; }
+  void SetComposite(CompositeOperation composite);
 
   const PropertySpecificKeyframeVector* GetPropertySpecificKeyframes(
       const PropertyHandle& property) const {
@@ -169,6 +169,9 @@ class CORE_EXPORT KeyframeEffectModelBase : public EffectModel {
   // Lazily computes the groups of property-specific keyframes.
   void EnsureKeyframeGroups() const;
   void EnsureInterpolationEffectPopulated() const;
+
+  // Clears the various bits of cached data that this class has.
+  void ClearCachedData();
 
   using ShouldSnapshotPropertyCallback =
       std::function<bool(const PropertyHandle&)>;

@@ -50,8 +50,6 @@ class AllStatus : public SyncEngineEventListener {
 
   void SetNotificationsEnabled(bool notifications_enabled);
 
-  void IncrementNotifiableCommits();
-
   void IncrementNotificationsReceived();
 
   void SetEncryptedTypes(ModelTypeSet types);
@@ -65,8 +63,6 @@ class AllStatus : public SyncEngineEventListener {
 
   void SetSyncId(const std::string& sync_id);
   void SetInvalidatorClientId(const std::string& invalidator_client_id);
-
-  void IncrementNudgeCounter(NudgeSource source);
 
   void SetLocalBackendFolder(const std::string& folder);
 

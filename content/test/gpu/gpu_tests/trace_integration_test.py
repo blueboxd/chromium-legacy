@@ -261,8 +261,7 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     assert os_name and os_name.lower() == 'win'
 
     # Calculate expectations.
-    if other_args is None:
-      other_args = {}
+    other_args = other_args if other_args is not None else {}
     expect_yuy2 = other_args.get('expect_yuy2', False)
     zero_copy = other_args.get('zero_copy', False)
 
@@ -285,12 +284,16 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if not supports_nv12_overlays:
       zero_copy = False
 
+    expect_no_overlay = other_args.get('no_overlay', False)
+
     # Verify expectations through captured trace events.
     for event in event_iterator:
       if event.category != category:
         continue
       if event.name != _SWAP_CHAIN_PRESENT_EVENT_NAME:
         continue
+      if expect_no_overlay:
+        self.fail('Expected no overlay got %s' % _SWAP_CHAIN_PRESENT_EVENT_NAME)
       detected_pixel_format = event.args.get('PixelFormat', None)
       if detected_pixel_format is None:
         self.fail('PixelFormat is missing from event %s' %
@@ -307,6 +310,8 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
                   (zero_copy, detected_zero_copy))
       break
     else:
+      if expect_no_overlay:
+        return
       self.fail('Events with name %s were not found' %
                 _SWAP_CHAIN_PRESENT_EVENT_NAME)
 
@@ -325,17 +330,26 @@ class TraceIntegrationTest(gpu_integration_test.GpuIntegrationTest):
     if overlay_bot_config.get('supports_overlays', False):
       expected_presentation_mode = _SWAP_CHAIN_PRESENTATION_MODE_OVERLAY
 
+    other_args = other_args if other_args is not None else {}
+    expect_no_overlay = other_args.get('no_overlay', False)
+
     presentation_mode_history = []
     for event in event_iterator:
       if event.category != category:
         continue
       if event.name != _GET_STATISTICS_EVENT_NAME:
         continue
+      if expect_no_overlay:
+        self.fail('Expected no overlay got %s' % _GET_STATISTICS_EVENT_NAME)
       detected_presentation_mode = event.args.get('CompositionMode', None)
       if detected_presentation_mode is None:
         self.fail('PresentationMode is missing from event %s' %
                   _GET_STATISTICS_EVENT_NAME)
       presentation_mode_history.append(detected_presentation_mode)
+
+    if expect_no_overlay:
+      return
+
     valid_entry_found = False
     for index in range(len(presentation_mode_history)):
       mode = presentation_mode_history[index]

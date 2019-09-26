@@ -33,6 +33,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
+#include "chrome/browser/obsolete_system/obsolete_system.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/network_time/network_time_tracker.h"
@@ -391,6 +392,13 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
 
   if (!base::FeatureList::IsEnabled(kOutdatedBuildDetector))
     return false;
+
+  // Don't detect outdated builds for obsolete operating systems when new builds
+  // are no longer available.
+  if (ObsoleteSystem::IsObsoleteNowOrSoon() &&
+      ObsoleteSystem::IsEndOfTheLine()) {
+    return false;
+  }
 
   // Don't show the bubble if we have a brand code that is NOT organic, unless
   // an outdated build is being simulated by command line switches.

@@ -67,36 +67,6 @@ AXNode* AXPlatformNodeTest::GetNodeFromTree(const ui::AXTreeID tree_id,
   return nullptr;
 }
 
-AXPlatformNodeDelegate* AXPlatformNodeTest::GetDelegate(
-    const ui::AXTreeID tree_id,
-    const int32_t node_id) const {
-  AXNode* node = GetNodeFromTree(tree_id, node_id);
-
-  if (node) {
-    TestAXNodeWrapper* wrapper =
-        TestAXNodeWrapper::GetOrCreate(tree_.get(), node);
-
-    return wrapper;
-  }
-
-  return nullptr;
-}
-
-AXPlatformNodeDelegate* AXPlatformNodeTest::GetRootDelegate(
-    const AXTreeID tree_id) const {
-  if (GetTreeID() == tree_id) {
-    AXNode* root_node = GetRootNode();
-
-    if (root_node) {
-      TestAXNodeWrapper* wrapper =
-          TestAXNodeWrapper::GetOrCreate(tree_.get(), root_node);
-      return wrapper;
-    }
-  }
-
-  return nullptr;
-}
-
 AXTreeID AXPlatformNodeTest::GetTreeID() const {
   return tree_->data().tree_id;
 }

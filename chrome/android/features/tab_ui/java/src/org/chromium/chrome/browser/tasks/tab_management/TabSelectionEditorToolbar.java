@@ -27,6 +27,7 @@ class TabSelectionEditorToolbar extends SelectableListToolbar<Integer> {
     private Button mGroupButton;
     @ColorInt
     private int mBackgroundColor;
+    private int mActionButtonEnablingThreshold = 2;
 
     public TabSelectionEditorToolbar(Context context, AttributeSet attrs) {
         super(context, attrs);
@@ -55,7 +56,7 @@ class TabSelectionEditorToolbar extends SelectableListToolbar<Integer> {
     @Override
     public void onSelectionStateChange(List<Integer> selectedItems) {
         super.onSelectionStateChange(selectedItems);
-        mGroupButton.setEnabled(selectedItems.size() > 1);
+        mGroupButton.setEnabled(selectedItems.size() >= mActionButtonEnablingThreshold);
     }
 
     @Override
@@ -109,5 +110,21 @@ class TabSelectionEditorToolbar extends SelectableListToolbar<Integer> {
      */
     public void setTextAppearance(int resId) {
         mNumberRollView.setTextAppearance(resId);
+    }
+
+    /**
+     * Set action button text.
+     * @param text The text to display.
+     */
+    public void setActionButtonText(String text) {
+        mGroupButton.setText(text);
+    }
+
+    /**
+     * Set the action button enabling threshold.
+     * @param threshold New threshold.
+     */
+    public void setActionButtonEnablingThreshold(int threshold) {
+        mActionButtonEnablingThreshold = threshold;
     }
 }

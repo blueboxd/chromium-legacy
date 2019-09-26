@@ -32,10 +32,12 @@
 !Android.mk
 .*.sw?
 .DS_Store
+.android
 .cipd
 .classpath
 .code-coverage
 .cproject
+.emulator_sdk
 .gdb_history
 .gdbinit
 .landmines

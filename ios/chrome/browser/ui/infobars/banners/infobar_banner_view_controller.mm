@@ -38,8 +38,9 @@ const CGFloat kButtonSeparatorWidth = 1.0;
 const CGFloat kButtonMaxFontSize = 45;
 
 // Container Stack constants.
-const CGFloat kContainerStackSpacing = 18.0;
+const CGFloat kContainerStackSpacing = 10.0;
 const CGFloat kContainerStackVerticalPadding = 18.0;
+const CGFloat kContainerStackHorizontalPadding = 18.0;
 
 // Icon constants.
 const CGFloat kIconWidth = 25.0;
@@ -124,11 +125,13 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   self.view.accessibilityCustomActions = [self accessibilityActions];
 
   // Icon setup.
-  self.iconImage = [self.iconImage
-      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
-  UIImageView* iconImageView =
-      [[UIImageView alloc] initWithImage:self.iconImage];
-  iconImageView.contentMode = UIViewContentModeScaleAspectFit;
+  UIImageView* iconImageView = nil;
+  if (self.iconImage) {
+    self.iconImage = [self.iconImage
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    iconImageView = [[UIImageView alloc] initWithImage:self.iconImage];
+    iconImageView.contentMode = UIViewContentModeScaleAspectFit;
+  }
 
   // Labels setup.
   self.titleLabel = [[UILabel alloc] init];
@@ -161,6 +164,8 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
       scaledFontForFont:[UIFont
                             preferredFontForTextStyle:UIFontTextStyleHeadline]
        maximumPointSize:kButtonMaxFontSize];
+  self.infobarButton.titleLabel.numberOfLines = 0;
+  self.infobarButton.titleLabel.textAlignment = NSTextAlignmentCenter;
   [self.infobarButton addTarget:self
                          action:@selector(bannerInfobarButtonWasPressed:)
                forControlEvents:UIControlEventTouchUpInside];
@@ -173,9 +178,36 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   [self.infobarButton addSubview:buttonSeparator];
 
   // Container Stack setup.
-  UIStackView* containerStack = [[UIStackView alloc] initWithArrangedSubviews:@[
-    iconImageView, labelsStackView, self.infobarButton
-  ]];
+  UIStackView* containerStack = [[UIStackView alloc] init];
+  // Check if it should have an icon.
+  if (iconImageView) {
+    [containerStack addArrangedSubview:iconImageView];
+    [iconImageView.widthAnchor constraintEqualToConstant:kIconWidth].active =
+        YES;
+  }
+  // Add labels.
+  [containerStack addArrangedSubview:labelsStackView];
+  // Check if it should have an Open Modal button.
+  if (self.presentsModal) {
+    // Open Modal Button setup.
+    UIButton* openModalButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    UIImage* gearImage = [[UIImage imageNamed:@"infobar_settings_icon"]
+        imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
+    [openModalButton setImage:gearImage forState:UIControlStateNormal];
+    openModalButton.tintColor = [UIColor colorNamed:kTextSecondaryColor];
+    [openModalButton addTarget:self
+                        action:@selector(animateBannerTappedAndPresentModal)
+              forControlEvents:UIControlEventTouchUpInside];
+    [openModalButton
+        setContentHuggingPriority:UILayoutPriorityDefaultHigh
+                          forAxis:UILayoutConstraintAxisHorizontal];
+    openModalButton.accessibilityIdentifier =
+        kInfobarBannerOpenModalButtonIdentifier;
+    [containerStack addArrangedSubview:openModalButton];
+  }
+  // Add accept button.
+  [containerStack addArrangedSubview:self.infobarButton];
+  // Configure it.
   containerStack.axis = UILayoutConstraintAxisHorizontal;
   containerStack.spacing = kContainerStackSpacing;
   containerStack.distribution = UIStackViewDistributionFill;
@@ -192,14 +224,12 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
     // Container Stack.
     [containerStack.leadingAnchor
         constraintEqualToAnchor:self.view.leadingAnchor
-                       constant:kContainerStackSpacing],
+                       constant:kContainerStackHorizontalPadding],
     [containerStack.trailingAnchor
         constraintEqualToAnchor:self.view.trailingAnchor],
     [containerStack.topAnchor constraintEqualToAnchor:self.view.topAnchor],
     [containerStack.bottomAnchor
         constraintEqualToAnchor:self.view.bottomAnchor],
-    // Icon.
-    [iconImageView.widthAnchor constraintEqualToConstant:kIconWidth],
     // Button.
     [self.infobarButton.widthAnchor constraintEqualToConstant:kButtonWidth],
     [buttonSeparator.widthAnchor
@@ -224,14 +254,6 @@ const CGFloat kLongPressTimeDurationInSeconds = 0.4;
   longPressGestureRecognizer.minimumPressDuration =
       kLongPressTimeDurationInSeconds;
   [self.view addGestureRecognizer:longPressGestureRecognizer];
-
-  if (self.presentsModal) {
-    UITapGestureRecognizer* tapGestureRecognizer =
-        [[UITapGestureRecognizer alloc]
-            initWithTarget:self
-                    action:@selector(animateBannerTappedAndPresentModal)];
-    [self.view addGestureRecognizer:tapGestureRecognizer];
-  }
 }
 
 - (void)viewDidAppear:(BOOL)animated {

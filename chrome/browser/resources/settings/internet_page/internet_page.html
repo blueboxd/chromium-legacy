@@ -1,6 +1,7 @@
 <link rel="import" href="chrome://resources/html/polymer.html">
 
 <link rel="import" href="chrome://resources/cr_components/chromeos/network/mojo_interface_provider.html">
+<link rel="import" href="chrome://resources/cr_elements/chromeos/network/cr_network_listener_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_expand_button/cr_expand_button.html">
 <link rel="import" href="chrome://resources/cr_elements/cr_icon_button/cr_icon_button.html">
 <link rel="import" href="chrome://resources/cr_elements/icons.html">
@@ -125,9 +126,7 @@
     </settings-animated-pages>
 
     <template is="dom-if" if="[[showInternetConfig_]]" restamp>
-      <internet-config id="configDialog"
-          networking-private="[[networkingPrivate]]"
-          on-close="onInternetConfigClose_">
+      <internet-config id="configDialog" on-close="onInternetConfigClose_">
       </internet-config>
     </template>
 

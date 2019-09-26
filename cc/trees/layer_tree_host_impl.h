@@ -278,8 +278,8 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
       const gfx::ScrollOffset& root_content_offset) override;
   void ScrollEnd(ScrollState* scroll_state, bool should_snap = false) override;
 
-  InputHandlerPointerResult MouseDown(
-      const gfx::PointF& viewport_point) override;
+  InputHandlerPointerResult MouseDown(const gfx::PointF& viewport_point,
+                                      bool shift_modifier) override;
   InputHandlerPointerResult MouseUp(const gfx::PointF& viewport_point) override;
   InputHandlerPointerResult MouseMoveAt(
       const gfx::Point& viewport_point) override;

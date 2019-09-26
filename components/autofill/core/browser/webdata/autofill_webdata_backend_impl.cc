@@ -117,10 +117,6 @@ void AutofillWebDataBackendImpl::NotifyOfCreditCardChanged(
 void AutofillWebDataBackendImpl::NotifyOfMultipleAutofillChanges() {
   DCHECK(owning_task_runner()->RunsTasksInCurrentSequence());
 
-  // DB sequence notification.
-  for (auto& db_observer : db_observer_list_)
-    db_observer.AutofillMultipleChangedBySync();
-
   // UI sequence notification.
   ui_task_runner_->PostTask(FROM_HERE, on_changed_callback_);
 }

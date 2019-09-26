@@ -120,7 +120,6 @@ class SyncerProtoUtilTest : public testing::Test {
         /*listeners=*/std::vector<SyncEngineEventListener*>(),
         /*debug_info_getter=*/nullptr,
         /*model_type_registry=*/nullptr,
-        /*keystore_encryption_enabled=*/false,
         /*invalidator_client_id=*/"",
         /*birthday=*/"",
         /*bag_of_chips=*/"",

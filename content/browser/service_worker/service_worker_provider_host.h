@@ -42,6 +42,7 @@
 #include "third_party/blink/public/mojom/service_worker/service_worker_provider_type.mojom.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_registration.mojom.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom.h"
+#include "url/origin.h"
 
 namespace service_worker_object_host_unittest {
 class ServiceWorkerObjectHostTest;
@@ -244,9 +245,12 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   mojo::Remote<blink::mojom::ControllerServiceWorker>
   GetRemoteControllerServiceWorker();
 
-  // For service worker clients. Sets |url_| and |site_for_cookies_| and updates
-  // the client uuid if it's a cross-origin transition.
-  void UpdateUrls(const GURL& url, const GURL& site_for_cookies);
+  // For service worker clients. Sets |url_|, |site_for_cookies_| and
+  // |top_frame_origin_| and updates the client uuid if it's a cross-origin
+  // transition.
+  void UpdateUrls(const GURL& url,
+                  const GURL& site_for_cookies,
+                  const base::Optional<url::Origin>& top_frame_origin);
 
   // The URL of this context. For service worker clients, this is the document
   // URL (for documents) or script URL (for workers). For service worker
@@ -261,11 +265,19 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // is_response_committed() is true, the URL should no longer change.
   const GURL& url() const;
 
-  // The URL representing the first-party site for this context. See
-  // |network::ResourceRequest::site_for_cookies| for details.
+  // The URL representing the site_for_cookies for this context. See
+  // |URLRequest::site_for_cookies()| for details.
   // For service worker execution contexts, site_for_cookies() always
   // returns the service worker script URL.
   const GURL& site_for_cookies() const;
+
+  // The URL representing the first-party site for this context.
+  // For service worker execution contexts, top_frame_origin() always
+  // returns the origin of the service worker script URL.
+  // For shared worker it is the origin of the document that created the worker.
+  // For dedicated worker it is the top-frame origin of the document that owns
+  // the worker.
+  base::Optional<url::Origin> top_frame_origin() const;
 
   blink::mojom::ServiceWorkerProviderType provider_type() const {
     return type_;
@@ -637,6 +649,7 @@ class CONTENT_EXPORT ServiceWorkerProviderHost
   // For service worker clients. See comments for the getter functions.
   GURL url_;
   GURL site_for_cookies_;
+  base::Optional<url::Origin> top_frame_origin_;
 
   // Keyed by registration scope URL length.
   using ServiceWorkerRegistrationMap =

@@ -46,8 +46,8 @@ base::FilePath SavePrintDocument(mojo::ScopedHandle scoped_handle) {
   char buf[4096];
   int bytes;
   while ((bytes = src_file.ReadAtCurrentPos(buf, sizeof(buf))) > 0) {
-    int written = temp.WriteAtCurrentPos(buf, bytes);
-    if (written != bytes) {
+    if (!temp.WriteAtCurrentPosAndCheck(
+            base::as_bytes(base::make_span(buf, bytes)))) {
       PLOG(ERROR) << "Error while saving PDF to disk.";
       return base::FilePath();
     }

@@ -59,6 +59,7 @@ class ConsoleMessage;
 class ExceptionState;
 class FetchClientSettingsObjectSnapshot;
 class FontFaceSet;
+class InstalledScriptsManager;
 class OffscreenFontSelector;
 class WorkerResourceTimingNotifier;
 class StringOrTrustedScriptURL;
@@ -190,6 +191,10 @@ class CORE_EXPORT WorkerGlobalScope
 
   void Trace(blink::Visitor*) override;
 
+  virtual InstalledScriptsManager* GetInstalledScriptsManager() {
+    return nullptr;
+  }
+
   // TODO(fserb): This can be removed once we WorkerGlobalScope implements
   // FontFaceSource on the IDL.
   FontFaceSet* fonts();
@@ -211,6 +216,12 @@ class CORE_EXPORT WorkerGlobalScope
   void ExceptionThrown(ErrorEvent*) override;
   void RemoveURLFromMemoryCache(const KURL&) final;
 
+  virtual bool FetchClassicImportedScript(
+      const KURL& script_url,
+      KURL* out_response_url,
+      String* out_source_code,
+      std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data);
+
   // Notifies that the top-level worker script is ready to evaluate.
   // Worker top-level script is evaluated after it is fetched and
   // ReadyToRunWorkerScript() is called.
@@ -228,12 +239,6 @@ class CORE_EXPORT WorkerGlobalScope
 
   // Used for importScripts().
   void ImportScriptsInternal(const Vector<String>& urls, ExceptionState&);
-  bool FetchClassicImportedScript(
-      const KURL& script_url,
-      KURL* out_response_url,
-      String* out_source_code,
-      std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data);
-
   // ExecutionContext
   EventTarget* ErrorEventTarget() final { return this; }
 

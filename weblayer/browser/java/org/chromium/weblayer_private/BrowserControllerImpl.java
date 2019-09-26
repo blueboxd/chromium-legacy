@@ -29,8 +29,10 @@ import org.chromium.weblayer_private.aidl.ObjectWrapper;
 public final class BrowserControllerImpl extends IBrowserController.Stub {
     private long mNativeBrowserController;
 
+    // TODO: move mWindowAndroid, mContentViewRenderView, mContentView, mTopControlsContainerView to
+    // BrowserFragmentControllerImpl.
     private ActivityWindowAndroid mWindowAndroid;
-    // This view is the main view (returned from OnCreateView()).
+    // This view is the main view (returned from the fragment's onCreateView()).
     private ContentViewRenderView mContentViewRenderView;
     // One of these is needed per WebContents.
     private ContentView mContentView;
@@ -125,7 +127,6 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         mBrowserObserverProxy = new BrowserObserverProxy(mNativeBrowserController, client);
     }
 
-    @Override
     public void destroy() {
         BrowserControllerImplJni.get().setTopControlsContainerView(
                 mNativeBrowserController, BrowserControllerImpl.this, 0);
@@ -138,18 +139,16 @@ public final class BrowserControllerImpl extends IBrowserController.Stub {
         mNativeBrowserController = 0;
     }
 
-    @Override
     public void setTopView(IObjectWrapper viewWrapper) {
         View view = ObjectWrapper.unwrap(viewWrapper, View.class);
         mTopControlsContainerView.setView(view);
     }
 
-    @Override
-    public IObjectWrapper onCreateView() {
-        return ObjectWrapper.wrap(mContentViewRenderView);
+    /** Returns top-level View this Controller works with */
+    public View getView() {
+        return mContentViewRenderView;
     }
 
-    @Override
     public void setSupportsEmbedding(boolean enable, IObjectWrapper callback) {
         mContentViewRenderView.requestMode(enable ? ContentViewRenderView.MODE_TEXTURE_VIEW
                                                   : ContentViewRenderView.MODE_SURFACE_VIEW,

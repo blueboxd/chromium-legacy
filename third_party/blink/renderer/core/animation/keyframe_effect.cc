@@ -140,6 +140,9 @@ String KeyframeEffect::composite() const {
 void KeyframeEffect::setComposite(String composite_string) {
   Model()->SetComposite(
       EffectModel::StringToCompositeOperation(composite_string).value());
+
+  ClearEffects();
+  InvalidateAndNotifyOwner();
 }
 
 HeapVector<ScriptValue> KeyframeEffect::getKeyframes(

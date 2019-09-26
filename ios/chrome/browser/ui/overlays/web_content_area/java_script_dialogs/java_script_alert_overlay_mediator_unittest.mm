@@ -12,8 +12,7 @@
 #import "ios/chrome/browser/ui/alert_view_controller/alert_action.h"
 #import "ios/chrome/browser/ui/alert_view_controller/test/fake_alert_consumer.h"
 #import "ios/chrome/browser/ui/dialogs/java_script_dialog_blocking_state.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/java_script_dialog_overlay_mediator.h"
-#import "ios/chrome/browser/ui/overlays/web_content_area/java_script_dialogs/test/java_script_dialog_overlay_mediator_test.h"
+#import "ios/chrome/browser/ui/overlays/common/alerts/test/alert_overlay_mediator_test.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
 #include "testing/gtest_mac.h"
@@ -23,7 +22,7 @@
 #error "This file requires ARC support."
 #endif
 
-using JavaScriptAlertOverlayMediatorTest = JavaScriptDialogOverlayMediatorTest;
+using JavaScriptAlertOverlayMediatorTest = AlertOverlayMediatorTest;
 
 // Tests that the consumer values are set correctly for alerts from the main
 // frame.

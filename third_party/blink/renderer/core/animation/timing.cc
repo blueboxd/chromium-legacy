@@ -223,7 +223,9 @@ Timing::CalculatedTiming Timing::CalculateTimings(
   // https://drafts.csswg.org/web-animations-1/#current
   calculated.is_current = calculated.is_in_play ||
                           (playback_rate.has_value() && playback_rate > 0 &&
-                           calculated.phase == Timing::kPhaseBefore);
+                           calculated.phase == Timing::kPhaseBefore) ||
+                          (playback_rate.has_value() && playback_rate < 0 &&
+                           calculated.phase == Timing::kPhaseAfter);
   calculated.local_time = local_time;
   calculated.time_to_next_iteration = time_to_next_iteration;
 

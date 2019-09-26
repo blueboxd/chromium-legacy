@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
+#include "build/buildflag.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/ash_util.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chromeos/assistant/buildflags.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
 #include "components/prefs/pref_service.h"
 #include "components/session_manager/core/session_manager.h"
@@ -122,10 +124,16 @@ void AssistantOptInUI::Initialize() {
 void AssistantOptInDialog::Show(
     ash::FlowType type,
     ash::AssistantSetup::StartAssistantOptInFlowCallback callback) {
+#if !BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+  std::move(callback).Run(false);
+  return;
+#endif
+
   // Check session state here to prevent timing issue -- session state might
   // have changed during the mojom calls to launch the opt-in dalog.
   if (session_manager::SessionManager::Get()->session_state() !=
       session_manager::SessionState::ACTIVE) {
+    std::move(callback).Run(false);
     return;
   }
   if (g_dialog) {

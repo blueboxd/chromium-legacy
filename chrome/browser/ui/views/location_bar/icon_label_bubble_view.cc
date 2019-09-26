@@ -368,15 +368,18 @@ gfx::Size IconLabelBubbleView::GetSizeForLabelWidth(int label_width) const {
   // as long as the animation is still shrinking.
   if (ShouldShowLabel() || shrinking) {
     // |multiplier| grows from zero to one, stays equal to one and then shrinks
-    // to zero again. The view width should correspondingly grow from zero to
-    // fully showing both label and icon, stay there, then shrink to just large
-    // enough to show the icon. We don't want to shrink all the way back to
-    // zero, since this would mean the view would completely disappear and then
-    // pop back to an icon after the animation finishes.
+    // to zero again. The view width should correspondingly grow from the
+    // original width before animation started to fully showing both label and
+    // icon, stay there, then shrink to just large enough to show the icon. We
+    // don't want to shrink all the way back to zero, since this would mean the
+    // view would completely disappear and then pop back to an icon after the
+    // animation finishes.
     const int max_width = size.width() + GetInternalSpacing() + label_width;
     const int current_width = WidthMultiplier() * max_width;
-    size.set_width(shrinking ? std::max(current_width, size.width())
-                             : current_width);
+    size.set_width(
+        shrinking ? std::max(current_width, size.width())
+                  : std::min(current_width + grow_animation_starting_width_,
+                             max_width));
   }
   return size;
 }
@@ -424,6 +427,9 @@ void IconLabelBubbleView::SetUpForInOutAnimation() {
 
 void IconLabelBubbleView::AnimateIn(base::Optional<int> string_id) {
   if (!label()->GetVisible()) {
+    // Start animation from the current width, otherwise the icon will also be
+    // included if visible.
+    grow_animation_starting_width_ = width();
     if (string_id)
       SetLabel(l10n_util::GetStringUTF16(string_id.value()));
     label()->SetVisible(true);

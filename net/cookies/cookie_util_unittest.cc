@@ -318,8 +318,7 @@ TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
           "GET", GURL("http://example.com"), GURL("http://notexample.com"),
           base::nullopt /*initiator*/, false /*attach_same_site_cookies*/));
 
-  // |attach_same_site_cookies| = true bypasses method and initiator
-  // checks, but not the |site_for_cookies| one.
+  // |attach_same_site_cookies| = true bypasses all checks.
   EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
             cookie_util::ComputeSameSiteContextForRequest(
                 "GET", GURL("http://example.com"), GURL("http://example.com"),
@@ -332,7 +331,7 @@ TEST(CookieUtilTest, ComputeSameSiteContextForRequest) {
                 url::Origin::Create(GURL("http://from-elsewhere.com")),
                 true /*attach_same_site_cookies*/));
 
-  EXPECT_EQ(CookieOptions::SameSiteCookieContext::CROSS_SITE,
+  EXPECT_EQ(CookieOptions::SameSiteCookieContext::SAME_SITE_STRICT,
             cookie_util::ComputeSameSiteContextForRequest(
                 "GET", GURL("http://example.com"), GURL("http://question.com"),
                 url::Origin::Create(GURL("http://from-elsewhere.com")),

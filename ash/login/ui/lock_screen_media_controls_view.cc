@@ -49,7 +49,7 @@ constexpr size_t kMaxActions = 5;
 
 // Dimensions.
 constexpr gfx::Insets kMediaControlsInsets = gfx::Insets(15, 15, 15, 15);
-constexpr int kMediaControlsCornerRadius = 8;
+constexpr int kMediaControlsCornerRadius = 16;
 constexpr int kMinimumIconSize = 16;
 constexpr int kDesiredIconSize = 20;
 constexpr int kIconSize = 20;

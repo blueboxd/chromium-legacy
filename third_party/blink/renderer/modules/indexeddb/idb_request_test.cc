@@ -197,7 +197,8 @@ class IDBRequestTest : public testing::Test {
     HashSet<String> transaction_scope = {"store"};
     transaction_ = IDBTransaction::CreateNonVersionChange(
         scope.GetScriptState(), std::move(transaction_backend), kTransactionId,
-        transaction_scope, mojom::IDBTransactionMode::ReadOnly, db_.Get());
+        transaction_scope, mojom::IDBTransactionMode::ReadOnly,
+        mojom::IDBTransactionDurability::Relaxed, db_.Get());
 
     IDBKeyPath store_key_path("primaryKey");
     scoped_refptr<IDBObjectStoreMetadata> store_metadata = base::AdoptRef(

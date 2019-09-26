@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/trace_event/trace_event.h"
 #include "components/offline_pages/buildflags/buildflags.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
@@ -213,8 +214,12 @@ bool ServiceWorkerControlleeRequestHandler::InitializeProvider(
   provider_host_->SetControllerRegistration(nullptr,
                                             /*notify_controllerchange=*/false);
   stripped_url_ = net::SimplifyUrlForRequest(tentative_resource_request.url);
-  provider_host_->UpdateUrls(stripped_url_,
-                             tentative_resource_request.site_for_cookies);
+  provider_host_->UpdateUrls(
+      stripped_url_, tentative_resource_request.site_for_cookies,
+      tentative_resource_request.trusted_params
+          ? tentative_resource_request.trusted_params->network_isolation_key
+                .GetTopFrameOrigin()
+          : base::nullopt);
   return true;
 }
 
@@ -257,12 +262,14 @@ void ServiceWorkerControlleeRequestHandler::ContinueWithRegistration(
   if (ServiceWorkerContext::IsServiceWorkerOnUIEnabled()) {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnUI(
-            registration->scope(), provider_host_->site_for_cookies(), GURL(),
+            registration->scope(), provider_host_->site_for_cookies(),
+            provider_host_->top_frame_origin(), /*script_url=*/GURL(),
             browser_context_, provider_host_->web_contents_getter());
   } else {
     allow_service_worker =
         GetContentClient()->browser()->AllowServiceWorkerOnIO(
-            registration->scope(), provider_host_->site_for_cookies(), GURL(),
+            registration->scope(), provider_host_->site_for_cookies(),
+            provider_host_->top_frame_origin(), /*script_url=*/GURL(),
             resource_context_, provider_host_->web_contents_getter());
   }
 

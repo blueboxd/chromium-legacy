@@ -37,7 +37,7 @@ using typed_urls_helper::GetVisitsFromClient;
 using typed_urls_helper::RemoveVisitsFromClient;
 
 namespace {
-const std::string kDummyUrl = "http://dummy-history.google.com/";
+const char kDummyUrl[] = "http://dummy-history.google.com/";
 }  // namespace
 
 class TwoClientTypedUrlsSyncTest : public SyncTest {
@@ -655,6 +655,7 @@ IN_PROC_BROWSER_TEST_F(TwoClientTypedUrlsSyncTest,
   const base::string16 kHistoryUrl(ASCIIToUTF16("http://typed.google.com/"));
   const base::string16 kRedirectedHistoryUrl(
       ASCIIToUTF16("http://www.typed.google.com/"));
+  ResetSyncForPrimaryAccount();
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 
   // Simulate a typed address that gets redirected by the server to a different

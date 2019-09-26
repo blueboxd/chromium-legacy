@@ -1587,6 +1587,10 @@ const char kDefaultTasksByMimeType[] =
 const char kDefaultTasksBySuffix[] =
     "filebrowser.tasks.default_by_suffix";
 
+// A flag to enable/disable the Shared Clipboard feature which enables users to
+// send text across devices.
+const char kSharedClipboardEnabled[] = "browser.shared_clipboard_enabled";
+
 // Extensions which should be opened upon completion.
 const char kDownloadExtensionsToOpen[] = "download.extensions_to_open";
 

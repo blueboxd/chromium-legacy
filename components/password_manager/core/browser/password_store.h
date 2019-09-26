@@ -236,10 +236,6 @@ class PasswordStore : protected PasswordStoreSync,
   // Removes the statistics for |origin_domain|.
   void RemoveSiteStats(const GURL& origin_domain);
 
-  // Retrieves the statistics for all sites and notifies |consumer| on
-  // completion. The request will be cancelled if the consumer is destroyed.
-  void GetAllSiteStats(PasswordStoreConsumer* consumer);
-
   // Retrieves the statistics for |origin_domain| and notifies |consumer| on
   // completion. The request will be cancelled if the consumer is destroyed.
   void GetSiteStats(const GURL& origin_domain, PasswordStoreConsumer* consumer);
@@ -265,8 +261,6 @@ class PasswordStore : protected PasswordStoreSync,
 
   // Schedules the given |task| to be run on the PasswordStore's TaskRunner.
   bool ScheduleTask(base::OnceClosure task);
-
-  scoped_refptr<base::SequencedTaskRunner> GetBackgroundTaskRunner();
 
   // Returns true iff initialization was successful.
   virtual bool IsAbleToSavePasswords() const;

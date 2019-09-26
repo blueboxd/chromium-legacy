@@ -944,21 +944,21 @@ TEST_F(ServiceWorkerContextTest, ProviderHostIterator) {
   base::WeakPtr<ServiceWorkerProviderHost> host1 = CreateProviderHostForWindow(
       kRenderProcessId1, true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoints.back());
-  host1->UpdateUrls(kOrigin1, kOrigin1);
+  host1->UpdateUrls(kOrigin1, kOrigin1, url::Origin::Create(kOrigin1));
 
   // Host2 : process_id=2, origin2.
   remote_endpoints.emplace_back();
   base::WeakPtr<ServiceWorkerProviderHost> host2 = CreateProviderHostForWindow(
       kRenderProcessId2, true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoints.back());
-  host2->UpdateUrls(kOrigin2, kOrigin2);
+  host2->UpdateUrls(kOrigin2, kOrigin2, url::Origin::Create(kOrigin2));
 
   // Host3 : process_id=2, origin1.
   remote_endpoints.emplace_back();
   base::WeakPtr<ServiceWorkerProviderHost> host3 = CreateProviderHostForWindow(
       kRenderProcessId2, true /* is_parent_frame_secure */,
       context()->AsWeakPtr(), &remote_endpoints.back());
-  host3->UpdateUrls(kOrigin1, kOrigin1);
+  host3->UpdateUrls(kOrigin1, kOrigin1, url::Origin::Create(kOrigin1));
 
   // Host4 : process_id=2, origin2, for ServiceWorker.
   blink::mojom::ServiceWorkerRegistrationOptions registration_opt;

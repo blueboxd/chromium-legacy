@@ -90,25 +90,25 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
   void CloseImpl(CloseCallback callback);
   // The following two methods are static, because they need to be invoked to
   // perform cleanup even if the writer was deleted before they were invoked.
-  static void DoSafeBrowsingCheck(
+  static void DoAfterWriteCheck(
       base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
       const base::FilePath& swap_path,
       NativeFileSystemFileWriterImpl::CloseCallback callback,
       base::File::Error hash_result,
       const std::string& hash,
       int64_t size);
-  static void DidSafeBrowsingCheck(
+  static void DidAfterWriteCheck(
       base::WeakPtr<NativeFileSystemFileWriterImpl> file_writer,
       const base::FilePath& swap_path,
       NativeFileSystemFileWriterImpl::CloseCallback callback,
-      NativeFileSystemPermissionContext::SafeBrowsingResult result);
-  void DidPassSafeBrowsingCheck(CloseCallback callback);
+      NativeFileSystemPermissionContext::AfterWriteCheckResult result);
+  void DidPassAfterWriteCheck(CloseCallback callback);
   void DidSwapFileBeforeClose(CloseCallback callback, base::File::Error result);
   void DidAnnotateFile(CloseCallback callback,
                        quarantine::mojom::QuarantineFileResult result);
 
-  // Safe browsing checks only apply to native local paths.
-  bool require_safe_browsing_check() {
+  // After write checks only apply to native local paths.
+  bool RequireAfterWriteCheck() const {
     return url().type() == storage::kFileSystemTypeNativeLocal;
   }
 
@@ -149,7 +149,7 @@ class CONTENT_EXPORT NativeFileSystemFileWriterImpl
 
   bool skip_quarantine_check_for_testing_ = false;
 
-  // Keeps track of user activation state at creation time for SafeBrowsing
+  // Keeps track of user activation state at creation time for after write
   // checks.
   bool has_transient_user_activation_ = false;
 

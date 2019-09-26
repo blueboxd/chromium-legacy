@@ -987,9 +987,11 @@ void TabStripModel::AddWebContents(std::unique_ptr<WebContents> contents,
   // so we have to handle the general case.
   if (group.has_value()) {
     auto grouped_tabs = ListTabsInGroup(group.value());
-    DCHECK(base::STLIsSorted(grouped_tabs));
-    index = base::ClampToRange(index, grouped_tabs.front(),
-                               grouped_tabs.back() + 1);
+    if (grouped_tabs.size() > 0) {
+      DCHECK(base::STLIsSorted(grouped_tabs));
+      index = base::ClampToRange(index, grouped_tabs.front(),
+                                 grouped_tabs.back() + 1);
+    }
   }
 
   if (ui::PageTransitionTypeIncludingQualifiersIs(transition,

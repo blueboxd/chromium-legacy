@@ -368,6 +368,10 @@ class StatusMediator {
      *     - not shown if URL is focused.
      */
     private void updateLocationBarIcon() {
+        int icon = 0;
+        int tint = 0;
+        int toast = 0;
+
         // Update the accessibility description before continuing since we need it either way.
         mModel.set(StatusProperties.STATUS_ICON_DESCRIPTION_RES, getAccessibilityDescriptionRes());
 
@@ -380,8 +384,6 @@ class StatusMediator {
         // (doesUrlMatchDefaultSearchEngine) can be removed once this is fixed.
         // TODO(crbug.com/991017): Remove doesUrlMatchDefaultSearchEngine when "Query in the
         //                         omnibox" properly reacts to dse changes.
-        boolean showUnfocusedNewTabPage = !mUrlHasFocus && mToolbarCommonPropertiesModel != null
-                && mToolbarCommonPropertiesModel.getNewTabPageForCurrentTab() != null;
         boolean showUnfocusedSearchResultsPage = !mUrlHasFocus
                 && mToolbarCommonPropertiesModel != null
                 && mToolbarCommonPropertiesModel.getDisplaySearchTerms() != null
@@ -390,35 +392,34 @@ class StatusMediator {
         boolean isIncognito = mToolbarCommonPropertiesModel != null
                 && mToolbarCommonPropertiesModel.isIncognito();
         if (mDelegate.shouldShowSearchEngineLogo(isIncognito) && mIsSearchEngineStateSetup
-                && (showFocused || showUnfocusedNewTabPage || showUnfocusedSearchResultsPage)) {
+                && (showFocused || showUnfocusedSearchResultsPage)) {
             mShouldCancelCustomFavicon = false;
             // If the current url text is a valid url, then swap the dse icon for a globe.
             if (mUrlBarTextIsValidUrl) {
-                mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_globe_24dp);
+                icon = R.drawable.ic_globe_24dp;
             } else if (mIsSearchEngineGoogle) {
-                mModel.set(StatusProperties.STATUS_ICON_RES,
-                        mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)
-                                ? R.drawable.ic_search
-                                : R.drawable.ic_logo_googleg_24dp);
+                if (mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
+                    icon = R.drawable.ic_search;
+                } else {
+                    icon = R.drawable.ic_logo_googleg_24dp;
+                }
             } else {
-                mModel.set(StatusProperties.STATUS_ICON_RES, R.drawable.ic_search);
+                icon = R.drawable.ic_search;
                 if (!mDelegate.shouldShowSearchLoupeEverywhere(isIncognito)) {
                     mDelegate.getSearchEngineLogoFavicon(mResources, (favicon) -> {
                         if (favicon == null || mShouldCancelCustomFavicon) return;
                         mModel.set(StatusProperties.STATUS_ICON, favicon);
+                        mModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
                     });
                 }
             }
-            // None of the icons associated with dse should be tinted.
-            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, 0);
+            tint = icon == R.drawable.ic_logo_googleg_24dp ? 0 : mSecurityIconTintRes;
+            mModel.set(StatusProperties.STATUS_ICON_RES, icon);
+            mModel.set(StatusProperties.STATUS_ICON_TINT_RES, tint);
             return;
         } else {
             mShouldCancelCustomFavicon = true;
         }
-
-        int icon = 0;
-        int tint = 0;
-        int toast = 0;
 
         mIsSecurityButtonShown = false;
         if (mUrlHasFocus) {

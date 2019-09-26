@@ -18,8 +18,15 @@ public class TabSelectionEditorProperties {
             new PropertyModel.WritableBooleanPropertyKey();
 
     public static final PropertyModel
-            .WritableObjectPropertyKey<View.OnClickListener> TOOLBAR_GROUP_BUTTON_LISTENER =
+            .WritableObjectPropertyKey<View.OnClickListener> TOOLBAR_ACTION_BUTTON_LISTENER =
             new PropertyModel.WritableObjectPropertyKey<>();
+
+    public static final PropertyModel.WritableObjectPropertyKey<String> TOOLBAR_ACTION_BUTTON_TEXT =
+            new PropertyModel.WritableObjectPropertyKey<>();
+
+    public static final PropertyModel
+            .WritableIntPropertyKey TOOLBAR_ACTION_BUTTON_ENABLING_THRESHOLD =
+            new PropertyModel.WritableIntPropertyKey();
 
     public static final PropertyModel
             .WritableObjectPropertyKey<View.OnClickListener> TOOLBAR_NAVIGATION_LISTENER =
@@ -39,6 +46,7 @@ public class TabSelectionEditorProperties {
             new PropertyModel.WritableIntPropertyKey();
 
     public static final PropertyKey[] ALL_KEYS = new PropertyKey[] {IS_VISIBLE,
-            TOOLBAR_GROUP_BUTTON_LISTENER, TOOLBAR_NAVIGATION_LISTENER, PRIMARY_COLOR,
+            TOOLBAR_ACTION_BUTTON_LISTENER, TOOLBAR_ACTION_BUTTON_TEXT,
+            TOOLBAR_ACTION_BUTTON_ENABLING_THRESHOLD, TOOLBAR_NAVIGATION_LISTENER, PRIMARY_COLOR,
             TOOLBAR_BACKGROUND_COLOR, TOOLBAR_GROUP_BUTTON_TINT, TOOLBAR_TEXT_APPEARANCE};
 }

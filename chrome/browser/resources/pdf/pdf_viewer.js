@@ -416,7 +416,8 @@ class PDFViewer {
 
     // Request translated strings.
     chrome.resourcesPrivate.getStrings(
-        'pdf', strings => this.handleStrings_(strings));
+        chrome.resourcesPrivate.Component.PDF,
+        strings => this.handleStrings_(strings));
 
     // Listen for save commands from the browser.
     if (chrome.mimeHandlerPrivate && chrome.mimeHandlerPrivate.onSave) {

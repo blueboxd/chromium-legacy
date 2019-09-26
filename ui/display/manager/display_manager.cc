@@ -2074,7 +2074,9 @@ void DisplayManager::InsertAndUpdateDisplayInfo(
     }
   } else {
     display_info_[new_info.id()] = new_info;
-    display_info_[new_info.id()].set_native(false);
+    // Set from_native_platform to false so that all information
+    // (rotation, zoom factor etc.) is copied.
+    display_info_[new_info.id()].set_from_native_platform(false);
   }
   display_info_[new_info.id()].UpdateDisplaySize();
 }

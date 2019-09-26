@@ -19,6 +19,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/notifications/win/notification_image_retainer.h"
 #include "chrome/browser/notifications/win/notification_launch_id.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/url_formatter/elide_url.h"
@@ -48,6 +49,8 @@ const char kBindingElement[] = "binding";
 const char kBindingElementTemplateAttribute[] = "template";
 const char kContent[] = "content";
 const char kContextMenu[] = "contextMenu";
+const char kDuration[] = "duration";
+const char kDurationLong[] = "long";
 const char kForeground[] = "foreground";
 const char kHero[] = "hero";
 const char kHintCrop[] = "hint-crop";
@@ -98,10 +101,16 @@ void StartToastElement(XmlWriter* xml_writer,
   xml_writer->StartElement(kNotificationToastElement);
   xml_writer->AddAttribute(kNotificationLaunchAttribute, launch_id.Serialize());
 
-  // Note: If the notification doesn't include a button, then Windows will
-  // ignore the Reminder flag.
-  if (notification.never_timeout())
-    xml_writer->AddAttribute(kScenario, kReminder);
+  if (notification.never_timeout()) {
+    if (base::FeatureList::IsEnabled(
+            features::kNotificationDurationLongForRequireInteraction)) {
+      xml_writer->AddAttribute(kDuration, kDurationLong);
+    } else {
+      // Note: If the notification doesn't include a button, then Windows will
+      // ignore the Reminder flag. See EnsureReminderHasButton below.
+      xml_writer->AddAttribute(kScenario, kReminder);
+    }
+  }
 
   if (notification.timestamp().is_null())
     return;
@@ -315,8 +324,11 @@ void AddContextMenu(XmlWriter* xml_writer,
 void EnsureReminderHasButton(XmlWriter* xml_writer,
                              const message_center::Notification& notification,
                              NotificationLaunchId copied_launch_id) {
-  if (!notification.never_timeout() || !notification.buttons().empty())
+  if (!notification.never_timeout() || !notification.buttons().empty() ||
+      base::FeatureList::IsEnabled(
+          features::kNotificationDurationLongForRequireInteraction)) {
     return;
+  }
 
   xml_writer->StartElement(kActionElement);
   xml_writer->AddAttribute(kActivationType, kBackground);

@@ -11,3 +11,5 @@
 NSString* const kInfobarBannerViewIdentifier = @"kInfobarBannerViewIdentifier";
 NSString* const kInfobarBannerAcceptButtonIdentifier =
     @"kInfobarBannerAcceptButtonIdentifier";
+NSString* const kInfobarBannerOpenModalButtonIdentifier =
+    @"kInfobarBannerOpenModalButtonIdentifier";

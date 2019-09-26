@@ -240,6 +240,7 @@
     scrollView,
     search,
     searchBox,
+    section,
     slider,
     sliderThumb,
     spinButton,

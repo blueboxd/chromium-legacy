@@ -26,7 +26,7 @@ import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet;
 import org.chromium.components.embedder_support.view.ContentView;
 import org.chromium.content_public.browser.RenderCoordinates;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.base.ActivityWindowAndroid;
 
 /**
  * Represents ephemeral tab content and the toolbar, which can be included inside the bottom sheet.
@@ -81,7 +81,7 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
      * bottom sheet.
      */
     private void createThinWebView() {
-        mThinWebView = ThinWebViewFactory.create(mContext, new WindowAndroid(mContext));
+        mThinWebView = ThinWebViewFactory.create(mContext, new ActivityWindowAndroid(mContext));
 
         mSheetContentView = new FrameLayout(mContext);
         mSheetContentView.addView(mThinWebView.getView());
@@ -190,6 +190,11 @@ public class EphemeralTabSheetContent implements BottomSheet.BottomSheetContent 
     @Override
     public boolean wrapContentEnabled() {
         return true;
+    }
+
+    @Override
+    public float getCustomFullRatio() {
+        return 0.9f;
     }
 
     // TODO(shaktisahu): Provide correct strings for the following methods.

@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Centro de notificações, <ph name="UNREAD_NOTIFICATION_COUNT" /> notificações não lidas</translation>
 <translation id="4730374152663651037">UTILIZADAS FREQUENTEMENTE</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{Falta 1 mês}other{Faltam # meses}}</translation>
-<translation id="4841881773802181781">Inserção</translation>
 <translation id="4881695831933465202">Abrir</translation>
 <translation id="4888938634149558681">Efetuar chamada</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 segundo}other{# segundos}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Guardar ficheiro</translation>
 <translation id="6656912866303152668">Certifique-se de que o <ph name="TARGET_DEVICE_NAME" /> tem a sincronização ativada no Chrome e, em seguida, tente enviar novamente.</translation>
 <translation id="6699343763173986273">Faixa seguinte de multimédia</translation>
-<translation id="673773751041746814">Eliminação</translation>
 <translation id="6779314412797872738">Para enviar um número daqui para o seu telemóvel Android, <ph name="TROUBLESHOOT_LINK" /> para ambos os dispositivos nas definições.</translation>
 <translation id="6786750046913594791">Fechar pasta</translation>
 <translation id="6808150112686056157">Parar multimédia</translation>

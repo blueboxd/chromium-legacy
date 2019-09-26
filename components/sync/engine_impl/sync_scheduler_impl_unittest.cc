@@ -138,9 +138,8 @@ class SyncSchedulerImplTest : public testing::Test {
     context_ = std::make_unique<SyncCycleContext>(
         connection_.get(), directory(), extensions_activity_.get(),
         std::vector<SyncEngineEventListener*>(), nullptr,
-        model_type_registry_.get(),
-        true,  // enable keystore encryption
-        "fake_invalidator_client_id", "fake_birthday", "fake_bag_of_chips",
+        model_type_registry_.get(), "fake_invalidator_client_id",
+        "fake_birthday", "fake_bag_of_chips",
         /*poll_interval=*/base::TimeDelta::FromMinutes(30));
     context_->set_notifications_enabled(true);
     context_->set_account_name("Test");

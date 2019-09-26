@@ -14,11 +14,6 @@ DataTypeController::DataTypeController(ModelType type) : type_(type) {}
 DataTypeController::~DataTypeController() {}
 
 // static
-bool DataTypeController::IsUnrecoverableResult(ConfigureResult result) {
-  return (result == UNRECOVERABLE_ERROR);
-}
-
-// static
 bool DataTypeController::IsSuccessfulResult(ConfigureResult result) {
   return (result == OK || result == OK_FIRST_RUN);
 }

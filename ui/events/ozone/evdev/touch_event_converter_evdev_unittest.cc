@@ -1628,6 +1628,9 @@ TEST_F(TouchEventConverterEvdevTest, HeldEventNotSent) {
   EXPECT_THAT(histogram_tester_.GetAllSamples(
                   TouchEventConverterEvdev::kHoldCountAtCancelEventName),
               testing::ElementsAre());
+  EXPECT_THAT(histogram_tester_.GetAllSamples(
+                  TouchEventConverterEvdev::kPalmFilterTimerEventName),
+              testing::SizeIs(1));
 }
 
 TEST_F(TouchEventConverterEvdevTest, HeldThenEnd) {

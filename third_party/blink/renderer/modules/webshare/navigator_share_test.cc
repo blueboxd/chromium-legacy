@@ -6,8 +6,8 @@
 
 #include <memory>
 #include <utility>
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/core/dom/user_gesture_indicator.h"
 #include "third_party/blink/renderer/core/fileapi/file.h"
@@ -112,9 +112,7 @@ class NavigatorShareTest : public testing::Test {
         nullptr /* extra_data */);
     test::RunPendingTasks();
 
-    service_manager::InterfaceProvider::TestApi test_api(
-        &GetFrame().GetInterfaceProvider());
-    test_api.SetBinderForName(
+    GetFrame().GetBrowserInterfaceBroker().SetBinderForTesting(
         ShareService::Name_,
         WTF::BindRepeating(&MockShareService::Bind,
                            WTF::Unretained(&mock_share_service_)));

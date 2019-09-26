@@ -608,6 +608,7 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
             properties->connection_state);
   ASSERT_TRUE(properties->wifi);
   EXPECT_EQ(50, properties->wifi->signal_strength);
+  EXPECT_EQ(mojom::OncSource::kNone, properties->source);
 
   properties = GetManagedProperties("wifi2_guid");
   ASSERT_TRUE(properties);
@@ -618,6 +619,15 @@ TEST_F(CrosNetworkConfigTest, GetManagedProperties) {
   ASSERT_TRUE(properties->wifi);
   EXPECT_EQ(mojom::SecurityType::kWpaPsk, properties->wifi->security);
   EXPECT_EQ(100, properties->wifi->signal_strength);
+  EXPECT_EQ(mojom::OncSource::kUserPolicy, properties->source);
+
+  properties = GetManagedProperties("wifi3_guid");
+  ASSERT_TRUE(properties);
+  EXPECT_EQ("wifi3_guid", properties->guid);
+  EXPECT_EQ(mojom::NetworkType::kWiFi, properties->type);
+  EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
+            properties->connection_state);
+  EXPECT_EQ(mojom::OncSource::kDevice, properties->source);
 
   properties = GetManagedProperties("cellular_guid");
   ASSERT_TRUE(properties);

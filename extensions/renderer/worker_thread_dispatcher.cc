@@ -35,6 +35,12 @@ base::LazyInstance<WorkerThreadDispatcher>::DestructorAtExit
 base::LazyInstance<base::ThreadLocalPointer<extensions::ServiceWorkerData>>::
     DestructorAtExit g_data_tls = LAZY_INSTANCE_INITIALIZER;
 
+ServiceWorkerData* GetServiceWorkerDataChecked() {
+  ServiceWorkerData* data = WorkerThreadDispatcher::GetServiceWorkerData();
+  DCHECK(data);
+  return data;
+}
+
 }  // namespace
 
 WorkerThreadDispatcher::WorkerThreadDispatcher() {}
@@ -54,24 +60,22 @@ void WorkerThreadDispatcher::Init(content::RenderThread* render_thread) {
 
 // static
 NativeExtensionBindingsSystem* WorkerThreadDispatcher::GetBindingsSystem() {
-  return GetServiceWorkerData()->bindings_system();
+  return GetServiceWorkerDataChecked()->bindings_system();
 }
 
 // static
 V8SchemaRegistry* WorkerThreadDispatcher::GetV8SchemaRegistry() {
-  return GetServiceWorkerData()->v8_schema_registry();
+  return GetServiceWorkerDataChecked()->v8_schema_registry();
 }
 
 // static
 ScriptContext* WorkerThreadDispatcher::GetScriptContext() {
-  return GetServiceWorkerData()->context();
+  return GetServiceWorkerDataChecked()->context();
 }
 
 // static
 ServiceWorkerData* WorkerThreadDispatcher::GetServiceWorkerData() {
-  ServiceWorkerData* data = g_data_tls.Pointer()->Get();
-  DCHECK(data);
-  return data;
+  return g_data_tls.Pointer()->Get();
 }
 
 // static

@@ -83,7 +83,7 @@ async_test((t) => {
     document.getElementById("parent").appendChild(container);
     construct(container);
 
-    container.displayLock.update().then(() => {
+    container.updateRendering().then(() => {
       measureInUpdate();
       setVisible(container).then(() => {
         measureInCommit();

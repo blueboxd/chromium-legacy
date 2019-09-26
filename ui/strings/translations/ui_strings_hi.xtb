@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">सूचना केंद्र, <ph name="UNREAD_NOTIFICATION_COUNT" /> नहीं पढ़ी गई सूचनाएं</translation>
 <translation id="4730374152663651037">अक्सर उपयोग किए गए</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 माह शेष}one{# माह शेष}other{# माह शेष}}</translation>
-<translation id="4841881773802181781">डालना</translation>
 <translation id="4881695831933465202">खोलें</translation>
 <translation id="4888938634149558681">कॉल करें</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 सेकंड}one{# सेकंड}other{# सेकंड}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">फ़ाइल सेव करें</translation>
 <translation id="6656912866303152668">पक्का करें कि Chrome में <ph name="TARGET_DEVICE_NAME" /> सिंक करने की सुविधा चालू है. इसके बाद, फिर से भेजने की कोशिश करें.</translation>
 <translation id="6699343763173986273">मीडिया अगला ट्रैक</translation>
-<translation id="673773751041746814">मिटाना</translation>
 <translation id="6779314412797872738">यहां से अपने फ़ोन पर नंबर भेजने के लिए, सेटिंग में जाकर दोनों डिवाइस के लिए <ph name="TROUBLESHOOT_LINK" /> इस्तेमाल करें.</translation>
 <translation id="6786750046913594791">फ़ोल्डर बंद करें</translation>
 <translation id="6808150112686056157">मीडिया रोकें</translation>

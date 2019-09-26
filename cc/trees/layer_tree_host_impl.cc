@@ -4946,7 +4946,8 @@ void LayerTreeHostImpl::ScrollEnd(ScrollState* scroll_state, bool should_snap) {
 }
 
 InputHandlerPointerResult LayerTreeHostImpl::MouseDown(
-    const gfx::PointF& viewport_point) {
+    const gfx::PointF& viewport_point,
+    bool shift_modifier) {
   ScrollbarAnimationController* animation_controller =
       ScrollbarAnimationControllerForElementId(
           scroll_element_id_mouse_currently_over_);
@@ -4957,8 +4958,10 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseDown(
   }
 
   InputHandlerPointerResult result;
-  if (settings().compositor_threaded_scrollbar_scrolling)
-    result = scrollbar_controller_->HandlePointerDown(viewport_point);
+  if (settings().compositor_threaded_scrollbar_scrolling) {
+    result = scrollbar_controller_->HandlePointerDown(viewport_point,
+                                                      shift_modifier);
+  }
 
   return result;
 }
@@ -4986,9 +4989,10 @@ InputHandlerPointerResult LayerTreeHostImpl::MouseUp(
 InputHandlerPointerResult LayerTreeHostImpl::MouseMoveAt(
     const gfx::Point& viewport_point) {
   InputHandlerPointerResult result;
-  if (settings().compositor_threaded_scrollbar_scrolling)
+  if (settings().compositor_threaded_scrollbar_scrolling) {
     result =
-        scrollbar_controller_->HandleMouseMove(gfx::PointF(viewport_point));
+        scrollbar_controller_->HandlePointerMove(gfx::PointF(viewport_point));
+  }
 
   // Early out if there are no animation controllers and avoid the hit test.
   // This happens on platforms without animated scrollbars.

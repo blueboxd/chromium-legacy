@@ -95,14 +95,10 @@ class VotesUploader {
       uint32_t username_element_renderer_id,
       autofill::FormStructure* form_structure);
 
-  bool get_generation_popup_was_shown() const {
-    return generation_popup_was_shown_;
-  }
   void set_generation_popup_was_shown(bool generation_popup_was_shown) {
     generation_popup_was_shown_ = generation_popup_was_shown;
   }
 
-  bool is_manual_generation() const { return is_manual_generation_; }
   void set_is_manual_generation(bool is_manual_generation) {
     is_manual_generation_ = is_manual_generation;
   }
@@ -110,6 +106,7 @@ class VotesUploader {
   const base::string16& get_generation_element() const {
     return generation_element_;
   }
+
   void set_generation_element(const base::string16& generation_element) {
     generation_element_ = generation_element;
   }
@@ -148,9 +145,6 @@ class VotesUploader {
 
   // Adds a vote on password generation usage to |form_structure|.
   void AddGeneratedVote(autofill::FormStructure* form_structure);
-
-  // Adds a vote from HTML parsing based form classifier to |form_structure|.
-  void AddFormClassifierVote(autofill::FormStructure* form_structure);
 
   // Sets the known-value flag for each field, indicating that the field
   // contained a previously stored credential on submission.

@@ -30,11 +30,9 @@ using content::BrowserThread;
 
 namespace {
 
-// "ServiceWorker" is not handled correctly by content settings with secondary
-// pattern yet.
 const std::vector<std::string> kStorageTypes{
     "Cookie",    "LocalStorage", "FileSystem",   "SessionStorage",
-    "IndexedDb", "WebSql",       "CacheStorage",
+    "IndexedDb", "WebSql",       "CacheStorage", "ServiceWorker",
 };
 
 class CookiePolicyBrowserTest : public InProcessBrowserTest {

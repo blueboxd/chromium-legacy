@@ -44,6 +44,7 @@
 #include "third_party/blink/renderer/bindings/core/v8/request_or_usv_string.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/modules/modules_export.h"
+#include "third_party/blink/renderer/modules/service_worker/service_worker_installed_scripts_manager.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_timeout_timer.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
 #include "third_party/blink/renderer/platform/wtf/casting.h"
@@ -59,6 +60,7 @@ class ScriptPromise;
 class ScriptState;
 class ServiceWorker;
 class ServiceWorkerClients;
+class ServiceWorkerInstalledScriptsManager;
 class ServiceWorkerRegistration;
 class ServiceWorkerThread;
 class StringOrTrustedScriptURL;
@@ -83,13 +85,16 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   static ServiceWorkerGlobalScope* Create(
       ServiceWorkerThread*,
       std::unique_ptr<GlobalScopeCreationParams>,
+      std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
       mojo::PendingRemote<mojom::blink::CacheStorage>,
       base::TimeTicks time_origin);
 
-  ServiceWorkerGlobalScope(std::unique_ptr<GlobalScopeCreationParams>,
-                           ServiceWorkerThread*,
-                           mojo::PendingRemote<mojom::blink::CacheStorage>,
-                           base::TimeTicks time_origin);
+  ServiceWorkerGlobalScope(
+      std::unique_ptr<GlobalScopeCreationParams>,
+      ServiceWorkerThread*,
+      std::unique_ptr<ServiceWorkerInstalledScriptsManager>,
+      mojo::PendingRemote<mojom::blink::CacheStorage>,
+      base::TimeTicks time_origin);
   ~ServiceWorkerGlobalScope() override;
 
   // ExecutionContext overrides:
@@ -118,6 +123,7 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       network::mojom::CredentialsMode) override;
   void Dispose() override;
+  InstalledScriptsManager* GetInstalledScriptsManager() override;
 
   // Runs the installed top-level classic worker script for the 'installed'
   // service worker case.
@@ -306,6 +312,13 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       EventListener*,
       const AddEventListenerOptionsResolved*) override;
 
+  // WorkerGlobalScope
+  bool FetchClassicImportedScript(
+      const KURL& script_url,
+      KURL* out_response_url,
+      String* out_source_code,
+      std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data) override;
+
  private:
   void importScripts(const HeapVector<StringOrTrustedScriptURL>& urls,
                      ExceptionState&) override;
@@ -470,6 +483,10 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
   size_t cache_storage_installed_script_count_ = 0;
   uint64_t cache_storage_installed_script_total_size_ = 0;
   uint64_t cache_storage_installed_script_metadata_total_size_ = 0;
+
+  // Non-null only when this service worker is already installed.
+  std::unique_ptr<ServiceWorkerInstalledScriptsManager>
+      installed_scripts_manager_;
 
   // May be provided in the constructor as an optimization so InterfaceProvider
   // doesn't need to be used. Taken at the initial call to

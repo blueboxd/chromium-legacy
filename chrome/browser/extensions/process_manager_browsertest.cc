@@ -1448,16 +1448,18 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
   EXPECT_FALSE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
       extension2, extension2_manifest.path()));
   {
+    content::TestNavigationObserver nav_observer(tab, 1);
     EXPECT_TRUE(ExecuteScript(
         tab, base::StringPrintf("frames[0].location.href = '%s';",
                                 extension2_manifest.spec().c_str())));
-    WaitForLoadStop(tab);
-    EXPECT_EQ(extension2_empty,
-              ChildFrameAt(main_frame, 0)->GetLastCommittedURL())
-        << "The URL of frames[0] should not have changed";
-    EXPECT_EQ(3u, pm->GetAllFrames().size());
+    nav_observer.Wait();
+    EXPECT_FALSE(nav_observer.last_navigation_succeeded());
+    EXPECT_EQ(net::ERR_BLOCKED_BY_CLIENT, nav_observer.last_net_error_code());
+    EXPECT_EQ(extension2_manifest,
+              ChildFrameAt(main_frame, 0)->GetLastCommittedURL());
+    EXPECT_EQ(2u, pm->GetAllFrames().size());
     EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
-    EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+    EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
   }
 
   // extension1 should not be able to navigate its second iframe to
@@ -1476,9 +1478,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
               ChildFrameAt(main_frame, 1)->GetLastCommittedURL())
         << "The initial navigation should be allowed, but not the server "
            "redirect to extension2's manifest";
-    EXPECT_EQ(2u, pm->GetAllFrames().size());
+    EXPECT_EQ(1u, pm->GetAllFrames().size());
     EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
-    EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+    EXPECT_EQ(0u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
   }
 
   // extension1 can embed a webaccessible resource of extension2 by means of
@@ -1497,9 +1499,9 @@ IN_PROC_BROWSER_TEST_F(ProcessManagerBrowserTest,
     EXPECT_EQ(extension2_empty,
               ChildFrameAt(main_frame, 1)->GetLastCommittedURL())
         << "The URL of frames[1] should have changed";
-    EXPECT_EQ(3u, pm->GetAllFrames().size());
+    EXPECT_EQ(2u, pm->GetAllFrames().size());
     EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension1->id()).size());
-    EXPECT_EQ(2u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
+    EXPECT_EQ(1u, pm->GetRenderFrameHostsForExtension(extension2->id()).size());
   }
 }
 

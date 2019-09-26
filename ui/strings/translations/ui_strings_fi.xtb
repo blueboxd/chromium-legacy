@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Ilmoituskeskus, <ph name="UNREAD_NOTIFICATION_COUNT" /> lukematonta ilmoitusta</translation>
 <translation id="4730374152663651037">USEIN KÄYTETYT</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 kuukausi jäljellä}other{# kuukautta jäljellä}}</translation>
-<translation id="4841881773802181781">Lisäys</translation>
 <translation id="4881695831933465202">Avaa</translation>
 <translation id="4888938634149558681">Soita</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekunti}other{# sekuntia}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Tallenna tiedosto</translation>
 <translation id="6656912866303152668">Varmista, että <ph name="TARGET_DEVICE_NAME" /> käyttää synkronointia Chromessa, ja yritä lähettämistä sitten uudelleen.</translation>
 <translation id="6699343763173986273">Media: seuraava kappale</translation>
-<translation id="673773751041746814">Poisto</translation>
 <translation id="6779314412797872738">Jos haluat lähettää numeron tältä laitteelta Android-puhelimeesi, <ph name="TROUBLESHOOT_LINK" /> molempien laitteiden asetuksista.</translation>
 <translation id="6786750046913594791">Sulje kansio</translation>
 <translation id="6808150112686056157">Media: pysäytä</translation>

@@ -5,6 +5,8 @@
 #ifndef CHROME_APP_SHIM_APP_SHIM_CONTROLLER_H_
 #define CHROME_APP_SHIM_APP_SHIM_CONTROLLER_H_
 
+#include <vector>
+
 #import <AppKit/AppKit.h>
 
 #include "base/files/file_path.h"
@@ -21,6 +23,7 @@ class MachBootstrapAcceptorTest;
 }
 
 @class AppShimDelegate;
+@class ProfileMenuTarget;
 
 // The AppShimController is responsible for launching and maintaining the
 // connection with the main Chrome process, and generally controls the lifetime
@@ -51,6 +54,9 @@ class AppShimController : public chrome::mojom::AppShim {
   bool SendFocusApp(apps::AppShimFocusType focus_type,
                     const std::vector<base::FilePath>& files);
 
+  // Called when a profile is selected from the profiles NSMenu.
+  void ProfileMenuItemSelected(uint32_t index);
+
  private:
   friend class TestShimClient;
   friend class apps::MachBootstrapAcceptorTest;
@@ -72,6 +78,8 @@ class AppShimController : public chrome::mojom::AppShim {
   void CreateCommandDispatcherForWidget(uint64_t widget_id) override;
   void SetBadgeLabel(const std::string& badge_label) override;
   void SetUserAttention(apps::AppShimAttentionType attention_type) override;
+  void UpdateProfileMenu(std::vector<chrome::mojom::ProfileMenuItemPtr>
+                             profile_menu_items) override;
 
   // Terminates the app shim process.
   void Close();
@@ -129,6 +137,12 @@ class AppShimController : public chrome::mojom::AppShim {
   base::scoped_nsobject<AppShimDelegate> delegate_;
   bool launch_app_done_;
   NSInteger attention_request_id_;
+
+  // The target for NSMenuItems in the profile menu.
+  base::scoped_nsobject<ProfileMenuTarget> profile_menu_target_;
+
+  // The items in the profile menu.
+  std::vector<chrome::mojom::ProfileMenuItemPtr> profile_menu_items_;
 
   DISALLOW_COPY_AND_ASSIGN(AppShimController);
 };

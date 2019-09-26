@@ -16,6 +16,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_mime_types_service_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_test_helper.h"
+#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/drive/file_system_util.h"
 #include "chrome/browser/chromeos/file_manager/app_id.h"
 #include "chrome/browser/chromeos/file_manager/path_util.h"
@@ -312,7 +313,7 @@ TEST(FileManagerFileTasksTest, ChooseAndSetDefaultTask_FallbackOfficeEditing) {
 TEST(FileManagerFileTasksTest, IsFileHandlerEnabled) {
   content::BrowserTaskEnvironment task_environment;
   TestingProfile test_profile;
-  crostini::CrostiniTestHelper helper(&test_profile);
+  crostini::FakeCrostiniFeatures crostini_features;
 
   apps::FileHandlerInfo test_handler;
   test_handler.id = "test";
@@ -320,49 +321,24 @@ TEST(FileManagerFileTasksTest, IsFileHandlerEnabled) {
   // Test import-crostini-image.
   apps::FileHandlerInfo crostini_import_handler;
   crostini_import_handler.id = "import-crostini-image";
-  test_profile.GetPrefs()->SetBoolean(
-      crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, true);
+  crostini_features.set_export_import_ui_allowed(true);
   EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, crostini_import_handler));
   EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
 
-  test_profile.GetPrefs()->SetBoolean(
-      crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, false);
+  crostini_features.set_export_import_ui_allowed(false);
   EXPECT_FALSE(IsFileHandlerEnabled(&test_profile, crostini_import_handler));
   EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
 
-  // Test install-linux-package - feature on.
+  // Test install-linux-package.
   apps::FileHandlerInfo install_linux_handler;
   install_linux_handler.id = "install-linux-package";
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures(
-        {features::kCrostiniAdvancedAccessControls}, {});
-    test_profile.GetPrefs()->SetBoolean(
-        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, true);
-    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
-    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
+  crostini_features.set_root_access_allowed(true);
+  EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
+  EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
 
-    test_profile.GetPrefs()->SetBoolean(
-        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, false);
-    EXPECT_FALSE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
-    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
-  }
-
-  // Test install-linux-package - feature off.
-  {
-    base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitWithFeatures(
-        {}, {features::kCrostiniAdvancedAccessControls});
-    test_profile.GetPrefs()->SetBoolean(
-        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, true);
-    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
-    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
-
-    test_profile.GetPrefs()->SetBoolean(
-        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, false);
-    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
-    EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
-  }
+  crostini_features.set_root_access_allowed(false);
+  EXPECT_FALSE(IsFileHandlerEnabled(&test_profile, install_linux_handler));
+  EXPECT_TRUE(IsFileHandlerEnabled(&test_profile, test_handler));
 }
 
 // Test IsGoodMatchFileHandler which returns whether a file handle info matches

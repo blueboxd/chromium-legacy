@@ -43,6 +43,9 @@ declare_args() {
   # Enable adding annotations to generated C++ headers that are used for
   # cross-references in CodeSearch.
   enable_kythe_annotations = false
+
+  # Enables generating Typescript bindings and compiling them to JS bindings.
+  enable_typescript_bindings = false
 }
 
 # NOTE: We would like to avoid scrambling message IDs where it doesn't add
@@ -64,6 +67,7 @@ enable_scrambled_message_ids =
      ((enable_nacl || is_nacl || is_nacl_nonsfi) && target_os != "chromeos"))
 
 mojom_generator_root = "//mojo/public/tools/bindings"
+compile_typescript_script = "$mojom_generator_root/compile_typescript.py"
 mojom_generator_script = "$mojom_generator_root/mojom_bindings_generator.py"
 mojom_generator_sources = [
   "$mojom_generator_root/generators/mojom_cpp_generator.py",
@@ -285,6 +289,9 @@ if (enable_mojom_typemapping) {
 #   use_old_js_lite_bindings_names (optional)
 #       Use old names i.e. FooProxy, Foo, getProxy(), etc. instead of the new
 #       names i.e. FooRemote, FooReceiver, getRemote(), etc.
+#
+#   use_typescript_sources (optional)
+#       Uses the Typescript generator to generate JavaScript bindings.
 #
 # The following parameters are used to support the component build. They are
 # needed so that bindings which are linked with a component can use the same
@@ -1221,7 +1228,16 @@ template("mojom") {
     }
   }
 
-  if (generate_fuzzing || !defined(invoker.cpp_only) || !invoker.cpp_only) {
+  use_typescript_for_target =
+      enable_typescript_bindings && defined(invoker.use_typescript_sources) &&
+      invoker.use_typescript_sources
+
+  if (!use_typescript_for_target && defined(invoker.use_typescript_sources)) {
+    not_needed(invoker, [ "use_typescript_sources" ])
+  }
+
+  if ((generate_fuzzing || !defined(invoker.cpp_only) || !invoker.cpp_only) &&
+      !use_typescript_for_target) {
     if (defined(invoker.sources)) {
       generator_js_target_name = "${target_name}_js__generator"
       generator_js_lite_outputs =
@@ -1352,6 +1368,79 @@ template("mojom") {
       }
     } else {
       group(js_library_for_compile_target_name) {
+      }
+    }
+  }
+  if ((generate_fuzzing || !defined(invoker.cpp_only) || !invoker.cpp_only) &&
+      use_typescript_for_target) {
+    generator_ts_target_name = "${target_name}_ts__generator"
+
+    source_filelist = []
+    ts_filelist = []
+    ts_outputs = []
+    js_outputs = []
+    foreach(source, invoker.sources) {
+      source_filelist += [ rebase_path("$source", root_build_dir) ]
+      ts_outputs += [
+        "$target_gen_dir/$source-lite.ts",
+        "$target_gen_dir/$source-lite.m.ts",
+      ]
+      ts_filelist += [
+        rebase_path("$target_gen_dir/$source-lite.ts", root_build_dir),
+        rebase_path("$target_gen_dir/$source-lite.m.ts", root_build_dir),
+      ]
+
+      js_outputs += [
+        "$target_gen_dir/$source-lite.js",
+        "$target_gen_dir/$source-lite.m.js",
+      ]
+    }
+
+    generator_ts_target_name = "${target_name}_ts__generator"
+    action(generator_ts_target_name) {
+      script = mojom_generator_script
+      inputs = mojom_generator_sources + jinja2_sources
+      sources = invoker.sources
+      deps = [
+               ":$parsed_target_name",
+               "//mojo/public/tools/bindings:precompile_templates",
+             ] + verify_deps_target_names
+      outputs = ts_outputs
+      args = common_generator_args
+      response_file_contents = source_filelist
+
+      args += [
+        "--filelist={{response_file_name}}",
+        "-g",
+        "typescript",
+      ]
+
+      # TODO(crbug.com/1007587): Support scramble_message_ids.
+      # TODO(crbug.com/1007591): Support generate_fuzzing.
+    }
+
+    generator_js_target_name = "${target_name}_js__generator"
+    action(generator_js_target_name) {
+      script = compile_typescript_script
+      sources = ts_outputs
+      outputs = js_outputs
+      public_deps = [
+        ":$generator_ts_target_name",
+      ]
+      response_file_contents = ts_filelist
+      args = [ "--filelist={{response_file_name}}" ]
+    }
+
+    js_target_name = target_name + "_js"
+    group(js_target_name) {
+      public_deps = []
+      if (defined(invoker.sources)) {
+        public_deps += [ ":$generator_js_target_name" ]
+      }
+
+      foreach(d, all_deps) {
+        full_name = get_label_info(d, "label_no_toolchain")
+        public_deps += [ "${full_name}_js" ]
       }
     }
   }

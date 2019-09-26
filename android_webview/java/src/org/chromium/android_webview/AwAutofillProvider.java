@@ -331,10 +331,12 @@ public class AwAutofillProvider extends AutofillProvider {
             // the position could be changed.
             int virtualId = mRequest.getVirtualId(sIndex);
             Rect absBound = transformToWindowBounds(new RectF(x, y, x + width, y + height));
-            mAutofillManager.notifyVirtualViewExited(mContainerView, virtualId);
-            mAutofillManager.notifyVirtualViewEntered(mContainerView, virtualId, absBound);
-            // Update focus field position.
-            mRequest.setFocusField(new FocusField(focusField.fieldIndex, absBound));
+            if (!focusField.absBound.equals(absBound)) {
+                mAutofillManager.notifyVirtualViewExited(mContainerView, virtualId);
+                mAutofillManager.notifyVirtualViewEntered(mContainerView, virtualId, absBound);
+                // Update focus field position.
+                mRequest.setFocusField(new FocusField(focusField.fieldIndex, absBound));
+            }
         }
         notifyVirtualValueChanged(index);
         mAutofillUMA.onUserChangeFieldValue(mRequest.getField(sIndex).hasPreviouslyAutofilled());

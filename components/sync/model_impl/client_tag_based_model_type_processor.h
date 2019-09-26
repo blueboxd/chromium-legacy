@@ -215,26 +215,10 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Returns true if all processor entities have non-empty storage keys.
   bool AllStorageKeysPopulated() const;
 
-  // Expires entries according to garbage collection directives.
-  void ExpireEntriesIfNeeded(
-      const sync_pb::DataTypeProgressMarker& progress_marker);
-
-  // Clear metadata for the entries in |storage_key_to_be_deleted|.
-  void ClearMetadataForEntries(
-      const std::vector<std::string>& storage_key_to_be_deleted,
-      MetadataChangeList* metadata_changes);
-
   // Removes metadata for all entries unless they are unsynced.
   // This is used to limit the amount of data stored in sync, and this does not
   // tell the bridge to delete the actual data.
   void ExpireAllEntries(MetadataChangeList* metadata_changes);
-
-  // Removes metadata for all entries whose ages are older than
-  // |age_watermark_in_days| unless they are unsynced.
-  // This is used to limit the amount of data stored in sync, and this does not
-  // tell the bridge to delete the actual data.
-  void ExpireEntriesByAge(int32_t age_watermark_in_days,
-                          MetadataChangeList* metadata_changes);
 
   // Removes |entity| and clears metadata for |entity| from
   // |metadata_change_list|.
@@ -325,12 +309,6 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // confirmation, we should delete local data, because the model side never
   // intends to read it. This includes both data and metadata.
   const bool commit_only_;
-
-  // The day which processor already ran garbage collection against on.
-  // Cache this value is for saving resource purpose(ex. cpu, battery), we round
-  // up garbage collection age to day, so we only run GC once a day if server
-  // did not change the age out days.
-  base::Time cached_gc_directive_aged_out_day_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

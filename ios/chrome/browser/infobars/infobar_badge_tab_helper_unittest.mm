@@ -34,20 +34,20 @@
     : NSObject <InfobarBadgeTabHelperDelegate>
 @property(nonatomic, assign) BOOL displayingBadge;
 @property(nonatomic, assign) BOOL badgeIsTappable;
-@property(nonatomic, assign) BOOL badgeIsAccepted;
+@property(nonatomic, assign) BadgeState badgeState;
 @property(nonatomic, assign) BadgeType badgeType;
 @end
 
 @implementation InfobarBadgeTabHelperTestDelegate
 - (void)updateInfobarBadge:(id<BadgeItem>)badgeItem {
   self.badgeIsTappable = badgeItem.isTappable;
-  self.badgeIsAccepted = badgeItem.isAccepted;
+  self.badgeState = badgeItem.badgeState;
   self.badgeType = badgeItem.badgeType;
 }
 - (void)addInfobarBadge:(id<BadgeItem>)badgeItem {
   self.displayingBadge = YES;
   self.badgeIsTappable = badgeItem.isTappable;
-  self.badgeIsAccepted = badgeItem.isAccepted;
+  self.badgeState = badgeItem.badgeState;
   self.badgeType = badgeItem.badgeType;
 }
 - (void)removeInfobarBadge:(id<BadgeItem>)badgeItem {
@@ -219,16 +219,16 @@ class InfobarBadgeTabHelperTest : public PlatformTest {
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeState) {
   EXPECT_FALSE(infobar_badge_tab_delegate_.displayingBadge);
   EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsTappable);
-  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsAccepted);
+  EXPECT_NE(infobar_badge_tab_delegate_.badgeState, BadgeStateAccepted);
   AddInfoBar(/*has_badge=*/true);
   EXPECT_TRUE(infobar_badge_tab_delegate_.displayingBadge);
   EXPECT_TRUE(infobar_badge_tab_delegate_.badgeIsTappable);
-  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsAccepted);
+  EXPECT_NE(infobar_badge_tab_delegate_.badgeState, BadgeStateAccepted);
   // Test that accepting the Infobar sets the badge to accepted state.
   tab_helper()->UpdateBadgeForInfobarAccepted(
       InfobarType::kInfobarTypePasswordSave);
   EXPECT_TRUE(infobar_badge_tab_delegate_.badgeIsTappable);
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeIsAccepted);
+  EXPECT_EQ(infobar_badge_tab_delegate_.badgeState, BadgeStateAccepted);
 }
 
 // Test the badge state after doesn't change after adding an Infobar with no
@@ -236,11 +236,11 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeState) {
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeStateNoBadge) {
   EXPECT_FALSE(infobar_badge_tab_delegate_.displayingBadge);
   EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsTappable);
-  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsAccepted);
+  EXPECT_NE(infobar_badge_tab_delegate_.badgeState, BadgeStateAccepted);
   AddInfoBar(/*has_badge=*/false);
   EXPECT_FALSE(infobar_badge_tab_delegate_.displayingBadge);
   EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsTappable);
-  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsAccepted);
+  EXPECT_NE(infobar_badge_tab_delegate_.badgeState, BadgeStateAccepted);
 }
 
 // Tests that the InfobarBadge has not been removed after dismissing the
@@ -259,7 +259,7 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeOnBannerDismissal) {
 // InfobarBanner.
 TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeOnBannerAccepted) {
   AddInfoBar(/*has_badge=*/true);
-  EXPECT_FALSE(infobar_badge_tab_delegate_.badgeIsAccepted);
+  EXPECT_NE(infobar_badge_tab_delegate_.badgeState, BadgeStateAccepted);
   tab_helper()->UpdateBadgeForInfobarAccepted(
       InfobarType::kInfobarTypePasswordSave);
   [infobar_container_coordinator_ dismissBanner];
@@ -267,7 +267,7 @@ TEST_F(InfobarBadgeTabHelperTest, TestInfobarBadgeOnBannerAccepted) {
       base::test::ios::kWaitForUIElementTimeout, ^bool {
         return !infobar_container_coordinator_.bannerIsPresenting;
       }));
-  EXPECT_TRUE(infobar_badge_tab_delegate_.badgeIsAccepted);
+  EXPECT_EQ(infobar_badge_tab_delegate_.badgeState, BadgeStateAccepted);
 }
 
 // Test that removing the InfobarView doesn't stop displaying the badge.

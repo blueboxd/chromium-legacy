@@ -88,7 +88,7 @@ class WorkerTest : public ContentBrowserTest {
     const base::string16 fail_title = base::ASCIIToUTF16("FAIL");
     TitleWatcher title_watcher(window->web_contents(), ok_title);
     title_watcher.AlsoWaitForTitle(fail_title);
-    NavigateToURL(window, url);
+    EXPECT_TRUE(NavigateToURL(window, url));
     base::string16 final_title = title_watcher.WaitAndGetTitle();
     EXPECT_EQ(expect_failure ? fail_title : ok_title, final_title);
   }
@@ -252,7 +252,7 @@ IN_PROC_BROWSER_TEST_F(WorkerTest, WebSocketSharedWorker) {
   Shell* window = shell();
   const base::string16 expected_title = base::ASCIIToUTF16("OK");
   TitleWatcher title_watcher(window->web_contents(), expected_title);
-  NavigateToURL(window, url);
+  EXPECT_TRUE(NavigateToURL(window, url));
   base::string16 final_title = title_watcher.WaitAndGetTitle();
   EXPECT_EQ(expected_title, final_title);
 }

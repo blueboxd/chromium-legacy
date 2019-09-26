@@ -76,6 +76,7 @@ uint64_t GetDisallowedFeatures() {
       ToFeatureBit(WebSchedulerTrackedFeature::kWebRTC) |
       ToFeatureBit(WebSchedulerTrackedFeature::kContainsPlugins) |
       ToFeatureBit(WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kOutstandingNetworkRequest) |
       ToFeatureBit(
           WebSchedulerTrackedFeature::kOutstandingIndexedDBTransaction) |
       ToFeatureBit(
@@ -248,16 +249,9 @@ BackForwardCacheImpl::CanStoreDocument(RenderFrameHostImpl* rfh) {
 BackForwardCacheImpl::CanStoreDocumentResult
 BackForwardCacheImpl::CanStoreRenderFrameHost(RenderFrameHostImpl* rfh,
                                               uint64_t disallowed_features) {
-  // For the main frame, we don't check loading at the FrameTreeNode level,
-  // because the FrameTreeNode has already begun loading the page being
-  // navigated to.
-  bool is_loading = rfh->frame_tree_node()->IsMainFrame()
-                        ? rfh->is_loading()
-                        : rfh->frame_tree_node()->IsLoading();
-  if (is_loading) {
+  if (!rfh->dom_content_loaded())
     return CanStoreDocumentResult::No(
         BackForwardCacheMetrics::CanNotStoreDocumentReason::kLoading);
-  }
 
   // If the rfh has ever granted media access, prevent it from entering cache.
   // TODO(crbug.com/989379): Consider only blocking when there's an active

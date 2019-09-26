@@ -65,8 +65,7 @@
   BadgeStaticItem* incognitoItem = [[BadgeStaticItem alloc]
       initWithBadgeType:BadgeType::kBadgeTypeIncognito];
   InfobarBadgeModel* passwordBadgeItem = [[InfobarBadgeModel alloc]
-      initWithInfobarType:InfobarType::kInfobarTypePasswordSave
-                 accepted:NO];
+      initWithInfobarType:InfobarType::kInfobarTypePasswordSave];
   [self.consumer setupWithDisplayedBadge:passwordBadgeItem
                          fullScreenBadge:incognitoItem];
 }

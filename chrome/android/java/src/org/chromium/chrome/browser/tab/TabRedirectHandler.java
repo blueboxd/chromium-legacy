@@ -278,7 +278,7 @@ public class TabRedirectHandler extends EmptyTabObserver implements UserData {
     }
 
     private boolean shouldNavigationTypeStayInChrome(boolean isForTrustedCallingApp) {
-        // Never leave Chrome from a refresh.
+        // http://crbug.com/162106: Never leave Chrome from a refresh.
         if (mInitialNavigationType == NAVIGATION_TYPE_FROM_RELOAD) return true;
 
         // If the app we would navigate to is trusted and what launched Chrome, allow the

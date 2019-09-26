@@ -363,3 +363,7 @@ Bug(none) paint/invalidation/offset-change-wrong-invalidation-with-float.html [ 
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-then-clip-effect-interleave.html [ Failure ]
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-then-clip-z-order-interleave.html [ Failure ]
 Bug(none) virtual/prefer_compositing_to_lcd_text/compositing/overflow/rotate-then-clip.html [ Failure ]
+
+# display-locking
+crbug.com/1007506 wpt_internal/display-lock/rendersubtree/sizing/large-content-size-in-overflow-auto.html [ Failure ]
+crbug.com/1007506 wpt_internal/display-lock/rendersubtree/sizing/overflow-auto-with-overflow.html [ Failure ]

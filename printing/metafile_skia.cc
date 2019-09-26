@@ -299,14 +299,14 @@ bool MetafileSkia::SaveTo(base::File* file) const {
   std::unique_ptr<SkStreamAsset> asset(data_->data_stream->duplicate());
 
   static constexpr size_t kMaximumBufferSize = 1024 * 1024;
-  std::vector<char> buffer(std::min(kMaximumBufferSize, asset->getLength()));
+  std::vector<uint8_t> buffer(std::min(kMaximumBufferSize, asset->getLength()));
   do {
     size_t read_size = asset->read(&buffer[0], buffer.size());
     if (read_size == 0)
       break;
     DCHECK_GE(buffer.size(), read_size);
-    if (!file->WriteAtCurrentPos(&buffer[0],
-                                 base::checked_cast<int>(read_size))) {
+    if (!file->WriteAtCurrentPosAndCheck(
+            base::make_span(&buffer[0], read_size))) {
       return false;
     }
   } while (!asset->isAtEnd());

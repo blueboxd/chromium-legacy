@@ -13,8 +13,7 @@
 // A model object that represents a badge for an Infobar.
 @interface InfobarBadgeModel : NSObject <BadgeItem>
 
-- (instancetype)initWithInfobarType:(InfobarType)type
-                           accepted:(BOOL)accepted NS_DESIGNATED_INITIALIZER;
+- (instancetype)initWithInfobarType:(InfobarType)type NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
 @end

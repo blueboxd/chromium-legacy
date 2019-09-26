@@ -28,6 +28,11 @@ const base::Feature kSettingsShowsPerKeyboardSettings = {
 const base::Feature kInputMethodSettingsUiUpdate = {
     "InputMethodSettingsUiUpdate", base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Enables percent-based scrolling for mousewheel and keyboard initiated
+// scrolls.
+const base::Feature kPercentBasedScrolling = {
+    "PercentBasedScrolling", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Allows requesting unadjusted movement when entering pointerlock.
 const base::Feature kPointerLockOptions = {"PointerLockOptions",
                                            base::FEATURE_DISABLED_BY_DEFAULT};

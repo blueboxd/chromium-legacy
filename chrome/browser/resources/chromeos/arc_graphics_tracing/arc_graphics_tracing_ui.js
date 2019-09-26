@@ -212,7 +212,7 @@ var valueAttributes = {
     scale: 1.0 / 1024.0,
     width: 1.0
   },
-  // kGpuFreq.
+  // kGpuFrequency.
   7: {
     color: '#01579b',
     minRange: 300.0,
@@ -220,11 +220,19 @@ var valueAttributes = {
     scale: 1.0,
     width: 1.0
   },
-  // kCpuTemp.
+  // kCpuTemperature.
   8: {
     color: '#ff3d00',
     minRange: 20.0,
     name: 'CPU celsius.',
+    scale: 1.0 / 1000.0,
+    width: 1.0
+  },
+  // kCpuFrequency.
+  9: {
+    color: '#ff80ab',
+    minRange: 300.0,
+    name: 'CPU Mhz.',
     scale: 1.0 / 1000.0,
     width: 1.0
   },
@@ -1650,7 +1658,13 @@ function setGraphicBuffersModel(model) {
   cpusBands.setModel(model);
   cpusBands.addChartToExistingArea(0 /* top */, cpusBands.height);
   cpusBands.addChartSources(
-      [new Events(model.system.memory, 8 /* kCpuTemp */, 8 /* kCpuTemp */)],
+      [new Events(
+          model.system.memory, 8 /* kCpuTemperature */,
+          8 /* kCpuTemperature */)],
+      true /* smooth */);
+  cpusBands.addChartSources(
+      [new Events(
+          model.system.memory, 9 /* kCpuFrequency */, 9 /* kCpuFrequency */)],
       true /* smooth */);
   cpusBands.setVSync(vsyncEvents);
 
@@ -1701,7 +1715,8 @@ function setGraphicBuffersModel(model) {
 
   chromeBands.addChartToExistingArea(0 /* top */, chromeBands.height);
   chromeBands.addChartSources(
-      [new Events(model.system.memory, 7 /* kGpuFreq */, 7 /* kGpuFreq */)],
+      [new Events(
+          model.system.memory, 7 /* kGpuFrequency */, 7 /* kGpuFrequency */)],
       false /* smooth */);
 
 

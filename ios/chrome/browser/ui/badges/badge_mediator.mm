@@ -89,7 +89,7 @@
 - (void)updateInfobarBadge:(id<BadgeItem>)badgeItem {
   for (id<BadgeItem> item in self.badges) {
     if (item.badgeType == badgeItem.badgeType) {
-      item.accepted = badgeItem.accepted;
+      item.badgeState = badgeItem.badgeState;
       [self updateBadgesShown];
       return;
     }

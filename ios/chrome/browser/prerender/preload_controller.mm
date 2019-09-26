@@ -198,6 +198,8 @@ class PreloadJavaScriptDialogPresenter : public web::JavaScriptDialogPresenter {
 
 @implementation PreloadController
 
+@synthesize prerenderedURL = prerenderedURL_;
+
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState {
   DCHECK(browserState);
   DCHECK_CURRENTLY_ON(web::WebThread::UI);

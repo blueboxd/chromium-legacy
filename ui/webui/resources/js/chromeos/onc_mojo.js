@@ -4,9 +4,8 @@
 
 /**
  * @fileoverview Utilities supporting network_config.mojom types. The strings
- * returned here should only be used for compatibility with the
- * networkingPrivate extension API and for debugging, they are not intended to
- * be user facing.
+ * returned in the getFooTypeString methods are used for looking up localized
+ * strings and for debugging. They are not intended to be drectly user facing.
  */
 
 class OncMojo {

@@ -31,7 +31,7 @@ function runTest() {
 
   setInvisible(container).then(() => {
     document.body.appendChild(container);
-    container.displayLock.update().then(
+    container.updateRendering().then(
       () => { finishTest("FAIL"); },
       (e) => { finishTest("PASS " + e.message); });
     container.remove();

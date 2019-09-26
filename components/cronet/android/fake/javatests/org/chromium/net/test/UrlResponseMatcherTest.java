@@ -51,7 +51,7 @@ public class UrlResponseMatcherTest {
                 new FakeUrlResponse.Builder().setResponseBody("TestBody".getBytes()).build();
         ResponseMatcher matcher = new UrlResponseMatcher(url, response);
 
-        FakeUrlResponse found = matcher.getMatchingResponse(url, null, null);
+        FakeUrlResponse found = matcher.getMatchingResponse(url, null, null, null);
 
         assertNotNull(found);
         assertEquals(found, response);
@@ -66,7 +66,8 @@ public class UrlResponseMatcherTest {
                 new FakeUrlResponse.Builder().setResponseBody("TestBody".getBytes()).build();
         ResponseMatcher matcher = new UrlResponseMatcher(url, response);
 
-        FakeUrlResponse notFound = matcher.getMatchingResponse(urlWithoutResponse, null, null);
+        FakeUrlResponse notFound =
+                matcher.getMatchingResponse(urlWithoutResponse, null, null, null);
 
         assertNull(notFound);
     }

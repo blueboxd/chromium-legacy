@@ -151,7 +151,7 @@ int Version::CompareTo(const Version& other) const {
   return CompareVersionComponents(components_, other.components_);
 }
 
-const std::string Version::GetString() const {
+std::string Version::GetString() const {
   DCHECK(IsValid());
   std::string version_str;
   size_t count = components_.size();

@@ -8,6 +8,7 @@ import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityOptions;
+import android.app.Application;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
@@ -28,7 +29,6 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.PowerManager;
 import android.os.Process;
-import android.os.StatFs;
 import android.os.StrictMode;
 import android.os.UserManager;
 import android.provider.Settings;
@@ -51,7 +51,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.annotations.VerifiesOnLollipop;
+import org.chromium.base.annotations.VerifiesOnLollipopMR1;
+import org.chromium.base.annotations.VerifiesOnM;
 import org.chromium.base.annotations.VerifiesOnN;
+import org.chromium.base.annotations.VerifiesOnO;
+import org.chromium.base.annotations.VerifiesOnP;
 
 import java.io.UnsupportedEncodingException;
 
@@ -61,10 +65,170 @@ import java.io.UnsupportedEncodingException;
  * Do not inline because we use many new APIs, and if they are inlined, they could cause dex
  * validation errors on low Android versions.
  */
-@VerifiesOnLollipop
-@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 public class ApiCompatibilityUtils {
     private ApiCompatibilityUtils() {
+    }
+
+    @VerifiesOnP
+    @TargetApi(Build.VERSION_CODES.P)
+    private static class ApisP {
+        static String getProcessName() {
+            return Application.getProcessName();
+        }
+    }
+
+    @VerifiesOnO
+    @TargetApi(Build.VERSION_CODES.O)
+    private static class ApisO {
+        static void initNotificationSettingsIntent(Intent intent, String packageName) {
+            intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
+            intent.putExtra(Settings.EXTRA_APP_PACKAGE, packageName);
+        }
+
+        static void disableSmartSelectionTextClassifier(TextView textView) {
+            textView.setTextClassifier(TextClassifier.NO_OP);
+        }
+
+        static Bundle createLaunchDisplayIdActivityOptions(int displayId) {
+            ActivityOptions options = ActivityOptions.makeBasic();
+            options.setLaunchDisplayId(displayId);
+            return options.toBundle();
+        }
+    }
+
+    @VerifiesOnN
+    @TargetApi(Build.VERSION_CODES.N)
+    private static class ApisN {
+        static String toHtml(Spanned spanned, int option) {
+            return Html.toHtml(spanned, option);
+        }
+
+        // This class is sufficiently small that it's fine if it doesn't verify for N devices.
+        @TargetApi(Build.VERSION_CODES.N_MR1)
+        static boolean isDemoUser() {
+            UserManager userManager =
+                    (UserManager) ContextUtils.getApplicationContext().getSystemService(
+                            Context.USER_SERVICE);
+            return userManager.isDemoUser();
+        }
+
+        static String getLocale(InputMethodSubtype inputMethodSubType) {
+            return inputMethodSubType.getLanguageTag();
+        }
+
+        static boolean isInMultiWindowMode(Activity activity) {
+            return activity.isInMultiWindowMode();
+        }
+    }
+
+    @VerifiesOnM
+    @TargetApi(Build.VERSION_CODES.M)
+    private static class ApisM {
+        public static void setStatusBarIconColor(View rootView, boolean useDarkIcons) {
+            int systemUiVisibility = rootView.getSystemUiVisibility();
+            if (useDarkIcons) {
+                systemUiVisibility |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            } else {
+                systemUiVisibility &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+            }
+            rootView.setSystemUiVisibility(systemUiVisibility);
+        }
+    }
+
+    @VerifiesOnLollipopMR1
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP_MR1)
+    private static class ApisLmr1 {
+        static void setAccessibilityTraversalBefore(View view, int viewFocusedAfter) {
+            view.setAccessibilityTraversalBefore(viewFocusedAfter);
+        }
+    }
+
+    @VerifiesOnLollipop
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private static class ApisL {
+        static final int FLAG_ACTIVITY_NEW_DOCUMENT = Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
+
+        static void finishAndRemoveTask(Activity activity) {
+            activity.finishAndRemoveTask();
+        }
+
+        static void finishAfterTransition(Activity activity) {
+            activity.finishAfterTransition();
+        }
+
+        static void setElevation(PopupWindow popupWindow, float elevationValue) {
+            popupWindow.setElevation(elevationValue);
+        }
+
+        static boolean isInteractive(PowerManager manager) {
+            return manager.isInteractive();
+        }
+
+        static boolean shouldSkipFirstUseHints(ContentResolver contentResolver) {
+            return Settings.Secure.getInt(contentResolver, Settings.Secure.SKIP_FIRST_USE_HINTS, 0)
+                    != 0;
+        }
+
+        static void setTaskDescription(Activity activity, String title, Bitmap icon, int color) {
+            ActivityManager.TaskDescription description =
+                    new ActivityManager.TaskDescription(title, icon, color);
+            activity.setTaskDescription(description);
+        }
+
+        static void setStatusBarColor(Window window, int statusBarColor) {
+            // If both system bars are black, we can remove these from our layout,
+            // removing or shrinking the SurfaceFlinger overlay required for our views.
+            // This benefits battery usage on L and M.  However, this no longer provides a battery
+            // benefit as of N and starts to cause flicker bugs on O, so don't bother on O and up.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && statusBarColor == Color.BLACK
+                    && window.getNavigationBarColor() == Color.BLACK) {
+                window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            } else {
+                window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+            }
+            window.setStatusBarColor(statusBarColor);
+        }
+
+        static Drawable getDrawableForDensity(Resources res, int id, int density) {
+            // On newer OS versions, this check is done within getDrawableForDensity().
+            if (density == 0) {
+                return res.getDrawable(id, null);
+            }
+            return res.getDrawableForDensity(id, density, null);
+        }
+
+        static void setImageTintList(ImageView view, @Nullable ColorStateList tintList) {
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
+                // Work around broken workaround in ImageViewCompat, see
+                // https://crbug.com/891609#c3.
+                if (tintList != null && view.getImageTintMode() == null) {
+                    view.setImageTintMode(PorterDuff.Mode.SRC_IN);
+                }
+            }
+            ImageViewCompat.setImageTintList(view, tintList);
+
+            if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
+                // Work around that the tint list is not cleared when setting tint list to null on L
+                // in some cases. See https://crbug.com/983686.
+                if (tintList == null) view.refreshDrawableState();
+            }
+        }
+
+        static Drawable getUserBadgedIcon(PackageManager packageManager, Drawable drawable) {
+            return packageManager.getUserBadgedIcon(drawable, Process.myUserHandle());
+        }
+
+        static Drawable getUserBadgedDrawableForDensity(
+                Drawable drawable, Rect badgeLocation, int density) {
+            PackageManager packageManager =
+                    ContextUtils.getApplicationContext().getPackageManager();
+            return packageManager.getUserBadgedDrawableForDensity(
+                    drawable, Process.myUserHandle(), badgeLocation, density);
+        }
+
+        static ColorFilter getColorFilter(Drawable drawable) {
+            return drawable.getColorFilter();
+        }
     }
 
     /**
@@ -114,36 +278,20 @@ public class ApiCompatibilityUtils {
         try {
             return str.getBytes("UTF-8");
         } catch (UnsupportedEncodingException e) {
-            throw new IllegalStateException("UTF-8 encoding not available.", e);
+            throw new IllegalStateException(e);
         }
-    }
-
-    /**
-     * @return True if the running version of the Android supports printing.
-     */
-    public static boolean isPrintingSupported() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT;
-    }
-
-    /**
-     * @return True if the running version of the Android supports elevation. Elevation of a view
-     * determines the visual appearance of its shadow.
-     */
-    public static boolean isElevationSupported() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP;
     }
 
     /**
      * @see android.text.Html#toHtml(Spanned, int)
      * @param option is ignored on below N
      */
-    @VerifiesOnN
+    @SuppressWarnings("deprecation")
     public static String toHtml(Spanned spanned, int option) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return Html.toHtml(spanned, option);
-        } else {
-            return Html.toHtml(spanned);
+            return ApisN.toHtml(spanned, option);
         }
+        return Html.toHtml(spanned);
     }
 
     // These methods have a new name, and the old name is deprecated.
@@ -153,7 +301,7 @@ public class ApiCompatibilityUtils {
      */
     public static void finishAndRemoveTask(Activity activity) {
         if (Build.VERSION.SDK_INT > Build.VERSION_CODES.LOLLIPOP) {
-            activity.finishAndRemoveTask();
+            ApisL.finishAndRemoveTask(activity);
         } else if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
             // crbug.com/395772 : Fallback for Activity.finishAndRemoveTask() failing.
             new FinishAndRemoveTaskWithRetry(activity).run();
@@ -165,39 +313,26 @@ public class ApiCompatibilityUtils {
     /**
      * Set elevation if supported.
      */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static boolean setElevation(View view, float elevationValue) {
-        if (!isElevationSupported()) return false;
-
-        view.setElevation(elevationValue);
-        return true;
-    }
-
-    /**
-     * Set elevation if supported.
-     */
-    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-    public static boolean setElevation(PopupWindow window, float elevationValue) {
-        if (!isElevationSupported()) return false;
-
-        window.setElevation(elevationValue);
-        return true;
+    public static void setElevation(PopupWindow window, float elevationValue) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            ApisL.setElevation(window, elevationValue);
+        }
     }
 
     /**
      *  Gets an intent to start the Android system notification settings activity for an app.
      *
-     *  @param context Context of the app whose settings intent should be returned.
      */
-    public static Intent getNotificationSettingsIntent(Context context) {
+    public static Intent getNotificationSettingsIntent() {
         Intent intent = new Intent();
+        String packageName = ContextUtils.getApplicationContext().getPackageName();
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            intent.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS);
-            intent.putExtra(Settings.EXTRA_APP_PACKAGE, context.getPackageName());
+            ApisO.initNotificationSettingsIntent(intent, packageName);
         } else {
             intent.setAction("android.settings.ACTION_APP_NOTIFICATION_SETTINGS");
-            intent.putExtra("app_package", context.getPackageName());
-            intent.putExtra("app_uid", context.getApplicationInfo().uid);
+            intent.putExtra("app_package", packageName);
+            intent.putExtra(
+                    "app_uid", ContextUtils.getApplicationContext().getApplicationInfo().uid);
         }
         return intent;
     }
@@ -214,7 +349,7 @@ public class ApiCompatibilityUtils {
 
         @Override
         public void run() {
-            mActivity.finishAndRemoveTask();
+            ApisL.finishAndRemoveTask(mActivity);
             mTryCount++;
             if (!mActivity.isFinishing()) {
                 if (mTryCount < MAX_TRY_COUNT) {
@@ -230,22 +365,21 @@ public class ApiCompatibilityUtils {
      * @return Whether the screen of the device is interactive.
      */
     @SuppressWarnings("deprecation")
-    public static boolean isInteractive(Context context) {
-        PowerManager manager = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT_WATCH) {
-            return manager.isInteractive();
-        } else {
-            return manager.isScreenOn();
+    public static boolean isInteractive() {
+        PowerManager manager = (PowerManager) ContextUtils.getApplicationContext().getSystemService(
+                Context.POWER_SERVICE);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            return ApisL.isInteractive(manager);
         }
+        return manager.isScreenOn();
     }
 
     @SuppressWarnings("deprecation")
     public static int getActivityNewDocumentFlag() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return Intent.FLAG_ACTIVITY_NEW_DOCUMENT;
-        } else {
-            return Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET;
+            return ApisL.FLAG_ACTIVITY_NEW_DOCUMENT;
         }
+        return Intent.FLAG_ACTIVITY_CLEAR_WHEN_TASK_RESET;
     }
 
     /**
@@ -253,11 +387,9 @@ public class ApiCompatibilityUtils {
      */
     public static boolean shouldSkipFirstUseHints(ContentResolver contentResolver) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return Settings.Secure.getInt(
-                    contentResolver, Settings.Secure.SKIP_FIRST_USE_HINTS, 0) != 0;
-        } else {
-            return false;
+            return ApisL.shouldSkipFirstUseHints(contentResolver);
         }
+        return false;
     }
 
     /**
@@ -271,9 +403,7 @@ public class ApiCompatibilityUtils {
         assert Color.alpha(color) == 255;
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            ActivityManager.TaskDescription description =
-                    new ActivityManager.TaskDescription(title, icon, color);
-            activity.setTaskDescription(description);
+            ApisL.setTaskDescription(activity, title, icon, color);
         }
     }
 
@@ -281,19 +411,9 @@ public class ApiCompatibilityUtils {
      * @see android.view.Window#setStatusBarColor(int color).
      */
     public static void setStatusBarColor(Window window, int statusBarColor) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
-
-        // If both system bars are black, we can remove these from our layout,
-        // removing or shrinking the SurfaceFlinger overlay required for our views.
-        // This benefits battery usage on L and M.  However, this no longer provides a battery
-        // benefit as of N and starts to cause flicker bugs on O, so don't bother on O and up.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O && statusBarColor == Color.BLACK
-                && window.getNavigationBarColor() == Color.BLACK) {
-            window.clearFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
-        } else {
-            window.addFlags(WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            ApisL.setStatusBarColor(window, statusBarColor);
         }
-        window.setStatusBarColor(statusBarColor);
     }
 
     /**
@@ -304,15 +424,9 @@ public class ApiCompatibilityUtils {
      * @param useDarkIcons Whether the status bar icons should be dark.
      */
     public static void setStatusBarIconColor(View rootView, boolean useDarkIcons) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
-
-        int systemUiVisibility = rootView.getSystemUiVisibility();
-        if (useDarkIcons) {
-            systemUiVisibility |= View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
-        } else {
-            systemUiVisibility &= ~View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            ApisM.setStatusBarIconColor(rootView, useDarkIcons);
         }
-        rootView.setSystemUiVisibility(systemUiVisibility);
     }
 
     /**
@@ -320,35 +434,12 @@ public class ApiCompatibilityUtils {
      * TODO(ltian): use {@link AppCompatResources} to parse drawable to prevent fail on
      * {@link VectorDrawable}. (http://crbug.com/792129)
      */
-    @SuppressWarnings("deprecation")
     public static Drawable getDrawable(Resources res, int id) throws NotFoundException {
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        try {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                return res.getDrawable(id, null);
-            } else {
-                return res.getDrawable(id);
-            }
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        return getDrawableForDensity(res, id, 0);
     }
 
-    public static void setImageTintList(
-            @NonNull ImageView view, @Nullable ColorStateList tintList) {
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
-            // Work around broken workaround in ImageViewCompat, see https://crbug.com/891609#c3.
-            if (tintList != null && view.getImageTintMode() == null) {
-                view.setImageTintMode(PorterDuff.Mode.SRC_IN);
-            }
-        }
-        ImageViewCompat.setImageTintList(view, tintList);
-
-        if (Build.VERSION.SDK_INT == Build.VERSION_CODES.LOLLIPOP) {
-            // Work around that the tint list is not cleared when setting tint list to null on L in
-            // some cases. See https://crbug.com/983686.
-            if (tintList == null) view.refreshDrawableState();
-        }
+    public static void setImageTintList(ImageView view, @Nullable ColorStateList tintList) {
+        ApisL.setImageTintList(view, tintList);
     }
 
     /**
@@ -356,10 +447,17 @@ public class ApiCompatibilityUtils {
      */
     @SuppressWarnings("deprecation")
     public static Drawable getDrawableForDensity(Resources res, int id, int density) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return res.getDrawableForDensity(id, density, null);
-        } else {
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
+        try {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                return ApisL.getDrawableForDensity(res, id, density);
+            } else if (density == 0) {
+                // On newer OS versions, this check is done within getDrawableForDensity().
+                return res.getDrawable(id);
+            }
             return res.getDrawableForDensity(id, density);
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
     }
 
@@ -368,7 +466,7 @@ public class ApiCompatibilityUtils {
      */
     public static void finishAfterTransition(Activity activity) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            activity.finishAfterTransition();
+            ApisL.finishAfterTransition(activity);
         } else {
             activity.finish();
         }
@@ -381,7 +479,7 @@ public class ApiCompatibilityUtils {
         Drawable drawable = getDrawable(context.getResources(), id);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
             PackageManager packageManager = context.getPackageManager();
-            drawable = packageManager.getUserBadgedIcon(drawable, Process.myUserHandle());
+            drawable = ApisL.getUserBadgedIcon(packageManager, drawable);
         }
         return drawable;
     }
@@ -391,11 +489,9 @@ public class ApiCompatibilityUtils {
      * UserHandle user, Rect badgeLocation, int badgeDensity).
      */
     public static Drawable getUserBadgedDrawableForDensity(
-            Context context, Drawable drawable, Rect badgeLocation, int density) {
+            Drawable drawable, Rect badgeLocation, int density) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            PackageManager packageManager = context.getPackageManager();
-            return packageManager.getUserBadgedDrawableForDensity(
-                    drawable, Process.myUserHandle(), badgeLocation, density);
+            drawable = ApisL.getUserBadgedDrawableForDensity(drawable, badgeLocation, density);
         }
         return drawable;
     }
@@ -405,23 +501,17 @@ public class ApiCompatibilityUtils {
      */
     @SuppressWarnings("deprecation")
     public static int getColor(Resources res, int id) throws NotFoundException {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            return res.getColor(id, null);
-        } else {
-            return res.getColor(id);
-        }
+        return res.getColor(id);
     }
 
     /**
      * @see android.graphics.drawable.Drawable#getColorFilter().
      */
-    @SuppressWarnings("NewApi")
     public static ColorFilter getColorFilter(Drawable drawable) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            return drawable.getColorFilter();
-        } else {
-            return null;
+            return ApisL.getColorFilter(drawable);
         }
+        return null;
     }
 
     /**
@@ -429,60 +519,17 @@ public class ApiCompatibilityUtils {
      */
     @SuppressWarnings("deprecation")
     public static void setTextAppearance(TextView view, int id) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            view.setTextAppearance(id);
-        } else {
-            view.setTextAppearance(view.getContext(), id);
-        }
+        // setTextAppearance(id) is the undeprecated version of this, but it just calls the
+        // deprecated one, so there is no benefit to using the non-deprecated one until we can
+        // drop support for it entirely (new one was added in M).
+        view.setTextAppearance(view.getContext(), id);
     }
 
     /**
-     * See {@link android.os.StatFs#getAvailableBlocksLong}.
-     */
-    @SuppressWarnings("deprecation")
-    public static long getAvailableBlocks(StatFs statFs) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            return statFs.getAvailableBlocksLong();
-        } else {
-            return statFs.getAvailableBlocks();
-        }
-    }
-
-    /**
-     * See {@link android.os.StatFs#getBlockCount}.
-     */
-    @SuppressWarnings("deprecation")
-    public static long getBlockCount(StatFs statFs) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            return statFs.getBlockCountLong();
-        } else {
-            return statFs.getBlockCount();
-        }
-    }
-
-    /**
-     * See {@link android.os.StatFs#getBlockSize}.
-     */
-    @SuppressWarnings("deprecation")
-    public static long getBlockSize(StatFs statFs) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            return statFs.getBlockSizeLong();
-        } else {
-            return statFs.getBlockSize();
-        }
-    }
-
-    /**
-     * @param context The Android context, used to retrieve the UserManager system service.
      * @return Whether the device is running in demo mode.
      */
-    @SuppressWarnings("NewApi")
-    public static boolean isDemoUser(Context context) {
-        // UserManager#isDemoUser() is only available in Android NMR1+.
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N_MR1) return false;
-
-        UserManager userManager = (UserManager) context.getSystemService(Context.USER_SERVICE);
-        return userManager.isDemoUser();
+    public static boolean isDemoUser() {
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && ApisN.isDemoUser();
     }
 
     /**
@@ -505,10 +552,9 @@ public class ApiCompatibilityUtils {
     @SuppressWarnings("deprecation")
     public static String getLocale(InputMethodSubtype inputMethodSubType) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
-            return inputMethodSubType.getLanguageTag();
-        } else {
-            return inputMethodSubType.getLocale();
+            return ApisN.getLocale(inputMethodSubType);
         }
+        return inputMethodSubType.getLocale();
     }
 
     /**
@@ -531,21 +577,20 @@ public class ApiCompatibilityUtils {
      * @return Whether or not {@code activity} is currently in Android N+ multi-window mode.
      */
     public static boolean isInMultiWindowMode(Activity activity) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) {
-            return false;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            return ApisN.isInMultiWindowMode(activity);
         }
-        return activity.isInMultiWindowMode();
+        return false;
     }
 
     /**
      * Disables the Smart Select {@link TextClassifier} for the given {@link TextView} instance.
      * @param textView The {@link TextView} that should have its classifier disabled.
      */
-    @TargetApi(Build.VERSION_CODES.O)
     public static void disableSmartSelectionTextClassifier(TextView textView) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
-
-        textView.setTextClassifier(TextClassifier.NO_OP);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            ApisO.disableSmartSelectionTextClassifier(textView);
+        }
     }
 
     /**
@@ -554,11 +599,10 @@ public class ApiCompatibilityUtils {
      * @return The created bundle, or null if unsupported.
      */
     public static Bundle createLaunchDisplayIdActivityOptions(int displayId) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return null;
-
-        ActivityOptions options = ActivityOptions.makeBasic();
-        options.setLaunchDisplayId(displayId);
-        return options.toBundle();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            return ApisO.createLaunchDisplayIdActivityOptions(displayId);
+        }
+        return null;
     }
 
     /**
@@ -566,7 +610,7 @@ public class ApiCompatibilityUtils {
      */
     public static void setAccessibilityTraversalBefore(View view, int viewFocusedAfter) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
-            view.setAccessibilityTraversalBefore(viewFocusedAfter);
+            ApisLmr1.setAccessibilityTraversalBefore(view, viewFocusedAfter);
         }
     }
 
@@ -619,6 +663,21 @@ public class ApiCompatibilityUtils {
                 == (EditorInfo.TYPE_CLASS_TEXT | EditorInfo.TYPE_TEXT_VARIATION_WEB_PASSWORD)
                 || variation
                 == (EditorInfo.TYPE_CLASS_NUMBER | EditorInfo.TYPE_NUMBER_VARIATION_PASSWORD);
+    }
+
+    // Access this via ContextUtils.getProcessName().
+    static String getProcessName() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            return ApisP.getProcessName();
+        }
+        try {
+            Class<?> activityThreadClazz = Class.forName("android.app.ActivityThread");
+            return (String) activityThreadClazz.getMethod("currentProcessName").invoke(null);
+        } catch (Exception e) {
+            // If fallback logic is ever needed, refer to:
+            // https://chromium-review.googlesource.com/c/chromium/src/+/905563/1
+            throw new RuntimeException(e);
+        }
     }
 
     private static class LayerDrawableCompat extends LayerDrawable {

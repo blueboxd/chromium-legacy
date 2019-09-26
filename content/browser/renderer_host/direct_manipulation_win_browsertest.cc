@@ -85,7 +85,7 @@ IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest,
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   LegacyRenderWidgetHostHWND* lrwhh = GetLegacyRenderWidgetHostHWND();
   ASSERT_TRUE(lrwhh);
@@ -137,7 +137,7 @@ IN_PROC_BROWSER_TEST_P(DirectManipulationBrowserTest, EventConvert) {
   if (base::win::GetVersion() < base::win::Version::WIN10)
     return;
 
-  NavigateToURL(shell(), GURL(url::kAboutBlankURL));
+  EXPECT_TRUE(NavigateToURL(shell(), GURL(url::kAboutBlankURL)));
 
   LegacyRenderWidgetHostHWND* lrwhh = GetLegacyRenderWidgetHostHWND();
   ASSERT_TRUE(lrwhh);

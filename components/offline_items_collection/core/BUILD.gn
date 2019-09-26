@@ -91,11 +91,13 @@ if (is_android) {
       "android/java/src/org/chromium/components/offline_items_collection/UpdateDelta.java",
       "android/java/src/org/chromium/components/offline_items_collection/VisualsCallback.java",
     ]
+    annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
     srcjar_deps = [ ":jni_enums" ]
 
     deps = [
       "//base:base_java",
+      "//base:jni_java",
       "//third_party/android_deps:androidx_annotation_annotation_java",
     ]
   }

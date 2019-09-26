@@ -15,8 +15,6 @@
 #include "net/cookies/cookie_change_dispatcher.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 
-@class CWVSyncController;
-
 namespace ios_web_view {
 class WebViewBrowserState;
 }
@@ -54,10 +52,6 @@ class IOSWebViewSigninClient : public SigninClient {
       GaiaAuthConsumer* consumer,
       gaia::GaiaSource source) override;
 
-  // CWVSyncController setter/getter.
-  void SetSyncController(CWVSyncController* sync_controller);
-  CWVSyncController* GetSyncController() const;
-
  private:
   // Helper to delay callbacks until connection becomes online again.
   std::unique_ptr<WaitForNetworkCallbackHelper> network_callback_helper_;
@@ -68,10 +62,6 @@ class IOSWebViewSigninClient : public SigninClient {
   scoped_refptr<content_settings::CookieSettings> cookie_settings_;
   // Used to add and remove content settings observers.
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-  // Used by WebViewDeviceAccountsProviderImpl to fetch access
-  // tokens. Also used to notify of signout events. Held weak so this class
-  // does not determine |sync_controller_|'s lifetime.
-  __weak CWVSyncController* sync_controller_ = nil;
 
   DISALLOW_COPY_AND_ASSIGN(IOSWebViewSigninClient);
 };

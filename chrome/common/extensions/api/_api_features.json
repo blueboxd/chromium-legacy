@@ -662,6 +662,10 @@
     "contexts": ["blessed_extension"],
     "disallow_for_service_workers": true
   }],
+  "printingMetrics": {
+    "dependencies": ["permission:printingMetrics"],
+    "contexts": ["blessed_extension"]
+  },
   "privacy": {
     "dependencies": ["permission:privacy"],
     "contexts": ["blessed_extension"]

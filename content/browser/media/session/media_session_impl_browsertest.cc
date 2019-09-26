@@ -2712,8 +2712,9 @@ IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
 #endif
 IN_PROC_BROWSER_TEST_F(MediaSessionImplBrowserTest,
                        MAYBE_PositionStateRouteWithOnePlayer) {
-  NavigateToURL(shell(), embedded_test_server()->GetURL(
-                             "example.com", "/media/session/position.html"));
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("example.com",
+                                              "/media/session/position.html")));
 
   auto* main_frame = shell()->web_contents()->GetMainFrame();
   const base::TimeDelta duration = base::TimeDelta::FromMilliseconds(6060);

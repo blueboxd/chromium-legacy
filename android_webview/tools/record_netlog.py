@@ -40,8 +40,8 @@ def _WaitUntilCtrlC():
 
 
 def CheckAppNotRunning(device, package_name, force):
-  processes = device.ListProcesses(package_name)
-  if processes:
+  is_running = bool(device.GetApplicationPids(package_name))
+  if is_running:
     msg = ('Netlog requires setting commandline flags, which only works if the '
            'application ({}) is not already running. Please kill the app and '
            'restart the script.'.format(

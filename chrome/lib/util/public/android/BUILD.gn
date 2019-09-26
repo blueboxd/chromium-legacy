@@ -4,30 +4,9 @@
 
 import("//build/config/android/rules.gni")
 
-android_library("java") {
+# Temporary target until clank removes this as a dependency.
+java_group("java") {
   deps = [
-    "//base:base_java",
-    "//base:jni_java",
-    "//content/public/android:content_java",
-    "//third_party/android_deps:com_android_support_collections_java",
-    "//third_party/android_deps:com_android_support_support_compat_java",
-    "//third_party/android_deps:com_android_support_support_core_utils_java",
-  ]
-  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  java_files = [
-    "java/src/org/chromium/chrome/browser/util/BitmapCache.java",
-    "java/src/org/chromium/chrome/browser/util/ConversionUtils.java",
-    "java/src/org/chromium/chrome/browser/util/FileSizeUtil.java",
-    "java/src/org/chromium/chrome/browser/util/KeyNavigationUtil.java",
-    "java/src/org/chromium/chrome/browser/util/MathUtils.java",
-    "java/src/org/chromium/chrome/browser/util/ChromeFileProvider.java",
-    "java/src/org/chromium/chrome/browser/util/UrlConstants.java",
-    "java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
-  ]
-}
-
-generate_jni("jni_headers") {
-  sources = [
-    "java/src/org/chromium/chrome/browser/util/UrlUtilities.java",
+    "//chrome/browser/util/android:java",
   ]
 }

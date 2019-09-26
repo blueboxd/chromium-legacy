@@ -290,13 +290,13 @@ void ContentTranslateDriver::OnPageAway(int page_seq_no) {
   pages_.erase(page_seq_no);
 }
 
-void ContentTranslateDriver::AddBinding(
-    translate::mojom::ContentTranslateDriverRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void ContentTranslateDriver::AddReceiver(
+    mojo::PendingReceiver<translate::mojom::ContentTranslateDriver> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void ContentTranslateDriver::RegisterPage(
-    translate::mojom::PagePtr page,
+    mojo::PendingRemote<translate::mojom::Page> page,
     const translate::LanguageDetectionDetails& details,
     const bool page_needs_translation) {
   // If we have a language histogram (i.e. we're not in incognito), update it
@@ -304,8 +304,8 @@ void ContentTranslateDriver::RegisterPage(
   if (language_histogram_ && details.is_cld_reliable)
     language_histogram_->OnPageVisited(details.cld_language);
 
-  pages_[++next_page_seq_no_] = std::move(page);
-  pages_[next_page_seq_no_].set_connection_error_handler(
+  pages_[++next_page_seq_no_].Bind(std::move(page));
+  pages_[next_page_seq_no_].set_disconnect_handler(
       base::BindOnce(&ContentTranslateDriver::OnPageAway,
                      base::Unretained(this), next_page_seq_no_));
   translate_manager_->set_current_seq_no(next_page_seq_no_);

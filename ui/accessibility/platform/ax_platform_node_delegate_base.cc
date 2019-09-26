@@ -225,6 +225,12 @@ AXPlatformNode* AXPlatformNodeDelegateBase::GetFromNodeID(int32_t id) {
   return nullptr;
 }
 
+AXPlatformNode* AXPlatformNodeDelegateBase::GetFromTreeIDAndNodeID(
+    const ui::AXTreeID& ax_tree_id,
+    int32_t id) {
+  return nullptr;
+}
+
 int AXPlatformNodeDelegateBase::GetIndexInParent() {
   AXPlatformNodeDelegate* parent = GetParentDelegate();
   if (!parent)

@@ -240,10 +240,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   BlameContext* GetFrameBlameContext() override;
 
-  WebEffectiveConnectionType GetEffectiveConnectionType() override;
-  void SetEffectiveConnectionTypeForTesting(
-      WebEffectiveConnectionType) override;
-
   WebURLRequest::PreviewsState GetPreviewsStateForFrame() const override;
 
   KURL OverrideFlashEmbedWithHTML(const KURL&) override;

@@ -9,13 +9,6 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-typedef NS_ENUM(NSInteger, CWVStopSyncReason) {
-  // When sync is stopped explicitly via |stopSyncAndClearIdentity|.
-  CWVStopSyncReasonClient = 0,
-  // When sync was reset from another device.
-  CWVStopSyncReasonServer = 1
-};
-
 @class CWVSyncController;
 
 // Delegate of CWVSyncController.
@@ -23,8 +16,9 @@ typedef NS_ENUM(NSInteger, CWVStopSyncReason) {
 
 @optional
 
-// Called when sync has been started. Check |syncController|'s |needsPassphrase|
-// property to see if |unlockWithPassphrase:| is necessary.
+// Called when sync has started. Check |syncController|'s |passphraseNeeded|
+// property to see if |unlockWithPassphrase:| is necessary, and also check
+// |consentNeeded| to see if |consent| is necessary.
 - (void)syncControllerDidStartSync:(CWVSyncController*)syncController;
 
 // Called when sync fails. |error|'s code is a CWVSyncError.
@@ -32,9 +26,8 @@ typedef NS_ENUM(NSInteger, CWVStopSyncReason) {
 - (void)syncController:(CWVSyncController*)syncController
       didFailWithError:(NSError*)error;
 
-// Called after sync was stopped. |reason| Indicates why sync was stopped.
-- (void)syncController:(CWVSyncController*)syncController
-    didStopSyncWithReason:(CWVStopSyncReason)reason;
+// Called after sync has stopped.
+- (void)syncControllerDidStopSync:(CWVSyncController*)syncController;
 
 @end
 

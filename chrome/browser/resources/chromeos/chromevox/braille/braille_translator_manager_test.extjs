@@ -107,7 +107,7 @@ TEST_F('ChromeVoxBrailleTranslatorManagerTest', 'testRefreshWithChange',
     assertNotEquals(null, this.manager.getExpandingTranslator());
     this.addChangeListener(function() {
       assertEquals('en-UEB-g2', this.manager.getDefaultTranslator().table.id);
-      assertEquals('en-UEB-g1',
+      assertEquals('en-US-comp8',
                    this.manager.getUncontractedTranslator().table.id);
     });
     this.manager.refresh('en-UEB-g2');

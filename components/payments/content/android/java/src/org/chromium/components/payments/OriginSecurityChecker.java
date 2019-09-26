@@ -5,6 +5,7 @@
 package org.chromium.components.payments;
 
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 /** Helper for origin security. */
 @JNINamespace("payments")
@@ -17,7 +18,7 @@ public class OriginSecurityChecker {
      * @return Whether the origin of the URL is secure.
      */
     public static boolean isOriginSecure(String url) {
-        return nativeIsOriginSecure(url);
+        return OriginSecurityCheckerJni.get().isOriginSecure(url);
     }
 
     /**
@@ -27,11 +28,14 @@ public class OriginSecurityChecker {
      * @return Whether the scheme of the URL is cryptographic.
      */
     public static boolean isSchemeCryptographic(String url) {
-        return nativeIsSchemeCryptographic(url);
+        return OriginSecurityCheckerJni.get().isSchemeCryptographic(url);
     }
 
     private OriginSecurityChecker() {}
 
-    private static native boolean nativeIsOriginSecure(String url);
-    private static native boolean nativeIsSchemeCryptographic(String url);
+    @NativeMethods
+    interface Natives {
+        boolean isOriginSecure(String url);
+        boolean isSchemeCryptographic(String url);
+    }
 }

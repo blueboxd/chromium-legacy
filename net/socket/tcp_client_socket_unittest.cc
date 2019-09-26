@@ -604,7 +604,14 @@ TEST_F(TCPClientSocketTest, SuspendDuringRead) {
               IsError(ERR_NETWORK_IO_SUSPENDED));
 }
 
-TEST_F(TCPClientSocketTest, SuspendDuringWrite) {
+// TODO(https://crbug.com/1005042): close(socket_fd_) hangs on Fuchsia in this
+// test.
+#if defined(OS_FUCHSIA)
+#define MAYBE_SuspendDuringWrite DISABLED_SuspendDuringWrite
+#else
+#define MAYBE_SuspendDuringWrite SuspendDuringWrite
+#endif
+TEST_F(TCPClientSocketTest, MAYBE_SuspendDuringWrite) {
   std::unique_ptr<StreamSocket> accepted_socket;
   std::unique_ptr<TCPClientSocket> client_socket;
   CreateConnectedSockets(&accepted_socket, &client_socket);

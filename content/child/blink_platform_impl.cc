@@ -160,8 +160,6 @@ int ToMessageID(int resource_id) {
       return IDS_AX_MEDIA_TOUCHLESS_VOLUME_ACTION;
     case WebLocalizedString::kDetailsLabel:
       return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
-    case WebLocalizedString::kFileButtonNoFileSelectedLabel:
-      return IDS_FORM_FILE_NO_FILE_LABEL;
     case WebLocalizedString::kInputElementAltText:
       return IDS_FORM_INPUT_ALT;
     case WebLocalizedString::kMissingPluginText:
@@ -186,12 +184,6 @@ int ToMessageID(int resource_id) {
       return IDS_FORM_FILE_MULTIPLE_UPLOAD;
     case WebLocalizedString::kOtherColorLabel:
       return IDS_FORM_OTHER_COLOR_LABEL;
-    case WebLocalizedString::kOtherDateLabel:
-      return IDS_FORM_OTHER_DATE_LABEL;
-    case WebLocalizedString::kOtherMonthLabel:
-      return IDS_FORM_OTHER_MONTH_LABEL;
-    case WebLocalizedString::kOtherWeekLabel:
-      return IDS_FORM_OTHER_WEEK_LABEL;
     case WebLocalizedString::kOverflowMenuCaptionsSubmenuTitle:
       return IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS_SUBMENU_TITLE;
     case WebLocalizedString::kOverflowMenuUnmute:
@@ -206,34 +198,20 @@ int ToMessageID(int resource_id) {
       return IDS_FORM_PLACEHOLDER_FOR_YEAR_FIELD;
     case WebLocalizedString::kResetButtonDefaultLabel:
       return IDS_FORM_RESET_LABEL;
-    case WebLocalizedString::kSelectMenuListText:
-      return IDS_FORM_SELECT_MENU_LIST_TEXT;
     case WebLocalizedString::kSubmitButtonDefaultLabel:
       return IDS_FORM_SUBMIT_LABEL;
-    case WebLocalizedString::kThisMonthButtonLabel:
-      return IDS_FORM_THIS_MONTH_LABEL;
-    case WebLocalizedString::kThisWeekButtonLabel:
-      return IDS_FORM_THIS_WEEK_LABEL;
     case WebLocalizedString::kValidationBadInputForDateTime:
       return IDS_FORM_VALIDATION_BAD_INPUT_DATETIME;
     case WebLocalizedString::kValidationBadInputForNumber:
       return IDS_FORM_VALIDATION_BAD_INPUT_NUMBER;
     case WebLocalizedString::kValidationPatternMismatch:
       return IDS_FORM_VALIDATION_PATTERN_MISMATCH;
-    case WebLocalizedString::kValidationRangeOverflow:
-      return IDS_FORM_VALIDATION_RANGE_OVERFLOW;
     case WebLocalizedString::kValidationRangeOverflowDateTime:
       return IDS_FORM_VALIDATION_RANGE_OVERFLOW_DATETIME;
-    case WebLocalizedString::kValidationRangeUnderflow:
-      return IDS_FORM_VALIDATION_RANGE_UNDERFLOW;
     case WebLocalizedString::kValidationRangeUnderflowDateTime:
       return IDS_FORM_VALIDATION_RANGE_UNDERFLOW_DATETIME;
-    case WebLocalizedString::kValidationStepMismatch:
-      return IDS_FORM_VALIDATION_STEP_MISMATCH;
     case WebLocalizedString::kValidationStepMismatchCloseToLimit:
       return IDS_FORM_VALIDATION_STEP_MISMATCH_CLOSE_TO_LIMIT;
-    case WebLocalizedString::kValidationTooLong:
-      return IDS_FORM_VALIDATION_TOO_LONG;
     case WebLocalizedString::kValidationTooShort:
       return IDS_FORM_VALIDATION_TOO_SHORT;
     case WebLocalizedString::kValidationTooShortPlural:
@@ -260,8 +238,6 @@ int ToMessageID(int resource_id) {
       return IDS_FORM_VALIDATION_TYPE_MISMATCH_MULTIPLE_EMAIL;
     case WebLocalizedString::kValidationTypeMismatchForURL:
       return IDS_FORM_VALIDATION_TYPE_MISMATCH_URL;
-    case WebLocalizedString::kValidationValueMissing:
-      return IDS_FORM_VALIDATION_VALUE_MISSING;
     case WebLocalizedString::kValidationValueMissingForCheckbox:
       return IDS_FORM_VALIDATION_VALUE_MISSING_CHECKBOX;
     case WebLocalizedString::kValidationValueMissingForFile:
@@ -270,10 +246,6 @@ int ToMessageID(int resource_id) {
       return IDS_FORM_VALIDATION_VALUE_MISSING_MULTIPLE_FILE;
     case WebLocalizedString::kValidationValueMissingForRadio:
       return IDS_FORM_VALIDATION_VALUE_MISSING_RADIO;
-    case WebLocalizedString::kValidationValueMissingForSelect:
-      return IDS_FORM_VALIDATION_VALUE_MISSING_SELECT;
-    case WebLocalizedString::kWeekFormatTemplate:
-      return IDS_FORM_INPUT_WEEK_TEMPLATE;
     case WebLocalizedString::kWeekNumberLabel:
       return IDS_FORM_WEEK_NUMBER_LABEL;
     case WebLocalizedString::kTextTracksNoLabel:

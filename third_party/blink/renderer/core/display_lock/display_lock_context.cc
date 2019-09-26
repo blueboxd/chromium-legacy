@@ -36,7 +36,6 @@ namespace {
 double kDefaultLockTimeoutMs = 1000.;
 
 namespace rejection_names {
-const char* kElementIsUnlocked = "Element is unlocked.";
 const char* kExecutionContextDestroyed = "Execution context destroyed.";
 const char* kContainmentNotSatisfied =
     "Containment requirement is not satisfied.";
@@ -262,13 +261,11 @@ void DisplayLockContext::StartAcquire() {
   MarkPaintLayerNeedsRepaint();
 }
 
-ScriptPromise DisplayLockContext::update(ScriptState* script_state) {
-  TRACE_EVENT0("blink", "DisplayLockContext::update()");
-  // Reject if we're unlocked or disconnected.
-  if (state_ == kUnlocked || !ConnectedToView()) {
-    return GetRejectedPromise(script_state,
-                              rejection_names::kElementIsUnlocked);
-  }
+ScriptPromise DisplayLockContext::UpdateRendering(ScriptState* script_state) {
+  TRACE_EVENT0("blink", "DisplayLockContext::UpdateRendering");
+  // Immediately resolve if we're unlocked or disconnected.
+  if (state_ == kUnlocked || !ConnectedToView())
+    return GetResolvedPromise(script_state);
 
   // If we have a resolver, then we're at least updating already, just return
   // the same promise.

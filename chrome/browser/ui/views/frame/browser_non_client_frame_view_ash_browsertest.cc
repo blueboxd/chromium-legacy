@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller_test.h"
 #include "chrome/browser/ui/passwords/passwords_client_ui_delegate.h"
+#include "chrome/browser/ui/settings_window_manager_chromeos.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/toolbar/browser_actions_bar_browsertest.h"
 #include "chrome/browser/ui/views/bookmarks/bookmark_bar_view.h"
@@ -63,6 +64,8 @@
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_frame_toolbar_view.h"
 #include "chrome/browser/ui/views/web_apps/web_app_menu_button.h"
+#include "chrome/browser/web_applications/system_web_app_manager.h"
+#include "chrome/browser/web_applications/web_app_provider.h"
 #include "chrome/common/web_application_info.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -348,6 +351,28 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // Minimum window size should grow with the bookmark bar shown.
   gfx::Size min_window_size = frame_view->GetMinimumSize();
   EXPECT_GT(min_window_size.height(), min_height_no_bookmarks);
+}
+
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
+                       SettingsSystemWebAppHasMinimumWindowSize) {
+  // Install the Settings System Web App.
+  web_app::WebAppProvider::Get(browser()->profile())
+      ->system_web_app_manager()
+      .InstallSystemAppsForTesting();
+
+  // Open a settings window.
+  auto* settings_manager = chrome::SettingsWindowManager::GetInstance();
+  settings_manager->ShowOSSettings(browser()->profile());
+  Browser* settings_browser =
+      settings_manager->FindBrowserForProfile(browser()->profile());
+
+  // Try to set the bounds to a tiny value.
+  settings_browser->window()->SetBounds(gfx::Rect(1, 1));
+
+  // The window has a reasonable size.
+  gfx::Rect actual_bounds = settings_browser->window()->GetBounds();
+  EXPECT_LE(300, actual_bounds.width());
+  EXPECT_LE(100, actual_bounds.height());
 }
 
 // This is a regression test that session restore minimized browser should

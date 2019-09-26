@@ -115,16 +115,28 @@ class VIEWS_EXPORT FlexSpecification {
   // needs.
   FlexSpecification WithWeight(int weight) const;
 
+  // Makes a copy of this specification with a different alignment. The default
+  // is kStretch, which means the child view will always fill the bounds
+  // allocated for it; specifying kLeading, kTrailing, or kCenter will cause the
+  // view to grow to a maximum of its preferred size and then "float" to either
+  // the center, leading, or trailing edge of the allocated space.
+  FlexSpecification WithAlignment(LayoutAlignment alignment) const;
+
   const FlexRule& rule() const { return rule_; }
   int weight() const { return weight_; }
   int order() const { return order_; }
+  LayoutAlignment alignment() const { return alignment_; }
 
  private:
-  FlexSpecification(FlexRule rule, int order, int weight);
+  FlexSpecification(FlexRule rule,
+                    int order,
+                    int weight,
+                    LayoutAlignment alignment);
 
   FlexRule rule_;
   int order_ = 1;
   int weight_ = 0;
+  LayoutAlignment alignment_ = LayoutAlignment::kStretch;
 };
 
 // Represents insets in a single dimension.

@@ -17,6 +17,7 @@
       'chromeos-amd64-generic-google-rel': 'official_cros_chrome_sdk',
       'chromeos-betty-google-rel': 'official_cros_chrome_sdk_headless_ozone',
       'chromeos-betty-pi-arc-google-rel': 'official_cros_chrome_sdk_headless_ozone',
+      'chromeos-eve-google-rel': 'official_cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-google-rel': 'official_cros_chrome_sdk_headless_ozone',
       'linux-chromeos-google-rel': 'official_goma_chromeos_minimal_symbols',
       'linux-google-rel': 'official_goma',
@@ -77,6 +78,7 @@
     },
 
     'chromium.android.fyi': {
+      'Android WebView P FYI (rel)': 'android_release_bot_minimal_symbols_arm64_webview_google',
       'Memory Infra Tester': 'android_release_thumb_bot',
       'android-marshmallow-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86_resource_whitelisting',
       'android-pie-x86-fyi-rel': 'android_release_bot_minimal_symbols_x86',
@@ -653,7 +655,12 @@
       'android-marshmallow-x86-fyi-rel': 'android_release_trybot_x86_resource_whitelisting',
       'android-oreo-arm64-cts-networkservice-dbg': 'android_debug_trybot_arm64',
       'android-pie-arm64-rel': 'android_release_trybot_arm64_webview_google',
+      'android-webview-pie-arm64-fyi-rel': 'android_release_trybot_arm64_webview_google',
       'android-pie-x86-fyi-rel': 'android_release_trybot_x86',
+      'android-webview-marshmallow-arm64-dbg': 'android_release_trybot_arm64_webview_google',
+      'android-webview-nougat-arm64-dbg': 'android_release_trybot_arm64_webview_google',
+      'android-webview-oreo-arm64-dbg': 'android_release_trybot_arm64_webview_google',
+      'android-webview-pie-arm64-dbg': 'android_release_trybot_arm64_webview_google',
       'android_archive_rel_ng': 'android_release_trybot',
       'android_arm64_dbg_recipe': 'android_debug_trybot_compile_only_arm64',
       'android-binary-size': 'android_binary_size',
@@ -717,6 +724,7 @@
     'tryserver.chrome': {
       'chromeos-betty-chrome': 'official_cros_chrome_sdk_headless_ozone',
       'chromeos-betty-pi-arc-chrome': 'official_cros_chrome_sdk_headless_ozone',
+      'chromeos-eve-chrome': 'official_cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-chrome': 'official_cros_chrome_sdk_headless_ozone',
       'linux-chrome': 'official_goma',
       'linux-chromeos-chrome': 'official_goma_chromeos_minimal_symbols',

@@ -61,7 +61,6 @@
 #include "third_party/blink/renderer/core/probe/core_probes.h"
 #include "third_party/blink/renderer/core/trustedtypes/trusted_script_url.h"
 #include "third_party/blink/renderer/core/workers/global_scope_creation_params.h"
-#include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
 #include "third_party/blink/renderer/core/workers/worker_classic_script_loader.h"
 #include "third_party/blink/renderer/core/workers/worker_clients.h"
 #include "third_party/blink/renderer/core/workers/worker_reporting_proxy.h"
@@ -181,16 +180,18 @@ static std::string MojoEnumToString(T mojo_enum) {
 ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
     ServiceWorkerThread* thread,
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
+    std::unique_ptr<ServiceWorkerInstalledScriptsManager>
+        installed_scripts_manager,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin) {
   DCHECK_EQ(creation_params->off_main_thread_fetch_option,
             OffMainThreadWorkerScriptFetchOption::kEnabled);
 
+#if DCHECK_IS_ON()
   // If the script is being loaded via script streaming, the script is not yet
   // loaded.
-  if (thread->GetInstalledScriptsManager() &&
-      thread->GetInstalledScriptsManager()->IsScriptInstalled(
-          creation_params->script_url)) {
+  if (installed_scripts_manager && installed_scripts_manager->IsScriptInstalled(
+                                       creation_params->script_url)) {
     // CSP headers, referrer policy, and origin trial tokens will be provided by
     // the InstalledScriptsManager in EvaluateClassicScript().
     DCHECK(creation_params->outside_content_security_policy_headers.IsEmpty());
@@ -198,18 +199,22 @@ ServiceWorkerGlobalScope* ServiceWorkerGlobalScope::Create(
               creation_params->referrer_policy);
     DCHECK(creation_params->origin_trial_tokens->IsEmpty());
   }
+#endif  // DCHECK_IS_ON()
 
   return MakeGarbageCollected<ServiceWorkerGlobalScope>(
-      std::move(creation_params), thread, std::move(cache_storage_remote),
-      time_origin);
+      std::move(creation_params), thread, std::move(installed_scripts_manager),
+      std::move(cache_storage_remote), time_origin);
 }
 
 ServiceWorkerGlobalScope::ServiceWorkerGlobalScope(
     std::unique_ptr<GlobalScopeCreationParams> creation_params,
     ServiceWorkerThread* thread,
+    std::unique_ptr<ServiceWorkerInstalledScriptsManager>
+        installed_scripts_manager,
     mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote,
     base::TimeTicks time_origin)
     : WorkerGlobalScope(std::move(creation_params), thread, time_origin),
+      installed_scripts_manager_(std::move(installed_scripts_manager)),
       cache_storage_remote_(std::move(cache_storage_remote)) {
   // Create the idle timer. At this point the timer is not started. It will be
   // started by DidEvaluateScript().
@@ -292,14 +297,12 @@ void ServiceWorkerGlobalScope::RunInstalledClassicScript(
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(IsContextThread());
 
-  InstalledScriptsManager* installed_scripts_manager =
-      GetThread()->GetInstalledScriptsManager();
-  DCHECK(installed_scripts_manager);
-  DCHECK(installed_scripts_manager->IsScriptInstalled(script_url));
+  DCHECK(installed_scripts_manager_);
+  DCHECK(installed_scripts_manager_->IsScriptInstalled(script_url));
 
   // GetScriptData blocks until the script is received from the browser.
   std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
-      installed_scripts_manager->GetScriptData(script_url);
+      installed_scripts_manager_->GetScriptData(script_url);
   if (!script_data) {
     ReportingProxy().DidFailToLoadClassicScript();
     // This will eventually initiate worker thread termination. See
@@ -357,6 +360,11 @@ void ServiceWorkerGlobalScope::Dispose() {
   service_worker_host_.reset();
   receiver_.reset();
   WorkerGlobalScope::Dispose();
+}
+
+InstalledScriptsManager*
+ServiceWorkerGlobalScope::GetInstalledScriptsManager() {
+  return installed_scripts_manager_.get();
 }
 
 void ServiceWorkerGlobalScope::CountWorkerScript(size_t script_size,
@@ -695,6 +703,33 @@ bool ServiceWorkerGlobalScope::AddEventListenerInternal(
                                                      options);
 }
 
+bool ServiceWorkerGlobalScope::FetchClassicImportedScript(
+    const KURL& script_url,
+    KURL* out_response_url,
+    String* out_source_code,
+    std::unique_ptr<Vector<uint8_t>>* out_cached_meta_data) {
+  // InstalledScriptsManager is used only for starting installed service
+  // workers.
+  if (installed_scripts_manager_) {
+    // All imported scripts must be installed. This is already checked in
+    // ServiceWorkerGlobalScope::importScripts().
+    DCHECK(installed_scripts_manager_->IsScriptInstalled(script_url));
+    std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
+        installed_scripts_manager_->GetScriptData(script_url);
+    if (!script_data)
+      return false;
+    *out_response_url = script_url;
+    *out_source_code = script_data->TakeSourceText();
+    *out_cached_meta_data = script_data->TakeMetaData();
+    // TODO(shimazu): Add appropriate probes for inspector.
+    return true;
+  }
+  // This is a new service worker. Proceed with importing scripts and installing
+  // them.
+  return WorkerGlobalScope::FetchClassicImportedScript(
+      script_url, out_response_url, out_source_code, out_cached_meta_data);
+}
+
 const AtomicString& ServiceWorkerGlobalScope::InterfaceName() const {
   return event_target_names::kServiceWorkerGlobalScope;
 }
@@ -734,17 +769,15 @@ void ServiceWorkerGlobalScope::Trace(blink::Visitor* visitor) {
 void ServiceWorkerGlobalScope::importScripts(
     const HeapVector<StringOrTrustedScriptURL>& urls,
     ExceptionState& exception_state) {
-  InstalledScriptsManager* installed_scripts_manager =
-      GetThread()->GetInstalledScriptsManager();
   for (const StringOrTrustedScriptURL& stringOrUrl : urls) {
     String string_url = stringOrUrl.IsString()
                             ? stringOrUrl.GetAsString()
                             : stringOrUrl.GetAsTrustedScriptURL()->toString();
 
     KURL completed_url = CompleteURL(string_url);
-    if (installed_scripts_manager &&
-        !installed_scripts_manager->IsScriptInstalled(completed_url)) {
-      DCHECK(installed_scripts_manager->IsScriptInstalled(Url()));
+    if (installed_scripts_manager_ &&
+        !installed_scripts_manager_->IsScriptInstalled(completed_url)) {
+      DCHECK(installed_scripts_manager_->IsScriptInstalled(Url()));
       exception_state.ThrowDOMException(
           DOMExceptionCode::kNetworkError,
           "Failed to import '" + completed_url.ElidedString() +

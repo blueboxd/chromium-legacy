@@ -17,7 +17,7 @@ import org.chromium.base.annotations.NativeMethods;
  */
 @JNINamespace("android_webview")
 @MainDex
-final public class AwFeatureList {
+public final class AwFeatureList {
     // Do not instantiate this class.
     private AwFeatureList() {}
 

@@ -55,6 +55,7 @@ include_rules = [
   "+components/chromeos_camera",
   "+components/cloud_devices/common",
   "+components/component_updater",
+  "+components/component_updater/installer_policies",
   "+components/consent_auditor",
   "+components/constrained_window",
   "+components/content_capture/browser",

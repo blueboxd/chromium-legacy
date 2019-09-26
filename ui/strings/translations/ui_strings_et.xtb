@@ -111,7 +111,6 @@
 <translation id="4724120544754982507">Märguandekeskus, <ph name="UNREAD_NOTIFICATION_COUNT" /> lugemata märguannet</translation>
 <translation id="4730374152663651037">SAGELI KASUTATUD</translation>
 <translation id="4788285488841504513">{MONTHS,plural, =1{1 kuu jäänud}other{# kuud jäänud}}</translation>
-<translation id="4841881773802181781">Lisamine</translation>
 <translation id="4881695831933465202">Ava</translation>
 <translation id="4888938634149558681">Helista</translation>
 <translation id="4968171027979920686">{SECONDS,plural, =1{1 sekund}other{# sekundit}}</translation>
@@ -165,7 +164,6 @@
 <translation id="6620110761915583480">Faili salvestamine</translation>
 <translation id="6656912866303152668">Veenduge, et seadmes <ph name="TARGET_DEVICE_NAME" /> oleks Chrome'i sünkroonimine sisse lülitatud, ja proovige siis uuesti saata.</translation>
 <translation id="6699343763173986273">Meediumi järgmine lugu</translation>
-<translation id="673773751041746814">Kustutamine</translation>
 <translation id="6779314412797872738">Selleks et number siit teie Android-telefoni saata, tehke mõlema seadme puhul seadetes järgmist: <ph name="TROUBLESHOOT_LINK" />.</translation>
 <translation id="6786750046913594791">Kausta sulgemine</translation>
 <translation id="6808150112686056157">Meediumi peatamine</translation>

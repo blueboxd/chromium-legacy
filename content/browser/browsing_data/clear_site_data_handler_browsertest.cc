@@ -368,7 +368,8 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
     AddQuery(&urls[0], "redirect", urls[1].spec());
 
     // Navigate to the first url of the redirect chain.
-    NavigateToURL(shell(), urls[0]);
+    EXPECT_TRUE(
+        NavigateToURL(shell(), urls[0], urls[2] /* expected_commit_url */));
 
     // We reached the end of the redirect chain.
     EXPECT_EQ(urls[2], shell()->web_contents()->GetURL());
@@ -425,7 +426,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
         "\" />"
         "</body></html>";
     AddQuery(&page_with_image, "html", content_with_image);
-    NavigateToURL(shell(), page_with_image);
+    EXPECT_TRUE(NavigateToURL(shell(), page_with_image));
 
     delegate()->VerifyAndClearExpectations();
   }
@@ -438,7 +439,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, InsecureNavigation) {
   AddQuery(&url, "header", kClearCookiesHeader);
   ASSERT_FALSE(url.SchemeIsCryptographic());
 
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // We do not expect any calls to have been made.
   delegate()->VerifyAndClearExpectations();
@@ -493,10 +494,10 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTestWithAutoupgradesDisabled,
   AddQuery(&secure_page, "html", content_with_insecure_image);
 
   // Insecure resource on an insecure page does not execute Clear-Site-Data.
-  NavigateToURL(shell(), insecure_page);
+  EXPECT_TRUE(NavigateToURL(shell(), insecure_page));
 
   // Insecure resource on a secure page does not execute Clear-Site-Data.
-  NavigateToURL(shell(), secure_page);
+  EXPECT_TRUE(NavigateToURL(shell(), secure_page));
 
   // We do not expect any calls to have been made.
   delegate()->VerifyAndClearExpectations();
@@ -511,13 +512,13 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTestWithAutoupgradesDisabled,
   // Secure resource on an insecure page does execute Clear-Site-Data.
   delegate()->ExpectClearSiteDataCookiesCall(url::Origin::Create(secure_image));
 
-  NavigateToURL(shell(), secure_page);
+  EXPECT_TRUE(NavigateToURL(shell(), secure_page));
   delegate()->VerifyAndClearExpectations();
 
   // Secure resource on a secure page does execute Clear-Site-Data.
   delegate()->ExpectClearSiteDataCookiesCall(url::Origin::Create(secure_image));
 
-  NavigateToURL(shell(), secure_page);
+  EXPECT_TRUE(NavigateToURL(shell(), secure_page));
   delegate()->VerifyAndClearExpectations();
 }
 
@@ -534,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, ServiceWorker) {
   // the page title.
   GURL url = origin1;
   AddQuery(&url, "file", "worker_setup.html");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   WaitForTitle(shell(), "service worker is ready");
 
   // The service worker will now serve a page containing several images, which
@@ -567,7 +568,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, ServiceWorker) {
   AddQuery(&url, "origin2", origin2.spec());
   AddQuery(&url, "origin3", origin3.spec());
   AddQuery(&url, "origin4", origin4.spec());
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   WaitForTitle(shell(), "done");
   delegate()->VerifyAndClearExpectations();
 }
@@ -632,7 +633,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, MAYBE_Credentials) {
     if (test_case.should_run)
       delegate()->ExpectClearSiteDataCookiesCall(url::Origin::Create(resource));
 
-    NavigateToURL(shell(), page);
+    EXPECT_TRUE(NavigateToURL(shell(), page));
     WaitForTitle(shell(), "done");
     delegate()->VerifyAndClearExpectations();
   }
@@ -675,7 +676,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, CredentialsOnRedirect) {
   GURL page = https_server()->GetURL("origin1.com", "/");
   AddQuery(&page, "html", content);
 
-  NavigateToURL(shell(), page);
+  EXPECT_TRUE(NavigateToURL(shell(), page));
   WaitForTitle(shell(), "done");
   delegate()->VerifyAndClearExpectations();
 }
@@ -707,7 +708,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest, Types) {
         url::Origin::Create(url), test_case.remove_cookies,
         test_case.remove_storage, test_case.remove_cache);
 
-    NavigateToURL(shell(), url);
+    EXPECT_TRUE(NavigateToURL(shell(), url));
 
     delegate()->VerifyAndClearExpectations();
   }
@@ -728,7 +729,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   // Let Clear-Site-Data delete the "cookies" of "origin1.com".
   GURL url = https_server()->GetURL("origin1.com", "/clear-site-data");
   AddQuery(&url, "header", kClearCookiesHeader);
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // Only the "origin2.com" eTLD now has cookies.
   cookies = GetCookies();
@@ -759,7 +760,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   // of the scope.
   GURL url = server->GetURL("origin1.com", "/anything-in-the-scope");
   AddQuery(&url, "header", "\"storage\"");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   service_workers =
       browsing_data_browsertest_utils::GetServiceWorkers(partition);
   EXPECT_EQ(2u, service_workers.size());
@@ -770,7 +771,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   // The header will be respected and the worker deleted.
   url = server->GetURL("origin1.com", "/resource");
   AddQuery(&url, "header", "\"storage\"");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // Only "origin2.com" now has a service worker.
   service_workers =
@@ -810,7 +811,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
   // Let Clear-Site-Data delete the "cache" of HTTPS host 2.
   GURL url = GetURLForHTTPSHost2("/clear-site-data");
   AddQuery(&url, "header", "\"cache\"");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
 
   // Only HTTPS host 1 now has cache entries.
   EXPECT_TRUE(TestCacheEntry(url1));
@@ -834,7 +835,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
                        ClearSiteDataDuringServiceWorkerInstall) {
   GURL url = embedded_test_server()->GetURL("127.0.0.1", "/");
   AddQuery(&url, "file", "worker_test.html");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   delegate()->ExpectClearSiteDataCall(url::Origin::Create(url), false, true,
                                       false);
   SetClearSiteDataHeader("\"storage\"");
@@ -849,7 +850,7 @@ IN_PROC_BROWSER_TEST_F(ClearSiteDataHandlerBrowserTest,
                        ClearSiteDataDuringServiceWorkerUpdate) {
   GURL url = embedded_test_server()->GetURL("127.0.0.1", "/");
   AddQuery(&url, "file", "worker_test.html");
-  NavigateToURL(shell(), url);
+  EXPECT_TRUE(NavigateToURL(shell(), url));
   // Install a service worker.
   EXPECT_TRUE(RunScriptAndGetBool("installServiceWorker()"));
   delegate()->VerifyAndClearExpectations();

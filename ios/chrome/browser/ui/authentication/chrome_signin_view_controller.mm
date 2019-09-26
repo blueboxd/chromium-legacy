@@ -200,7 +200,6 @@ enum AuthenticationState {
     _currentState = NULL_STATE;
 
     self.modalPresentationStyle = UIModalPresentationFormSheet;
-    self.presentationController.delegate = self;
   }
   return self;
 }
@@ -857,6 +856,18 @@ enum AuthenticationState {
   [self updateGradientColors];
   [[_gradientView layer] insertSublayer:_gradientLayer atIndex:0];
   [self.view addSubview:_gradientView];
+  if (!self.navigationController) {
+    // If the view controller is part of a navigation controller, there is no
+    // need to be the presentation delegate. The point to be the delegate is to
+    // receive notification when the view is swiped to be dismissed.
+    // The view cannot be swiped away if it is inside a navigation controller.
+    // In that case, the ChromeSigninViewController is leaked because of some
+    // iOS bug. See crbug.com/1004695.
+    // This view controller is presented by itself for signin-in, and it is
+    // presented inside a navigation view controller when being part of the
+    // first run.
+    self.presentationController.delegate = self;
+  }
 }
 
 - (void)viewWillAppear:(BOOL)animated {

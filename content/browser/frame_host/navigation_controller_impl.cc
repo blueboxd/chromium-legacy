@@ -3361,8 +3361,13 @@ void NavigationControllerImpl::FinishRestore(int selected_index,
 
 void NavigationControllerImpl::DiscardNonCommittedEntries() {
   // Avoid sending a notification if there is nothing to discard.
-  if (!pending_entry_ && transient_entry_index_ == -1)
+  // TODO(mthiesse): Temporarily checking failed_pending_entry_id_ to help
+  // diagnose https://bugs.chromium.org/p/chromium/issues/detail?id=1007570.
+  if (!pending_entry_ && transient_entry_index_ == -1 &&
+      failed_pending_entry_id_ == 0) {
     return;
+  }
+
   DiscardPendingEntry(false);
   DiscardTransientEntry();
   if (delegate_)

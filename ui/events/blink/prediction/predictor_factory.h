@@ -13,6 +13,7 @@ namespace input_prediction {
 
 extern const char kScrollPredictorNameLsq[];
 extern const char kScrollPredictorNameKalman[];
+extern const char kScrollPredictorNameKalmanHeuristic[];
 extern const char kScrollPredictorNameLinearFirst[];
 extern const char kScrollPredictorNameLinearSecond[];
 extern const char kScrollPredictorNameLinearResampling[];
@@ -21,6 +22,7 @@ extern const char kScrollPredictorNameEmpty[];
 enum class PredictorType {
   kScrollPredictorTypeLsq,
   kScrollPredictorTypeKalman,
+  kScrollPredictorTypeKalmanHeuristic,
   kScrollPredictorTypeLinearFirst,
   kScrollPredictorTypeLinearSecond,
   kScrollPredictorTypeLinearResampling,

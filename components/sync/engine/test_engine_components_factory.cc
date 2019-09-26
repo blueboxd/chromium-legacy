@@ -13,12 +13,9 @@
 namespace syncer {
 
 TestEngineComponentsFactory::TestEngineComponentsFactory(
-    const Switches& switches,
     StorageOption option,
     StorageOption* storage_used)
-    : switches_(switches),
-      storage_override_(option),
-      storage_used_(storage_used) {}
+    : storage_override_(option), storage_used_(storage_used) {}
 
 TestEngineComponentsFactory::~TestEngineComponentsFactory() {}
 
@@ -45,8 +42,7 @@ std::unique_ptr<SyncCycleContext> TestEngineComponentsFactory::BuildContext(
   std::vector<SyncEngineEventListener*> empty_listeners;
   return std::unique_ptr<SyncCycleContext>(new SyncCycleContext(
       connection_manager, directory, monitor, empty_listeners,
-      debug_info_getter, model_type_registry,
-      switches_.encryption_method == ENCRYPTION_KEYSTORE, invalidator_client_id,
+      debug_info_getter, model_type_registry, invalidator_client_id,
       store_birthday, bag_of_chips, poll_interval));
 }
 
@@ -74,11 +70,6 @@ TestEngineComponentsFactory::BuildDirectoryBackingStore(
   }
   NOTREACHED();
   return std::unique_ptr<syncable::DirectoryBackingStore>();
-}
-
-EngineComponentsFactory::Switches TestEngineComponentsFactory::GetSwitches()
-    const {
-  return switches_;
 }
 
 }  // namespace syncer

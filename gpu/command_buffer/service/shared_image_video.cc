@@ -329,8 +329,8 @@ class SharedImageRepresentationVideoSkiaVk
         LOG(ERROR) << "Failed to get the hardware buffer.";
         return nullptr;
       }
+      DCHECK(scoped_hardware_buffer_->buffer());
     }
-    DCHECK(scoped_hardware_buffer_->buffer());
 
     // Wait on the sync fd attached to the buffer to make sure buffer is
     // ready before the read. This is done by inserting the sync fd semaphore

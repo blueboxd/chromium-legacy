@@ -70,8 +70,6 @@ void InternalsNetInfo::setNetworkConnectionInfoOverride(
   }
   GetNetworkStateNotifier().SetNetworkConnectionInfoOverride(
       on_line, webtype, web_effective_type, http_rtt_msec, downlink_max_mbps);
-  internals.GetFrame()->Client()->SetEffectiveConnectionTypeForTesting(
-      web_effective_type);
 }
 
 void InternalsNetInfo::setSaveDataEnabled(Internals&, bool enabled) {

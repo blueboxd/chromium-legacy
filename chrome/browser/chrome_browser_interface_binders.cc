@@ -8,16 +8,32 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/image_annotation/public/mojom/constants.mojom-forward.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "content/public/browser/web_contents.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
+#else
 #include "chrome/browser/badging/badge_manager.h"
 #endif
 
 namespace chrome {
 namespace internal {
+
+#if defined(OS_ANDROID)
+template <typename Interface>
+void ForwardToJavaWebContents(content::RenderFrameHost* frame_host,
+                              mojo::PendingReceiver<Interface> receiver) {
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(frame_host);
+  if (contents)
+    contents->GetJavaInterfaces()->GetInterface(std::move(receiver));
+}
+#endif
 
 // Forward image Annotator requests to the image_annotation service.
 void BindImageAnnotator(
@@ -25,9 +41,7 @@ void BindImageAnnotator(
     mojo::PendingReceiver<image_annotation::mojom::Annotator> receiver) {
   content::BrowserContext::GetConnectorFor(
       frame_host->GetProcess()->GetBrowserContext())
-      ->BindInterface(
-          image_annotation::mojom::kServiceName,
-          image_annotation::mojom::AnnotatorRequest(std::move(receiver)));
+      ->Connect(image_annotation::mojom::kServiceName, std::move(receiver));
 }
 
 void PopulateChromeFrameBinders(
@@ -35,7 +49,10 @@ void PopulateChromeFrameBinders(
   map->Add<image_annotation::mojom::Annotator>(
       base::BindRepeating(&BindImageAnnotator));
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+  map->Add<blink::mojom::ShareService>(base::BindRepeating(
+      &ForwardToJavaWebContents<blink::mojom::ShareService>));
+#else
   map->Add<blink::mojom::BadgeService>(
       base::BindRepeating(&badging::BadgeManager::BindReceiver));
 #endif

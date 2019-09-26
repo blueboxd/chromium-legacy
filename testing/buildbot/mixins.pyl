@@ -548,32 +548,24 @@
   'pie-x86-emulator': {
     '$mixin_append': {
       'args': [
-        '--avd-name=20190716T160000Z_android_28_google_apis_x86',
-        '--emulator-home=../../.android',
+        '--avd-config=../../tools/android/avd/proto/generic_android28.textpb',
       ],
     },
     'swarming': {
-      'cipd_packages': [
-        {
-          'cipd_package': 'chromium/third_party/android_sdk/public/avds/android-28/google_apis/x86',
-          'location': '.android',
-          'revision': 'J5MFTg7OhekLKsOX7bmkVTSCDzohydCvXrn4sJzy0xsC',
-        },
-        {
-          'cipd_package': 'chromium/third_party/android_sdk/public/emulator',
-          'location': 'third_party/android_sdk/public',
-          'revision': 'xhyuoquVvBTcJelgRjMKZeoBVSQRjB7pLVJPt5C9saIC',
-        },
-        {
-          'cipd_package': 'chromium/third_party/android_sdk/public/system-images/android-28/google_apis/x86',
-          'location': 'third_party/android_sdk/public',
-          'revision': 'LDa0XkTjgGYx7Amzg5qjIRgCfc4F_pq7rKMJVdACYx8C',
-        },
-      ],
       'dimensions': {
         'device_os': None,
         'device_type': None,
       },
+      'named_caches': [
+        {
+          'name': 'avd_generic_android28',
+          'path': '.android',
+        },
+        {
+          'name': 'system_images_android_28_google_apis_x86',
+          'path': '.emulator_sdk',
+        },
+      ]
     },
   },
   'pie_fleet': {

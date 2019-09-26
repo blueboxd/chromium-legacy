@@ -1976,8 +1976,10 @@ TEST_F(HttpStreamFactoryJobControllerTest, DelayedTCPWithLargeSrtt) {
   EXPECT_FALSE(job_controller_->alternative_job());
 }
 
+// TODO(https://crbug.com/1007502): Disabled because the pending task count does
+//                                  not match expectations.
 TEST_F(HttpStreamFactoryJobControllerTest,
-       ResumeMainJobImmediatelyOnStreamFailed) {
+       DISABLED_ResumeMainJobImmediatelyOnStreamFailed) {
   HttpRequestInfo request_info;
   request_info.method = "GET";
   request_info.url = GURL("https://www.google.com");

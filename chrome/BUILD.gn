@@ -1524,10 +1524,10 @@ group("extra_resources") {
   if (!is_android) {
     public_deps += [
       "//chrome/browser/resources:component_extension_resources",
+      "//chrome/browser/resources:dev_ui_paks",
       "//chrome/browser/resources:downloads_resources",
       "//chrome/browser/resources:local_ntp_resources",
       "//chrome/browser/resources:settings_resources",
-      "//chrome/browser/resources/bluetooth_internals:resources",
     ]
   }
 

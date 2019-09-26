@@ -53,7 +53,7 @@ public class AndroidViewIntegrationTest {
     private static final int CONTENT_SIZE_CHANGE_STABILITY_TIMEOUT_MS = 1000;
 
     private static class OnContentSizeChangedHelper extends CallbackHelper {
-        final private Object mLock = new Object();
+        private final Object mLock = new Object();
         @GuardedBy("mLock")
         private int mWidth;
         @GuardedBy("mLock")

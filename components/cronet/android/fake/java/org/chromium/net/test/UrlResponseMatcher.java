@@ -35,7 +35,7 @@ public class UrlResponseMatcher implements ResponseMatcher {
 
     @Override
     public FakeUrlResponse getMatchingResponse(
-            String url, String httpMethod, List<Map.Entry<String, String>> headers) {
+            String url, String httpMethod, List<Map.Entry<String, String>> headers, byte[] body) {
         return mUrl.equals(url) ? mResponse : null;
     }
 }

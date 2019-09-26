@@ -2547,20 +2547,8 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       return ATK_ROLE_RADIO_BUTTON;
     case ax::mojom::Role::kRadioGroup:
       return ATK_ROLE_PANEL;
-    case ax::mojom::Role::kRegion: {
-      std::string html_tag =
-          GetData().GetStringAttribute(ax::mojom::StringAttribute::kHtmlTag);
-      if (html_tag == "section" &&
-          GetData()
-              .GetString16Attribute(ax::mojom::StringAttribute::kName)
-              .empty()) {
-        // Do not use ARIA mapping for nameless <section>.
-        return ATK_ROLE_SECTION;
-      } else {
-        // Use ARIA mapping.
-        return ATK_ROLE_LANDMARK;
-      }
-    }
+    case ax::mojom::Role::kRegion:
+      return ATK_ROLE_LANDMARK;
     case ax::mojom::Role::kRootWebArea:
       return ATK_ROLE_DOCUMENT_WEB;
     case ax::mojom::Role::kRow:
@@ -2573,6 +2561,17 @@ AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
       // TODO(accessibility) Panels are generally for containers of widgets.
       // This should probably be a section (if a container) or static if text.
       return ATK_ROLE_PANEL;
+    case ax::mojom::Role::kSection: {
+      if (GetData()
+              .GetString16Attribute(ax::mojom::StringAttribute::kName)
+              .empty()) {
+        // Do not use ARIA mapping for nameless <section>.
+        return ATK_ROLE_SECTION;
+      } else {
+        // Use ARIA mapping.
+        return ATK_ROLE_LANDMARK;
+      }
+    }
     case ax::mojom::Role::kScrollBar:
       return ATK_ROLE_SCROLL_BAR;
     case ax::mojom::Role::kSearch:

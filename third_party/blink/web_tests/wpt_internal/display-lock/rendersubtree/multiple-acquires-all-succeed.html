@@ -46,10 +46,10 @@ function runTest() {
     document.body.appendChild(container);
 
     Promise.all([
-      container.displayLock.update(),
-      container.displayLock.update(),
-      container.displayLock.update(),
-      container.displayLock.update()
+      container.updateRendering(),
+      container.updateRendering(),
+      container.updateRendering(),
+      container.updateRendering()
     ]).then(() => {
       setVisible(container).then(
         () => { finishTest("PASS"); },

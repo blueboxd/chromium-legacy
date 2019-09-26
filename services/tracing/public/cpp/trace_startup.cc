@@ -13,6 +13,7 @@
 #include "components/tracing/common/tracing_switches.h"
 #include "services/tracing/public/cpp/perfetto/trace_event_data_source.h"
 #include "services/tracing/public/cpp/stack_sampling/tracing_sampler_profiler.h"
+#include "services/tracing/public/cpp/trace_event_agent.h"
 #include "services/tracing/public/cpp/tracing_features.h"
 
 namespace tracing {
@@ -85,6 +86,8 @@ void InitTracingPostThreadPoolStartAndFeatureList() {
   // Below are the things tracing must do once per process.
   TraceEventDataSource::GetInstance()->OnTaskSchedulerAvailable();
   if (base::FeatureList::IsEnabled(features::kEnablePerfettoSystemTracing)) {
+    // We have to ensure that we register all the data sources we care about.
+    TraceEventAgent::GetInstance();
     // To ensure System tracing connects we have to initialize the process wide
     // state. This Get() call ensures that the constructor has run.
     PerfettoTracedProcess::Get();

@@ -2858,6 +2858,11 @@
     "expiry_milestone": 78
   },
   {
+    "name": "percent-based-scrolling",
+    "owners": [ "maamert@microsoft.com" ],
+    "expiry_milestone": 82
+  },
+  {
     "name": "periodic-background-sync",
     "owners": [ "nator" ],
     "expiry_milestone": 80

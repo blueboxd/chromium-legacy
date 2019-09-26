@@ -2641,6 +2641,25 @@
             ]
         }
     ],
+    "GenerationNoOverwrites": [
+        {
+            "platforms": [
+                "windows",
+                "mac",
+                "chromeos",
+                "linux",
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "GenerationNoOverwrites"
+                    ]
+                }
+            ]
+        }
+    ],
     "GestureNavigation": [
         {
             "platforms": [

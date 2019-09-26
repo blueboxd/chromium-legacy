@@ -77,6 +77,7 @@ class PseudoElement;
 class PseudoElementStyleRequest;
 class ResizeObservation;
 class ResizeObserver;
+class ScriptPromise;
 class ScrollIntoViewOptions;
 class ScrollIntoViewOptionsOrBoolean;
 class ScrollToOptions;
@@ -931,6 +932,8 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
   DisplayLockContext* getDisplayLockForBindings();
   DisplayLockContext* GetDisplayLockContext() const;
   DisplayLockContext& EnsureDisplayLockContext();
+
+  ScriptPromise updateRendering(ScriptState*);
 
   bool StyleRecalcBlockedByDisplayLock(DisplayLockLifecycleTarget) const;
 

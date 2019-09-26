@@ -157,7 +157,9 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
       network::mojom::NetworkContext* network_context,
       mojo::PendingRemote<network::mojom::TrustedURLLoaderHeaderClient>*
           header_client,
-      const url::Origin& request_initiator) override;
+      const url::Origin& request_initiator,
+      const base::Optional<net::NetworkIsolationKey>& network_isolation_key)
+      override;
   void GetAdditionalWebUISchemes(
       std::vector<std::string>* additional_schemes) override;
   void GetAdditionalViewSourceSchemes(
@@ -221,18 +223,21 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
                      content::BrowserContext* context) override;
   bool AllowServiceWorkerOnIO(
       const GURL& scope,
-      const GURL& first_party,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       content::ResourceContext* context,
       base::RepeatingCallback<content::WebContents*()> wc_getter) override;
   bool AllowServiceWorkerOnUI(
       const GURL& scope,
-      const GURL& first_party,
+      const GURL& site_for_cookies,
+      const base::Optional<url::Origin>& top_frame_origin,
       const GURL& script_url,
       content::BrowserContext* context,
       base::RepeatingCallback<content::WebContents*()> wc_getter) override;
   bool AllowSharedWorker(const GURL& worker_url,
-                         const GURL& main_frame_url,
+                         const GURL& site_for_cookies,
+                         const base::Optional<url::Origin>& top_frame_origin,
                          const std::string& name,
                          const url::Origin& constructor_origin,
                          content::BrowserContext* context,

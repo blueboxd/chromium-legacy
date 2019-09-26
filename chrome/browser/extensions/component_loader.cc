@@ -49,6 +49,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/keyboard/ui/grit/keyboard_resources.h"
+#include "chromeos/constants/chromeos_features.h"
 #include "chromeos/constants/chromeos_switches.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/site_instance.h"
@@ -541,7 +542,7 @@ void ComponentLoader::AddDefaultComponentExtensionsWithBackgroundPages(
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
     if (base::FeatureList::IsEnabled(
-            features::kDisableOfficeEditingComponentApp)) {
+            chromeos::features::kDisableOfficeEditingComponentApp)) {
       Add(IDR_QUICKOFFICE_MANIFEST,
           base::FilePath(
               FILE_PATH_LITERAL("/usr/share/chromeos-assets/quickoffice")));

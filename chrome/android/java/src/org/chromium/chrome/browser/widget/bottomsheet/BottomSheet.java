@@ -423,7 +423,9 @@ public class BottomSheet
      */
     public boolean handleBackPress() {
         if (isSheetOpen()) {
-            setSheetState(SheetState.PEEK, true, StateChangeReason.BACK_PRESS);
+            int sheetState =
+                    mSheetContent.isPeekStateEnabled() ? SheetState.PEEK : SheetState.HIDDEN;
+            setSheetState(sheetState, true, StateChangeReason.BACK_PRESS);
             return true;
         }
 
@@ -1213,8 +1215,8 @@ public class BottomSheet
      * @return The height of the sheet at the provided state.
      */
     private float getSheetHeightForState(@SheetState int state) {
-        if (mSheetContent != null && mSheetContent.wrapContentEnabled()
-                && state == SheetState.FULL) {
+        if (mSheetContent != null && mSheetContent.wrapContentEnabled() && state == SheetState.FULL
+                && mSheetContent.getCustomFullRatio() == INVALID_HEIGHT_RATIO) {
             ensureContentDesiredHeightIsComputed();
             return mContentDesiredHeight + mToolbarShadowHeight;
         }

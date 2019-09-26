@@ -8,6 +8,7 @@ import("//build/config/android/rules.gni")
 android_library("sync_java") {
   deps = [
     "//base:base_java",
+    "//base:jni_java",
     "//components/signin/core/browser/android:java",
     "//net/android:net_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
@@ -16,6 +17,7 @@ android_library("sync_java") {
     "//third_party/cacheinvalidation:cacheinvalidation_proto_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
   srcjar_deps = [ ":java_enums" ]
   java_files = [
     "java/src/org/chromium/components/sync/AndroidSyncSettings.java",

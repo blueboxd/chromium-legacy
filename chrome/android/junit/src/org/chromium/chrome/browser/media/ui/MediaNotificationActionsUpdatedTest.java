@@ -51,7 +51,7 @@ public class MediaNotificationActionsUpdatedTest extends MediaNotificationManage
         doCallRealMethod()
                 .when(mMockForegroundServiceUtils)
                 .startForegroundService(any(Intent.class));
-        mTabHolder = new MediaNotificationTestTabHolder(TAB_ID_1, "about:blank", "title1");
+        mTabHolder = createMediaNotificationTestTabHolder(TAB_ID_1, "about:blank", "title1");
     }
 
     @Test

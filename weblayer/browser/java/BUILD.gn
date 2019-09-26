@@ -8,6 +8,7 @@ import("//build/config/android/rules.gni")
 android_library("java") {
   java_files = [
     "org/chromium/weblayer_private/BrowserControllerImpl.java",
+    "org/chromium/weblayer_private/BrowserFragmentControllerImpl.java",
     "org/chromium/weblayer_private/BrowserObserverProxy.java",
     "org/chromium/weblayer_private/ContentView.java",
     "org/chromium/weblayer_private/ContentViewRenderView.java",
@@ -18,6 +19,7 @@ android_library("java") {
     "org/chromium/weblayer_private/TopControlsContainerView.java",
     "org/chromium/weblayer_private/WebLayerImpl.java",
     "org/chromium/weblayer_private/ChildProcessServiceImpl.java",
+    "org/chromium/weblayer_private/RemoteFragmentImpl.java",
   ]
 
   deps = [
@@ -54,6 +56,7 @@ android_library("client_java") {
 android_aidl("aidl") {
   import_include = [ "org/chromium/weblayer_private/aidl" ]
   sources = [
+    "org/chromium/weblayer_private/aidl/IBrowserFragmentController.aidl",
     "org/chromium/weblayer_private/aidl/IBrowserController.aidl",
     "org/chromium/weblayer_private/aidl/IBrowserControllerClient.aidl",
     "org/chromium/weblayer_private/aidl/IChildProcessService.aidl",
@@ -63,6 +66,8 @@ android_aidl("aidl") {
     "org/chromium/weblayer_private/aidl/INavigationControllerClient.aidl",
     "org/chromium/weblayer_private/aidl/IObjectWrapper.aidl",
     "org/chromium/weblayer_private/aidl/IProfile.aidl",
+    "org/chromium/weblayer_private/aidl/IRemoteFragment.aidl",
+    "org/chromium/weblayer_private/aidl/IRemoteFragmentClient.aidl",
     "org/chromium/weblayer_private/aidl/IWebLayer.aidl",
   ]
 }

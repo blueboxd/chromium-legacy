@@ -1,0 +1,111 @@
+From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
+From: Darwin Huang <huangdarwin@chromium.org>
+Date: Wed, 25 Sep 2019 14:58:51 -0700
+Subject: [PATCH 6/6] Avoid dangling schema pointer
+
+Backports https://www.sqlite.org/src/info/069c2f4c61f06211
+
+Bug 990234
+---
+ third_party/sqlite/patched/src/attach.c       | 13 +++++++++++++
+ third_party/sqlite/patched/src/trigger.c      | 14 +++++++-------
+ third_party/sqlite/patched/test/trigger1.test | 14 ++++++++++++++
+ 3 files changed, 34 insertions(+), 7 deletions(-)
+
+diff --git a/third_party/sqlite/patched/src/attach.c b/third_party/sqlite/patched/src/attach.c
+index 347680fd4be2..ef0700fd483b 100644
+--- a/third_party/sqlite/patched/src/attach.c
++++ b/third_party/sqlite/patched/src/attach.c
+@@ -299,6 +299,7 @@ static void detachFunc(
+   sqlite3 *db = sqlite3_context_db_handle(context);
+   int i;
+   Db *pDb = 0;
++  HashElem *pEntry;
+   char zErr[128];
+ 
+   UNUSED_PARAMETER(NotUsed);
+@@ -323,6 +324,18 @@ static void detachFunc(
+     goto detach_error;
+   }
+ 
++  /* If any TEMP triggers reference the schema being detached, move those
++  ** triggers to reference the TEMP schema itself. */
++  assert( db->aDb[1].pSchema );
++  pEntry = sqliteHashFirst(&db->aDb[1].pSchema->trigHash);
++  while( pEntry ){
++    Trigger *pTrig = (Trigger*)sqliteHashData(pEntry);
++    if( pTrig->pTabSchema==pDb->pSchema ){
++      pTrig->pTabSchema = pTrig->pSchema;
++    }
++    pEntry = sqliteHashNext(pEntry);
++  }
++
+   sqlite3BtreeClose(pDb->pBt);
+   pDb->pBt = 0;
+   pDb->pSchema = 0;
+diff --git a/third_party/sqlite/patched/src/trigger.c b/third_party/sqlite/patched/src/trigger.c
+index fba75d8fb4de..2c27ea3ecfc9 100644
+--- a/third_party/sqlite/patched/src/trigger.c
++++ b/third_party/sqlite/patched/src/trigger.c
+@@ -613,10 +613,9 @@ void sqlite3DropTriggerPtr(Parse *pParse, Trigger *pTrigger){
+   iDb = sqlite3SchemaToIndex(pParse->db, pTrigger->pSchema);
+   assert( iDb>=0 && iDb<db->nDb );
+   pTable = tableOfTrigger(pTrigger);
+-  assert( pTable );
+-  assert( pTable->pSchema==pTrigger->pSchema || iDb==1 );
++  assert( (pTable && pTable->pSchema==pTrigger->pSchema) || iDb==1 );
+ #ifndef SQLITE_OMIT_AUTHORIZATION
+-  {
++  if( pTable ){
+     int code = SQLITE_DROP_TRIGGER;
+     const char *zDb = db->aDb[iDb].zDbSName;
+     const char *zTab = SCHEMA_TABLE(iDb);
+@@ -630,7 +629,6 @@ void sqlite3DropTriggerPtr(Parse *pParse, Trigger *pTrigger){
+ 
+   /* Generate code to destroy the database record of the trigger.
+   */
+-  assert( pTable!=0 );
+   if( (v = sqlite3GetVdbe(pParse))!=0 ){
+     sqlite3NestedParse(pParse,
+        "DELETE FROM %Q.%s WHERE name=%Q AND type='trigger'",
+@@ -654,9 +652,11 @@ void sqlite3UnlinkAndDeleteTrigger(sqlite3 *db, int iDb, const char *zName){
+   if( ALWAYS(pTrigger) ){
+     if( pTrigger->pSchema==pTrigger->pTabSchema ){
+       Table *pTab = tableOfTrigger(pTrigger);
+-      Trigger **pp;
+-      for(pp=&pTab->pTrigger; *pp!=pTrigger; pp=&((*pp)->pNext));
+-      *pp = (*pp)->pNext;
++      if( pTab ){
++        Trigger **pp;
++        for(pp=&pTab->pTrigger; *pp!=pTrigger; pp=&((*pp)->pNext));
++        *pp = (*pp)->pNext;
++      }
+     }
+     sqlite3DeleteTrigger(db, pTrigger);
+     db->mDbFlags |= DBFLAG_SchemaChange;
+diff --git a/third_party/sqlite/patched/test/trigger1.test b/third_party/sqlite/patched/test/trigger1.test
+index 3cfd2fa2f0ab..489a51e2e5a0 100644
+--- a/third_party/sqlite/patched/test/trigger1.test
++++ b/third_party/sqlite/patched/test/trigger1.test
+@@ -768,4 +768,18 @@ do_execsql_test trigger1-19.1 {
+   SELECT * FROM t19;
+ } {1 2 2}
+ 
++# 2019-08-26 Chromium sqlite3_fts3_lpm_fuzzer find.
++#
++db close
++sqlite3 db :memory:
++do_execsql_test trigger1-20.1 {
++  CREATE TABLE t20_1(x);
++  ATTACH ':memory:' AS aux;
++  CREATE TABLE aux.t20_2(y);
++  CREATE TABLE aux.t20_3(z);
++  CREATE TEMP TRIGGER r20_3 AFTER INSERT ON t20_2 BEGIN UPDATE t20_3 SET z=z+1; END;
++  DETACH aux;
++  DROP TRIGGER r20_3;
++} {}
++
+ finish_test
+-- 
+2.23.0.351.gc4317032e6-goog
+

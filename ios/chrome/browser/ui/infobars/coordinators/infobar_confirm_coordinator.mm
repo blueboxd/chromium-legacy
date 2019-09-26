@@ -71,7 +71,7 @@
     // from memory.
     self.delegate->RemoveInfoBar();
     _confirmInfobarDelegate = nil;
-    [self.infobarContainer childCoordinatorStopped:self.infobarType];
+    [self.infobarContainer childCoordinatorStopped:self];
   }
 }
 

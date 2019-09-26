@@ -64,6 +64,8 @@ class MEDIA_MOJO_EXPORT MojoCdmProxyService : public mojom::CdmProxy,
                      ::media::CdmProxy::Protocol protocol,
                      uint32_t crypto_session_id);
 
+  bool has_initialize_been_called_ = false;
+
   std::unique_ptr<::media::CdmProxy> cdm_proxy_;
   MojoCdmServiceContext* const context_ = nullptr;
 

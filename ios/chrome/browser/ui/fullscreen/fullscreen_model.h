@@ -73,14 +73,10 @@ class FullscreenModel : public ChromeBroadcastObserverInterface {
 
   // Returns the toolbar insets at |progress|.
   UIEdgeInsets GetToolbarInsetsAtProgress(CGFloat progress) const {
-    const CGFloat kBottomToolbarProgress =
-        base::FeatureList::IsEnabled(fullscreen::features::kLockBottomToolbar)
-            ? 1.0
-            : progress;
     return UIEdgeInsetsMake(
         collapsed_toolbar_height_ +
             progress * (expanded_toolbar_height_ - collapsed_toolbar_height_),
-        0, kBottomToolbarProgress * bottom_toolbar_height_, 0);
+        0, progress * bottom_toolbar_height_, 0);
   }
 
   // Increments and decrements |disabled_counter_| for features that require the

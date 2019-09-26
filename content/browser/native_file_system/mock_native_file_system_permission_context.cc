@@ -31,12 +31,12 @@ void MockNativeFileSystemPermissionContext::ConfirmSensitiveDirectoryAccess(
                                    frame_id, callback);
 }
 
-void MockNativeFileSystemPermissionContext::PerformSafeBrowsingChecks(
+void MockNativeFileSystemPermissionContext::PerformAfterWriteChecks(
     std::unique_ptr<NativeFileSystemWriteItem> item,
     int process_id,
     int frame_id,
-    base::OnceCallback<void(SafeBrowsingResult)> callback) {
-  PerformSafeBrowsingChecks_(item.get(), process_id, frame_id, callback);
+    base::OnceCallback<void(AfterWriteCheckResult)> callback) {
+  PerformAfterWriteChecks_(item.get(), process_id, frame_id, callback);
 }
 
 }  // namespace content

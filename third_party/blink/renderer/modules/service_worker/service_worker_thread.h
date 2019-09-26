@@ -60,7 +60,6 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
     return *worker_backing_thread_;
   }
   void ClearWorkerBackingThread() override;
-  InstalledScriptsManager* GetInstalledScriptsManager() override;
   void TerminateForTesting() override;
 
   void RunInstalledClassicScript(const KURL& script_url,
@@ -90,6 +89,8 @@ class MODULES_EXPORT ServiceWorkerThread final : public WorkerThread {
 
   std::unique_ptr<ServiceWorkerGlobalScopeProxy> global_scope_proxy_;
   std::unique_ptr<WorkerBackingThread> worker_backing_thread_;
+
+  // Ownership of these members is moved out in CreateWorkerGlobalScope().
   std::unique_ptr<ServiceWorkerInstalledScriptsManager>
       installed_scripts_manager_;
   mojo::PendingRemote<mojom::blink::CacheStorage> cache_storage_remote_;

@@ -412,11 +412,11 @@ void PoissonAllocationSampler::RecordAlloc(void* address,
     return;
 
   if (UNLIKELY(!g_running.load(std::memory_order_relaxed))) {
-    // Sampling is in fact disabled. Put a large negative value into
-    // the accumulator. It needs to be large enough to have this code
-    // not trigger frequently, and small enough to eventually start collecting
-    // samples when the sampling is enabled.
-    g_accumulated_bytes_tls = -static_cast<intptr_t>(kWarmupInterval);
+    // Sampling is in fact disabled. Reset the state of the sampler.
+    // We do this check off the fast-path, because it's quite a rare state when
+    // allocation hooks are installed but the sampler is not running.
+    g_sampling_interval_initialized_tls = false;
+    g_accumulated_bytes_tls = 0;
     return;
   }
 
@@ -433,6 +433,21 @@ void PoissonAllocationSampler::DoRecordAlloc(intptr_t accumulated_bytes,
     return;
 
   size_t mean_interval = g_sampling_interval.load(std::memory_order_relaxed);
+
+  if (UNLIKELY(!g_sampling_interval_initialized_tls)) {
+    g_sampling_interval_initialized_tls = true;
+    // This is the very first allocation on the thread. It always makes it
+    // passing the condition at |RecordAlloc|, because g_accumulated_bytes_tls
+    // is initialized with zero due to TLS semantics.
+    // Generate proper sampling interval instance and make sure the allocation
+    // has indeed crossed the threshold before counting it as a sample.
+    accumulated_bytes -= GetNextSampleInterval(mean_interval);
+    if (accumulated_bytes < 0) {
+      g_accumulated_bytes_tls = accumulated_bytes;
+      return;
+    }
+  }
+
   size_t samples = accumulated_bytes / mean_interval;
   accumulated_bytes %= mean_interval;
 
@@ -442,16 +457,6 @@ void PoissonAllocationSampler::DoRecordAlloc(intptr_t accumulated_bytes,
   } while (accumulated_bytes >= 0);
 
   g_accumulated_bytes_tls = accumulated_bytes;
-
-  if (UNLIKELY(!g_sampling_interval_initialized_tls)) {
-    g_sampling_interval_initialized_tls = true;
-    // This is the very first allocation on the thread. It always produces an
-    // extra sample because g_accumulated_bytes_tls is initialized with zero
-    // due to TLS semantics.
-    // Make sure we don't count this extra sample.
-    if (!--samples)
-      return;
-  }
 
   if (UNLIKELY(ScopedMuteThreadSamples::IsMuted()))
     return;

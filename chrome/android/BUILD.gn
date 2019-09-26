@@ -282,7 +282,6 @@ android_library("chrome_java") {
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/util/android:java",
     "//chrome/lib/lifecycle/public/android:java",
-    "//chrome/lib/util/public/android:java",
     "//components/autofill/android:autofill_java",
     "//components/autofill_assistant/browser:proto_java",
     "//components/background_task_scheduler:background_task_scheduler_java",
@@ -537,7 +536,7 @@ group("jni_headers") {
     "//chrome/android/public/profiles:jni_headers",
     "//chrome/browser/image_fetcher:jni_headers",
     "//chrome/browser/touch_to_fill/android:jni_headers",
-    "//chrome/lib/util/public/android:jni_headers",
+    "//chrome/browser/util/android:jni_headers",
   ]
 }
 
@@ -817,7 +816,6 @@ android_library("chrome_test_java") {
     "//chrome/browser/android/metrics:ukm_utils_java",
     "//chrome/browser/ui/android/widget:java",
     "//chrome/browser/util/android:java",
-    "//chrome/lib/util/public/android:java",
     "//chrome/test/android:chrome_java_test_support",
     "//chrome/test/android/test_trusted_web_activity:test_trusted_web_activity_java",
     "//components/autofill/android:autofill_java",
@@ -973,7 +971,6 @@ if (enable_vr || enable_arcore) {
     "//chrome/android:chrome_java",
     "//chrome/android/features/vr:java",
     "//chrome/browser/util/android:java",
-    "//chrome/lib/util/public/android:java",
     "//chrome/test/android:chrome_java_test_support",
     "//components/policy/android:policy_java",
     "//content/public/android:content_java",
@@ -1384,8 +1381,8 @@ if (current_toolchain == default_toolchain) {
       }
       if (!dfmify_dev_ui) {
         additional_extra_paks +=
-            [ "$root_gen_dir/chrome/bluetooth_internals_resources.pak" ]
-        deps += [ "//chrome/browser/resources/bluetooth_internals:resources" ]
+            [ "$root_gen_dir/chrome/dev_ui_page_resources.pak" ]
+        deps += [ "//chrome/browser/resources:dev_ui_paks" ]
       }
 
       if (enable_resource_whitelist_generation) {
@@ -2709,9 +2706,7 @@ generate_jni("chrome_jni_headers") {
     "java/src/org/chromium/chrome/browser/translate/TranslateBridge.java",
     "java/src/org/chromium/chrome/browser/usage_stats/NotificationSuspender.java",
     "java/src/org/chromium/chrome/browser/usage_stats/UsageStatsBridge.java",
-    "java/src/org/chromium/chrome/browser/util/ChromeContextUtil.java",
     "java/src/org/chromium/chrome/browser/util/FeatureUtilities.java",
-    "java/src/org/chromium/chrome/browser/util/PlatformUtil.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkHandlerDelegate.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkInstallService.java",
     "java/src/org/chromium/chrome/browser/webapps/WebApkInstaller.java",

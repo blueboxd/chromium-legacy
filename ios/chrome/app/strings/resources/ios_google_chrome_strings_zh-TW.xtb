@@ -26,7 +26,6 @@
 <translation id="415767770115540173">在您使用 Chrome 時，讓 Google 根據您的位置資訊提供更優質的服務。</translation>
 <translation id="424864128008805179">要登出 Chrome 嗎？</translation>
 <translation id="4523886039239821078">部分外掛程式造成 Chrome 當機，請解除安裝這些外掛程式：</translation>
-<translation id="4615174829807303908">您即將登出由 <ph name="SIGNOUT_MANAGED_DOMAIN" /> 所管理的帳戶。系統會將您的 Chrome 資料從這個裝置上刪除，但繼續保留在您的 Google 帳戶中。</translation>
 <translation id="5389212809648216794">另一個應用程式正在使用你的相機，因此 Google Chrome 無法使用</translation>
 <translation id="5621912349729388018"><ph name="BEGIN_LINK" />查看更新的 Chrome 服務條款。<ph name="END_LINK" /></translation>
 <translation id="5639704535586432836">請前往 [設定] &gt; [隱私權] &gt; [相機] &gt; [Google Chrome]，並開啟相機。</translation>
@@ -45,7 +44,6 @@
 <translation id="7173660919484573146">Chrome 會使用 Face ID 來確保只有經過授權的使用者才能存取你的密碼。</translation>
 <translation id="7265369419224458312">只要在電腦上開啟 Chrome 並前往選單中選取 [登入 Chrome...]，即可直接在這裡使用您在電腦上開啟的所有分頁。</translation>
 <translation id="7400722733683201933">關於 Google Chrome</translation>
-<translation id="7437998757836447326">登出 Chrome</translation>
 <translation id="756809126120519699">已清除 Chrome 資料</translation>
 <translation id="7626032353295482388">歡迎使用 Chrome</translation>
 <translation id="7698568245838009292">Chrome 要求存取你的相機</translation>

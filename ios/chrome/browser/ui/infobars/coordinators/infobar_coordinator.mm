@@ -93,6 +93,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   DCHECK(self.browserState);
   DCHECK(self.baseViewController);
   DCHECK(self.bannerViewController);
+  DCHECK(self.started);
 
   // If |self.baseViewController| is not part of the ViewHierarchy the banner
   // shouldn't be presented.
@@ -140,6 +141,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
 }
 
 - (void)presentInfobarModal {
+  DCHECK(self.started);
   ProceduralBlock modalPresentation = ^{
     DCHECK(self.infobarBannerState !=
            InfobarBannerPresentationState::Presented);
@@ -245,7 +247,7 @@ const CGFloat kiPadBannerOverlapWithOmnibox = 10.0;
   self.bannerTransitionDriver = nil;
   animatedFullscreenDisabler_ = nullptr;
   [self infobarWasDismissed];
-  [self.infobarContainer childCoordinatorBannerWasDismissed:self.infobarType];
+  [self.infobarContainer childCoordinatorBannerWasDismissed:self];
 }
 
 #pragma mark InfobarBannerPositioner

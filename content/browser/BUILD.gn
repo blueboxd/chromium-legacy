@@ -1862,6 +1862,8 @@ jumbo_source_set("browser") {
     "web_package/bundled_exchanges_source.h",
     "web_package/bundled_exchanges_url_loader_factory.cc",
     "web_package/bundled_exchanges_url_loader_factory.h",
+    "web_package/bundled_exchanges_utils.cc",
+    "web_package/bundled_exchanges_utils.h",
     "web_package/prefetched_signed_exchange_cache.cc",
     "web_package/prefetched_signed_exchange_cache.h",
     "web_package/prefetched_signed_exchange_cache_adapter.cc",

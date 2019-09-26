@@ -314,6 +314,9 @@ Status DevToolsClientImpl::SendCommandInternal(
   command.SetInteger("id", command_id);
   command.SetString("method", method);
   command.SetKey("params", params.Clone());
+  if (parent_ != nullptr) {
+    command.SetString("sessionId", session_id_);
+  }
   std::string message = SerializeValue(&command);
   if (IsVLogOn(1)) {
     // Note: ChromeDriver log-replay depends on the format of this logging.
@@ -321,16 +324,9 @@ Status DevToolsClientImpl::SendCommandInternal(
     VLOG(1) << "DevTools WebSocket Command: " << method << " (id=" << command_id
             << ") " << id_ << " " << FormatValueForDisplay(params);
   }
-  if (parent_ != nullptr) {
-    base::DictionaryValue params2;
-    params2.SetString("sessionId", session_id_);
-    params2.SetString("message", message);
-    Status status =
-        parent_->SendCommandInternal("Target.sendMessageToTarget", params2,
-                                     nullptr, true, false, 0, timeout);
-    if (status.IsError())
-      return status;
-  } else if (!socket_->Send(message)) {
+  SyncWebSocket* socket =
+      (parent_ != nullptr) ? parent_->socket_.get() : socket_.get();
+  if (!socket->Send(message)) {
     return Status(kDisconnected, "unable to send message to renderer");
   }
 
@@ -357,8 +353,9 @@ Status DevToolsClientImpl::SendCommandInternal(
       }
       CHECK_EQ(response_info->state, kReceived);
       internal::InspectorCommandResponse& response = response_info->response;
-      if (!response.result)
+      if (!response.result) {
         return internal::ParseInspectorError(response.error);
+      }
       *result = std::move(response.result);
     }
   } else {
@@ -426,18 +423,32 @@ Status DevToolsClientImpl::ProcessNextMessage(
 
 Status DevToolsClientImpl::HandleMessage(int expected_id,
                                          const std::string& message) {
+  std::string session_id;
   internal::InspectorMessageType type;
   internal::InspectorEvent event;
   internal::InspectorCommandResponse response;
-  if (!parser_func_.Run(message, expected_id, &type, &event, &response)) {
+  if (!parser_func_.Run(message, expected_id, &session_id, &type, &event,
+                        &response)) {
     LOG(ERROR) << "Bad inspector message: " << message;
     return Status(kUnknownError, "bad inspector message: " + message);
   }
-
-  if (type == internal::kEventMessageType)
-    return ProcessEvent(event);
+  DevToolsClientImpl* client = this;
+  if (session_id != session_id_) {
+    auto it = children_.find(session_id);
+    if (it == children_.end()) {
+      // ChromeDriver only cares about iframe targets, but uses
+      // Target.setAutoAttach in FrameTracker. If we don't know about this
+      // sessionId, then it must be of a different target type and should be
+      // ignored.
+      return Status(kOk);
+    }
+    client = it->second;
+  }
+  if (type == internal::kEventMessageType) {
+    return client->ProcessEvent(event);
+  }
   CHECK_EQ(type, internal::kCommandResponseMessageType);
-  return ProcessCommandResponse(response);
+  return client->ProcessCommandResponse(response);
 }
 
 Status DevToolsClientImpl::ProcessEvent(const internal::InspectorEvent& event) {
@@ -482,27 +493,6 @@ Status DevToolsClientImpl::ProcessEvent(const internal::InspectorEvent& event) {
     }
     if (enable_status.IsError())
       return status;
-  }
-  if (event.method == "Target.receivedMessageFromTarget") {
-    std::string session_id;
-    if (!event.params->GetString("sessionId", &session_id))
-      return Status(
-          kUnknownError,
-          "missing sessionId in Target.receivedMessageFromTarget event");
-    if (children_.count(session_id) == 0)
-      // ChromeDriver only cares about iframe targets. If we don't know about
-      // this sessionId, then it must be of a different target type and should
-      // be ignored.
-      return Status(kOk);
-    DevToolsClientImpl* child = children_[session_id];
-    std::string message;
-    if (!event.params->GetString("message", &message))
-      return Status(
-          kUnknownError,
-          "missing message in Target.receivedMessageFromTarget event");
-
-    WebViewImplHolder childHolder(child->owner_);
-    return child->HandleMessage(-1, message);
   }
   return Status(kOk);
 }
@@ -592,12 +582,12 @@ Status DevToolsClientImpl::EnsureListenersNotifiedOfCommandResponse() {
 
 namespace internal {
 
-bool ParseInspectorMessage(
-    const std::string& message,
-    int expected_id,
-    InspectorMessageType* type,
-    InspectorEvent* event,
-    InspectorCommandResponse* command_response) {
+bool ParseInspectorMessage(const std::string& message,
+                           int expected_id,
+                           std::string* session_id,
+                           InspectorMessageType* type,
+                           InspectorEvent* event,
+                           InspectorCommandResponse* command_response) {
   // We want to allow invalid characters in case they are valid ECMAScript
   // strings. For example, webplatform tests use this to check string handling
   std::unique_ptr<base::Value> message_value = base::JSONReader::ReadDeprecated(
@@ -605,7 +595,9 @@ bool ParseInspectorMessage(
   base::DictionaryValue* message_dict;
   if (!message_value || !message_value->GetAsDictionary(&message_dict))
     return false;
-
+  session_id->clear();
+  if (message_dict->HasKey("sessionId"))
+    message_dict->GetString("sessionId", session_id);
   int id;
   if (!message_dict->HasKey("id")) {
     std::string method;

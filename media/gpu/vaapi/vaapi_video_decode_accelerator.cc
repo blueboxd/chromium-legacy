@@ -700,11 +700,12 @@ void VaapiVideoDecodeAccelerator::AssignPictureBuffers(
             : pictures_.size();
     CHECK_NE(requested_num_surfaces, 0u);
     va_surface_ids.clear();
-    RETURN_AND_NOTIFY_ON_FAILURE(vaapi_wrapper_->CreateContextAndSurfaces(
-                                     va_surface_format_, requested_pic_size_,
-                                     requested_num_surfaces, &va_surface_ids),
-                                 "Failed creating VA Surfaces",
-                                 PLATFORM_FAILURE, );
+    RETURN_AND_NOTIFY_ON_FAILURE(
+        vaapi_wrapper_->CreateContextAndSurfaces(
+            va_surface_format_, requested_pic_size_,
+            VaapiWrapper::SurfaceUsageHint::kVideoDecoder,
+            requested_num_surfaces, &va_surface_ids),
+        "Failed creating VA Surfaces", PLATFORM_FAILURE, );
   }
 
   available_va_surfaces_.assign(va_surface_ids.begin(), va_surface_ids.end());

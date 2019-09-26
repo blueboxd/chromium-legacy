@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_text_track_list_element.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/events/event_dispatch_forbidden_scope.h"
 #include "third_party/blink/renderer/core/dom/text.h"
@@ -182,7 +183,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackHeaderItem() {
   header_item->setAttribute(
       html_names::kAriaLabelAttr,
       AtomicString(GetLocale().QueryString(
-          WebLocalizedString::kAXMediaHideClosedCaptionsMenuButton)));
+          IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_MENU_BUTTON)));
   header_item->setTabIndex(0);
   return header_item;
 }

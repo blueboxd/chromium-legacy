@@ -39,10 +39,7 @@ android_library("java") {
   deps = [
     ":client_resources",
     "//weblayer/browser/java:client_java",
-
-    # TODO(pshmakov): Exclude this from the artifact and make sure we can depend on other version
-    # than Chrome.
-    "//third_party/android_deps:android_support_v4_java",
+    "//third_party/android_deps:com_android_support_support_fragment_java",
   ]
 
   # Needed for android.webkit.WebViewDelegate.
@@ -54,6 +51,13 @@ dist_aar("client_aar") {
   deps = [
     ":java",
     ":weblayer_client_manifest",
+  ]
+
+  jar_excluded_patterns = [
+   "*android/support/*",
+   "*android/arch/*",
+   "*androidx/*",
+   "*_support*",
   ]
 
   # dist_aar does not take the manifest from libraries in deps, so we have to

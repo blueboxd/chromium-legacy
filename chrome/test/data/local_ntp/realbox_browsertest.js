@@ -19,6 +19,7 @@ test.realbox.IDS = {
  * @const
  */
 test.realbox.CLASSES = {
+  SELECTED: 'selected',
   SHOW_MATCHES: 'show-matches',
 };
 
@@ -84,6 +85,9 @@ test.realbox.getSearchMatch = function(modifiers = {}) {
 /** @type {!Array<string>} */
 test.realbox.queries;
 
+/** @type {!Array<number>} */
+test.realbox.deletedLines;
+
 /** @type {!Element} */
 test.realbox.realboxEl;
 
@@ -101,10 +105,14 @@ test.realbox.setUp = function() {
       queryAutocomplete(query) {
         test.realbox.queries.push(query);
       },
+      deleteAutocompleteMatch(line) {
+        test.realbox.deletedLines.push(line);
+      }
     },
   };
 
   test.realbox.queries = [];
+  test.realbox.deletedLines = [];
 
   initLocalNTP(/*isGooglePage=*/ true);
 
@@ -464,4 +472,91 @@ test.realbox.testAutocompleteResultStatus = function() {
   const newMatchesEl = $(test.realbox.IDS.REALBOX_MATCHES);
   assertEquals(RESULTS.length, newMatchesEl.children.length);
   assertFalse(matchesEl === newMatchesEl);
+};
+
+test.realbox.testDeleteAutocompleteResultUnmodifiedDelete = function() {
+  const keyEvent = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Delete',
+  });
+  test.realbox.realboxEl.dispatchEvent(keyEvent);
+  assertFalse(keyEvent.defaultPrevented);
+};
+
+test.realbox.testDeleteAutocompleteResultShiftDeleteWithNoMatches = function() {
+  const keyEvent = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Delete',
+    shiftKey: true,
+  });
+  test.realbox.realboxEl.dispatchEvent(keyEvent);
+  assertFalse(keyEvent.defaultPrevented);
+};
+
+test.realbox.testDeleteAutocompleteResultShiftDeleteCantRemove = function() {
+  test.realbox.realboxEl.value = 'hello world';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  const matches = [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()];
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
+      {input: test.realbox.realboxEl.value, matches});
+
+  const keyEvent = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Delete',
+    shiftKey: true,
+  });
+  test.realbox.realboxEl.dispatchEvent(keyEvent);
+  assertTrue(keyEvent.defaultPrevented);
+
+  assertEquals(1, test.realbox.deletedLines.length);
+  assertEquals(0, test.realbox.deletedLines[0]);
+
+  assertEquals(2, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
+
+  chrome.embeddedSearch.searchBox.ondeleteautocompletematch(
+      {success: false, matches: []});
+
+  assertEquals(2, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
+};
+
+test.realbox.testDeleteAutocompleteResultShiftDeleteCanRemove = function() {
+  test.realbox.realboxEl.value = 'hello world';
+  test.realbox.realboxEl.dispatchEvent(new CustomEvent('input'));
+
+  const matches = [test.realbox.getSearchMatch(), test.realbox.getUrlMatch()];
+  chrome.embeddedSearch.searchBox.onqueryautocompletedone(
+      {input: test.realbox.realboxEl.value, matches});
+
+  const downArrow = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'ArrowDown',
+  });
+  test.realbox.realboxEl.dispatchEvent(downArrow);
+  assertTrue(downArrow.defaultPrevented);
+
+  const matchEls = $(test.realbox.IDS.REALBOX_MATCHES).children;
+  assertEquals(2, matchEls.length);
+  assertTrue(matchEls[1].classList.contains(test.realbox.CLASSES.SELECTED));
+
+  const shiftDelete = new KeyboardEvent('keydown', {
+    bubbles: true,
+    cancelable: true,
+    key: 'Delete',
+    shiftKey: true,
+  });
+  test.realbox.realboxEl.dispatchEvent(shiftDelete);
+  assertTrue(shiftDelete.defaultPrevented);
+
+  assertEquals(1, test.realbox.deletedLines.length);
+  assertEquals(1, test.realbox.deletedLines[0]);
+
+  chrome.embeddedSearch.searchBox.ondeleteautocompletematch(
+      {success: true, matches: [test.realbox.getSearchMatch()]});
+
+  assertEquals(1, $(test.realbox.IDS.REALBOX_MATCHES).children.length);
 };

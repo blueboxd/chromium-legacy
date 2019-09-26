@@ -92,6 +92,24 @@ class ProxiedPoliciesPropagatedWatcher : PolicyService::ProviderUpdateObserver {
 };
 
 }  // namespace internal
+
+namespace {
+// Returns the PolicyService that holds device-wide policies.
+PolicyService* GetDeviceWidePolicyService() {
+  BrowserPolicyConnectorChromeOS* browser_policy_connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return browser_policy_connector->GetPolicyService();
+}
+
+// Returns the ProxyPolicyProvider which is used to forward primary Profile
+// policies into the device-wide PolicyService.
+ProxyPolicyProvider* GetProxyPolicyProvider() {
+  BrowserPolicyConnectorChromeOS* browser_policy_connector =
+      g_browser_process->platform_part()->browser_policy_connector_chromeos();
+  return browser_policy_connector->GetGlobalUserCloudPolicyProvider();
+}
+}  // namespace
+
 #endif  // defined(OS_CHROMEOS)
 
 ProfilePolicyConnector::ProfilePolicyConnector() {}
@@ -174,22 +192,40 @@ void ProfilePolicyConnector::Init(
   }
 #endif
 
-  policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_);
-
 #if defined(OS_CHROMEOS)
-  ConfigurationPolicyProvider* user_policy_delegate = nullptr;
-  if (is_primary_user_) {
-    user_policy_delegate = configuration_policy_provider
-                               ? configuration_policy_provider
-                               : special_user_policy_provider_.get();
+  ConfigurationPolicyProvider* user_policy_delegate_candidate =
+      configuration_policy_provider ? configuration_policy_provider
+                                    : special_user_policy_provider_.get();
+
+  // Only proxy primary user policies to the device_wide policy service if all
+  // of the following are true:
+  // (*) This ProfilePolicyConnector has been created for the primary user.
+  // (*) There is a policy provider for this profile. Note that for unmanaged
+  //     users, |user_policy_delegate_candidate| will be nullptr.
+  // (*) The ProxyPolicyProvider is actually used by the device-wide policy
+  //     service. This may not be the case  e.g. in tests that use
+  //     bBrowserPolicyConnectorBase::SetPolicyProviderForTesting.
+  if (is_primary_user_ && user_policy_delegate_candidate &&
+      GetDeviceWidePolicyService()->HasProvider(GetProxyPolicyProvider())) {
+    GetProxyPolicyProvider()->SetDelegate(user_policy_delegate_candidate);
+
+    // When proxying primary user policies to the device-wide PolicyService,
+    // delay signaling that initialization is complete until the policies have
+    // propagated. See CreatePolicyServiceWithInitializationThrottled for
+    // details.
+    policy_service_ = CreatePolicyServiceWithInitializationThrottled(
+        policy_providers_, user_policy_delegate_candidate);
+  } else {
+    policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_);
   }
-  if (user_policy_delegate)
-    SetGlobalUserPolicyDelegate(user_policy_delegate);
-#endif
+#else   // defined(OS_CHROMEOS)
+  policy_service_ = std::make_unique<PolicyServiceImpl>(policy_providers_);
+#endif  // defined(OS_CHROMEOS)
 }
 
 void ProfilePolicyConnector::InitForTesting(
     std::unique_ptr<PolicyService> service) {
+  DCHECK(!policy_service_);
   policy_service_ = std::move(service);
 }
 
@@ -200,7 +236,7 @@ void ProfilePolicyConnector::OverrideIsManagedForTesting(bool is_managed) {
 void ProfilePolicyConnector::Shutdown() {
 #if defined(OS_CHROMEOS)
   if (is_primary_user_)
-    SetGlobalUserPolicyDelegate(nullptr);
+    GetProxyPolicyProvider()->SetDelegate(nullptr);
 
   if (special_user_policy_provider_)
     special_user_policy_provider_->Shutdown();
@@ -256,41 +292,33 @@ ProfilePolicyConnector::DeterminePolicyProviderForPolicy(
 }
 
 #if defined(OS_CHROMEOS)
-void ProfilePolicyConnector::SetGlobalUserPolicyDelegate(
+std::unique_ptr<PolicyService>
+ProfilePolicyConnector::CreatePolicyServiceWithInitializationThrottled(
+    const std::vector<ConfigurationPolicyProvider*>& policy_providers,
     ConfigurationPolicyProvider* user_policy_delegate) {
-  BrowserPolicyConnectorChromeOS* browser_policy_connector =
-      g_browser_process->platform_part()->browser_policy_connector_chromeos();
-  PolicyService* device_wide_policy_service =
-      browser_policy_connector->GetPolicyService();
-  ProxyPolicyProvider* proxy_policy_provider =
-      browser_policy_connector->GetGlobalUserCloudPolicyProvider();
+  DCHECK(user_policy_delegate);
 
-  // The ProxyPolicyProvider may be available from |browser_policy_connector|
-  // but not actually used by the |device_wide_policy_service| in tests (e.g. if
-  // BrowserPolicyConnectorBase::SetPolicyProviderForTesting has been used).
-  if (!device_wide_policy_service->HasProvider(proxy_policy_provider))
-    return;
+  auto policy_service =
+      PolicyServiceImpl::CreateWithThrottledInitialization(policy_providers);
 
-  if (!user_policy_delegate) {
-    proxy_policy_provider->SetDelegate(nullptr);
-    return;
-  }
-
-  policy_service_->SetInitializationThrottled(true);
   // base::Unretained is OK for |this| because
   // |proxied_policies_propagated_watcher_| is guaranteed not to call its
-  // callback after it has been destroyed.
+  // callback after it has been destroyed. base::Unretained is also OK for
+  // |policy_service.get()| because it will be owned by |*this| and is never
+  // explicitly destroyed.
   proxied_policies_propagated_watcher_ =
       std::make_unique<internal::ProxiedPoliciesPropagatedWatcher>(
-          device_wide_policy_service, proxy_policy_provider,
+          GetDeviceWidePolicyService(), GetProxyPolicyProvider(),
           user_policy_delegate,
           base::BindOnce(&ProfilePolicyConnector::OnProxiedPoliciesPropagated,
-                         base::Unretained(this)));
-  proxy_policy_provider->SetDelegate(user_policy_delegate);
+                         base::Unretained(this),
+                         base::Unretained(policy_service.get())));
+  return std::move(policy_service);
 }
 
-void ProfilePolicyConnector::OnProxiedPoliciesPropagated() {
-  policy_service_->SetInitializationThrottled(false);
+void ProfilePolicyConnector::OnProxiedPoliciesPropagated(
+    PolicyServiceImpl* policy_service) {
+  policy_service->UnthrottleInitialization();
   // Do not delete |proxied_policies_propagated_watcher_| synchronously, as the
   // PolicyService it is observing is expected to be iterating its observer
   // list.

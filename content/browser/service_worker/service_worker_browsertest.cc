@@ -1168,7 +1168,8 @@ IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, StartNotFound) {
   StartWorker(blink::ServiceWorkerStatusCode::kErrorNetwork);
 }
 
-IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, ReadResourceFailure) {
+// Flaky failures on multiple OSes: crbug.com/1008386
+IN_PROC_BROWSER_TEST_F(ServiceWorkerVersionBrowserTest, DISABLED_ReadResourceFailure) {
   StartServerAndNavigateToSetup();
 
   // Create a registration with an active version.

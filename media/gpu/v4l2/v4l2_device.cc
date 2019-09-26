@@ -903,6 +903,8 @@ bool V4L2Queue::QueueBuffer(struct v4l2_buffer* v4l2_buffer) {
   auto inserted = queued_buffers_.emplace(v4l2_buffer->index);
   DCHECK_EQ(inserted.second, true);
 
+  device_->SchedulePoll();
+
   return true;
 }
 
@@ -945,6 +947,9 @@ std::pair<bool, V4L2ReadableBufferRef> V4L2Queue::DequeueBuffer() {
   auto it = queued_buffers_.find(v4l2_buffer.index);
   DCHECK(it != queued_buffers_.end());
   queued_buffers_.erase(*it);
+
+  if (QueuedBuffersCount() > 0)
+    device_->SchedulePoll();
 
   DCHECK(free_buffers_);
   return std::make_pair(true,
@@ -1757,6 +1762,39 @@ V4L2Device::EnumerateSupportedEncodeProfiles() {
   }
 
   return profiles;
+}
+
+bool V4L2Device::StartPolling(V4L2DevicePoller::EventCallback event_callback,
+                              base::RepeatingClosure error_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  if (!device_poller_) {
+    device_poller_ =
+        std::make_unique<V4L2DevicePoller>(this, "V4L2DeviceThreadPoller");
+  }
+
+  bool ret = device_poller_->StartPolling(std::move(event_callback),
+                                          std::move(error_callback));
+
+  if (!ret)
+    device_poller_ = nullptr;
+
+  return ret;
+}
+
+bool V4L2Device::StopPolling() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  return !device_poller_ || device_poller_->StopPolling();
+}
+
+void V4L2Device::SchedulePoll() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(client_sequence_checker_);
+
+  if (!device_poller_ || !device_poller_->IsPolling())
+    return;
+
+  device_poller_->SchedulePoll();
 }
 
 }  //  namespace media

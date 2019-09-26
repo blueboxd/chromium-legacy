@@ -244,13 +244,22 @@ class TraceEventDataSourceTest : public testing::Test {
     producer_client_.reset();
   }
 
-  void CreateTraceEventDataSource(bool privacy_filtering_enabled = false) {
-    TraceEventDataSource::ResetForTesting();
-    perfetto::DataSourceConfig config;
-    config.mutable_chrome_config()->set_privacy_filtering_enabled(
-        privacy_filtering_enabled);
-    TraceEventDataSource::GetInstance()->StartTracing(producer_client(),
-                                                      config);
+  void CreateTraceEventDataSource(bool privacy_filtering_enabled = false,
+                                  bool start_trace = true) {
+    task_environment_.RunUntilIdle();
+    base::RunLoop tracing_started;
+    base::SequencedTaskRunnerHandle::Get()->PostTaskAndReply(
+        FROM_HERE,
+        base::BindOnce([]() { TraceEventDataSource::ResetForTesting(); }),
+        tracing_started.QuitClosure());
+    tracing_started.Run();
+    if (start_trace) {
+      perfetto::DataSourceConfig config;
+      config.mutable_chrome_config()->set_privacy_filtering_enabled(
+          privacy_filtering_enabled);
+      TraceEventDataSource::GetInstance()->StartTracing(producer_client(),
+                                                        config);
+    }
   }
 
   MockProducerClient* producer_client() { return producer_client_.get(); }
@@ -1060,6 +1069,7 @@ TEST_F(TraceEventDataSourceTest, FilteringMetadataSource) {
 }
 
 TEST_F(TraceEventDataSourceTest, ProtoMetadataSource) {
+  CreateTraceEventDataSource();
   auto* metadata_source = TraceEventMetadataSource::GetInstance();
   metadata_source->AddGeneratorFunction(base::BindRepeating(
       [](perfetto::protos::pbzero::ChromeMetadataPacket* metadata,
@@ -1072,8 +1082,6 @@ TEST_F(TraceEventDataSourceTest, ProtoMetadataSource) {
                 MONITOR_AND_DUMP_WHEN_SPECIFIC_HISTOGRAM_AND_VALUE);
         rule->set_histogram_rule()->set_histogram_min_trigger(123);
       }));
-
-  CreateTraceEventDataSource();
 
   perfetto::DataSourceConfig config;
   config.mutable_chrome_config()->set_privacy_filtering_enabled(true);
@@ -1157,10 +1165,11 @@ TEST_F(TraceEventDataSourceNoInterningTest, InterningScopedToPackets) {
 }
 
 TEST_F(TraceEventDataSourceTest, StartupTracingTimeout) {
+  CreateTraceEventDataSource(/* privacy_filtering_enabled = */ false,
+                             /* start_trace = */ false);
   PerfettoTracedProcess::ResetTaskRunnerForTesting(
       base::SequencedTaskRunnerHandle::Get());
   constexpr char kStartupTestEvent1[] = "startup_registry";
-  TraceEventDataSource::ResetForTesting();
   auto* data_source = TraceEventDataSource::GetInstance();
 
   // Start startup tracing registry with no timeout. This would cause startup

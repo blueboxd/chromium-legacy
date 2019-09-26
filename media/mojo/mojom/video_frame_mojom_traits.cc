@@ -9,11 +9,14 @@
 
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "media/base/format_utils.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
 #include "mojo/public/cpp/base/values_mojom_traits.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
+#include "ui/gfx/mojom/buffer_types_mojom_traits.h"
 #include "ui/gfx/mojom/color_space_mojom_traits.h"
 
 namespace mojo {
@@ -69,12 +72,20 @@ media::mojom::VideoFrameDataPtr MakeVideoFrameData(
   }
 #endif
 
-  if (input->HasTextures()) {
-    std::vector<gpu::MailboxHolder> mailbox_holder(
-        media::VideoFrame::kMaxPlanes);
-    size_t num_planes = media::VideoFrame::NumPlanes(input->format());
-    for (size_t i = 0; i < num_planes; i++)
-      mailbox_holder[i] = input->mailbox_holder(i);
+  std::vector<gpu::MailboxHolder> mailbox_holder(media::VideoFrame::kMaxPlanes);
+  size_t num_planes = media::VideoFrame::NumPlanes(input->format());
+  DCHECK_LE(num_planes, mailbox_holder.size());
+  for (size_t i = 0; i < num_planes; i++)
+    mailbox_holder[i] = input->mailbox_holder(i);
+
+  if (input->storage_type() == media::VideoFrame::STORAGE_GPU_MEMORY_BUFFER) {
+    gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle;
+    if (input->HasGpuMemoryBuffer())
+      gpu_memory_buffer_handle = input->GetGpuMemoryBuffer()->CloneHandle();
+    return media::mojom::VideoFrameData::NewGpuMemoryBufferData(
+        media::mojom::GpuMemoryBufferVideoFrameData::New(
+            std::move(gpu_memory_buffer_handle), std::move(mailbox_holder)));
+  } else if (input->HasTextures()) {
     return media::mojom::VideoFrameData::NewMailboxData(
         media::mojom::MailboxVideoFrameData::New(
             std::move(mailbox_holder), std::move(input->ycbcr_info())));
@@ -186,6 +197,47 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     frame = media::VideoFrame::WrapExternalDmabufs(
         *layout, visible_rect, natural_size, std::move(dmabuf_fds), timestamp);
 #endif
+  } else if (data.is_gpu_memory_buffer_data()) {
+    media::mojom::GpuMemoryBufferVideoFrameDataDataView gpu_memory_buffer_data;
+    data.GetGpuMemoryBufferDataDataView(&gpu_memory_buffer_data);
+
+    gfx::GpuMemoryBufferHandle gpu_memory_buffer_handle;
+    if (!gpu_memory_buffer_data.ReadGpuMemoryBufferHandle(
+            &gpu_memory_buffer_handle)) {
+      return false;
+    }
+
+    std::vector<gpu::MailboxHolder> mailbox_holder;
+    if (!gpu_memory_buffer_data.ReadMailboxHolder(&mailbox_holder)) {
+      DLOG(WARNING) << "Failed to get mailbox holder";
+    }
+    if (mailbox_holder.size() > media::VideoFrame::kMaxPlanes) {
+      DLOG(ERROR) << "The size of mailbox holder is too large: "
+                  << mailbox_holder.size();
+      return false;
+    }
+
+    gpu::MailboxHolder mailbox_holder_array[media::VideoFrame::kMaxPlanes];
+    for (size_t i = 0; i < mailbox_holder.size(); i++)
+      mailbox_holder_array[i] = mailbox_holder[i];
+
+    base::Optional<gfx::BufferFormat> buffer_format =
+        VideoPixelFormatToGfxBufferFormat(format);
+    if (!buffer_format)
+      return false;
+
+    gpu::GpuMemoryBufferSupport support;
+    std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+        support.CreateGpuMemoryBufferImplFromHandle(
+            std::move(gpu_memory_buffer_handle), coded_size, *buffer_format,
+            gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+            base::NullCallback());
+    if (!gpu_memory_buffer)
+      return false;
+
+    frame = media::VideoFrame::WrapExternalGpuMemoryBuffer(
+        visible_rect, natural_size, std::move(gpu_memory_buffer),
+        mailbox_holder_array, media::VideoFrame::ReleaseMailboxCB(), timestamp);
   } else if (data.is_mailbox_data()) {
     media::mojom::MailboxVideoFrameDataDataView mailbox_data;
     data.GetMailboxDataDataView(&mailbox_data);

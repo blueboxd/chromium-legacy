@@ -369,7 +369,8 @@ void RemotePlayback::StateChanged(
     DispatchEvent(*Event::Create(event_type_names::kDisconnect));
     if (media_element_->IsHTMLVideoElement()) {
       ToHTMLVideoElement(media_element_.Get())
-          ->MediaRemotingStopped(WebLocalizedString::kMediaRemotingStopNoText);
+          ->MediaRemotingStopped(
+              WebMediaPlayerClient::kMediaRemotingStopNoText);
     }
     CleanupConnections();
     presentation_id_ = "";

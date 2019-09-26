@@ -54,7 +54,7 @@ void CredentialManagerPasswordFormManager::OnFetchCompleted() {
 }
 
 metrics_util::CredentialSourceType
-CredentialManagerPasswordFormManager::GetCredentialSource() {
+CredentialManagerPasswordFormManager::GetCredentialSource() const {
   return metrics_util::CredentialSourceType::kCredentialManagementAPI;
 }
 

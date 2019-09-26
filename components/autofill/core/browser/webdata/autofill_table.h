@@ -476,17 +476,6 @@ class AutofillTable : public WebDatabaseTable,
       const base::Time& delete_end,
       std::vector<std::unique_ptr<AutofillProfile>>* profiles);
 
-  // Retrieves all profiles in the database that have been deleted since last
-  // "empty" of the trash.
-  bool GetAutofillProfilesInTrash(std::vector<std::string>* guids);
-
-  // Empties the Autofill profiles "trash can".
-  bool EmptyAutofillProfilesTrash();
-
-  // Retrieves all profiles in the database that have been deleted since last
-  // "empty" of the trash.
-  bool AddAutofillGUIDToTrash(const std::string& guid);
-
   // Clear all profiles.
   bool ClearAutofillProfiles();
 
@@ -540,7 +529,6 @@ class AutofillTable : public WebDatabaseTable,
   bool MigrateToVersion78AddModelTypeColumns();
   bool MigrateToVersion80AddIsClientValidityStatesUpdatedColumn();
   bool MigrateToVersion81CleanUpWrongModelTypeData();
-  bool MigrateToVersion82AddCloudTokenData();
   // Max data length saved in the table, AKA the maximum length allowed for
   // form data.
   // Copied to components/autofill/ios/browser/resources/autofill_controller.js.

@@ -14,6 +14,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/system/sys_info.h"
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
+#include "media/base/format_utils.h"
 #include "media/base/video_types.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
 #include "media/gpu/macros.h"
@@ -188,19 +189,24 @@ void GpuArcVideoEncodeAccelerator::EncodeDmabuf(
     return;
   }
 
-  auto layout = CreateVideoFrameLayout(format, coded_size_, *gmb_handle);
-  if (!layout) {
-    DLOG(ERROR) << "Failed to create VideoFrameLayout.";
+  base::Optional<gfx::BufferFormat> buffer_format =
+      VideoPixelFormatToGfxBufferFormat(format);
+  if (!format) {
+    DLOG(ERROR) << "Unexpected format: " << format;
     client_->NotifyError(Error::kInvalidArgumentError);
     return;
   }
+  std::unique_ptr<gfx::GpuMemoryBuffer> gpu_memory_buffer =
+      support_.CreateGpuMemoryBufferImplFromHandle(
+          std::move(gmb_handle).value(), coded_size_, *buffer_format,
+          gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE,
+          base::NullCallback());
 
-  std::vector<base::ScopedFD> scoped_fds;
-  for (auto& plane : gmb_handle->native_pixmap_handle.planes) {
-    scoped_fds.push_back(std::move(plane.fd));
-  }
-  auto frame = media::VideoFrame::WrapExternalDmabufs(
-      *layout, gfx::Rect(visible_size_), visible_size_, std::move(scoped_fds),
+  gpu::MailboxHolder dummy_mailbox[media::VideoFrame::kMaxPlanes];
+  auto frame = media::VideoFrame::WrapExternalGpuMemoryBuffer(
+      gfx::Rect(visible_size_), visible_size_, std::move(gpu_memory_buffer),
+      dummy_mailbox /* mailbox_holders */,
+      base::NullCallback() /* mailbox_holder_release_cb_ */,
       base::TimeDelta::FromMicroseconds(timestamp));
   if (!frame) {
     DLOG(ERROR) << "Failed to create VideoFrame";

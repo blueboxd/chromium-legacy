@@ -88,6 +88,7 @@ class CreditCardSaveManager {
     virtual void OnReceivedGetUploadDetailsResponse() {}
     virtual void OnSentUploadCardRequest() {}
     virtual void OnReceivedUploadCardResponse() {}
+    virtual void OnShowCardSavedFeedback() {}
     virtual void OnStrikeChangeComplete() {}
   };
 
@@ -147,6 +148,8 @@ class CreditCardSaveManager {
                            StrikeDatabase_Local_FullFlowTest);
   FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTest,
                            StrikeDatabase_Upload_FullFlowTest);
+  FRIEND_TEST_ALL_PREFIXES(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                           Feedback_CardSavingAnimation);
 
   // Returns the CreditCardSaveStrikeDatabase for |client_|.
   CreditCardSaveStrikeDatabase* GetCreditCardSaveStrikeDatabase();

@@ -81,7 +81,8 @@ bool SignedExchangeRequestHandler::MaybeCreateLoaderForResponse(
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
     ThrottlingURLLoader* url_loader,
-    bool* skip_other_interceptors) {
+    bool* skip_other_interceptors,
+    bool* will_return_unsafe_redirect) {
   DCHECK(!signed_exchange_loader_);
   if (!signed_exchange_utils::ShouldHandleAsSignedHTTPExchange(request.url,
                                                                response_head)) {

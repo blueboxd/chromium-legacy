@@ -30,10 +30,10 @@ void MediaControlMuteButtonElement::UpdateDisplayType() {
   // 'muted' when the volume is 0 even if the element is not muted. This allows
   // the painting and the display type to actually match.
   bool muted = MediaElement().muted() || MediaElement().volume() == 0;
-  setAttribute(html_names::kAriaLabelAttr,
-               WTF::AtomicString(GetLocale().QueryString(
-                   muted ? WebLocalizedString::kAXMediaUnMuteButton
-                         : WebLocalizedString::kAXMediaMuteButton)));
+  setAttribute(
+      html_names::kAriaLabelAttr,
+      WTF::AtomicString(GetLocale().QueryString(
+          muted ? IDS_AX_MEDIA_UNMUTE_BUTTON : IDS_AX_MEDIA_MUTE_BUTTON)));
   SetClass("muted", muted);
   UpdateOverflowString();
 

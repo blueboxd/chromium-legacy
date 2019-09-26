@@ -675,8 +675,14 @@ IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
 // Test that the action accuracy is properly recorded.
 // User clicks on an anchor element that points to same URL as the URL
 // prefetched.
+// https://crbug.com/1008307
+#if (defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_CHROMEOS))
+#define MAYBE_ActionAccuracy_SameOrigin DISABLED_ActionAccuracy_SameOrigin
+#else
+#define MAYBE_ActionAccuracy_SameOrigin ActionAccuracy_SameOrigin
+#endif
 IN_PROC_BROWSER_TEST_F(NavigationPredictorBrowserTest,
-                       ActionAccuracy_SameOrigin) {
+                       MAYBE_ActionAccuracy_SameOrigin) {
   base::HistogramTester histogram_tester;
 
   const GURL& url = GetTestURL("/page_with_same_host_anchor_element.html");

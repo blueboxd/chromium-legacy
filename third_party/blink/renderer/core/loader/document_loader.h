@@ -509,6 +509,7 @@ class CORE_EXPORT DocumentLoader : public GarbageCollected<DocumentLoader>,
   WebScopedVirtualTimePauser virtual_time_pauser_;
   Member<SourceKeyedCachedMetadataHandler> cached_metadata_handler_;
   Member<PrefetchedSignedExchangeManager> prefetched_signed_exchange_manager_;
+  KURL base_url_override_for_bundled_exchanges_;
 
   // This UseCounterHelper tracks feature usage associated with the lifetime of
   // the document load. Features recorded prior to commit will be recorded

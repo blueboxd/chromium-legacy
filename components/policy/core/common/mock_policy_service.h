@@ -45,7 +45,6 @@ class MockPolicyService : public PolicyService {
   MOCK_CONST_METHOD1(GetPolicies, const PolicyMap&(const PolicyNamespace&));
   MOCK_CONST_METHOD1(IsInitializationComplete, bool(PolicyDomain domain));
   MOCK_METHOD1(RefreshPolicies, void(const base::Closure&));
-  MOCK_METHOD1(SetInitializationThrottled, void(bool initialization_throttled));
 };
 
 }  // namespace policy

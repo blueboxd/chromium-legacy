@@ -47,7 +47,7 @@ SecureChannelInitializer::ConnectionRequestArgs::ConnectionRequestArgs(
     const multidevice::RemoteDevice& local_device,
     const std::string& feature,
     ConnectionPriority connection_priority,
-    mojom::ConnectionDelegatePtr delegate,
+    mojo::PendingRemote<mojom::ConnectionDelegate> delegate,
     bool is_listen_request)
     : device_to_connect(device_to_connect),
       local_device(local_device),
@@ -83,7 +83,7 @@ void SecureChannelInitializer::ListenForConnectionFromDevice(
     const multidevice::RemoteDevice& local_device,
     const std::string& feature,
     ConnectionPriority connection_priority,
-    mojom::ConnectionDelegatePtr delegate) {
+    mojo::PendingRemote<mojom::ConnectionDelegate> delegate) {
   if (secure_channel_impl_) {
     secure_channel_impl_->ListenForConnectionFromDevice(
         device_to_connect, local_device, feature, connection_priority,
@@ -101,7 +101,7 @@ void SecureChannelInitializer::InitiateConnectionToDevice(
     const multidevice::RemoteDevice& local_device,
     const std::string& feature,
     ConnectionPriority connection_priority,
-    mojom::ConnectionDelegatePtr delegate) {
+    mojo::PendingRemote<mojom::ConnectionDelegate> delegate) {
   if (secure_channel_impl_) {
     secure_channel_impl_->InitiateConnectionToDevice(
         device_to_connect, local_device, feature, connection_priority,

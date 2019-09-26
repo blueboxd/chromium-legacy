@@ -1707,12 +1707,18 @@ void HTMLSelectElement::ListBoxDefaultEventHandler(Event& event) {
       event.SetDefaultHandled();
     } else if (is_multiple_ && key_code == ' ' &&
                IsSpatialNavigationEnabled(GetDocument().GetFrame())) {
-      // Use space to toggle selection change.
-      active_selection_state_ = !active_selection_state_;
-      UpdateSelectedState(active_selection_end_.Get(), true /*multi*/,
-                          false /*shift*/);
-      ListBoxOnChange();
-      event.SetDefaultHandled();
+      HTMLOptionElement* option = active_selection_end_;
+      // If there's no active selection,
+      // act as if "ArrowDown" had been pressed.
+      if (!option)
+        option = NextSelectableOption(LastSelectedOption());
+      if (option) {
+        // Use space to toggle selection change.
+        active_selection_state_ = !active_selection_state_;
+        UpdateSelectedState(option, true /*multi*/, false /*shift*/);
+        ListBoxOnChange();
+        event.SetDefaultHandled();
+      }
     }
   }
 }

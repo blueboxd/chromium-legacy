@@ -34,6 +34,7 @@
 #include "third_party/blink/renderer/core/layout/svg/svg_layout_support.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources.h"
 #include "third_party/blink/renderer/core/layout/svg/svg_resources_cache.h"
+#include "third_party/blink/renderer/core/layout/svg/transform_helper.h"
 #include "third_party/blink/renderer/core/layout/svg/transformed_hit_test_location.h"
 #include "third_party/blink/renderer/core/paint/image_element_timing.h"
 #include "third_party/blink/renderer/core/paint/svg_image_painter.h"
@@ -47,11 +48,19 @@ LayoutSVGImage::LayoutSVGImage(SVGImageElement* impl)
     : LayoutSVGModelObject(impl),
       needs_boundaries_update_(true),
       needs_transform_update_(true),
+      transform_uses_reference_box_(false),
       image_resource_(MakeGarbageCollected<LayoutImageResource>()) {
   image_resource_->Initialize(this);
 }
 
 LayoutSVGImage::~LayoutSVGImage() = default;
+
+void LayoutSVGImage::StyleDidChange(StyleDifference diff,
+                                    const ComputedStyle* old_style) {
+  transform_uses_reference_box_ =
+      TransformHelper::DependsOnReferenceBox(StyleRef());
+  LayoutSVGModelObject::StyleDidChange(diff, old_style);
+}
 
 void LayoutSVGImage::WillBeDestroyed() {
   image_resource_->Shutdown();
@@ -132,22 +141,28 @@ void LayoutSVGImage::UpdateLayout() {
   if (EverHadLayout() && SelfNeedsLayout())
     SVGResourcesCache::ClientLayoutChanged(*this);
 
-  UpdateBoundingBox();
+  FloatPoint old_bbox_location = object_bounding_box_.Location();
+  bool bbox_changed = UpdateBoundingBox() ||
+                      old_bbox_location != object_bounding_box_.Location();
 
   bool update_parent_boundaries = false;
-  if (needs_transform_update_) {
-    local_transform_ =
-        ToSVGImageElement(GetElement())
-            ->CalculateTransform(SVGElement::kIncludeMotionTransform);
-    needs_transform_update_ = false;
-    update_parent_boundaries = true;
-  }
-
   if (needs_boundaries_update_) {
     local_visual_rect_ = object_bounding_box_;
     SVGLayoutSupport::AdjustVisualRectWithResources(*this, object_bounding_box_,
                                                     local_visual_rect_);
     needs_boundaries_update_ = false;
+    update_parent_boundaries = true;
+  }
+
+  if (!needs_transform_update_ && transform_uses_reference_box_) {
+    needs_transform_update_ = CheckForImplicitTransformChange(bbox_changed);
+    if (needs_transform_update_)
+      SetNeedsPaintPropertyUpdate();
+  }
+
+  if (needs_transform_update_) {
+    local_transform_ = CalculateLocalTransform();
+    needs_transform_update_ = false;
     update_parent_boundaries = true;
   }
 

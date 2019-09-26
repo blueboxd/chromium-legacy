@@ -4,6 +4,28 @@
 
 import("//ios/build/chrome_build.gni")
 
+source_set("scene") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "scene_controller.h",
+    "scene_controller.mm",
+    "scene_delegate.h",
+    "scene_delegate.mm",
+    "scene_state.h",
+    "scene_state.mm",
+  ]
+
+  deps = [
+    ":main",
+    "//base",
+    "//ios/chrome/browser/tabs:tabs",
+    "//ios/chrome/browser/ui/commands:commands",
+    "//ios/chrome/browser/ui/tab_grid",
+  ]
+
+  libs = [ "UIKit.framework" ]
+}
+
 source_set("main") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
@@ -12,12 +34,6 @@ source_set("main") {
     "browser_view_wrangler.mm",
     "bvc_container_view_controller.h",
     "bvc_container_view_controller.mm",
-    "scene_controller.h",
-    "scene_controller.mm",
-    "scene_delegate.h",
-    "scene_delegate.mm",
-    "scene_state.h",
-    "scene_state.mm",
   ]
   deps = [
     "//base",
@@ -78,6 +94,7 @@ source_set("unit_tests") {
   ]
   deps = [
     ":main",
+    ":scene",
     "//base",
     "//base/test:test_support",
     "//components/bookmarks/test",

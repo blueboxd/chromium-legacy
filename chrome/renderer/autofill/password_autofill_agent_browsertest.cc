@@ -70,10 +70,6 @@ namespace {
 // The name of the username/password element in the form.
 const char kUsernameName[] = "username";
 const char kPasswordName[] = "password";
-const char kDisplayName[] = "display-name";
-const char kCreditCardOwnerName[] = "creditcardowner";
-const char kCreditCardNumberName[] = "creditcardnumber";
-const char kCreditCardVerificationName[] = "cvc";
 const char kSearchField[] = "search";
 const char kSocialMediaTextArea[] = "new_chirp";
 
@@ -218,15 +214,6 @@ const char kJavaScriptClick[] =
     "var form = document.getElementById('myform1');"
     "form.dispatchEvent(event);"
     "console.log('clicked!');";
-
-const char kFormHTMLWithTwoTextFields[] =
-    "<FORM name='LoginTestForm' id='LoginTestForm' "
-    "action='http://www.bidule.com'>"
-    "  <INPUT type='text' id='display-name'/>"
-    "  <INPUT type='text' id='username'/>"
-    "  <INPUT type='password' id='password'/>"
-    "  <INPUT type='submit' value='Login'/>"
-    "</FORM>";
 
 const char kPasswordChangeFormHTML[] =
     "<FORM name='ChangeWithUsernameForm' action='http://www.bidule.com'>"
@@ -1894,7 +1881,7 @@ TEST_F(PasswordAutofillAgentTest, NoCredentialsOnPasswordClick) {
 // PasswordAutofillAgent can still remember the username and the password
 // typed by the user.
 TEST_F(PasswordAutofillAgentTest,
-       RememberLastNonEmptyUsernameAndPasswordOnSubmit_ScriptCleared) {
+       DISABLED_RememberLastNonEmptyUsernameAndPasswordOnSubmit_ScriptCleared) {
   LoadHTML(kSignupFormHTML);
   WebInputElement username_element = GetInputElementByID("random_info");
   ASSERT_FALSE(username_element.IsNull());
@@ -1957,7 +1944,7 @@ TEST_F(PasswordAutofillAgentTest,
 // Similar to RememberLastNonEmptyPasswordOnSubmit_ScriptCleared, but uses the
 // new password instead of the current password.
 TEST_F(PasswordAutofillAgentTest,
-       RememberLastNonEmptyUsernameAndPasswordOnSubmit_New) {
+       DISABLED_RememberLastNonEmptyUsernameAndPasswordOnSubmit_New) {
   const char kNewPasswordFormHTML[] =
       "<FORM name='LoginTestForm' action='http://www.bidule.com'>"
       "  <INPUT type='text' id='username' autocomplete='username'/>"
@@ -2314,68 +2301,6 @@ TEST_F(PasswordAutofillAgentTest,
                                               std::string(), false);
 }
 
-// Test that the last plain text field before a password field is chosen as a
-// username, in a form with 2 plain text fields without username predictions.
-TEST_F(PasswordAutofillAgentTest, FindingUsernameWithoutAutofillPredictions) {
-  LoadHTML(kFormHTMLWithTwoTextFields);
-  UpdateUsernameAndPasswordElements();
-  WebInputElement display_name_element = GetInputElementByID(kDisplayName);
-  SimulateUsernameTyping("temp");
-  SimulateUserInputChangeForElement(&display_name_element, "User123");
-  SimulatePasswordTyping("random");
-
-  SaveAndSubmitForm();
-
-  // Observe that the PasswordAutofillAgent identifies the second field as
-  // username.
-  ExpectFormSubmittedWithUsernameAndPasswords("temp", "random", "");
-}
-
-// Tests that field predictions are followed when identifying the username
-// and password in a password form with two plain text fields.
-TEST_F(PasswordAutofillAgentTest, FindingFieldsWithAutofillPredictions) {
-  LoadHTML(kFormHTMLWithTwoTextFields);
-  UpdateUsernameAndPasswordElements();
-  WebInputElement display_name_element = GetInputElementByID(kDisplayName);
-  SimulateUsernameTyping("temp");
-  SimulateUserInputChangeForElement(&display_name_element, "User123");
-  SimulatePasswordTyping("random");
-  // Find FormData for visible password form.
-  WebFormElement form_element = username_element_.Form();
-  FormData form_data;
-  ASSERT_TRUE(WebFormElementToFormData(
-      form_element, blink::WebFormControlElement(), nullptr,
-      form_util::EXTRACT_NONE, &form_data, nullptr));
-  // Simulate Autofill predictions: the first field is username, the third
-  // one is password.
-  autofill::FormsPredictionsMap predictions;
-  predictions[form_data][form_data.fields[0]] =
-      PasswordFormFieldPredictionType::kUsername;
-  predictions[form_data][form_data.fields[2]] =
-      PasswordFormFieldPredictionType::kNewPassword;
-  password_autofill_agent_->AutofillUsernameAndPasswordDataReceived(
-      predictions);
-
-  // The predictions should still match even if the form changes, as long
-  // as the particular elements don't change.
-  std::string add_field_to_form =
-      "var form = document.getElementById('LoginTestForm');"
-      "var new_input = document.createElement('input');"
-      "new_input.setAttribute('type', 'text');"
-      "new_input.setAttribute('id', 'other_field');"
-      "form.appendChild(new_input);";
-  ExecuteJavaScriptForTests(add_field_to_form.c_str());
-
-  SaveAndSubmitForm();
-
-  // Observe that the PasswordAutofillAgent identifies the first field as
-  // username.
-  // TODO(msramek): We should also test that adding another password field
-  // won't override the password field prediction either. However, the password
-  // field predictions are not taken into account yet.
-  ExpectFormSubmittedWithUsernameAndPasswords("User123", "random", "");
-}
-
 // The user types in a username and a password. Then JavaScript changes password
 // field to readonly state before submit. PasswordAutofillAgent can correctly
 // process readonly password field. This test models behaviour of gmail.com.
@@ -2567,39 +2492,6 @@ TEST_F(PasswordAutofillAgentTest,
   // message.
   autofill_agent_->FormControlElementClicked(password_element_, true);
   CheckSuggestions("", false);
-}
-
-// Tests that NOT_PASSWORD field predictions are followed so that no password
-// form is submitted.
-TEST_F(PasswordAutofillAgentTest, IgnoreNotPasswordFields) {
-  LoadHTML(kCreditCardFormHTML);
-  WebInputElement credit_card_owner_element =
-      GetInputElementByID(kCreditCardOwnerName);
-  WebInputElement credit_card_number_element =
-      GetInputElementByID(kCreditCardNumberName);
-  WebInputElement credit_card_verification_element =
-      GetInputElementByID(kCreditCardVerificationName);
-  SimulateUserInputChangeForElement(&credit_card_owner_element, "JohnSmith");
-  SimulateUserInputChangeForElement(&credit_card_number_element,
-                                    "1234123412341234");
-  SimulateUserInputChangeForElement(&credit_card_verification_element, "123");
-  // Find FormData for visible form.
-  WebFormElement form_element = credit_card_number_element.Form();
-  FormData form_data;
-  ASSERT_TRUE(WebFormElementToFormData(
-      form_element, blink::WebFormControlElement(), nullptr,
-      form_util::EXTRACT_NONE, &form_data, nullptr));
-  // Simulate Autofill predictions: the third field is not a password.
-  autofill::FormsPredictionsMap predictions;
-  predictions[form_data][form_data.fields[2]] =
-      PasswordFormFieldPredictionType::kNotPassword;
-  password_autofill_agent_->AutofillUsernameAndPasswordDataReceived(
-      predictions);
-
-  SaveAndSubmitForm(form_element);
-
-  base::RunLoop().RunUntilIdle();
-  ASSERT_TRUE(fake_driver_.called_password_form_submitted_only_for_fallback());
 }
 
 // Tests that only the password field is autocompleted when the browser sends

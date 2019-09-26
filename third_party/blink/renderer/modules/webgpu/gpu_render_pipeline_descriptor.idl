@@ -12,7 +12,7 @@ dictionary GPURenderPipelineDescriptor : GPUPipelineDescriptorBase {
     GPURasterizationStateDescriptor rasterizationState;
     required sequence<GPUColorStateDescriptor> colorStates;
     GPUDepthStencilStateDescriptor depthStencilState;
-    GPUVertexInputDescriptor vertexInput;
+    GPUVertexInputDescriptor vertexInput = {};
 
     unsigned long sampleCount = 1;
 

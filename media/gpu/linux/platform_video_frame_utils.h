@@ -9,10 +9,10 @@
 #include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
 
 namespace gfx {
 struct GpuMemoryBufferHandle;
-class NativePixmapDmaBuf;
 }  // namespace gfx
 
 namespace media {

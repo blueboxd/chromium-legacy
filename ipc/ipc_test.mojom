@@ -43,7 +43,7 @@ interface Reflector {
 };
 
 interface AssociatedInterfaceVendor {
-  GetTestInterface(associated SimpleTestDriver& interface_reqest);
+  GetTestInterface(pending_associated_receiver<SimpleTestDriver> receiver);
 };
 
 interface InterfacePassingTestDriver {

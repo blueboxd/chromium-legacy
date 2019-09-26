@@ -85,7 +85,7 @@ void InitTracingPostThreadPoolStartAndFeatureList() {
   CHECK(base::FeatureList::GetInstance());
   // Below are the things tracing must do once per process.
   TraceEventDataSource::GetInstance()->OnTaskSchedulerAvailable();
-  if (base::FeatureList::IsEnabled(features::kEnablePerfettoSystemTracing)) {
+  if (ShouldSetupSystemTracing()) {
     // We have to ensure that we register all the data sources we care about.
     TraceEventAgent::GetInstance();
     // To ensure System tracing connects we have to initialize the process wide

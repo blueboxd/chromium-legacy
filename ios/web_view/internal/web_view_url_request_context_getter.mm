@@ -79,7 +79,7 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
     bool cookie_path_found =
         base::PathService::Get(base::DIR_APP_DATA, &cookie_path);
     DCHECK(cookie_path_found);
-    cookie_path = cookie_path.Append("ChromeWebView").Append("Cookies");
+    cookie_path = cookie_path.Append("ChromeWebViewCookies");
     scoped_refptr<net::CookieMonster::PersistentCookieStore> persistent_store =
         new net::SQLitePersistentCookieStore(
             cookie_path, network_task_runner_,
@@ -151,7 +151,8 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
     network_session_context.ct_policy_enforcer =
         url_request_context_->ct_policy_enforcer();
 
-    base::FilePath cache_path = base_path_.Append(FILE_PATH_LITERAL("Cache"));
+    base::FilePath cache_path =
+        base_path_.Append(FILE_PATH_LITERAL("ChromeWebViewCache"));
     std::unique_ptr<net::HttpCache::DefaultBackend> main_backend(
         new net::HttpCache::DefaultBackend(
             net::DISK_CACHE, net::CACHE_BACKEND_DEFAULT, cache_path, 0));

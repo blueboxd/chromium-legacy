@@ -89,6 +89,10 @@ void FakeStreamSocket::SetPeer(FakeStreamSocket* peer) {
   peer_ = peer;
 }
 
+void FakeStreamSocket::SetBadSenderMode(bool bad_sender) {
+  bad_sender_mode_ = bad_sender;
+}
+
 int FakeStreamSocket::Read(net::IOBuffer* buf,
                            int buf_len,
                            net::CompletionOnceCallback callback) {
@@ -105,8 +109,12 @@ int FakeStreamSocket::Write(
   if (!peer_) {
     return net::ERR_SOCKET_NOT_CONNECTED;
   }
-  peer_->buffer_->Write(buf->data(), buf_len);
-  return buf_len;
+  int amount_to_send = buf_len;
+  if (bad_sender_mode_) {
+    amount_to_send = std::min(buf_len, buf_len / 2 + 1);
+  }
+  peer_->buffer_->Write(buf->data(), amount_to_send);
+  return amount_to_send;
 }
 
 int FakeStreamSocket::SetReceiveBufferSize(int32_t /* size */) {

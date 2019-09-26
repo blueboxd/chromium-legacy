@@ -1758,6 +1758,7 @@ if (enable_java_templates) {
   #   android_manifest: Path to AndroidManifest.xml (optional).
   #   native_libraries: list of native libraries (optional).
   #   direct_deps_only: Do not recurse on deps. (optional, defaults false).
+  #   jar_excluded_patterns: List of patterns of .class files to exclude.
   #
   # Example
   #   dist_aar("my_aar") {
@@ -1841,6 +1842,9 @@ if (enable_java_templates) {
           "--native-libraries=$_rebased_native_libraries",
           "--abi=$android_app_abi",
         ]
+      }
+      if (defined(invoker.jar_excluded_patterns)) {
+        args += [ "--input-zips-excluded-globs=${invoker.jar_excluded_patterns}" ]
       }
     }
   }

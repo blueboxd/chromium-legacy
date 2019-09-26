@@ -301,4 +301,32 @@ bool FillVP8DataStructures(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
       VASliceDataBufferType, frame_header.frame_size, frame_header.data);
 }
 
+uint32_t VideoPixelFormatToVAFourCC(VideoPixelFormat format) {
+  // Formats in media::VideoPixelFormat are specified in little-endian order.
+  // See
+  // https://docs.google.com/spreadsheets/d/1E8yxvnAkG6oXhe1bnekhSkYzQQSUwb-kJapEtWmyLe4
+  switch (format) {
+    case VideoPixelFormat::PIXEL_FORMAT_I420:
+      return VA_FOURCC_I420;
+    case VideoPixelFormat::PIXEL_FORMAT_NV12:
+      return VA_FOURCC_NV12;
+    case VideoPixelFormat::PIXEL_FORMAT_NV21:
+      return VA_FOURCC_NV21;
+    case VideoPixelFormat::PIXEL_FORMAT_YV12:
+      return VA_FOURCC_YV12;
+    case VideoPixelFormat::PIXEL_FORMAT_YUY2:
+      return VA_FOURCC_YUY2;
+    case VideoPixelFormat::PIXEL_FORMAT_ABGR:
+      return VA_FOURCC_RGBA;
+    case VideoPixelFormat::PIXEL_FORMAT_XBGR:
+      return VA_FOURCC_RGBX;
+    case VideoPixelFormat::PIXEL_FORMAT_ARGB:
+      return VA_FOURCC_BGRA;
+    case VideoPixelFormat::PIXEL_FORMAT_RGB24:
+      return VA_FOURCC_BGRX;
+    default:
+      DVLOG(3) << "Unsupported format: " << format;
+      return kInvalidVaFourcc;
+  }
+}
 }  // namespace media

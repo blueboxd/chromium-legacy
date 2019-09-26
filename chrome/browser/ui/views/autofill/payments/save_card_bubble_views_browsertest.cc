@@ -108,11 +108,15 @@ const char kResponseGetUploadDetailsSuccess[] =
     "link: "
     "{0}.\",\"template_parameter\":[{\"display_text\":\"Link\",\"url\":\"https:"
     "//www.example.com/\"}]}]},\"context_token\":\"dummy_context_token\"}";
+const char kURLUploadCardRequest[] =
+    "https://payments.google.com/payments/apis-secure/chromepaymentsservice/"
+    "savecard"
+    "?s7e_suffix=chromewallet";
+const char kResponsePaymentsSuccess[] =
+    "{ \"credit_card_id\": \"InstrumentData:1\" }";
 const char kResponsePaymentsFailure[] =
     "{\"error\":{\"code\":\"FAILED_PRECONDITION\",\"user_error_message\":\"An "
     "unexpected error has occurred. Please try again later.\"}}";
-const char kURLUploadCardRequest[] =
-    "https://payments.google.com/payments/apis/chromepaymentsservice/savecard";
 
 const double kFakeGeolocationLatitude = 1.23;
 const double kFakeGeolocationLongitude = 4.56;
@@ -138,6 +142,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     RECEIVED_GET_UPLOAD_DETAILS_RESPONSE,
     SENT_UPLOAD_CARD_REQUEST,
     RECEIVED_UPLOAD_CARD_RESPONSE,
+    SHOW_CARD_SAVED_FEEDBACK,
     STRIKE_CHANGE_COMPLETE,
     BUBBLE_SHOWN,
     BUBBLE_CLOSED
@@ -248,6 +253,12 @@ class SaveCardBubbleViewsFullFormBrowserTest
   void OnReceivedUploadCardResponse() override {
     if (event_waiter_)
       event_waiter_->OnEvent(DialogEvent::RECEIVED_UPLOAD_CARD_RESPONSE);
+  }
+
+  // CreditCardSaveManager::ObserverForTest:
+  void OnShowCardSavedFeedback() override {
+    if (event_waiter_)
+      event_waiter_->OnEvent(DialogEvent::SHOW_CARD_SAVED_FEEDBACK);
   }
 
   // CreditCardSaveManager::ObserverForTest:
@@ -577,6 +588,11 @@ class SaveCardBubbleViewsFullFormBrowserTest
                                            net::HTTP_INTERNAL_SERVER_ERROR);
   }
 
+  void SetUploadCardRpcPaymentsSucceeds() {
+    test_url_loader_factory()->AddResponse(kURLUploadCardRequest,
+                                           kResponsePaymentsSuccess);
+  }
+
   void SetUploadCardRpcPaymentsFails() {
     test_url_loader_factory()->AddResponse(kURLUploadCardRequest,
                                            kResponsePaymentsFailure);
@@ -688,7 +704,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     return static_cast<SaveCardBubbleViews*>(save_card_bubble_view);
   }
 
-  PageActionIconView* GetSaveCardIconView() {
+  SaveCardIconView* GetSaveCardIconView() {
     BrowserView* browser_view =
         BrowserView::GetBrowserViewForBrowser(browser());
     PageActionIconView* icon =
@@ -702,7 +718,7 @@ class SaveCardBubbleViewsFullFormBrowserTest
     } else {
       DCHECK(browser_view->GetLocationBarView()->Contains(icon));
     }
-    return icon;
+    return static_cast<SaveCardIconView*>(icon);
   }
 
   void OpenSettingsFromManageCardsPrompt() {
@@ -795,8 +811,11 @@ class SaveCardBubbleViewsFullFormBrowserTestForStatusChip
 
   void SetUp() override {
     base::test::ScopedFeatureList scoped_feature_list;
-    scoped_feature_list.InitAndEnableFeature(
-        features::kAutofillEnableToolbarStatusChip);
+    scoped_feature_list.InitWithFeatures(
+        /*enabled_features=*/{features::kAutofillCreditCardUploadFeedback,
+                              features::kAutofillEnableToolbarStatusChip,
+                              features::kAutofillUpstream},
+        /*disabled_features=*/{});
 
     SaveCardBubbleViewsFullFormBrowserTest::SetUp();
   }
@@ -2734,6 +2753,41 @@ IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
   EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
   EXPECT_FALSE(GetSaveCardBubbleViews());
 }
+
+// Ensures the card saving throbber animation in the status chip behaves
+// correctly during credit card upload process.
+IN_PROC_BROWSER_TEST_F(SaveCardBubbleViewsFullFormBrowserTestForStatusChip,
+                       Feedback_CardSavingAnimation) {
+  // Start sync.
+  harness_->SetupSync();
+
+  FillForm();
+  SubmitFormAndWaitForCardUploadSaveBubble();
+
+  // Ensures icon is visible and animation is not.
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
+  EXPECT_FALSE(
+      GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
+
+  ResetEventWaiterForSequence({DialogEvent::SENT_UPLOAD_CARD_REQUEST});
+  ClickOnDialogViewWithIdAndWait(DialogViewId::OK_BUTTON);
+  WaitForObservedEvent();
+
+  // Ensures icon and the animation are visible.
+  EXPECT_TRUE(GetSaveCardIconView()->GetVisible());
+  EXPECT_TRUE(
+      GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
+
+  SetUploadCardRpcPaymentsSucceeds();
+  ResetEventWaiterForSequence({DialogEvent::RECEIVED_UPLOAD_CARD_RESPONSE,
+                               DialogEvent::SHOW_CARD_SAVED_FEEDBACK});
+  WaitForObservedEvent();
+
+  // Ensures the animation should not be animating.
+  EXPECT_FALSE(
+      GetSaveCardIconView()->loading_indicator_for_testing()->IsAnimating());
+}
+
 #endif  // !defined(OS_CHROMEOS)
 
 }  // namespace autofill

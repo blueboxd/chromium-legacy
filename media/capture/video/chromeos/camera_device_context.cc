@@ -4,25 +4,6 @@
 
 #include "media/capture/video/chromeos/camera_device_context.h"
 
-namespace {
-media::VideoRotation CameraFrameOrientationToVideoRotation(
-    int frame_orientation) {
-  switch (frame_orientation) {
-    case 0:
-      return media::VideoRotation::VIDEO_ROTATION_0;
-    case 90:
-      return media::VideoRotation::VIDEO_ROTATION_90;
-    case 180:
-      return media::VideoRotation::VIDEO_ROTATION_180;
-    case 270:
-      return media::VideoRotation::VIDEO_ROTATION_270;
-    default:
-      NOTREACHED() << "Invalid frame orientation " << frame_orientation;
-      return media::VideoRotation::VIDEO_ROTATION_0;
-  }
-}
-}  // namespace
-
 namespace media {
 
 CameraDeviceContext::CameraDeviceContext(
@@ -68,9 +49,9 @@ void CameraDeviceContext::SubmitCapturedVideoCaptureBuffer(
     base::TimeTicks reference_time,
     base::TimeDelta timestamp) {
   VideoFrameMetadata metadata;
-  metadata.SetRotation(
-      VideoFrameMetadata::Key::ROTATION,
-      CameraFrameOrientationToVideoRotation(GetCameraFrameOrientation()));
+  // All frames are pre-rotated to the display orientation.
+  metadata.SetRotation(VideoFrameMetadata::Key::ROTATION,
+                       VideoRotation::VIDEO_ROTATION_0);
   // TODO: Figure out the right color space for the camera frame.  We may need
   // to populate the camera metadata with the color space reported by the V4L2
   // device.

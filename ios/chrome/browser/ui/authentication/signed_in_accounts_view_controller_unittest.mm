@@ -9,6 +9,8 @@
 #include "base/bind.h"
 #include "base/strings/sys_string_conversions.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
+#import "ios/chrome/browser/metrics/previous_session_info.h"
+#include "ios/chrome/browser/metrics/previous_session_info_private.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #import "ios/chrome/browser/signin/authentication_service_fake.h"
 #include "ios/chrome/test/block_cleanup_test.h"
@@ -64,4 +66,46 @@ TEST_F(SignedInAccountsViewControllerTest,
   auth_service_->SetHaveAccountsChanged(true);
   EXPECT_TRUE([SignedInAccountsViewController
       shouldBePresentedForBrowserState:browser_state_.get()]);
+}
+
+// Tests that the signed in accounts view shouldn't be presented on the first
+// session after upgrade.
+TEST_F(SignedInAccountsViewControllerTest,
+       ShouldBePresentedForBrowserStateAfterUpgrade) {
+  auth_service_->SetHaveAccountsChanged(true);
+
+  {
+    [PreviousSessionInfo resetSharedInstanceForTesting];
+    PreviousSessionInfo* prevSessionInfo = [PreviousSessionInfo sharedInstance];
+    [prevSessionInfo setIsFirstSessionAfterUpgrade:YES];
+    [prevSessionInfo setPreviousSessionVersion:nil];
+    EXPECT_TRUE([SignedInAccountsViewController
+        shouldBePresentedForBrowserState:browser_state_.get()]);
+  }
+
+  {
+    [PreviousSessionInfo resetSharedInstanceForTesting];
+    PreviousSessionInfo* prevSessionInfo = [PreviousSessionInfo sharedInstance];
+    [prevSessionInfo setIsFirstSessionAfterUpgrade:YES];
+    EXPECT_TRUE([SignedInAccountsViewController
+        shouldBePresentedForBrowserState:browser_state_.get()]);
+  }
+
+  {
+    [PreviousSessionInfo resetSharedInstanceForTesting];
+    PreviousSessionInfo* prevSessionInfo = [PreviousSessionInfo sharedInstance];
+    [prevSessionInfo setIsFirstSessionAfterUpgrade:YES];
+    [prevSessionInfo setPreviousSessionVersion:@"77.0.1.0"];
+    EXPECT_FALSE([SignedInAccountsViewController
+        shouldBePresentedForBrowserState:browser_state_.get()]);
+  }
+
+  {
+    [PreviousSessionInfo resetSharedInstanceForTesting];
+    PreviousSessionInfo* prevSessionInfo = [PreviousSessionInfo sharedInstance];
+    [prevSessionInfo setIsFirstSessionAfterUpgrade:YES];
+    [prevSessionInfo setPreviousSessionVersion:@"78.0.1.0"];
+    EXPECT_TRUE([SignedInAccountsViewController
+        shouldBePresentedForBrowserState:browser_state_.get()]);
+  }
 }

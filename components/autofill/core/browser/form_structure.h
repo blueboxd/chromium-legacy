@@ -237,10 +237,6 @@ class FormStructure {
     return has_author_specified_types_;
   }
 
-  bool has_author_specified_sections() const {
-    return has_author_specified_sections_;
-  }
-
   bool has_author_specified_upi_vpa_hint() const {
     return has_author_specified_upi_vpa_hint_;
   }

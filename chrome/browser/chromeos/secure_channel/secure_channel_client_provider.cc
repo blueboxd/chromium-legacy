@@ -30,7 +30,7 @@ SecureChannelClient* SecureChannelClientProvider::GetClient() {
     }()};
 
     mojo::PendingRemote<mojom::SecureChannel> channel;
-    (*instance)->BindRequest(channel.InitWithNewPipeAndPassReceiver());
+    (*instance)->BindReceiver(channel.InitWithNewPipeAndPassReceiver());
     secure_channel_client_ =
         SecureChannelClientImpl::Factory::Get()->BuildInstance(
             std::move(channel));

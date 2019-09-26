@@ -55,6 +55,7 @@ class COMPONENT_EXPORT(TRACING_CPP) DummyProducer : public SystemProducer {
   // Functions expected for SystemProducer
   void DisconnectWithReply(base::OnceClosure on_disconnect_complete) override;
   bool IsDummySystemProducerForTesting() override;
+  void ResetSequenceForTesting() override;
 };
 }  // namespace tracing
 

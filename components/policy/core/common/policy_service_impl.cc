@@ -107,8 +107,14 @@ base::flat_set<std::string> GetStringListPolicyItems(
 
 }  // namespace
 
-PolicyServiceImpl::PolicyServiceImpl(Providers providers) {
-  providers_ = std::move(providers);
+PolicyServiceImpl::PolicyServiceImpl(Providers providers)
+    : PolicyServiceImpl(std::move(providers),
+                        /*initialization_throttled=*/false) {}
+
+PolicyServiceImpl::PolicyServiceImpl(Providers providers,
+                                     bool initialization_throttled)
+    : providers_(std::move(providers)),
+      initialization_throttled_(initialization_throttled) {
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
     initialization_complete_[domain] = true;
   for (auto* provider : providers_) {
@@ -121,6 +127,13 @@ PolicyServiceImpl::PolicyServiceImpl(Providers providers) {
   // There are no observers yet, but calls to GetPolicies() should already get
   // the processed policy values.
   MergeAndTriggerUpdates();
+}
+
+// static
+std::unique_ptr<PolicyServiceImpl>
+PolicyServiceImpl::CreateWithThrottledInitialization(Providers providers) {
+  return base::WrapUnique(new PolicyServiceImpl(
+      std::move(providers), /*initialization_throttled=*/true));
 }
 
 PolicyServiceImpl::~PolicyServiceImpl() {
@@ -177,6 +190,8 @@ const PolicyMap& PolicyServiceImpl::GetPolicies(
 bool PolicyServiceImpl::IsInitializationComplete(PolicyDomain domain) const {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(domain >= 0 && domain < POLICY_DOMAIN_SIZE);
+  if (initialization_throttled_)
+    return false;
   return initialization_complete_[domain];
 }
 
@@ -203,12 +218,14 @@ void PolicyServiceImpl::RefreshPolicies(const base::Closure& callback) {
   }
 }
 
-void PolicyServiceImpl::SetInitializationThrottled(
-    bool initialization_throttled) {
+void PolicyServiceImpl::UnthrottleInitialization() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(initialization_throttled != initialization_throttled_);
-  initialization_throttled_ = initialization_throttled;
-  CheckInitializationComplete();
+  if (!initialization_throttled_)
+    return;
+
+  initialization_throttled_ = false;
+  for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain)
+    MaybeNotifyInitializationComplete(static_cast<PolicyDomain>(domain));
 }
 
 void PolicyServiceImpl::OnUpdatePolicy(ConfigurationPolicyProvider* provider) {
@@ -355,9 +372,6 @@ void PolicyServiceImpl::MergeAndTriggerUpdates() {
 void PolicyServiceImpl::CheckInitializationComplete() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  if (initialization_throttled_)
-    return;
-
   // Check if all the providers just became initialized for each domain; if so,
   // notify that domain's observers.
   for (int domain = 0; domain < POLICY_DOMAIN_SIZE; ++domain) {
@@ -375,12 +389,21 @@ void PolicyServiceImpl::CheckInitializationComplete() {
     }
     if (all_complete) {
       initialization_complete_[domain] = true;
-      auto iter = observers_.find(policy_domain);
-      if (iter != observers_.end()) {
-        for (auto& observer : *iter->second)
-          observer.OnPolicyServiceInitialized(policy_domain);
-      }
+      MaybeNotifyInitializationComplete(policy_domain);
     }
+  }
+}
+
+void PolicyServiceImpl::MaybeNotifyInitializationComplete(
+    PolicyDomain policy_domain) {
+  if (initialization_throttled_)
+    return;
+  if (!initialization_complete_[policy_domain])
+    return;
+  auto iter = observers_.find(policy_domain);
+  if (iter != observers_.end()) {
+    for (auto& observer : *iter->second)
+      observer.OnPolicyServiceInitialized(policy_domain);
   }
 }
 

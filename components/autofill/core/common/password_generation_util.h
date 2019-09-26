@@ -141,10 +141,6 @@ struct PasswordGenerationUIData {
 
 void LogPasswordGenerationEvent(PasswordGenerationEvent event);
 
-// Returns true if Password Generation is enabled according to the field
-// trial result and the flags.
-bool IsPasswordGenerationEnabled();
-
 }  // namespace password_generation
 }  // namespace autofill
 

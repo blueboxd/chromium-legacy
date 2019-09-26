@@ -139,8 +139,6 @@ void StyleFetchedImage::ImageNotifyFinished(ImageResourceContent*) {
 
     if (document_ && image.IsSVGImage())
       ToSVGImage(image).UpdateUseCounters(*document_);
-
-    image_->UpdateImageAnimationPolicy();
   }
 
   if (document_ && RuntimeEnabledFeatures::ElementTimingEnabled(document_)) {

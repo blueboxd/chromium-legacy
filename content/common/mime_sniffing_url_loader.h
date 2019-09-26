@@ -13,6 +13,10 @@
 #include "base/strings/string_piece.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "mojo/public/cpp/system/simple_watcher.h"
 #include "services/network/public/cpp/resource_response.h"
@@ -58,12 +62,14 @@ class CONTENT_EXPORT MimeSniffingURLLoader
 
   // Start waiting for the body.
   void Start(
-      network::mojom::URLLoaderPtr source_url_loader,
-      network::mojom::URLLoaderClientRequest source_url_loader_client_request);
+      mojo::PendingRemote<network::mojom::URLLoader> source_url_loader_remote,
+      mojo::PendingReceiver<network::mojom::URLLoaderClient>
+          source_url_client_receiver);
 
-  // network::mojom::URLLoaderPtr controls the lifetime of the loader.
-  static std::tuple<network::mojom::URLLoaderPtr,
-                    network::mojom::URLLoaderClientRequest,
+  // mojo::PendingRemote<network::mojom::URLLoader> controls the lifetime of the
+  // loader.
+  static std::tuple<mojo::PendingRemote<network::mojom::URLLoader>,
+                    mojo::PendingReceiver<network::mojom::URLLoaderClient>,
                     MimeSniffingURLLoader*>
   CreateLoader(base::WeakPtr<MimeSniffingThrottle> throttle,
                const GURL& response_url,
@@ -75,7 +81,8 @@ class CONTENT_EXPORT MimeSniffingURLLoader
       base::WeakPtr<MimeSniffingThrottle> throttle,
       const GURL& response_url,
       const network::ResourceResponseHead& response_head,
-      network::mojom::URLLoaderClientPtr destination_url_loader_client,
+      mojo::PendingRemote<network::mojom::URLLoaderClient>
+          destination_url_loader_client,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 
   // network::mojom::URLLoaderClient implementation (called from the source of
@@ -117,9 +124,10 @@ class CONTENT_EXPORT MimeSniffingURLLoader
 
   base::WeakPtr<MimeSniffingThrottle> throttle_;
 
-  mojo::Binding<network::mojom::URLLoaderClient> source_url_client_binding_;
-  network::mojom::URLLoaderPtr source_url_loader_;
-  network::mojom::URLLoaderClientPtr destination_url_loader_client_;
+  mojo::Receiver<network::mojom::URLLoaderClient> source_url_client_receiver_{
+      this};
+  mojo::Remote<network::mojom::URLLoader> source_url_loader_;
+  mojo::Remote<network::mojom::URLLoaderClient> destination_url_loader_client_;
 
   GURL response_url_;
 

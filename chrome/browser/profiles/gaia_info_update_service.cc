@@ -49,14 +49,8 @@ GAIAInfoUpdateService::GAIAInfoUpdateService(Profile* profile)
 
   // TODO(msalama): Once Unconsented primary account is available on startup,
   // remove the wait on refresh tokens.
-  if (identity_manager->AreRefreshTokensLoaded()) {
-    if (!identity_manager->HasUnconsentedPrimaryAccount()) {
-      // Handle the case when the primary account was cleared while loading the
-      // profile, before the |GAIAInfoUpdateService| is created.
-      OnUsernameChanged(std::string());
-    }
-    ScheduleNextUpdate();
-  }
+  if (identity_manager->AreRefreshTokensLoaded())
+    OnRefreshTokensLoaded();
 }
 
 GAIAInfoUpdateService::~GAIAInfoUpdateService() {
@@ -68,6 +62,10 @@ void GAIAInfoUpdateService::Update() {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
   if (!identity_manager->HasUnconsentedPrimaryAccount())
+    return;
+
+  if (!base::FeatureList::IsEnabled(kPersistUPAInProfileInfoCache) &&
+      !identity_manager->HasPrimaryAccount())
     return;
 
   if (profile_image_downloader_)
@@ -235,6 +233,14 @@ void GAIAInfoUpdateService::OnPrimaryAccountCleared(
 
 void GAIAInfoUpdateService::OnUnconsentedPrimaryAccountChanged(
     const CoreAccountInfo& unconsented_primary_account_info) {
+  signin::IdentityManager* identity_manager =
+      IdentityManagerFactory::GetForProfile(profile_);
+
+  if (identity_manager->HasPrimaryAccount() ||
+      !base::FeatureList::IsEnabled(kPersistUPAInProfileInfoCache)) {
+    return;
+  }
+
   OnUsernameChanged(unconsented_primary_account_info.gaia);
 }
 
@@ -242,8 +248,14 @@ void GAIAInfoUpdateService::OnRefreshTokensLoaded() {
   signin::IdentityManager* identity_manager =
       IdentityManagerFactory::GetForProfile(profile_);
 
-  if (!identity_manager->HasUnconsentedPrimaryAccount()) {
+  bool clear_profile =
+      !identity_manager->HasUnconsentedPrimaryAccount() ||
+      (!base::FeatureList::IsEnabled(kPersistUPAInProfileInfoCache) &&
+       !identity_manager->HasPrimaryAccount());
+
+  if (clear_profile) {
     OnUsernameChanged(std::string());
   }
+
   ScheduleNextUpdate();
 }

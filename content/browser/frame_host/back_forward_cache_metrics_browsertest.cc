@@ -497,6 +497,26 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, DedicatedWorker) {
                                       kDedicatedWorkerOrWorklet));
 }
 
+// TODO(https://crbug.com/154571): Shared workers are not available on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_SharedWorker DISABLED_SharedWorker
+#else
+#define MAYBE_SharedWorker SharedWorker
+#endif
+IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest, MAYBE_SharedWorker) {
+  const GURL url(embedded_test_server()->GetURL(
+      "/back_forward_cache/page_with_shared_worker.html"));
+
+  EXPECT_TRUE(NavigateToURL(shell(), url));
+
+  EXPECT_EQ(static_cast<WebContentsImpl*>(shell()->web_contents())
+                    ->GetMainFrame()
+                    ->scheduler_tracked_features() &
+                ~kFeaturesToIgnoreMask,
+            1ull << static_cast<uint32_t>(
+                blink::scheduler::WebSchedulerTrackedFeature::kSharedWorker));
+}
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheMetricsBrowserTest,
                        WindowOpen_SameOrigin) {
   ukm::TestAutoSetUkmRecorder recorder;

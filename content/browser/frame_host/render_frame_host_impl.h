@@ -465,6 +465,11 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // |destination|.
   GURL ComputeSiteForCookiesForNavigation(const GURL& destination) const;
 
+  // Computes site_for_cookies for this frame. It can be used to check
+  // if cookies (including storage APIs and shared/service workers) are
+  // accessible.
+  GURL ComputeSiteForCookies() const;
+
   // Allows overriding the last committed origin in tests.
   void SetLastCommittedOriginForTesting(const url::Origin& origin);
 
@@ -1101,6 +1106,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void GetPushMessaging(
       mojo::PendingReceiver<blink::mojom::PushMessaging> receiver);
 
+#if defined(OS_ANDROID)
+  void BindNFCReceiver(mojo::PendingReceiver<device::mojom::NFC> receiver);
+#endif
+
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
       const {
@@ -1360,6 +1369,12 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void OnFrameDidCallFocus();
   void OnRenderFallbackContentInParentProcess();
 
+  // To be called by ComputeSiteForCookiesForNavigation() and
+  // ComputeSiteForCookies().
+  // Starts traversing the tree from |render_frame_host|.
+  GURL ComputeSiteForCookiesInternal(
+      const RenderFrameHostImpl* render_frame_host) const;
+
 #if BUILDFLAG(USE_EXTERNAL_POPUP_MENU)
   void OnShowPopup(const FrameHostMsg_ShowPopup_Params& params);
   void OnHidePopup();
@@ -1588,10 +1603,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();
-
-#if defined(OS_ANDROID)
-  void BindNFCReceiver(mojo::PendingReceiver<device::mojom::NFC> receiver);
-#endif
 
 #if !defined(OS_ANDROID)
   void BindSerialServiceReceiver(

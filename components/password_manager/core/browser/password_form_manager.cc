@@ -238,7 +238,8 @@ const PasswordForm& PasswordFormManager::GetPendingCredentials() const {
   return pending_credentials_;
 }
 
-metrics_util::CredentialSourceType PasswordFormManager::GetCredentialSource() {
+metrics_util::CredentialSourceType PasswordFormManager::GetCredentialSource()
+    const {
   return metrics_util::CredentialSourceType::kPasswordManager;
 }
 

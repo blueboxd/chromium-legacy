@@ -102,10 +102,9 @@ void MediaControlPictureInPictureButtonElement::UpdateAriaString(
     bool isInPictureInPicture) {
   String aria_string =
       isInPictureInPicture
-          ? GetLocale().QueryString(
-                WebLocalizedString::kAXMediaExitPictureInPictureButton)
+          ? GetLocale().QueryString(IDS_AX_MEDIA_EXIT_PICTURE_IN_PICTURE_BUTTON)
           : GetLocale().QueryString(
-                WebLocalizedString::kAXMediaEnterPictureInPictureButton);
+                IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON);
 
   setAttribute(html_names::kAriaLabelAttr, WTF::AtomicString(aria_string));
 }

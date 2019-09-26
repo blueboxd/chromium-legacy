@@ -159,7 +159,7 @@ class MockBundledExchangesReaderFactoryImpl final
       return nullptr;
     }
 
-    auto source = BundledExchangesSource::CreateFromTrustedFileUrl(
+    auto source = BundledExchangesSource::MaybeCreateFromTrustedFileUrl(
         net::FilePathToFileURL(temp_file_path_));
     auto reader = std::make_unique<BundledExchangesReader>(*source);
 

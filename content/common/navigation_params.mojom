@@ -344,4 +344,8 @@ struct CommitNavigationParams {
   // https://wicg.github.io/cors-rfc1918/#address-space
   network.mojom.IPAddressSpace ip_address_space =
       network.mojom.IPAddressSpace.kUnknown;
+
+  // The base URL which will be set for the document to support relative path
+  // subresource loading in unsigned bundled exchanges file.
+  url.mojom.Url base_url_override_for_bundled_exchanges;
 };

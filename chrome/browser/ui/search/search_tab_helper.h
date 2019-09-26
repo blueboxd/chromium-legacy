@@ -141,6 +141,10 @@ class SearchTabHelper : public content::WebContentsObserver,
       const base::string16& input,
       chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback)
       override;
+  void DeleteAutocompleteMatch(
+      uint8_t line,
+      chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback callback)
+      override;
   void StopAutocomplete(bool clear_result) override;
   void BlocklistPromo(const std::string& promo_id) override;
 

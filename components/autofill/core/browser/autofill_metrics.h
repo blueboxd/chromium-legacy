@@ -1263,13 +1263,6 @@ class AutofillMetrics {
   // autofilled to support synthetic fields.
   static void LogHiddenOrPresentationalSelectFieldsFilled();
 
-  // Logs the the |ukm_entry_name| with the specified |url| and the specified
-  // |metrics|. Returns whether the ukm was sucessfully logged.
-  static bool LogUkm(ukm::UkmRecorder* ukm_recorder,
-                     const GURL& url,
-                     const std::string& ukm_entry_name,
-                     const std::vector<std::pair<const char*, int>>& metrics);
-
   // Converts form type to bit vector to store in UKM.
   static int64_t FormTypesToBitVector(const std::set<FormType>& form_types);
 

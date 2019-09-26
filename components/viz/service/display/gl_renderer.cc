@@ -378,9 +378,13 @@ GLRenderer::GLRenderer(
 GLRenderer::~GLRenderer() {
   CleanupSharedObjects();
 
+  auto* context_provider = output_surface_->context_provider();
+  auto* cache_controller = context_provider->CacheController();
+
+  if (context_busy_) {
+    cache_controller->ClientBecameNotBusy(std::move(context_busy_));
+  }
   if (context_visibility_) {
-    auto* context_provider = output_surface_->context_provider();
-    auto* cache_controller = context_provider->CacheController();
     cache_controller->ClientBecameNotVisibleDuringShutdown(
         std::move(context_visibility_));
   }
@@ -478,6 +482,12 @@ void GLRenderer::ClearFramebuffer() {
 
 void GLRenderer::BeginDrawingFrame() {
   TRACE_EVENT0("viz", "GLRenderer::BeginDrawingFrame");
+
+  if (!context_busy_) {
+    context_busy_ = output_surface_->context_provider()
+                        ->CacheController()
+                        ->ClientBecameBusy();
+  }
 
   scoped_refptr<ResourceFence> read_lock_fence;
   if (use_sync_query_) {
@@ -2957,6 +2967,18 @@ void GLRenderer::SwapBuffers(std::vector<ui::LatencyInfo> latency_info) {
   output_surface_->SwapBuffers(std::move(output_frame));
 
   swap_buffer_rect_ = gfx::Rect();
+
+  if (context_busy_) {
+    output_surface_->context_provider()->CacheController()->ClientBecameNotBusy(
+        std::move(context_busy_));
+  }
+}
+
+void GLRenderer::SwapBuffersSkipped() {
+  if (context_busy_) {
+    output_surface_->context_provider()->CacheController()->ClientBecameNotBusy(
+        std::move(context_busy_));
+  }
 }
 
 void GLRenderer::SwapBuffersComplete() {

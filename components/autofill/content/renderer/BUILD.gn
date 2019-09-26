@@ -32,8 +32,6 @@ jumbo_static_library("renderer") {
     "password_generation_agent.h",
     "prefilled_values_detector.cc",
     "prefilled_values_detector.h",
-    "provisionally_saved_password_form.cc",
-    "provisionally_saved_password_form.h",
     "renderer_save_password_progress_logger.cc",
     "renderer_save_password_progress_logger.h",
   ]

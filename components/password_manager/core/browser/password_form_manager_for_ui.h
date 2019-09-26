@@ -48,7 +48,7 @@ class PasswordFormManagerForUI {
   // Returns who created this PasswordFormManager. The Credential Management API
   // uses a derived class of the PasswordFormManager that can indicate its
   // origin.
-  virtual metrics_util::CredentialSourceType GetCredentialSource() = 0;
+  virtual metrics_util::CredentialSourceType GetCredentialSource() const = 0;
 
   // Returns metric recorder which responsible for recording metrics for this
   // form.

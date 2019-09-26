@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_size.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
@@ -47,9 +48,8 @@ MediaControlOverlayPlayButtonElement::MediaControlOverlayPlayButtonElement(
 void MediaControlOverlayPlayButtonElement::UpdateDisplayType() {
   SetIsWanted(MediaElement().ShouldShowControls());
 
-  WebLocalizedString::Name state =
-      MediaElement().paused() ? WebLocalizedString::kAXMediaPlayButton
-                              : WebLocalizedString::kAXMediaPauseButton;
+  int state = MediaElement().paused() ? IDS_AX_MEDIA_PLAY_BUTTON
+                                      : IDS_AX_MEDIA_PAUSE_BUTTON;
   setAttribute(html_names::kAriaLabelAttr,
                WTF::AtomicString(GetLocale().QueryString(state)));
 

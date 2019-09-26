@@ -60,6 +60,7 @@ class MockPeerConnectionTrackerHost : public mojom::PeerConnectionTrackerHost {
   MockPeerConnectionTrackerHost() : binding_(this) {}
   MOCK_METHOD3(UpdatePeerConnection,
                void(int, const std::string&, const std::string&));
+  MOCK_METHOD1(AddPeerConnection, void(mojom::PeerConnectionInfoPtr));
   MOCK_METHOD1(RemovePeerConnection, void(int));
   MOCK_METHOD2(OnPeerConnectionSessionIdSet, void(int, const std::string&));
   MOCK_METHOD5(GetUserMedia,
@@ -119,24 +120,6 @@ std::unique_ptr<blink::WebRTCRtpTransceiver> CreateDefaultTransceiver(
 
 namespace {
 
-class MockSendTargetThread : public MockRenderThread {
- public:
-  MOCK_METHOD1(OnAddPeerConnection, void(PeerConnectionInfo));
-
- private:
-  bool OnMessageReceived(const IPC::Message& msg) override;
-};
-
-bool MockSendTargetThread::OnMessageReceived(const IPC::Message& msg) {
-  bool handled = true;
-  IPC_BEGIN_MESSAGE_MAP(MockSendTargetThread, msg)
-    IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddPeerConnection,
-                        OnAddPeerConnection)
-    IPC_MESSAGE_UNHANDLED(handled = false)
-  IPC_END_MESSAGE_MAP()
-  return handled;
-}
-
 // TODO(https://crbug.com/868868): Move this into a separate file.
 class MockPeerConnectionHandler : public RTCPeerConnectionHandler {
  public:
@@ -159,24 +142,22 @@ class PeerConnectionTrackerTest : public ::testing::Test {
     tracker_.reset(new PeerConnectionTracker(
         mock_host_->CreateInterfacePtrAndBind(),
         blink::scheduler::GetSingleThreadTaskRunnerForTesting()));
-    target_thread_.reset(new MockSendTargetThread());
-    tracker_->OverrideSendTargetForTesting(target_thread_.get());
   }
 
   void CreateAndRegisterPeerConnectionHandler() {
     mock_handler_.reset(new MockPeerConnectionHandler());
-    EXPECT_CALL(*target_thread_, OnAddPeerConnection(_));
+    EXPECT_CALL(*mock_host_, AddPeerConnection(_));
     tracker_->RegisterPeerConnection(
         mock_handler_.get(),
         webrtc::PeerConnectionInterface::RTCConfiguration(),
         blink::WebMediaConstraints(), nullptr);
+    task_environment_.RunUntilIdle();
   }
 
  protected:
   base::test::SingleThreadTaskEnvironment task_environment_;
   std::unique_ptr<MockPeerConnectionTrackerHost> mock_host_;
   std::unique_ptr<PeerConnectionTracker> tracker_;
-  std::unique_ptr<MockSendTargetThread> target_thread_;
   std::unique_ptr<MockPeerConnectionHandler> mock_handler_;
 };
 

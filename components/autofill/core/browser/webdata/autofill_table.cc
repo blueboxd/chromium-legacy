@@ -1859,36 +1859,6 @@ bool AutofillTable::RemoveOriginURLsModifiedBetween(
   return true;
 }
 
-bool AutofillTable::GetAutofillProfilesInTrash(
-    std::vector<std::string>* guids) {
-  guids->clear();
-
-  sql::Statement s(
-      db_->GetUniqueStatement("SELECT guid FROM autofill_profiles_trash"));
-
-  while (s.Step()) {
-    std::string guid = s.ColumnString(0);
-    guids->push_back(guid);
-  }
-
-  return s.Succeeded();
-}
-
-bool AutofillTable::EmptyAutofillProfilesTrash() {
-  sql::Statement s(
-      db_->GetUniqueStatement("DELETE FROM autofill_profiles_trash"));
-
-  return s.Run();
-}
-
-bool AutofillTable::AddAutofillGUIDToTrash(const std::string& guid) {
-  sql::Statement s(db_->GetUniqueStatement(
-      "INSERT INTO autofill_profiles_trash (guid) VALUES (?)"));
-  s.BindString(0, guid);
-
-  return s.Run();
-}
-
 bool AutofillTable::ClearAutofillProfiles() {
   sql::Statement s1(db_->GetUniqueStatement("DELETE FROM autofill_profiles"));
 

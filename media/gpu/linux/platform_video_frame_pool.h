@@ -34,8 +34,6 @@ namespace media {
 // old parameter values will be purged from the pool.
 class MEDIA_GPU_EXPORT PlatformVideoFramePool : public DmabufVideoFramePool {
  public:
-  using DmabufId = const std::vector<base::ScopedFD>*;
-
   PlatformVideoFramePool();
   ~PlatformVideoFramePool() override;
 

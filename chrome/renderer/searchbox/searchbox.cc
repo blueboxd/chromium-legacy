@@ -438,6 +438,12 @@ void SearchBox::QueryAutocomplete(const base::string16& input) {
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
+void SearchBox::DeleteAutocompleteMatch(uint8_t line) {
+  embedded_search_service_->DeleteAutocompleteMatch(
+      line, base::BindOnce(&SearchBox::OnDeleteAutocompleteMatch,
+                           base::Unretained(this)));
+}
+
 void SearchBox::StopAutocomplete(bool clear_result) {
   embedded_search_service_->StopAutocomplete(clear_result);
 }
@@ -450,6 +456,14 @@ void SearchBox::QueryAutocompleteResult(
     chrome::mojom::AutocompleteResultPtr result) {
   if (can_run_js_in_renderframe_) {
     SearchBoxExtension::DispatchQueryAutocompleteResult(
+        render_frame()->GetWebFrame(), std::move(result));
+  }
+}
+
+void SearchBox::OnDeleteAutocompleteMatch(
+    chrome::mojom::DeleteAutocompleteMatchResultPtr result) {
+  if (can_run_js_in_renderframe_) {
+    SearchBoxExtension::DispatchDeleteAutocompleteMatchResult(
         render_frame()->GetWebFrame(), std::move(result));
   }
 }

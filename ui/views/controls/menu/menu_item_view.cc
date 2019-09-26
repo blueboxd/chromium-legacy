@@ -180,10 +180,10 @@ void MenuItemView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
     // The first child is taking over, just use its accessible name instead of
     // |title_|.
     View* child = children().front();
-    ui::AXNodeData node_data;
-    child->GetAccessibleNodeData(&node_data);
+    ui::AXNodeData child_node_data;
+    child->GetAccessibleNodeData(&child_node_data);
     item_text =
-        node_data.GetString16Attribute(ax::mojom::StringAttribute::kName);
+        child_node_data.GetString16Attribute(ax::mojom::StringAttribute::kName);
   } else {
     item_text = title_;
   }
@@ -667,7 +667,7 @@ void MenuItemView::Layout() {
   } else {
     // Child views are laid out right aligned and given the full height. To
     // right align start with the last view and progress to the first.
-    int x = width() - (use_right_margin_ ? item_right_margin_ : 0);
+    int child_x = width() - (use_right_margin_ ? item_right_margin_ : 0);
     for (View* child : base::Reversed(children())) {
       if (icon_view_ == child)
         continue;
@@ -678,8 +678,8 @@ void MenuItemView::Layout() {
       if (vertical_separator_ == child)
         continue;
       int width = child->GetPreferredSize().width();
-      child->SetBounds(x - width, 0, width, height());
-      x -= width + kChildXPadding;
+      child->SetBounds(child_x - width, 0, width, height());
+      child_x -= width + kChildXPadding;
     }
     // Position |icon_view|.
     const MenuConfig& config = MenuConfig::instance();

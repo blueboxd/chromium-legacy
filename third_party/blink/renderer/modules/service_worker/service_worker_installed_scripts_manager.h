@@ -5,8 +5,6 @@
 #ifndef THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPTS_MANAGER_H_
 #define THIRD_PARTY_BLINK_RENDERER_MODULES_SERVICE_WORKER_SERVICE_WORKER_INSTALLED_SCRIPTS_MANAGER_H_
 
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/shared_remote.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/renderer/core/workers/installed_scripts_manager.h"
@@ -19,17 +17,16 @@
 
 namespace blink {
 
+struct WebServiceWorkerInstalledScriptsManagerParams;
+
 // ServiceWorkerInstalledScriptsManager provides the main script and imported
 // scripts of an installed service worker. The scripts are streamed from the
 // browser process in parallel with worker thread initialization.
-class MODULES_EXPORT ServiceWorkerInstalledScriptsManager
+class MODULES_EXPORT ServiceWorkerInstalledScriptsManager final
     : public InstalledScriptsManager {
  public:
   ServiceWorkerInstalledScriptsManager(
-      const Vector<KURL>& installed_urls,
-      mojo::PendingReceiver<mojom::blink::ServiceWorkerInstalledScriptsManager>,
-      mojo::PendingRemote<
-          mojom::blink::ServiceWorkerInstalledScriptsManagerHost>,
+      std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   virtual ~ServiceWorkerInstalledScriptsManager() = default;
 
@@ -43,7 +40,10 @@ class MODULES_EXPORT ServiceWorkerInstalledScriptsManager
   std::unique_ptr<ThreadSafeScriptContainer::RawScriptData> GetRawScriptData(
       const KURL& script_url);
 
+  // Constructed on the initiator thread, and accessed only on the worker
+  // thread.
   HashSet<KURL> installed_urls_;
+
   scoped_refptr<ThreadSafeScriptContainer> script_container_;
   mojo::SharedRemote<mojom::blink::ServiceWorkerInstalledScriptsManagerHost>
       manager_host_;

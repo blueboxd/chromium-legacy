@@ -479,14 +479,7 @@ unpacker.Compressor.prototype.onReadFileChunk_ = function(data) {
     entry.file(
         (file) => {
           this.file_ = file;
-          chrome.fileManagerPrivate.ensureFileDownloaded(entry, () => {
-            if (chrome.runtime.lastError) {
-              console.error(chrome.runtime.lastError.message);
-              this.onErrorInternal_();
-              return;
-            }
-            readFileChunk();
-          });
+          readFileChunk();
         },
         (error) => {
           console.error(error);

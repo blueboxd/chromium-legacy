@@ -674,22 +674,22 @@ void DesktopDragDropClientAuraX11::OnXdndDrop(
           std::make_unique<ui::OSExchangeDataProviderAuraX11>(
               xwindow_, target_current_context_->fetched_targets())));
 
-      ui::DropTargetEvent event(*data.get(),
-                                gfx::PointF(target_window_location_),
-                                gfx::PointF(target_window_root_location_),
-                                target_current_context_->GetDragOperation());
+      ui::DropTargetEvent drop_event(
+          *data.get(), gfx::PointF(target_window_location_),
+          gfx::PointF(target_window_root_location_),
+          target_current_context_->GetDragOperation());
       if (target_current_context_->source_client()) {
-        event.set_flags(target_current_context_->source_client()
-                            ->current_modifier_state());
+        drop_event.set_flags(
+            target_current_context_->source_client()->current_modifier_state());
       } else {
-        event.set_flags(XGetModifiers());
+        drop_event.set_flags(XGetModifiers());
       }
 
       if (!IsDragDropInProgress()) {
         UMA_HISTOGRAM_COUNTS_1M("Event.DragDrop.ExternalOriginDrop", 1);
       }
 
-      drag_operation = delegate->OnPerformDrop(event, std::move(data));
+      drag_operation = delegate->OnPerformDrop(drop_event, std::move(data));
     }
 
     target_window_->RemoveObserver(this);

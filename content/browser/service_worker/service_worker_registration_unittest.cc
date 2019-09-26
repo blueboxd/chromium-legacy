@@ -16,6 +16,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
@@ -803,19 +804,23 @@ class ServiceWorkerRegistrationObjectHostTest
     ServiceWorkerRegistrationTest::TearDown();
   }
 
+  // Pass nullptr for |out_error_msg| if it's not needed.
   blink::mojom::ServiceWorkerErrorType CallUpdate(
-      blink::mojom::ServiceWorkerRegistrationObjectHost* registration_host) {
-    blink::mojom::ServiceWorkerErrorType error =
+      blink::mojom::ServiceWorkerRegistrationObjectHost* registration_host,
+      std::string* out_error_msg) {
+    blink::mojom::ServiceWorkerErrorType out_error =
         blink::mojom::ServiceWorkerErrorType::kUnknown;
-    registration_host->Update(base::BindOnce(
-        [](blink::mojom::ServiceWorkerErrorType* out_error,
-           blink::mojom::ServiceWorkerErrorType error,
-           const base::Optional<std::string>& error_msg) {
-          *out_error = error;
-        },
-        &error));
+    registration_host->Update(base::BindLambdaForTesting(
+        [&out_error, &out_error_msg](
+            blink::mojom::ServiceWorkerErrorType error,
+            const base::Optional<std::string>& error_msg) {
+          out_error = error;
+          if (out_error_msg) {
+            *out_error_msg = error_msg ? *error_msg : "";
+          }
+        }));
     base::RunLoop().RunUntilIdle();
-    return error;
+    return out_error;
   }
 
   blink::ServiceWorkerStatusCode CallDelayUpdate(
@@ -1030,7 +1035,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest, Update_Success) {
   info->receiver.reset();
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
-            CallUpdate(registration_host.get()));
+            CallUpdate(registration_host.get(), /*out_error_msg=*/nullptr));
 }
 
 TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
@@ -1050,7 +1055,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
   ASSERT_TRUE(bad_messages_.empty());
   GURL url("https://does.not.exist/");
   provider_host->UpdateUrls(url, url, url::Origin::Create(url));
-  CallUpdate(registration_host.get());
+  CallUpdate(registration_host.get(), /*out_error_msg=*/nullptr);
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
@@ -1070,8 +1075,14 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
   ServiceWorkerTestContentBrowserClient test_browser_client;
   ContentBrowserClient* old_browser_client =
       SetBrowserClientForTesting(&test_browser_client);
+  std::string error_msg;
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kDisabled,
-            CallUpdate(registration_host.get()));
+            CallUpdate(registration_host.get(), &error_msg));
+  EXPECT_EQ(
+      error_msg,
+      "Failed to update a ServiceWorker for scope ('https://www.example.com/') "
+      "with script ('https://www.example.com/sw.js'): The user denied "
+      "permission to use Service Worker.");
   SetBrowserClientForTesting(old_browser_client);
 }
 
@@ -1101,7 +1112,7 @@ TEST_P(ServiceWorkerRegistrationObjectHostUpdateTest,
   EXPECT_EQ(base::TimeDelta(), registration->self_update_delay());
 
   EXPECT_EQ(blink::mojom::ServiceWorkerErrorType::kNone,
-            CallUpdate(registration_host.get()));
+            CallUpdate(registration_host.get(), /*out_error_msg=*/nullptr));
   EXPECT_EQ(base::TimeDelta(), registration->self_update_delay());
 }
 

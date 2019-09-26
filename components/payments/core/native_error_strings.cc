@@ -155,6 +155,8 @@ const char kPaymentHandlerInsecureNavigation[] =
 const char kSinglePaymentMethodNotSupportedFormat[] =
     "The payment method $ is not supported.";
 
+const char kShippingOptionIdRequired[] = "Shipping option identifier required.";
+
 const char kShippingAddressInvalid[] =
     "Payment app returned invalid shipping address in response.";
 

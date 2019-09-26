@@ -89,9 +89,9 @@ void DesktopCaptureClient::SetCapture(aura::Window* new_capture_window) {
     ClientSet clients(*clients_);
     for (auto client : clients) {
       if (client && client.get() != this) {
-        aura::client::CaptureDelegate* delegate =
+        aura::client::CaptureDelegate* client_delegate =
             client->root_->GetHost()->dispatcher();
-        delegate->OnOtherRootGotCapture();
+        client_delegate->OnOtherRootGotCapture();
       }
     }
   }  // else case is capture is remaining in our root, nothing to do.

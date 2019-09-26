@@ -36,6 +36,11 @@ namespace tracing {
 
 bool COMPONENT_EXPORT(TRACING_CPP) TracingUsesPerfettoBackend();
 
+// Returns true if the system tracing Perfetto producer should be setup. This
+// can be influenced by the feature above or other situations (like debug
+// android builds).
+bool COMPONENT_EXPORT(TRACING_CPP) ShouldSetupSystemTracing();
+
 }  // namespace tracing
 
 #endif  // SERVICES_TRACING_PUBLIC_CPP_TRACING_FEATURES_H_

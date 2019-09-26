@@ -405,6 +405,8 @@ jumbo_static_library("test_support") {
     "fake_form_fetcher.h",
     "mock_password_feature_manager.cc",
     "mock_password_feature_manager.h",
+    "mock_password_form_manager_for_ui.cc",
+    "mock_password_form_manager_for_ui.h",
     "mock_password_store.cc",
     "mock_password_store.h",
     "password_manager_test_utils.cc",

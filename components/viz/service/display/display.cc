@@ -637,6 +637,8 @@ bool Display::DrawAndSwap() {
       }
     }
 
+    renderer_->SwapBuffersSkipped();
+
     TRACE_EVENT_ASYNC_END1("viz,benchmark", "Graphics.Pipeline.DrawAndSwap",
                            swapped_trace_id_, "status", "canceled");
     --swapped_trace_id_;

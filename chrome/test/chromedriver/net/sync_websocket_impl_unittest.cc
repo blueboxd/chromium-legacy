@@ -77,16 +77,12 @@ TEST_F(SyncWebSocketImplTest, DetermineRecipient) {
   SyncWebSocketImpl sock(context_getter_.get());
   ASSERT_TRUE(sock.Connect(server_.web_socket_url()));
   std::string message_for_chromedriver = R"({
-        "method": "Target.receivedMessageFromTarget",
-        "params": {
-           "message": "{\"id\": 1}"
-        }
+        "id": 1,
+        "method": "Page.enable"
       })";
   std::string message_not_for_chromedriver = R"({
-        "method": "Target.receivedMessageFromTarget",
-        "params": {
-           "message": "{\"id\": -1}"
-        }
+        "id": -1,
+        "method": "Page.enable"
       })";
   sock.Send(message_not_for_chromedriver);
   sock.Send(message_for_chromedriver);
@@ -96,21 +92,14 @@ TEST_F(SyncWebSocketImplTest, DetermineRecipient) {
 
   // Getting message id and method
   base::DictionaryValue* message_dict;
-  base::DictionaryValue* inner_dict;
-  std::string method;
-  std::string inner_message;
-  int id;
   base::Optional<base::Value> message_value = base::JSONReader::Read(message);
+  ASSERT_TRUE(message_value.has_value());
   ASSERT_TRUE(message_value->GetAsDictionary(&message_dict));
+  std::string method;
   ASSERT_TRUE(message_dict->GetString("method", &method));
-  ASSERT_TRUE(message_dict->GetDictionary("params", &inner_dict) &&
-              inner_dict->GetString("message", &inner_message));
-  base::Optional<base::Value> inner_message_value =
-      base::JSONReader::Read(inner_message);
-  ASSERT_TRUE(inner_message_value->GetAsDictionary(&message_dict));
+  int id;
   ASSERT_TRUE(message_dict->GetInteger("id", &id));
-
-  ASSERT_STREQ(method.c_str(), "Target.receivedMessageFromTarget");
+  ASSERT_EQ(method, "Page.enable");
   ASSERT_EQ(id, 1);
 }
 

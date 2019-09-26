@@ -118,15 +118,6 @@ void SerializeFormData(const FormData& form_data, base::Pickle* pickle);
 // the part of a pickle created by SerializeFormData. Returns true on success.
 bool DeserializeFormData(base::PickleIterator* iter, FormData* form_data);
 
-// Serialize FormData. Used by the PasswordManager to persist FormData
-// pertaining to password forms in base64 string. It is useful since in some
-// cases we need to store C strings without embedded '\0' symbols.
-void SerializeFormDataToBase64String(const FormData& form_data,
-                                     std::string* output);
-// Deserialize FormData. Returns true on success.
-bool DeserializeFormDataFromBase64String(const base::StringPiece& input,
-                                         FormData* form_data);
-
 LogBuffer& operator<<(LogBuffer& buffer, const FormData& form);
 
 }  // namespace autofill

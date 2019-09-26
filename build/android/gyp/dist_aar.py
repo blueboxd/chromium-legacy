@@ -77,6 +77,8 @@ def main(args):
                       'ABI must be specified.')
   parser.add_argument('--abi',
                       help='ABI (e.g. armeabi-v7a) for native libraries.')
+  parser.add_argument('--input-zips-excluded-globs',
+                      help='GN-list of globs for paths to exclude.')
 
   options = parser.parse_args(args)
 
@@ -97,7 +99,13 @@ def main(args):
             z, 'AndroidManifest.xml', src_path=options.android_manifest)
 
         with tempfile.NamedTemporaryFile() as jar_file:
-          build_utils.MergeZips(jar_file.name, options.jars)
+          path_transform = None
+          if options.input_zips_excluded_globs:
+            globs = build_utils.ParseGnList(options.input_zips_excluded_globs)
+            path_transform = (
+                lambda p: None if build_utils.MatchesGlob(p, globs) else p)
+          build_utils.MergeZips(
+              jar_file.name, options.jars, path_transform=path_transform)
           build_utils.AddToZipHermetic(z, 'classes.jar', src_path=jar_file.name)
 
         build_utils.AddToZipHermetic(

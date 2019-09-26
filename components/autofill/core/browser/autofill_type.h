@@ -48,11 +48,6 @@ class AutofillType {
   // Serializes |this| type to a string.
   std::string ToString() const;
 
-  // Maps |field_type| to the corresponding billing field type if the field type
-  // is an address, name, or phone number type.
-  static ServerFieldType GetEquivalentBillingFieldType(
-      ServerFieldType field_type);
-
   // Translates the ServerFieldType values into the corresponding strings.
   static std::string ServerFieldTypeToString(ServerFieldType type);
 

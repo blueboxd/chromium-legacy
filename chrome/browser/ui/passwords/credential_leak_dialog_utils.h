@@ -44,7 +44,8 @@ GURL GetPasswordCheckupURL();
 // Returns the range of the bold part of the leak dialog message when
 // credentials were leaked only on current site.
 gfx::Range GetChangePasswordBoldRange(
-    password_manager::CredentialLeakType leak_type);
+    password_manager::CredentialLeakType leak_type,
+    const GURL& origin);
 
 }  // namespace leak_dialog_utils
 

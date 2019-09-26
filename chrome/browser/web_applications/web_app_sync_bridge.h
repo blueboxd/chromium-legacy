@@ -13,7 +13,6 @@
 #include "base/optional.h"
 #include "chrome/browser/web_applications/components/app_registry_controller.h"
 #include "chrome/browser/web_applications/web_app.h"
-#include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/sync/model/model_type_sync_bridge.h"
 
@@ -26,7 +25,9 @@ class ModelTypeChangeProcessor;
 namespace web_app {
 
 class AbstractWebAppDatabaseFactory;
+class WebAppDatabase;
 class WebAppRegistryUpdate;
+struct RegistryUpdateData;
 
 // The sync bridge exclusively owns ModelTypeChangeProcessor and WebAppDatabase
 // (the storage).
@@ -44,12 +45,6 @@ class WebAppSyncBridge : public AppRegistryController,
       std::unique_ptr<syncer::ModelTypeChangeProcessor> change_processor);
   ~WebAppSyncBridge() override;
 
-  // TODO(loyso): Erase UnregisterAll. Move Register/Unregister app methods to
-  // BeginUpdate/CommitUpdate API.
-  void RegisterApp(std::unique_ptr<WebApp> web_app);
-  std::unique_ptr<WebApp> UnregisterApp(const AppId& app_id);
-  void UnregisterAll();
-
   using CommitCallback = base::OnceCallback<void(bool success)>;
   // This is the writable API for the registry. Any updates will be written to
   // LevelDb and sync service. There can be only 1 update at a time.
@@ -63,9 +58,11 @@ class WebAppSyncBridge : public AppRegistryController,
                              LaunchContainer launch_container) override;
   WebAppSyncBridge* AsWebAppSyncBridge() override;
 
-  WebAppDatabase& database_for_testing() { return *database_; }
-
  private:
+  void CheckRegistryUpdateData(const RegistryUpdateData& update_data) const;
+  // Update the in-memory model.
+  void UpdateRegistrar(std::unique_ptr<RegistryUpdateData> update_data);
+
   void OnDatabaseOpened(base::OnceClosure callback, Registry registry);
   void OnDataWritten(CommitCallback callback, bool success);
 

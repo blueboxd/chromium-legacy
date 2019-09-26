@@ -34,6 +34,15 @@ class POLICY_EXPORT PolicyServiceImpl
   // Creates a new PolicyServiceImpl with the list of
   // ConfigurationPolicyProviders, in order of decreasing priority.
   explicit PolicyServiceImpl(Providers providers);
+
+  // Creates a new PolicyServiceImpl with the list of
+  // ConfigurationPolicyProviders, in order of decreasing priority.
+  // The created PolicyServiceImpl will only notify observers that
+  // initialization has completed (for any domain) after
+  // |UnthrottleInitialization| has been called.
+  static std::unique_ptr<PolicyServiceImpl> CreateWithThrottledInitialization(
+      Providers providers);
+
   ~PolicyServiceImpl() override;
 
   // PolicyService overrides:
@@ -47,11 +56,26 @@ class POLICY_EXPORT PolicyServiceImpl
   const PolicyMap& GetPolicies(const PolicyNamespace& ns) const override;
   bool IsInitializationComplete(PolicyDomain domain) const override;
   void RefreshPolicies(const base::Closure& callback) override;
-  void SetInitializationThrottled(bool initialization_throttled) override;
+
+  // If this PolicyServiceImpl has been created using
+  // |CreateWithThrottledInitialization|, calling UnthrottleInitialization will
+  // allow notification of observers that initialization has completed. If
+  // initialization has actually completed previously but observers were not
+  // notified yet because it was throttled, will notify observers synchronously.
+  // Has no effect if initialization was not throttled.
+  void UnthrottleInitialization();
 
  private:
   using Observers =
       base::ObserverList<PolicyService::Observer, true>::Unchecked;
+
+  // This constructor is not publicly visible so callers that want a
+  // PolicyServiceImpl with throttled initialization use
+  // |CreateWithInitializationThrottled| for clarity.
+  // If |initialization_throttled| is true, this PolicyServiceImpl will only
+  // notify observers that initialization has completed (for any domain) after
+  // |UnthrottleInitialization| has been called.
+  PolicyServiceImpl(Providers providers, bool initialization_throttled);
 
   // ConfigurationPolicyProvider::Observer overrides:
   void OnUpdatePolicy(ConfigurationPolicyProvider* provider) override;
@@ -68,9 +92,16 @@ class POLICY_EXPORT PolicyServiceImpl
   // of namespaces whose policies have been modified.
   void MergeAndTriggerUpdates();
 
-  // Checks if all providers are initialized, and notifies the observers
-  // if the service just became initialized.
+  // Checks if all providers are initialized and sets |initialization_complete_|
+  // accordingly. If initialization is not throttled, will also notify the
+  // observers if the service just became initialized.
   void CheckInitializationComplete();
+
+  // If initialization is complete for |policy_domain| and initialization is not
+  // throttled, will notify obserers for |policy_domain| that it has been
+  // initialized. This function should only be called when |policy_domain| just
+  // became initialized or when initialization has been unthrottled.
+  void MaybeNotifyInitializationComplete(PolicyDomain policy_domain);
 
   // Invokes all the refresh callbacks if there are no more refreshes pending.
   void CheckRefreshComplete();
@@ -110,7 +141,7 @@ class POLICY_EXPORT PolicyServiceImpl
   // If this is true, IsInitializationComplete should be returning false for all
   // policy domains because the owner of this PolicyService is delaying the
   // initialization signal.
-  bool initialization_throttled_ = false;
+  bool initialization_throttled_;
 
   // Used to verify thread-safe usage.
   base::ThreadChecker thread_checker_;

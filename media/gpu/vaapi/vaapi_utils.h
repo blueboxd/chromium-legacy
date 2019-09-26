@@ -9,6 +9,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/thread_annotations.h"
+#include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
 
 // Forward declarations taken verbatim from <va/va.h>
@@ -28,6 +29,8 @@ class VaapiWrapper;
 class Vp8ReferenceFrameVector;
 struct VAContextAndScopedVASurfaceDeleter;
 struct Vp8FrameHeader;
+
+constexpr uint32_t kInvalidVaFourcc = 0u;
 
 // Class to map a given VABuffer, identified by |buffer_id|, for its lifetime.
 // This class must operate under |lock_| acquired.
@@ -122,6 +125,9 @@ bool FillVP8DataStructures(const scoped_refptr<VaapiWrapper>& vaapi_wrapper,
                            const Vp8FrameHeader& frame_header,
                            const Vp8ReferenceFrameVector& reference_frames);
 
+// Returns a VA_FOURCC corresponding to |format|. Returns kInvalidVaFourcc if no
+// corresponding VA_FOURCC is found,
+uint32_t VideoPixelFormatToVAFourCC(VideoPixelFormat format);
 }  // namespace media
 
 #endif  // MEDIA_GPU_VAAPI_VAAPI_UTILS_H_

@@ -153,7 +153,7 @@ class ScreenTimeControllerTest : public policy::LoginPolicyTestBase,
 };
 
 // Tests a simple lock override.
-IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, LockOverride) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DISABLED_LockOverride) {
   LogInChildAndSetupClockWithTime("1 Jan 2018 10:00:00 GMT");
   ScreenLockerTester().Lock();
 
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, LockOverride) {
 }
 
 // Tests an unlock override on a bedtime.
-IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockBedtime) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DISABLED_UnlockBedtime) {
   LogInChildAndSetupClockWithTime("5 Jan 2018 22:00:00 BRT");
   ScreenLockerTester().Lock();
 
@@ -234,7 +234,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockBedtime) {
 }
 
 // Tests an override with duration on a bedtime before it's locked.
-IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, OverrideBedtimeWithDuration) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
+                       DISABLED_OverrideBedtimeWithDuration) {
   LogInChildAndSetupClockWithTime("5 Jan 2018 20:45:00 PST");
   ScreenLockerTester().Lock();
 
@@ -304,7 +305,7 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, OverrideBedtimeWithDuration) {
 
 // Tests an override with duration on a daily limit before it's locked.
 IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
-                       OverrideDailyLimitWithDuration) {
+                       DISABLED_OverrideDailyLimitWithDuration) {
   LogInChildAndSetupClockWithTime("1 Jan 2018 10:00:00 BRT");
   ScreenLockerTester().Lock();
 
@@ -368,7 +369,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
 }
 
 // Tests an unlock override with duration on a bedtime.
-IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockBedtimeWithDuration) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
+                       DISABLED_UnlockBedtimeWithDuration) {
   LogInChildAndSetupClockWithTime("5 Jan 2018 22:00:00 GMT");
   ScreenLockerTester().Lock();
 
@@ -434,7 +436,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockBedtimeWithDuration) {
 }
 
 // Tests an unlock override with duration on a daily limit.
-IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockDailyLimitWithDuration) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
+                       DISABLED_UnlockDailyLimitWithDuration) {
   LogInChildAndSetupClockWithTime("1 Jan 2018 10:00:00 PST");
   ScreenLockerTester().Lock();
 
@@ -498,7 +501,7 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, UnlockDailyLimitWithDuration) {
 }
 
 // Tests the default time window limit.
-IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DefaultBedtime) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DISABLED_DefaultBedtime) {
   LogInChildAndSetupClockWithTime("1 Jan 2018 10:00:00 GMT");
   ScreenLockerTester().Lock();
 
@@ -561,7 +564,7 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DefaultBedtime) {
 }
 
 // Tests the default time window limit.
-IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DefaultDailyLimit) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DISABLED_DefaultDailyLimit) {
   LogInChildAndSetupClockWithTime("1 Jan 2018 10:00:00 GMT");
   ScreenLockerTester().Lock();
 
@@ -627,7 +630,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DefaultDailyLimit) {
 }
 
 // Tests that the bedtime locks an active session when it is reached.
-IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, ActiveSessionBedtime) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
+                       DISABLED_ActiveSessionBedtime) {
   LogInChildAndSetupClockWithTime("1 Jan 2018 10:00:00 PST");
 
   system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
@@ -665,7 +669,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, ActiveSessionBedtime) {
 }
 
 // Tests that the daily limit locks the device when it is reached.
-IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, ActiveSessionDailyLimit) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
+                       DISABLED_ActiveSessionDailyLimit) {
   LogInChildAndSetupClockWithTime("1 Jan 2018 10:00:00 PST");
 
   system::TimezoneSettings::GetInstance()->SetTimezoneFromID(
@@ -701,7 +706,8 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, ActiveSessionDailyLimit) {
 }
 
 // Tests bedtime during timezone changes.
-IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, BedtimeOnTimezoneChange) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
+                       DISABLED_BedtimeOnTimezoneChange) {
   LogInChildAndSetupClockWithTime("3 Jan 2018 10:00:00 GMT-0600");
   ScreenLockerTester().Lock();
 
@@ -753,7 +759,7 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, BedtimeOnTimezoneChange) {
 
 // Tests bedtime during timezone changes that make the clock go back in time.
 IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
-                       BedtimeOnEastToWestTimezoneChanges) {
+                       DISABLED_BedtimeOnEastToWestTimezoneChanges) {
   LogInChildAndSetupClockWithTime("3 Jan 2018 8:00:00 GMT+1300");
   ScreenLockerTester().Lock();
 
@@ -797,7 +803,7 @@ IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest,
 }
 
 // Tests if call the observers for usage time limit warning.
-IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, CallObservers) {
+IN_PROC_BROWSER_TEST_P(ScreenTimeControllerTest, DISABLED_CallObservers) {
   if (!is_feature_enabled_)
     return;
   LogInChildAndSetupClockWithTime("1 Jan 2018 10:00:00 PST");

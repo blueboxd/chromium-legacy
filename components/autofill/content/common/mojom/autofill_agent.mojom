@@ -92,10 +92,6 @@ interface PasswordAutofillAgent {
   // logging the decisions made about saving the password.
   SetLoggingState(bool active);
 
-  // Sent when Autofill manager gets the query response from the Autofill server
-  // which contains information about username and password for some forms.
-  // |predictions| maps forms to their username fields.
-  AutofillUsernameAndPasswordDataReceived(FormsPredictionsMap predictions);
 };
 
 // There is one instance of this interface per render frame in the render

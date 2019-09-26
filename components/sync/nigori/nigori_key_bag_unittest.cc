@@ -44,6 +44,24 @@ TEST(NigoriKeyBagTest, ShouldAddKeys) {
   EXPECT_TRUE(key_bag.HasKey(key_name2));
 }
 
+TEST(NigoriKeyBagTest, ShouldExportKey) {
+  NigoriKeyBag key_bag = NigoriKeyBag::CreateEmpty();
+  const std::string key_name1 = key_bag.AddKey(CreateTestNigori("password1"));
+  ASSERT_THAT(key_bag, SizeIs(1));
+  ASSERT_THAT(key_name1, Ne(""));
+  ASSERT_TRUE(key_bag.HasKey(key_name1));
+
+  sync_pb::NigoriKey exported_key = key_bag.ExportKey(key_name1);
+
+  // Callers of ExportKey() rely on the deprecated field *NOT* being populated.
+  EXPECT_FALSE(exported_key.has_deprecated_name());
+
+  // The exported key, even without name, should be importable, and the
+  // resulting key name should match the original.
+  EXPECT_THAT(NigoriKeyBag::CreateEmpty().AddKeyFromProto(exported_key),
+              Eq(key_name1));
+}
+
 TEST(NigoriKeyBagTest, ShouldConvertEmptyToProto) {
   EXPECT_EQ(sync_pb::NigoriKeyBag().SerializeAsString(),
             NigoriKeyBag::CreateEmpty().ToProto().SerializeAsString());
@@ -55,8 +73,11 @@ TEST(NigoriKeyBagTest, ShouldConvertNonEmptyToProto) {
 
   sync_pb::NigoriKeyBag proto = key_bag.ToProto();
   ASSERT_THAT(proto.key(), SizeIs(1));
-  EXPECT_THAT(proto.key(0).name(), Eq(key_name));
-  EXPECT_THAT(proto.key(0).user_key(), Ne(""));
+  // Callers of ToProto() rely on the deprecated name field being populated,
+  // since it gets exposed to the sync protocol, and hence subject to backward
+  // compatibility.
+  EXPECT_THAT(proto.key(0).deprecated_name(), Eq(key_name));
+  EXPECT_THAT(proto.key(0).deprecated_user_key(), Ne(""));
   EXPECT_THAT(proto.key(0).encryption_key(), Ne(""));
   EXPECT_THAT(proto.key(0).mac_key(), Ne(""));
 }
@@ -114,7 +135,9 @@ TEST(NigoriKeyBagTest, ShouldClone) {
   EXPECT_TRUE(cloned_key_bag.HasKey(key_name2));
 }
 
-TEST(NigoriKeyBagTest, ShouldIgnoreKeyNameProtoField) {
+// This holds true for M79 and above, but older clients rely on the field being
+// set.
+TEST(NigoriKeyBagTest, ShouldIgnoreDeprecatedKeyNameProtoField) {
   NigoriKeyBag original_key_bag = NigoriKeyBag::CreateEmpty();
   const std::string real_key_name =
       original_key_bag.AddKey(CreateTestNigori("password1"));
@@ -124,7 +147,7 @@ TEST(NigoriKeyBagTest, ShouldIgnoreKeyNameProtoField) {
       NigoriKeyBag::CreateEmpty().AddKey(CreateTestNigori("password2"));
 
   sync_pb::NigoriKeyBag proto = original_key_bag.ToProto();
-  proto.mutable_key(0)->set_name(actual_key_name_in_proto);
+  proto.mutable_key(0)->set_deprecated_name(actual_key_name_in_proto);
 
   NigoriKeyBag restored_key_bag = NigoriKeyBag::CreateFromProto(proto);
 

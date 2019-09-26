@@ -106,7 +106,8 @@ class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
       ThrottlingURLLoader* url_loader,
-      bool* skip_other_interceptors) override {
+      bool* skip_other_interceptors,
+      bool* will_return_unsafe_redirect) override {
     return false;
   }
 

@@ -155,15 +155,6 @@ void SerializeFormData(const FormData& form_data, base::Pickle* pickle) {
   pickle->WriteString(form_data.main_frame_origin.Serialize());
 }
 
-void SerializeFormDataToBase64String(const FormData& form_data,
-                                     std::string* output) {
-  base::Pickle pickle;
-  SerializeFormData(form_data, &pickle);
-  Base64Encode(
-      base::StringPiece(static_cast<const char*>(pickle.data()), pickle.size()),
-      output);
-}
-
 bool DeserializeFormData(base::PickleIterator* iter, FormData* form_data) {
   int version;
   FormData temp_form_data;
@@ -225,17 +216,6 @@ bool DeserializeFormData(base::PickleIterator* iter, FormData* form_data) {
 
   *form_data = temp_form_data;
   return true;
-}
-
-bool DeserializeFormDataFromBase64String(const base::StringPiece& input,
-                                         FormData* form_data) {
-  if (input.empty())
-    return false;
-  std::string pickle_data;
-  Base64Decode(input, &pickle_data);
-  base::Pickle pickle(pickle_data.data(), static_cast<int>(pickle_data.size()));
-  base::PickleIterator iter(pickle);
-  return DeserializeFormData(&iter, form_data);
 }
 
 LogBuffer& operator<<(LogBuffer& buffer, const FormData& form) {

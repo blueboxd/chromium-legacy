@@ -57,6 +57,7 @@ class SearchIPCRouterPolicyImpl : public SearchIPCRouter::Policy {
   bool ShouldProcessQueryAutocomplete(bool is_active_tab) override;
   bool ShouldProcessStopAutocomplete(bool is_active_tab) override;
   bool ShouldProcessBlocklistPromo() override;
+  bool ShouldProcessDeleteAutocompleteMatch() override;
 
   // Used by unit tests.
   void set_is_incognito(bool is_incognito) {

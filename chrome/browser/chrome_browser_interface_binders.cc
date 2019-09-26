@@ -17,6 +17,9 @@
 #include "content/public/browser/web_contents.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
+#if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
+#include "third_party/blink/public/mojom/page/spatial_navigation.mojom.h"
+#endif
 #else
 #include "chrome/browser/badging/badge_manager.h"
 #endif
@@ -52,6 +55,10 @@ void PopulateChromeFrameBinders(
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::ShareService>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::ShareService>));
+#if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
+  map->Add<blink::mojom::SpatialNavigationHost>(base::BindRepeating(
+      &ForwardToJavaWebContents<blink::mojom::SpatialNavigationHost>));
+#endif
 #else
   map->Add<blink::mojom::BadgeService>(
       base::BindRepeating(&badging::BadgeManager::BindReceiver));

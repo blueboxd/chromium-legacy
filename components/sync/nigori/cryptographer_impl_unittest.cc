@@ -132,4 +132,25 @@ TEST(CryptographerImplTest, ShouldSerializeToAndFromProto) {
   EXPECT_THAT(decrypted, Eq(kText2));
 }
 
+TEST(CryptographerImplTest, ShouldExportDefaultKey) {
+  std::unique_ptr<CryptographerImpl> cryptographer =
+      CryptographerImpl::CreateEmpty();
+  ASSERT_THAT(cryptographer, NotNull());
+
+  const std::string key_name = cryptographer->EmplaceKey(
+      "password1", KeyDerivationParams::CreateForPbkdf2());
+  ASSERT_THAT(key_name, Ne(std::string()));
+
+  cryptographer->SelectDefaultEncryptionKey(key_name);
+  ASSERT_TRUE(cryptographer->CanEncrypt());
+
+  sync_pb::NigoriKey exported_key = cryptographer->ExportDefaultKey();
+  EXPECT_FALSE(exported_key.has_deprecated_name());
+
+  // The exported key, even without name, should be importable, and the
+  // resulting key name should match the original.
+  EXPECT_THAT(NigoriKeyBag::CreateEmpty().AddKeyFromProto(exported_key),
+              Eq(key_name));
+}
+
 }  // namespace syncer

@@ -83,10 +83,6 @@
 #include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom.h"
 #endif
 
-#if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
-#include "third_party/blink/public/mojom/page/spatial_navigation.mojom.h"
-#endif
-
 const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
     service_manager::ManifestBuilder()
@@ -165,9 +161,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 blink::mojom::InstalledAppProvider,
 #if defined(BROWSER_MEDIA_CONTROLS_MENU)
                 blink::mojom::MediaControlsMenuHost,
-#endif
-#if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
-                blink::mojom::SpatialNavigationHost,
 #endif
                 blink::mojom::TextSuggestionHost,
                 chrome::mojom::OfflinePageAutoFetcher,

@@ -35,10 +35,7 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "services/device/public/mojom/constants.mojom.h"
-#include "services/device/public/mojom/vibration_manager.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/shape_detection/public/mojom/barcodedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"
@@ -139,17 +136,6 @@ void BindTextDetection(shape_detection::mojom::TextDetectionRequest request,
   GetShapeDetectionService()->BindTextDetection(std::move(request));
 }
 
-// Forwards service requests to Service Manager since the renderer cannot launch
-// out-of-process services on is own.
-template <typename Interface>
-void ForwardServiceRequest(const char* service_name,
-                           mojo::InterfaceRequest<Interface> request,
-                           RenderProcessHost* host,
-                           const url::Origin& origin) {
-  auto* connector = BrowserContext::GetConnectorFor(host->GetBrowserContext());
-  connector->BindInterface(service_name, std::move(request));
-}
-
 // Register renderer-exposed interfaces. Each registered interface binder is
 // exposed to all renderer-hosted execution context types (document/frame,
 // dedicated worker, shared worker and service worker) where the appropriate
@@ -163,10 +149,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
       base::BindRepeating(&BindFaceDetectionProvider));
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(&BindTextDetection));
-
-  parameterized_binder_registry_.AddInterface(
-      base::Bind(&ForwardServiceRequest<device::mojom::VibrationManager>,
-                 device::mojom::kServiceName));
 
   // Used for shared workers and service workers to create a websocket.
   // In other cases, RenderFrameHostImpl for documents or DedicatedWorkerHost

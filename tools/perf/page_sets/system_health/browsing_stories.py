@@ -304,6 +304,29 @@ class WashingtonPostMobileStory(_ArticleBrowsingStory):
     super(WashingtonPostMobileStory, self)._DidLoadDocument(action_runner)
 
 
+class WashingtonPostMobileStory2019(_ArticleBrowsingStory):
+  """Progressive website"""
+  NAME = 'browse:news:washingtonpost:2019'
+  URL = 'https://www.washingtonpost.com/pwa'
+  IS_SINGLE_PAGE_APP = True
+  ITEM_SELECTOR = '.headline > a'
+  SUPPORTED_PLATFORMS = platforms.MOBILE_ONLY
+  _BROWSE_FREE_SELECTOR = '[class="continue-btn button free"]'
+  _I_AGREE_SELECTOR = '.agree-ckb'
+  _CONTINUE_SELECTOR = '[class="continue-btn button accept-consent"]'
+  TAGS = [story_tags.YEAR_2019]
+
+  def _DidLoadDocument(self, action_runner):
+    # Get past GDPR and subscription dialog.
+    action_runner.WaitForElement(selector=self._BROWSE_FREE_SELECTOR)
+    action_runner.ClickElement(selector=self._BROWSE_FREE_SELECTOR)
+    action_runner.WaitForElement(selector=self._I_AGREE_SELECTOR)
+    action_runner.ClickElement(selector=self._I_AGREE_SELECTOR)
+    action_runner.ClickElement(selector=self._CONTINUE_SELECTOR)
+
+    super(WashingtonPostMobileStory2019, self)._DidLoadDocument(action_runner)
+
+
 ##############################################################################
 # Search browsing stories.
 ##############################################################################

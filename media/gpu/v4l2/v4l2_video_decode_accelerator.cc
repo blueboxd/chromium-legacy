@@ -1924,6 +1924,11 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
   // First liberate all the frames held by the client.
   buffers_at_client_.clear();
 
+  egl_image_device_ = nullptr;
+
+  // The image processor's thread was the user of the image processor device,
+  // so let it keep the last reference and destroy it in its own thread.
+  image_processor_device_ = nullptr;
   image_processor_ = nullptr;
   while (!buffers_at_ip_.empty())
     buffers_at_ip_.pop();
@@ -1936,6 +1941,10 @@ void V4L2VideoDecodeAccelerator::DestroyTask() {
 
   decoder_h264_parser_ = nullptr;
   workarounds_.clear();
+
+  // Clear the V4L2 devices in the decoder thread so the V4L2Device's
+  // destructor is called from the thread that used it.
+  device_ = nullptr;
 
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);

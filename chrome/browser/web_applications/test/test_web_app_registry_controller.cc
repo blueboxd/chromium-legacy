@@ -7,6 +7,7 @@
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
 #include "chrome/browser/web_applications/test/test_web_app_database_factory.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 
 namespace web_app {
@@ -31,6 +32,23 @@ void TestWebAppRegistryController::Init() {
   base::RunLoop run_loop;
   sync_bridge_->Init(run_loop.QuitClosure());
   run_loop.Run();
+}
+
+void TestWebAppRegistryController::RegisterApp(
+    std::unique_ptr<WebApp> web_app) {
+  ScopedRegistryUpdate update(sync_bridge_.get());
+  update->CreateApp(std::move(web_app));
+}
+
+void TestWebAppRegistryController::UnregisterApp(const AppId& app_id) {
+  ScopedRegistryUpdate update(sync_bridge_.get());
+  update->DeleteApp(app_id);
+}
+
+void TestWebAppRegistryController::UnregisterAll() {
+  ScopedRegistryUpdate update(sync_bridge_.get());
+  for (const AppId& app_id : registrar().GetAppIds())
+    update->DeleteApp(app_id);
 }
 
 void TestWebAppRegistryController::DestroySubsystems() {

@@ -1388,6 +1388,7 @@ autofill::SaveCardBubbleView* BrowserView::ShowSaveCreditCardBubble(
       bubble = new autofill::SaveCardFailureBubbleViews(
           anchor_view, web_contents, controller);
       break;
+    case autofill::BubbleType::UPLOAD_IN_PROGRESS:
     case autofill::BubbleType::INACTIVE:
       break;
   }

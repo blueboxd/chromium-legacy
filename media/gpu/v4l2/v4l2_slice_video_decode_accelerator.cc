@@ -146,7 +146,6 @@ V4L2SliceVideoDecodeAccelerator::V4L2SliceVideoDecodeAccelerator(
       child_task_runner_(base::ThreadTaskRunnerHandle::Get()),
       device_(device),
       decoder_thread_("V4L2SliceVideoDecodeAcceleratorThread"),
-      device_poll_thread_("V4L2SliceVideoDecodeAcceleratorDevicePollThread"),
       video_profile_(VIDEO_CODEC_PROFILE_UNKNOWN),
       input_format_fourcc_(0),
       output_format_fourcc_(0),
@@ -170,7 +169,6 @@ V4L2SliceVideoDecodeAccelerator::~V4L2SliceVideoDecodeAccelerator() {
 
   DCHECK(child_task_runner_->BelongsToCurrentThread());
   DCHECK(!decoder_thread_.IsRunning());
-  DCHECK(!device_poll_thread_.IsRunning());
 
   DCHECK(requests_.empty());
   DCHECK(output_buffer_map_.empty());
@@ -384,6 +382,11 @@ void V4L2SliceVideoDecodeAccelerator::Destroy() {
         //    executes after all the tasks potentially posted by the IP.
         base::BindOnce(
             [](V4L2SliceVideoDecodeAccelerator* vda) {
+              vda->gl_image_device_ = nullptr;
+              // The image processor's thread was the user of the image
+              // processor device, so let it keep the last reference and destroy
+              // it in its own thread.
+              vda->image_processor_device_ = nullptr;
               vda->image_processor_ = nullptr;
               vda->surfaces_at_ip_ = {};
               vda->decoder_thread_task_runner_->PostTask(
@@ -427,6 +430,10 @@ void V4L2SliceVideoDecodeAccelerator::DestroyTask() {
 
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
+
+  // Clear the V4L2 devices in the decoder thread so the V4L2Device's
+  // destructor is called from the thread that used it.
+  device_ = nullptr;
 
   DCHECK(surfaces_at_device_.empty());
   DCHECK(surfaces_at_display_.empty());
@@ -749,60 +756,9 @@ void V4L2SliceVideoDecodeAccelerator::DismissPictures(
   done->Signal();
 }
 
-void V4L2SliceVideoDecodeAccelerator::DevicePollTask(bool poll_device) {
-  DVLOGF(3);
-  DCHECK(device_poll_thread_.task_runner()->BelongsToCurrentThread());
-  TRACE_EVENT0("media,gpu", "V4L2SVDA::DevicePollTask");
-  bool event_pending;
-  if (!device_->Poll(poll_device, &event_pending)) {
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return;
-  }
-
-  // All processing should happen on ServiceDeviceTask(), since we shouldn't
-  // touch encoder state from this thread.
-  decoder_thread_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2SliceVideoDecodeAccelerator::ServiceDeviceTask,
-                     base::Unretained(this)));
-}
-
-void V4L2SliceVideoDecodeAccelerator::ServiceDeviceTask() {
+void V4L2SliceVideoDecodeAccelerator::ServiceDeviceTask(bool event) {
   DVLOGF(4);
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-
-  if (IsDestroyPending())
-    return;
-
-  // ServiceDeviceTask() should only ever be scheduled from DevicePollTask().
-
-  Dequeue();
-  SchedulePollIfNeeded();
-}
-
-void V4L2SliceVideoDecodeAccelerator::SchedulePollIfNeeded() {
-  DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-
-  if (!device_poll_thread_.IsRunning()) {
-    DVLOGF(4) << "Device poll thread stopped, will not schedule poll";
-    return;
-  }
-
-  DCHECK(input_queue_->IsStreaming() || output_queue_->IsStreaming());
-
-  if (input_queue_->QueuedBuffersCount() +
-          output_queue_->QueuedBuffersCount() ==
-      0) {
-    DVLOGF(4) << "No buffers queued, will not schedule poll";
-    return;
-  }
-
-  DVLOGF(4) << "Scheduling device poll task";
-
-  device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2SliceVideoDecodeAccelerator::DevicePollTask,
-                     base::Unretained(this), true));
 
   DVLOGF(3) << "buffer counts: "
             << "INPUT[" << decoder_input_queue_.size() << "]"
@@ -814,14 +770,16 @@ void V4L2SliceVideoDecodeAccelerator::SchedulePollIfNeeded() {
             << output_buffer_map_.size() << "]"
             << " => DISPLAYQ[" << decoder_display_queue_.size() << "]"
             << " => CLIENT[" << surfaces_at_display_.size() << "]";
+
+  if (IsDestroyPending())
+    return;
+
+  Dequeue();
 }
 
 void V4L2SliceVideoDecodeAccelerator::Enqueue(
     const scoped_refptr<V4L2DecodeSurface>& dec_surface) {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-
-  const int old_inputs_queued = input_queue_->QueuedBuffersCount();
-  const int old_outputs_queued = output_queue_->QueuedBuffersCount();
 
   if (!EnqueueInputRecord(dec_surface.get())) {
     VLOGF(1) << "Failed queueing an input buffer";
@@ -836,9 +794,6 @@ void V4L2SliceVideoDecodeAccelerator::Enqueue(
   }
 
   surfaces_at_device_.push(dec_surface);
-
-  if (old_inputs_queued == 0 && old_outputs_queued == 0)
-    SchedulePollIfNeeded();
 }
 
 void V4L2SliceVideoDecodeAccelerator::Dequeue() {
@@ -1021,14 +976,6 @@ bool V4L2SliceVideoDecodeAccelerator::EnqueueOutputRecord(
 bool V4L2SliceVideoDecodeAccelerator::StartDevicePoll() {
   DVLOGF(3) << "Starting device poll";
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
-  DCHECK(!device_poll_thread_.IsRunning());
-
-  // Start up the device poll thread and schedule its first DevicePollTask().
-  if (!device_poll_thread_.Start()) {
-    VLOGF(1) << "Device thread failed to start";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return false;
-  }
 
   if (!input_queue_->Streamon())
     return false;
@@ -1036,12 +983,17 @@ bool V4L2SliceVideoDecodeAccelerator::StartDevicePoll() {
   if (!output_queue_->Streamon())
     return false;
 
-  device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2SliceVideoDecodeAccelerator::DevicePollTask,
-                     base::Unretained(this), true));
+  // We can use base::Unretained here because the client thread will flush
+  // all tasks posted to the decoder thread before deleting the SVDA.
+  return device_->StartPolling(
+      base::BindRepeating(&V4L2SliceVideoDecodeAccelerator::ServiceDeviceTask,
+                          base::Unretained(this)),
+      base::BindRepeating(&V4L2SliceVideoDecodeAccelerator::OnPollError,
+                          base::Unretained(this)));
+}
 
-  return true;
+void V4L2SliceVideoDecodeAccelerator::OnPollError() {
+  NOTIFY_ERROR(PLATFORM_FAILURE);
 }
 
 bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll() {
@@ -1049,20 +1001,8 @@ bool V4L2SliceVideoDecodeAccelerator::StopDevicePoll() {
   if (decoder_thread_.IsRunning())
     DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
-  // Signal the DevicePollTask() to stop, and stop the device poll thread.
-  if (!device_->SetDevicePollInterrupt()) {
-    VPLOGF(1) << "SetDevicePollInterrupt(): failed";
-    NOTIFY_ERROR(PLATFORM_FAILURE);
+  if (!device_->StopPolling())
     return false;
-  }
-  device_poll_thread_.Stop();
-  DVLOGF(3) << "Device poll thread stopped";
-
-  // Clear the interrupt now, to be sure.
-  if (!device_->ClearDevicePollInterrupt()) {
-    NOTIFY_ERROR(PLATFORM_FAILURE);
-    return false;
-  }
 
   // We may be called before the queue is acquired.
   if (input_queue_) {

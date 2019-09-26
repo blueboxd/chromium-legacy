@@ -48,7 +48,10 @@
 #include "ipc/ipc_test_base.h"
 #include "ipc/ipc_test_channel_listener.h"
 #include "mojo/core/embedder/embedder.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/lib/validation_errors.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/system/wait.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -661,7 +664,7 @@ class ListenerWithSimpleAssociatedInterface
   static const int kNumMessages;
 
   explicit ListenerWithSimpleAssociatedInterface(base::OnceClosure quit_closure)
-      : quit_closure_(std::move(quit_closure)), binding_(this) {}
+      : quit_closure_(std::move(quit_closure)) {}
 
   ~ListenerWithSimpleAssociatedInterface() override = default;
 
@@ -678,8 +681,9 @@ class ListenerWithSimpleAssociatedInterface
 
   void RegisterInterfaceFactory(IPC::Channel* channel) {
     channel->GetAssociatedInterfaceSupport()->AddAssociatedInterface(
-        base::BindRepeating(&ListenerWithSimpleAssociatedInterface::BindRequest,
-                            base::Unretained(this)));
+        base::BindRepeating(
+            &ListenerWithSimpleAssociatedInterface::BindReceiver,
+            base::Unretained(this)));
   }
 
  private:
@@ -700,16 +704,17 @@ class ListenerWithSimpleAssociatedInterface
     std::move(quit_closure_).Run();
   }
 
-  void BindRequest(IPC::mojom::SimpleTestDriverAssociatedRequest request) {
-    DCHECK(!binding_.is_bound());
-    binding_.Bind(std::move(request));
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<IPC::mojom::SimpleTestDriver> receiver) {
+    DCHECK(!receiver_.is_bound());
+    receiver_.Bind(std::move(receiver));
   }
 
   int32_t next_expected_value_ = 0;
   int num_messages_received_ = 0;
   base::OnceClosure quit_closure_;
 
-  mojo::AssociatedBinding<IPC::mojom::SimpleTestDriver> binding_;
+  mojo::AssociatedReceiver<IPC::mojom::SimpleTestDriver> receiver_{this};
 };
 
 const int ListenerWithSimpleAssociatedInterface::kNumMessages = 1000;
@@ -724,7 +729,7 @@ class ListenerSendingAssociatedMessages : public IPC::Listener {
   void OnChannelConnected(int32_t peer_pid) override {
     DCHECK(channel_);
     channel_->GetAssociatedInterfaceSupport()->GetRemoteAssociatedInterface(
-        &driver_);
+        driver_.BindNewEndpointAndPassReceiver());
 
     // Send a bunch of interleaved messages, alternating between the associated
     // interface and a legacy IPC::Message.
@@ -743,7 +748,7 @@ class ListenerSendingAssociatedMessages : public IPC::Listener {
   void OnQuitAck() { std::move(quit_closure_).Run(); }
 
   IPC::Channel* channel_ = nullptr;
-  IPC::mojom::SimpleTestDriverAssociatedPtr driver_;
+  mojo::AssociatedRemote<IPC::mojom::SimpleTestDriver> driver_;
   base::OnceClosure quit_closure_;
 };
 
@@ -850,7 +855,7 @@ class ListenerWithSimpleProxyAssociatedInterface
 
   explicit ListenerWithSimpleProxyAssociatedInterface(
       base::OnceClosure quit_closure)
-      : quit_closure_(std::move(quit_closure)), binding_(this) {}
+      : quit_closure_(std::move(quit_closure)) {}
 
   ~ListenerWithSimpleProxyAssociatedInterface() override = default;
 
@@ -869,8 +874,9 @@ class ListenerWithSimpleProxyAssociatedInterface
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) override {
     DCHECK_EQ(interface_name, IPC::mojom::SimpleTestDriver::Name_);
-    binding_.Bind(
-        IPC::mojom::SimpleTestDriverAssociatedRequest(std::move(handle)));
+    receiver_.Bind(
+        mojo::PendingAssociatedReceiver<IPC::mojom::SimpleTestDriver>(
+            std::move(handle)));
   }
 
   bool received_all_messages() const {
@@ -891,20 +897,21 @@ class ListenerWithSimpleProxyAssociatedInterface
 
   void RequestQuit(RequestQuitCallback callback) override {
     std::move(callback).Run();
-    binding_.Close();
+    receiver_.reset();
     std::move(quit_closure_).Run();
   }
 
-  void BindRequest(IPC::mojom::SimpleTestDriverAssociatedRequest request) {
-    DCHECK(!binding_.is_bound());
-    binding_.Bind(std::move(request));
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<IPC::mojom::SimpleTestDriver> receiver) {
+    DCHECK(!receiver_.is_bound());
+    receiver_.Bind(std::move(receiver));
   }
 
   int32_t next_expected_value_ = 0;
   int num_messages_received_ = 0;
   base::OnceClosure quit_closure_;
 
-  mojo::AssociatedBinding<IPC::mojom::SimpleTestDriver> binding_;
+  mojo::AssociatedReceiver<IPC::mojom::SimpleTestDriver> receiver_{this};
 };
 
 const int ListenerWithSimpleProxyAssociatedInterface::kNumMessages = 1000;
@@ -968,7 +975,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(
 
   // Send a bunch of interleaved messages, alternating between the associated
   // interface and a legacy IPC::Message.
-  IPC::mojom::SimpleTestDriverAssociatedPtr driver;
+  mojo::AssociatedRemote<IPC::mojom::SimpleTestDriver> driver;
   proxy()->GetRemoteAssociatedInterface(&driver);
   for (int i = 0; i < ListenerWithSimpleProxyAssociatedInterface::kNumMessages;
        ++i) {
@@ -1074,7 +1081,7 @@ class ListenerWithSyncAssociatedInterface
     : public IPC::Listener,
       public IPC::mojom::SimpleTestDriver {
  public:
-  ListenerWithSyncAssociatedInterface() : binding_(this) {}
+  ListenerWithSyncAssociatedInterface() = default;
   ~ListenerWithSyncAssociatedInterface() override = default;
 
   void set_sync_sender(IPC::Sender* sync_sender) { sync_sender_ = sync_sender; }
@@ -1085,7 +1092,7 @@ class ListenerWithSyncAssociatedInterface
     loop.Run();
   }
 
-  void CloseBinding() { binding_.Close(); }
+  void CloseBinding() { receiver_.reset(); }
 
   void set_response_value(int32_t response) {
     response_value_ = response;
@@ -1126,15 +1133,17 @@ class ListenerWithSyncAssociatedInterface
   void OnAssociatedInterfaceRequest(
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) override {
-    DCHECK(!binding_.is_bound());
+    DCHECK(!receiver_.is_bound());
     DCHECK_EQ(interface_name, IPC::mojom::SimpleTestDriver::Name_);
-    binding_.Bind(
-        IPC::mojom::SimpleTestDriverAssociatedRequest(std::move(handle)));
+    receiver_.Bind(
+        mojo::PendingAssociatedReceiver<IPC::mojom::SimpleTestDriver>(
+            std::move(handle)));
   }
 
-  void BindRequest(IPC::mojom::SimpleTestDriverAssociatedRequest request) {
-    DCHECK(!binding_.is_bound());
-    binding_.Bind(std::move(request));
+  void BindReceiver(
+      mojo::PendingAssociatedReceiver<IPC::mojom::SimpleTestDriver> receiver) {
+    DCHECK(!receiver_.is_bound());
+    receiver_.Bind(std::move(receiver));
   }
 
   IPC::Sender* sync_sender_ = nullptr;
@@ -1142,7 +1151,7 @@ class ListenerWithSyncAssociatedInterface
   int32_t response_value_ = 0;
   base::OnceClosure quit_closure_;
 
-  mojo::AssociatedBinding<IPC::mojom::SimpleTestDriver> binding_;
+  mojo::AssociatedReceiver<IPC::mojom::SimpleTestDriver> receiver_{this};
 };
 
 class SyncReplyReader : public IPC::MessageReplyDeserializer {
@@ -1178,7 +1187,7 @@ TEST_F(IPCChannelProxyMojoTest, SyncAssociatedInterface) {
   // Verify that we can send a sync IPC and service an incoming sync request
   // while waiting on it
   listener.set_response_value(42);
-  IPC::mojom::SimpleTestClientAssociatedPtr client;
+  mojo::AssociatedRemote<IPC::mojom::SimpleTestClient> client;
   proxy()->GetRemoteAssociatedInterface(&client);
   int32_t received_value;
   EXPECT_TRUE(client->RequestValue(&received_value));
@@ -1208,7 +1217,8 @@ TEST_F(IPCChannelProxyMojoTest, SyncAssociatedInterface) {
 class SimpleTestClientImpl : public IPC::mojom::SimpleTestClient,
                              public IPC::Listener {
  public:
-  SimpleTestClientImpl() : binding_(this) {}
+  SimpleTestClientImpl() = default;
+  ~SimpleTestClientImpl() override = default;
 
   void set_driver(IPC::mojom::SimpleTestDriver* driver) { driver_ = driver; }
   void set_sync_sender(IPC::Sender* sync_sender) { sync_sender_ = sync_sender; }
@@ -1259,15 +1269,15 @@ class SimpleTestClientImpl : public IPC::mojom::SimpleTestClient,
   void OnAssociatedInterfaceRequest(
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) override {
-    DCHECK(!binding_.is_bound());
+    DCHECK(!receiver_.is_bound());
     DCHECK_EQ(interface_name, IPC::mojom::SimpleTestClient::Name_);
 
-    binding_.Bind(
+    receiver_.Bind(
         IPC::mojom::SimpleTestClientAssociatedRequest(std::move(handle)));
   }
 
   bool use_sync_sender_ = false;
-  mojo::AssociatedBinding<IPC::mojom::SimpleTestClient> binding_;
+  mojo::AssociatedBinding<IPC::mojom::SimpleTestClient> receiver_{this};
   IPC::Sender* sync_sender_ = nullptr;
   IPC::mojom::SimpleTestDriver* driver_ = nullptr;
   std::unique_ptr<base::RunLoop> run_loop_;
@@ -1282,7 +1292,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(SyncAssociatedInterface,
   client_impl.set_sync_sender(proxy());
   RunProxy();
 
-  IPC::mojom::SimpleTestDriverAssociatedPtr driver;
+  mojo::AssociatedRemote<IPC::mojom::SimpleTestDriver> driver;
   proxy()->GetRemoteAssociatedInterface(&driver);
   client_impl.set_driver(driver.get());
 
@@ -1416,12 +1426,13 @@ TEST_F(IPCChannelProxyMojoTest, AssociatedRequestClose) {
 
   IPC::mojom::AssociatedInterfaceVendorAssociatedPtr vendor;
   proxy()->GetRemoteAssociatedInterface(&vendor);
-  IPC::mojom::SimpleTestDriverAssociatedPtr tester;
-  vendor->GetTestInterface(mojo::MakeRequest(&tester));
+  mojo::AssociatedRemote<IPC::mojom::SimpleTestDriver> tester;
+  vendor->GetTestInterface(tester.BindNewEndpointAndPassReceiver());
   base::RunLoop run_loop;
-  tester.set_connection_error_handler(run_loop.QuitClosure());
+  tester.set_disconnect_handler(run_loop.QuitClosure());
   run_loop.Run();
 
+  tester.reset();
   proxy()->GetRemoteAssociatedInterface(&tester);
   EXPECT_TRUE(WaitForClientShutdown());
   DestroyProxy();

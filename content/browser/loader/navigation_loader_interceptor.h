@@ -107,6 +107,10 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
   // flag was introduced to skip service worker after signed exchange redirect.
   // Remove this flag when we support service worker and signed exchange
   // integration. See crbug.com/894755#c1. Nullptr is not allowed.
+  // |will_return_unsafe_redirect| is set to true when this interceptor will
+  // return an unsafe redirect response and will handle the redirected request,
+  // therefore regular safety check should be exempted for the redirect.
+  // Nullptr is not allowed.
   virtual bool MaybeCreateLoaderForResponse(
       const network::ResourceRequest& request,
       const network::ResourceResponseHead& response_head,
@@ -114,7 +118,8 @@ class CONTENT_EXPORT NavigationLoaderInterceptor {
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
       ThrottlingURLLoader* url_loader,
-      bool* skip_other_interceptors);
+      bool* skip_other_interceptors,
+      bool* will_return_unsafe_redirect);
 };
 
 }  // namespace content

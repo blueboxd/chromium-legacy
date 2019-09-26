@@ -166,7 +166,7 @@ void WindowEventDispatcher::DispatchGestureEvent(
   Window* target = ConsumerToWindow(raw_input_consumer);
   if (target) {
     event->ConvertLocationToTarget(window(), target);
-    DispatchDetails details = DispatchEvent(target, event);
+    details = DispatchEvent(target, event);
     if (details.dispatcher_destroyed)
       return;
   }

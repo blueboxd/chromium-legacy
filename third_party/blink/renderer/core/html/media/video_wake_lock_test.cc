@@ -9,6 +9,7 @@
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/frame/picture_in_picture_controller.h"
@@ -86,16 +87,9 @@ class VideoWakeLockMediaPlayer final : public EmptyWebMediaPlayer {
 class VideoWakeLockFrameClient : public test::MediaStubLocalFrameClient {
  public:
   explicit VideoWakeLockFrameClient(std::unique_ptr<WebMediaPlayer> player)
-      : test::MediaStubLocalFrameClient(std::move(player)),
-        interface_provider_(new service_manager::InterfaceProvider()) {}
-
-  service_manager::InterfaceProvider* GetInterfaceProvider() override {
-    return interface_provider_.get();
-  }
+      : test::MediaStubLocalFrameClient(std::move(player)) {}
 
  private:
-  std::unique_ptr<service_manager::InterfaceProvider> interface_provider_;
-
   DISALLOW_COPY_AND_ASSIGN(VideoWakeLockFrameClient);
 };
 
@@ -106,9 +100,7 @@ class VideoWakeLockTest : public PageTestBase {
         nullptr, MakeGarbageCollected<VideoWakeLockFrameClient>(
                      std::make_unique<VideoWakeLockMediaPlayer>()));
 
-    service_manager::InterfaceProvider::TestApi test_api(
-        GetFrame().Client()->GetInterfaceProvider());
-    test_api.SetBinderForName(
+    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
         mojom::blink::PictureInPictureService::Name_,
         WTF::BindRepeating(&VideoWakeLockPictureInPictureService::Bind,
                            WTF::Unretained(&pip_service_)));
@@ -118,6 +110,11 @@ class VideoWakeLockTest : public PageTestBase {
     video_wake_lock_ = MakeGarbageCollected<VideoWakeLock>(*video_.Get());
 
     GetPage().SetIsHidden(false, true);
+  }
+
+  void TearDown() override {
+    GetDocument().GetBrowserInterfaceBroker().SetBinderForTesting(
+        mojom::blink::PictureInPictureService::Name_, {});
   }
 
   HTMLVideoElement* Video() const { return video_.Get(); }

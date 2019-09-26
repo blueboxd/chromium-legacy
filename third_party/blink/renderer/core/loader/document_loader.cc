@@ -271,6 +271,9 @@ DocumentLoader::DocumentLoader(
     DCHECK(history_item);
     history_item_ = history_item;
   }
+
+  base_url_override_for_bundled_exchanges_ =
+      params_->base_url_override_for_bundled_exchanges;
 }
 
 FrameLoader& DocumentLoader::GetFrameLoader() const {
@@ -1269,10 +1272,12 @@ void DocumentLoader::StartLoadingResponse() {
 
   ArchiveResource* main_resource =
       loading_mhtml_archive_ && archive_ ? archive_->MainResource() : nullptr;
-  if (main_resource)
+  if (main_resource) {
     FinishNavigationCommit(main_resource->MimeType(), main_resource->Url());
-  else
-    FinishNavigationCommit(response_.MimeType());
+  } else {
+    FinishNavigationCommit(response_.MimeType(),
+                           base_url_override_for_bundled_exchanges_);
+  }
 
   CHECK_GE(state_, kCommitted);
 

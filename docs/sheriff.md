@@ -174,7 +174,7 @@ To look at how flaky a specific test is across all builders:
 This gives you a UI listing the failures for the named test broken down by
 builder. At this point you should check to see where the flakes start
 revision-wise. If that helps you identify a culprit CL revert it and move on;
-otherwise, [disable the test][gtest-disable].
+otherwise, [disable the test][test-disable].
 
 For more advice on dealing with flaky tests, look at the "Test Failed" section
 below under "Diagnosing Build Failures".
@@ -210,7 +210,7 @@ see if the flakes started at a specific point, in which case you can look for
 culprit CLs around there. In general, for a flaky test, you should either:
 
 * Revert a culprit CL, if you can find it, or
-* [Disable the test][gtest-disable] it as narrowly as possible to fix the flake
+* [Disable the test][test-disable] it as narrowly as possible to fix the flake
   (eg, if the test is broken on Windows, only disable it on Windows)
 
 For more advice on dealing with flaky tests, look at the "Test Failed" section
@@ -406,7 +406,7 @@ and hopefully someone else will be able to help you figure it out.
 [contacting-troopers]: https://chromium.googlesource.com/infra/infra/+/master/doc/users/contacting_troopers.md
 [get-the-code]: https://www.chromium.org/developers/how-tos/get-the-code
 [goma]: http://shortn/_Iox00npQJW
-[gtest-disable]: https://github.com/google/googletest/blob/master/googletest/docs/faq.md#how-do-i-temporarily-disable-a-test
+[test-disable]: https://www.chromium.org/developers/tree-sheriffs/sheriff-details-chromium#TOC-How-do-I-disable-a-flaky-test-
 [new flakiness dashboard]: https://analysis.chromium.org/p/chromium/flake-portal
 [old flakiness dashboard]: https://test-results.appspot.com/dashboards/flakiness_dashboard.html
 [sheriff-o-matic]: https://sheriff-o-matic.appspot.com/chromium

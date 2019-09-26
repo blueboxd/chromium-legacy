@@ -543,7 +543,8 @@ bool AppCacheRequestHandler::MaybeCreateLoaderForResponse(
     network::mojom::URLLoaderPtr* loader,
     network::mojom::URLLoaderClientRequest* client_request,
     ThrottlingURLLoader* url_loader,
-    bool* skip_other_interceptors) {
+    bool* skip_other_interceptors,
+    bool* will_return_unsafe_redirect) {
   // The sync interface of this method is inherited from the
   // NavigationLoaderInterceptor class. The LoaderCallback created here is
   // invoked synchronously in fallback cases, and only when there really is

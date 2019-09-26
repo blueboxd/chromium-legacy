@@ -68,6 +68,7 @@
 #include "third_party/blink/public/platform/web_surface_layer_bridge.h"
 #include "third_party/blink/public/platform/web_url.h"
 #include "third_party/blink/public/platform/webaudiosourceprovider_impl.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/public/web/modules/media/webmediaplayer_util.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
@@ -153,21 +154,20 @@ constexpr base::TimeDelta kPrerollAttemptTimeout =
 // Maximum number, per-WMPI, of media logs of playback rate changes.
 constexpr int kMaxNumPlaybackRateLogs = 10;
 
-blink::WebLocalizedString::Name GetSwitchToLocalMessage(
-    MediaObserverClient::ReasonToSwitchToLocal reason) {
+int GetSwitchToLocalMessage(MediaObserverClient::ReasonToSwitchToLocal reason) {
   switch (reason) {
     case MediaObserverClient::ReasonToSwitchToLocal::NORMAL:
-      return blink::WebLocalizedString::kMediaRemotingStopText;
+      return IDS_MEDIA_REMOTING_STOP_TEXT;
     case MediaObserverClient::ReasonToSwitchToLocal::POOR_PLAYBACK_QUALITY:
-      return blink::WebLocalizedString::kMediaRemotingStopByPlaybackQualityText;
+      return IDS_MEDIA_REMOTING_STOP_BY_PLAYBACK_QUALITY_TEXT;
     case MediaObserverClient::ReasonToSwitchToLocal::PIPELINE_ERROR:
-      return blink::WebLocalizedString::kMediaRemotingStopByErrorText;
+      return IDS_MEDIA_REMOTING_STOP_BY_ERROR_TEXT;
     case MediaObserverClient::ReasonToSwitchToLocal::ROUTE_TERMINATED:
-      return blink::WebLocalizedString::kMediaRemotingStopNoText;
+      return blink::WebMediaPlayerClient::kMediaRemotingStopNoText;
   }
   NOTREACHED();
   // To suppress compiler warning on Windows.
-  return blink::WebLocalizedString::kMediaRemotingStopNoText;
+  return blink::WebMediaPlayerClient::kMediaRemotingStopNoText;
 }
 
 // These values are persisted to UMA. Entries should not be renumbered and
@@ -454,7 +454,7 @@ WebMediaPlayerImpl::~WebMediaPlayerImpl() {
   client_->SetCcLayer(nullptr);
 
   client_->MediaRemotingStopped(
-      blink::WebLocalizedString::kMediaRemotingStopNoText);
+      blink::WebMediaPlayerClient::kMediaRemotingStopNoText);
 
   if (!surface_layer_for_video_enabled_ && video_layer_)
     video_layer_->StopUsingProvider();

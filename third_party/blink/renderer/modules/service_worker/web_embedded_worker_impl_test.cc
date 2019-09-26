@@ -160,10 +160,7 @@ class MockServiceWorkerContextClient final
         registration_object_host_receiver.PassHandle());
   }
 
-  void FailedToLoadClassicScript() override {
-    // off-main-script fetch:
-    // In production code, calling FailedToLoadClassicScript results in
-    // terminating the worker.
+  void FailedToFetchClassicScript() override {
     classic_script_load_failure_event_.Signal();
   }
 
@@ -195,10 +192,7 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
  protected:
   void SetUp() override {
     mock_client_ = std::make_unique<MockServiceWorkerContextClient>();
-    worker_ = std::make_unique<WebEmbeddedWorkerImpl>(
-        mock_client_.get(), /*cache_storage_remote=*/mojo::NullRemote(),
-        /*interface_provider_info=*/nullptr,
-        /*browser_interface_broker=*/mojo::NullRemote());
+    worker_ = std::make_unique<WebEmbeddedWorkerImpl>(mock_client_.get());
 
     script_url_ = url_test_helpers::ToKURL("https://www.example.com/sw.js");
     WebURLResponse response(script_url_);
@@ -244,6 +238,9 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateSoonAfterStart) {
       CreateStartData(),
       /*installed_scripts_manager_params=*/nullptr,
       /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
+      /*cache_storage_remote=*/mojo::ScopedMessagePipeHandle(),
+      /*interface_provider_info=*/mojo::ScopedMessagePipeHandle(),
+      /*browser_interface_broker=*/mojo::ScopedMessagePipeHandle(),
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
@@ -260,6 +257,9 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
       std::move(start_data),
       /*installed_scripts_manager_params=*/nullptr,
       /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
+      /*cache_storage_remote=*/mojo::ScopedMessagePipeHandle(),
+      /*interface_provider_info=*/mojo::ScopedMessagePipeHandle(),
+      /*browser_interface_broker=*/mojo::ScopedMessagePipeHandle(),
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
@@ -276,6 +276,9 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
       CreateStartData(),
       /*installed_scripts_manager_params=*/nullptr,
       /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
+      /*cache_storage_remote=*/mojo::ScopedMessagePipeHandle(),
+      /*interface_provider_info=*/mojo::ScopedMessagePipeHandle(),
+      /*browser_interface_broker=*/mojo::ScopedMessagePipeHandle(),
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 
@@ -300,6 +303,9 @@ TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
       std::move(start_data),
       /*installed_scripts_manager_params=*/nullptr,
       /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
+      /*cache_storage_remote=*/mojo::ScopedMessagePipeHandle(),
+      /*interface_provider_info=*/mojo::ScopedMessagePipeHandle(),
+      /*browser_interface_broker=*/mojo::ScopedMessagePipeHandle(),
       Thread::Current()->GetTaskRunner());
   testing::Mock::VerifyAndClearExpectations(mock_client_.get());
 

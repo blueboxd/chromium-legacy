@@ -150,7 +150,7 @@ class SecureChannelClientImplTest : public testing::Test {
         test_task_runner_);
 
     mojo::PendingRemote<mojom::SecureChannel> channel;
-    service_->BindRequest(channel.InitWithNewPipeAndPassReceiver());
+    service_->BindReceiver(channel.InitWithNewPipeAndPassReceiver());
     client_ = SecureChannelClientImpl::Factory::Get()->BuildInstance(
         std::move(channel), test_task_runner_);
   }

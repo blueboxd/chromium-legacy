@@ -23,9 +23,10 @@ namespace secure_channel {
 // Encapsulates metadata for a pending request for a connection to a remote
 // device. Every PendingConnectionRequestBase starts out active (i.e., there
 // exists an ongoing attempt to create a connection). The client of this class
-// can cancel an active attempt by disconnecting the ConnectionDelegatePtr
-// passed PendingConnectionRequestBase's constructor; likewise, a
-// PendingConnectionRequestBase can become inactive due to connection failures.
+// can cancel an active attempt by disconnecting the
+// mojo::Remote<ConnectionDelegate> passed PendingConnectionRequestBase's
+// constructor; likewise, a PendingConnectionRequestBase can become inactive due
+// to connection failures.
 //
 // Each connection type should implement its own pending request class deriving
 // from PendingConnectionRequestBase.

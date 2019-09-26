@@ -134,37 +134,14 @@ void SyncWebSocketImpl::Core::DetermineRecipient(const std::string& message,
   base::Optional<base::Value> message_value =
       base::JSONReader::Read(message, base::JSON_REPLACE_INVALID_CHARACTERS);
   base::DictionaryValue* message_dict;
-  int id;
-
   if (!message_value || !message_value->GetAsDictionary(&message_dict)) {
     *send_to_chromedriver = true;
     return;
   }
-  if (!message_dict->HasKey("id")) {
-    std::string method;
-    // OOPIFs have responses wrapped in a Target.receivedMessageFromTarget
-    // event. To determine if the response is intended for ChromeDriver, the ID
-    // inside of the wrapped message must be inspected
-    if (!message_dict->GetString("method", &method) ||
-        method != "Target.receivedMessageFromTarget") {
-      *send_to_chromedriver = true;
-      return;
-    }
-    std::string inner_message;
-    base::DictionaryValue* event_params;
-
-    // Send to ChromeDriver so that it properly errors for improper response
-    if (!message_dict->GetDictionary("params", &event_params) ||
-        !event_params->GetString("message", &inner_message)) {
-      *send_to_chromedriver = true;
-      return;
-    }
-    DetermineRecipient(inner_message, send_to_chromedriver);
-  } else {
-    message_dict->GetInteger("id", &id);
-    *send_to_chromedriver = CommandId::IsChromeDriverCommandId(id);
-    return;
-  }
+  int id;
+  *send_to_chromedriver =
+      !message_dict->HasKey("id") || (message_dict->GetInteger("id", &id) &&
+                                      CommandId::IsChromeDriverCommandId(id));
 }
 
 void SyncWebSocketImpl::Core::OnClose() {

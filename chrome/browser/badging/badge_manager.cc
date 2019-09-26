@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/web_applications/app_browser_controller.h"
+#include "chrome/browser/web_applications/components/app_registrar.h"
 #include "chrome/browser/web_applications/components/web_app_provider_base.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -52,10 +53,13 @@ void BadgeManager::BindReceiver(
     mojo::PendingReceiver<blink::mojom::BadgeService> receiver) {
   Profile* profile = Profile::FromBrowserContext(
       content::WebContents::FromRenderFrameHost(frame)->GetBrowserContext());
+
   badging::BadgeManager* badge_manager =
       badging::BadgeManagerFactory::GetInstance()->GetForProfile(profile);
-  BindingContext context(frame->GetProcess()->GetID(), frame->GetRoutingID());
+  if (!badge_manager)
+    return;
 
+  BindingContext context(frame->GetProcess()->GetID(), frame->GetRoutingID());
   badge_manager->receivers_.Add(badge_manager, std::move(receiver),
                                 std::move(context));
 }
@@ -95,7 +99,7 @@ void BadgeManager::UpdateBadge(const GURL& scope,
   delegate_->OnBadgeUpdated(scope);
 }
 
-void BadgeManager::SetBadge(const GURL& scope,
+void BadgeManager::SetBadge(const GURL& /*scope*/,
                             blink::mojom::BadgeValuePtr mojo_value) {
   if (mojo_value->is_number() && mojo_value->get_number() == 0) {
     mojo::ReportBadMessage(
@@ -104,21 +108,25 @@ void BadgeManager::SetBadge(const GURL& scope,
     return;
   }
 
-  if (!ScopeIsValidBadgeTarget(receivers_.current_context(), scope))
+  const base::Optional<GURL> app_scope =
+      GetAppScopeForContext(receivers_.current_context());
+  if (!app_scope)
     return;
 
   // Convert the mojo badge representation into a BadgeManager::BadgeValue.
   BadgeValue value = mojo_value->is_flag()
                          ? base::nullopt
                          : base::make_optional(mojo_value->get_number());
-  UpdateBadge(scope, base::make_optional(value));
+  UpdateBadge(app_scope.value(), base::make_optional(value));
 }
 
-void BadgeManager::ClearBadge(const GURL& scope) {
-  if (!ScopeIsValidBadgeTarget(receivers_.current_context(), scope))
+void BadgeManager::ClearBadge(const GURL& /*scope*/) {
+  const base::Optional<GURL> app_scope =
+      GetAppScopeForContext(receivers_.current_context());
+  if (!app_scope)
     return;
 
-  UpdateBadge(scope, base::nullopt);
+  UpdateBadge(app_scope.value(), base::nullopt);
 }
 
 GURL BadgeManager::MostSpecificBadgeForScope(const GURL& scope) {
@@ -141,14 +149,29 @@ GURL BadgeManager::MostSpecificBadgeForScope(const GURL& scope) {
   return best_match;
 }
 
-bool BadgeManager::ScopeIsValidBadgeTarget(const BindingContext& context,
-                                           const GURL& scope) {
+base::Optional<GURL> BadgeManager::GetAppScopeForContext(
+    const BindingContext& context) {
   content::RenderFrameHost* frame =
       content::RenderFrameHost::FromID(context.process_id, context.frame_id);
   if (!frame)
-    return false;
+    return base::nullopt;
 
-  return url::IsSameOriginWith(frame->GetLastCommittedURL(), scope);
+  content::WebContents* contents =
+      content::WebContents::FromRenderFrameHost(frame);
+  if (!contents)
+    return base::nullopt;
+
+  const web_app::AppRegistrar& registrar =
+      web_app::WebAppProviderBase::GetProviderBase(
+          Profile::FromBrowserContext(contents->GetBrowserContext()))
+          ->registrar();
+
+  const base::Optional<web_app::AppId> app_id =
+      registrar.FindAppWithUrlInScope(frame->GetLastCommittedURL());
+  if (!app_id)
+    return base::nullopt;
+
+  return registrar.GetAppScope(app_id.value());
 }
 
 std::string GetBadgeString(base::Optional<uint64_t> badge_content) {

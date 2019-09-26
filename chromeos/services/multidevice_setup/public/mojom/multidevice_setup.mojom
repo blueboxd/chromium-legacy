@@ -138,11 +138,12 @@ interface MultiDeviceSetup {
   // Registers the "account status change" delegate to be used by the service.
   // Only one delegate can be set; this function should not be called more than
   // once.
-  SetAccountStatusChangeDelegate(AccountStatusChangeDelegate delegate);
+  SetAccountStatusChangeDelegate(
+      pending_remote<AccountStatusChangeDelegate> delegate);
 
   // Adds an observer of host status changes. To stop observing, disconnect the
-  // HostStatusObserverPtr passed here.
-  AddHostStatusObserver(HostStatusObserver observer);
+  // pending_remote<HostStatusObserver> passed here.
+  AddHostStatusObserver(pending_remote<HostStatusObserver> observer);
 
   // Adds an observer of feature state changes. To stop observing, disconnect
   // the FeatureStateObserverPtr passed here.

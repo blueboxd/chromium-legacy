@@ -20,8 +20,6 @@ class FileTransferController {
    * @param {!Document} doc Owning document.
    * @param {!ListContainer} listContainer List container.
    * @param {!DirectoryTree} directoryTree Directory tree.
-   * @param {!MultiProfileShareDialog} multiProfileShareDialog Share dialog to
-   *     be used to share files from another profile.
    * @param {function(boolean, !Array<string>): !Promise<boolean>}
    *     confirmationCallback called when operation requires user's
    *     confirmation. The operation will be executed if the return value
@@ -36,9 +34,9 @@ class FileTransferController {
    * @param {!FileSelectionHandler} selectionHandler Selection handler.
    */
   constructor(
-      doc, listContainer, directoryTree, multiProfileShareDialog,
-      confirmationCallback, progressCenter, fileOperationManager, metadataModel,
-      thumbnailModel, directoryModel, volumeManager, selectionHandler) {
+      doc, listContainer, directoryTree, confirmationCallback, progressCenter,
+      fileOperationManager, metadataModel, thumbnailModel, directoryModel,
+      volumeManager, selectionHandler) {
     /**
      * @private {!Document}
      * @const
@@ -86,12 +84,6 @@ class FileTransferController {
      * @const
      */
     this.selectionHandler_ = selectionHandler;
-
-    /**
-     * @private {!MultiProfileShareDialog}
-     * @const
-     */
-    this.multiProfileShareDialog_ = multiProfileShareDialog;
 
     /**
      * @private {function(boolean, !Array<string>):
@@ -414,84 +406,6 @@ class FileTransferController {
   }
 
   /**
-   * Obtains entries that need to share with me.
-   * The method also observers child entries of the given entries.
-   * @param {Array<Entry>} entries Entries.
-   * @return {!Promise<Array<Entry>>} Promise to be fulfilled with the entries
-   *    that need to share.
-   * @private
-   */
-  getMultiProfileShareEntries_(entries) {
-    // Utility function to concat arrays.
-    const concatArrays = arrays => {
-      return Array.prototype.concat.apply([], arrays);
-    };
-
-    // Call processEntry for each item of entries.
-    const processEntries = entries => {
-      const files = entries.filter(entry => {
-        return entry.isFile;
-      });
-      const dirs = entries.filter(entry => {
-        return !entry.isFile;
-      });
-      const promises = dirs.map(processDirectoryEntry);
-      if (files.length > 0) {
-        promises.push(processFileEntries(files));
-      }
-      return Promise.all(promises).then(concatArrays);
-    };
-
-    // Check all file entries and keeps only those need sharing operation.
-    const processFileEntries = entries => {
-      return new Promise(callback => {
-               // Do not use metadata cache here because the urls come from the
-               // different profile.
-               chrome.fileManagerPrivate.getEntryProperties(
-                   entries, ['hosted', 'sharedWithMe'], callback);
-             })
-          .then(metadatas => {
-            return entries.filter((entry, i) => {
-              const metadata = metadatas[i];
-              return metadata && metadata.hosted && !metadata.sharedWithMe;
-            });
-          });
-    };
-
-    // Check child entries.
-    const processDirectoryEntry = entry => {
-      return readEntries(entry.createReader());
-    };
-
-    // Read entries from DirectoryReader and call processEntries for the chunk
-    // of entries.
-    const readEntries = reader => {
-      return new Promise(reader.readEntries.bind(reader))
-          .then(
-              entries => {
-                if (entries.length > 0) {
-                  return Promise
-                      .all([processEntries(entries), readEntries(reader)])
-                      .then(concatArrays);
-                } else {
-                  return [];
-                }
-              },
-              error => {
-                console.warn('Error happens while reading directory.', error);
-                return [];
-              });
-    };
-
-    // Filter entries that is owned by the current user, and call
-    // processEntries.
-    return processEntries(entries.filter(entry => {
-      // If the volumeInfo is found, the entry belongs to the current user.
-      return !this.volumeManager_.getVolumeInfo(/** @type {!Entry} */ (entry));
-    }));
-  }
-
-  /**
    * Collects parameters of paste operation by the given command and the current
    * system clipboard.
    *
@@ -619,7 +533,6 @@ class FileTransferController {
               })
         .then(/**
                * @param {!Array<Entry>} filteredEntries
-               * @return {!Promise<Array<Entry>>}
                */
               filteredEntries => {
                 entries = filteredEntries;
@@ -661,56 +574,12 @@ class FileTransferController {
                 item.subMessage =
                     strf('TO_FOLDER_NAME', item.destinationMessage);
                 this.progressCenter_.updateItem(item);
-                // Check if cross share is needed or not.
-                return this.getMultiProfileShareEntries_(entries);
-              })
-        .then(/**
-               * @param {Array<Entry>} inShareEntries
-               * @return {!Promise<Array<Entry>>|!Promise<null>}
-               */
-              inShareEntries => {
-                shareEntries = inShareEntries;
-                if (shareEntries.length === 0) {
-                  return Promise.resolve(null);
-                }
-                return this.multiProfileShareDialog_
-                    .showMultiProfileShareDialog(shareEntries.length > 1);
-              })
-        .then(
-            /**
-             * @param {?string} dialogResult
-             * @return {!Promise<undefined>|undefined}
-             */
-            dialogResult => {
-              if (dialogResult === null) {
-                return;
-              }  // No dialog was shown, skip this step.
-              if (dialogResult === 'cancel') {
-                return Promise.reject('ABORT');
-              }
-              // Do cross share.
-              // TODO(hirono): Make the loop cancellable.
-              const requestDriveShare = index => {
-                if (index >= shareEntries.length) {
-                  return;
-                }
-                return new Promise(fulfill => {
-                         chrome.fileManagerPrivate.requestDriveShare(
-                             shareEntries[index], assert(dialogResult), () => {
-                               // TODO(hirono): Check chrome.runtime.lastError
-                               // here.
-                               fulfill();
-                             });
-                       })
-                    .then(requestDriveShare.bind(null, index + 1));
-              };
-              return requestDriveShare(0);
-            })
-        .then(() => {
-          // Start the pasting operation.
-          this.fileOperationManager_.paste(
-              entries, destinationEntry, toMove, taskId);
-          this.pendingTaskIds.splice(this.pendingTaskIds.indexOf(taskId), 1);
+
+                // Start the pasting operation.
+                this.fileOperationManager_.paste(
+                    entries, destinationEntry, toMove, taskId);
+                this.pendingTaskIds.splice(
+                    this.pendingTaskIds.indexOf(taskId), 1);
         })
         .catch(error => {
           if (error !== 'ABORT') {

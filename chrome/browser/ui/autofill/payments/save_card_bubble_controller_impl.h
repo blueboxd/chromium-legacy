@@ -123,7 +123,9 @@ class SaveCardBubbleControllerImpl
   //    to the server -- this should change.
   // TODO(crbug.com/864702): Don't show promo if user is a butter user.
   bool ShouldShowSignInPromo() const override;
-  bool ShouldShowCardSavedAnimation() const override;
+  bool ShouldShowSavingCardAnimation() const override;
+  bool ShouldShowCardSavedLabelAnimation() const override;
+  bool ShouldShowSaveFailureBadge() const override;
   void OnSyncPromoAccepted(const AccountInfo& account,
                            signin_metrics::AccessPoint access_point,
                            bool is_default_promo_account) override;
@@ -179,8 +181,8 @@ class SaveCardBubbleControllerImpl
   // Should outlive this object.
   PersonalDataManager* personal_data_manager_;
 
-  // Is true only if the card saved animation should be shown.
-  bool should_show_card_saved_animation_ = false;
+  // Is true only if the [Card saved] label animation should be shown.
+  bool should_show_card_saved_label_animation_ = false;
 
   // Weak reference. Will be nullptr if no bubble is currently shown.
   SaveCardBubbleView* save_card_bubble_view_ = nullptr;

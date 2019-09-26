@@ -68,6 +68,8 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
     kAudioTrackKindCommentary
   };
 
+  static const int kMediaRemotingStopNoText = -1;
+
   virtual void NetworkStateChanged() = 0;
   virtual void ReadyStateChanged() = 0;
   virtual void TimeChanged() = 0;
@@ -120,9 +122,10 @@ class BLINK_PLATFORM_EXPORT WebMediaPlayerClient {
   virtual void MediaRemotingStarted(
       const WebString& remote_device_friendly_name) = 0;
 
-  // Informs that media stops being rendered remotely. |error_msg| corresponds
+  // Informs that media stops being rendered remotely. |error_code| corresponds
   // to a localized string that explains the reason as user-readable text.
-  virtual void MediaRemotingStopped(WebLocalizedString::Name error_msg) = 0;
+  // |error_code| should be IDS_FOO or kMediaRemotingStopNoText.
+  virtual void MediaRemotingStopped(int error_code) = 0;
 
   // Returns whether the media element has native controls. It does not mean
   // that the controls are currently visible.

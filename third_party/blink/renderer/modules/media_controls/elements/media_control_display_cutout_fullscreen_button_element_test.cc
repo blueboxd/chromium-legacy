@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_display_cutout_fullscreen_button_element.h"
 
 #include "third_party/blink/public/mojom/page/display_cutout.mojom-blink.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/events/touch_event.h"
 #include "third_party/blink/renderer/core/frame/viewport_data.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -98,7 +99,7 @@ class MediaControlDisplayCutoutFullscreenButtonElementTest
 TEST_F(MediaControlDisplayCutoutFullscreenButtonElementTest,
        Fullscreen_ButtonAccessibility) {
   EXPECT_EQ(display_cutout_fullscreen_button_->GetLocale().QueryString(
-                WebLocalizedString::kAXMediaDisplayCutoutFullscreenButton),
+                IDS_AX_MEDIA_DISPLAY_CUT_OUT_FULL_SCREEN_BUTTON),
             display_cutout_fullscreen_button_->getAttribute(
                 html_names::kAriaLabelAttr));
 }

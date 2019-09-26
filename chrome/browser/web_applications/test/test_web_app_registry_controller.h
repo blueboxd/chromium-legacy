@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "chrome/browser/web_applications/components/web_app_helpers.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,6 +18,7 @@ namespace web_app {
 
 class TestWebAppDatabaseFactory;
 class WebAppSyncBridge;
+class WebApp;
 
 class TestWebAppRegistryController {
  public:
@@ -28,6 +30,10 @@ class TestWebAppRegistryController {
   // Synchronously init the sync bridge: open database, read all data and
   // metadata.
   void Init();
+
+  void RegisterApp(std::unique_ptr<WebApp> web_app);
+  void UnregisterApp(const AppId& app_id);
+  void UnregisterAll();
 
   void DestroySubsystems();
 

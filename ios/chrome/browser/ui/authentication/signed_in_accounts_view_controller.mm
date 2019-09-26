@@ -8,6 +8,7 @@
 #include "components/signin/public/identity_manager/identity_manager.h"
 #import "components/signin/public/identity_manager/objc/identity_manager_observer_bridge.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
+#import "ios/chrome/browser/metrics/previous_session_info.h"
 #include "ios/chrome/browser/signin/authentication_service.h"
 #include "ios/chrome/browser/signin/authentication_service_factory.h"
 #include "ios/chrome/browser/signin/chrome_identity_service_observer_bridge.h"
@@ -202,6 +203,22 @@ BOOL gSignedInAccountsViewControllerIsShown = NO;
   if (!browserState || browserState->IsOffTheRecord()) {
     return NO;
   }
+
+  PreviousSessionInfo* prevSessionInfo = [PreviousSessionInfo sharedInstance];
+  if (prevSessionInfo.isFirstSessionAfterUpgrade &&
+      [prevSessionInfo.previousSessionVersion hasPrefix:@"77."]) {
+    // In M77, showing the signed-in account view was disabled due to the fact
+    // that the preferences used to compute authService->HaveAccountsChanged()
+    // were not correctly updated (see crbug.com/1006717).
+    // To avoid user confusion, it is important to avoid showing the signed-in
+    // accounts dialog on the first session after an update from M77 in order
+    // to allow the authentication service to update its internal preferences.
+    //
+    // TODO(crbug.com/1007990) Remove this code after M81 (revert
+    // https://chromium-review.googlesource.com/c/chromium/src/+/1824259 ).
+    return NO;
+  }
+
   AuthenticationService* authService =
       AuthenticationServiceFactory::GetForBrowserState(browserState);
   return !gSignedInAccountsViewControllerIsShown &&

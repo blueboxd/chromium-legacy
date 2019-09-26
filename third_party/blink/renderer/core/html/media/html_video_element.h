@@ -184,7 +184,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
 
   void MediaRemotingStarted(const WebString& remote_device_friendly_name) final;
   bool SupportsPictureInPicture() const final;
-  void MediaRemotingStopped(WebLocalizedString::Name error_msg) final;
+  void MediaRemotingStopped(int error_code) final;
   WebMediaPlayer::DisplayType DisplayType() const final;
   bool IsInAutoPIP() const final;
   void OnPictureInPictureStateChange() final;

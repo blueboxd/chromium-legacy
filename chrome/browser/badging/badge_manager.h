@@ -75,16 +75,19 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   // blink::mojom::BadgeService:
   // Note: These are private to stop them being called outside of mojo as they
   // require a mojo binding context.
-  void SetBadge(const GURL& scope, blink::mojom::BadgeValuePtr value) override;
-  void ClearBadge(const GURL& scope) override;
+  // TODO(crbug.com/1006665): Remove scope from the mojo interface in SetBadge
+  // and ClearBadge.
+  void SetBadge(const GURL& /*scope*/,
+                blink::mojom::BadgeValuePtr value) override;
+  void ClearBadge(const GURL& /*scope*/) override;
 
   // Finds the scope URL of the most specific badge for |scope|. Returns
   // GURL::EmptyGURL() if no match is found.
   GURL MostSpecificBadgeForScope(const GURL& scope);
 
-  // Determines whether |context| is allowed to change the badge for |scope|.
-  bool ScopeIsValidBadgeTarget(const BindingContext& context,
-                               const GURL& scope);
+  // Finds the most specific app scope containing |context|. base::nullopt if
+  // no app contains |context|.
+  base::Optional<GURL> GetAppScopeForContext(const BindingContext& context);
 
   // All the mojo receivers for the BadgeManager. Keeps track of the
   // render_frame the binding is associated with, so as to not have to rely

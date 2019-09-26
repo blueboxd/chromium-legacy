@@ -124,10 +124,6 @@ class AutofillProfile : public AutofillDataModel {
   bool operator==(const AutofillProfile& profile) const;
   virtual bool operator!=(const AutofillProfile& profile) const;
 
-  // Returns true if this AutofillProfile's data is a subset of |profile|'s.
-  bool IsSubsetOf(const AutofillProfile& profile,
-                  const std::string& app_locale) const;
-
   // Like IsSubsetOf, but considers only the given |types|.
   bool IsSubsetOfForFieldSet(const AutofillProfileComparator& comparator,
                              const AutofillProfile& profile,

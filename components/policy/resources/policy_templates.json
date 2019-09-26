@@ -17365,7 +17365,7 @@
       'id': 578,
       'supported_on': ['chrome.*:78-','chrome_os:78-'],
       'future': True,
-      'caption': '''Check Safe Browsing reputation of visited URLs in real time''',
+      'caption': '''Check Safe Browsing status of visited URLs in real time''',
       'tags': ['google-sharing'],
       'desc': '''When this policy is set to enabled, all visited URLs will be checked with Safe Browsing in real time.
 
@@ -17510,7 +17510,7 @@
       'future': True,
       'caption': '''Allows Chrome to report unsafe events to Google''',
       'tags': [],
-      'desc': '''When this policy is set to enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> reports unsafe events such as password reuse, malware downloads, interstitials, content noncompliance etc. to Google for analysis.  Some unsafe events such as content noncompliance depend on other policies that enable such checks.
+      'desc': '''When this policy is set to enabled, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> reports unsafe events such as password reuse, malware downloads, interstitials, sensitive data protection rule violations etc. to Google for analysis.  Some unsafe events such as sensitive data protection rule violations depend on other policies that enable such checks.
 
       If this policy is set to disabled or not set, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not report unsafe events.
       '''
@@ -17555,7 +17555,7 @@
       'future': True,
       'caption': '''Prevent user to transfer large files''',
       'tags': [],
-      'desc': '''This policy controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves when a user attempts to either upload or download files that are too large to send for either malware or content compliance scanning (50MB or larger).  This restriction only applies to files that would need scanning as determined by <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph>, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> and the policies that control the list of domains for which checks are enabled.
+      'desc': '''This policy controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> behaves when a user attempts to either upload or download files that are too large to send for either malware or sensitive data protection scanning (50MB or larger).  This restriction only applies to files that would need scanning as determined by <ph name="SEND_FILES_FOR_MALWARE_CHECK_POLICY_NAME">SendFilesForMalwareCheck</ph>, <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> and the policies that control the list of domains for which checks are enabled.
 
       If this policy is not set or set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> allows the user to upload or download files of any size.
 
@@ -17680,22 +17680,22 @@
         {
           'name': 'None',
           'value': 0,
-          'caption': '''Don't check content compliance''',
+          'caption': '''Don't check for sensitive data protection rule violations''',
         },
         {
           'name': 'Check-downloads',
           'value': 1,
-          'caption': '''Check content compliance of downloads''',
+          'caption': '''Check sensitive data protection rule violations for downloads''',
         },
         {
           'name': 'Check-uploads',
           'value': 2,
-          'caption': '''Check content compliance of uploads''',
+          'caption': '''Check sensitive data protection rule violations for uploads''',
         },
         {
           'name': 'Check-uploads-and-downloads',
           'value': 3,
-          'caption': '''Check content compliance of uploads and downloads''',
+          'caption': '''Check sensitive data protection rule violations for uploads and downloads''',
         },
       ],
       'example_value': 0,
@@ -17706,11 +17706,11 @@
       'id': 589,
       'supported_on': ['chrome.*:78-'],
       'future': True,
-      'caption': '''Check content compliance''',
+      'caption': '''Send files for sensitive data protection rule violation inspection''',
       'tags': [],
-      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> checks data that is uploaded, downloaded, pasted from the clipboard, or dragged and dropped for compliance with enterprise rules.
+      'desc': '''Controls how <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> checks data that is uploaded, downloaded, pasted from the clipboard, or dragged and dropped for sensitive data protection rule violations.
 
-      If this policy is not set or set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not check any data for compliance.
+      If this policy is not set or set to 'None', <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will not check any data for sensitive data protection rule violations.
 
       If this policy is set to 'Check downloads' and the user attempts to download a file from a URL in the <ph name="DOMAINS_TO_CHECK_COMPLIANCE_OF_DOWNLOADED_CONTENT_POLICTY_NAME">DomainsToCheckComplianceOfDownloadedContent</ph> policy, <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> will check the data downloaded for compiance with enterprise rules.
 
@@ -17735,11 +17735,11 @@
       'id': 590,
       'supported_on': ['chrome.*:78-'],
       'future': True,
-      'caption': '''List of domains for which downloaded content needs to be checked for compliance''',
+      'caption': '''List of domains for which downloaded content needs to be checked for sensitive data protection rule violations''',
       'tags': [],
-      'desc': '''List of domains for which downloaded content needs to be checked for compliance before being saved on local storage.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
+      'desc': '''List of domains for which downloaded content needs to be checked for sensitive data protection rule violations before being saved on local storage.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
 
-      If this policy is not set or set to an empty list of domains, no downloaded content is checked for compliance.
+      If this policy is not set or set to an empty list of domains, no downloaded content is checked for sensitive data protection rule violations.
       '''
     },
     {
@@ -17758,11 +17758,11 @@
       'id': 591,
       'supported_on': ['chrome.*:78-'],
       'future': True,
-      'caption': '''List of domains for which uploaded content need not be checked for compliance''',
+      'caption': '''List of domains for which uploaded content need not be checked for sensitive data protection rule violations''',
       'tags': [],
-      'desc': '''List of domains for which uploaded files, data pasted from the clipboard, or data dragged and dropped does not need to be checked for compliance.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
+      'desc': '''List of domains for which uploaded files, data pasted from the clipboard, or data dragged and dropped does not need to be checked for sensitive data protection rule violations.  This policy is used only if <ph name="CHECK_CONTENT_COMPLIANCE_POLICY_NAME">CheckContentCompliance</ph> is set to enabled.
 
-      If this policy is not set or set to an empty list of domains, all content is checked for compliance.
+      If this policy is not set or set to an empty list of domains, all content is checked for sensitive data protection rule violations.
       '''
     },
     {

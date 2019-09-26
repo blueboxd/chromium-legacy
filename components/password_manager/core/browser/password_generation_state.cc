@@ -51,7 +51,7 @@ class PasswordDataForUI : public PasswordFormManagerForUI {
       const override;
   std::vector<const PasswordForm*> GetFederatedMatches() const override;
   const PasswordForm& GetPendingCredentials() const override;
-  metrics_util::CredentialSourceType GetCredentialSource() override;
+  metrics_util::CredentialSourceType GetCredentialSource() const override;
   PasswordFormMetricsRecorder* GetMetricsRecorder() override;
   base::span<const InteractionsStats> GetInteractionsStats() const override;
   bool IsBlacklisted() const override;
@@ -114,7 +114,8 @@ const PasswordForm& PasswordDataForUI::GetPendingCredentials() const {
   return pending_form_;
 }
 
-metrics_util::CredentialSourceType PasswordDataForUI::GetCredentialSource() {
+metrics_util::CredentialSourceType PasswordDataForUI::GetCredentialSource()
+    const {
   return metrics_util::CredentialSourceType::kPasswordManager;
 }
 

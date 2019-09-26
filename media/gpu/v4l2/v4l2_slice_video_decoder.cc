@@ -168,7 +168,6 @@ V4L2SliceVideoDecoder::V4L2SliceVideoDecoder(
       get_pool_cb_(std::move(get_pool_cb)),
       client_task_runner_(std::move(client_task_runner)),
       decoder_task_runner_(std::move(decoder_task_runner)),
-      device_poll_thread_("V4L2SliceVideoDecoderDevicePollThread"),
       bitstream_id_to_timestamp_(kTimestampCacheSize),
       weak_this_factory_(this) {
   DETACH_FROM_SEQUENCE(client_sequence_checker_);
@@ -546,11 +545,11 @@ void V4L2SliceVideoDecoder::ResetTask(base::OnceClosure closure) {
   // Streamoff V4L2 queues to drop input and output buffers.
   // If the queues are streaming before reset, then we need to start streaming
   // them after stopping.
-  bool poll_thread_running = device_poll_thread_.IsRunning();
+  bool is_streaming = input_queue_->IsStreaming();
   if (!StopStreamV4L2Queue())
     return;
 
-  if (poll_thread_running) {
+  if (is_streaming) {
     if (!StartStreamV4L2Queue())
       return;
   }
@@ -897,8 +896,6 @@ void V4L2SliceVideoDecoder::DecodeSurface(
   }
 
   surfaces_at_device_.push(std::move(dec_surface));
-
-  SchedulePollTaskIfNeeded();
 }
 
 void V4L2SliceVideoDecoder::SurfaceReady(
@@ -930,21 +927,21 @@ bool V4L2SliceVideoDecoder::StartStreamV4L2Queue() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  if (!device_poll_thread_.IsRunning()) {
-    if (!device_poll_thread_.Start()) {
-      VLOGF(1) << "Failed to start device poll thread.";
-      SetState(State::kError);
-      return false;
-    }
-  }
-
   if (!input_queue_->Streamon() || !output_queue_->Streamon()) {
     VLOGF(1) << "Failed to streamon V4L2 queue.";
     SetState(State::kError);
     return false;
   }
 
-  SchedulePollTaskIfNeeded();
+  if (!device_->StartPolling(
+          base::BindRepeating(&V4L2SliceVideoDecoder::ServiceDeviceTask,
+                              weak_this_),
+          base::BindRepeating(&V4L2SliceVideoDecoder::SetState, weak_this_,
+                              State::kError))) {
+    SetState(State::kError);
+    return false;
+  }
+
   return true;
 }
 
@@ -952,19 +949,7 @@ bool V4L2SliceVideoDecoder::StopStreamV4L2Queue() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3);
 
-  if (!device_poll_thread_.IsRunning())
-    return true;
-
-  if (!device_->SetDevicePollInterrupt()) {
-    VLOGF(1) << "Failed to interrupt device poll.";
-    SetState(State::kError);
-    return false;
-  }
-
-  DVLOGF(3) << "Stop device poll thead";
-  device_poll_thread_.Stop();
-  if (!device_->ClearDevicePollInterrupt()) {
-    VLOGF(1) << "Failed to clear interrupting device poll.";
+  if (!device_->StopPolling()) {
     SetState(State::kError);
     return false;
   }
@@ -981,46 +966,7 @@ bool V4L2SliceVideoDecoder::StopStreamV4L2Queue() {
   return true;
 }
 
-// Poke when we want to dequeue buffer from V4L2 device
-void V4L2SliceVideoDecoder::SchedulePollTaskIfNeeded() {
-  DVLOGF(3);
-  DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
-  DCHECK(input_queue_->IsStreaming() && output_queue_->IsStreaming());
-
-  if (!device_poll_thread_.IsRunning()) {
-    DVLOGF(4) << "Device poll thread stopped, will not schedule poll";
-    return;
-  }
-
-  if (input_queue_->QueuedBuffersCount() == 0 &&
-      output_queue_->QueuedBuffersCount() == 0) {
-    DVLOGF(4) << "No buffers queued, will not schedule poll";
-    return;
-  }
-
-  device_poll_thread_.task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&V4L2SliceVideoDecoder::DevicePollTask,
-                                base::Unretained(this)));
-}
-
-void V4L2SliceVideoDecoder::DevicePollTask() {
-  DCHECK(device_poll_thread_.task_runner()->RunsTasksInCurrentSequence());
-  DVLOGF(3);
-
-  bool event_pending;
-  if (!device_->Poll(true, &event_pending)) {
-    decoder_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&V4L2SliceVideoDecoder::SetState, weak_this_,
-                                  State::kError));
-    return;
-  }
-
-  decoder_task_runner_->PostTask(
-      FROM_HERE,
-      base::BindOnce(&V4L2SliceVideoDecoder::ServiceDeviceTask, weak_this_));
-}
-
-void V4L2SliceVideoDecoder::ServiceDeviceTask() {
+void V4L2SliceVideoDecoder::ServiceDeviceTask(bool /* event */) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(decoder_sequence_checker_);
   DVLOGF(3) << "Number of queued input buffers: "
             << input_queue_->QueuedBuffersCount()
@@ -1075,8 +1021,6 @@ void V4L2SliceVideoDecoder::ServiceDeviceTask() {
     if (!dequeued_buffer)
       break;
   }
-
-  SchedulePollTaskIfNeeded();
 
   if (resume_decode && pause_reason_ == PauseReason::kWaitSubFrameDecoded) {
     decoder_task_runner_->PostTask(

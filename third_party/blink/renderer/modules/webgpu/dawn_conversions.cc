@@ -291,6 +291,9 @@ DawnStoreOp AsDawnEnum<DawnStoreOp>(const WTF::String& webgpu_enum) {
   if (webgpu_enum == "store") {
     return DAWN_STORE_OP_STORE;
   }
+  if (webgpu_enum == "clear") {
+    return DAWN_STORE_OP_CLEAR;
+  }
   NOTREACHED();
   return DAWN_STORE_OP_FORCE32;
 }

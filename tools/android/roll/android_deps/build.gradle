@@ -85,6 +85,7 @@ dependencies {
     compile "com.android.support:support-compat:${supportLibVersion}"
     compile "com.android.support:support-core-ui:${supportLibVersion}"
     compile "com.android.support:support-core-utils:${supportLibVersion}"
+    compile "com.android.support:support-fragment:${supportLibVersion}"
 
     // Support v7 libraries
     compile "com.android.support:appcompat-v7:${supportLibVersion}"

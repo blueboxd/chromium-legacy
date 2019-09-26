@@ -87,9 +87,18 @@ var CrElementsDrawerV3Test = class extends CrElementsV3BrowserTest {
   }
 };
 
-TEST_F('CrElementsDrawerV3Test', 'All', function() {
-  mocha.run();
-});
+// https://crbug.com/1008122
+GEN('#if defined(OS_MACOSX) && defined(NDEBUG)');
+GEN('# define MAYBE_CrElementsDrawerV3Test_All \\');
+GEN('     DISABLED_All');
+GEN('#else');
+GEN('# define MAYBE_CrElementsDrawerV3Test_All  \\');
+GEN('     All');
+GEN('#endif');
+TEST_F(
+    'CrElementsDrawerV3Test', 'MAYBE_CrElementsDrawerV3Test_All', function() {
+      mocha.run();
+    });
 
 // eslint-disable-next-line no-var
 var CrElementsExpandButtonV3Test = class extends CrElementsV3BrowserTest {

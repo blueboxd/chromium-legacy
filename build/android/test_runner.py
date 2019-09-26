@@ -310,11 +310,13 @@ def AddEmulatorOptions(parser):
   parser = parser.add_argument_group('emulator arguments')
 
   parser.add_argument(
-      '--avd-config',
+      '--avd-name',
+      help='Run and manage the lifetime of an AVD with the given name.')
+  parser.add_argument(
+      '--emulator-home',
       type=os.path.realpath,
-      help='Path to the avd config textpb. '
-      '(See //tools/android/avd/proto/ for message definition'
-      ' and existing textpb files.)')
+      help='Emulator home directory '
+      '(see ANDROID_EMULATOR_HOME: http://bit.ly/2K32oEy)')
 
 
 def AddGTestOptions(parser):

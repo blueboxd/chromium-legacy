@@ -33,8 +33,6 @@ class AccountInfoFetcher : public OAuth2AccessTokenManager::Consumer,
       const CoreAccountId& account_id);
   ~AccountInfoFetcher() override;
 
-  const CoreAccountId& account_id() { return account_id_; }
-
   // Start fetching the account information.
   void Start();
 

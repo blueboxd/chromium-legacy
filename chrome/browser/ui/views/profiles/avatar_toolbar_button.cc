@@ -70,6 +70,15 @@ bool IsGenericProfile(const ProfileAttributesEntry& entry) {
                  .GetNumberOfProfiles() == 1;
 }
 
+int GetIconSizeForNonTouchUi() {
+  // Note that the non-touchable icon size is larger than the default to
+  // make the avatar icon easier to read.
+  if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
+    return 22;
+  }
+  return 20;
+}
+
 }  // namespace
 
 AvatarToolbarButton::AvatarToolbarButton(Browser* browser)
@@ -414,10 +423,9 @@ base::string16 AvatarToolbarButton::GetProfileName() const {
 
 gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
     const gfx::Image& gaia_image) const {
-  // Note that the non-touchable icon size is larger than the default to
-  // make the avatar icon easier to read.
-  const int icon_size =
-      ui::MaterialDesignController::touch_ui() ? kDefaultTouchableIconSize : 20;
+  const int icon_size = ui::MaterialDesignController::touch_ui()
+                            ? kDefaultTouchableIconSize
+                            : GetIconSizeForNonTouchUi();
 
   SkColor icon_color =
       GetThemeProvider()->GetColor(ThemeProperties::COLOR_TOOLBAR_BUTTON_ICON);
@@ -532,9 +540,12 @@ AvatarToolbarButton::State AvatarToolbarButton::GetState() const {
 }
 
 void AvatarToolbarButton::SetInsets() {
-  // In non-touch mode we use a larger-than-normal icon size for avatars as 16dp
-  // is hard to read for user avatars, so we need to set corresponding insets.
-  gfx::Insets layout_insets(ui::MaterialDesignController::touch_ui() ? 0 : -2);
+  // In non-touch mode we use a larger-than-normal icon size for avatars so we
+  // need to compensate it by smaller insets.
+  gfx::Insets layout_insets(
+      ui::MaterialDesignController::touch_ui()
+          ? 0
+          : (kDefaultIconSize - GetIconSizeForNonTouchUi()) / 2);
 
   SetLayoutInsetDelta(layout_insets);
 }

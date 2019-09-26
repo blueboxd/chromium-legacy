@@ -8,9 +8,9 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "chromeos/services/secure_channel/public/cpp/client/connection_attempt.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace chromeos {
 
@@ -33,7 +33,7 @@ class ConnectionAttemptImpl : public ConnectionAttempt,
 
   ~ConnectionAttemptImpl() override;
 
-  mojom::ConnectionDelegatePtr GenerateInterfacePtr();
+  mojo::PendingRemote<mojom::ConnectionDelegate> GenerateRemote();
 
  protected:
   ConnectionAttemptImpl();
@@ -46,7 +46,7 @@ class ConnectionAttemptImpl : public ConnectionAttempt,
                         message_receiver_receiver) override;
 
  private:
-  mojo::Binding<mojom::ConnectionDelegate> binding_;
+  mojo::Receiver<mojom::ConnectionDelegate> receiver_{this};
 
   base::WeakPtrFactory<ConnectionAttemptImpl> weak_ptr_factory_{this};
 

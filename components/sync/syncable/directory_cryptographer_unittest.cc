@@ -320,10 +320,11 @@ TEST_F(DirectoryCryptographerTest,
       ->Permute(Nigori::Password, kNigoriKeyName, &expected_key_name);
   EXPECT_THAT(serialized.cryptographer_data.default_key_name(),
               Eq(expected_key_name));
-  EXPECT_THAT(serialized.cryptographer_data.key_bag().key(0).name(),
+  EXPECT_THAT(serialized.cryptographer_data.key_bag().key(0).deprecated_name(),
               Eq(expected_key_name));
-  EXPECT_THAT(serialized.cryptographer_data.key_bag().key(0).user_key(),
-              Ne(""));
+  EXPECT_THAT(
+      serialized.cryptographer_data.key_bag().key(0).deprecated_user_key(),
+      Ne(""));
   EXPECT_THAT(serialized.cryptographer_data.key_bag().key(0).encryption_key(),
               Ne(""));
   EXPECT_THAT(serialized.cryptographer_data.key_bag().key(0).mac_key(), Ne(""));

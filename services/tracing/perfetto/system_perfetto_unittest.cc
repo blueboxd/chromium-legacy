@@ -49,17 +49,38 @@ std::string RandomASCII(size_t length) {
   return tmp;
 }
 
+class SaveSystemProducerAndScopedRestore {
+ public:
+  SaveSystemProducerAndScopedRestore()
+      : saved_producer_(
+            PerfettoTracedProcess::Get()->SetSystemProducerForTesting(
+                std::make_unique<DummyProducer>(
+                    PerfettoTracedProcess::GetTaskRunner()))) {}
+
+  ~SaveSystemProducerAndScopedRestore() {
+    base::RunLoop destroy;
+    PerfettoTracedProcess::GetTaskRunner()
+        ->GetOrCreateTaskRunner()
+        ->PostTaskAndReply(
+            FROM_HERE, base::BindLambdaForTesting([this]() {
+              PerfettoTracedProcess::Get()
+                  ->SetSystemProducerForTesting(std::move(saved_producer_))
+                  .reset();
+            }),
+            destroy.QuitClosure());
+    destroy.Run();
+  }
+
+ private:
+  std::unique_ptr<SystemProducer> saved_producer_;
+};
+
 class SystemPerfettoTest : public testing::Test {
  public:
   SystemPerfettoTest()
       : task_environment_(base::test::TaskEnvironment::MainThreadType::IO) {
-    // Ensure system tracing is enabled for all tests.
-    base::test::ScopedFeatureList feature_list;
-    feature_list.InitAndEnableFeature(features::kEnablePerfettoSystemTracing);
     PerfettoTracedProcess::ResetTaskRunnerForTesting();
-    // To ensure we have a fully clean PerfettoTracedProcess reconstruct it at
-    // the beginning of each test.
-    PerfettoTracedProcess::ReconstructForTesting(perfetto::GetProducerSocket());
+    PerfettoTracedProcess::Get()->ClearDataSourcesForTesting();
 
     EXPECT_TRUE(tmp_dir_.CreateUniqueTempDir());
     // We need to set TMPDIR environment variable because when a new producer
@@ -134,17 +155,6 @@ class SystemPerfettoTest : public testing::Test {
   }
 
   ~SystemPerfettoTest() override {
-    // The real "AndroidSystemProducer" must be destroyed on the correct
-    // sequence however that sequence is tied to the |task_environment_|
-    // which is being deleted now. Therefore to prevent it crashing a future
-    // test we destroy it now.
-    PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
-        FROM_HERE, base::BindOnce([]() {
-          PerfettoTracedProcess::Get()
-              ->SetSystemProducerForTesting(std::make_unique<DummyProducer>(
-                  PerfettoTracedProcess::GetTaskRunner()))
-              .reset();
-        }));
     RunUntilIdle();
     // The producer client will be destroyed in the next iteration of the test,
     // but the sequence it was used on disappears with the
@@ -790,7 +800,33 @@ TEST_F(SystemPerfettoTest, SystemToLowAPILevel) {
   EXPECT_EQ(0u, run_test(/* check_sdk_level = */ true));
 }
 
+TEST_F(SystemPerfettoTest, EnabledOnDebugBuilds) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kEnablePerfettoSystemTracing);
+  // We have to prevent destroying the system producer because we might have
+  // created it on a different task environment (wrong sequence).
+  SaveSystemProducerAndScopedRestore saved_system_producer;
+  PerfettoTracedProcess::ReconstructForTesting(producer_socket_.c_str());
+  if (base::android::BuildInfo::GetInstance()->is_debug_android()) {
+    EXPECT_FALSE(PerfettoTracedProcess::Get()
+                     ->SystemProducerForTesting()
+                     ->IsDummySystemProducerForTesting());
+  } else {
+    EXPECT_TRUE(PerfettoTracedProcess::Get()
+                    ->SystemProducerForTesting()
+                    ->IsDummySystemProducerForTesting());
+  }
+}
+
 TEST_F(SystemPerfettoTest, RespectsFeatureList) {
+  if (base::android::BuildInfo::GetInstance()->is_debug_android()) {
+    // The feature list is ignored on debug android builds so we should have a
+    // real system producer so just bail out of this test.
+    EXPECT_FALSE(PerfettoTracedProcess::Get()
+                     ->SystemProducerForTesting()
+                     ->IsDummySystemProducerForTesting());
+    return;
+  }
   {
     base::test::ScopedFeatureList feature_list;
     feature_list.InitAndEnableFeature(features::kEnablePerfettoSystemTracing);

@@ -27,6 +27,7 @@ public_deps = [
 ]
 
 deps = [
+  "//gpu/ipc/common:common",
   "//gpu/ipc/common:mojom_traits",
   "//media/base/ipc",
   "//media/mojo/common:mojo_shared_buffer_video_frame",

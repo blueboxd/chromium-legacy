@@ -305,7 +305,7 @@ void TrackEventThreadLocalEventSink::AddTraceEvent(
           log_message_body = value->message().c_str();
 
           interned_log_message_body =
-              interned_log_message_bodies_.LookupOrAdd(log_message_body);
+              interned_log_message_bodies_.LookupOrAdd(value->message());
         }  // else
       }    // else
       interned_source_location = interned_source_locations_.LookupOrAdd(

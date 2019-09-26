@@ -47,6 +47,12 @@ bool ImageProcessor::Process(scoped_refptr<VideoFrame> frame,
 
   return ProcessInternal(std::move(frame), BindToCurrentLoop(std::move(cb)));
 }
+
+bool ImageProcessor::ProcessInternal(scoped_refptr<VideoFrame> frame,
+                                     LegacyFrameReadyCB cb) {
+  NOTIMPLEMENTED();
+  return false;
+}
 #endif
 
 bool ImageProcessor::Process(scoped_refptr<VideoFrame> input_frame,

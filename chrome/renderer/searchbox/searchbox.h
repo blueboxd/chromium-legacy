@@ -193,6 +193,9 @@ class SearchBox : public content::RenderFrameObserver,
   // search term. Handled by |QueryAutocompleteResult|.
   void QueryAutocomplete(const base::string16& input);
 
+  // Deletes |AutocompleteMatch| by index of the result.
+  void DeleteAutocompleteMatch(uint8_t line);
+
   // Cancels the current autocomplete query. Clears the result set if
   // |clear_result| is true.
   void StopAutocomplete(bool clear_result);
@@ -229,6 +232,11 @@ class SearchBox : public content::RenderFrameObserver,
 
   // Asynchronous callback for autocomplete query results. Sends to renderer.
   void QueryAutocompleteResult(chrome::mojom::AutocompleteResultPtr result);
+
+  // Asynchronous callback for results of attempting to delete an autocomplete
+  // result.
+  void OnDeleteAutocompleteMatch(
+      chrome::mojom::DeleteAutocompleteMatchResultPtr result);
 
   // The connection to the EmbeddedSearch service in the browser process.
   chrome::mojom::EmbeddedSearchAssociatedPtr embedded_search_service_;

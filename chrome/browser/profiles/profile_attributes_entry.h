@@ -10,6 +10,7 @@
 #include <memory>
 #include <string>
 
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -30,6 +31,8 @@ enum class SigninState {
   kSignedInWithUnconsentedPrimaryAccount,
   kSignedInWithConsentedPrimaryAccount,
 };
+
+extern const base::Feature kPersistUPAInProfileInfoCache;
 
 class ProfileAttributesEntry {
  public:

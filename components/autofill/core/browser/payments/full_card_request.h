@@ -85,9 +85,6 @@ class FullCardRequest final : public CardUnmaskDelegate {
                           base::WeakPtr<ResultDelegate> result_delegate,
                           base::Value fido_assertion_info);
 
-  // Returns true if there's a pending request to get the full card.
-  bool IsGettingFullCard() const;
-
   // Called by the payments client when a card has been unmasked.
   void OnDidGetRealPan(
       AutofillClient::PaymentsRpcResult result,

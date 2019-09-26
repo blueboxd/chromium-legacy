@@ -25,9 +25,9 @@ namespace blink {
 
 MediaControlTimeDisplayElement::MediaControlTimeDisplayElement(
     MediaControlsImpl& media_controls,
-    blink::WebLocalizedString::Name localized_label)
+    int localized_resource_id)
     : MediaControlDivElement(media_controls),
-      localized_label_(localized_label) {
+      localized_resource_id_(localized_resource_id) {
   SetAriaLabel();
 }
 
@@ -58,7 +58,8 @@ String MediaControlTimeDisplayElement::FormatTime() const {
 }
 
 void MediaControlTimeDisplayElement::SetAriaLabel() {
-  String aria_label = GetLocale().QueryString(localized_label_, FormatTime());
+  String aria_label =
+      GetLocale().QueryString(localized_resource_id_, FormatTime());
   setAttribute(html_names::kAriaLabelAttr, AtomicString(aria_label));
 }
 

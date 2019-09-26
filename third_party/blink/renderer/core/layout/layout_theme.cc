@@ -770,7 +770,7 @@ Color LayoutTheme::SystemColor(CSSValueID css_value_id,
     case CSSValueID::kLinktext:
       return 0xFF0000EE;
     case CSSValueID::kMenu:
-      return 0xFFC0C0C0;
+      return color_scheme == WebColorScheme::kDark ? 0xFF404040 : 0xFFC0C0C0;
     case CSSValueID::kMenutext:
       return color_scheme == WebColorScheme::kDark ? 0xFFFFFFFF : 0xFF000000;
     case CSSValueID::kScrollbar:

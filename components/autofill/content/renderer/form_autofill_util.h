@@ -219,12 +219,6 @@ bool FindFormAndFieldForFormControlElement(
 void FillForm(const FormData& form,
               const blink::WebFormControlElement& element);
 
-// Fills focusable and non-focusable form control elements within |form_element|
-// with field data from |form_data|.
-void FillFormIncludingNonFocusableElements(
-    const FormData& form_data,
-    const blink::WebFormElement& form_element);
-
 // Previews the form represented by |form|.  |element| is the input element that
 // initiated the preview process.
 void PreviewForm(const FormData& form,

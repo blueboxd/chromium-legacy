@@ -113,6 +113,7 @@ NSString* const kOSStartTime = @"OSStartTime";
 @property(nonatomic, assign) BOOL isFirstSessionAfterLanguageChange;
 @property(nonatomic, assign) BOOL OSRestartedAfterPreviousSession;
 @property(nonatomic, strong) NSString* OSVersion;
+@property(nonatomic, strong) NSString* previousSessionVersion;
 @property(nonatomic, strong) NSDate* sessionEndTime;
 
 @end
@@ -175,6 +176,8 @@ static PreviousSessionInfo* gSharedInstance = nil;
     gSharedInstance.OSVersion = versionOfOSAtLastRun;
 
     NSString* lastRanVersion = [defaults stringForKey:kLastRanVersion];
+    gSharedInstance.previousSessionVersion = lastRanVersion;
+
     NSString* currentVersion =
         base::SysUTF8ToNSString(version_info::GetVersionNumber());
     gSharedInstance.isFirstSessionAfterUpgrade =

@@ -44,9 +44,12 @@ class WebAppInstallFinalizer final : public InstallFinalizer {
   bool CanUserUninstallFromSync(const AppId& app_id) const override;
 
  private:
-  void OnDataWritten(InstallFinalizedCallback callback,
-                     std::unique_ptr<WebApp> web_app,
-                     bool success);
+  void OnIconsDataWritten(InstallFinalizedCallback callback,
+                          std::unique_ptr<WebApp> web_app,
+                          bool success);
+  void OnDatabaseCommitCompleted(InstallFinalizedCallback callback,
+                                 const AppId& app_id,
+                                 bool success);
 
   WebAppSyncBridge* sync_bridge_;
   WebAppIconManager* const icon_manager_;

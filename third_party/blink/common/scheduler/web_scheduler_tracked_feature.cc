@@ -39,6 +39,8 @@ const char* FeatureToString(WebSchedulerTrackedFeature feature) {
       return "document loaded";
     case WebSchedulerTrackedFeature::kDedicatedWorkerOrWorklet:
       return "Dedicated worker or worklet present";
+    case WebSchedulerTrackedFeature::kSharedWorker:
+      return "Shared worker present";
     case WebSchedulerTrackedFeature::kOutstandingNetworkRequest:
       return "outstanding network request";
     case WebSchedulerTrackedFeature::kServiceWorkerControlledPage:

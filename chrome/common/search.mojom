@@ -63,6 +63,11 @@ struct AutocompleteResult {
   AutocompleteResultStatus status;
 };
 
+struct DeleteAutocompleteMatchResult {
+  bool success;
+  array<AutocompleteMatch> matches;
+};
+
 // Browser interface to support embedded search. Render frames connect to this
 // interface to query browser data, such as the most visited pages.
 // See http://dev.chromium.org/embeddedsearch
@@ -177,6 +182,11 @@ interface EmbeddedSearch {
   // Gets autocomplete matches from the browser.
   QueryAutocomplete(mojo_base.mojom.String16 input) =>
         (AutocompleteResult result);
+
+  // Deletes the AutocompleteMatch in the current results by |line| number if
+  // it is deletable. When a match is deleted, |matches| is populated with the
+  // updated result after deletion. Otherwise, |matches| is empty.
+  DeleteAutocompleteMatch(uint8 line) => (DeleteAutocompleteMatchResult result);
 
   // Cancels the current autocomplete query. Clears the result set if
   // |clear_result| is true.

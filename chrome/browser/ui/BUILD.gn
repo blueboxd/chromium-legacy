@@ -2934,6 +2934,8 @@ jumbo_split_static_library("ui") {
       "views/overlay/track_image_button.h",
       "views/page_action/page_action_icon_container_view.cc",
       "views/page_action/page_action_icon_container_view.h",
+      "views/page_action/page_action_icon_loading_indicator_view.cc",
+      "views/page_action/page_action_icon_loading_indicator_view.h",
       "views/page_action/page_action_icon_view.cc",
       "views/page_action/page_action_icon_view.h",
       "views/page_action/pwa_install_view.cc",

@@ -72,6 +72,9 @@
         "browse:news:washingtonpost": {
             "DEFAULT": "system_health_mobile_021.wprgo"
         },
+        "browse:news:washingtonpost:2019": {
+            "DEFAULT": "system_health_mobile_93ff1080a1.wprgo"
+        },
         "browse:search:amp:2018": {
             "DEFAULT": "system_health_mobile_0483ae239d.wprgo"
         },

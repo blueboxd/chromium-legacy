@@ -208,7 +208,6 @@ class ReusingTextShaper final {
                return item.EndOffset() <= offset;
              });
          item != reusable_items_->end(); ++item) {
-      DCHECK_LE(start_offset, item->StartOffset());
       if (end_offset <= item->StartOffset())
         break;
       if (item->EndOffset() < start_offset)

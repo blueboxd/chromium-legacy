@@ -9,7 +9,10 @@
 
 #include "base/barrier_closure.h"
 #include "base/threading/thread_checker.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "third_party/blink/public/web/web_embedded_worker.h"
 #include "third_party/blink/renderer/core/html/parser/text_resource_decoder.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_thread.h"
 #include "third_party/blink/renderer/platform/instrumentation/tracing/traced_value.h"
@@ -245,18 +248,33 @@ std::unique_ptr<TracedValue> UrlToTracedValue(const KURL& url) {
 }  // namespace
 
 ServiceWorkerInstalledScriptsManager::ServiceWorkerInstalledScriptsManager(
-    const Vector<KURL>& installed_urls,
-    mojo::PendingReceiver<mojom::blink::ServiceWorkerInstalledScriptsManager>
-        manager_receiver,
-    mojo::PendingRemote<mojom::blink::ServiceWorkerInstalledScriptsManagerHost>
-        manager_host,
+    std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>
+        installed_scripts_manager_params,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : script_container_(base::MakeRefCounted<ThreadSafeScriptContainer>()),
-      manager_host_(std::move(manager_host)) {
-  // We're on the main thread now, but |installed_urls_| will be accessed on the
-  // worker thread later, so make a deep copy of |url| as key.
-  for (const KURL& url : installed_urls)
-    installed_urls_.insert(url.Copy());
+    : script_container_(base::MakeRefCounted<ThreadSafeScriptContainer>()) {
+  DCHECK(installed_scripts_manager_params);
+
+  DCHECK(installed_scripts_manager_params->manager_receiver);
+  auto manager_receiver =
+      mojo::PendingReceiver<mojom::blink::ServiceWorkerInstalledScriptsManager>(
+          std::move(installed_scripts_manager_params->manager_receiver));
+
+  DCHECK(installed_scripts_manager_params->manager_host_remote);
+  manager_host_ = mojo::SharedRemote<
+      mojom::blink::ServiceWorkerInstalledScriptsManagerHost>(
+      mojo::PendingRemote<
+          mojom::blink::ServiceWorkerInstalledScriptsManagerHost>(
+          std::move(installed_scripts_manager_params->manager_host_remote),
+          mojom::blink::ServiceWorkerInstalledScriptsManagerHost::Version_));
+
+  // Don't touch |installed_urls_| after this point. We're on the initiator
+  // thread now, but |installed_urls_| will be accessed on the
+  // worker thread later, so they should keep isolated from the current thraed.
+  for (const WebURL& url :
+       installed_scripts_manager_params->installed_scripts_urls) {
+    installed_urls_.insert(url);
+  }
+
   PostCrossThreadTask(
       *io_task_runner, FROM_HERE,
       CrossThreadBindOnce(&Internal::Create, script_container_,

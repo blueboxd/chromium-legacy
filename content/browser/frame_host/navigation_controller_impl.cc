@@ -3126,7 +3126,9 @@ NavigationControllerImpl::CreateNavigationRequestFromLoadParams(
           std::string(), /* data_url_as_string */
 #endif
           false, /* is_browser_initiated */
-          network::mojom::IPAddressSpace::kUnknown);
+          network::mojom::IPAddressSpace::kUnknown,
+          GURL() /* base_url_override_for_bundled_exchanges */
+      );
 #if defined(OS_ANDROID)
   if (ValidateDataURLAsString(params.data_url_as_string)) {
     commit_params->data_url_as_string = params.data_url_as_string->data();

@@ -673,31 +673,6 @@ TEST(AutofillProfileTest, CreateInferredLabelsFlattensMultiLineValues) {
   EXPECT_EQ(ASCIIToUTF16("88 Nowhere Ave., Apt. 42"), labels[0]);
 }
 
-TEST(AutofillProfileTest, IsSubsetOfForProfiles) {
-  AutofillProfile profile1 =
-      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile1, "Genevieve", "", "Fox",
-                       "genevieve@hotmail.com", "", "274 Main St", "",
-                       "Northhampton", "MA", "01060", "US", "");
-
-  AutofillProfile profile2 =
-      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile2, "Genevieve", "", "Fox",
-                       "genevieve@hotmail.com", "", "", "", "", "", "", "US",
-                       "");
-
-  AutofillProfile profile3 =
-      AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
-  test::SetProfileInfo(&profile3, "Genevieve", "", "Fuller",
-                       "genevieve@hotmail.com", "", "", "", "", "", "", "US",
-                       "");
-
-  EXPECT_FALSE(profile1.IsSubsetOf(profile2, "en-US"));
-  EXPECT_TRUE(profile2.IsSubsetOf(profile1, "en-US"));
-  EXPECT_FALSE(profile2.IsSubsetOf(profile3, "en-US"));
-  EXPECT_FALSE(profile3.IsSubsetOf(profile2, "en-US"));
-}
-
 TEST(AutofillProfileTest, IsSubsetOfForFieldSet_DifferentMiddleNames) {
   AutofillProfile profile1 =
       AutofillProfile(base::GenerateGUID(), test::kEmptyOrigin);
@@ -1459,6 +1434,7 @@ TEST(AutofillProfileTest, IsAnInvalidPhoneNumber) {
               profile.IsAnInvalidPhoneNumber(PHONE_BILLING_WHOLE_NUMBER));
   }
 }
+
 
 TEST(AutofillProfileTest, ValidityStatesClients) {
   AutofillProfile profile;

@@ -10,6 +10,7 @@
 #include "chrome/browser/web_applications/proto/web_app.pb.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/protocol/web_app_specifics.pb.h"
@@ -38,32 +39,45 @@ void WebAppDatabase::OpenDatabase(RegistryOpenedCallback callback) {
                           weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
-void WebAppDatabase::WriteWebApps(AppsToWrite apps,
-                                  CompletionCallback callback) {
+void WebAppDatabase::BeginTransaction() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   DCHECK(opened_);
 
-  BeginTransaction();
+  DCHECK(!write_batch_);
+  write_batch_ = store_->CreateWriteBatch();
+}
 
-  for (const WebApp* web_app : apps) {
+void WebAppDatabase::CommitTransaction(const RegistryUpdateData& update_data,
+                                       CompletionCallback callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  DCHECK(opened_);
+
+  DCHECK(write_batch_);
+  DCHECK(!update_data.IsEmpty());
+
+  for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_create) {
     auto proto = CreateWebAppProto(*web_app);
     write_batch_->WriteData(web_app->app_id(), proto->SerializeAsString());
   }
 
-  CommitTransaction(std::move(callback));
-}
-
-void WebAppDatabase::DeleteWebApps(std::vector<AppId> app_ids,
-                                   CompletionCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(opened_);
-
-  BeginTransaction();
-
-  for (auto& app_id : app_ids)
+  for (const AppId& app_id : update_data.apps_to_delete)
     write_batch_->DeleteData(app_id);
 
-  CommitTransaction(std::move(callback));
+  for (const WebApp* web_app : update_data.apps_to_update) {
+    auto proto = CreateWebAppProto(*web_app);
+    write_batch_->WriteData(web_app->app_id(), proto->SerializeAsString());
+  }
+
+  store_->CommitWriteBatch(
+      std::move(write_batch_),
+      base::BindOnce(&WebAppDatabase::OnDataWritten,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  write_batch_.reset();
+}
+
+void WebAppDatabase::CancelTransaction() {
+  DCHECK(write_batch_);
+  write_batch_.reset();
 }
 
 // static
@@ -277,23 +291,6 @@ std::unique_ptr<WebApp> WebAppDatabase::ParseWebApp(const AppId& app_id,
   }
 
   return web_app;
-}
-
-void WebAppDatabase::BeginTransaction() {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!write_batch_);
-  write_batch_ = store_->CreateWriteBatch();
-}
-
-void WebAppDatabase::CommitTransaction(CompletionCallback callback) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(write_batch_);
-
-  store_->CommitWriteBatch(
-      std::move(write_batch_),
-      base::BindOnce(&WebAppDatabase::OnDataWritten,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
-  write_batch_.reset();
 }
 
 }  // namespace web_app

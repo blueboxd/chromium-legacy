@@ -30,6 +30,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/url_input_type.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/parser/html_parser_idioms.h"
@@ -55,8 +56,7 @@ bool URLInputType::TypeMismatch() const {
 }
 
 String URLInputType::TypeMismatchText() const {
-  return GetLocale().QueryString(
-      WebLocalizedString::kValidationTypeMismatchForURL);
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_TYPE_MISMATCH_URL);
 }
 
 String URLInputType::SanitizeValue(const String& proposed_value) const {

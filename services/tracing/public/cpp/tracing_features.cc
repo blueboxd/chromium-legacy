@@ -12,6 +12,10 @@
 #include "build/build_config.h"
 #include "components/tracing/common/tracing_switches.h"
 
+#if defined(OS_ANDROID)
+#include "base/android/build_info.h"  // nogncheck
+#endif
+
 namespace features {
 
 // Enables the perfetto tracing backend. For startup tracing, pass the
@@ -77,6 +81,19 @@ bool TracingUsesPerfettoBackend() {
   }
 
   return features::kTracingPerfettoBackend.default_state ==
+         base::FEATURE_ENABLED_BY_DEFAULT;
+}
+
+bool ShouldSetupSystemTracing() {
+#if defined(OS_ANDROID)
+  if (base::android::BuildInfo::GetInstance()->is_debug_android()) {
+    return true;
+  }
+#endif  // defined(OS_ANDROID)
+  if (base::FeatureList::GetInstance()) {
+    return base::FeatureList::IsEnabled(features::kTracingPerfettoBackend);
+  }
+  return features::kEnablePerfettoSystemTracing.default_state ==
          base::FEATURE_ENABLED_BY_DEFAULT;
 }
 

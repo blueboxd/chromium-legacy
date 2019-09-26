@@ -109,16 +109,18 @@ void InputEventPrediction::ApplyResampling(base::TimeTicks frame_time,
   if (event->GetType() == WebInputEvent::kTouchMove) {
     WebTouchEvent* touch_event = static_cast<WebTouchEvent*>(event);
     for (unsigned i = 0; i < touch_event->touches_length; ++i) {
-      wpp_event = &touch_event->touches[i];
-      // Cutoff prediction if delta > MaxResampleTime
-      auto predictor = pointer_id_predictor_map_.find(wpp_event->id);
-      if (predictor != pointer_id_predictor_map_.end()) {
-        prediction_delta =
-            std::min(prediction_delta, predictor->second->MaxResampleTime());
-        predict_time = event->TimeStamp() + prediction_delta;
-        // Compute the prediction
-        if (GetPointerPrediction(predict_time, wpp_event))
-          event->SetTimeStamp(predict_time);
+      if (touch_event->touches[i].state == blink::WebTouchPoint::kStateMoved) {
+        wpp_event = &touch_event->touches[i];
+        // Cutoff prediction if delta > MaxResampleTime
+        auto predictor = pointer_id_predictor_map_.find(wpp_event->id);
+        if (predictor != pointer_id_predictor_map_.end()) {
+          prediction_delta =
+              std::min(prediction_delta, predictor->second->MaxResampleTime());
+          predict_time = event->TimeStamp() + prediction_delta;
+          // Compute the prediction
+          if (GetPointerPrediction(predict_time, wpp_event))
+            event->SetTimeStamp(predict_time);
+        }
       }
     }
   } else if (event->GetType() == WebInputEvent::kMouseMove) {
@@ -182,10 +184,13 @@ void InputEventPrediction::AddPredictedEvents(
       }
       predict_time += touch_time_interval / touch_event.touches_length;
       if (predict_time <= max_prediction_timestamp) {
-        success = true;
-        for (unsigned i = 0; i < touch_event.touches_length; ++i)
-          success &=
-              GetPointerPrediction(predict_time, &touch_event.touches[i]);
+        for (unsigned i = 0; i < touch_event.touches_length; ++i) {
+          if (touch_event.touches[i].state ==
+              blink::WebTouchPoint::kStateMoved) {
+            success =
+                GetPointerPrediction(predict_time, &touch_event.touches[i]);
+          }
+        }
       }
     } else if (predicted_event->GetType() == WebInputEvent::kMouseMove) {
       WebMouseEvent& mouse_event =

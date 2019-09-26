@@ -1190,7 +1190,7 @@ public class PaymentRequestImpl
             // Hence Chrome forwards the updateWith() calls to the currently invoked
             // PaymentInstrument object.
             mInvokedPaymentInstrument.updateWith(
-                    PaymentDetailsConverter.convertToPaymentMethodChangeResponse(
+                    PaymentDetailsConverter.convertToPaymentRequestDetailsUpdate(
                             details, this /* methodChecker */));
             return;
         }

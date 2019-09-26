@@ -61,6 +61,38 @@
 
 namespace {
 
+std::vector<chrome::mojom::AutocompleteMatchPtr> CreateAutocompleteMatches(
+    const AutocompleteResult& result) {
+  std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
+  for (const AutocompleteMatch& match : result) {
+    chrome::mojom::AutocompleteMatchPtr mojom_match =
+        chrome::mojom::AutocompleteMatch::New();
+    mojom_match->allowed_to_be_default_match =
+        match.allowed_to_be_default_match;
+    mojom_match->contents = match.contents;
+    for (const auto& contents_class : match.contents_class) {
+      mojom_match->contents_class.push_back(
+          chrome::mojom::ACMatchClassification::New(contents_class.offset,
+                                                    contents_class.style));
+    }
+    mojom_match->description = match.description;
+    for (const auto& description_class : match.description_class) {
+      mojom_match->description_class.push_back(
+          chrome::mojom::ACMatchClassification::New(description_class.offset,
+                                                    description_class.style));
+    }
+    mojom_match->destination_url = match.destination_url.spec();
+    mojom_match->fill_into_edit = match.fill_into_edit;
+    mojom_match->inline_autocompletion = match.inline_autocompletion;
+    mojom_match->is_search_type = AutocompleteMatch::IsSearchType(match.type);
+    mojom_match->swap_contents_and_description =
+        match.swap_contents_and_description;
+    mojom_match->type = AutocompleteMatchType::ToString(match.type);
+    matches.push_back(std::move(mojom_match));
+  }
+  return matches;
+}
+
 bool IsCacheableNTP(content::WebContents* contents) {
   content::NavigationEntry* entry =
       contents->GetController().GetLastCommittedEntry();
@@ -447,37 +479,10 @@ void SearchTabHelper::OnResultChanged(bool default_result_changed) {
   if (!autocomplete_controller_->done() || !query_autocomplete_callback_)
     return;
 
-  std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
-  for (const AutocompleteMatch& match : autocomplete_controller_->result()) {
-    chrome::mojom::AutocompleteMatchPtr mojom_match =
-        chrome::mojom::AutocompleteMatch::New();
-    mojom_match->allowed_to_be_default_match =
-        match.allowed_to_be_default_match;
-    mojom_match->contents = match.contents;
-    for (const auto& contents_class : match.contents_class) {
-      mojom_match->contents_class.push_back(
-          chrome::mojom::ACMatchClassification::New(contents_class.offset,
-                                                    contents_class.style));
-    }
-    mojom_match->description = match.description;
-    for (const auto& description_class : match.description_class) {
-      mojom_match->description_class.push_back(
-          chrome::mojom::ACMatchClassification::New(description_class.offset,
-                                                    description_class.style));
-    }
-    mojom_match->destination_url = match.destination_url.spec();
-    mojom_match->fill_into_edit = match.fill_into_edit;
-    mojom_match->inline_autocompletion = match.inline_autocompletion;
-    mojom_match->is_search_type = AutocompleteMatch::IsSearchType(match.type);
-    mojom_match->swap_contents_and_description =
-        match.swap_contents_and_description;
-    mojom_match->type = AutocompleteMatchType::ToString(match.type);
-    matches.push_back(std::move(mojom_match));
-  }
-
   std::move(query_autocomplete_callback_)
       .Run(chrome::mojom::AutocompleteResult::New(
-          autocomplete_controller_->input().text(), std::move(matches),
+          autocomplete_controller_->input().text(),
+          CreateAutocompleteMatches(autocomplete_controller_->result()),
           chrome::mojom::AutocompleteResultStatus::SUCCESS));
 }
 
@@ -598,6 +603,28 @@ void SearchTabHelper::QueryAutocomplete(
       ChromeAutocompleteSchemeClassifier(profile()));
   autocomplete_input.set_from_omnibox_focus(input.empty());
   autocomplete_controller_->Start(autocomplete_input);
+}
+
+void SearchTabHelper::DeleteAutocompleteMatch(
+    uint8_t line,
+    chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback callback) {
+  bool success = false;
+  std::vector<chrome::mojom::AutocompleteMatchPtr> matches;
+
+  if (search::DefaultSearchProviderIsGoogle(profile()) &&
+      autocomplete_controller_ &&
+      autocomplete_controller_->result().size() > line) {
+    const auto& match = autocomplete_controller_->result().match_at(line);
+    if (match.SupportsDeletion()) {
+      success = true;
+      autocomplete_controller_->Stop(false);
+      autocomplete_controller_->DeleteMatch(match);
+      matches = CreateAutocompleteMatches(autocomplete_controller_->result());
+    }
+  }
+
+  std::move(callback).Run(chrome::mojom::DeleteAutocompleteMatchResult::New(
+      success, std::move(matches)));
 }
 
 void SearchTabHelper::StopAutocomplete(bool clear_result) {

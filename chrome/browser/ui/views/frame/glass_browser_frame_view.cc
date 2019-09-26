@@ -69,8 +69,12 @@ SkColor GlassBrowserFrameView::GetReadableFeatureColor(
   // color_utils::GetColorWithMaxContrast()/IsDark() aren't used here because
   // they switch based on the Chrome light/dark endpoints, while we want to use
   // the system native behavior below.
-  return color_utils::GetLuma(background_color) < 128 ? SK_ColorWHITE
-                                                      : SK_ColorBLACK;
+  const auto windows_luma = [](SkColor c) {
+    return 0.25f * SkColorGetR(c) + 0.625f * SkColorGetG(c) +
+           0.125f * SkColorGetB(c);
+  };
+  return windows_luma(background_color) <= 128.0f ? SK_ColorWHITE
+                                                  : SK_ColorBLACK;
 }
 
 GlassBrowserFrameView::GlassBrowserFrameView(BrowserFrame* frame,

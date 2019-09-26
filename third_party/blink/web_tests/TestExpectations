@@ -6200,3 +6200,7 @@ crbug.com/630695 virtual/scalefactor200/css3/filters/effect-drop-shadow-hw.html 
 
 # Sheriff 2019-09-20
 crbug.com/1005128 crypto/subtle/abandon-crypto-operation2.html [ Pass Crash ]
+
+# Sheriff 2019-09-26
+crbug.com/1008257 external/wpt/service-workers/service-worker/claim-shared-worker-fetch.https.html [ Pass Crash ]
+crbug.com/1008257 external/wpt/service-workers/service-worker/worker-interception-redirect.https.html [ Pass Crash ]

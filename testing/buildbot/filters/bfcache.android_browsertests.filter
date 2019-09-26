@@ -10,3 +10,9 @@
 -PaymentRequestCanMakePaymentQueryCCTest.*
 -PaymentRequestCanMakePaymentQueryPMITest.*
 -PaymentRequestCanMakePaymentQueryTest.*
+
+# Flaky for unknown reasons.
+# TODO(ahemery): Was not able to reproduce locally on api_level 21 and 28,
+# reach out to more knowledgeable android folks.
+-AndroidBrowserTest.Smoke
+-ImportantSitesUtilBrowserTest.DSENotConsideredImportantInRegularMode

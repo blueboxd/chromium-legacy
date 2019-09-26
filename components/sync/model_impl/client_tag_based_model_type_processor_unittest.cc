@@ -2127,7 +2127,7 @@ TEST_F(ClientTagBasedModelTypeProcessorTest, ShouldUntrackEntity) {
   // Metadata should not be written under kUntrackKey1. This means that
   // UntrackEntity was called and corresponding ProcessorEntity is
   // removed and no storage key got propagated to MetadataChangeList.
-  EXPECT_FALSE(db()->HasMetadata(kHash1));
+  EXPECT_FALSE(db()->HasMetadata(kKey1));
   EXPECT_EQ(0U, db()->metadata_count());
   EXPECT_EQ(0, bridge()->get_storage_key_call_count());
 }

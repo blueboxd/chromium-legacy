@@ -21,6 +21,15 @@ using password_manager::CredentialLeakType;
 using password_manager::metrics_util::LeakDialogType;
 
 namespace leak_dialog_utils {
+namespace {
+
+// Formats the |origin| to a human-friendly url string.
+base::string16 GetFormattedUrl(const GURL& origin) {
+  return url_formatter::FormatUrlForSecurityDisplay(
+      origin, url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+}
+
+}  // namespace
 
 base::string16 GetAcceptButtonLabel(CredentialLeakType leak_type) {
   return l10n_util::GetStringUTF16(
@@ -33,9 +42,7 @@ base::string16 GetCancelButtonLabel() {
 
 base::string16 GetDescription(CredentialLeakType leak_type,
                               const GURL& origin) {
-  const auto formatted = url_formatter::FormatOriginForSecurityDisplay(
-      url::Origin::Create(origin),
-      url_formatter::SchemeDisplay::OMIT_HTTP_AND_HTTPS);
+  const base::string16 formatted = GetFormattedUrl(origin);
   if (!ShouldCheckPasswords(leak_type)) {
     std::vector<size_t> offsets;
     base::string16 bold_message = l10n_util::GetStringUTF16(
@@ -82,16 +89,17 @@ GURL GetPasswordCheckupURL() {
   return GURL(value);
 }
 
-gfx::Range GetChangePasswordBoldRange(CredentialLeakType leak_type) {
+gfx::Range GetChangePasswordBoldRange(CredentialLeakType leak_type,
+                                      const GURL& origin) {
   if (ShouldCheckPasswords(leak_type))
     return gfx::Range();
 
   std::vector<size_t> offsets;
   const base::string16 bold_message = l10n_util::GetStringUTF16(
       IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_BOLD_MESSAGE);
-  const base::string16 change_password_message =
-      l10n_util::GetStringFUTF16(IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE,
-                                 bold_message, base::string16(), &offsets);
+  const base::string16 change_password_message = l10n_util::GetStringFUTF16(
+      IDS_CREDENTIAL_LEAK_CHANGE_PASSWORD_MESSAGE, bold_message,
+      GetFormattedUrl(origin), &offsets);
   return offsets.empty()
              ? gfx::Range()
              : gfx::Range(offsets[0], offsets[0] + bold_message.length());

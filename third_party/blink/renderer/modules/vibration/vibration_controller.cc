@@ -19,7 +19,7 @@
 
 #include "third_party/blink/renderer/modules/vibration/vibration_controller.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/renderer/bindings/modules/v8/unsigned_long_or_unsigned_long_sequence.h"
@@ -85,7 +85,7 @@ VibrationController::VibrationController(LocalFrame& frame)
       is_running_(false),
       is_calling_cancel_(false),
       is_calling_vibrate_(false) {
-  frame.GetInterfaceProvider().GetInterface(
+  frame.GetBrowserInterfaceBroker().GetInterface(
       vibration_manager_.BindNewPipeAndPassReceiver());
 }
 

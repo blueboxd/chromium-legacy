@@ -174,12 +174,17 @@ void ServiceWorkerContextClient::StartWorkerContextOnInitiatorThread(
     std::unique_ptr<blink::WebEmbeddedWorkerStartData> start_data,
     std::unique_ptr<blink::WebServiceWorkerInstalledScriptsManagerParams>
         installed_scripts_manager_params,
-    mojo::ScopedMessagePipeHandle content_settings_handle) {
+    mojo::ScopedMessagePipeHandle content_settings_handle,
+    mojo::ScopedMessagePipeHandle cache_storage,
+    mojo::ScopedMessagePipeHandle interface_provider,
+    mojo::ScopedMessagePipeHandle browser_interface_broker) {
   DCHECK(initiator_thread_task_runner_->RunsTasksInCurrentSequence());
   worker_ = std::move(worker);
   worker_->StartWorkerContext(
       std::move(start_data), std::move(installed_scripts_manager_params),
-      std::move(content_settings_handle), initiator_thread_task_runner_);
+      std::move(content_settings_handle), std::move(cache_storage),
+      std::move(interface_provider), std::move(browser_interface_broker),
+      initiator_thread_task_runner_);
 }
 
 blink::WebEmbeddedWorker& ServiceWorkerContextClient::worker() {
@@ -199,10 +204,10 @@ void ServiceWorkerContextClient::WorkerReadyForInspectionOnInitiatorThread(
                                        std::move(receiver));
 }
 
-void ServiceWorkerContextClient::FailedToLoadClassicScript() {
+void ServiceWorkerContextClient::FailedToFetchClassicScript() {
   DCHECK(worker_task_runner_->RunsTasksInCurrentSequence());
   TRACE_EVENT_NESTABLE_ASYNC_END1("ServiceWorker", "LOAD_SCRIPT", this,
-                                  "Status", "FailedToLoadClassicScript");
+                                  "Status", "FailedToFetchClassicScript");
   // The caller is responsible for terminating the thread which
   // eventually destroys |this|.
 }

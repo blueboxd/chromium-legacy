@@ -66,10 +66,6 @@ function setUp() {
   // Initialize cr.ui.Command with the <command>s.
   cr.ui.decorate('command', cr.ui.Command);
 
-  // Setup MultiProfileShareDialog.
-  const multiProfileShareDialog =
-      new MultiProfileShareDialog(queryRequiredElement('#dialog'));
-
   // Fake confirmation callback.
   const confirmationDialog = (isMove, messages) => Promise.resolve(true);
 
@@ -139,7 +135,6 @@ function setUp() {
       document,
       listContainer,
       directoryTree,
-      multiProfileShareDialog,
       confirmationDialog,
       progressCenter,
       fileOperationManager,

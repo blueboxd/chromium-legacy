@@ -156,8 +156,9 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeWithDmaBufTask(
     input_size_ = gfx::Size();
 
     std::vector<VASurfaceID> va_surfaces;
-    if (!vaapi_wrapper_->CreateContextAndSurfaces(va_format, input_size, 1,
-                                                  &va_surfaces)) {
+    if (!vaapi_wrapper_->CreateContextAndSurfaces(
+            va_format, input_size, VaapiWrapper::SurfaceUsageHint::kGeneric, 1,
+            &va_surfaces)) {
       VLOGF(1) << "Failed to create VA surface";
       notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
       return;
@@ -308,7 +309,8 @@ void VaapiJpegEncodeAccelerator::Encoder::EncodeTask(
 
     std::vector<VASurfaceID> va_surfaces;
     if (!vaapi_wrapper_->CreateContextAndSurfaces(
-            VA_RT_FORMAT_YUV420, input_size, 1, &va_surfaces)) {
+            VA_RT_FORMAT_YUV420, input_size,
+            VaapiWrapper::SurfaceUsageHint::kGeneric, 1, &va_surfaces)) {
       VLOGF(1) << "Failed to create VA surface";
       notify_error_cb_.Run(task_id, PLATFORM_FAILURE);
       return;

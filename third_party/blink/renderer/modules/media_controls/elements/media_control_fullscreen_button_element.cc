@@ -29,11 +29,11 @@ void MediaControlFullscreenButtonElement::SetIsFullscreen(bool is_fullscreen) {
   if (is_fullscreen) {
     setAttribute(html_names::kAriaLabelAttr,
                  WTF::AtomicString(GetLocale().QueryString(
-                     WebLocalizedString::kAXMediaExitFullscreenButton)));
+                     IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON)));
   } else {
     setAttribute(html_names::kAriaLabelAttr,
                  WTF::AtomicString(GetLocale().QueryString(
-                     WebLocalizedString::kAXMediaEnterFullscreenButton)));
+                     IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON)));
   }
   SetClass("fullscreen", is_fullscreen);
 }

@@ -38,14 +38,13 @@ ConnectionAttemptImpl::Factory::BuildInstance() {
   return base::WrapUnique(new ConnectionAttemptImpl());
 }
 
-ConnectionAttemptImpl::ConnectionAttemptImpl() : binding_(this) {}
+ConnectionAttemptImpl::ConnectionAttemptImpl() = default;
 
 ConnectionAttemptImpl::~ConnectionAttemptImpl() = default;
 
-mojom::ConnectionDelegatePtr ConnectionAttemptImpl::GenerateInterfacePtr() {
-  mojom::ConnectionDelegatePtr interface_ptr;
-  binding_.Bind(mojo::MakeRequest(&interface_ptr));
-  return interface_ptr;
+mojo::PendingRemote<mojom::ConnectionDelegate>
+ConnectionAttemptImpl::GenerateRemote() {
+  return receiver_.BindNewPipeAndPassRemote();
 }
 
 void ConnectionAttemptImpl::OnConnectionAttemptFailure(

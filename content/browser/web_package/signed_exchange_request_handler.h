@@ -57,7 +57,8 @@ class SignedExchangeRequestHandler final : public NavigationLoaderInterceptor {
       network::mojom::URLLoaderPtr* loader,
       network::mojom::URLLoaderClientRequest* client_request,
       ThrottlingURLLoader* url_loader,
-      bool* skip_other_interceptors) override;
+      bool* skip_other_interceptors,
+      bool* will_return_unsafe_redirect) override;
 
  private:
   void StartResponse(const network::ResourceRequest& resource_request,

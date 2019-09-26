@@ -9,7 +9,6 @@
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sync/sessions/sync_sessions_web_contents_router.h"
 #include "components/favicon/content/content_favicon_driver.h"
-#include "components/favicon/core/features.h"
 #include "components/language/core/common/language_experiments.h"
 #include "components/sync_sessions/synced_tab_delegate.h"
 #include "content/public/browser/navigation_entry.h"
@@ -119,9 +118,7 @@ void SyncSessionsRouterTabHelper::OnFaviconUpdated(
     const GURL& icon_url,
     bool icon_url_changed,
     const gfx::Image& image) {
-  if (icon_url_changed &&
-      base::FeatureList::IsEnabled(
-          favicon::kNotifySessionsOfMostRecentIconUrlChange)) {
+  if (icon_url_changed) {
     NotifyRouter();
   }
 }

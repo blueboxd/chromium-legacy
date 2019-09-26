@@ -48,15 +48,14 @@ MultiDeviceSetupClientImpl::Factory::BuildInstance(
 
 MultiDeviceSetupClientImpl::MultiDeviceSetupClientImpl(
     service_manager::Connector* connector)
-    : host_status_observer_binding_(this),
-      feature_state_observer_binding_(this),
+    : feature_state_observer_binding_(this),
       remote_device_cache_(
           multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance()),
       host_status_with_device_(GenerateDefaultHostStatusWithDevice()),
       feature_states_map_(GenerateDefaultFeatureStatesMap()) {
   connector->BindInterface(mojom::kServiceName, &multidevice_setup_ptr_);
   multidevice_setup_ptr_->AddHostStatusObserver(
-      GenerateHostStatusObserverInterfacePtr());
+      GenerateHostStatusObserverRemote());
   multidevice_setup_ptr_->AddFeatureStateObserver(
       GenerateFeatureStatesObserverInterfacePtr());
   multidevice_setup_ptr_->GetHostStatus(
@@ -156,11 +155,9 @@ void MultiDeviceSetupClientImpl::OnGetEligibleHostDevicesCompleted(
   std::move(callback).Run(eligible_host_device_refs);
 }
 
-mojom::HostStatusObserverPtr
-MultiDeviceSetupClientImpl::GenerateHostStatusObserverInterfacePtr() {
-  mojom::HostStatusObserverPtr interface_ptr;
-  host_status_observer_binding_.Bind(mojo::MakeRequest(&interface_ptr));
-  return interface_ptr;
+mojo::PendingRemote<mojom::HostStatusObserver>
+MultiDeviceSetupClientImpl::GenerateHostStatusObserverRemote() {
+  return host_status_observer_receiver_.BindNewPipeAndPassRemote();
 }
 
 mojom::FeatureStateObserverPtr

@@ -107,6 +107,8 @@ uint32_t BufferFormatToVAFourCC(gfx::BufferFormat fmt) {
       return VA_FOURCC_BGRA;
     case gfx::BufferFormat::RGBX_8888:
       return VA_FOURCC_RGBX;
+    case gfx::BufferFormat::RGBA_8888:
+      return VA_FOURCC_RGBA;
     case gfx::BufferFormat::YVU_420:
       return VA_FOURCC_YV12;
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -1264,17 +1266,21 @@ bool VaapiWrapper::IsVppResolutionAllowed(const gfx::Size& size) {
 }
 
 // static
-bool VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
-    unsigned int rt_format,
-    uint32_t fourcc) {
-  if (!IsDecodingSupportedForInternalFormat(VAProfileJPEGBaseline, rt_format))
-    return false;
-
+bool VaapiWrapper::IsVppFormatSupported(uint32_t va_fourcc) {
   VASupportedProfiles::ProfileInfo profile_info;
   if (!VASupportedProfiles::Get().IsProfileSupported(
           kVideoProcess, VAProfileNone, &profile_info)) {
     return false;
   }
+  return base::Contains(profile_info.pixel_formats, va_fourcc);
+}
+
+// static
+bool VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
+    unsigned int rt_format,
+    uint32_t fourcc) {
+  if (!IsDecodingSupportedForInternalFormat(VAProfileJPEGBaseline, rt_format))
+    return false;
 
   // Workaround: for Mesa VAAPI driver, VPP only supports internal surface
   // format for 4:2:0 JPEG image.
@@ -1285,7 +1291,7 @@ bool VaapiWrapper::IsVppSupportedForJpegDecodedSurfaceToFourCC(
     return false;
   }
 
-  return base::Contains(profile_info.pixel_formats, fourcc);
+  return IsVppFormatSupported(fourcc);
 }
 
 // static
@@ -1311,6 +1317,7 @@ uint32_t VaapiWrapper::BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
     case gfx::BufferFormat::BGRX_8888:
     case gfx::BufferFormat::BGRA_8888:
     case gfx::BufferFormat::RGBX_8888:
+    case gfx::BufferFormat::RGBA_8888:
       return VA_RT_FORMAT_RGB32;
     case gfx::BufferFormat::YVU_420:
     case gfx::BufferFormat::YUV_420_BIPLANAR:
@@ -1324,6 +1331,7 @@ uint32_t VaapiWrapper::BufferFormatToVARTFormat(gfx::BufferFormat fmt) {
 bool VaapiWrapper::CreateContextAndSurfaces(
     unsigned int va_format,
     const gfx::Size& size,
+    SurfaceUsageHint surface_usage_hint,
     size_t num_surfaces,
     std::vector<VASurfaceID>* va_surfaces) {
   DVLOG(2) << "Creating " << num_surfaces << " surfaces";
@@ -1335,8 +1343,10 @@ bool VaapiWrapper::CreateContextAndSurfaces(
     return false;
   }
 
-  if (!CreateSurfaces(va_format, size, num_surfaces, va_surfaces))
+  if (!CreateSurfaces(va_format, size, surface_usage_hint, num_surfaces,
+                      va_surfaces)) {
     return false;
+  }
 
   const bool success = CreateContext(size);
   if (!success)
@@ -2069,6 +2079,7 @@ void VaapiWrapper::DestroyContext() {
 
 bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
                                   const gfx::Size& size,
+                                  SurfaceUsageHint usage_hint,
                                   size_t num_surfaces,
                                   std::vector<VASurfaceID>* va_surfaces) {
   DVLOG(2) << "Creating " << num_surfaces << " " << size.ToString()
@@ -2077,13 +2088,29 @@ bool VaapiWrapper::CreateSurfaces(unsigned int va_format,
   DCHECK(va_surfaces->empty());
 
   va_surfaces->resize(num_surfaces);
+  VASurfaceAttrib attribute{};
+  attribute.type = VASurfaceAttribUsageHint;
+  attribute.flags = VA_SURFACE_ATTRIB_SETTABLE;
+  attribute.value.type = VAGenericValueTypeInteger;
+  switch (usage_hint) {
+    case SurfaceUsageHint::kVideoDecoder:
+      attribute.value.value.i = VA_SURFACE_ATTRIB_USAGE_HINT_DECODER;
+      break;
+    case SurfaceUsageHint::kVideoEncoder:
+      attribute.value.value.i = VA_SURFACE_ATTRIB_USAGE_HINT_ENCODER;
+      break;
+    case SurfaceUsageHint::kGeneric:
+      attribute.value.value.i = VA_SURFACE_ATTRIB_USAGE_HINT_GENERIC;
+      break;
+  }
+
   VAStatus va_res;
   {
     base::AutoLock auto_lock(*va_lock_);
-    va_res = vaCreateSurfaces(va_display_, va_format,
-                              base::checked_cast<unsigned int>(size.width()),
-                              base::checked_cast<unsigned int>(size.height()),
-                              va_surfaces->data(), num_surfaces, NULL, 0);
+    va_res = vaCreateSurfaces(
+        va_display_, va_format, base::checked_cast<unsigned int>(size.width()),
+        base::checked_cast<unsigned int>(size.height()), va_surfaces->data(),
+        num_surfaces, &attribute, 1u);
   }
   VA_LOG_ON_ERROR(va_res, "vaCreateSurfaces failed");
   return va_res == VA_STATUS_SUCCESS;

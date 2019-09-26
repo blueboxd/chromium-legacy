@@ -14,6 +14,8 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 #include "url/gurl.h"
 
 class PrefService;
@@ -80,8 +82,10 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
 
   // mojom::MultiDeviceSetup:
   void SetAccountStatusChangeDelegate(
-      mojom::AccountStatusChangeDelegatePtr delegate) override;
-  void AddHostStatusObserver(mojom::HostStatusObserverPtr observer) override;
+      mojo::PendingRemote<mojom::AccountStatusChangeDelegate> delegate)
+      override;
+  void AddHostStatusObserver(
+      mojo::PendingRemote<mojom::HostStatusObserver> observer) override;
   void AddFeatureStateObserver(
       mojom::FeatureStateObserverPtr observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
@@ -136,7 +140,7 @@ class MultiDeviceSetupImpl : public MultiDeviceSetupBase,
       android_sms_app_installing_host_observer_;
   AuthTokenValidator* auth_token_validator_;
 
-  mojo::InterfacePtrSet<mojom::HostStatusObserver> host_status_observers_;
+  mojo::RemoteSet<mojom::HostStatusObserver> host_status_observers_;
   mojo::InterfacePtrSet<mojom::FeatureStateObserver> feature_state_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupImpl);

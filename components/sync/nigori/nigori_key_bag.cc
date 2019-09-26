@@ -26,9 +26,9 @@ sync_pb::NigoriKey NigoriToProto(const Nigori& nigori,
   DCHECK_EQ(key_name, ComputeNigoriName(nigori));
 
   sync_pb::NigoriKey proto;
-  proto.set_name(key_name);
-  nigori.ExportKeys(proto.mutable_user_key(), proto.mutable_encryption_key(),
-                    proto.mutable_mac_key());
+  proto.set_deprecated_name(key_name);
+  nigori.ExportKeys(proto.mutable_deprecated_user_key(),
+                    proto.mutable_encryption_key(), proto.mutable_mac_key());
   return proto;
 }
 
@@ -98,7 +98,12 @@ bool NigoriKeyBag::HasKey(const std::string& key_name) const {
 
 sync_pb::NigoriKey NigoriKeyBag::ExportKey(const std::string& key_name) const {
   DCHECK(HasKey(key_name));
-  return NigoriToProto(*nigori_map_.find(key_name)->second, key_name);
+  sync_pb::NigoriKey key =
+      NigoriToProto(*nigori_map_.find(key_name)->second, key_name);
+  // For exported keys, clients never consumed the key name, so it's safe to
+  // clear the deprecated field.
+  key.clear_deprecated_name();
+  return key;
 }
 
 std::string NigoriKeyBag::AddKey(std::unique_ptr<Nigori> nigori) {
@@ -114,7 +119,7 @@ std::string NigoriKeyBag::AddKey(std::unique_ptr<Nigori> nigori) {
 
 std::string NigoriKeyBag::AddKeyFromProto(const sync_pb::NigoriKey& key) {
   std::unique_ptr<Nigori> nigori = Nigori::CreateByImport(
-      key.user_key(), key.encryption_key(), key.mac_key());
+      key.deprecated_user_key(), key.encryption_key(), key.mac_key());
   if (!nigori) {
     return std::string();
   }

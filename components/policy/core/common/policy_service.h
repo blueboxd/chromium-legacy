@@ -97,16 +97,6 @@ class POLICY_EXPORT PolicyService {
   // |callback| is invoked once every source has reloaded its policies, and
   // GetPolicies() is guaranteed to return the updated values at that point.
   virtual void RefreshPolicies(const base::Closure& callback) = 0;
-
-  // When |initialization_throttled| is set to true, this PolicyService should
-  // return false in IsInitializationComplete for all domains and should not
-  // notify observers that it has initialized any domain. When
-  // |initialization_throttled| is set to false and the
-  // OnPolicyServiceInitialized notifications for some domains have not been
-  // sent out due to a previous call to this function with
-  // |initialization_throttled|=true, this function will notify observers that
-  // those domains are now initializted.
-  virtual void SetInitializationThrottled(bool initialization_throttled) = 0;
 };
 
 // A registrar that only observes changes to particular policies within the

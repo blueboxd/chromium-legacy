@@ -19,6 +19,7 @@ static_library("video_accelerator") {
   deps = [
     ":common",
     "//components/arc/mojom:media",
+    "//gpu/ipc/common:common",
     "//media",
     "//ui/ozone",
   ]

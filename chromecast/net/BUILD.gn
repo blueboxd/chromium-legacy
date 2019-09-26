@@ -71,6 +71,7 @@ cast_source_set("small_message_socket") {
   ]
 
   deps = [
+    ":io_buffer_pool",
     "//base",
   ]
 }
@@ -99,10 +100,12 @@ test("cast_net_unittests") {
   sources = [
     "fake_stream_socket_unittest.cc",
     "io_buffer_pool_unittest.cc",
+    "small_message_socket_unittest.cc",
   ]
 
   deps = [
     ":io_buffer_pool",
+    ":small_message_socket",
     ":test_support",
     "//base",
     "//base/test:run_all_unittests",

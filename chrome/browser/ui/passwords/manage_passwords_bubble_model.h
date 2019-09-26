@@ -100,7 +100,6 @@ class ManagePasswordsBubbleModel {
   const std::vector<autofill::PasswordForm>& local_credentials() const {
     return local_credentials_;
   }
-  const base::string16& manage_link() const { return manage_link_; }
   const base::string16& save_confirmation_text() const {
     return save_confirmation_text_;
   }
@@ -166,7 +165,6 @@ class ManagePasswordsBubbleModel {
   base::string16 title_;
   autofill::PasswordForm pending_password_;
   std::vector<autofill::PasswordForm> local_credentials_;
-  base::string16 manage_link_;
   base::string16 save_confirmation_text_;
   gfx::Range save_confirmation_link_range_;
 

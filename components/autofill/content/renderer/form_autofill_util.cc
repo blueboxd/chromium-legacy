@@ -1980,23 +1980,6 @@ void FillForm(const FormData& form, const WebFormControlElement& element) {
                            &FillFormField);
 }
 
-void FillFormIncludingNonFocusableElements(const FormData& form_data,
-                                           const WebFormElement& form_element) {
-  if (form_element.IsNull()) {
-    NOTREACHED();
-    return;
-  }
-
-  FieldFilterMask filter_mask = static_cast<FieldFilterMask>(
-      FILTER_DISABLED_ELEMENTS | FILTER_READONLY_ELEMENTS);
-  ForEachMatchingFormField(form_element,
-                           WebInputElement(),
-                           form_data,
-                           filter_mask,
-                           true, /* force override */
-                           &FillFormField);
-}
-
 void PreviewForm(const FormData& form, const WebFormControlElement& element) {
   WebFormElement form_element = element.Form();
   if (form_element.IsNull()) {

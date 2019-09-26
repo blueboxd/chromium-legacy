@@ -8,9 +8,9 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
-#include "base/memory/ptr_util.h"
 #include "base/optional.h"
 #include "chrome/browser/web_applications/web_app.h"
+#include "chrome/browser/web_applications/web_app_database.h"
 #include "chrome/browser/web_applications/web_app_database_factory.h"
 #include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/common/channel_info.h"
@@ -49,48 +49,13 @@ WebAppSyncBridge::WebAppSyncBridge(
 
 WebAppSyncBridge::~WebAppSyncBridge() = default;
 
-void WebAppSyncBridge::RegisterApp(std::unique_ptr<WebApp> web_app) {
-  registrar_->CountMutation();
-
-  const auto app_id = web_app->app_id();
-  DCHECK(!app_id.empty());
-  DCHECK(!registrar_->GetAppById(app_id));
-
-  // TODO(loyso): Expose CompletionCallback as RegisterApp argument.
-  database_->WriteWebApps({web_app.get()}, base::DoNothing());
-
-  registrar_->registry().emplace(app_id, std::move(web_app));
-}
-
-std::unique_ptr<WebApp> WebAppSyncBridge::UnregisterApp(const AppId& app_id) {
-  registrar_->CountMutation();
-
-  DCHECK(!app_id.empty());
-
-  // TODO(loyso): Expose CompletionCallback as UnregisterApp argument.
-  database_->DeleteWebApps({app_id}, base::DoNothing());
-
-  auto it = registrar_->registry().find(app_id);
-  DCHECK(it != registrar_->registry().end());
-
-  auto web_app = std::move(it->second);
-  registrar_->registry().erase(it);
-  return web_app;
-}
-
-void WebAppSyncBridge::UnregisterAll() {
-  registrar_->CountMutation();
-
-  // TODO(loyso): Expose CompletionCallback as UnregisterAll argument.
-  database_->DeleteWebApps(registrar_->GetAppIds(), base::DoNothing());
-  registrar_->registry().clear();
-}
-
 std::unique_ptr<WebAppRegistryUpdate> WebAppSyncBridge::BeginUpdate() {
   DCHECK(!is_in_update_);
   is_in_update_ = true;
 
-  return base::WrapUnique(new WebAppRegistryUpdate(registrar_));
+  database_->BeginTransaction();
+
+  return std::make_unique<WebAppRegistryUpdate>(registrar_);
 }
 
 void WebAppSyncBridge::CommitUpdate(
@@ -99,28 +64,24 @@ void WebAppSyncBridge::CommitUpdate(
   DCHECK(is_in_update_);
   is_in_update_ = false;
 
-  if (update == nullptr) {
+  if (update == nullptr || update->update_data().IsEmpty()) {
+    database_->CancelTransaction();
     std::move(callback).Run(/*success*/ true);
     return;
   }
 
-  WebAppRegistryUpdate::AppsToUpdate apps_to_update =
-      update->TakeAppsToUpdate();
+  CheckRegistryUpdateData(update->update_data());
 
-  if (apps_to_update.empty()) {
-    std::move(callback).Run(/*success*/ true);
-    return;
-  }
+  registrar_->CountMutation();
 
-#if DCHECK_IS_ON()
-  for (auto* app : apps_to_update)
-    DCHECK(registrar_->GetAppById(app->app_id()));
-#endif
+  std::unique_ptr<RegistryUpdateData> update_data = update->TakeUpdateData();
 
-  database_->WriteWebApps(
-      std::move(apps_to_update),
+  database_->CommitTransaction(
+      *update_data,
       base::BindOnce(&WebAppSyncBridge::OnDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+
+  UpdateRegistrar(std::move(update_data));
 }
 
 void WebAppSyncBridge::Init(base::OnceClosure callback) {
@@ -139,6 +100,35 @@ void WebAppSyncBridge::SetAppLaunchContainer(const AppId& app_id,
 
 WebAppSyncBridge* WebAppSyncBridge::AsWebAppSyncBridge() {
   return this;
+}
+
+void WebAppSyncBridge::CheckRegistryUpdateData(
+    const RegistryUpdateData& update_data) const {
+#if DCHECK_IS_ON()
+  for (const std::unique_ptr<WebApp>& web_app : update_data.apps_to_create)
+    DCHECK(!registrar_->GetAppById(web_app->app_id()));
+
+  for (const AppId& app_id : update_data.apps_to_delete)
+    DCHECK(registrar_->GetAppById(app_id));
+
+  for (const WebApp* web_app : update_data.apps_to_update)
+    DCHECK(registrar_->GetAppById(web_app->app_id()));
+#endif
+}
+
+void WebAppSyncBridge::UpdateRegistrar(
+    std::unique_ptr<RegistryUpdateData> update_data) {
+  for (std::unique_ptr<WebApp>& web_app : update_data->apps_to_create) {
+    AppId app_id = web_app->app_id();
+    DCHECK(!registrar_->GetAppById(app_id));
+    registrar_->registry().emplace(std::move(app_id), std::move(web_app));
+  }
+
+  for (const AppId& app_id : update_data->apps_to_delete) {
+    auto it = registrar_->registry().find(app_id);
+    DCHECK(it != registrar_->registry().end());
+    registrar_->registry().erase(it);
+  }
 }
 
 void WebAppSyncBridge::OnDatabaseOpened(base::OnceClosure callback,

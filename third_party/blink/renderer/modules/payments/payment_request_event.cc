@@ -13,7 +13,7 @@
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
 #include "third_party/blink/renderer/core/workers/worker_location.h"
-#include "third_party/blink/renderer/modules/payments/payment_method_change_response.h"
+#include "third_party/blink/renderer/modules/payments/payment_request_details_update.h"
 #include "third_party/blink/renderer/modules/payments/payments_validators.h"
 #include "third_party/blink/renderer/modules/service_worker/respond_with_observer.h"
 #include "third_party/blink/renderer/modules/service_worker/service_worker_global_scope.h"
@@ -181,12 +181,12 @@ ScriptPromise PaymentRequestEvent::changePaymentMethod(
     const String& method_name,
     const ScriptValue& method_details,
     ExceptionState& exception_state) {
-  if (change_payment_method_resolver_) {
+  if (change_payment_request_details_resolver_) {
     return ScriptPromise::RejectWithDOMException(
-        script_state,
-        MakeGarbageCollected<DOMException>(
-            DOMExceptionCode::kInvalidStateError,
-            "Waiting for response to the previous payment method change"));
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Waiting for response to the previous payment "
+                          "request details change"));
   }
 
   if (!payment_handler_host_.is_bound()) {
@@ -208,11 +208,106 @@ ScriptPromise PaymentRequestEvent::changePaymentMethod(
   method_data->method_name = method_name;
   payment_handler_host_->ChangePaymentMethod(
       std::move(method_data),
-      WTF::Bind(&PaymentRequestEvent::OnChangePaymentMethodResponse,
+      WTF::Bind(&PaymentRequestEvent::OnChangePaymentRequestDetailsResponse,
                 WrapWeakPersistent(this)));
-  change_payment_method_resolver_ =
+  change_payment_request_details_resolver_ =
       MakeGarbageCollected<ScriptPromiseResolver>(script_state);
-  return change_payment_method_resolver_->Promise();
+  return change_payment_request_details_resolver_->Promise();
+}
+
+ScriptPromise PaymentRequestEvent::changeShippingAddress(
+    ScriptState* script_state,
+    PaymentAddressInit* shipping_address) {
+  if (change_payment_request_details_resolver_) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Waiting for response to the previous payment "
+                          "request details change"));
+  }
+
+  if (!payment_handler_host_.is_bound()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "No corresponding PaymentRequest object found"));
+  }
+  if (!shipping_address) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
+                                           "Shipping address cannot be null"));
+  }
+
+  auto shipping_address_ptr = payments::mojom::blink::PaymentAddress::New();
+  shipping_address_ptr->country = shipping_address->country();
+  shipping_address_ptr->address_line = shipping_address->addressLine();
+  shipping_address_ptr->region = shipping_address->region();
+  shipping_address_ptr->city = shipping_address->city();
+  shipping_address_ptr->dependent_locality =
+      shipping_address->dependentLocality();
+  shipping_address_ptr->postal_code = shipping_address->postalCode();
+  shipping_address_ptr->sorting_code = shipping_address->sortingCode();
+  shipping_address_ptr->organization = shipping_address->organization();
+  shipping_address_ptr->recipient = shipping_address->recipient();
+  shipping_address_ptr->phone = shipping_address->phone();
+  String shipping_address_error;
+  if (!PaymentsValidators::IsValidShippingAddress(shipping_address_ptr,
+                                                  &shipping_address_error)) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state,
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
+                                           shipping_address_error));
+  }
+
+  payment_handler_host_->ChangeShippingAddress(
+      std::move(shipping_address_ptr),
+      WTF::Bind(&PaymentRequestEvent::OnChangePaymentRequestDetailsResponse,
+                WrapWeakPersistent(this)));
+  change_payment_request_details_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  return change_payment_request_details_resolver_->Promise();
+}
+
+ScriptPromise PaymentRequestEvent::changeShippingOption(
+    ScriptState* script_state,
+    const String& shipping_option_id) {
+  if (change_payment_request_details_resolver_) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "Waiting for response to the previous payment "
+                          "request details change"));
+  }
+
+  if (!payment_handler_host_.is_bound()) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kInvalidStateError,
+                          "No corresponding PaymentRequest object found"));
+  }
+
+  bool shipping_option_id_is_valid = false;
+  for (const auto& option : shipping_options_) {
+    if (option->id() == shipping_option_id) {
+      shipping_option_id_is_valid = true;
+      break;
+    }
+  }
+  if (!shipping_option_id_is_valid) {
+    return ScriptPromise::RejectWithDOMException(
+        script_state, MakeGarbageCollected<DOMException>(
+                          DOMExceptionCode::kSyntaxError,
+                          "Shipping option identifier is invalid"));
+  }
+
+  payment_handler_host_->ChangeShippingOption(
+      shipping_option_id,
+      WTF::Bind(&PaymentRequestEvent::OnChangePaymentRequestDetailsResponse,
+                WrapWeakPersistent(this)));
+  change_payment_request_details_resolver_ =
+      MakeGarbageCollected<ScriptPromiseResolver>(script_state);
+  return change_payment_request_details_resolver_->Promise();
 }
 
 void PaymentRequestEvent::respondWith(ScriptState* script_state,
@@ -237,17 +332,17 @@ void PaymentRequestEvent::Trace(blink::Visitor* visitor) {
   visitor->Trace(modifiers_);
   visitor->Trace(payment_options_);
   visitor->Trace(shipping_options_);
-  visitor->Trace(change_payment_method_resolver_);
+  visitor->Trace(change_payment_request_details_resolver_);
   visitor->Trace(observer_);
   ExtendableEvent::Trace(visitor);
 }
 
-void PaymentRequestEvent::OnChangePaymentMethodResponse(
-    payments::mojom::blink::PaymentMethodChangeResponsePtr response) {
-  if (!change_payment_method_resolver_)
+void PaymentRequestEvent::OnChangePaymentRequestDetailsResponse(
+    payments::mojom::blink::PaymentRequestDetailsUpdatePtr response) {
+  if (!change_payment_request_details_resolver_)
     return;
 
-  auto* dictionary = MakeGarbageCollected<PaymentMethodChangeResponse>();
+  auto* dictionary = MakeGarbageCollected<PaymentRequestDetailsUpdate>();
   if (!response->error.IsNull() && !response->error.IsEmpty()) {
     dictionary->setError(response->error);
   }
@@ -259,7 +354,8 @@ void PaymentRequestEvent::OnChangePaymentMethodResponse(
     dictionary->setTotal(total);
   }
 
-  ScriptState* script_state = change_payment_method_resolver_->GetScriptState();
+  ScriptState* script_state =
+      change_payment_request_details_resolver_->GetScriptState();
   ScriptState::Scope scope(script_state);
   ExceptionState exception_state(script_state->GetIsolate(),
                                  ExceptionState::kConstructionContext,
@@ -290,10 +386,10 @@ void PaymentRequestEvent::OnChangePaymentMethodResponse(
             script_state->GetIsolate(), script_state->GetContext(),
             response_modifier->method_data->stringified_data, exception_state);
         if (exception_state.HadException()) {
-          change_payment_method_resolver_->Reject(
+          change_payment_request_details_resolver_->Reject(
               MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
                                                  exception_state.Message()));
-          change_payment_method_resolver_.Clear();
+          change_payment_request_details_resolver_.Clear();
           return;
         }
         mod->setData(ScriptValue(script_state->GetIsolate(), parsed_value));
@@ -303,36 +399,83 @@ void PaymentRequestEvent::OnChangePaymentMethodResponse(
     dictionary->setModifiers(*modifiers);
   }
 
+  if (response->shipping_options) {
+    auto* shipping_options =
+        MakeGarbageCollected<HeapVector<Member<PaymentShippingOption>>>();
+    for (const auto& response_shipping_option : *response->shipping_options) {
+      if (!response_shipping_option)
+        continue;
+
+      auto* shipping_option = MakeGarbageCollected<PaymentShippingOption>();
+      auto* amount = MakeGarbageCollected<PaymentCurrencyAmount>();
+      amount->setCurrency(response_shipping_option->amount->currency);
+      amount->setValue(response_shipping_option->amount->value);
+      shipping_option->setAmount(amount);
+      shipping_option->setId(response_shipping_option->id);
+      shipping_option->setLabel(response_shipping_option->label);
+      shipping_option->setSelected(response_shipping_option->selected);
+      shipping_options->emplace_back(shipping_option);
+    }
+    dictionary->setShippingOptions(*shipping_options);
+  }
+
   if (response->stringified_payment_method_errors &&
       !response->stringified_payment_method_errors.IsEmpty()) {
     v8::Local<v8::Value> parsed_value = FromJSONString(
         script_state->GetIsolate(), script_state->GetContext(),
         response->stringified_payment_method_errors, exception_state);
     if (exception_state.HadException()) {
-      change_payment_method_resolver_->Reject(
+      change_payment_request_details_resolver_->Reject(
           MakeGarbageCollected<DOMException>(DOMExceptionCode::kSyntaxError,
                                              exception_state.Message()));
-      change_payment_method_resolver_.Clear();
+      change_payment_request_details_resolver_.Clear();
       return;
     }
     dictionary->setPaymentMethodErrors(
         ScriptValue(script_state->GetIsolate(), parsed_value));
   }
 
-  change_payment_method_resolver_->Resolve(
+  if (response->shipping_address_errors) {
+    auto* shipping_address_errors = MakeGarbageCollected<AddressErrors>();
+    shipping_address_errors->setAddressLine(
+        response->shipping_address_errors->address_line);
+    shipping_address_errors->setCity(response->shipping_address_errors->city);
+    shipping_address_errors->setCountry(
+        response->shipping_address_errors->country);
+    shipping_address_errors->setDependentLocality(
+        response->shipping_address_errors->dependent_locality);
+    shipping_address_errors->setOrganization(
+        response->shipping_address_errors->organization);
+    shipping_address_errors->setPhone(response->shipping_address_errors->phone);
+    shipping_address_errors->setPostalCode(
+        response->shipping_address_errors->postal_code);
+    shipping_address_errors->setRecipient(
+        response->shipping_address_errors->recipient);
+    shipping_address_errors->setRegion(
+        response->shipping_address_errors->region);
+    shipping_address_errors->setSortingCode(
+        response->shipping_address_errors->sorting_code);
+    dictionary->setShippingAddressErrors(shipping_address_errors);
+  }
+
+  change_payment_request_details_resolver_->Resolve(
       dictionary->hasError() || dictionary->hasTotal() ||
-              dictionary->hasModifiers() || dictionary->hasPaymentMethodErrors()
+              dictionary->hasModifiers() ||
+              dictionary->hasPaymentMethodErrors() ||
+              dictionary->hasShippingOptions() ||
+              dictionary->hasShippingAddressErrors()
           ? dictionary
           : nullptr);
-  change_payment_method_resolver_.Clear();
+  change_payment_request_details_resolver_.Clear();
 }
 
 void PaymentRequestEvent::OnHostConnectionError() {
-  if (change_payment_method_resolver_) {
-    change_payment_method_resolver_->Reject(MakeGarbageCollected<DOMException>(
-        DOMExceptionCode::kAbortError, "Browser process disconnected"));
+  if (change_payment_request_details_resolver_) {
+    change_payment_request_details_resolver_->Reject(
+        MakeGarbageCollected<DOMException>(DOMExceptionCode::kAbortError,
+                                           "Browser process disconnected"));
   }
-  change_payment_method_resolver_.Clear();
+  change_payment_request_details_resolver_.Clear();
   payment_handler_host_.reset();
 }
 

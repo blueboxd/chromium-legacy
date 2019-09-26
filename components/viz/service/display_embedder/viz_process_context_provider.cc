@@ -172,6 +172,7 @@ class GrContext* VizProcessContextProvider::GrContext() {
   gr_context_ = std::make_unique<skia_bindings::GrContextForGLES2Interface>(
       ContextGL(), ContextSupport(), ContextCapabilities(),
       max_resource_cache_bytes, max_glyph_cache_texture_bytes);
+  cache_controller_->SetGrContext(gr_context_->get());
   return gr_context_->get();
 }
 

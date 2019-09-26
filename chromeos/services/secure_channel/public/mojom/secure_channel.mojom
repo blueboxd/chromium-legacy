@@ -174,7 +174,7 @@ interface SecureChannel {
       chromeos.multidevice.mojom.RemoteDevice local_device,
       string feature,
       ConnectionPriority connection_priority,
-      ConnectionDelegate delegate);
+      pending_remote<ConnectionDelegate> delegate);
 
   // Initiates a connection to |device|, which is presumed to be listening
   // for incoming connections. This function attempts to create a connection
@@ -188,5 +188,5 @@ interface SecureChannel {
       chromeos.multidevice.mojom.RemoteDevice local_device,
       string feature,
       ConnectionPriority connection_priority,
-      ConnectionDelegate delegate);
+      pending_remote<ConnectionDelegate> delegate);
 };

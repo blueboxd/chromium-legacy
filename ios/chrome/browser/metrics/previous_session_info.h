@@ -90,6 +90,10 @@ enum class DeviceBatteryState {
 // is available.
 @property(nonatomic, strong, readonly) NSString* OSVersion;
 
+// The version of the previous session or nil if no previous session data is
+// available.
+@property(nonatomic, strong, readonly) NSString* previousSessionVersion;
+
 // The time at which the previous sesion ended. Note that this is only an
 // estimate and is updated whenever another value of the receiver is updated.
 @property(nonatomic, strong, readonly) NSDate* sessionEndTime;

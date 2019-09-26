@@ -708,19 +708,21 @@ void PeerConnectionTracker::RegisterPeerConnection(
   DCHECK(pc_handler);
   DCHECK_EQ(GetLocalIDForHandler(pc_handler), -1);
   DVLOG(1) << "PeerConnectionTracker::RegisterPeerConnection()";
-  PeerConnectionInfo info;
+  auto info = mojom::PeerConnectionInfo::New();
 
-  info.lid = GetNextLocalID();
-  info.rtc_configuration = SerializeConfiguration(config);
+  info->lid = GetNextLocalID();
+  info->rtc_configuration = SerializeConfiguration(config);
 
-  info.constraints = SerializeMediaConstraints(constraints);
+  info->constraints = SerializeMediaConstraints(constraints);
   if (frame)
-    info.url = frame->GetDocument().Url().GetString().Utf8();
+    info->url = frame->GetDocument().Url().GetString().Utf8();
   else
-    info.url = "test:testing";
-  SendTarget()->Send(new PeerConnectionTrackerHost_AddPeerConnection(info));
+    info->url = "test:testing";
 
-  peer_connection_local_id_map_.insert(std::make_pair(pc_handler, info.lid));
+  int32_t lid = info->lid;
+  GetPeerConnectionTrackerHost()->AddPeerConnection(std::move(info));
+
+  peer_connection_local_id_map_.insert(std::make_pair(pc_handler, lid));
 }
 
 void PeerConnectionTracker::UnregisterPeerConnection(

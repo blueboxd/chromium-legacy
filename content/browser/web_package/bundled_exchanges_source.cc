@@ -18,18 +18,39 @@ namespace content {
 
 // static
 std::unique_ptr<BundledExchangesSource>
-BundledExchangesSource::CreateFromTrustedFileUrl(const GURL& url) {
+BundledExchangesSource::MaybeCreateFromTrustedFileUrl(const GURL& url) {
 #if defined(OS_ANDROID)
   if (url.SchemeIs(url::kContentScheme)) {
     const base::FilePath file_path = base::FilePath(url.spec());
-    return base::WrapUnique(new BundledExchangesSource(true, file_path, url));
+    return base::WrapUnique(
+        new BundledExchangesSource(/*is_trusted=*/true, file_path, url));
   }
 #endif
   DCHECK(url.SchemeIsFile());
   base::FilePath file_path;
   if (!net::FileURLToFilePath(url, &file_path))
     return nullptr;
-  return base::WrapUnique(new BundledExchangesSource(true, file_path, url));
+  return base::WrapUnique(
+      new BundledExchangesSource(/*is_trusted=*/true, file_path, url));
+}
+
+// static
+std::unique_ptr<BundledExchangesSource>
+BundledExchangesSource::MaybeCreateFromFileUrl(const GURL& url) {
+  base::FilePath file_path;
+  if (url.SchemeIsFile()) {
+    if (net::FileURLToFilePath(url, &file_path)) {
+      return base::WrapUnique(
+          new BundledExchangesSource(/*is_trusted=*/false, file_path, url));
+    }
+  }
+#if defined(OS_ANDROID)
+  if (url.SchemeIs(url::kContentScheme)) {
+    return base::WrapUnique(new BundledExchangesSource(
+        /*is_trusted=*/false, base::FilePath(url.spec()), url));
+  }
+#endif
+  return nullptr;
 }
 
 std::unique_ptr<BundledExchangesSource> BundledExchangesSource::Clone() const {

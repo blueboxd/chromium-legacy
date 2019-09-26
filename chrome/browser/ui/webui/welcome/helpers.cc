@@ -107,7 +107,12 @@ bool CanShowSigninModule(const policy::PolicyMap& policies) {
          policy::BrowserSigninMode::kDisabled;
 }
 
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+// Welcome experiments depend on Google being the default search provider.
+static bool CanExperimentWithVariations(Profile* profile) {
+  return search::DefaultSearchProviderIsGoogle(profile);
+}
+
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
 // These feature flags are used to tie our experiment to specific studies.
 // go/navi-app-variation for details.
 // TODO(hcarmona): find a solution that scales better.
@@ -119,21 +124,14 @@ const base::Feature kNaviNTPVariationEnabled = {
     "NaviNTPVariationEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kNaviShortcutVariationEnabled = {
     "NaviShortcutVariationEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
 
-// Welcome experiments depend on Google being the default search provider.
-bool CanExperimentWithVariations(Profile* profile) {
-  return search::DefaultSearchProviderIsGoogle(profile);
-}
-
-#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
 // Get the group for users who onboard in this experiment.
 // Groups are:
 //   - Specified by study
 //   - The same for all experiments in study
 //   - Incremented with each new version
 //   - Not reused
-std::string GetOnboardingGroup(Profile* profile) {
+static std::string GetOnboardingGroup(Profile* profile) {
   if (!CanExperimentWithVariations(profile)) {
     // If we cannot run any variations, we bucket the users into a separate
     // synthetic group that we will ignore data for.
@@ -146,8 +144,10 @@ std::string GetOnboardingGroup(Profile* profile) {
   // "NaviOnboarding" match study name in configs.
   return base::GetFieldTrialParamValue("NaviOnboarding", "onboarding-group");
 }
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
 
 void JoinOnboardingGroup(Profile* profile) {
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
   PrefService* prefs = profile->GetPrefs();
 
   std::string group;
@@ -178,17 +178,17 @@ void JoinOnboardingGroup(Profile* profile) {
     base::FeatureList::IsEnabled(kNaviNTPVariationEnabled);
   else if (group.compare("ShortcutVariationSynthetic-008") == 0)
     base::FeatureList::IsEnabled(kNaviShortcutVariationEnabled);
-}
 #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING) && defined(OS_WIN)
+}
 
 bool IsEnabled(Profile* profile) {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return base::FeatureList::IsEnabled(welcome::kFeature) ||
          base::FeatureList::IsEnabled(welcome::kForceEnabled);
 #else
   // Allow enabling outside official builds for testing purposes.
   return base::FeatureList::IsEnabled(welcome::kForceEnabled);
-#endif  // defined(GOOGLE_CHROME_BUILD)
+#endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
 }
 
 bool IsAppVariationEnabled() {

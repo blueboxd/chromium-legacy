@@ -18,6 +18,7 @@
 #include "chrome/browser/web_applications/test/web_app_test.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/browser/web_applications/web_app_registrar.h"
+#include "chrome/browser/web_applications/web_app_registry_update.h"
 #include "chrome/browser/web_applications/web_app_sync_bridge.h"
 #include "components/sync/model/model_type_store.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -132,10 +133,6 @@ class WebAppDatabaseTest : public WebAppTest {
     return controller().database_factory();
   }
 
-  WebAppDatabase& database() {
-    return controller().sync_bridge().database_for_testing();
-  }
-
   WebAppRegistrar& registrar() { return controller().registrar(); }
 
   WebAppRegistrarMutable& mutable_registrar() {
@@ -157,19 +154,19 @@ TEST_F(WebAppDatabaseTest, WriteAndReadRegistry) {
 
   auto app = CreateWebApp(base_url, 0);
   auto app_id = app->app_id();
-  sync_bridge().RegisterApp(std::move(app));
+  controller().RegisterApp(std::move(app));
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 
   for (int i = 1; i <= num_apps; ++i) {
     auto extra_app = CreateWebApp(base_url, i);
-    sync_bridge().RegisterApp(std::move(extra_app));
+    controller().RegisterApp(std::move(extra_app));
   }
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 
-  sync_bridge().UnregisterApp(app_id);
+  controller().UnregisterApp(app_id);
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 
-  sync_bridge().UnregisterAll();
+  controller().UnregisterAll();
   EXPECT_TRUE(IsDatabaseRegistryEqualToRegistrar());
 }
 
@@ -180,37 +177,51 @@ TEST_F(WebAppDatabaseTest, WriteAndDeleteAppsWithCallbacks) {
   const int num_apps = 10;
   const std::string base_url = "https://example.com/path";
 
-  Registry registry;
-  WebAppDatabase::AppsToWrite apps_to_write;
-  std::vector<AppId> apps_to_delete;
+  RegistryUpdateData::AppsToCreate apps_to_create;
+  RegistryUpdateData::AppsToDelete apps_to_delete;
+  Registry expected_registry;
 
   for (int i = 0; i < num_apps; ++i) {
-    auto app = CreateWebApp(base_url, i);
-    apps_to_write.insert(app.get());
+    std::unique_ptr<WebApp> app = CreateWebApp(base_url, i);
     apps_to_delete.push_back(app->app_id());
-    registry.emplace(app->app_id(), std::move(app));
+    apps_to_create.push_back(std::move(app));
+
+    std::unique_ptr<WebApp> expected_app = CreateWebApp(base_url, i);
+    expected_registry.emplace(expected_app->app_id(), std::move(expected_app));
   }
 
   {
     base::RunLoop run_loop;
-    database().WriteWebApps(std::move(apps_to_write),
-                            base::BindLambdaForTesting([&](bool success) {
-                              EXPECT_TRUE(success);
-                              run_loop.Quit();
-                            }));
+
+    std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge().BeginUpdate();
+
+    for (std::unique_ptr<WebApp>& web_app : apps_to_create)
+      update->CreateApp(std::move(web_app));
+
+    sync_bridge().CommitUpdate(std::move(update),
+                               base::BindLambdaForTesting([&](bool success) {
+                                 EXPECT_TRUE(success);
+                                 run_loop.Quit();
+                               }));
     run_loop.Run();
 
     Registry registry_written = database_factory().ReadRegistry();
-    EXPECT_TRUE(IsRegistryEqual(registry_written, registry));
+    EXPECT_TRUE(IsRegistryEqual(registry_written, expected_registry));
   }
 
   {
     base::RunLoop run_loop;
-    database().DeleteWebApps(std::move(apps_to_delete),
-                             base::BindLambdaForTesting([&](bool success) {
-                               EXPECT_TRUE(success);
-                               run_loop.Quit();
-                             }));
+
+    std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge().BeginUpdate();
+
+    for (const AppId& app_id : apps_to_delete)
+      update->DeleteApp(app_id);
+
+    sync_bridge().CommitUpdate(std::move(update),
+                               base::BindLambdaForTesting([&](bool success) {
+                                 EXPECT_TRUE(success);
+                                 run_loop.Quit();
+                               }));
     run_loop.Run();
 
     Registry registry_deleted = database_factory().ReadRegistry();
@@ -252,7 +263,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithoutOptionalFields) {
   EXPECT_TRUE(app->scope().is_empty());
   EXPECT_FALSE(app->theme_color().has_value());
   EXPECT_TRUE(app->icons().empty());
-  sync_bridge().RegisterApp(std::move(app));
+  controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
   EXPECT_EQ(1UL, registry.size());
@@ -298,7 +309,7 @@ TEST_F(WebAppDatabaseTest, WebAppWithManyIcons) {
   }
   app->SetIcons(std::move(icons));
 
-  sync_bridge().RegisterApp(std::move(app));
+  controller().RegisterApp(std::move(app));
 
   Registry registry = database_factory().ReadRegistry();
   EXPECT_EQ(1UL, registry.size());

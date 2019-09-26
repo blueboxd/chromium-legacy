@@ -129,9 +129,6 @@ class AutofillField : public FormFieldData {
   // field).
   bool IsFieldFillable() const;
 
-  void set_default_value(const std::string& value) { default_value_ = value; }
-  const std::string& default_value() const { return default_value_; }
-
   void set_initial_value_hash(uint32_t value) { initial_value_hash_ = value; }
   base::Optional<uint32_t> initial_value_hash() { return initial_value_hash_; }
 
@@ -223,9 +220,6 @@ class AutofillField : public FormFieldData {
 
   // Used to track whether this field is a phone prefix or suffix.
   PhonePart phone_part_;
-
-  // The default value returned by the Autofill server.
-  std::string default_value_;
 
   // A low-entropy hash of the field's initial value before user-interactions or
   // automatic fillings. This field is used to detect static placeholders.

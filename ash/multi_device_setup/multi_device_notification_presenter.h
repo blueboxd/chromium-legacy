@@ -14,7 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/message_center/message_center_observer.h"
 
 namespace message_center {
@@ -128,8 +128,9 @@ class ASH_EXPORT MultiDeviceNotificationPresenter
 
   chromeos::multidevice_setup::mojom::MultiDeviceSetupPtr
       multidevice_setup_ptr_;
-  mojo::Binding<chromeos::multidevice_setup::mojom::AccountStatusChangeDelegate>
-      binding_;
+  mojo::Receiver<
+      chromeos::multidevice_setup::mojom::AccountStatusChangeDelegate>
+      receiver_{this};
 
   base::WeakPtrFactory<MultiDeviceNotificationPresenter> weak_ptr_factory_{
       this};

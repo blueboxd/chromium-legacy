@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom-blink.h"
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/web/web_embedded_worker.h"
 #include "third_party/blink/renderer/platform/scheduler/public/post_cross_thread_task.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
@@ -140,11 +141,14 @@ class ServiceWorkerInstalledScriptsManagerTest : public testing::Test {
   void CreateInstalledScriptsManager(
       mojom::blink::ServiceWorkerInstalledScriptsInfoPtr
           installed_scripts_info) {
+    auto installed_scripts_manager_params =
+        std::make_unique<WebServiceWorkerInstalledScriptsManagerParams>(
+            std::move(installed_scripts_info->installed_urls),
+            installed_scripts_info->manager_receiver.PassPipe(),
+            installed_scripts_info->manager_host_remote.PassPipe());
     installed_scripts_manager_ =
         std::make_unique<ServiceWorkerInstalledScriptsManager>(
-            std::move(installed_scripts_info->installed_urls),
-            std::move(installed_scripts_info->manager_receiver),
-            std::move(installed_scripts_info->manager_host_remote),
+            std::move(installed_scripts_manager_params),
             io_thread_->GetTaskRunner());
   }
 

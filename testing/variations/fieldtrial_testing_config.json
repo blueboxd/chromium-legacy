@@ -2431,16 +2431,18 @@
             ]
         }
     ],
-    "ExploreSites InitialCountries": [
+    "ExploreSitesDense": [
         {
             "platforms": [
                 "android"
             ],
             "experiments": [
                 {
-                    "name": "WithGrouped_20190620",
+                    "name": "WithDenseBottom",
                     "params": {
-                        "mostLikelyVariation": "groupedIcon",
+                        "denseVariation": "titleBottom",
+                        "exp": "games-top",
+                        "mostLikelyvariation": "groupedIcon",
                         "variation": "mostLikelyTile"
                     },
                     "enable_features": [
@@ -2831,11 +2833,11 @@
                 {
                     "name": "Enabled",
                     "params": {
-                        "AllocationSamplingRange": "16",
-                        "MaxAllocations": "70",
-                        "MaxMetadata": "255",
+                        "AllocationSamplingRange": "64",
+                        "MaxAllocations": "35",
+                        "MaxMetadata": "150",
                         "ProcessSamplingBoost2": "10",
-                        "ProcessSamplingProbability": "0.05"
+                        "ProcessSamplingProbability": "0.01"
                     },
                     "enable_features": [
                         "GwpAsanMalloc",
@@ -2859,7 +2861,7 @@
                         "MaxAllocations": "70",
                         "MaxMetadata": "255",
                         "ProcessSamplingBoost2": "10",
-                        "ProcessSamplingProbability": "0.05"
+                        "ProcessSamplingProbability": "0.015"
                     },
                     "enable_features": [
                         "GwpAsanMalloc",
@@ -4392,7 +4394,8 @@
                 "linux",
                 "mac",
                 "windows",
-                "android"
+                "android",
+                "android_webview"
             ],
             "experiments": [
                 {

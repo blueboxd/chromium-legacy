@@ -110,6 +110,8 @@ class COMPONENT_EXPORT(IPC) Channel : public Sender {
         const std::string& name,
         mojo::ScopedInterfaceEndpointHandle handle) = 0;
 
+    // Remove this after done with migrating all AsscoiatedInterfacePtr to
+    // AsscoiatedRemote.
     // Template helper to add an interface factory to this channel.
     template <typename Interface>
     using AssociatedInterfaceFactory =
@@ -120,6 +122,18 @@ class COMPONENT_EXPORT(IPC) Channel : public Sender {
       AddGenericAssociatedInterface(
           Interface::Name_,
           base::Bind(&BindAssociatedInterfaceRequest<Interface>, factory));
+    }
+
+    // Template helper to add an interface factory to this channel.
+    template <typename Interface>
+    using AssociatedReceiverFactory =
+        base::Callback<void(mojo::PendingAssociatedReceiver<Interface>)>;
+    template <typename Interface>
+    void AddAssociatedInterface(
+        const AssociatedReceiverFactory<Interface>& factory) {
+      AddGenericAssociatedInterface(
+          Interface::Name_,
+          base::Bind(&BindPendingAssociatedReceiver<Interface>, factory));
     }
 
     // Remove this after done with migrating all AsscoiatedInterfacePtr to
@@ -142,12 +156,22 @@ class COMPONENT_EXPORT(IPC) Channel : public Sender {
     }
 
    private:
+    // Remove this after done with migrating all AsscoiatedInterfacePtr to
+    // AsscoiatedRemote.
     template <typename Interface>
     static void BindAssociatedInterfaceRequest(
         const AssociatedInterfaceFactory<Interface>& factory,
         mojo::ScopedInterfaceEndpointHandle handle) {
       factory.Run(
           mojo::AssociatedInterfaceRequest<Interface>(std::move(handle)));
+    }
+
+    template <typename Interface>
+    static void BindPendingAssociatedReceiver(
+        const AssociatedReceiverFactory<Interface>& factory,
+        mojo::ScopedInterfaceEndpointHandle handle) {
+      factory.Run(
+          mojo::PendingAssociatedReceiver<Interface>(std::move(handle)));
     }
   };
 

@@ -20,7 +20,6 @@
 #include "components/autofill/content/renderer/field_data_manager.h"
 #include "components/autofill/content/renderer/form_tracker.h"
 #include "components/autofill/content/renderer/html_based_username_detector.h"
-#include "components/autofill/content/renderer/provisionally_saved_password_form.h"
 #include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
@@ -132,8 +131,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   void FillIntoFocusedField(bool is_password,
                             const base::string16& credential) override;
   void SetLoggingState(bool active) override;
-  void AutofillUsernameAndPasswordDataReceived(
-      const FormsPredictionsMap& predictions) override;
 
   // FormTracker::Observer
   void OnProvisionallySaveForm(const blink::WebFormElement& form,
@@ -458,10 +455,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
   // The chronologically last insertion into |web_input_to_password_info_|.
   WebInputToPasswordInfoMap::iterator last_supplied_password_info_iter_;
 
-  // Set if the user might be submitting a password form on the current page,
-  // but the submit may still fail (i.e. doesn't pass JavaScript validation).
-  ProvisionallySavedPasswordForm provisionally_saved_form_;
-
   // Map WebFormControlElement to the pair of:
   // 1) The most recent text that user typed or PasswordManager autofilled in
   // input elements. Used for storing username/password before JavaScript
@@ -488,6 +481,12 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // True indicates that a request for credentials has been sent to the store.
   bool sent_request_to_store_;
+
+  // True indicates that a form data has been sent to the browser process. Gets
+  // cleared when the form is submitted to indicate that the browser has already
+  // processed the form.
+  // TODO(crbug.com/949519): double check if we need this variable.
+  bool browser_has_form_to_process_ = false;
 
   // True indicates that a safe browsing reputation check has been triggered.
   bool checked_safe_browsing_reputation_;

@@ -47,31 +47,6 @@ bool NameInfo::operator==(const NameInfo& other) const {
          family_ == other.family_ && full_ == other.full_;
 }
 
-bool NameInfo::ParsedNamesAreEqual(const NameInfo& info) const {
-  return given_ == info.given_ && middle_ == info.middle_ &&
-         family_ == info.family_;
-}
-
-void NameInfo::OverwriteName(const NameInfo& new_name) {
-  if (!new_name.given_.empty())
-    given_ = new_name.given_;
-
-  // For the middle name, don't overwrite a full middle name with an initial.
-  if (!new_name.middle_.empty() &&
-      (middle_.size() <= 1 || new_name.middle_.size() > 1))
-    middle_ = new_name.middle_;
-
-  if (!new_name.family_.empty())
-    family_ = new_name.family_;
-
-  if (!new_name.full_.empty())
-    full_ = new_name.full_;
-}
-
-bool NameInfo::NamePartsAreEmpty() const {
-  return given_.empty() && middle_.empty() && family_.empty();
-}
-
 base::string16 NameInfo::GetRawInfo(ServerFieldType type) const {
   DCHECK_EQ(NAME, AutofillType(type).group());
   switch (type) {

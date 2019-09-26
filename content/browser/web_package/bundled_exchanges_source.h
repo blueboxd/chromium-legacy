@@ -21,7 +21,14 @@ namespace content {
 // A class to abstract required information to access a BundledExchanges.
 class CONTENT_EXPORT BundledExchangesSource {
  public:
-  static std::unique_ptr<BundledExchangesSource> CreateFromTrustedFileUrl(
+  // Used only for testing navigation to a trustable BundledExchanges source
+  // with --trustable-bundled-exchanges-file-url flag. Returns null when failed
+  // to get the filename from the |url|.
+  static std::unique_ptr<BundledExchangesSource> MaybeCreateFromTrustedFileUrl(
+      const GURL& url);
+  // Returns a new BundledExchangesSource for the |url| if the scheme of |url|
+  // is file: (or content: on Android). Otherwise returns null.
+  static std::unique_ptr<BundledExchangesSource> MaybeCreateFromFileUrl(
       const GURL& url);
 
   ~BundledExchangesSource() = default;
@@ -34,10 +41,6 @@ class CONTENT_EXPORT BundledExchangesSource {
   // the BundledExchanges as the origin for the content. Otherwise, we will use
   // the origin that serves the BundledExchanges itself. For instance, if the
   // BundledExchanges is in a local file system, file:// should be the origin.
-  //
-  // Currently this flag is always true because we only support
-  // trustable-bundled-exchanges-file loading. TODO(horo): Implement
-  // untrusted bundled exchanges file loading.
   bool is_trusted() const { return is_trusted_; }
 
   const base::FilePath& file_path() const { return file_path_; }

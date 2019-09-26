@@ -48,8 +48,6 @@ namespace media {
 
 namespace {
 
-constexpr uint32_t kInvalidVaFourcc = 0u;
-
 // UMA errors that the VaapiMjpegDecodeAccelerator class reports.
 enum VAJDAFailure {
   VAAPI_ERROR = 0,
@@ -103,32 +101,6 @@ static bool VerifyDataSize(const VAImage* image) {
   }
   return base::strict_cast<size_t>(image->data_size) >= min_size;
 }
-
-static uint32_t VideoPixelFormatToVAFourCC(VideoPixelFormat format) {
-  switch (format) {
-    case PIXEL_FORMAT_I420:
-      return VA_FOURCC_I420;
-    case PIXEL_FORMAT_YV12:
-      return VA_FOURCC_YV12;
-    case PIXEL_FORMAT_NV12:
-      return VA_FOURCC_NV12;
-    case PIXEL_FORMAT_NV21:
-      return VA_FOURCC_NV21;
-    case PIXEL_FORMAT_YUY2:
-      return VA_FOURCC_YUY2;
-    case PIXEL_FORMAT_ARGB:
-      return VA_FOURCC_ARGB;
-    case PIXEL_FORMAT_XRGB:
-      return VA_FOURCC_XRGB;
-    case PIXEL_FORMAT_ABGR:
-      return VA_FOURCC_ABGR;
-    case PIXEL_FORMAT_XBGR:
-      return VA_FOURCC_XBGR;
-    default:
-      return kInvalidVaFourcc;
-  }
-}
-
 }  // namespace
 
 void VaapiMjpegDecodeAccelerator::NotifyError(int32_t task_id, Error error) {

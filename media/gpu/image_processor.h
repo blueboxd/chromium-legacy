@@ -173,7 +173,7 @@ class MEDIA_GPU_EXPORT ImageProcessor {
   // "client thread".
 #if defined(OS_POSIX) || defined(OS_FUCHSIA)
   virtual bool ProcessInternal(scoped_refptr<VideoFrame> frame,
-                               LegacyFrameReadyCB cb) = 0;
+                               LegacyFrameReadyCB cb);
 #endif
   virtual bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,
                                scoped_refptr<VideoFrame> output_frame,

@@ -33,6 +33,8 @@ source_set("v4l2") {
     "v4l2_decode_surface_handler.h",
     "v4l2_device.cc",
     "v4l2_device.h",
+    "v4l2_device_poller.cc",
+    "v4l2_device_poller.h",
     "v4l2_h264_accelerator.cc",
     "v4l2_h264_accelerator.h",
     "v4l2_h264_accelerator_legacy.cc",

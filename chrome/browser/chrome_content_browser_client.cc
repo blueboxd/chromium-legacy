@@ -614,10 +614,6 @@
 #include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom.h"
 #endif
 
-#if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
-#include "third_party/blink/public/mojom/page/spatial_navigation.mojom.h"
-#endif
-
 using base::FileDescriptor;
 using content::BrowserThread;
 using content::BrowserURLHandler;
@@ -2004,16 +2000,6 @@ template <typename Interface>
 void ForwardToJavaFrameRegistry(mojo::InterfaceRequest<Interface> request,
                                 content::RenderFrameHost* render_frame_host) {
   render_frame_host->GetJavaInterfaces()->GetInterface(std::move(request));
-}
-
-template <typename Interface>
-void ForwardToJavaWebContentsRegistry(
-    mojo::InterfaceRequest<Interface> request,
-    content::RenderFrameHost* render_frame_host) {
-  content::WebContents* contents =
-      content::WebContents::FromRenderFrameHost(render_frame_host);
-  if (contents)
-    contents->GetJavaInterfaces()->GetInterface(std::move(request));
 }
 #endif
 
@@ -4453,13 +4439,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
     frame_interfaces_parameterized_->AddInterface(
         base::Bind(&payments::CreatePaymentRequest));
   }
-#endif
-
-#if defined(OS_ANDROID)
-#if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
-  frame_interfaces_parameterized_->AddInterface(base::Bind(
-      &ForwardToJavaWebContentsRegistry<blink::mojom::SpatialNavigationHost>));
-#endif
 #endif
 
   frame_interfaces_parameterized_->AddInterface(

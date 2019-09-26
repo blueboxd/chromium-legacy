@@ -400,6 +400,43 @@ SearchBox* GetSearchBoxForCurrentContext() {
   return SearchBox::Get(main_frame);
 }
 
+base::Value CreateAutocompleteMatches(
+    const std::vector<chrome::mojom::AutocompleteMatchPtr>& matches) {
+  base::Value list(base::Value::Type::LIST);
+  for (const chrome::mojom::AutocompleteMatchPtr& match : matches) {
+    base::Value dict(base::Value::Type::DICTIONARY);
+    dict.SetBoolKey("allowedToBeDefaultMatch",
+                    match->allowed_to_be_default_match);
+    dict.SetStringKey("contents", match->contents);
+    base::Value contents_class(base::Value::Type::LIST);
+    for (const auto& classification : match->contents_class) {
+      base::Value entry(base::Value::Type::DICTIONARY);
+      entry.SetIntKey("offset", classification->offset);
+      entry.SetIntKey("style", classification->style);
+      contents_class.Append(std::move(entry));
+    }
+    dict.SetKey("contentsClass", std::move(contents_class));
+    dict.SetStringKey("description", match->description);
+    base::Value description_class(base::Value::Type::LIST);
+    for (const auto& classification : match->description_class) {
+      base::Value entry(base::Value::Type::DICTIONARY);
+      entry.SetIntKey("offset", classification->offset);
+      entry.SetIntKey("style", classification->style);
+      description_class.Append(std::move(entry));
+    }
+    dict.SetKey("descriptionClass", std::move(description_class));
+    dict.SetStringKey("destinationUrl", match->destination_url);
+    dict.SetStringKey("inlineAutocompletion", match->inline_autocompletion);
+    dict.SetBoolKey("isSearchType", match->is_search_type);
+    dict.SetStringKey("fillIntoEdit", match->fill_into_edit);
+    dict.SetBoolKey("swapContentsAndDescription",
+                    match->swap_contents_and_description);
+    dict.SetStringKey("type", match->type);
+    list.Append(std::move(dict));
+  }
+  return list;
+}
+
 static const char kDispatchFocusChangedScript[] =
     "if (window.chrome &&"
     "    window.chrome.embeddedSearch &&"
@@ -441,6 +478,17 @@ static const char kDispatchQueryAutocompleteResult[] =
     "    typeof window.chrome.embeddedSearch.searchBox"
     "        .onqueryautocompletedone === 'function') {"
     "  window.chrome.embeddedSearch.searchBox.onqueryautocompletedone(%s);"
+    "  true;"
+    "}";
+
+static const char kDispatchDeleteAutocompleteMatchResult[] =
+    "if (window.chrome &&"
+    "    window.chrome.embeddedSearch &&"
+    "    window.chrome.embeddedSearch.searchBox &&"
+    "    window.chrome.embeddedSearch.searchBox.ondeleteautocompletematch &&"
+    "    typeof window.chrome.embeddedSearch.searchBox"
+    "        .ondeleteautocompletematch === 'function') {"
+    "  window.chrome.embeddedSearch.searchBox.ondeleteautocompletematch(%s);"
     "  true;"
     "}";
 
@@ -543,6 +591,7 @@ class SearchBoxBindings : public gin::Wrappable<SearchBoxBindings> {
   static bool IsKeyCaptureEnabled();
 
   // Handlers for JS functions.
+  static void DeleteAutocompleteMatch(int line);
   static void Paste(const std::string& text);
   static void QueryAutocomplete(const base::string16& input);
   static void StopAutocomplete(bool clear_result);
@@ -565,6 +614,8 @@ gin::ObjectTemplateBuilder SearchBoxBindings::GetObjectTemplateBuilder(
       .SetProperty("isFocused", &SearchBoxBindings::IsFocused)
       .SetProperty("isKeyCaptureEnabled",
                    &SearchBoxBindings::IsKeyCaptureEnabled)
+      .SetMethod("deleteAutocompleteMatch",
+                 &SearchBoxBindings::DeleteAutocompleteMatch)
       .SetMethod("paste", &SearchBoxBindings::Paste)
       .SetMethod("queryAutocomplete", &SearchBoxBindings::QueryAutocomplete)
       .SetMethod("stopAutocomplete", &SearchBoxBindings::StopAutocomplete)
@@ -588,6 +639,16 @@ bool SearchBoxBindings::IsKeyCaptureEnabled() {
   if (!search_box)
     return false;
   return search_box->is_key_capture_enabled();
+}
+
+// static
+void SearchBoxBindings::DeleteAutocompleteMatch(int line) {
+  DCHECK_GE(line, 0);
+  DCHECK_LE(line, 255);
+  SearchBox* search_box = GetSearchBoxForCurrentContext();
+  if (!search_box)
+    return;
+  search_box->DeleteAutocompleteMatch(line);
 }
 
 // static
@@ -1353,45 +1414,25 @@ void SearchBoxExtension::DispatchQueryAutocompleteResult(
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("input", result->input);
   dict.SetDoubleKey("status", static_cast<double>(result->status));
-
-  base::Value list(base::Value::Type::LIST);
-  for (const chrome::mojom::AutocompleteMatchPtr& match : result->matches) {
-    base::Value dict(base::Value::Type::DICTIONARY);
-    dict.SetBoolKey("allowedToBeDefaultMatch",
-                    match->allowed_to_be_default_match);
-    dict.SetStringKey("contents", match->contents);
-    base::Value contents_class(base::Value::Type::LIST);
-    for (const auto& classification : match->contents_class) {
-      base::Value entry(base::Value::Type::DICTIONARY);
-      entry.SetIntKey("offset", classification->offset);
-      entry.SetIntKey("style", classification->style);
-      contents_class.Append(std::move(entry));
-    }
-    dict.SetKey("contentsClass", std::move(contents_class));
-    dict.SetStringKey("description", match->description);
-    base::Value description_class(base::Value::Type::LIST);
-    for (const auto& classification : match->description_class) {
-      base::Value entry(base::Value::Type::DICTIONARY);
-      entry.SetIntKey("offset", classification->offset);
-      entry.SetIntKey("style", classification->style);
-      description_class.Append(std::move(entry));
-    }
-    dict.SetKey("descriptionClass", std::move(description_class));
-    dict.SetStringKey("destinationUrl", match->destination_url);
-    dict.SetStringKey("inlineAutocompletion", match->inline_autocompletion);
-    dict.SetBoolKey("isSearchType", match->is_search_type);
-    dict.SetStringKey("fillIntoEdit", match->fill_into_edit);
-    dict.SetBoolKey("swapContentsAndDescription",
-                    match->swap_contents_and_description);
-    dict.SetStringKey("type", match->type);
-    list.Append(std::move(dict));
-  }
-  dict.SetKey("matches", std::move(list));
+  dict.SetKey("matches", CreateAutocompleteMatches(result->matches));
 
   std::string json;
   base::JSONWriter::Write(dict, &json);
   Dispatch(frame, blink::WebString::FromUTF8(base::StringPrintf(
                       kDispatchQueryAutocompleteResult, json.c_str())));
+}
+
+void SearchBoxExtension::DispatchDeleteAutocompleteMatchResult(
+    blink::WebLocalFrame* frame,
+    chrome::mojom::DeleteAutocompleteMatchResultPtr result) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetBoolKey("success", result->success);
+  dict.SetKey("matches", CreateAutocompleteMatches(result->matches));
+
+  std::string json;
+  base::JSONWriter::Write(dict, &json);
+  Dispatch(frame, blink::WebString::FromUTF8(base::StringPrintf(
+                      kDispatchDeleteAutocompleteMatchResult, json.c_str())));
 }
 
 // static

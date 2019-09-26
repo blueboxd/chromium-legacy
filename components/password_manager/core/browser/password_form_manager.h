@@ -144,7 +144,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   std::vector<const autofill::PasswordForm*> GetFederatedMatches()
       const override;
   const autofill::PasswordForm& GetPendingCredentials() const override;
-  metrics_util::CredentialSourceType GetCredentialSource() override;
+  metrics_util::CredentialSourceType GetCredentialSource() const override;
   PasswordFormMetricsRecorder* GetMetricsRecorder() override;
   base::span<const InteractionsStats> GetInteractionsStats() const override;
   bool IsBlacklisted() const override;

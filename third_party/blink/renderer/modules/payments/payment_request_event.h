@@ -11,6 +11,7 @@
 #include "third_party/blink/public/mojom/payments/payment_handler_host.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_value.h"
 #include "third_party/blink/renderer/modules/event_modules.h"
+#include "third_party/blink/renderer/modules/payments/payment_address_init.h"
 #include "third_party/blink/renderer/modules/payments/payment_request_event_init.h"
 #include "third_party/blink/renderer/modules/service_worker/extendable_event.h"
 #include "third_party/blink/renderer/platform/heap/handle.h"
@@ -68,13 +69,17 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
                                     const String& method_name,
                                     const ScriptValue& method_details,
                                     ExceptionState& exception_state);
+  ScriptPromise changeShippingAddress(ScriptState*,
+                                      PaymentAddressInit* shippingAddress);
+  ScriptPromise changeShippingOption(ScriptState*,
+                                     const String& shipping_option_id);
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
 
   void Trace(blink::Visitor*) override;
 
  private:
-  void OnChangePaymentMethodResponse(
-      payments::mojom::blink::PaymentMethodChangeResponsePtr);
+  void OnChangePaymentRequestDetailsResponse(
+      payments::mojom::blink::PaymentRequestDetailsUpdatePtr);
   void OnHostConnectionError();
 
   String top_origin_;
@@ -87,7 +92,7 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   Member<PaymentOptions> payment_options_;
   HeapVector<Member<PaymentShippingOption>> shipping_options_;
 
-  Member<ScriptPromiseResolver> change_payment_method_resolver_;
+  Member<ScriptPromiseResolver> change_payment_request_details_resolver_;
   Member<RespondWithObserver> observer_;
   mojo::Remote<payments::mojom::blink::PaymentHandlerHost>
       payment_handler_host_;

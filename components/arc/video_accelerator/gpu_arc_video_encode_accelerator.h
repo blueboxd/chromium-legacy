@@ -14,6 +14,7 @@
 #include "components/arc/mojom/video_encode_accelerator.mojom.h"
 #include "components/arc/video_accelerator/video_frame_plane.h"
 #include "gpu/config/gpu_preferences.h"
+#include "gpu/ipc/common/gpu_memory_buffer_support.h"
 #include "media/video/video_encode_accelerator.h"
 
 namespace arc {
@@ -84,6 +85,7 @@ class GpuArcVideoEncodeAccelerator
   media::VideoEncodeAccelerator::Config::StorageType input_storage_type_;
   int32_t bitstream_buffer_serial_;
   std::unordered_map<uint32_t, UseBitstreamBufferCallback> use_bitstream_cbs_;
+  gpu::GpuMemoryBufferSupport support_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuArcVideoEncodeAccelerator);
 };

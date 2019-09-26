@@ -330,6 +330,10 @@ if (use_v4l2_codec || use_vaapi) {
     if (use_v4l2_codec) {
       deps += [ "//media/gpu/v4l2" ]
     }
+
+    if (use_vaapi) {
+      deps += [ "//media/gpu/vaapi" ]
+    }
   }
 
   source_set("image_processor_common") {

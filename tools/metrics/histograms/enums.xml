@@ -19270,7 +19270,8 @@ Called by update_net_error_codes.py.-->
   <int value="18" label="TERMINALPRIVATE_ONTERMINALRESIZE"/>
   <int value="19" label="DELETED_FILEMANAGERPRIVATE_REQUESTDIRECTORYREFRESH"/>
   <int value="20" label="BLUETOOTH_GETADAPTERSTATE"/>
-  <int value="21" label="FILEMANAGERPRIVATEINTERNAL_CANCELFILETRANSFERS"/>
+  <int value="21"
+      label="DELETED_FILEMANAGERPRIVATEINTERNAL_CANCELFILETRANSFERS"/>
   <int value="22" label="FILEMANAGERPRIVATEINTERNAL_PINDRIVEFILE"/>
   <int value="23" label="SOCKET_WRITE"/>
   <int value="24" label="OMNIBOX_SETDEFAULTSUGGESTION"/>
@@ -19750,7 +19751,7 @@ Called by update_net_error_codes.py.-->
   <int value="496" label="FILEMANAGERPRIVATE_ZOOM"/>
   <int value="497" label="DELETED_WEBVIEW_GO"/>
   <int value="498" label="WEBSTOREPRIVATE_ISININCOGNITOMODEFUNCTION"/>
-  <int value="499" label="FILEMANAGERPRIVATE_REQUESTACCESSTOKEN"/>
+  <int value="499" label="DELETED_FILEMANAGERPRIVATE_REQUESTACCESSTOKEN"/>
   <int value="500" label="DELETED_WEBVIEW_STOP"/>
   <int value="501" label="DELETED_WEBVIEW_RELOAD"/>
   <int value="502" label="DELETED_WEBVIEW_TERMINATE"/>
@@ -19958,7 +19959,8 @@ Called by update_net_error_codes.py.-->
   <int value="700" label="APP_CURRENTWINDOWINTERNAL_SETSIZECONSTRAINTS"/>
   <int value="701" label="BLUETOOTH_GETDEVICE"/>
   <int value="702" label="GCM_UNREGISTER"/>
-  <int value="703" label="FILEMANAGERPRIVATEINTERNAL_REQUESTDRIVESHARE"/>
+  <int value="703"
+      label="DELETED_FILEMANAGERPRIVATEINTERNAL_REQUESTDRIVESHARE"/>
   <int value="704" label="METRICSPRIVATE_RECORDSPARSEVALUE"/>
   <int value="705" label="HOTWORDPRIVATE_SETAUDIOLOGGINGENABLED"/>
   <int value="706" label="BLUETOOTHPRIVATE_SETADAPTERSTATE"/>
@@ -20525,7 +20527,7 @@ Called by update_net_error_codes.py.-->
   <int value="1236" label="AUTOMATIONINTERNAL_QUERYSELECTOR"/>
   <int value="1237" label="DEBUGGER_GETTARGETS"/>
   <int value="1238" label="NOTIFICATIONS_GETPERMISSIONLEVEL"/>
-  <int value="1239" label="FILEMANAGERPRIVATE_ENSUREFILEDOWNLOADED"/>
+  <int value="1239" label="DELETED_FILEMANAGERPRIVATE_ENSUREFILEDOWNLOADED"/>
   <int value="1240" label="FILEMANAGERPRIVATE_OPENSETTINGSSUBPAGE"/>
   <int value="1241"
       label="ENTERPRISEREPORTINGPRIVATE_UPLOADCHROMEDESKTOPREPORT"/>
@@ -61516,6 +61518,10 @@ Full version information for the fingerprint enum values:
   <int value="1" label="OPENED_RETRY">Opened after one or more retries</int>
   <int value="2" label="FAILED_IN_USE">Failed because file in use</int>
   <int value="3" label="FAILED_OTHER">Failed for other reason</int>
+</enum>
+
+<enum name="VAIPFailure">
+  <int value="0" label="VAAPI_VPP_ERROR"/>
 </enum>
 
 <enum name="VAJDAFailure">

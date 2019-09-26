@@ -5,6 +5,8 @@
 #include "content/common/mime_sniffing_throttle.h"
 
 #include "content/common/mime_sniffing_url_loader.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/mime_sniffer.h"
 
 namespace content {
@@ -37,19 +39,19 @@ void MimeSniffingThrottle::WillProcessResponse(
     // Pause the response until the mime type becomes ready.
     *defer = true;
 
-    network::mojom::URLLoaderPtr new_loader;
-    network::mojom::URLLoaderClientRequest new_loader_request;
+    mojo::PendingRemote<network::mojom::URLLoader> new_remote;
+    mojo::PendingReceiver<network::mojom::URLLoaderClient> new_receiver;
     network::mojom::URLLoaderPtr source_loader;
     network::mojom::URLLoaderClientRequest source_client_request;
     MimeSniffingURLLoader* mime_sniffing_loader;
-    std::tie(new_loader, new_loader_request, mime_sniffing_loader) =
+    std::tie(new_remote, new_receiver, mime_sniffing_loader) =
         MimeSniffingURLLoader::CreateLoader(weak_factory_.GetWeakPtr(),
                                             response_url, *response_head,
                                             task_runner_);
-    delegate_->InterceptResponse(std::move(new_loader),
-                                 std::move(new_loader_request), &source_loader,
-                                 &source_client_request);
-    mime_sniffing_loader->Start(std::move(source_loader),
+    delegate_->InterceptResponse(
+        network::mojom::URLLoaderPtr(std::move(new_remote)),
+        std::move(new_receiver), &source_loader, &source_client_request);
+    mime_sniffing_loader->Start(source_loader.PassInterface(),
                                 std::move(source_client_request));
   }
 }

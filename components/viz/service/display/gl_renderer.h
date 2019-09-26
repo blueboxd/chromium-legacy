@@ -69,6 +69,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   bool use_swap_with_bounds() const { return use_swap_with_bounds_; }
 
   void SwapBuffers(std::vector<ui::LatencyInfo> latency_info) override;
+  void SwapBuffersSkipped() override;
   void SwapBuffersComplete() override;
 
   void DidReceiveTextureInUseResponses(
@@ -386,6 +387,7 @@ class VIZ_SERVICE_EXPORT GLRenderer : public DirectRenderer {
   gpu::gles2::GLES2Interface* gl_;
   gpu::ContextSupport* context_support_;
   std::unique_ptr<ContextCacheController::ScopedVisibility> context_visibility_;
+  std::unique_ptr<ContextCacheController::ScopedBusy> context_busy_;
 
   TextureDeleter texture_deleter_;
   GLRendererCopier copier_;

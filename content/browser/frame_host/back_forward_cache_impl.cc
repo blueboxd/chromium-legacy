@@ -31,7 +31,7 @@ static constexpr int kDefaultTimeToLiveInBackForwardCacheInSeconds = 15;
 
 // Converts a WebSchedulerTrackedFeature to a bit for use in a bitmask.
 constexpr uint64_t ToFeatureBit(WebSchedulerTrackedFeature feature) {
-  return 1 << static_cast<uint32_t>(feature);
+  return 1ull << static_cast<uint32_t>(feature);
 }
 
 void SetPageFrozenImpl(
@@ -95,6 +95,8 @@ uint64_t GetDisallowedFeatures() {
       ToFeatureBit(WebSchedulerTrackedFeature::kIndexedDBConnection) |
       ToFeatureBit(WebSchedulerTrackedFeature::kWebGL) |
       ToFeatureBit(WebSchedulerTrackedFeature::kWebVR) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kWebXR) |
+      ToFeatureBit(WebSchedulerTrackedFeature::kSharedWorker) |
       ToFeatureBit(WebSchedulerTrackedFeature::kWebXR);
 
   uint64_t result = kAlwaysDisallowedFeatures;

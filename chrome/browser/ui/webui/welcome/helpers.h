@@ -23,13 +23,12 @@ class PolicyMap;
 class Profile;
 
 namespace welcome {
-#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
+
 // Onboarding groups are used for running field trials related to first run
 // experience. This will make a new profile join whatever group is currently
 // active. Any profile that is already part of an onboarding group will remain
 // in that group.
 void JoinOnboardingGroup(Profile* profile);
-#endif  // defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
 
 bool IsEnabled(Profile* profile);
 

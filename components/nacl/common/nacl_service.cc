@@ -12,7 +12,8 @@
 #include "content/public/common/service_names.mojom.h"
 #include "ipc/ipc.mojom.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/platform/platform_channel.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/platform/platform_handle.h"
@@ -68,7 +69,7 @@ service_manager::mojom::ServiceRequest ConnectToServiceManager(
 class NaClService : public service_manager::Service {
  public:
   NaClService(service_manager::mojom::ServiceRequest request,
-              IPC::mojom::ChannelBootstrapPtrInfo bootstrap,
+              mojo::PendingRemote<IPC::mojom::ChannelBootstrap> bootstrap,
               std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support)
       : service_binding_(this, std::move(request)),
         ipc_channel_bootstrap_(std::move(bootstrap)),
@@ -83,9 +84,9 @@ class NaClService : public service_manager::Service {
     if (source_info.identity.name() == content::mojom::kSystemServiceName &&
         interface_name == IPC::mojom::ChannelBootstrap::Name_ && !connected_) {
       connected_ = true;
-      mojo::FuseInterface(
-          IPC::mojom::ChannelBootstrapRequest(std::move(interface_pipe)),
-          std::move(ipc_channel_bootstrap_));
+      mojo::FusePipes(mojo::PendingReceiver<IPC::mojom::ChannelBootstrap>(
+                          std::move(interface_pipe)),
+                      std::move(ipc_channel_bootstrap_));
     } else {
       DVLOG(1) << "Ignoring request for unknown interface " << interface_name;
     }
@@ -93,7 +94,7 @@ class NaClService : public service_manager::Service {
 
  private:
   service_manager::ServiceBinding service_binding_;
-  IPC::mojom::ChannelBootstrapPtrInfo ipc_channel_bootstrap_;
+  mojo::PendingRemote<IPC::mojom::ChannelBootstrap> ipc_channel_bootstrap_;
   std::unique_ptr<mojo::core::ScopedIPCSupport> ipc_support_;
   bool connected_ = false;
 
@@ -109,9 +110,9 @@ std::unique_ptr<service_manager::Service> CreateNaClService(
       std::move(io_task_runner),
       mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST);
   auto invitation = EstablishMojoConnection();
-  IPC::mojom::ChannelBootstrapPtr bootstrap;
-  *ipc_channel = mojo::MakeRequest(&bootstrap).PassMessagePipe();
+  mojo::PendingRemote<IPC::mojom::ChannelBootstrap> bootstrap;
+  *ipc_channel = bootstrap.InitWithNewPipeAndPassReceiver().PassPipe();
   return std::make_unique<NaClService>(ConnectToServiceManager(&invitation),
-                                       bootstrap.PassInterface(),
+                                       std::move(bootstrap),
                                        std::move(ipc_support));
 }

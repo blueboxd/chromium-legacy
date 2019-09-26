@@ -111,10 +111,6 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
   }
 }
 
-bool FullCardRequest::IsGettingFullCard() const {
-  return !!request_;
-}
-
 void FullCardRequest::OnUnmaskPromptAccepted(
     const UserProvidedUnmaskDetails& user_response) {
   if (!user_response.exp_month.empty())

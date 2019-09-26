@@ -125,42 +125,72 @@ public class ExploreSitesCategoryCardViewTest {
     // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites=MAX_COLUMNS, numBlacklisted=0
     @Test
     @SmallTest
-    public void testTileQuantityOriginalPerfectRow() throws Exception {
+    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
+                    + "denseVariation/original"})
+    public void
+    testTileQuantityOriginalPerfectRow() throws Exception {
         runTileQuantityTest(4, 0, false, 1, 4);
     }
 
     // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_COLUMNS, numBlacklisted=0
     @Test
     @SmallTest
-    public void testTileQuantityOriginalImperfectRow() throws Exception {
+    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
+                    + "denseVariation/original"})
+    public void
+    testTileQuantityOriginalImperfectRow() throws Exception {
         runTileQuantityTest(5, 0, false, 1, 4);
     }
 
     // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites=MAX_COLUMNS, numBlacklisted>0
     @Test
     @SmallTest
-    public void testTileQuantityOriginalPerfectRowAfterBlacklisted() throws Exception {
+    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
+                    + "denseVariation/original"})
+    public void
+    testTileQuantityOriginalPerfectRowAfterBlacklisted() throws Exception {
         runTileQuantityTest(5, 1, false, 1, 4);
     }
 
     // Covers: IS_DENSE=false, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_COLUMNS, numBlacklisted>0
     @Test
     @SmallTest
-    public void testTileQuantityOriginalImperfectRowAfterBlacklisted() throws Exception {
+    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
+                    + "denseVariation/original"})
+    public void
+    testTileQuantityOriginalImperfectRowAfterBlacklisted() throws Exception {
         runTileQuantityTest(8, 2, false, 2, 6);
     }
 
     // Covers: IS_DENSE=true, MAX_ROWS=2, MAX_COLUMNS=4, numSites<MAX_COLUMNS, numBlacklisted>0
     @Test
     @SmallTest
-    public void testTileQuantityOriginalTooFewTilesAfterBlacklisted() throws Exception {
+    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
+                    + "denseVariation/original"})
+    public void
+    testTileQuantityOriginalTooFewTilesAfterBlacklisted() throws Exception {
         runTileQuantityTest(5, 4, false, 1, 1);
     }
 
     // Covers: IS_DENSE=true, MAX_ROWS=2, MAX_COLUMNS=4, numSites>MAX_TILE_COUNT, numBlacklisted=0
     @Test
     @SmallTest
-    public void testTileQuantityOriginalTooManyTiles() throws Exception {
+    @CommandLineFlags.Add({"enable-features=ExploreSites<FakeStudyName",
+            "force-fieldtrials=FakeStudyName/Enabled",
+            "force-fieldtrial-params=FakeStudyName.Enabled:variation/mostLikelyTile/"
+                    + "denseVariation/original"})
+    public void
+    testTileQuantityOriginalTooManyTiles() throws Exception {
         runTileQuantityTest(15, 0, false, 2, 8);
     }
 }

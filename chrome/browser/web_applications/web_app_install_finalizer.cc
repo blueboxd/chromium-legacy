@@ -131,7 +131,7 @@ void WebAppInstallFinalizer::FinalizeInstall(
 
   icon_manager_->WriteData(
       std::move(app_id), std::make_unique<WebApplicationInfo>(web_app_info),
-      base::BindOnce(&WebAppInstallFinalizer::OnDataWritten,
+      base::BindOnce(&WebAppInstallFinalizer::OnIconsDataWritten,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      std::move(web_app)));
 }
@@ -150,23 +150,40 @@ void WebAppInstallFinalizer::UninstallWebApp(const AppId& app_id,
   NOTIMPLEMENTED();
 }
 
-void WebAppInstallFinalizer::OnDataWritten(InstallFinalizedCallback callback,
-                                           std::unique_ptr<WebApp> web_app,
-                                           bool success) {
+void WebAppInstallFinalizer::OnIconsDataWritten(
+    InstallFinalizedCallback callback,
+    std::unique_ptr<WebApp> web_app,
+    bool success) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   if (!success) {
     std::move(callback).Run(AppId(), InstallResultCode::kWriteDataFailed);
     return;
   }
 
+  std::unique_ptr<WebAppRegistryUpdate> update = sync_bridge_->BeginUpdate();
+
   AppId app_id = web_app->app_id();
+  update->CreateApp(std::move(web_app));
 
-  sync_bridge_->RegisterApp(std::move(web_app));
-  // TODO(loyso): NotifyWebAppInstalled should be a part of RegisterApp.
+  sync_bridge_->CommitUpdate(
+      std::move(update),
+      base::BindOnce(&WebAppInstallFinalizer::OnDatabaseCommitCompleted,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback),
+                     std::move(app_id)));
+}
+
+void WebAppInstallFinalizer::OnDatabaseCommitCompleted(
+    InstallFinalizedCallback callback,
+    const AppId& app_id,
+    bool success) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if (!success) {
+    std::move(callback).Run(AppId(), InstallResultCode::kWriteDataFailed);
+    return;
+  }
+
   registrar().NotifyWebAppInstalled(app_id);
-
-  std::move(callback).Run(std::move(app_id),
-                          InstallResultCode::kSuccessNewInstall);
+  std::move(callback).Run(app_id, InstallResultCode::kSuccessNewInstall);
 }
 
 bool WebAppInstallFinalizer::CanCreateOsShortcuts() const {

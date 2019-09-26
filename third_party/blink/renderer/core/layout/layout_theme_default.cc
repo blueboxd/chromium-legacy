@@ -72,6 +72,7 @@ Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id,
   constexpr Color kDefaultButtonGrayColor(0xffdddddd);
   constexpr Color kDefaultButtonGrayColorDark(0xff444444);
   constexpr Color kDefaultMenuColor(0xfff7f7f7);
+  constexpr Color kDefaultMenuColorDark(0xff404040);
 
   if (css_value_id == CSSValueID::kButtonface) {
     if (UseMockTheme()) {
@@ -87,8 +88,14 @@ Color LayoutThemeDefault::SystemColor(CSSValueID css_value_id,
         return kDefaultButtonGrayColorDark;
     }
   }
-  if (css_value_id == CSSValueID::kMenu)
-    return kDefaultMenuColor;
+  if (css_value_id == CSSValueID::kMenu) {
+    switch (color_scheme) {
+      case WebColorScheme::kLight:
+        return kDefaultMenuColor;
+      case WebColorScheme::kDark:
+        return kDefaultMenuColorDark;
+    }
+  }
   return LayoutTheme::SystemColor(css_value_id, color_scheme);
 }
 

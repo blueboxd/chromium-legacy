@@ -24,8 +24,6 @@ bool PeerConnectionTrackerHost::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
 
   IPC_BEGIN_MESSAGE_MAP(PeerConnectionTrackerHost, message)
-    IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddPeerConnection,
-                        OnAddPeerConnection)
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddStandardStats,
                         OnAddStandardStats)
     IPC_MESSAGE_HANDLER(PeerConnectionTrackerHost_AddLegacyStats,
@@ -61,20 +59,27 @@ void PeerConnectionTrackerHost::OnChannelClosing() {
   base::PowerMonitor::RemoveObserver(this);
 }
 
-void PeerConnectionTrackerHost::OnAddPeerConnection(
-    const PeerConnectionInfo& info) {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+void PeerConnectionTrackerHost::AddPeerConnection(
+    mojom::PeerConnectionInfoPtr info) {
+  // TODO(crbug.com/787254): Remove the thread jump on all the methods
+  // here, and make sure the mojo pipe is bound on the proper thread instead.
+  if (!BrowserThread::CurrentlyOn(BrowserThread::UI)) {
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&PeerConnectionTrackerHost::AddPeerConnection,
+                                  this, std::move(info)));
+    return;
+  }
 
   WebRTCInternals* webrtc_internals = WebRTCInternals::GetInstance();
   if (webrtc_internals) {
     webrtc_internals->OnAddPeerConnection(
-        render_process_id_, peer_pid(), info.lid, info.url,
-        info.rtc_configuration, info.constraints);
+        render_process_id_, peer_pid(), info->lid, info->url,
+        info->rtc_configuration, info->constraints);
   }
 
   WebRtcEventLogger* const logger = WebRtcEventLogger::Get();
   if (logger) {
-    logger->PeerConnectionAdded(render_process_id_, info.lid,
+    logger->PeerConnectionAdded(render_process_id_, info->lid,
                                 base::OnceCallback<void(bool)>());
   }
 }

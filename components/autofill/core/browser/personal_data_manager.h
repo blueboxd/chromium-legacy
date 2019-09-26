@@ -268,12 +268,6 @@ class PersonalDataManager : public KeyedService,
   // Returns the profiles to suggest to the user, ordered by frecency.
   std::vector<AutofillProfile*> GetProfilesToSuggest() const;
 
-  // Remove profiles that whose |type| field is flagged as invalid, if Chrome
-  // is configured to not make suggestions based on invalid data.
-  static void MaybeRemoveInvalidSuggestions(
-      const AutofillType& type,
-      std::vector<AutofillProfile*>* profiles);
-
   // Returns Suggestions corresponding to the focused field's |type| and
   // |field_contents|, i.e. what the user has typed. |field_is_autofilled| is
   // true if the field has already been autofilled, and |field_types| stores the
@@ -338,12 +332,6 @@ class PersonalDataManager : public KeyedService,
       std::vector<std::unique_ptr<AutofillProfile>>* existing_profiles,
       const std::string& app_locale,
       std::vector<AutofillProfile>* merged_profiles);
-
-  // Returns true if |country_code| is a country that the user is likely to
-  // be associated with the user. More concretely, it checks if there are any
-  // addresses with this country or if the user's system timezone is in the
-  // given country.
-  virtual bool IsCountryOfInterest(const std::string& country_code) const;
 
   // Returns our best guess for the country a user is likely to use when
   // inputting a new address. The value is calculated once and cached, so it
@@ -709,13 +697,6 @@ class PersonalDataManager : public KeyedService,
   // refreshing in the end.
   void RemoveAutofillProfileByGUIDAndBlankCreditCardReference(
       const std::string& guid);
-
-  // Returns true if an address can be deleted in a major version upgrade.
-  // An address is deletable if it is unverified, and not used by a valid
-  // credit card as billing address, and not used for a long time(13 months).
-  bool IsAddressDeletable(
-      AutofillProfile* profile,
-      const std::unordered_set<std::string>& used_billing_address_guids);
 
   // Applies various fixes and cleanups on autofill addresses.
   void ApplyAddressFixesAndCleanups();

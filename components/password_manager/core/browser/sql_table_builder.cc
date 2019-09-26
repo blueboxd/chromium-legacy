@@ -172,47 +172,6 @@ void SQLTableBuilder::AddIndex(std::string name,
                       kInvalidVersion});
 }
 
-void SQLTableBuilder::RenameIndex(const std::string& old_name,
-                                  const std::string& new_name) {
-  auto old_index = FindLastIndexByName(old_name);
-  // Check that there is an index with the old name.
-  DCHECK(old_index != indices_.rend());
-  if (old_name == new_name)  // The easy case.
-    return;
-
-  // Check that there is no index with the new name.
-  DCHECK(FindLastIndexByName(new_name) == indices_.rend());
-  // Check that there is at least one sealed version.
-  DCHECK_NE(sealed_version_, kInvalidVersion);
-  // Check that the old index has been added before the last version was sealed.
-  DCHECK_LE(old_index->min_version, sealed_version_);
-  // Check that the old index has not been renamed or deleted yet.
-  DCHECK_EQ(old_index->max_version, kInvalidVersion);
-  // This index exists in the last sealed version. Therefore it cannot be
-  // just replaced, it needs to be kept for generating the migration code.
-  old_index->max_version = sealed_version_;
-  // Add the new index.
-  indices_.push_back(
-      {new_name, old_index->columns, sealed_version_ + 1, kInvalidVersion});
-}
-
-void SQLTableBuilder::DropIndex(const std::string& name) {
-  auto index = FindLastIndexByName(name);
-  // Check that an index with the name exists.
-  DCHECK(index != indices_.rend());
-  // Check that this index exists in the last sealed version and hasn't been
-  // renamed or deleted yet.
-  // Check that there is at least one sealed version.
-  DCHECK_NE(sealed_version_, kInvalidVersion);
-  // Check that the index has been added before the last version was sealed.
-  DCHECK_LE(index->min_version, sealed_version_);
-  // Check that the index has not been renamed or deleted yet.
-  DCHECK_EQ(index->max_version, kInvalidVersion);
-  // This index exists in the last sealed version. Therefore it cannot be
-  // just deleted, it needs to be kept for generating the migration code.
-  index->max_version = sealed_version_;
-}
-
 std::string SQLTableBuilder::ComputeConstraints(unsigned version) const {
   std::string primary_key;
   std::string unique_key;
@@ -331,30 +290,11 @@ std::vector<base::StringPiece> SQLTableBuilder::AllPrimaryKeyNames() const {
   return result;
 }
 
-std::vector<base::StringPiece> SQLTableBuilder::AllIndexNames() const {
-  DCHECK(IsVersionLastAndSealed(sealed_version_));
-  std::vector<base::StringPiece> result;
-  result.reserve(indices_.size());
-  for (const Index& index : indices_) {
-    if (IsIndexInLastVersion(index)) {
-      result.emplace_back(index.name);
-    }
-  }
-  return result;
-}
-
 size_t SQLTableBuilder::NumberOfColumns() const {
   DCHECK(IsVersionLastAndSealed(sealed_version_));
   return base::checked_cast<size_t>(std::count_if(
       columns_.begin(), columns_.end(),
       [this](const Column& column) { return IsColumnInLastVersion(column); }));
-}
-
-size_t SQLTableBuilder::NumberOfIndices() const {
-  DCHECK(IsVersionLastAndSealed(sealed_version_));
-  return base::checked_cast<size_t>(std::count_if(
-      indices_.begin(), indices_.end(),
-      [this](const Index& index) { return IsIndexInLastVersion(index); }));
 }
 
 bool SQLTableBuilder::MigrateToNextFrom(unsigned old_version,

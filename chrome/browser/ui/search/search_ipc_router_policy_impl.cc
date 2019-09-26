@@ -145,3 +145,7 @@ bool SearchIPCRouterPolicyImpl::ShouldProcessStopAutocomplete(
 bool SearchIPCRouterPolicyImpl::ShouldProcessBlocklistPromo() {
   return !is_incognito_ && search::IsInstantNTP(web_contents_);
 }
+
+bool SearchIPCRouterPolicyImpl::ShouldProcessDeleteAutocompleteMatch() {
+  return !is_incognito_ && search::IsInstantNTP(web_contents_);
+}

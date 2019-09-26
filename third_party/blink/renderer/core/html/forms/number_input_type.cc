@@ -262,8 +262,7 @@ bool NumberInputType::HasBadInput() const {
 }
 
 String NumberInputType::BadInputText() const {
-  return GetLocale().QueryString(
-      WebLocalizedString::kValidationBadInputForNumber);
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_BAD_INPUT_NUMBER);
 }
 
 String NumberInputType::RangeOverflowText(const Decimal& maximum) const {

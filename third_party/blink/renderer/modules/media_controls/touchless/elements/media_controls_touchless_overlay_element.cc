@@ -43,14 +43,14 @@ MediaControlsTouchlessOverlayElement::MediaControlsTouchlessOverlayElement(
   ParserAppendChild(volume_down_button);
 
   StringBuilder aria_label;
-  aria_label.Append(GetLocale().QueryString(
-      WebLocalizedString::kAXMediaTouchLessPlayPauseAction));
+  aria_label.Append(
+      GetLocale().QueryString(IDS_AX_MEDIA_TOUCHLESS_PLAY_PAUSE_ACTION));
   aria_label.Append(" ");
   aria_label.Append(
-      GetLocale().QueryString(WebLocalizedString::kAXMediaTouchLessSeekAction));
+      GetLocale().QueryString(IDS_AX_MEDIA_TOUCHLESS_SEEK_ACTION));
   aria_label.Append(" ");
-  aria_label.Append(GetLocale().QueryString(
-      WebLocalizedString::kAXMediaTouchLessVolumeAction));
+  aria_label.Append(
+      GetLocale().QueryString(IDS_AX_MEDIA_TOUCHLESS_VOLUME_ACTION));
   setAttribute(html_names::kAriaLabelAttr, aria_label.ToAtomicString());
 }
 

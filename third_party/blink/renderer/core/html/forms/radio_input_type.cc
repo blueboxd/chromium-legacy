@@ -21,6 +21,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/radio_input_type.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -60,8 +61,7 @@ bool RadioInputType::ValueMissing(const String&) const {
 }
 
 String RadioInputType::ValueMissingText() const {
-  return GetLocale().QueryString(
-      WebLocalizedString::kValidationValueMissingForRadio);
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_VALUE_MISSING_RADIO);
 }
 
 void RadioInputType::HandleClickEvent(MouseEvent& event) {

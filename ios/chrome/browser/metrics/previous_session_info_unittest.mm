@@ -45,6 +45,7 @@ TEST_F(PreviousSessionInfoTest, InitializationWithEmptyDefaults) {
   EXPECT_FALSE([sharedInstance didSeeMemoryWarningShortlyBeforeTerminating]);
   EXPECT_TRUE([sharedInstance isFirstSessionAfterUpgrade]);
   EXPECT_TRUE([sharedInstance isFirstSessionAfterLanguageChange]);
+  EXPECT_FALSE([sharedInstance previousSessionVersion]);
 }
 
 TEST_F(PreviousSessionInfoTest, InitializationWithSameLanguage) {
@@ -96,6 +97,7 @@ TEST_F(PreviousSessionInfoTest, InitializationWithSameVersionNoMemoryWarning) {
   // Checks the values.
   EXPECT_FALSE([sharedInstance didSeeMemoryWarningShortlyBeforeTerminating]);
   EXPECT_FALSE([sharedInstance isFirstSessionAfterUpgrade]);
+  EXPECT_NSEQ(currentVersion, [sharedInstance previousSessionVersion]);
 }
 
 TEST_F(PreviousSessionInfoTest, InitializationWithSameVersionMemoryWarning) {
@@ -118,6 +120,7 @@ TEST_F(PreviousSessionInfoTest, InitializationWithSameVersionMemoryWarning) {
   // Checks the values.
   EXPECT_TRUE([sharedInstance didSeeMemoryWarningShortlyBeforeTerminating]);
   EXPECT_FALSE([sharedInstance isFirstSessionAfterUpgrade]);
+  EXPECT_NSEQ(currentVersion, [sharedInstance previousSessionVersion]);
 }
 
 TEST_F(PreviousSessionInfoTest, InitializationDifferentVersionNoMemoryWarning) {
@@ -135,6 +138,7 @@ TEST_F(PreviousSessionInfoTest, InitializationDifferentVersionNoMemoryWarning) {
   // Checks the values.
   EXPECT_FALSE([sharedInstance didSeeMemoryWarningShortlyBeforeTerminating]);
   EXPECT_TRUE([sharedInstance isFirstSessionAfterUpgrade]);
+  EXPECT_NSEQ(@"Fake Version", [sharedInstance previousSessionVersion]);
 }
 
 TEST_F(PreviousSessionInfoTest, InitializationDifferentVersionMemoryWarning) {
@@ -155,6 +159,7 @@ TEST_F(PreviousSessionInfoTest, InitializationDifferentVersionMemoryWarning) {
   // Checks the values.
   EXPECT_TRUE([sharedInstance didSeeMemoryWarningShortlyBeforeTerminating]);
   EXPECT_TRUE([sharedInstance isFirstSessionAfterUpgrade]);
+  EXPECT_NSEQ(@"Fake Version", [sharedInstance previousSessionVersion]);
 }
 
 // Creates conditions that exist on the first app run and tests

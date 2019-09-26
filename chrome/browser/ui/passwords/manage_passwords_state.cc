@@ -129,7 +129,6 @@ void ManagePasswordsState::OnAutomaticPasswordSave(
     std::unique_ptr<PasswordFormManagerForUI> form_manager) {
   ClearData();
   form_manager_ = std::move(form_manager);
-  local_credentials_forms_.reserve(form_manager_->GetBestMatches().size());
   for (const auto& form : form_manager_->GetBestMatches()) {
     if (form.second->is_public_suffix_match)
       continue;

@@ -67,7 +67,6 @@
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/browser/interface_provider_filtering.h"
-#include "content/browser/keyboard_lock/keyboard_lock_service_impl.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/log_console_message.h"
@@ -81,7 +80,6 @@
 #include "content/browser/permissions/permission_controller_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
-#include "content/browser/picture_in_picture/picture_in_picture_service_impl.h"
 #include "content/browser/portal/portal.h"
 #include "content/browser/presentation/presentation_service_impl.h"
 #include "content/browser/push_messaging/push_messaging_manager.h"
@@ -2163,19 +2161,30 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
   if (frame_tree_node_->IsMainFrame())
     return destination;
 
-  GURL base_url;
+  // Check if everything above the frame being navigated is consistent. It's OK
+  // to skip checking the frame itself since it will be validated against
+  // |site_for_cookies| anyway.
+  return ComputeSiteForCookiesInternal(parent_);
+}
+
+GURL RenderFrameHostImpl::ComputeSiteForCookies() const {
+  return ComputeSiteForCookiesInternal(this);
+}
+
+GURL RenderFrameHostImpl::ComputeSiteForCookiesInternal(
+    const RenderFrameHostImpl* render_frame_host) const {
 #if defined(OS_ANDROID)
   // On Android, a base URL can be set for the frame. If this the case, it is
   // the URL to use for cookies.
   NavigationEntry* last_committed_entry =
       frame_tree_node_->navigator()->GetController()->GetLastCommittedEntry();
-  if (last_committed_entry)
-    base_url = last_committed_entry->GetBaseURLForDataURL();
+  if (last_committed_entry &&
+      !last_committed_entry->GetBaseURLForDataURL().is_empty()) {
+    return last_committed_entry->GetBaseURLForDataURL();
+  }
 #endif
-  // This is pre-navigation, but since at this point the frame being navigated
-  // is known to not be the main frame, it's correct post-navigation as well.
-  const GURL& top_document_url =
-      !base_url.is_empty() ? base_url : frame_tree_->root()->current_url();
+
+  const GURL& top_document_url = frame_tree_->root()->current_url();
 
   if (GetContentClient()
           ->browser()
@@ -2184,23 +2193,18 @@ GURL RenderFrameHostImpl::ComputeSiteForCookiesForNavigation(
     return top_document_url;
   }
 
-  // Check if everything above the frame being navigated is consistent. It's OK
-  // to skip checking the frame itself since it will be validated against
-  // |site_for_cookies| anyway.
-  const FrameTreeNode* current = frame_tree_node_->parent();
-  bool ancestors_are_same_site = true;
-  while (current && ancestors_are_same_site) {
+  // Make sure every ancestors are same-domain with the main document. Otherwise
+  // this will be a 3rd party cookie.
+  for (const RenderFrameHostImpl* rfh = render_frame_host; rfh;
+       rfh = rfh->parent_) {
     if (!net::registry_controlled_domains::SameDomainOrHost(
-            top_document_url,
-            current->current_frame_host()->GetLastCommittedOrigin(),
+            top_document_url, rfh->last_committed_origin_,
             net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      ancestors_are_same_site = false;
+      return GURL::EmptyGURL();
     }
-    current = current->parent();
   }
 
-  return (ancestors_are_same_site || !base_url.is_empty()) ? top_document_url
-                                                           : GURL::EmptyGURL();
+  return top_document_url;
 }
 
 void RenderFrameHostImpl::SetOriginOfNewFrame(
@@ -4328,13 +4332,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
     }
   }
 
-#if defined(OS_ANDROID)
-  if (base::FeatureList::IsEnabled(features::kWebNfc)) {
-    registry_->AddInterface<device::mojom::NFC>(base::Bind(
-        &RenderFrameHostImpl::BindNFCReceiver, base::Unretained(this)));
-  }
-#endif
-
   registry_->AddInterface(
       base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 
@@ -4392,9 +4389,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::Bind(&RemoterFactoryImpl::Bind,
                                      GetProcess()->GetID(), GetRoutingID()));
 #endif  // BUILDFLAG(ENABLE_MEDIA_REMOTING)
-
-  registry_->AddInterface(base::BindRepeating(
-      &KeyboardLockServiceImpl::CreateMojoService, base::Unretained(this)));
 
 #if !defined(OS_ANDROID)
   if (command_line->HasSwitch(
@@ -4471,9 +4465,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
                                               base::Unretained(this)));
-
-  registry_->AddInterface(base::BindRepeating(
-      &PictureInPictureServiceImpl::Create, base::Unretained(this)));
 
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     registry_->AddInterface(base::BindRepeating(
@@ -5209,6 +5200,10 @@ void RenderFrameHostImpl::CommitNavigation(
       bundled_exchanges_handle_->CreateURLLoaderFactory(
           pending_default_factory.InitWithNewPipeAndPassReceiver(),
           std::move(fallback_factory));
+      if (bundled_exchanges_handle_->base_url_override().is_valid()) {
+        commit_params->base_url_override_for_bundled_exchanges =
+            bundled_exchanges_handle_->base_url_override();
+      }
     }
 
     DCHECK(pending_default_factory);

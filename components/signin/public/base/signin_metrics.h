@@ -378,8 +378,6 @@ void LogExternalCcResultFetches(
 // Track when the current authentication error changed.
 void LogAuthError(const GoogleServiceAuthError& auth_error);
 
-void LogSigninConfirmHistogramValue(ConfirmationUsage action);
-
 // Records the AccountReconcilor |state| when GAIA returns a specific response.
 // If |state| is different than ACCOUNT_RECONCILOR_OK it means the user will
 // be shown a different set of accounts in the content-area and the settings UI.

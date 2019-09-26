@@ -2,6 +2,29 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//build/buildflag_header.gni")
+import("//ios/build/chrome_build.gni")
+
+buildflag_header("ios_multi_window_buildflags") {
+  header = "multi_window_buildflags.h"
+  header_dir = "ios/chrome/browser/ui/util"
+  flags = [ "IOS_MULTIWINDOW_ENABLED=$ios_enable_multi_window" ]
+}
+
+source_set("multiwindow_util") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  sources = [
+    "multi_window_support.h",
+    "multi_window_support.mm",
+  ]
+
+  deps = [
+    ":ios_multi_window_buildflags",
+    "//base",
+  ]
+}
+
 source_set("util") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [

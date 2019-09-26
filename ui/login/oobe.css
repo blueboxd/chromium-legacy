@@ -7,6 +7,7 @@
  */
 
 :root {
+  --google-grey-700: rgb(95, 99, 104);
   --shelf-area-height: 57px;
 }
 
@@ -151,15 +152,11 @@ span.bold {
 }
 
 #version-labels {
-  color: #fff;
-  font-size: 11px;
+  color: var(--google-grey-700);
+  font-size: 13px;
   margin: 10px;
   position: relative;
   text-align: end;
-  text-shadow:
-      0 0 4px rgba(0,0,0,.6),
-      0 1px 2px rgba(0,0,0,.8),
-      0 -1px 2px rgba(0,0,0,1);
   transition: all 500ms linear;
   z-index: 1;
 }

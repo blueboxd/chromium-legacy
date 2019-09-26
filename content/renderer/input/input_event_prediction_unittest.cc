@@ -438,4 +438,28 @@ TEST_F(InputEventPredictionTest, PredictedEventsTimeIntervalEqualRealEvents) {
   }
 }
 
+// Test that touch points other than kStateMove will not have predicted events.
+TEST_F(InputEventPredictionTest, TouchPointStates) {
+  SyntheticWebTouchEvent touch_event;
+  touch_event.PressPoint(10, 10);
+  HandleEvents(touch_event);
+  // Send 3 moves to initialize predictor.
+  for (int i = 0; i < 3; i++) {
+    touch_event.MovePoint(0, 10, 10);
+    HandleEvents(touch_event);
+  }
+
+  for (int state = blink::WebTouchPoint::kStateUndefined;
+       state <= blink::WebTouchPoint::kStateMax; state++) {
+    touch_event.touches[0].state =
+        static_cast<blink::WebTouchPoint::State>(state);
+    blink::WebCoalescedInputEvent coalesced_event(touch_event);
+    event_predictor_->HandleEvents(coalesced_event, ui::EventTimeForNow());
+    if (state == blink::WebTouchPoint::kStateMoved)
+      EXPECT_GT(coalesced_event.PredictedEventSize(), 0u);
+    else
+      EXPECT_EQ(coalesced_event.PredictedEventSize(), 0u);
+  }
+}
+
 }  // namespace content

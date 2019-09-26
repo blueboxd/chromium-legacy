@@ -50,7 +50,7 @@ scoped_refptr<VideoFrame> CreateDmabufVideoFrame(VideoPixelFormat format,
 class PlatformVideoFramePoolTest
     : public ::testing::TestWithParam<VideoPixelFormat> {
  public:
-  using DmabufId = PlatformVideoFramePool::DmabufId;
+  using DmabufId = DmabufVideoFramePool::DmabufId;
 
   PlatformVideoFramePoolTest()
       : task_environment_(base::test::TaskEnvironment::TimeSource::MOCK_TIME) {
@@ -86,8 +86,6 @@ class PlatformVideoFramePoolTest
     EXPECT_EQ(size, pool_->GetPoolSizeForTesting());
   }
 
-  DmabufId GetDmabufId(const VideoFrame& frame) { return &(frame.DmabufFds()); }
-
  protected:
   base::test::TaskEnvironment task_environment_;
   std::unique_ptr<PlatformVideoFramePool,
@@ -108,7 +106,7 @@ INSTANTIATE_TEST_SUITE_P(,
 TEST_F(PlatformVideoFramePoolTest, SingleFrameReuse) {
   SetFrameFormat(PIXEL_FORMAT_I420);
   scoped_refptr<VideoFrame> frame = GetFrame(10);
-  DmabufId id = GetDmabufId(*frame);
+  DmabufId id = DmabufVideoFramePool::GetDmabufId(*frame);
 
   // Clear frame reference to return the frame to the pool.
   frame = nullptr;
@@ -116,25 +114,25 @@ TEST_F(PlatformVideoFramePoolTest, SingleFrameReuse) {
 
   // Verify that the next frame from the pool uses the same memory.
   scoped_refptr<VideoFrame> new_frame = GetFrame(20);
-  EXPECT_EQ(id, GetDmabufId(*new_frame));
+  EXPECT_EQ(id, DmabufVideoFramePool::GetDmabufId(*new_frame));
 }
 
 TEST_F(PlatformVideoFramePoolTest, MultipleFrameReuse) {
   SetFrameFormat(PIXEL_FORMAT_I420);
   scoped_refptr<VideoFrame> frame1 = GetFrame(10);
   scoped_refptr<VideoFrame> frame2 = GetFrame(20);
-  DmabufId id1 = GetDmabufId(*frame1);
-  DmabufId id2 = GetDmabufId(*frame2);
+  DmabufId id1 = DmabufVideoFramePool::GetDmabufId(*frame1);
+  DmabufId id2 = DmabufVideoFramePool::GetDmabufId(*frame2);
 
   frame1 = nullptr;
   task_environment_.RunUntilIdle();
   frame1 = GetFrame(30);
-  EXPECT_EQ(id1, GetDmabufId(*frame1));
+  EXPECT_EQ(id1, DmabufVideoFramePool::GetDmabufId(*frame1));
 
   frame2 = nullptr;
   task_environment_.RunUntilIdle();
   frame2 = GetFrame(40);
-  EXPECT_EQ(id2, GetDmabufId(*frame2));
+  EXPECT_EQ(id2, DmabufVideoFramePool::GetDmabufId(*frame2));
 
   frame1 = nullptr;
   frame2 = nullptr;

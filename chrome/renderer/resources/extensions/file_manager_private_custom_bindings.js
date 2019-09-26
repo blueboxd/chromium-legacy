@@ -122,12 +122,6 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.pinDriveFile(url, pin, callback);
   });
 
-  apiFunctions.setHandleRequest(
-      'ensureFileDownloaded', function(entry, callback) {
-        var url = getEntryURL(entry);
-        fileManagerPrivateInternal.ensureFileDownloaded(url, callback);
-      });
-
   apiFunctions.setHandleRequest('executeTask',
       function(taskId, entries, callback) {
         var urls = entries.map(function(entry) {
@@ -157,25 +151,11 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.getDownloadUrl(url, callback);
   });
 
-  apiFunctions.setHandleRequest('requestDriveShare', function(
-        entry, shareType, callback) {
-    var url = getEntryURL(entry);
-    fileManagerPrivateInternal.requestDriveShare(url, shareType, callback);
-  });
-
   apiFunctions.setHandleRequest('setEntryTag', function(
         entry, visibility, key, value, callback) {
     var url = getEntryURL(entry);
     fileManagerPrivateInternal.setEntryTag(
         url, visibility, key, value, callback);
-  });
-
-  apiFunctions.setHandleRequest('cancelFileTransfers', function(
-        entries, callback) {
-    var urls = entries.map(function(entry) {
-      return getEntryURL(entry);
-    });
-    fileManagerPrivateInternal.cancelFileTransfers(urls, callback);
   });
 
   apiFunctions.setHandleRequest('startCopy', function(

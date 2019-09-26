@@ -79,8 +79,6 @@ class CORE_EXPORT ImageResourceContent final
   IntSize IntrinsicSize(
       RespectImageOrientationEnum should_respect_image_orientation) const;
 
-  void UpdateImageAnimationPolicy();
-
   void AddObserver(ImageResourceObserver*);
   void RemoveObserver(ImageResourceObserver*);
 
@@ -202,10 +200,10 @@ class CORE_EXPORT ImageResourceContent final
 
   enum NotifyFinishOption { kShouldNotifyFinish, kDoNotNotifyFinish };
 
-  // If not null, changeRect is the changed part of the image.
   void NotifyObservers(NotifyFinishOption, CanDeferInvalidation);
-  void MarkObserverFinished(ImageResourceObserver*);
+  void HandleObserverFinished(ImageResourceObserver*);
   void UpdateToLoadedContentStatus(ResourceStatus);
+  void UpdateImageAnimationPolicy();
 
   class ProhibitAddRemoveObserverInScope : public base::AutoReset<bool> {
    public:

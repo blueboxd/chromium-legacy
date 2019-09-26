@@ -26,6 +26,19 @@ namespace {
 constexpr uint32_t kInitialConnectionBackoffMs = 100;
 constexpr uint32_t kMaxConnectionBackoffMs = 30 * 1000;
 
+perfetto::DataSourceConfig EnsureGuardRailsAreFollowed(
+    const perfetto::DataSourceConfig& data_source_config) {
+  if (!data_source_config.enable_extra_guardrails() ||
+      data_source_config.chrome_config().privacy_filtering_enabled()) {
+    return data_source_config;
+  }
+  // If extra_guardrails is enabled then we have to ensure we have privacy
+  // filtering enabled.
+  perfetto::DataSourceConfig config = data_source_config;
+  config.mutable_chrome_config()->set_privacy_filtering_enabled(true);
+  return config;
+}
+
 uint32_t IncreaseBackoff(uint32_t current, uint32_t max) {
   return std::min(current * 2, max);
 }
@@ -44,7 +57,6 @@ AndroidSystemProducer::~AndroidSystemProducer() {
 }
 
 void AndroidSystemProducer::SetDisallowPreAndroidPieForTesting(bool disallow) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   disallow_pre_android_pie = disallow;
   if (!disallow && state_ == State::kUninitialized) {
     // If previously we would not have connected, we now attempt to connect
@@ -54,7 +66,6 @@ void AndroidSystemProducer::SetDisallowPreAndroidPieForTesting(bool disallow) {
 }
 
 void AndroidSystemProducer::SetNewSocketForTesting(const char* socket) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   socket_name_ = socket;
   if (state_ == State::kConnected) {
     // If we are fully connected we need to reset the service before we
@@ -67,6 +78,15 @@ void AndroidSystemProducer::SetNewSocketForTesting(const char* socket) {
     // |socket|.
     DisconnectWithReply(base::OnceClosure());
   }
+}
+
+void AndroidSystemProducer::ResetSequenceForTesting() {
+  // DETACH the sequence and then immediately attach it. This is needed in tests
+  // because we might be executing in a TaskEnvironment, but the global
+  // PerfettoTracedProcess (which contains a pointer to AndroidSystemProducer)
+  // will leak between tests, but the sequence will no longer be valid.
+  DETACH_FROM_SEQUENCE(sequence_checker_);
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 }
 
 bool AndroidSystemProducer::IsTracingActive() {
@@ -217,8 +237,9 @@ void AndroidSystemProducer::StartDataSource(
                 }
                 DCHECK_CALLED_ON_VALID_SEQUENCE(weak_ptr->sequence_checker_);
                 ++weak_ptr->data_sources_tracing_;
-                data_source->StartTracingWithID(id, weak_ptr.get(),
-                                                data_source_config);
+                data_source->StartTracingWithID(
+                    id, weak_ptr.get(),
+                    EnsureGuardRailsAreFollowed(data_source_config));
                 weak_ptr->service_->NotifyDataSourceStarted(id);
               },
               weak_ptr_factory_.GetWeakPtr(), data_source, id, config));

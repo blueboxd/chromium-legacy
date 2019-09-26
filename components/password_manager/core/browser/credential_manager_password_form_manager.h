@@ -49,7 +49,7 @@ class CredentialManagerPasswordFormManager : public PasswordFormManager {
   void OnFetchCompleted() override;
 
   // PasswordFormManagerForUI:
-  metrics_util::CredentialSourceType GetCredentialSource() override;
+  metrics_util::CredentialSourceType GetCredentialSource() const override;
 
  private:
   // Calls OnProvisionalSaveComplete on |delegate_|.

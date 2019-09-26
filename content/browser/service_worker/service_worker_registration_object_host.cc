@@ -148,11 +148,6 @@ void ServiceWorkerRegistrationObjectHost::OnUpdateFound(
 }
 
 void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
-  if (!CanServeRegistrationObjectHostMethods(
-          &callback, ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix)) {
-    return;
-  }
-
   // Run steps according to section 3.2.7:
   // https://w3c.github.io/ServiceWorker/#service-worker-registration-update
 
@@ -164,14 +159,18 @@ void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
   // passing |registration| as its argument.
   ServiceWorkerVersion* newest_worker = registration->GetNewestVersion();
 
+  if (!CanServeRegistrationObjectHostMethods(
+          &callback, ComposeUpdateErrorMessagePrefix(newest_worker))) {
+    return;
+  }
+
   // 3. If |newest_worker| is null, return a promise rejected with an
   // "InvalidStateError" DOMException and abort these steps.
   if (!newest_worker) {
     // This can happen if update() is called during initial script evaluation.
-    std::move(callback).Run(
-        blink::mojom::ServiceWorkerErrorType::kState,
-        std::string(ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix) +
-            std::string(ServiceWorkerConsts::kInvalidStateErrorMessage));
+    std::move(callback).Run(blink::mojom::ServiceWorkerErrorType::kState,
+                            ComposeUpdateErrorMessagePrefix(nullptr) +
+                                ServiceWorkerConsts::kInvalidStateErrorMessage);
     return;
   }
 
@@ -187,8 +186,8 @@ void ServiceWorkerRegistrationObjectHost::Update(UpdateCallback callback) {
       // install-event-handler.
       std::move(callback).Run(
           blink::mojom::ServiceWorkerErrorType::kState,
-          std::string(ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix) +
-              std::string(ServiceWorkerConsts::kInvalidStateErrorMessage));
+          ComposeUpdateErrorMessagePrefix(version) +
+              ServiceWorkerConsts::kInvalidStateErrorMessage);
       return;
     }
   }
@@ -248,7 +247,8 @@ void ServiceWorkerRegistrationObjectHost::Unregister(
     UnregisterCallback callback) {
   if (!CanServeRegistrationObjectHostMethods(
           &callback,
-          ServiceWorkerConsts::kServiceWorkerUnregisterErrorPrefix)) {
+          std::string(
+              ServiceWorkerConsts::kServiceWorkerUnregisterErrorPrefix))) {
     return;
   }
 
@@ -264,7 +264,8 @@ void ServiceWorkerRegistrationObjectHost::EnableNavigationPreload(
     EnableNavigationPreloadCallback callback) {
   if (!CanServeRegistrationObjectHostMethods(
           &callback,
-          ServiceWorkerConsts::kEnableNavigationPreloadErrorPrefix)) {
+          std::string(
+              ServiceWorkerConsts::kEnableNavigationPreloadErrorPrefix))) {
     return;
   }
 
@@ -287,7 +288,9 @@ void ServiceWorkerRegistrationObjectHost::EnableNavigationPreload(
 void ServiceWorkerRegistrationObjectHost::GetNavigationPreloadState(
     GetNavigationPreloadStateCallback callback) {
   if (!CanServeRegistrationObjectHostMethods(
-          &callback, ServiceWorkerConsts::kGetNavigationPreloadStateErrorPrefix,
+          &callback,
+          std::string(
+              ServiceWorkerConsts::kGetNavigationPreloadStateErrorPrefix),
           nullptr)) {
     return;
   }
@@ -302,7 +305,8 @@ void ServiceWorkerRegistrationObjectHost::SetNavigationPreloadHeader(
     SetNavigationPreloadHeaderCallback callback) {
   if (!CanServeRegistrationObjectHostMethods(
           &callback,
-          ServiceWorkerConsts::kSetNavigationPreloadHeaderErrorPrefix)) {
+          std::string(
+              ServiceWorkerConsts::kSetNavigationPreloadHeaderErrorPrefix))) {
     return;
   }
 
@@ -341,9 +345,9 @@ void ServiceWorkerRegistrationObjectHost::UpdateComplete(
     blink::mojom::ServiceWorkerErrorType error_type;
     GetServiceWorkerErrorTypeForRegistration(status, status_message,
                                              &error_type, &error_message);
-    std::move(callback).Run(
-        error_type,
-        ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix + error_message);
+    std::move(callback).Run(error_type, ComposeUpdateErrorMessagePrefix(
+                                            registration_->GetNewestVersion()) +
+                                            error_message);
     return;
   }
 
@@ -445,14 +449,12 @@ void ServiceWorkerRegistrationObjectHost::OnConnectionError() {
 template <typename CallbackType, typename... Args>
 bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
     CallbackType* callback,
-    const char* error_prefix,
+    const std::string& error_prefix,
     Args... args) {
   if (!context_) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kAbort,
-        std::string(error_prefix) +
-            std::string(ServiceWorkerConsts::kShutdownErrorMessage),
-        args...);
+        error_prefix + ServiceWorkerConsts::kShutdownErrorMessage, args...);
     return false;
   }
 
@@ -461,8 +463,7 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
   if (provider_host_->url().is_empty()) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kSecurity,
-        std::string(error_prefix) +
-            std::string(ServiceWorkerConsts::kNoDocumentURLErrorMessage),
+        error_prefix + ServiceWorkerConsts::kNoDocumentURLErrorMessage,
         args...);
     return false;
   }
@@ -477,13 +478,24 @@ bool ServiceWorkerRegistrationObjectHost::CanServeRegistrationObjectHostMethods(
   if (!provider_host_->AllowServiceWorker(registration_->scope(), GURL())) {
     std::move(*callback).Run(
         blink::mojom::ServiceWorkerErrorType::kDisabled,
-        std::string(error_prefix) +
-            std::string(ServiceWorkerConsts::kUserDeniedPermissionMessage),
+        error_prefix + ServiceWorkerConsts::kUserDeniedPermissionMessage,
         args...);
     return false;
   }
 
   return true;
+}
+
+std::string
+ServiceWorkerRegistrationObjectHost::ComposeUpdateErrorMessagePrefix(
+    const ServiceWorkerVersion* version_to_update) const {
+  DCHECK(registration_);
+  const char* script_url = version_to_update
+                               ? version_to_update->script_url().spec().c_str()
+                               : "Unknown";
+  return base::StringPrintf(
+      ServiceWorkerConsts::kServiceWorkerUpdateErrorPrefix,
+      registration_->scope().spec().c_str(), script_url);
 }
 
 }  // namespace content

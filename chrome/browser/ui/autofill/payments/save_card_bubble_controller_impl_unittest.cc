@@ -142,7 +142,7 @@ class SaveCardBubbleControllerImplTest : public BrowserWithTestWindowTest {
 
   void ClickSaveButton() {
     controller()->OnSaveButton({});
-    if (controller()->ShouldShowCardSavedAnimation())
+    if (controller()->ShouldShowCardSavedLabelAnimation())
       controller()->OnAnimationEnded();
   }
 

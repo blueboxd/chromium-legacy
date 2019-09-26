@@ -369,6 +369,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
 
   if (!vaapi_wrapper_->CreateContextAndSurfaces(
           kVaSurfaceFormat, coded_size_,
+          VaapiWrapper::SurfaceUsageHint::kVideoEncoder,
           (num_frames_in_flight + 1) * va_surfaces_per_video_frame_,
           &available_va_surface_ids_)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed creating VASurfaces");

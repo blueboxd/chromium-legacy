@@ -25,6 +25,7 @@
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "media/gpu/media_gpu_export.h"
+#include "media/gpu/v4l2/v4l2_device_poller.h"
 #include "media/video/video_decode_accelerator.h"
 #include "media/video/video_encode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
@@ -539,6 +540,19 @@ class MEDIA_GPU_EXPORT V4L2Device
   virtual bool IsJpegDecodingSupported() = 0;
   virtual bool IsJpegEncodingSupported() = 0;
 
+  // Start polling on this V4L2Device. |event_callback| will be posted to
+  // the caller's sequence if a buffer is ready to be dequeued and/or a V4L2
+  // event has been posted. |error_callback| will be posted to the client's
+  // sequence if a polling error has occurred.
+  bool StartPolling(V4L2DevicePoller::EventCallback event_callback,
+                    base::RepeatingClosure error_callback);
+  // Stop polling this V4L2Device if polling was active. No new events will
+  // be posted after this method has returned.
+  bool StopPolling();
+  // Schedule a polling event if polling is enabled. This method is intended
+  // to be called from V4L2Queue, clients should not need to call it directly.
+  void SchedulePoll();
+
  protected:
   friend class base::RefCountedThreadSafe<V4L2Device>;
   V4L2Device();
@@ -562,6 +576,10 @@ class MEDIA_GPU_EXPORT V4L2Device
   // Callback that is called upon a queue's destruction, to cleanup its pointer
   // in queues_.
   void OnQueueDestroyed(v4l2_buf_type buf_type);
+
+  // Used if EnablePolling() is called to signal the user that an event
+  // happened or a buffer is ready to be dequeued.
+  std::unique_ptr<V4L2DevicePoller> device_poller_;
 
   SEQUENCE_CHECKER(client_sequence_checker_);
 };

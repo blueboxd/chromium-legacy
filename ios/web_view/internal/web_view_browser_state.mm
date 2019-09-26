@@ -61,7 +61,8 @@
 #endif
 
 namespace {
-const char kPreferencesFilename[] = FILE_PATH_LITERAL("Preferences");
+const char kPreferencesFilename[] =
+    FILE_PATH_LITERAL("ChromeWebViewPreferences");
 }
 
 namespace ios_web_view {

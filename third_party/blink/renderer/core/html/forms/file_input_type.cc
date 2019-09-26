@@ -148,9 +148,8 @@ bool FileInputType::ValueMissing(const String& value) const {
 
 String FileInputType::ValueMissingText() const {
   return GetLocale().QueryString(
-      GetElement().Multiple()
-          ? WebLocalizedString::kValidationValueMissingForMultipleFile
-          : WebLocalizedString::kValidationValueMissingForFile);
+      GetElement().Multiple() ? IDS_FORM_VALIDATION_VALUE_MISSING_MULTIPLE_FILE
+                              : IDS_FORM_VALIDATION_VALUE_MISSING_FILE);
 }
 
 void FileInputType::HandleDOMActivateEvent(Event& event) {

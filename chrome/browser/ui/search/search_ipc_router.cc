@@ -469,6 +469,18 @@ void SearchIPCRouter::BlocklistPromo(const std::string& promo_id) {
   delegate_->BlocklistPromo(promo_id);
 }
 
+void SearchIPCRouter::DeleteAutocompleteMatch(
+    uint8_t line,
+    chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback callback) {
+  if (!policy_->ShouldProcessDeleteAutocompleteMatch()) {
+    std::move(callback).Run(chrome::mojom::DeleteAutocompleteMatchResult::New(
+        false, std::vector<chrome::mojom::AutocompleteMatchPtr>()));
+    return;
+  }
+
+  delegate_->DeleteAutocompleteMatch(line, std::move(callback));
+}
+
 void SearchIPCRouter::set_delegate_for_testing(Delegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;

@@ -73,13 +73,24 @@ class WebAppRegistrarTest : public WebAppTest {
   std::set<AppId> RegisterAppsForTesting(Registry registry) {
     std::set<AppId> ids;
 
+    ScopedRegistryUpdate update(&sync_bridge());
     for (auto& kv : registry) {
       ids.insert(kv.first);
-      sync_bridge().RegisterApp(std::move(kv.second));
+      update->CreateApp(std::move(kv.second));
     }
 
     return ids;
   }
+
+  void RegisterApp(std::unique_ptr<WebApp> web_app) {
+    controller().RegisterApp(std::move(web_app));
+  }
+
+  void UnregisterApp(const AppId& app_id) {
+    controller().UnregisterApp(app_id);
+  }
+
+  void UnregisterAll() { controller().UnregisterAll(); }
 
   AppId InitRegistrarWithApp(std::unique_ptr<WebApp> app) {
     DCHECK(registrar().is_empty());
@@ -175,7 +186,7 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id2));
   EXPECT_TRUE(registrar().is_empty());
 
-  sync_bridge().RegisterApp(std::move(web_app));
+  RegisterApp(std::move(web_app));
   EXPECT_TRUE(registrar().IsInstalled(app_id));
   const WebApp* app = registrar().GetAppById(app_id);
 
@@ -189,13 +200,13 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id2));
   EXPECT_FALSE(registrar().is_empty());
 
-  sync_bridge().RegisterApp(std::move(web_app2));
+  RegisterApp(std::move(web_app2));
   EXPECT_TRUE(registrar().IsInstalled(app_id2));
   const WebApp* app2 = registrar().GetAppById(app_id2);
   EXPECT_EQ(app_id2, app2->app_id());
   EXPECT_FALSE(registrar().is_empty());
 
-  sync_bridge().UnregisterApp(app_id);
+  UnregisterApp(app_id);
   EXPECT_FALSE(registrar().IsInstalled(app_id));
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id));
   EXPECT_FALSE(registrar().is_empty());
@@ -205,7 +216,7 @@ TEST_F(WebAppRegistrarTest, CreateRegisterUnregister) {
   EXPECT_TRUE(registrar().IsInstalled(app_id2));
   EXPECT_EQ(app_id2, app2->app_id());
 
-  sync_bridge().UnregisterApp(app_id2);
+  UnregisterApp(app_id2);
   EXPECT_FALSE(registrar().IsInstalled(app_id2));
   EXPECT_EQ(nullptr, registrar().GetAppById(app_id2));
   EXPECT_TRUE(registrar().is_empty());
@@ -215,10 +226,10 @@ TEST_F(WebAppRegistrarTest, DestroyRegistrarOwningRegisteredApps) {
   controller().Init();
 
   auto web_app = CreateWebApp("https://example.com/path");
-  sync_bridge().RegisterApp(std::move(web_app));
+  RegisterApp(std::move(web_app));
 
   auto web_app2 = CreateWebApp("https://example.com/path2");
-  sync_bridge().RegisterApp(std::move(web_app2));
+  RegisterApp(std::move(web_app2));
 
   controller().DestroySubsystems();
 }
@@ -260,7 +271,7 @@ TEST_F(WebAppRegistrarTest, DoForEachAndUnregisterAllApps) {
   EXPECT_TRUE(ids.empty());
 
   EXPECT_FALSE(registrar().is_empty());
-  sync_bridge().UnregisterAll();
+  UnregisterAll();
   EXPECT_TRUE(registrar().is_empty());
 }
 
@@ -271,18 +282,18 @@ TEST_F(WebAppRegistrarTest, WebAppSyncBridge) {
   auto web_app = CreateWebApp("https://example.com/path");
   const AppId app_id = web_app->app_id();
 
-  sync_bridge().RegisterApp(std::move(web_app));
+  RegisterApp(std::move(web_app));
 
   EXPECT_EQ(101UL, database_factory().ReadAllAppIds().size());
   EXPECT_EQ(101UL, controller().mutable_registrar().registry().size());
 
   // Remove 1 app after Init.
-  sync_bridge().UnregisterApp(app_id);
+  UnregisterApp(app_id);
   EXPECT_EQ(100UL, controller().mutable_registrar().registry().size());
   EXPECT_EQ(100UL, database_factory().ReadAllAppIds().size());
 
   // Remove 100 apps after Init.
-  sync_bridge().UnregisterAll();
+  UnregisterAll();
   EXPECT_TRUE(database_factory().ReadAllAppIds().empty());
   EXPECT_TRUE(registrar().is_empty());
 }
@@ -311,7 +322,7 @@ TEST_F(WebAppRegistrarTest, GetAppDataFields) {
   web_app->SetLaunchContainer(launch_container);
   web_app->SetIsLocallyInstalled(/*is_locally_installed*/ false);
 
-  sync_bridge().RegisterApp(std::move(web_app));
+  RegisterApp(std::move(web_app));
 
   EXPECT_EQ(name, registrar().GetAppShortName(app_id));
   EXPECT_EQ(description, registrar().GetAppDescription(app_id));
@@ -358,7 +369,7 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   auto app1 = CreateWebApp(app1_scope.spec());
   app1->SetScope(app1_scope);
-  sync_bridge().RegisterApp(std::move(app1));
+  RegisterApp(std::move(app1));
 
   in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id));
@@ -368,7 +379,7 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   auto app2 = CreateWebApp(app2_scope.spec());
   app2->SetScope(app2_scope);
-  sync_bridge().RegisterApp(std::move(app2));
+  RegisterApp(std::move(app2));
 
   in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id, app2_id));
@@ -381,7 +392,7 @@ TEST_F(WebAppRegistrarTest, CanFindAppsInScope) {
 
   auto app3 = CreateWebApp(app3_scope.spec());
   app3->SetScope(app3_scope);
-  sync_bridge().RegisterApp(std::move(app3));
+  RegisterApp(std::move(app3));
 
   in_scope = registrar().FindAppsInScope(origin_scope);
   EXPECT_THAT(in_scope, testing::UnorderedElementsAre(app1_id, app2_id));
@@ -405,7 +416,7 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
 
   auto app1 = CreateWebApp(app1_scope.spec());
   app1->SetScope(app1_scope);
-  sync_bridge().RegisterApp(std::move(app1));
+  RegisterApp(std::move(app1));
 
   base::Optional<AppId> app2_match =
       registrar().FindAppWithUrlInScope(app2_scope);
@@ -418,11 +429,11 @@ TEST_F(WebAppRegistrarTest, CanFindAppWithUrlInScope) {
 
   auto app2 = CreateWebApp(app2_scope.spec());
   app2->SetScope(app2_scope);
-  sync_bridge().RegisterApp(std::move(app2));
+  RegisterApp(std::move(app2));
 
   auto app3 = CreateWebApp(app3_scope.spec());
   app3->SetScope(app3_scope);
-  sync_bridge().RegisterApp(std::move(app3));
+  RegisterApp(std::move(app3));
 
   base::Optional<AppId> origin_match =
       registrar().FindAppWithUrlInScope(origin_scope);
@@ -459,7 +470,7 @@ TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
 
   // Implicit scope "https://example.com/app/"
   auto app1 = CreateWebApp(app1_launch.spec());
-  sync_bridge().RegisterApp(std::move(app1));
+  RegisterApp(std::move(app1));
 
   base::Optional<AppId> app2_match =
       registrar().FindAppWithUrlInScope(app2_page);
@@ -470,10 +481,10 @@ TEST_F(WebAppRegistrarTest, CanFindShortcutWithUrlInScope) {
   EXPECT_FALSE(app3_match);
 
   auto app2 = CreateWebApp(app2_launch.spec());
-  sync_bridge().RegisterApp(std::move(app2));
+  RegisterApp(std::move(app2));
 
   auto app3 = CreateWebApp(app3_launch.spec());
-  sync_bridge().RegisterApp(std::move(app3));
+  RegisterApp(std::move(app3));
 
   base::Optional<AppId> app1_match =
       registrar().FindAppWithUrlInScope(app1_page);
@@ -501,14 +512,14 @@ TEST_F(WebAppRegistrarTest, FindPwaOverShortcut) {
   const GURL app3_launch("https://example.com/app/specific/launch3");
 
   auto app1 = CreateWebApp(app1_launch.spec());
-  sync_bridge().RegisterApp(std::move(app1));
+  RegisterApp(std::move(app1));
 
   auto app2 = CreateWebApp(app2_scope.spec());
   app2->SetScope(app2_scope);
-  sync_bridge().RegisterApp(std::move(app2));
+  RegisterApp(std::move(app2));
 
   auto app3 = CreateWebApp(app3_launch.spec());
-  sync_bridge().RegisterApp(std::move(app3));
+  RegisterApp(std::move(app3));
 
   base::Optional<AppId> app2_match =
       registrar().FindAppWithUrlInScope(app2_page);

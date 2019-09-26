@@ -438,7 +438,6 @@ js_library("file_transfer_controller") {
     "ui:directory_tree",
     "ui:file_manager_ui",
     "ui:list_container",
-    "ui:multi_profile_share_dialog",
     "ui:progress_center_panel",
     "//ui/file_manager/file_manager/common/js:progress_center_common",
   ]

@@ -27,12 +27,6 @@ scoped_refptr<VideoFrame> DefaultCreateFrame(VideoPixelFormat format,
                                   gfx::BufferUsage::SCANOUT_VDA_WRITE);
 }
 
-// Get the identifier of |frame|. Calling this method with the frames backed
-// by the same Dmabuf should return the same result.
-PlatformVideoFramePool::DmabufId GetDmabufId(const VideoFrame& frame) {
-  return &(frame.DmabufFds());
-}
-
 }  // namespace
 
 PlatformVideoFramePool::PlatformVideoFramePool()

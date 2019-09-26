@@ -820,15 +820,15 @@ void RequestManager::SubmitCapturedPreviewBuffer(uint32_t frame_number,
                                                  uint64_t buffer_ipc_id) {
   const CaptureResult& pending_result = pending_results_[frame_number];
   if (video_capture_use_gmb_) {
+    VideoCaptureFormat format;
     base::Optional<VideoCaptureDevice::Client::Buffer> buffer =
         stream_buffer_manager_->AcquireBufferForClientById(
-            StreamType::kPreviewOutput, buffer_ipc_id);
+            StreamType::kPreviewOutput, buffer_ipc_id,
+            device_context_->GetCameraFrameOrientation(), &format);
     CHECK(buffer);
     device_context_->SubmitCapturedVideoCaptureBuffer(
-        std::move(*buffer),
-        stream_buffer_manager_->GetStreamCaptureFormat(
-            StreamType::kPreviewOutput),
-        pending_result.reference_time, pending_result.timestamp);
+        std::move(*buffer), format, pending_result.reference_time,
+        pending_result.timestamp);
     // |buffer| ownership is transferred to client, so we need to reserve a
     // new video buffer.
     stream_buffer_manager_->ReserveBuffer(StreamType::kPreviewOutput);

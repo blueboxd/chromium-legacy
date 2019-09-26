@@ -11,9 +11,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/system/sys_info.h"
+#include "base/test/scoped_feature_list.h"
+#include "base/threading/thread_restrictions.h"
 #include "build/build_config.h"
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -27,13 +30,35 @@
 namespace content {
 namespace {
 
-base::FilePath GetDefaultTestDataPath() {
+// "%2F" is treated as an invalid character for file URLs.
+static constexpr char kInvalidFileUrl[] = "file:///tmp/test%2F/a.wbn";
+
+base::FilePath GetTestDataPath(base::StringPiece file) {
   base::FilePath test_data_dir;
   CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &test_data_dir));
-  return test_data_dir.Append(
-      base::FilePath(FILE_PATH_LITERAL("content/test/data/bundled_exchanges/"
-                                       "bundled_exchanges_browsertest.wbn")));
+  return test_data_dir
+      .Append(base::FilePath(
+          FILE_PATH_LITERAL("content/test/data/bundled_exchanges")))
+      .AppendASCII(file);
 }
+
+#if defined(OS_ANDROID)
+GURL CopyFileAndGetContentUri(const base::FilePath& file) {
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath tmp_dir;
+  CHECK(base::GetTempDir(&tmp_dir));
+  // The directory name "bundled_exchanges" must be kept in sync with
+  // content/shell/android/browsertests_apk/res/xml/file_paths.xml
+  base::FilePath tmp_wbn_dir = tmp_dir.AppendASCII("bundled_exchanges");
+  CHECK(base::CreateDirectoryAndGetError(tmp_wbn_dir, nullptr));
+  base::FilePath tmp_dir_in_tmp_wbn_dir;
+  CHECK(
+      base::CreateTemporaryDirInDir(tmp_wbn_dir, "", &tmp_dir_in_tmp_wbn_dir));
+  base::FilePath temp_file = tmp_dir_in_tmp_wbn_dir.Append(file.BaseName());
+  CHECK(base::CopyFile(file, temp_file));
+  return GURL(base::GetContentUriFromFilePath(temp_file).value());
+}
+#endif  // OS_ANDROID
 
 class TestBrowserClient : public ContentBrowserClient {
  public:
@@ -65,7 +90,67 @@ class FinishNavigationObserver : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(FinishNavigationObserver);
 };
 
+ContentBrowserClient* MaybeSetBrowserClientForTesting(
+    ContentBrowserClient* browser_client) {
+#if defined(OS_ANDROID)
+  // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
+  // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
+  // this test available on KitKat.
+  int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
+  base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
+                                               &bugfix_version);
+  if (major_version < 5)
+    return nullptr;
+#endif  // defined(OS_ANDROID)
+  return SetBrowserClientForTesting(browser_client);
+}
+
 }  // namespace
+
+class InvalidTrustableBundledExchangesFileUrlBrowserTest
+    : public ContentBrowserTest {
+ protected:
+  InvalidTrustableBundledExchangesFileUrlBrowserTest() = default;
+  ~InvalidTrustableBundledExchangesFileUrlBrowserTest() override = default;
+
+  void SetUpOnMainThread() override {
+    ContentBrowserTest::SetUpOnMainThread();
+    original_client_ = MaybeSetBrowserClientForTesting(&browser_client_);
+  }
+
+  void TearDownOnMainThread() override {
+    ContentBrowserTest::TearDownOnMainThread();
+    if (original_client_)
+      SetBrowserClientForTesting(original_client_);
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    command_line->AppendSwitchASCII(switches::kTrustableBundledExchangesFileUrl,
+                                    kInvalidFileUrl);
+  }
+
+  ContentBrowserClient* original_client_ = nullptr;
+
+ private:
+  TestBrowserClient browser_client_;
+
+  DISALLOW_COPY_AND_ASSIGN(InvalidTrustableBundledExchangesFileUrlBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_F(InvalidTrustableBundledExchangesFileUrlBrowserTest,
+                       NoCrashOnNavigation) {
+  // Don't run the test if we couldn't override BrowserClient. It happens only
+  // on Android Kitkat or older systems.
+  if (!original_client_)
+    return;
+  base::RunLoop run_loop;
+  FinishNavigationObserver finish_navigation_observer(shell()->web_contents(),
+                                                      run_loop.QuitClosure());
+  EXPECT_FALSE(NavigateToURL(shell()->web_contents(), GURL(kInvalidFileUrl)));
+  run_loop.Run();
+  ASSERT_TRUE(finish_navigation_observer.error_code());
+  EXPECT_EQ(net::ERR_INVALID_URL, *finish_navigation_observer.error_code());
+}
 
 class BundledExchangesTrustableFileBrowserTestBase : public ContentBrowserTest {
  protected:
@@ -78,17 +163,7 @@ class BundledExchangesTrustableFileBrowserTestBase : public ContentBrowserTest {
 
   void SetUpOnMainThread() override {
     ContentBrowserTest::SetUpOnMainThread();
-#if defined(OS_ANDROID)
-    // TODO(crbug.com/864403): It seems that we call unsupported Android APIs on
-    // KitKat when we set a ContentBrowserClient. Don't call such APIs and make
-    // this test available on KitKat.
-    int32_t major_version = 0, minor_version = 0, bugfix_version = 0;
-    base::SysInfo::OperatingSystemVersionNumbers(&major_version, &minor_version,
-                                                 &bugfix_version);
-    if (major_version < 5)
-      return;
-#endif
-    original_client_ = SetBrowserClientForTesting(&browser_client_);
+    original_client_ = MaybeSetBrowserClientForTesting(&browser_client_);
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -144,21 +219,14 @@ class BundledExchangesTrustableFileBrowserTest
  protected:
   BundledExchangesTrustableFileBrowserTest() {
     if (GetParam() == TestFilePathMode::kNormalFilePath) {
-      test_data_url_ = net::FilePathToFileURL(GetDefaultTestDataPath());
+      test_data_url_ = net::FilePathToFileURL(
+          GetTestDataPath("bundled_exchanges_browsertest.wbn"));
       return;
     }
 #if defined(OS_ANDROID)
     DCHECK_EQ(TestFilePathMode::kContentURI, GetParam());
-    base::FilePath tmp_dir;
-    CHECK(base::GetTempDir(&tmp_dir));
-    // The directory name "bundled_exchanges" must be kept in sync with
-    // content/shell/android/browsertests_apk/res/xml/file_paths.xml
-    base::FilePath tmp_wbn_dir = tmp_dir.AppendASCII("bundled_exchanges");
-    CHECK(base::CreateDirectoryAndGetError(tmp_wbn_dir, nullptr));
-    base::FilePath temp_file;
-    CHECK(base::CreateTemporaryFileInDir(tmp_wbn_dir, &temp_file));
-    CHECK(base::CopyFile(GetDefaultTestDataPath(), temp_file));
-    test_data_url_ = GURL(base::GetContentUriFromFilePath(temp_file).value());
+    test_data_url_ = CopyFileAndGetContentUri(
+        GetTestDataPath("bundled_exchanges_browsertest.wbn"));
 #endif  // OS_ANDROID
   }
   ~BundledExchangesTrustableFileBrowserTest() override = default;
@@ -224,5 +292,70 @@ IN_PROC_BROWSER_TEST_F(BundledExchangesTrustableFileNotFoundBrowserTest,
   EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,
             *finish_navigation_observer.error_code());
 }
+
+class BundledExchangesFileBrowserTest
+    : public testing::WithParamInterface<TestFilePathMode>,
+      public ContentBrowserTest {
+ protected:
+  BundledExchangesFileBrowserTest() = default;
+  ~BundledExchangesFileBrowserTest() override = default;
+
+  void SetUp() override {
+    feature_list_.InitWithFeatures({features::kBundledHTTPExchanges}, {});
+    ContentBrowserTest::SetUp();
+  }
+
+  GURL GetTestUrlForFile(base::FilePath file_path) const {
+    switch (GetParam()) {
+      case TestFilePathMode::kNormalFilePath:
+        return net::FilePathToFileURL(file_path);
+#if defined(OS_ANDROID)
+      case TestFilePathMode::kContentURI:
+        return CopyFileAndGetContentUri(file_path);
+#endif  // OS_ANDROID
+    }
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(BundledExchangesFileBrowserTest);
+};
+
+IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest, BasicNavigation) {
+  const GURL test_data_url =
+      GetTestUrlForFile(GetTestDataPath("bundled_exchanges_browsertest.wbn"));
+  base::string16 expected_title = base::ASCIIToUTF16("Ready");
+  TitleWatcher title_watcher(shell()->web_contents(), expected_title);
+  EXPECT_TRUE(
+      NavigateToURL(shell()->web_contents(), test_data_url,
+                    GURL(test_data_url.spec() + "?https://test.example.org/")));
+  EXPECT_EQ(expected_title, title_watcher.WaitAndGetTitle());
+}
+
+IN_PROC_BROWSER_TEST_P(BundledExchangesFileBrowserTest,
+                       InvalidBundledExchangeFile) {
+  const GURL test_data_url =
+      GetTestUrlForFile(GetTestDataPath("invalid_bundled_exchanges.wbn"));
+
+  base::RunLoop run_loop;
+  FinishNavigationObserver finish_navigation_observer(shell()->web_contents(),
+                                                      run_loop.QuitClosure());
+  EXPECT_FALSE(NavigateToURL(shell()->web_contents(), test_data_url,
+                             GURL("https://test.example.org/")));
+  run_loop.Run();
+  ASSERT_TRUE(finish_navigation_observer.error_code());
+  EXPECT_EQ(net::ERR_INVALID_BUNDLED_EXCHANGES,
+            *finish_navigation_observer.error_code());
+}
+
+INSTANTIATE_TEST_SUITE_P(BundledExchangesFileBrowserTest,
+                         BundledExchangesFileBrowserTest,
+                         testing::Values(TestFilePathMode::kNormalFilePath
+#if defined(OS_ANDROID)
+                                         ,
+                                         TestFilePathMode::kContentURI
+#endif  // OS_ANDROID
+                                         ));
 
 }  // namespace content

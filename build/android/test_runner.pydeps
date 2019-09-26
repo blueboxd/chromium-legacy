@@ -118,9 +118,6 @@
 ../../third_party/markupsafe/__init__.py
 ../../third_party/markupsafe/_compat.py
 ../../third_party/markupsafe/_native.py
-../../tools/android/avd/avd.py
-../../tools/android/avd/proto/__init__.py
-../../tools/android/avd/proto/avd_pb2.py
 ../../tools/swarming_client/libs/__init__.py
 ../../tools/swarming_client/libs/logdog/__init__.py
 ../../tools/swarming_client/libs/logdog/bootstrap.py

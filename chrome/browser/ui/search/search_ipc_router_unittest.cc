@@ -104,6 +104,11 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD0(OnRevertThemeChanges, void());
   MOCK_METHOD0(OnConfirmThemeChanges, void());
   MOCK_METHOD2(
+      DeleteAutocompleteMatch,
+      void(uint8_t line,
+           chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback
+               callback));
+  MOCK_METHOD2(
       QueryAutocomplete,
       void(const base::string16& input,
            chrome::mojom::EmbeddedSearch::QueryAutocompleteCallback callback));
@@ -146,6 +151,7 @@ class MockSearchIPCRouterPolicy : public SearchIPCRouter::Policy {
   MOCK_METHOD1(ShouldProcessQueryAutocomplete, bool(bool));
   MOCK_METHOD1(ShouldProcessStopAutocomplete, bool(bool));
   MOCK_METHOD0(ShouldProcessBlocklistPromo, bool());
+  MOCK_METHOD0(ShouldProcessDeleteAutocompleteMatch, bool());
 };
 
 class MockEmbeddedSearchClientFactory
@@ -1097,4 +1103,19 @@ TEST_F(SearchIPCRouterTest, IgnoreBlocklistPromo) {
       .WillOnce(Return(false));
 
   GetSearchIPCRouter().BlocklistPromo(std::string());
+}
+
+TEST_F(SearchIPCRouterTest, IgnoreDeleteAutocompleteMatch) {
+  NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
+  SetupMockDelegateAndPolicy();
+  MockSearchIPCRouterPolicy* policy = GetSearchIPCRouterPolicy();
+  EXPECT_CALL(*mock_delegate(), DeleteAutocompleteMatch(_, _)).Times(0);
+  EXPECT_CALL(*policy, ShouldProcessDeleteAutocompleteMatch())
+      .Times(1)
+      .WillOnce(Return(false));
+
+  base::MockCallback<
+      chrome::mojom::EmbeddedSearch::DeleteAutocompleteMatchCallback>
+      callback;
+  GetSearchIPCRouter().DeleteAutocompleteMatch(0u, callback.Get());
 }

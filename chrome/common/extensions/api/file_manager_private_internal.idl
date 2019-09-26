@@ -65,8 +65,6 @@ namespace fileManagerPrivateInternal {
     static void pinDriveFile(DOMString url,
                              boolean pin,
                              SimpleCallback callback);
-    static void ensureFileDownloaded(DOMString url,
-                             SimpleCallback callback);
     static void executeTask(DOMString taskId,
                             DOMString[] urls,
                             ExecuteTaskCallback callback);
@@ -77,16 +75,11 @@ namespace fileManagerPrivateInternal {
     static void getFileTasks(DOMString[] urls,
                              GetFileTasksCallback callback);
     static void getDownloadUrl(DOMString url, GetUrlCallback callback);
-    static void requestDriveShare(DOMString url,
-                                fileManagerPrivate.DriveShareType shareType,
-                                SimpleCallback callback);
     static void setEntryTag(DOMString url,
                             fileManagerPrivate.EntryTagVisibility visibility,
                             DOMString key,
                             DOMString value,
                             SimpleCallback callback);
-    static void cancelFileTransfers(DOMString[] urls,
-                                    optional SimpleCallback callback);
     static void startCopy(DOMString url,
                           DOMString parentUrl,
                           DOMString newName,

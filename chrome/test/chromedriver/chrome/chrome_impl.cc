@@ -429,8 +429,14 @@ Status ChromeImpl::SetAcceptInsecureCerts() {
 
   base::DictionaryValue params;
   params.SetBoolean("ignore", true);
-  return devtools_websocket_client_->SendCommand(
-      "Security.setIgnoreCertificateErrors", params);
+  // We ignore the status returned by this command - If it is an error, the
+  // target likely doesn't yet support the command. In that case, we'll fall
+  // back to --ignore-certificate-errors.
+  // TODO(eseckler): Handle status once we remove support for
+  // --ignore-certificate-errors.
+  devtools_websocket_client_->SendCommand("Security.setIgnoreCertificateErrors",
+                                          params);
+  return Status(kOk);
 }
 
 Status ChromeImpl::SetPermission(

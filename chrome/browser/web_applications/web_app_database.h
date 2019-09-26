@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "base/callback_forward.h"
-#include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -26,6 +25,7 @@ namespace web_app {
 class AbstractWebAppDatabaseFactory;
 class WebApp;
 class WebAppProto;
+struct RegistryUpdateData;
 
 // Exclusively used from the UI thread.
 class WebAppDatabase {
@@ -34,13 +34,15 @@ class WebAppDatabase {
   ~WebAppDatabase();
 
   using RegistryOpenedCallback = base::OnceCallback<void(Registry registry)>;
-  using CompletionCallback = base::OnceCallback<void(bool success)>;
-  using AppsToWrite = base::flat_set<const WebApp*>;
-
   // Open existing or create new DB. Read all data and return it via callback.
   void OpenDatabase(RegistryOpenedCallback callback);
-  void WriteWebApps(AppsToWrite apps, CompletionCallback callback);
-  void DeleteWebApps(std::vector<AppId> app_ids, CompletionCallback callback);
+
+  using CompletionCallback = base::OnceCallback<void(bool success)>;
+  // There can be only 1 transaction at a time.
+  void BeginTransaction();
+  void CommitTransaction(const RegistryUpdateData& update_data,
+                         CompletionCallback callback);
+  void CancelTransaction();
 
   // Exposed for testing.
   static std::unique_ptr<WebAppProto> CreateWebAppProto(const WebApp& web_app);
@@ -62,9 +64,6 @@ class WebAppDatabase {
 
   void OnDataWritten(CompletionCallback callback,
                      const base::Optional<syncer::ModelError>& error);
-
-  void BeginTransaction();
-  void CommitTransaction(CompletionCallback callback);
 
   std::unique_ptr<syncer::ModelTypeStore> store_;
   std::unique_ptr<syncer::ModelTypeStore::WriteBatch> write_batch_;

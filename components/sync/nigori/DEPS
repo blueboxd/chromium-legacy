@@ -4,8 +4,5 @@ include_rules = [
   "+components/sync/model",
   "+components/sync/model_impl",
   "+components/sync/protocol",
-  # TODO(crbug.com/967417): Remove once the USS code doesn't use the legacy
-  # cryptographer.
-  "+components/sync/syncable",
   "+crypto",
 ]

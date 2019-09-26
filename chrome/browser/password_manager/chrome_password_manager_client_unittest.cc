@@ -177,9 +177,6 @@ class FakePasswordAutofillAgent
     logging_state_active_ = active;
   }
 
-  void AutofillUsernameAndPasswordDataReceived(
-      const autofill::FormsPredictionsMap& predictions) override {}
-
   // Records whether SetLoggingState() gets called.
   bool called_set_logging_state_;
   // Records data received via SetLoggingState() call.

@@ -47,7 +47,6 @@ js_type_check("closure_compile_module") {
     ":list_container",
     ":location_line",
     ":multi_menu",
-    ":multi_profile_share_dialog",
     ":progress_center_panel",
     ":providers_menu",
     ":search_box",
@@ -257,7 +256,6 @@ js_library("file_manager_ui") {
     ":list_container",
     ":location_line",
     ":multi_menu",
-    ":multi_profile_share_dialog",
     ":progress_center_panel",
     ":providers_menu",
     ":search_box",
@@ -425,13 +423,6 @@ js_unittest("multi_menu_unittest") {
     "//ui/file_manager/base/js:test_error_reporting",
     "//ui/file_manager/file_manager/common/js:util",
     "//ui/webui/resources/js:webui_resource_test",
-  ]
-}
-
-js_library("multi_profile_share_dialog") {
-  deps = [
-    ":file_manager_dialog_base",
-    "//ui/file_manager/file_manager/common/js:util",
   ]
 }
 

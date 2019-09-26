@@ -51,11 +51,11 @@ void MediaControlsTouchlessTimeDisplayElement::UpdateTimeDisplay() {
 
   StringBuilder aria_label;
   aria_label.Append(GetLocale().QueryString(
-      WebLocalizedString::kAXMediaCurrentTimeDisplay,
+      IDS_AX_MEDIA_CURRENT_TIME_DISPLAY,
       MediaControlsSharedHelpers::FormatTime(current_time_)));
   aria_label.Append(" ");
   aria_label.Append(GetLocale().QueryString(
-      WebLocalizedString::kAXMediaTimeRemainingDisplay,
+      IDS_AX_MEDIA_TIME_REMAINING_DISPLAY,
       MediaControlsSharedHelpers::FormatTime(duration_)));
   setAttribute(html_names::kAriaLabelAttr, aria_label.ToAtomicString());
 }

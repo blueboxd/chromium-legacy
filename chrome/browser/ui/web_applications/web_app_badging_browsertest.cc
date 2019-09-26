@@ -35,12 +35,14 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 
     GURL cross_site_frame_url =
         cross_origin_https_server_.GetURL("/ssl/google.html");
+    cross_site_app_id_ = InstallPWA(cross_site_frame_url);
+
     // Note: The url for the cross site frame is embedded in the query string.
     GURL app_url = https_server()->GetURL(
         "/ssl/page_with_in_scope_and_cross_site_frame.html?url=" +
         cross_site_frame_url.spec());
-    AppId app_id = InstallPWA(app_url);
-    content::WebContents* web_contents = OpenApplication(app_id);
+    main_app_id_ = InstallPWA(app_url);
+    content::WebContents* web_contents = OpenApplication(main_app_id_);
     // There should be exactly 3 frames:
     // 1) The main frame.
     // 2) A cross site frame, on |cross_site_frame_url|.
@@ -85,13 +87,15 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
     // make asserting the result of a badge change easier.
     int total_changes = delegate_->cleared_app_badges().size() +
                         delegate_->set_app_badges().size();
-    EXPECT_LE(total_changes, 1);
+    ASSERT_EQ(total_changes, 1);
 
-    // A change is a failure if it doesn't set or clear any badges.
-    change_failed_ = total_changes == 0;
-    was_cleared_ = delegate_->cleared_app_badges().size();
+    if (delegate_->cleared_app_badges().size()) {
+      changed_app_id_ = delegate_->cleared_app_badges()[0];
+      was_cleared_ = true;
+    }
 
     if (delegate_->set_app_badges().size() == 1) {
+      changed_app_id_ = delegate_->set_app_badges()[0].first;
       last_badge_content_ = delegate_->set_app_badges()[0].second;
       was_flagged_ = last_badge_content_ == base::nullopt;
     }
@@ -104,19 +108,21 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
                                           RenderFrameHost* on) {
     was_cleared_ = false;
     was_flagged_ = false;
-    change_failed_ = false;
+    changed_app_id_ = base::nullopt;
     last_badge_content_ = base::nullopt;
     awaiter_ = std::make_unique<base::RunLoop>();
     delegate_->ResetBadges();
 
     ASSERT_TRUE(content::ExecuteScript(on, script));
 
-    if (was_cleared_ || was_flagged_ || change_failed_ ||
-        last_badge_content_ != base::nullopt)
+    if (was_cleared_ || was_flagged_ || changed_app_id_ || last_badge_content_)
       return;
 
     awaiter_->Run();
   }
+
+  const web_app::AppId& main_app_id() { return main_app_id_; }
+  const web_app::AppId& cross_site_app_id() { return cross_site_app_id_; }
 
   RenderFrameHost* main_frame_;
   RenderFrameHost* in_scope_frame_;
@@ -124,10 +130,12 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 
   bool was_cleared_ = false;
   bool was_flagged_ = false;
-  bool change_failed_ = false;
+  base::Optional<web_app::AppId> changed_app_id_ = base::nullopt;
   base::Optional<uint64_t> last_badge_content_ = base::nullopt;
 
  private:
+  web_app::AppId main_app_id_;
+  web_app::AppId cross_site_app_id_;
   std::unique_ptr<base::RunLoop> awaiter_;
   badging::TestBadgeManagerDelegate* delegate_;
   net::EmbeddedTestServer cross_origin_https_server_;
@@ -136,20 +144,21 @@ class WebAppBadgingBrowserTest : public WebAppControllerBrowserTest {
 // Tests that the badge for the main frame is not affected by changing the badge
 // of a cross site subframe.
 IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
-                       BadgeCannotBeChangedFromCrossSiteFrame) {
-  // Clearing from cross site frame should be a no-op.
+                       CrossSiteFrameCannotChangeMainFrameBadge) {
+  // Clearing from cross site frame should affect only the cross site app.
   ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.clear()",
                                      cross_site_frame_);
-  ASSERT_FALSE(was_cleared_);
+  ASSERT_TRUE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
-  ASSERT_TRUE(change_failed_);
+  ASSERT_EQ(cross_site_app_id(), changed_app_id_);
 
-  // Setting from cross site frame should be a no-op.
+  // Setting from cross site frame should affect only the cross site app.
   ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(77)",
                                      cross_site_frame_);
   ASSERT_FALSE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
-  ASSERT_TRUE(change_failed_);
+  ASSERT_EQ(77u, last_badge_content_);
+  ASSERT_EQ(cross_site_app_id(), changed_app_id_);
 }
 
 // Tests that setting the badge to an integer will be propagated across
@@ -158,7 +167,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeSetToAnInteger) {
   ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(99)", main_frame_);
   ASSERT_FALSE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
+  ASSERT_EQ(main_app_id(), changed_app_id_);
   ASSERT_EQ(base::Optional<uint64_t>(99u), last_badge_content_);
 }
 
@@ -168,13 +177,13 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
   ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(55)", main_frame_);
   ASSERT_FALSE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
+  ASSERT_EQ(main_app_id(), changed_app_id_);
   ASSERT_EQ(base::Optional<uint64_t>(55u), last_badge_content_);
 
   ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.clear()", main_frame_);
   ASSERT_TRUE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
+  ASSERT_EQ(main_app_id(), changed_app_id_);
   ASSERT_EQ(base::nullopt, last_badge_content_);
 }
 
@@ -184,7 +193,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeClearedWithZero) {
   ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set(0)", main_frame_);
   ASSERT_TRUE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
+  ASSERT_EQ(main_app_id(), changed_app_id_);
   ASSERT_EQ(base::nullopt, last_badge_content_);
 }
 
@@ -193,7 +202,7 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest, BadgeCanBeSetWithoutAValue) {
   ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.set()", main_frame_);
   ASSERT_FALSE(was_cleared_);
   ASSERT_TRUE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
+  ASSERT_EQ(main_app_id(), changed_app_id_);
   ASSERT_EQ(base::nullopt, last_badge_content_);
 }
 
@@ -204,15 +213,30 @@ IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
                                      in_scope_frame_);
   ASSERT_FALSE(was_cleared_);
   ASSERT_TRUE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
+  ASSERT_EQ(main_app_id(), changed_app_id_);
   ASSERT_EQ(base::nullopt, last_badge_content_);
 
   ExecuteScriptAndWaitForBadgeChange("ExperimentalBadge.clear()",
                                      in_scope_frame_);
   ASSERT_TRUE(was_cleared_);
   ASSERT_FALSE(was_flagged_);
-  ASSERT_FALSE(change_failed_);
+  ASSERT_EQ(main_app_id(), changed_app_id_);
   ASSERT_EQ(base::nullopt, last_badge_content_);
+}
+
+// Tests that badging incognito windows does not cause a crash.
+IN_PROC_BROWSER_TEST_P(WebAppBadgingBrowserTest,
+                       BadgingIncognitoWindowsDoesNotCrash) {
+  Browser* incognito_browser =
+      OpenURLOffTheRecord(profile(), main_frame_->GetLastCommittedURL());
+  RenderFrameHost* incognito_frame = incognito_browser->tab_strip_model()
+                                         ->GetActiveWebContents()
+                                         ->GetMainFrame();
+
+  ASSERT_TRUE(
+      content::ExecuteScript(incognito_frame, "ExperimentalBadge.set()"));
+  ASSERT_TRUE(
+      content::ExecuteScript(incognito_frame, "ExperimentalBadge.clear()"));
 }
 
 INSTANTIATE_TEST_SUITE_P(

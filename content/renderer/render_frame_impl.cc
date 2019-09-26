@@ -511,6 +511,8 @@ void FillNavigationParamsRequest(
   }
 
   navigation_params->had_transient_activation = common_params.has_user_gesture;
+  navigation_params->base_url_override_for_bundled_exchanges =
+      commit_params.base_url_override_for_bundled_exchanges;
 }
 
 mojom::CommonNavigationParamsPtr MakeCommonNavigationParams(

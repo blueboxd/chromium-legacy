@@ -59,10 +59,6 @@ class MEDIA_GPU_EXPORT LibYUVImageProcessor : public ImageProcessor {
                        ErrorCB error_cb);
 
   // ImageProcessor override
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
-  bool ProcessInternal(scoped_refptr<VideoFrame> frame,
-                       LegacyFrameReadyCB cb) override;
-#endif
   bool ProcessInternal(scoped_refptr<VideoFrame> input_frame,
                        scoped_refptr<VideoFrame> output_frame,
                        FrameReadyCB cb) override;

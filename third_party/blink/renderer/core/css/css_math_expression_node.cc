@@ -385,6 +385,9 @@ CSSMathExpressionNode* CSSMathExpressionBinaryOperation::CreateSimplified(
     const CSSMathExpressionNode* left_side,
     const CSSMathExpressionNode* right_side,
     CSSMathOperator op) {
+  if (left_side->IsMathFunction() || right_side->IsMathFunction())
+    return Create(left_side, right_side, op);
+
   CalculationCategory left_category = left_side->Category();
   CalculationCategory right_category = right_side->Category();
   DCHECK_NE(left_category, kCalcOther);

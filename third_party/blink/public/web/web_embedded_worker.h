@@ -45,7 +45,14 @@ struct WebEmbeddedWorkerStartData;
 
 // As we're on the border line between non-Blink and Blink variants, we need
 // to use mojo::ScopedMessagePipeHandle to pass Mojo types.
-struct WebServiceWorkerInstalledScriptsManagerParams {
+struct BLINK_EXPORT WebServiceWorkerInstalledScriptsManagerParams {
+  WebServiceWorkerInstalledScriptsManagerParams() = delete;
+  WebServiceWorkerInstalledScriptsManagerParams(
+      WebVector<WebURL> installed_scripts_urls,
+      mojo::ScopedMessagePipeHandle manager_receiver,
+      mojo::ScopedMessagePipeHandle manager_host_remote);
+  ~WebServiceWorkerInstalledScriptsManagerParams() = default;
+
   WebVector<WebURL> installed_scripts_urls;
   // A handle for
   // mojo::PendingReceiver<mojom::blink::ServiceWorkerInstalledScriptsManager>.
@@ -63,10 +70,7 @@ class BLINK_EXPORT WebEmbeddedWorker {
   // WebServiceWorkerContextClient is owned by caller and must survive the
   // instance of WebEmbeddedWorker.
   static std::unique_ptr<WebEmbeddedWorker> Create(
-      WebServiceWorkerContextClient*,
-      mojo::ScopedMessagePipeHandle cache_storage,
-      mojo::ScopedMessagePipeHandle interface_provider,
-      mojo::ScopedMessagePipeHandle browser_interface_broker);
+      WebServiceWorkerContextClient*);
 
   virtual ~WebEmbeddedWorker() = default;
 
@@ -75,6 +79,9 @@ class BLINK_EXPORT WebEmbeddedWorker {
       std::unique_ptr<WebEmbeddedWorkerStartData>,
       std::unique_ptr<WebServiceWorkerInstalledScriptsManagerParams>,
       mojo::ScopedMessagePipeHandle content_settings_handle,
+      mojo::ScopedMessagePipeHandle cache_storage,
+      mojo::ScopedMessagePipeHandle interface_provider,
+      mojo::ScopedMessagePipeHandle browser_interface_broker,
       scoped_refptr<base::SingleThreadTaskRunner>
           initiator_thread_task_runner) = 0;
   virtual void TerminateWorkerContext() = 0;

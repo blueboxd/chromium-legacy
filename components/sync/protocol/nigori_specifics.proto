@@ -19,8 +19,10 @@ package sync_pb;
 import "encryption.proto";
 
 message NigoriKey {
-  optional string name = 1;
-  optional bytes user_key = 2 [deprecated = true];
+  // Note that M78 and before rely on the name being populated, at least for
+  // the main encrypted keybag within NigoriSpecifics.
+  optional string deprecated_name = 1 [deprecated = true];
+  optional bytes deprecated_user_key = 2 [deprecated = true];
   optional bytes encryption_key = 3;
   optional bytes mac_key = 4;
 }

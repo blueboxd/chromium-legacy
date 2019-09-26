@@ -272,6 +272,7 @@ static_library("test_support") {
       "//chrome/app/chrome_crash_reporter_client.cc",
       "//chrome/app/chrome_crash_reporter_client_mac.mm",
     ]
+    deps += [ "//build:branding_buildflags" ]
     public_deps += [
       "//components/crash/content/app",
       "//third_party/breakpad",
@@ -2045,6 +2046,8 @@ if (!is_android) {
         "../browser/chromeos/extensions/login_screen/login_state/login_state_apitest.cc",
         "../browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher_apitest.cc",
         "../browser/chromeos/extensions/login_screen/storage_apitest.cc",
+        "../browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher_apitest.cc",
+        "../browser/chromeos/extensions/printing_metrics/printing_metrics_apitest.cc",
         "../browser/chromeos/extensions/users_private/users_private_apitest.cc",
         "../browser/chromeos/extensions/wallpaper_apitest.cc",
         "../browser/chromeos/extensions/wallpaper_manager_browsertest.cc",
@@ -2249,6 +2252,10 @@ if (!is_android) {
         "../browser/chromeos/policy/user_policy_test_helper.h",
         "../browser/chromeos/policy/variations_service_policy_browsertest.cc",
         "../browser/chromeos/preferences_chromeos_browsertest.cc",
+        "../browser/chromeos/printing/history/test_print_job_history_service_observer.cc",
+        "../browser/chromeos/printing/history/test_print_job_history_service_observer.h",
+        "../browser/chromeos/printing/test_cups_print_job_manager.cc",
+        "../browser/chromeos/printing/test_cups_print_job_manager.h",
         "../browser/chromeos/profiles/profile_helper_browsertest.cc",
         "../browser/chromeos/shutdown_policy_browsertest.cc",
         "../browser/chromeos/startup_settings_cache_browsertest.cc",

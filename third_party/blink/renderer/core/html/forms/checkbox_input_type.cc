@@ -31,6 +31,7 @@
 
 #include "third_party/blink/renderer/core/html/forms/checkbox_input_type.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
 #include "third_party/blink/renderer/core/frame/web_feature.h"
@@ -54,8 +55,7 @@ bool CheckboxInputType::ValueMissing(const String&) const {
 }
 
 String CheckboxInputType::ValueMissingText() const {
-  return GetLocale().QueryString(
-      WebLocalizedString::kValidationValueMissingForCheckbox);
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_VALUE_MISSING_CHECKBOX);
 }
 
 void CheckboxInputType::HandleKeyupEvent(KeyboardEvent& event) {

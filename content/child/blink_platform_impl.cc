@@ -94,90 +94,12 @@ int ToMessageID(int resource_id) {
       return IDS_AX_DAY_OF_MONTH_FIELD_TEXT;
     case WebLocalizedString::kAXHourFieldText:
       return IDS_AX_HOUR_FIELD_TEXT;
-    case WebLocalizedString::kAXMediaDefault:
-      return IDS_AX_MEDIA_DEFAULT;
-    case WebLocalizedString::kAXMediaAudioElement:
-      return IDS_AX_MEDIA_AUDIO_ELEMENT;
-    case WebLocalizedString::kAXMediaVideoElement:
-      return IDS_AX_MEDIA_VIDEO_ELEMENT;
-    case WebLocalizedString::kAXMediaMuteButton:
-      return IDS_AX_MEDIA_MUTE_BUTTON;
-    case WebLocalizedString::kAXMediaUnMuteButton:
-      return IDS_AX_MEDIA_UNMUTE_BUTTON;
-    case WebLocalizedString::kAXMediaPlayButton:
-      return IDS_AX_MEDIA_PLAY_BUTTON;
-    case WebLocalizedString::kAXMediaPauseButton:
-      return IDS_AX_MEDIA_PAUSE_BUTTON;
-    case WebLocalizedString::kAXMediaCurrentTimeDisplay:
-      return IDS_AX_MEDIA_CURRENT_TIME_DISPLAY;
-    case WebLocalizedString::kAXMediaTimeRemainingDisplay:
-      return IDS_AX_MEDIA_TIME_REMAINING_DISPLAY;
-    case WebLocalizedString::kAXMediaEnterFullscreenButton:
-      return IDS_AX_MEDIA_ENTER_FULL_SCREEN_BUTTON;
-    case WebLocalizedString::kAXMediaExitFullscreenButton:
-      return IDS_AX_MEDIA_EXIT_FULL_SCREEN_BUTTON;
-    case WebLocalizedString::kAXMediaDisplayCutoutFullscreenButton:
-      return IDS_AX_MEDIA_DISPLAY_CUT_OUT_FULL_SCREEN_BUTTON;
-    case WebLocalizedString::kAXMediaEnterPictureInPictureButton:
-      return IDS_AX_MEDIA_ENTER_PICTURE_IN_PICTURE_BUTTON;
-    case WebLocalizedString::kAXMediaExitPictureInPictureButton:
-      return IDS_AX_MEDIA_EXIT_PICTURE_IN_PICTURE_BUTTON;
-    case WebLocalizedString::kAXMediaShowClosedCaptionsMenuButton:
-      return IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_MENU_BUTTON;
-    case WebLocalizedString::kAXMediaHideClosedCaptionsMenuButton:
-      return IDS_AX_MEDIA_HIDE_CLOSED_CAPTIONS_MENU_BUTTON;
-    case WebLocalizedString::kAXMediaLoadingPanel:
-      return IDS_AX_MEDIA_LOADING_PANEL;
-    case WebLocalizedString::kAXMediaCastOffButton:
-      return IDS_AX_MEDIA_CAST_OFF_BUTTON;
-    case WebLocalizedString::kAXMediaCastOnButton:
-      return IDS_AX_MEDIA_CAST_ON_BUTTON;
-    case WebLocalizedString::kAXMediaDownloadButton:
-      return IDS_AX_MEDIA_DOWNLOAD_BUTTON;
-    case WebLocalizedString::kAXMediaOverflowButton:
-      return IDS_AX_MEDIA_OVERFLOW_BUTTON;
-    case WebLocalizedString::kAXMediaAudioElementHelp:
-      return IDS_AX_MEDIA_AUDIO_ELEMENT_HELP;
-    case WebLocalizedString::kAXMediaVideoElementHelp:
-      return IDS_AX_MEDIA_VIDEO_ELEMENT_HELP;
-    case WebLocalizedString::kAXMediaAudioSliderHelp:
-      return IDS_AX_MEDIA_AUDIO_SLIDER_HELP;
-    case WebLocalizedString::kAXMediaVideoSliderHelp:
-      return IDS_AX_MEDIA_VIDEO_SLIDER_HELP;
-    case WebLocalizedString::kAXMediaVolumeSliderHelp:
-      return IDS_AX_MEDIA_VOLUME_SLIDER_HELP;
-    case WebLocalizedString::kAXMediaCurrentTimeDisplayHelp:
-      return IDS_AX_MEDIA_CURRENT_TIME_DISPLAY_HELP;
-    case WebLocalizedString::kAXMediaTimeRemainingDisplayHelp:
-      return IDS_AX_MEDIA_TIME_REMAINING_DISPLAY_HELP;
-    case WebLocalizedString::kAXMediaOverflowButtonHelp:
-      return IDS_AX_MEDIA_OVERFLOW_BUTTON_HELP;
-    case WebLocalizedString::kAXMediaTouchLessPlayPauseAction:
-      return IDS_AX_MEDIA_TOUCHLESS_PLAY_PAUSE_ACTION;
-    case WebLocalizedString::kAXMediaTouchLessSeekAction:
-      return IDS_AX_MEDIA_TOUCHLESS_SEEK_ACTION;
-    case WebLocalizedString::kAXMediaTouchLessVolumeAction:
-      return IDS_AX_MEDIA_TOUCHLESS_VOLUME_ACTION;
     case WebLocalizedString::kDetailsLabel:
       return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
     case WebLocalizedString::kInputElementAltText:
       return IDS_FORM_INPUT_ALT;
     case WebLocalizedString::kMissingPluginText:
       return IDS_PLUGIN_INITIALIZATION_ERROR;
-    case WebLocalizedString::kAXMediaPlaybackError:
-      return IDS_MEDIA_PLAYBACK_ERROR;
-    case WebLocalizedString::kMediaRemotingCastText:
-      return IDS_MEDIA_REMOTING_CAST_TEXT;
-    case WebLocalizedString::kMediaRemotingCastToUnknownDeviceText:
-      return IDS_MEDIA_REMOTING_CAST_TO_UNKNOWN_DEVICE_TEXT;
-    case WebLocalizedString::kMediaRemotingStopByErrorText:
-      return IDS_MEDIA_REMOTING_STOP_BY_ERROR_TEXT;
-    case WebLocalizedString::kMediaRemotingStopByPlaybackQualityText:
-      return IDS_MEDIA_REMOTING_STOP_BY_PLAYBACK_QUALITY_TEXT;
-    case WebLocalizedString::kMediaRemotingStopNoText:
-      return -1;  // This string name is used only to indicate an empty string.
-    case WebLocalizedString::kMediaRemotingStopText:
-      return IDS_MEDIA_REMOTING_STOP_TEXT;
     case WebLocalizedString::kMediaScrubbingMessageText:
       return IDS_MEDIA_SCRUBBING_MESSAGE_TEXT;
     case WebLocalizedString::kMultipleFileUploadText:
@@ -200,52 +122,12 @@ int ToMessageID(int resource_id) {
       return IDS_FORM_RESET_LABEL;
     case WebLocalizedString::kSubmitButtonDefaultLabel:
       return IDS_FORM_SUBMIT_LABEL;
-    case WebLocalizedString::kValidationBadInputForDateTime:
-      return IDS_FORM_VALIDATION_BAD_INPUT_DATETIME;
-    case WebLocalizedString::kValidationBadInputForNumber:
-      return IDS_FORM_VALIDATION_BAD_INPUT_NUMBER;
-    case WebLocalizedString::kValidationPatternMismatch:
-      return IDS_FORM_VALIDATION_PATTERN_MISMATCH;
-    case WebLocalizedString::kValidationRangeOverflowDateTime:
-      return IDS_FORM_VALIDATION_RANGE_OVERFLOW_DATETIME;
-    case WebLocalizedString::kValidationRangeUnderflowDateTime:
-      return IDS_FORM_VALIDATION_RANGE_UNDERFLOW_DATETIME;
     case WebLocalizedString::kValidationStepMismatchCloseToLimit:
       return IDS_FORM_VALIDATION_STEP_MISMATCH_CLOSE_TO_LIMIT;
     case WebLocalizedString::kValidationTooShort:
       return IDS_FORM_VALIDATION_TOO_SHORT;
     case WebLocalizedString::kValidationTooShortPlural:
       return IDS_FORM_VALIDATION_TOO_SHORT_PLURAL;
-    case WebLocalizedString::kValidationTypeMismatch:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH;
-    case WebLocalizedString::kValidationTypeMismatchForEmail:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL;
-    case WebLocalizedString::kValidationTypeMismatchForEmailEmpty:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_EMPTY;
-    case WebLocalizedString::kValidationTypeMismatchForEmailEmptyDomain:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_EMPTY_DOMAIN;
-    case WebLocalizedString::kValidationTypeMismatchForEmailEmptyLocal:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_EMPTY_LOCAL;
-    case WebLocalizedString::kValidationTypeMismatchForEmailInvalidDomain:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_INVALID_DOMAIN;
-    case WebLocalizedString::kValidationTypeMismatchForEmailInvalidDots:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_INVALID_DOTS;
-    case WebLocalizedString::kValidationTypeMismatchForEmailInvalidLocal:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_INVALID_LOCAL;
-    case WebLocalizedString::kValidationTypeMismatchForEmailNoAtSign:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_EMAIL_NO_AT_SIGN;
-    case WebLocalizedString::kValidationTypeMismatchForMultipleEmail:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_MULTIPLE_EMAIL;
-    case WebLocalizedString::kValidationTypeMismatchForURL:
-      return IDS_FORM_VALIDATION_TYPE_MISMATCH_URL;
-    case WebLocalizedString::kValidationValueMissingForCheckbox:
-      return IDS_FORM_VALIDATION_VALUE_MISSING_CHECKBOX;
-    case WebLocalizedString::kValidationValueMissingForFile:
-      return IDS_FORM_VALIDATION_VALUE_MISSING_FILE;
-    case WebLocalizedString::kValidationValueMissingForMultipleFile:
-      return IDS_FORM_VALIDATION_VALUE_MISSING_MULTIPLE_FILE;
-    case WebLocalizedString::kValidationValueMissingForRadio:
-      return IDS_FORM_VALIDATION_VALUE_MISSING_RADIO;
     case WebLocalizedString::kWeekNumberLabel:
       return IDS_FORM_WEEK_NUMBER_LABEL;
     case WebLocalizedString::kTextTracksNoLabel:

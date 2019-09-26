@@ -148,15 +148,21 @@ void ImageResourceContent::Trace(blink::Visitor* visitor) {
   ImageObserver::Trace(visitor);
 }
 
-void ImageResourceContent::MarkObserverFinished(
+void ImageResourceContent::HandleObserverFinished(
     ImageResourceObserver* observer) {
-  ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(this);
-
-  auto it = observers_.find(observer);
-  if (it == observers_.end())
+  if (info_->SchedulingReloadOrShouldReloadBrokenPlaceholder())
     return;
-  observers_.erase(it);
-  finished_observers_.insert(observer);
+  {
+    ProhibitAddRemoveObserverInScope prohibit_add_remove_observer_in_scope(
+        this);
+    auto it = observers_.find(observer);
+    if (it != observers_.end()) {
+      observers_.erase(it);
+      finished_observers_.insert(observer);
+    }
+  }
+  observer->ImageNotifyFinished(this);
+  UpdateImageAnimationPolicy();
 }
 
 void ImageResourceContent::AddObserver(ImageResourceObserver* observer) {
@@ -177,11 +183,8 @@ void ImageResourceContent::AddObserver(ImageResourceObserver* observer) {
     observer->ImageChanged(this, CanDeferInvalidation::kNo);
   }
 
-  if (IsLoaded() && observers_.Contains(observer) &&
-      !info_->SchedulingReloadOrShouldReloadBrokenPlaceholder()) {
-    MarkObserverFinished(observer);
-    observer->ImageNotifyFinished(this);
-  }
+  if (IsLoaded() && observers_.Contains(observer))
+    HandleObserverFinished(observer);
 }
 
 void ImageResourceContent::RemoveObserver(ImageResourceObserver* observer) {
@@ -296,10 +299,8 @@ void ImageResourceContent::NotifyObservers(
       if (observers_.Contains(observer)) {
         observer->ImageChanged(this, defer);
         if (notifying_finish_option == kShouldNotifyFinish &&
-            observers_.Contains(observer) &&
-            !info_->SchedulingReloadOrShouldReloadBrokenPlaceholder()) {
-          MarkObserverFinished(observer);
-          observer->ImageNotifyFinished(this);
+            observers_.Contains(observer)) {
+          HandleObserverFinished(observer);
         }
       }
     }

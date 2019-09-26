@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/core/page/focus_controller.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_reader.h"
 #include "third_party/blink/renderer/modules/nfc/nfc_type_converters.h"
@@ -188,7 +188,7 @@ void NFCProxy::EnsureMojoConnection() {
   if (nfc_remote_)
     return;
 
-  GetSupplementable()->GetInterfaceProvider()->GetInterface(
+  GetSupplementable()->GetBrowserInterfaceBroker().GetInterface(
       nfc_remote_.BindNewPipeAndPassReceiver());
   nfc_remote_.set_disconnect_handler(
       WTF::Bind(&NFCProxy::OnMojoConnectionError, WrapWeakPersistent(this)));

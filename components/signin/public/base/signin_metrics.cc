@@ -742,11 +742,6 @@ void LogAuthError(const GoogleServiceAuthError& auth_error) {
   }
 }
 
-void LogSigninConfirmHistogramValue(ConfirmationUsage action) {
-  UMA_HISTOGRAM_ENUMERATION("Signin.OneClickConfirmation", action,
-                            HISTOGRAM_CONFIRM_MAX);
-}
-
 void LogAccountReconcilorStateOnGaiaResponse(AccountReconcilorState state) {
   UMA_HISTOGRAM_ENUMERATION("Signin.AccountReconcilorState.OnGaiaResponse",
                             state, ACCOUNT_RECONCILOR_HISTOGRAM_COUNT);

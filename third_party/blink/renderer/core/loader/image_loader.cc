@@ -788,10 +788,6 @@ void ImageLoader::ImageNotifyFinished(ImageResourceContent* resource) {
   image_complete_ = true;
   delay_until_image_notify_finished_ = nullptr;
 
-  // Update ImageAnimationPolicy for image_content_.
-  if (image_content_)
-    image_content_->UpdateImageAnimationPolicy();
-
   UpdateLayoutObject();
 
   if (image_content_ && image_content_->HasImage()) {

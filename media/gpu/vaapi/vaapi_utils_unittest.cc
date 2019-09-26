@@ -56,7 +56,8 @@ TEST_F(VaapiUtilsTest, ScopedVAImage) {
   std::vector<VASurfaceID> va_surfaces;
   const gfx::Size coded_size(64, 64);
   ASSERT_TRUE(vaapi_wrapper_->CreateContextAndSurfaces(
-      VA_RT_FORMAT_YUV420, coded_size, 1, &va_surfaces));
+      VA_RT_FORMAT_YUV420, coded_size, VaapiWrapper::SurfaceUsageHint::kGeneric,
+      1, &va_surfaces));
   ASSERT_EQ(va_surfaces.size(), 1u);
 
   std::unique_ptr<ScopedVAImage> scoped_image;

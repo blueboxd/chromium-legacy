@@ -370,9 +370,6 @@ struct LessThanUniqueKey {
 base::string16 ValueElementVectorToString(
     const ValueElementVector& value_element_pairs);
 
-// Returns true if |scheme| corresponds to http auth scheme.
-bool IsHttpAuthScheme(PasswordForm::Scheme scheme);
-
 // For testing.
 std::ostream& operator<<(std::ostream& os, const PasswordForm& form);
 std::ostream& operator<<(std::ostream& os, PasswordForm* form);

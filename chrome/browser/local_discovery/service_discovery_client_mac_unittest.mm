@@ -30,7 +30,7 @@
 @implementation TestNSNetService
 
 - (id)initWithData:(NSData*)data {
-  if ((self = [super init])) {
+  if ((self = [super initWithDomain:@"" type:@"_tcp." name:@"Test.123"])) {
     data_.reset([data retain]);
   }
   return self;

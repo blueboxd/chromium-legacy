@@ -9,6 +9,7 @@ import "gpu/ipc/common/vulkan_ycbcr_info.mojom";
 import "mojo/public/mojom/base/time.mojom";
 import "mojo/public/mojom/base/values.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "ui/gfx/mojom/buffer_types.mojom";
 import "ui/gfx/mojom/color_space.mojom";
 
 // See media/base/audio_codecs.h for descriptions.
@@ -275,6 +276,7 @@ union VideoFrameData {
   EosVideoFrameData eos_data;
   SharedBufferVideoFrameData shared_buffer_data;
   DmabufVideoFrameData dmabuf_data;
+  GpuMemoryBufferVideoFrameData gpu_memory_buffer_data;
   MailboxVideoFrameData mailbox_data;
 };
 
@@ -302,6 +304,11 @@ struct SharedBufferVideoFrameData {
 struct DmabufVideoFrameData {
   // Size depends on media::VideoFrame::NumPlanes with frame format.
   array<handle> dmabuf_fds;
+};
+
+struct GpuMemoryBufferVideoFrameData {
+  gfx.mojom.GpuMemoryBufferHandle gpu_memory_buffer_handle;
+  array<gpu.mojom.MailboxHolder, 4> mailbox_holder;
 };
 
 // This defines video frame data stored in texture mailboxes.

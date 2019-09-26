@@ -5,6 +5,7 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/scoped_observer.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -111,7 +112,13 @@ IN_PROC_BROWSER_TEST_F(ProfileHelperTest, OpenNewWindowForProfile) {
 #endif
 }
 
-IN_PROC_BROWSER_TEST_F(ProfileHelperTest, DeleteSoleProfile) {
+#if (defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)) && \
+    defined(NDEBUG)
+#define MAYBE_DeleteSoleProfile DISABLED_DeleteSoleProfile
+#else
+#define MAYBE_DeleteSoleProfile DeleteSoleProfile
+#endif
+IN_PROC_BROWSER_TEST_F(ProfileHelperTest, MAYBE_DeleteSoleProfile) {
   content::TestWebUI web_ui;
   Browser* original_browser = browser();
   ProfileAttributesStorage& storage =

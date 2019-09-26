@@ -10,7 +10,7 @@ class MockSpatialNavigationHostService {
     this.callback = null;
     this.bindingSet_ = new mojo.BindingSet(blink.mojom.SpatialNavigationHost);
     this.interceptor_ = new MojoInterfaceInterceptor(
-        blink.mojom.SpatialNavigationHost.name);
+        blink.mojom.SpatialNavigationHost.name, "context", true);
     this.interceptor_.oninterfacerequest =
         e => this.bindingSet_.addBinding(this, e.handle);
     this.interceptor_.start();

@@ -6,6 +6,12 @@
 
 namespace media {
 
+// static
+DmabufVideoFramePool::DmabufId DmabufVideoFramePool::GetDmabufId(
+    const VideoFrame& frame) {
+  return &(frame.DmabufFds());
+}
+
 DmabufVideoFramePool::DmabufVideoFramePool() = default;
 
 DmabufVideoFramePool::~DmabufVideoFramePool() = default;

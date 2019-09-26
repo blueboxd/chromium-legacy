@@ -1597,7 +1597,7 @@
 
     'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage': [
       'android', 'release_trybot', 'arm64', 'static_angle', 'resource_whitelisting',
-      'java_coverage',
+      'java_coverage', 'partial_code_coverage_instrumentation',
     ],
 
     'gpu_tests_android_vulkan_release_trybot': [

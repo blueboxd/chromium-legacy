@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/accessibility/ax_media_element.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/layout/layout_object.h"
 #include "third_party/blink/renderer/platform/text/platform_locale.h"
@@ -35,8 +36,7 @@ String AccessibilityMediaElement::TextAlternative(
   if (IsUnplayable()) {
     HTMLMediaElement* element =
         static_cast<HTMLMediaElement*>(layout_object_->GetNode());
-    return element->GetLocale().QueryString(
-        WebLocalizedString::kAXMediaPlaybackError);
+    return element->GetLocale().QueryString(IDS_MEDIA_PLAYBACK_ERROR);
   }
   return AXLayoutObject::TextAlternative(
       recursive, in_aria_labelled_by_traversal, visited, name_from,

@@ -47,6 +47,21 @@ class LayoutNGTextTest : public PageTestBase {
   }
 };
 
+TEST_F(LayoutNGTextTest, SetTextWithOffsetAppendControl) {
+  if (!RuntimeEnabledFeatures::LayoutNGEnabled())
+    return;
+
+  SetBodyInnerHTML(u"<pre id=target>a</pre>");
+  Text& text = To<Text>(*GetElementById("target")->firstChild());
+  // Note: "\n" is control character instead of text character.
+  text.appendData("\nX");
+
+  EXPECT_EQ(
+      "*{'a', ShapeResult=0+1}\n"
+      "*{'X', ShapeResult=2+1}\n",
+      GetItemsAsString(*text.GetLayoutObject()));
+}
+
 TEST_F(LayoutNGTextTest, SetTextWithOffsetAppendCollapseWhiteSpace) {
   if (!RuntimeEnabledFeatures::LayoutNGEnabled())
     return;

@@ -81,13 +81,6 @@ class FileManagerUI {
     this.copyConfirmDialog.setOkLabel(str('CONFIRM_COPY_BUTTON_LABEL'));
 
     /**
-     * Multi-profile share dialog.
-     * @type {!MultiProfileShareDialog}
-     * @const
-     */
-    this.multiProfileShareDialog = new MultiProfileShareDialog(this.element);
-
-    /**
      * Default task picker.
      * @type {!cr.filebrowser.DefaultTaskDialog}
      * @const

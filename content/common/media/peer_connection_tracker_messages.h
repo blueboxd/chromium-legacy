@@ -14,21 +14,7 @@
 #define IPC_MESSAGE_EXPORT CONTENT_EXPORT
 #define IPC_MESSAGE_START PeerConnectionTrackerMsgStart
 
-IPC_STRUCT_BEGIN(PeerConnectionInfo)
-  // ID of the peer connection. Unique only within the renderer process.
-  IPC_STRUCT_MEMBER(int, lid)
-  // Serialized version of RTCConfiguration.
-  IPC_STRUCT_MEMBER(std::string, rtc_configuration)
-  // Serialized version of blink::WebMediaConstraints.
-  IPC_STRUCT_MEMBER(std::string, constraints)
-  // The URL of the blink::WebLocalFrame within which this peer connection
-  // lives. Used for debugging purposes (displayed by WebRTC-Internals).
-  IPC_STRUCT_MEMBER(std::string, url)
-IPC_STRUCT_END()
-
 // Messages sent from PeerConnectionTracker to PeerConnectionTrackerHost.
-IPC_MESSAGE_CONTROL1(PeerConnectionTrackerHost_AddPeerConnection,
-                     PeerConnectionInfo /* info */)
 IPC_MESSAGE_CONTROL2(PeerConnectionTrackerHost_AddStandardStats,
                      int /* lid */,
                      base::ListValue /* value */)

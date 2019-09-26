@@ -10,6 +10,9 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "content/common/mime_sniffing_url_loader.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe_utils.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -106,8 +109,13 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
     ASSERT_TRUE(mojo::FuseInterface(
         std::move(new_client_request),
         destination_loader_client_.CreateInterfacePtr().PassInterface()));
-    source_loader_request_ = mojo::MakeRequest(original_loader);
-    *original_client_request = mojo::MakeRequest(&source_loader_client_ptr_);
+
+    mojo::PendingRemote<network::mojom::URLLoader> pending_remote;
+    pending_receiver_ = pending_remote.InitWithNewPipeAndPassReceiver();
+    original_loader->Bind(std::move(pending_remote));
+
+    *original_client_request =
+        source_loader_client_remote_.BindNewPipeAndPassReceiver();
   }
 
   void LoadResponseBody(const std::string& body) {
@@ -116,7 +124,8 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
       mojo::ScopedDataPipeConsumerHandle consumer;
       EXPECT_EQ(MOJO_RESULT_OK,
                 mojo::CreateDataPipe(nullptr, &source_body_handle_, &consumer));
-      source_loader_client()->OnStartLoadingResponseBody(std::move(consumer));
+      source_loader_client_remote()->OnStartLoadingResponseBody(
+          std::move(consumer));
     }
 
     MojoDataPipeSender sender(std::move(source_body_handle_));
@@ -129,7 +138,8 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
   }
 
   void CompleteResponse() {
-    source_loader_client()->OnComplete(network::URLLoaderCompletionStatus());
+    source_loader_client_remote()->OnComplete(
+        network::URLLoaderCompletionStatus());
     source_body_handle_.reset();
   }
 
@@ -162,8 +172,8 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
     return &destination_loader_client_;
   }
 
-  network::mojom::URLLoaderClient* source_loader_client() {
-    return source_loader_client_ptr_.get();
+  mojo::Remote<network::mojom::URLLoaderClient>& source_loader_client_remote() {
+    return source_loader_client_remote_;
   }
 
  private:
@@ -175,9 +185,9 @@ class MockDelegate : public blink::URLLoaderThrottle::Delegate {
   network::mojom::URLLoaderPtr destination_loader_ptr_;
   network::TestURLLoaderClient destination_loader_client_;
 
-  // A pair of a loader and a loader client for source of the response.
-  network::mojom::URLLoaderClientPtr source_loader_client_ptr_;
-  network::mojom::URLLoaderRequest source_loader_request_;
+  // A pair of a receiver and a remote for source of the response.
+  mojo::PendingReceiver<network::mojom::URLLoader> pending_receiver_;
+  mojo::Remote<network::mojom::URLLoaderClient> source_loader_client_remote_;
 
   mojo::ScopedDataPipeProducerHandle source_body_handle_;
 };
@@ -308,7 +318,7 @@ TEST_F(MimeSniffingThrottleTest, NoBody) {
   EXPECT_TRUE(delegate->is_intercepted());
 
   // Call OnComplete() without sending body.
-  delegate->source_loader_client()->OnComplete(
+  delegate->source_loader_client_remote()->OnComplete(
       network::URLLoaderCompletionStatus(net::ERR_FAILED));
   delegate->destination_loader_client()->RunUntilComplete();
 
@@ -332,11 +342,11 @@ TEST_F(MimeSniffingThrottleTest, EmptyBody) {
   EXPECT_TRUE(delegate->is_intercepted());
 
   mojo::DataPipe pipe;
-  delegate->source_loader_client()->OnStartLoadingResponseBody(
+  delegate->source_loader_client_remote()->OnStartLoadingResponseBody(
       std::move(pipe.consumer_handle));
   pipe.producer_handle.reset();  // The pipe is empty.
 
-  delegate->source_loader_client()->OnComplete(
+  delegate->source_loader_client_remote()->OnComplete(
       network::URLLoaderCompletionStatus());
   delegate->destination_loader_client()->RunUntilComplete();
 

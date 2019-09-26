@@ -86,11 +86,6 @@ class NativeThemeGtk : public ui::NativeThemeBase {
 
   ScopedCssProvider theme_css_override_;
 
-  // Used to notify the web native theme of changes to dark mode, high
-  // contrast, and preferred color scheme.
-  std::unique_ptr<NativeTheme::ColorSchemeNativeThemeObserver>
-      color_scheme_observer_;
-
   DISALLOW_COPY_AND_ASSIGN(NativeThemeGtk);
 };
 

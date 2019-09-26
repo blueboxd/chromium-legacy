@@ -31,6 +31,7 @@
 #include "third_party/blink/renderer/core/html/forms/base_temporal_input_type.h"
 
 #include <limits>
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/html/forms/chooser_only_temporal_input_type_view.h"
 #include "third_party/blink/renderer/core/html/forms/html_input_element.h"
 #include "third_party/blink/renderer/core/html/forms/multiple_fields_temporal_input_type_view.h"
@@ -47,8 +48,7 @@ static const int kMsecPerMinute = 60 * 1000;
 static const int kMsecPerSecond = 1000;
 
 String BaseTemporalInputType::BadInputText() const {
-  return GetLocale().QueryString(
-      WebLocalizedString::kValidationBadInputForDateTime);
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_BAD_INPUT_DATETIME);
 }
 
 InputTypeView* BaseTemporalInputType::CreateView() {
@@ -96,15 +96,13 @@ bool BaseTemporalInputType::TypeMismatch() const {
 }
 
 String BaseTemporalInputType::RangeOverflowText(const Decimal& maximum) const {
-  return GetLocale().QueryString(
-      WebLocalizedString::kValidationRangeOverflowDateTime,
-      LocalizeValue(Serialize(maximum)));
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_RANGE_OVERFLOW_DATETIME,
+                                 LocalizeValue(Serialize(maximum)));
 }
 
 String BaseTemporalInputType::RangeUnderflowText(const Decimal& minimum) const {
-  return GetLocale().QueryString(
-      WebLocalizedString::kValidationRangeUnderflowDateTime,
-      LocalizeValue(Serialize(minimum)));
+  return GetLocale().QueryString(IDS_FORM_VALIDATION_RANGE_UNDERFLOW_DATETIME,
+                                 LocalizeValue(Serialize(minimum)));
 }
 
 Decimal BaseTemporalInputType::DefaultValueForStepUp() const {

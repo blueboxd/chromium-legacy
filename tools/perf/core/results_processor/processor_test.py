@@ -19,11 +19,13 @@ import mock
 
 from core.results_processor import json3_output
 from core.results_processor import histograms_output
+from core.results_processor import html_output
 from core.results_processor import processor
 from core.results_processor import testing
 
 from tracing.value import histogram
 from tracing.value import histogram_set
+from tracing_build import render_histograms_viewer
 
 
 class ResultsProcessorIntegrationTests(unittest.TestCase):
@@ -237,6 +239,118 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     out_histograms = histogram_set.HistogramSet()
     out_histograms.ImportDicts(results)
     self.assertEqual(len(out_histograms), 2)
+    diag_values = [list(v) for v in  out_histograms.shared_diagnostics]
+    self.assertIn(['label1'], diag_values)
+    self.assertIn(['label2'], diag_values)
+
+  # TODO(crbug.com/981349): Remove this mock when html format
+  # is enabled in results_processor.
+  @mock.patch('core.results_processor.command_line.SUPPORTED_FORMATS',
+              ['html'])
+  def testHtmlOutput(self):
+    hist_file = os.path.join(self.output_dir,
+                             histograms_output.HISTOGRAM_DICTS_NAME)
+    with open(hist_file, 'w') as f:
+      json.dump([histogram.Histogram('a', 'unitless').AsDict()], f)
+
+    self.SerializeIntermediateResults(
+        test_results=[
+            testing.TestResult(
+                'benchmark/story',
+                artifacts={'histogram_dicts.json': testing.Artifact(hist_file)},
+            ),
+        ],
+        diagnostics={
+            'benchmarks': ['benchmark'],
+            'osNames': ['linux'],
+            'documentationUrls': [['documentation', 'url']],
+        },
+        start_time='2009-02-13T23:31:30.987000Z',
+    )
+
+    processor.main([
+        '--output-format', 'html',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label',
+    ])
+
+    with open(os.path.join(
+        self.output_dir, html_output.OUTPUT_FILENAME)) as f:
+      results = render_histograms_viewer.ReadExistingResults(f.read())
+
+    out_histograms = histogram_set.HistogramSet()
+    out_histograms.ImportDicts(results)
+    self.assertEqual(len(out_histograms), 1)
+    self.assertEqual(out_histograms.GetFirstHistogram().name, 'a')
+    self.assertEqual(out_histograms.GetFirstHistogram().unit, 'unitless')
+
+    diag_values = [list(v) for v in  out_histograms.shared_diagnostics]
+    self.assertEqual(len(diag_values), 4)
+    self.assertIn(['benchmark'], diag_values)
+    self.assertIn(['linux'], diag_values)
+    self.assertIn([['documentation', 'url']], diag_values)
+    self.assertIn(['label'], diag_values)
+
+  # TODO(crbug.com/981349): Remove this mock when html format
+  # is enabled in results_processor.
+  @mock.patch('core.results_processor.command_line.SUPPORTED_FORMATS',
+              ['html'])
+  def testHtmlOutputResetResults(self):
+    self.SerializeIntermediateResults([])
+
+    processor.main([
+        '--output-format', 'html',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label1',
+    ])
+
+    processor.main([
+        '--output-format', 'html',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label2',
+        '--reset-results',
+    ])
+
+    with open(os.path.join(
+        self.output_dir, html_output.OUTPUT_FILENAME)) as f:
+      results = render_histograms_viewer.ReadExistingResults(f.read())
+
+    out_histograms = histogram_set.HistogramSet()
+    out_histograms.ImportDicts(results)
+    diag_values = [list(v) for v in  out_histograms.shared_diagnostics]
+    self.assertNotIn(['label1'], diag_values)
+    self.assertIn(['label2'], diag_values)
+
+  # TODO(crbug.com/981349): Remove this mock when html format
+  # is enabled in results_processor.
+  @mock.patch('core.results_processor.command_line.SUPPORTED_FORMATS',
+              ['html'])
+  def testHtmlOutputAppendResults(self):
+    self.SerializeIntermediateResults([])
+
+    processor.main([
+        '--output-format', 'html',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label1',
+    ])
+
+    processor.main([
+        '--output-format', 'html',
+        '--output-dir', self.output_dir,
+        '--intermediate-dir', self.intermediate_dir,
+        '--results-label', 'label2',
+    ])
+
+    with open(os.path.join(
+        self.output_dir, html_output.OUTPUT_FILENAME)) as f:
+      results = render_histograms_viewer.ReadExistingResults(f.read())
+
+    out_histograms = histogram_set.HistogramSet()
+    out_histograms.ImportDicts(results)
     diag_values = [list(v) for v in  out_histograms.shared_diagnostics]
     self.assertIn(['label1'], diag_values)
     self.assertIn(['label2'], diag_values)

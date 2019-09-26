@@ -76,7 +76,7 @@ MultiDeviceNotificationPresenter::GetMetricValueForNotification(
 MultiDeviceNotificationPresenter::MultiDeviceNotificationPresenter(
     message_center::MessageCenter* message_center,
     service_manager::Connector* connector)
-    : message_center_(message_center), connector_(connector), binding_(this) {
+    : message_center_(message_center), connector_(connector) {
   DCHECK(message_center_);
   DCHECK(connector_);
 
@@ -227,11 +227,8 @@ void MultiDeviceNotificationPresenter::ObserveMultiDeviceSetupIfPossible() {
       &multidevice_setup_ptr_);
 
   // Add this object as the delegate of the MultiDeviceSetup Service.
-  chromeos::multidevice_setup::mojom::AccountStatusChangeDelegatePtr
-      delegate_ptr;
-  binding_.Bind(mojo::MakeRequest(&delegate_ptr));
   multidevice_setup_ptr_->SetAccountStatusChangeDelegate(
-      std::move(delegate_ptr));
+      receiver_.BindNewPipeAndPassRemote());
 
   message_center_->AddObserver(this);
 }

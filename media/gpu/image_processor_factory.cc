@@ -10,6 +10,10 @@
 #include "media/gpu/buildflags.h"
 #include "media/gpu/libyuv_image_processor.h"
 
+#if BUILDFLAG(USE_VAAPI)
+#include "media/gpu/vaapi/vaapi_image_processor.h"
+#endif  // BUILDFLAG(USE_VAAPI)
+
 #if BUILDFLAG(USE_V4L2_CODEC)
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
@@ -25,6 +29,12 @@ std::unique_ptr<ImageProcessor> ImageProcessorFactory::Create(
     size_t num_buffers,
     ImageProcessor::ErrorCB error_cb) {
   std::unique_ptr<ImageProcessor> image_processor;
+#if BUILDFLAG(USE_VAAPI)
+  image_processor = VaapiImageProcessor::Create(
+      input_config, output_config, preferred_output_modes, error_cb);
+  if (image_processor)
+    return image_processor;
+#endif  // BUILDFLAG(USE_VAAPI)
 #if BUILDFLAG(USE_V4L2_CODEC)
   for (auto output_mode : preferred_output_modes) {
     image_processor = V4L2ImageProcessor::Create(

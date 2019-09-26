@@ -764,6 +764,31 @@ IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
   delete_observer_rfh_a.WaitUntilDeleted();
 }
 
+// TODO(https://crbug.com/154571): Shared workers are not available on Android.
+#if defined(OS_ANDROID)
+#define MAYBE_PageWithSharedWorkerNotCached \
+  DISABLED_PageWithSharedWorkerNotCached
+#else
+#define MAYBE_PageWithSharedWorkerNotCached PageWithSharedWorkerNotCached
+#endif
+IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
+                       MAYBE_PageWithSharedWorkerNotCached) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  EXPECT_TRUE(NavigateToURL(
+      shell(),
+      embedded_test_server()->GetURL(
+          "a.com", "/back_forward_cache/page_with_shared_worker.html")));
+  RenderFrameDeletedObserver delete_observer_rfh_a(current_frame_host());
+
+  // Navigate away.
+  EXPECT_TRUE(NavigateToURL(
+      shell(), embedded_test_server()->GetURL("b.com", "/title1.html")));
+
+  // The page with the unsupported feature should be deleted (not cached).
+  delete_observer_rfh_a.WaitUntilDeleted();
+}
+
 IN_PROC_BROWSER_TEST_F(BackForwardCacheBrowserTest,
                        SubframeWithDisallowedFeatureNotCached) {
   ASSERT_TRUE(embedded_test_server()->Start());

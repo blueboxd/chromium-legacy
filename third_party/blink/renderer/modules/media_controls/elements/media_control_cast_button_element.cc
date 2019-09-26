@@ -57,12 +57,12 @@ void MediaControlCastButtonElement::TryShowOverlay() {
 void MediaControlCastButtonElement::UpdateDisplayType() {
   if (IsPlayingRemotely()) {
     setAttribute(html_names::kAriaLabelAttr,
-                 WTF::AtomicString(GetLocale().QueryString(
-                     WebLocalizedString::kAXMediaCastOnButton)));
+                 WTF::AtomicString(
+                     GetLocale().QueryString(IDS_AX_MEDIA_CAST_ON_BUTTON)));
   } else {
     setAttribute(html_names::kAriaLabelAttr,
-                 WTF::AtomicString(GetLocale().QueryString(
-                     WebLocalizedString::kAXMediaCastOffButton)));
+                 WTF::AtomicString(
+                     GetLocale().QueryString(IDS_AX_MEDIA_CAST_OFF_BUTTON)));
   }
   UpdateOverflowString();
   SetClass("on", IsPlayingRemotely());

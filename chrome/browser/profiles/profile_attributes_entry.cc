@@ -43,6 +43,9 @@ int NextAvailableMetricsBucketIndex() {
 
 }  // namespace
 
+const base::Feature kPersistUPAInProfileInfoCache{
+    "PersistUPAInProfileInfoCache", base::FEATURE_ENABLED_BY_DEFAULT};
+
 const char ProfileAttributesEntry::kAvatarIconKey[] = "avatar_icon";
 const char ProfileAttributesEntry::kBackgroundAppsKey[] = "background_apps";
 const char ProfileAttributesEntry::kProfileIsEphemeral[] = "is_ephemeral";
@@ -80,6 +83,14 @@ void ProfileAttributesEntry::Initialize(ProfileInfoCache* cache,
 
   DCHECK(profile_info_cache_->GetUserDataDir() == profile_path_.DirName());
   storage_key_ = profile_path_.BaseName().MaybeAsASCII();
+
+  const base::Value* entry_data = GetEntryData();
+  if (entry_data) {
+    if (!entry_data->FindKey(kIsConsentedPrimaryAccountKey)) {
+      SetBool(kIsConsentedPrimaryAccountKey,
+              !GetGAIAId().empty() || !GetUserName().empty());
+    }
+  }
 
   is_force_signin_enabled_ = signin_util::IsForceSigninEnabled();
   if (is_force_signin_enabled_) {

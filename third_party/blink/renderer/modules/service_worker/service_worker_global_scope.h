@@ -108,15 +108,13 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
                   const Vector<CSPHeaderAndType>& response_csp_headers,
                   const Vector<String>* response_origin_trial_tokens,
                   int64_t appcache_id) override;
-  // Fetches and runs the top-level classic worker script for the 'new' or
-  // 'update' service worker cases.
+  // Fetches and runs the top-level classic worker script.
   void FetchAndRunClassicScript(
       const KURL& script_url,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
       WorkerResourceTimingNotifier& outside_resource_timing_notifier,
       const v8_inspector::V8StackTraceId& stack_id) override;
-  // Fetches and runs the top-level module worker script for the 'new' or
-  // 'update' service worker cases.
+  // Fetches and runs the top-level module worker script.
   void FetchAndRunModuleScript(
       const KURL& module_url_record,
       const FetchClientSettingsObjectSnapshot& outside_settings_object,
@@ -124,18 +122,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       network::mojom::CredentialsMode) override;
   void Dispose() override;
   InstalledScriptsManager* GetInstalledScriptsManager() override;
-
-  // Runs the installed top-level classic worker script for the 'installed'
-  // service worker case.
-  void RunInstalledClassicScript(const KURL& script_url,
-                                 const v8_inspector::V8StackTraceId& stack_id);
-
-  // Runs the installed top-level module worker script for the 'installed'
-  // service worker case.
-  void RunInstalledModuleScript(
-      const KURL& module_url_record,
-      const FetchClientSettingsObjectSnapshot& outside_settings_object,
-      network::mojom::CredentialsMode);
 
   // Counts an evaluated script and its size. Called for the main worker script.
   void CountWorkerScript(size_t script_size, size_t cached_metadata_size);
@@ -331,6 +317,11 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
       WorkerClassicScriptLoader* classic_script_loader);
   void DidFetchClassicScript(WorkerClassicScriptLoader* classic_script_loader,
                              const v8_inspector::V8StackTraceId& stack_id);
+
+  // Loads and runs the installed top-level classic worker script.
+  void LoadAndRunInstalledClassicScript(
+      const KURL& script_url,
+      const v8_inspector::V8StackTraceId& stack_id);
 
   // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm
   void RunClassicScript(const KURL& response_url,

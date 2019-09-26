@@ -109,9 +109,7 @@ PrefService* ApplicationContext::GetLocalState() {
     base::FilePath local_state_path;
     base::PathService::Get(base::DIR_APP_DATA, &local_state_path);
     local_state_path =
-        local_state_path.Append(FILE_PATH_LITERAL("ChromeWebView"));
-    local_state_path =
-        local_state_path.Append(FILE_PATH_LITERAL("Local State"));
+        local_state_path.Append(FILE_PATH_LITERAL("ChromeWebViewLocalState"));
 
     scoped_refptr<PersistentPrefStore> user_pref_store =
         new JsonPrefStore(std::move(local_state_path));

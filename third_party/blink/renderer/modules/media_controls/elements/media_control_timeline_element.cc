@@ -6,6 +6,7 @@
 
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
 #include "third_party/blink/renderer/core/dom/shadow_root.h"
 #include "third_party/blink/renderer/core/events/keyboard_event.h"
@@ -66,17 +67,16 @@ bool MediaControlTimelineElement::WillRespondToMouseClickEvents() {
 void MediaControlTimelineElement::SetPosition(double current_time) {
   setValue(String::Number(current_time));
   String aria_label =
-      GetLocale().QueryString(
-          MediaElement().IsHTMLVideoElement()
-              ? WebLocalizedString::kAXMediaVideoSliderHelp
-              : WebLocalizedString::kAXMediaAudioSliderHelp) +
+      GetLocale().QueryString(MediaElement().IsHTMLVideoElement()
+                                  ? IDS_AX_MEDIA_VIDEO_SLIDER_HELP
+                                  : IDS_AX_MEDIA_AUDIO_SLIDER_HELP) +
       " " + GetMediaControls().CurrentTimeDisplay().textContent(true) + " " +
       GetMediaControls().RemainingTimeDisplay().textContent(true);
   setAttribute(html_names::kAriaLabelAttr, AtomicString(aria_label));
 
   setAttribute(html_names::kAriaValuetextAttr,
                AtomicString(GetLocale().QueryString(
-                   WebLocalizedString::kAXMediaCurrentTimeDisplay,
+                   IDS_AX_MEDIA_CURRENT_TIME_DISPLAY,
                    GetMediaControls().CurrentTimeDisplay().textContent(true))));
   RenderBarSegments();
 }

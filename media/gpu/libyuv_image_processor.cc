@@ -164,16 +164,6 @@ std::unique_ptr<LibYUVImageProcessor> LibYUVImageProcessor::Create(
   return processor;
 }
 
-#if defined(OS_POSIX) || defined(OS_FUCHSIA)
-bool LibYUVImageProcessor::ProcessInternal(
-    scoped_refptr<VideoFrame> frame,
-    LegacyFrameReadyCB cb) {
-  DCHECK_CALLED_ON_VALID_THREAD(client_thread_checker_);
-  NOTIMPLEMENTED();
-  return false;
-}
-#endif
-
 bool LibYUVImageProcessor::ProcessInternal(
     scoped_refptr<VideoFrame> input_frame,
     scoped_refptr<VideoFrame> output_frame,

@@ -1268,22 +1268,8 @@ bool Animation::Update(TimingUpdateReason reason) {
 
   if ((idle || Limited()) && !finished_) {
     if (reason == kTimingUpdateForAnimationFrame && (idle || start_time_)) {
-      if (idle) {
-        const AtomicString& event_type = event_type_names::kCancel;
-        if (GetExecutionContext() && HasEventListeners(event_type)) {
-          double event_current_time = NullValue();
-          // TODO(crbug.com/916117): Handle NaN values for scroll-linked
-          // animations.
-          pending_cancelled_event_ =
-              MakeGarbageCollected<AnimationPlaybackEvent>(
-                  event_type, event_current_time, TimelineTime());
-          pending_cancelled_event_->SetTarget(this);
-          pending_cancelled_event_->SetCurrentTarget(this);
-          document_->EnqueueAnimationFrameEvent(pending_cancelled_event_);
-        }
-      } else {
+      if (!idle)
         QueueFinishedEvent();
-      }
       finished_ = true;
     }
   }
@@ -1348,17 +1334,59 @@ base::Optional<AnimationTimeDelta> Animation::TimeToEffectChange() {
 }
 
 void Animation::cancel() {
-  PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
+  // TODO(crbug.com/916117): Get rid of internal_play_state_.
+  internal_play_state_ = kUnset;
+  AnimationPlayState initial_play_state = CalculateAnimationPlayState();
+  if (initial_play_state != kIdle) {
+    if (pending()) {
+      // TODO(crbug.com/916117): Rejecting the ready promise should be performed
+      // inside reset pending tasks once aligned with the spec.
+      if (ready_promise_)
+        RejectAndResetPromiseMaybeAsync(ready_promise_.Get());
+    }
+    ResetPendingTasks();
 
-  if (PlayStateInternal() == kIdle)
-    return;
+    if (finished_promise_) {
+      if (finished_promise_->GetState() == AnimationPromise::kPending)
+        RejectAndResetPromiseMaybeAsync(finished_promise_.Get());
+      else
+        finished_promise_->Reset();
+    }
+
+    const AtomicString& event_type = event_type_names::kCancel;
+    if (GetExecutionContext() && HasEventListeners(event_type)) {
+      double event_current_time = NullValue();
+      // TODO(crbug.com/916117): Handle NaN values for scroll-linked
+      // animations.
+      pending_cancelled_event_ = MakeGarbageCollected<AnimationPlaybackEvent>(
+          event_type, event_current_time, TimelineTime());
+      pending_cancelled_event_->SetTarget(this);
+      pending_cancelled_event_->SetCurrentTarget(this);
+      document_->EnqueueAnimationFrameEvent(pending_cancelled_event_);
+    }
+  } else {
+    // Quietly reset without rejecting promises.
+    active_playback_rate_ = base::nullopt;
+    pending_pause_ = pending_play_ = false;
+  }
 
   hold_time_ = base::nullopt;
+  start_time_ = base::nullopt;
+
+  // TODO(crbug.com/958433): Phase out the use of these variables, which are not
+  // in the spec.
   paused_ = false;
   internal_play_state_ = kIdle;
-  start_time_ = base::nullopt;
   current_time_pending_ = false;
-  ResetPendingTasks();
+
+  animation_play_state_ = kIdle;
+
+  // Apply changes synchronously.
+  SetCompositorPending(/*effect_changed=*/false);
+  NotifyProbe();
+  SetOutdated();
+
+  // Force dispatch of canceled event.
   ForceServiceOnNextFrame();
 }
 
@@ -1456,17 +1484,10 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
   // Ordering is important, the ready promise should resolve/reject before
   // the finished promise.
   if (animation_->ready_promise_ && new_play_state != old_play_state) {
-    if (new_play_state == kIdle) {
-      if (animation_->ready_promise_->GetState() ==
-          AnimationPromise::kPending) {
-        animation_->RejectAndResetPromiseMaybeAsync(
-            animation_->ready_promise_.Get());
-      } else {
-        animation_->ready_promise_->Reset();
-      }
-      animation_->ResetPendingTasks();
-      animation_->ResolvePromiseMaybeAsync(animation_->ready_promise_.Get());
-    } else if (old_play_state == kPending) {
+    // Transitioning to an idle state is handled in cancel().
+    DCHECK(new_play_state != kIdle);
+
+    if (old_play_state == kPending) {
       animation_->ResetPendingTasks();
       animation_->ResolvePromiseMaybeAsync(animation_->ready_promise_.Get());
     } else if (new_play_state == kPending) {
@@ -1477,15 +1498,10 @@ Animation::PlayStateUpdateScope::~PlayStateUpdateScope() {
   }
 
   if (animation_->finished_promise_ && new_play_state != old_play_state) {
-    if (new_play_state == kIdle) {
-      if (animation_->finished_promise_->GetState() ==
-          AnimationPromise::kPending) {
-        animation_->RejectAndResetPromiseMaybeAsync(
-            animation_->finished_promise_.Get());
-      } else {
-        animation_->finished_promise_->Reset();
-      }
-    } else if (new_play_state == kFinished) {
+    // Transitioning to an idle state is handled in cancel().
+    DCHECK(new_play_state != kIdle);
+
+    if (new_play_state == kFinished) {
       animation_->ResetPendingTasks();
       animation_->ResolvePromiseMaybeAsync(animation_->finished_promise_.Get());
     } else if (old_play_state == kFinished) {

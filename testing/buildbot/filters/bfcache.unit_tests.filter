@@ -1,8 +1,1 @@
 # These tests currently fail when run with --enable-features=BackForwardCache
-
-# Autofill component issue. The AutofillDriver is associated with the
-# RenderFrameHost, but is is used before it has been associated.
-#
-# https://crbug.com/999842
--TabsApiUnitTest.TabsGoForwardAndBack
--TabsApiUnitTest.TabsGoForwardAndBackWithoutTabId

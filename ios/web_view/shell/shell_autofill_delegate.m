@@ -109,19 +109,39 @@
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
+    decideSavePolicyForAutofillProfile:(CWVAutofillProfile*)autofillProfile
+                       decisionHandler:
+                           (void (^)(BOOL decision))decisionHandler {
+  UIAlertController* alertController = [UIAlertController
+      alertControllerWithTitle:@"Save profile?"
+                       message:autofillProfile.debugDescription
+                preferredStyle:UIAlertControllerStyleActionSheet];
+  UIAlertAction* allowAction =
+      [UIAlertAction actionWithTitle:@"Allow"
+                               style:UIAlertActionStyleDefault
+                             handler:^(UIAlertAction* _Nonnull action) {
+                               decisionHandler(YES);
+                             }];
+  UIAlertAction* cancelAction =
+      [UIAlertAction actionWithTitle:@"Cancel"
+                               style:UIAlertActionStyleCancel
+                             handler:^(UIAlertAction* _Nonnull action) {
+                               decisionHandler(NO);
+                             }];
+  [alertController addAction:allowAction];
+  [alertController addAction:cancelAction];
+  [UIApplication.sharedApplication.keyWindow.rootViewController
+      presentViewController:alertController
+                   animated:YES
+                 completion:nil];
+}
+
+- (void)autofillController:(CWVAutofillController*)autofillController
     saveCreditCardWithSaver:(CWVCreditCardSaver*)saver {
   CWVCreditCard* creditCard = saver.creditCard;
-  NSString* cardSummary = [NSString
-      stringWithFormat:@"%@ %@ %@/%@", creditCard.cardHolderFullName,
-                       creditCard.cardNumber, creditCard.expirationMonth,
-                       creditCard.expirationYear];
-  NSArray<NSString*>* legalMessages =
-      [saver.legalMessages valueForKey:@"string"];
-  NSString* message = [[legalMessages arrayByAddingObject:cardSummary]
-      componentsJoinedByString:@"\n"];
   UIAlertController* alertController = [UIAlertController
       alertControllerWithTitle:@"Save card?"
-                       message:message
+                       message:creditCard.debugDescription
                 preferredStyle:UIAlertControllerStyleActionSheet];
   UIAlertAction* allowAction = [UIAlertAction
       actionWithTitle:@"Allow"
@@ -150,13 +170,12 @@
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    decidePasswordSavingPolicyForUsername:(NSString*)userName
-                          decisionHandler:(void (^)(CWVPasswordUserDecision))
-                                              decisionHandler {
+    decideSavePolicyForPassword:(CWVPassword*)password
+                decisionHandler:(void (^)(CWVPasswordUserDecision decision))
+                                    decisionHandler {
   UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:@"Save Password"
-                       message:@"Do you want to save your password on "
-                               @"this site?"
+      alertControllerWithTitle:@"Save password?"
+                       message:password.debugDescription
                 preferredStyle:UIAlertControllerStyleActionSheet];
 
   UIAlertAction* noAction = [UIAlertAction
@@ -190,16 +209,12 @@
 }
 
 - (void)autofillController:(CWVAutofillController*)autofillController
-    decidePasswordUpdatingPolicyForUsername:(NSString*)userName
-                            decisionHandler:(void (^)(CWVPasswordUserDecision))
-                                                decisionHandler {
-  NSString* message =
-      [NSString stringWithFormat:@"Do you want to update your password "
-                                 @"for %@ on this site?",
-                                 userName];
+    decideUpdatePolicyForPassword:(CWVPassword*)password
+                  decisionHandler:(void (^)(CWVPasswordUserDecision decision))
+                                      decisionHandler {
   UIAlertController* alertController = [UIAlertController
-      alertControllerWithTitle:@"Update Password"
-                       message:message
+      alertControllerWithTitle:@"Update password?"
+                       message:password.debugDescription
                 preferredStyle:UIAlertControllerStyleActionSheet];
 
   UIAlertAction* noAction = [UIAlertAction

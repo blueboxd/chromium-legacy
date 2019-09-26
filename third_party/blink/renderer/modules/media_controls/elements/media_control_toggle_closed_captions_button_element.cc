@@ -51,7 +51,7 @@ MediaControlToggleClosedCaptionsButtonElement::
     : MediaControlInputElement(media_controls) {
   setAttribute(html_names::kAriaLabelAttr,
                WTF::AtomicString(GetLocale().QueryString(
-                   WebLocalizedString::kAXMediaShowClosedCaptionsMenuButton)));
+                   IDS_AX_MEDIA_SHOW_CLOSED_CAPTIONS_MENU_BUTTON)));
   setType(input_type_names::kButton);
   SetShadowPseudoId(
       AtomicString("-webkit-media-controls-toggle-closed-captions-button"));

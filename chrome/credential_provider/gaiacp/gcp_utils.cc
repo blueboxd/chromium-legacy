@@ -39,6 +39,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/current_module.h"
 #include "base/win/embedded_i18n/language_selector.h"
+#include "build/branding_buildflags.h"
 #include "chrome/common/chrome_version.h"
 #include "chrome/credential_provider/common/gcp_strings.h"
 #include "chrome/credential_provider/gaiacp/gaia_resources.h"
@@ -771,7 +772,7 @@ std::string GetDictStringUTF8(const std::unique_ptr<base::Value>& dict,
 }
 
 base::FilePath::StringType GetInstallParentDirectoryName() {
-#if defined(GOOGLE_CHROME_BUILD)
+#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   return FILE_PATH_LITERAL("Google");
 #else
   return FILE_PATH_LITERAL("Chromium");

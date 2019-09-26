@@ -2354,12 +2354,6 @@ class FormAutofillTest : public ChromeRenderViewTest {
     EXPECT_FALSE(phone.IsAutofilled());
   }
 
-  static void FillFormIncludingNonFocusableElementsWrapper(
-      const FormData& form,
-      const WebFormControlElement& element) {
-    FillFormIncludingNonFocusableElements(form, element.Form());
-  }
-
   static WebString GetValueWrapper(WebFormControlElement element) {
     if (element.FormControlType() == "textarea")
       return element.To<WebFormControlElement>().Value();
@@ -3644,92 +3638,6 @@ TEST_F(FormAutofillTest, FillFormForUnownedNonASCIIForm) {
       "</TITLE></HEAD>");
   html.append(kUnownedUntitledFormHtml);
   TestFillForm(html.c_str(), true, nullptr);
-}
-
-TEST_F(FormAutofillTest, FillFormIncludingNonFocusableElements) {
-  static const AutofillFieldCase field_cases[] = {
-      // fields: form_control_type, name, initial_value, autocomplete_attribute,
-      //         should_be_autofilled, autofill_value, expected_value
-
-      // Regular empty fields (firstname & lastname) should be autofilled.
-      {"text",
-       "firstname",
-       "",
-       "",
-       true,
-       "filled firstname",
-       "filled firstname"},
-      {"text", "lastname", "", "", true, "filled lastname", "filled lastname"},
-      // hidden fields should not be extracted to form_data.
-      // Non empty fields should be overriden.
-      {"text",
-       "notempty",
-       "Hi",
-       "",
-       true,
-       "filled notempty",
-       "filled notempty"},
-      {"text",
-       "noautocomplete",
-       "",
-       "off",
-       true,
-       "filled noautocomplete",
-       "filled noautocomplete"},
-      // Disabled fields should not be autofilled.
-      {"text", "notenabled", "", "", false, "filled notenabled", ""},
-      // Readonly fields should not be autofilled.
-      {"text", "readonly", "", "", false, "filled readonly", ""},
-      // Fields with "visibility: hidden" should also be autofilled.
-      {"text",
-       "invisible",
-       "",
-       "",
-       true,
-       "filled invisible",
-       "filled invisible"},
-      // Fields with "display:none" should also be autofilled.
-      {"text",
-       "displaynone",
-       "",
-       "",
-       true,
-       "filled displaynone",
-       "filled displaynone"},
-      // Regular <input type="month"> should be autofilled.
-      {"month", "month", "", "", true, "2017-11", "2017-11"},
-      // Non-empty <input type="month"> should be overridden.
-      {"month", "month-nonempty", "2011-12", "", true, "2017-11", "2017-11"},
-      // Regular select fields should be autofilled.
-      {"select-one", "select", "", "", true, "TX", "TX"},
-      // Select fields should be autofilled even if they already have a
-      // non-empty value.
-      {"select-one", "select-nonempty", "CA", "", true, "TX", "TX"},
-      // Select fields should not be autofilled if no new value is passed from
-      // autofill profile. The existing value should not be overriden.
-      {"select-one", "select-unchanged", "CA", "", false, "CA", "CA"},
-      // Select fields that are not focusable should always be filled.
-      {"select-one", "select-displaynone", "CA", "", true, "CA", "CA"},
-      // Regular textarea elements should be autofilled.
-      {"textarea",
-       "textarea",
-       "",
-       "",
-       true,
-       "some multi-\nline value",
-       "some multi-\nline value"},
-      // Nonempty textarea elements should be overridden.
-      {"textarea",
-       "textarea-nonempty",
-       "Go\naway!",
-       "",
-       true,
-       "some multi-\nline value",
-       "some multi-\nline value"},
-  };
-  TestFormFillFunctions(
-      kFormHtml, false, nullptr, field_cases, base::size(field_cases),
-      &FillFormIncludingNonFocusableElementsWrapper, &GetValueWrapper);
 }
 
 TEST_F(FormAutofillTest, PreviewForm) {

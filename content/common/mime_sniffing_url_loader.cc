@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "content/common/mime_sniffing_throttle.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "net/base/mime_sniffer.h"
 
 namespace content {
@@ -15,35 +15,38 @@ namespace content {
 const char MimeSniffingURLLoader::kDefaultMimeType[] = "text/plain";
 
 // static
-std::tuple<network::mojom::URLLoaderPtr,
-           network::mojom::URLLoaderClientRequest,
+std::tuple<mojo::PendingRemote<network::mojom::URLLoader>,
+           mojo::PendingReceiver<network::mojom::URLLoaderClient>,
            MimeSniffingURLLoader*>
 MimeSniffingURLLoader::CreateLoader(
     base::WeakPtr<MimeSniffingThrottle> throttle,
     const GURL& response_url,
     const network::ResourceResponseHead& response_head,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
-  network::mojom::URLLoaderPtr url_loader;
-  network::mojom::URLLoaderClientPtr url_loader_client;
-  network::mojom::URLLoaderClientRequest url_loader_client_request =
-      mojo::MakeRequest(&url_loader_client);
+  mojo::PendingRemote<network::mojom::URLLoader> url_loader;
+  mojo::PendingRemote<network::mojom::URLLoaderClient> url_loader_client;
+  mojo::PendingReceiver<network::mojom::URLLoaderClient>
+      url_loader_client_receiver =
+          url_loader_client.InitWithNewPipeAndPassReceiver();
+
   auto loader = base::WrapUnique(new MimeSniffingURLLoader(
       std::move(throttle), response_url, response_head,
       std::move(url_loader_client), std::move(task_runner)));
   MimeSniffingURLLoader* loader_rawptr = loader.get();
-  mojo::MakeStrongBinding(std::move(loader), mojo::MakeRequest(&url_loader));
+  mojo::MakeSelfOwnedReceiver(std::move(loader),
+                              url_loader.InitWithNewPipeAndPassReceiver());
   return std::make_tuple(std::move(url_loader),
-                         std::move(url_loader_client_request), loader_rawptr);
+                         std::move(url_loader_client_receiver), loader_rawptr);
 }
 
 MimeSniffingURLLoader::MimeSniffingURLLoader(
     base::WeakPtr<MimeSniffingThrottle> throttle,
     const GURL& response_url,
     const network::ResourceResponseHead& response_head,
-    network::mojom::URLLoaderClientPtr destination_url_loader_client,
+    mojo::PendingRemote<network::mojom::URLLoaderClient>
+        destination_url_loader_client,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner)
     : throttle_(throttle),
-      source_url_client_binding_(this),
       destination_url_loader_client_(std::move(destination_url_loader_client)),
       response_url_(response_url),
       response_head_(response_head),
@@ -58,11 +61,12 @@ MimeSniffingURLLoader::MimeSniffingURLLoader(
 MimeSniffingURLLoader::~MimeSniffingURLLoader() = default;
 
 void MimeSniffingURLLoader::Start(
-    network::mojom::URLLoaderPtr source_url_loader,
-    network::mojom::URLLoaderClientRequest source_url_loader_client_request) {
-  source_url_loader_ = std::move(source_url_loader);
-  source_url_client_binding_.Bind(std::move(source_url_loader_client_request),
-                                  task_runner_);
+    mojo::PendingRemote<network::mojom::URLLoader> source_url_loader_remote,
+    mojo::PendingReceiver<network::mojom::URLLoaderClient>
+        source_url_client_receiver) {
+  source_url_loader_.Bind(std::move(source_url_loader_remote));
+  source_url_client_receiver_.Bind(std::move(source_url_client_receiver),
+                                   task_runner_);
 }
 
 void MimeSniffingURLLoader::OnReceiveResponse(
@@ -359,7 +363,7 @@ void MimeSniffingURLLoader::Abort() {
   body_consumer_watcher_.Cancel();
   body_producer_watcher_.Cancel();
   source_url_loader_.reset();
-  source_url_client_binding_.Close();
+  source_url_client_receiver_.reset();
   destination_url_loader_client_.reset();
   // |this| should be removed since the owner will destroy |this| or the owner
   // has already been destroyed by some reason.

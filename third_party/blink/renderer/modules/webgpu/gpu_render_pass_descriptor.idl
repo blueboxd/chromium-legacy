@@ -14,5 +14,6 @@ enum GPULoadOp {
 };
 
 enum GPUStoreOp {
-    "store"
+    "store",
+    "clear"
 };

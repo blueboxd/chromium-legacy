@@ -121,7 +121,7 @@ void FillInDummyFormData(FormData* data) {
   data->action = GURL("https://example.com/action");
   data->main_frame_origin =
       url::Origin::Create(GURL("https://origin-example.com"));
-  data->is_form_tag = true;  // Default value.
+  data->is_form_tag = true;            // Default value.
   data->is_formless_checkout = false;  // Default value.
 
   FormFieldData field_data;
@@ -162,20 +162,6 @@ TEST(FormDataTest, SerializeAndDeserialize) {
   base::PickleIterator iter(pickle);
   FormData actual;
   EXPECT_TRUE(DeserializeFormData(&iter, &actual));
-
-  EXPECT_TRUE(actual.SameFormAs(data));
-}
-
-TEST(FormDataTest, SerializeAndDeserializeInStrings) {
-  FormData data;
-  FillInDummyFormData(&data);
-  data.is_form_tag = false;
-
-  std::string serialized_data;
-  SerializeFormDataToBase64String(data, &serialized_data);
-
-  FormData actual;
-  EXPECT_TRUE(DeserializeFormDataFromBase64String(serialized_data, &actual));
 
   EXPECT_TRUE(actual.SameFormAs(data));
 }

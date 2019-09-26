@@ -27,6 +27,7 @@ class ProxiedPoliciesPropagatedWatcher;
 class CloudPolicyStore;
 class ConfigurationPolicyProvider;
 class PolicyService;
+class PolicyServiceImpl;
 class SchemaRegistry;
 class ChromeBrowserPolicyConnector;
 
@@ -81,22 +82,31 @@ class ProfilePolicyConnector final {
 
 #if defined(OS_CHROMEOS)
   // On Chrome OS, primary Profile user policies are forwarded to the
-  // device-global PolicyService[1] using a ProxyPolicyProvider. This function
-  // sets up that forwarding, using |user_policy_delegate| as the policy source.
-  // It also delays signaling that |policy_service_| is initialized until the
-  // policies provided by |user_policy_delegate| have propagated to the
-  // device-wide PolicyService[1]. This is done so that code that runs early on
-  // Profile initialization can rely on the device-wide PolicyService[1] and
-  // local state Preferences[2] respecting the proxied primary user policies.
+  // device-global PolicyService[1] using a ProxyPolicyProvider.
+  // When that is done, signaling that |policy_service_| is initialized should
+  // be delayed until the policies provided by |user_policy_delegate| have
+  // propagated to the device-wide PolicyService[1]. This is done so that code
+  // that runs early on Profile initialization can rely on the device-wide
+  // PolicyService[1] and local state Preferences[2] respecting the proxied
+  // primary user policies.
+  //
+  // This function starts watching for the propagation to happen by creating a
+  // |ProxiedPoliciesPropagatedWatcher| and creates a PolicyService that
+  // only signals that it is initilalized when the
+  // |proxied_policies_propagated_watcher_| has fired.
   //
   // [1] i.e. g_browser_process->policy_service()
   // [2] i.e. g_browser_process->local_state()
-  void SetGlobalUserPolicyDelegate(
+  std::unique_ptr<PolicyService> CreatePolicyServiceWithInitializationThrottled(
+      const std::vector<ConfigurationPolicyProvider*>& policy_providers,
       ConfigurationPolicyProvider* user_policy_delegate);
 
   // Called when primary user policies that are proxied to the device-wide
   // PolicyService have propagated.
-  void OnProxiedPoliciesPropagated();
+  // |policy_service| is passed here because UnthrottleInitialization is
+  // implemented on PolicyServiceImpl, but the |policy_service_| class member is
+  // a PolicyService for testability.
+  void OnProxiedPoliciesPropagated(PolicyServiceImpl* policy_service);
 
   // Some of the user policy configuration affects browser global state, and
   // can only come from one Profile. |is_primary_user_| is true if this

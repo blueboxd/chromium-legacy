@@ -59,8 +59,16 @@ class CAPTURE_EXPORT StreamBufferManager final {
 
   gfx::GpuMemoryBuffer* GetGpuMemoryBufferById(StreamType stream_type,
                                                uint64_t buffer_ipc_id);
+
+  // Acquires the VCD client buffer specified by |stream_type| and
+  // |buffer_ipc_id|, with optional rotation applied.  |rotation| is the
+  // clockwise degrees that the source frame would be rotated to, and the valid
+  // values are 0, 90, 180, and 270.  Returns the VideoCaptureFormat of the
+  // returned buffer in |format|.
   base::Optional<Buffer> AcquireBufferForClientById(StreamType stream_type,
-                                                    uint64_t buffer_ipc_id);
+                                                    uint64_t buffer_ipc_id,
+                                                    int rotation,
+                                                    VideoCaptureFormat* format);
 
   VideoCaptureFormat GetStreamCaptureFormat(StreamType stream_type);
 

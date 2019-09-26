@@ -14,6 +14,7 @@ import os
 from core.results_processor import command_line
 from core.results_processor import json3_output
 from core.results_processor import histograms_output
+from core.results_processor import html_output
 
 
 HTML_TRACE_NAME = 'trace.html'
@@ -21,6 +22,7 @@ TELEMETRY_RESULTS = '_telemetry_results.jsonl'
 FORMATTERS = {
     'json-test-results': json3_output,
     'histograms': histograms_output,
+    'html': html_output,
 }
 
 

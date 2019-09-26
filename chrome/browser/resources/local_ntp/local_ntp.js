@@ -231,6 +231,7 @@ const NTP_DESIGN = {
 const REALBOX_KEYDOWN_HANDLED_KEYS = [
   'ArrowDown',
   'ArrowUp',
+  'Delete',
   'Enter',
   'Escape',
   'PageDown',
@@ -755,6 +756,7 @@ function init() {
       realboxWrapper.addEventListener('focusout', onRealboxWrapperFocusOut);
 
       searchboxApiHandle.onqueryautocompletedone = onQueryAutocompleteDone;
+      searchboxApiHandle.ondeleteautocompletematch = onDeleteAutocompleteMatch;
 
       if (!iframesAndVoiceSearchDisabledForTesting) {
         speech.init(
@@ -1062,6 +1064,33 @@ function onAddCustomLinkDone(success) {
   ntpApiHandle.logEvent(LOG_TYPE.NTP_CUSTOMIZE_SHORTCUT_DONE);
 }
 
+/** @param {!DeleteAutocompleteMatchResult} result */
+function onDeleteAutocompleteMatch(result) {
+  if (!result.success) {
+    return;
+  }
+
+  const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
+  const selected = matchEls.findIndex(matchEl => {
+    return matchEl.classList.contains(CLASSES.SELECTED);
+  });
+
+  populateAutocompleteMatches(result.matches);
+
+  if (result.matches.length === 0) {
+    return;
+  }
+
+  const newMatchEls = Array.from($(IDS.REALBOX_MATCHES).children);
+  const newSelected = Math.min(newMatchEls.length - 1, selected);
+  selectMatchEl(newMatchEls[newSelected]);
+  updateRealboxOutput({
+    moveCursorToEnd: true,
+    inline: '',
+    text: autocompleteMatches[newSelected].fillIntoEdit,
+  });
+}
+
 /**
  * Callback for embeddedSearch.newTabPage.ondeletecustomlinkdone. Called when
  * the custom link was successfully deleted. Shows the "Shortcut deleted"
@@ -1112,74 +1141,22 @@ function onQueryAutocompleteDone(result) {
     return;  // Stale or skipped result; ignore.
   }
 
-  const realboxMatchesEl = document.createElement('div');
+  populateAutocompleteMatches(result.matches);
 
-  for (const [i, match] of result.matches.entries()) {
-    const matchEl = document.createElement('a');
-    matchEl.href = match.destinationUrl;
-
-    let iconClass;
-    if (match.isSearchType) {
-      const isSearchHistory = SEARCH_HISTORY_MATCH_TYPES.includes(match.type);
-      iconClass = isSearchHistory ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON;
-    } else {
-      // TODO(crbug.com/997229): use chrome://favicon/<url> when perms allow.
-      iconClass = CLASSES.URL_ICON;
-    }
-    const icon = document.createElement('div');
-    icon.classList.add(assert(iconClass));
-    matchEl.appendChild(icon);
-
-    const contentsEls =
-        renderMatchClassifications(match.contents, match.contentsClass);
-    const descriptionEls = [];
-    const separatorEls = [];
-
-    if (match.description) {
-      descriptionEls.push(...renderMatchClassifications(
-          match.description, match.descriptionClass));
-      separatorEls.push(document.createTextNode(
-          configData.translatedStrings.realboxSeparator));
-    }
-
-    const layout = match.swapContentsAndDescription ?
-        [descriptionEls, separatorEls, contentsEls] :
-        [contentsEls, separatorEls, descriptionEls];
-
-    for (const col of layout) {
-      col.forEach(colEl => matchEl.appendChild(colEl));
-    }
-
-    realboxMatchesEl.append(matchEl);
+  if (result.matches.length === 0) {
+    return;
   }
 
-  const hasMatches = result.matches.length > 0;
-  if (hasMatches) {
-    realboxMatchesEl.firstElementChild.classList.add(CLASSES.SELECTED);
-  }
+  $(IDS.REALBOX_MATCHES).firstElementChild.classList.add(CLASSES.SELECTED);
 
-  $(IDS.REALBOX_MATCHES).remove();
-  realboxMatchesEl.id = IDS.REALBOX_MATCHES;
-
-  const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
-  realboxWrapper.appendChild(realboxMatchesEl);
-
-  realboxWrapper.classList.toggle(CLASSES.SHOW_MATCHES, hasMatches);
-
-  if (hasMatches) {
-    realboxWrapper.addEventListener('keydown', onRealboxKeyDown);
-
-    // If the user is deleting content, don't quickly re-suggest the same
-    // output.
-    if (!isDeleting) {
-      const first = result.matches[0];
-      if (first.allowedToBeDefaultMatch && first.inlineAutocompletion) {
-        updateRealboxOutput({inline: first.inlineAutocompletion});
-      }
+  // If the user is deleting content, don't quickly re-suggest the same
+  // output.
+  if (!isDeleting) {
+    const first = result.matches[0];
+    if (first.allowedToBeDefaultMatch && first.inlineAutocompletion) {
+      updateRealboxOutput({inline: first.inlineAutocompletion});
     }
   }
-
-  autocompleteMatches = result.matches;
 }
 
 /** @param {!Event} e */
@@ -1193,8 +1170,8 @@ function onRealboxCutCopy(e) {
   }
 
   const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
-  const selected = matchEls.findIndex(match => {
-    return match.classList.contains(CLASSES.SELECTED);
+  const selected = matchEls.findIndex(matchEl => {
+    return matchEl.classList.contains(CLASSES.SELECTED);
   });
 
   const selectedMatch = autocompleteMatches[selected];
@@ -1237,15 +1214,21 @@ function onRealboxKeyDown(e) {
     return;
   }
 
-  const hasMods = e.ctrlKey || e.metaKey || e.shiftKey;
-  if (hasMods && key !== 'Enter') {
+  const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
+  const selected = matchEls.findIndex(matchEl => {
+    return matchEl.classList.contains(CLASSES.SELECTED);
+  });
+
+  if (key === 'Delete' && e.shiftKey && !e.altKey && !e.ctrlKey && !e.metaKey) {
+    window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch(selected);
+    e.preventDefault();
     return;
   }
 
-  const matchEls = Array.from($(IDS.REALBOX_MATCHES).children);
-  const selected = matchEls.findIndex(match => {
-    return match.classList.contains(CLASSES.SELECTED);
-  });
+  const hasMods = e.altKey || e.ctrlKey || e.metaKey || e.shiftKey;
+  if (hasMods && key !== 'Enter') {
+    return;
+  }
 
   if (key === 'Enter') {
     if (matchEls[selected]) {
@@ -1384,6 +1367,67 @@ function onUpdateCustomLinkDone(success) {
  */
 function overrideExecutableTimeoutForTesting(timeout) {
   createExecutableTimeout = timeout;
+}
+
+/**
+ * @param {!Array<!AutocompleteMatch>} matches
+ */
+function populateAutocompleteMatches(matches) {
+  const realboxMatchesEl = document.createElement('div');
+
+  for (const [i, match] of matches.entries()) {
+    const matchEl = document.createElement('a');
+    matchEl.href = match.destinationUrl;
+
+    let iconClass;
+    if (match.isSearchType) {
+      const isSearchHistory = SEARCH_HISTORY_MATCH_TYPES.includes(match.type);
+      iconClass = isSearchHistory ? CLASSES.CLOCK_ICON : CLASSES.SEARCH_ICON;
+    } else {
+      // TODO(crbug.com/997229): use chrome://favicon/<url> when perms allow.
+      iconClass = CLASSES.URL_ICON;
+    }
+    const icon = document.createElement('div');
+    icon.classList.add(assert(iconClass));
+    matchEl.appendChild(icon);
+
+    const contentsEls =
+        renderMatchClassifications(match.contents, match.contentsClass);
+    const descriptionEls = [];
+    const separatorEls = [];
+
+    if (match.description) {
+      descriptionEls.push(...renderMatchClassifications(
+          match.description, match.descriptionClass));
+      separatorEls.push(document.createTextNode(
+          configData.translatedStrings.realboxSeparator));
+    }
+
+    const layout = match.swapContentsAndDescription ?
+        [descriptionEls, separatorEls, contentsEls] :
+        [contentsEls, separatorEls, descriptionEls];
+
+    for (const col of layout) {
+      col.forEach(colEl => matchEl.appendChild(colEl));
+    }
+
+    realboxMatchesEl.append(matchEl);
+  }
+
+  $(IDS.REALBOX_MATCHES).remove();
+  realboxMatchesEl.id = IDS.REALBOX_MATCHES;
+
+  const realboxWrapper = $(IDS.REALBOX_INPUT_WRAPPER);
+  realboxWrapper.appendChild(realboxMatchesEl);
+
+  const hasMatches = matches.length > 0;
+  realboxWrapper.classList.toggle(CLASSES.SHOW_MATCHES, hasMatches);
+
+  if (hasMatches) {
+    realboxWrapper.addEventListener('keydown', onRealboxKeyDown);
+  }
+
+  autocompleteMatches = matches;
 }
 
 /**

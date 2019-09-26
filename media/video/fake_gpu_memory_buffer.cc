@@ -6,7 +6,7 @@
 
 #include "build/build_config.h"
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 #include <fcntl.h>
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -14,9 +14,9 @@
 
 namespace media {
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
 base::ScopedFD GetDummyFD() {
-  base::ScopedFD fd(open("/dev/zero", O_RDONLY));
+  base::ScopedFD fd(open("/dev/zero", O_RDWR));
   DCHECK(fd.is_valid());
   return fd;
 }
@@ -37,7 +37,7 @@ FakeGpuMemoryBuffer::FakeGpuMemoryBuffer(const gfx::Size& size,
   // Set a dummy id since this is for testing only.
   handle_.id = gfx::GpuMemoryBufferId(0);
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   // Set a dummy fd since this is for testing only.
   handle_.native_pixmap_handle.planes.push_back(
       gfx::NativePixmapPlane(size_.width(), 0, y_plane_size, GetDummyFD()));
@@ -46,7 +46,7 @@ FakeGpuMemoryBuffer::FakeGpuMemoryBuffer(const gfx::Size& size,
         size_.width(), handle_.native_pixmap_handle.planes[0].size,
         uv_plane_size, GetDummyFD()));
   }
-#endif
+#endif  // defined(OS_LINUX)
 }
 
 FakeGpuMemoryBuffer::~FakeGpuMemoryBuffer() = default;

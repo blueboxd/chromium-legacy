@@ -1850,6 +1850,7 @@ test("content_unittests") {
     "../browser/web_contents/web_drag_source_mac_unittest.mm",
     "../browser/web_package/bundled_exchanges_reader_unittest.cc",
     "../browser/web_package/bundled_exchanges_url_loader_factory_unittest.cc",
+    "../browser/web_package/bundled_exchanges_utils_unittest.cc",
     "../browser/web_package/signed_exchange_cert_fetcher_unittest.cc",
     "../browser/web_package/signed_exchange_certificate_chain_unittest.cc",
     "../browser/web_package/signed_exchange_envelope_unittest.cc",

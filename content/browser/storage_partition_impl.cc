@@ -172,7 +172,17 @@ void ClearShaderCacheOnIOThread(const base::FilePath& path,
                                 const base::Time end,
                                 base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  GetShaderCacheFactorySingleton()->ClearByPath(
+  gpu::ShaderCacheFactory* shader_cache_factory =
+      GetShaderCacheFactorySingleton();
+
+  // May be null in tests where it is difficult to plumb through a test storage
+  // partition.
+  if (!shader_cache_factory) {
+    std::move(callback).Run();
+    return;
+  }
+
+  shader_cache_factory->ClearByPath(
       path, begin, end,
       base::BindOnce(&ClearedShaderCache, std::move(callback)));
 }

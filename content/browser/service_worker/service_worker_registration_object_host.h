@@ -125,8 +125,13 @@ class CONTENT_EXPORT ServiceWorkerRegistrationObjectHost
   // error message prefixed by |error_prefix| and |args|, and false is returned.
   template <typename CallbackType, typename... Args>
   bool CanServeRegistrationObjectHostMethods(CallbackType* callback,
-                                             const char* error_prefix,
+                                             const std::string& error_prefix,
                                              Args... args);
+
+  // When |version_to_update| is nullptr, the returned string uses "Unknown" as
+  // the script url.
+  std::string ComposeUpdateErrorMessagePrefix(
+      const ServiceWorkerVersion* version_to_update) const;
 
   // |provider_host_| is valid throughout lifetime of |this| because it owns
   // |this|.

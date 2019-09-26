@@ -888,9 +888,8 @@ void PasswordAutofillAgent::OnDynamicFormsSeen() {
 
 void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
     SubmissionIndicatorEvent event) {
-  if (!provisionally_saved_form_.IsPasswordValid())
+  if (!browser_has_form_to_process_)
     return;
-
   DCHECK(FrameCanAccessPasswordManager());
 
   // Prompt to save only if the form is now gone, either invisible or
@@ -914,10 +913,8 @@ void PasswordAutofillAgent::FireSubmissionIfFormDisappear(
         return;
     }
   }
-
-  provisionally_saved_form_.SetSubmissionIndicatorEvent(event);
   GetPasswordManagerDriver()->SameDocumentNavigation(event);
-  provisionally_saved_form_.Reset();
+  browser_has_form_to_process_ = false;
 }
 
 void PasswordAutofillAgent::UserGestureObserved() {
@@ -1101,11 +1098,8 @@ void PasswordAutofillAgent::OnFrameDetached() {
   // If a sub frame has been destroyed while the user was entering information
   // into a password form, try to save the data. See https://crbug.com/450806
   // for examples of sites that perform login using this technique.
-  if (render_frame()->GetWebFrame()->Parent() &&
-      provisionally_saved_form_.IsPasswordValid()) {
+  if (render_frame()->GetWebFrame()->Parent() && browser_has_form_to_process_) {
     DCHECK(FrameCanAccessPasswordManager());
-    provisionally_saved_form_.SetSubmissionIndicatorEvent(
-        SubmissionIndicatorEvent::FRAME_DETACHED);
     GetPasswordManagerDriver()->SameDocumentNavigation(
         SubmissionIndicatorEvent::FRAME_DETACHED);
   }
@@ -1123,18 +1117,6 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
 
   std::unique_ptr<PasswordForm> submitted_form =
       GetPasswordFormFromWebForm(form);
-
-  // As a site may clear field values, use a provisionally saved form as
-  // the submitted form.
-  if (provisionally_saved_form_.IsSet() &&
-      (!submitted_form ||
-       submitted_form->action ==
-           provisionally_saved_form_.password_form().action)) {
-    submitted_form.reset(
-        new PasswordForm(provisionally_saved_form_.password_form()));
-    if (logger)
-      logger->LogMessage(Logger::STRING_SUBMITTED_PASSWORD_REPLACED);
-  }
 
   // If there is a provisionally saved password, copy over the previous
   // password value so we get the user's typed password, not the value that
@@ -1161,8 +1143,7 @@ void PasswordAutofillAgent::OnWillSubmitForm(const WebFormElement& form) {
       if (logger)
         logger->LogMessage(Logger::STRING_SECURITY_ORIGIN_FAILURE);
     }
-
-    provisionally_saved_form_.Reset();
+    browser_has_form_to_process_ = false;
   } else if (logger) {
     logger->LogMessage(Logger::STRING_FORM_IS_NOT_PASSWORD);
   }
@@ -1339,11 +1320,6 @@ void PasswordAutofillAgent::SetLoggingState(bool active) {
   logging_state_active_ = active;
 }
 
-void PasswordAutofillAgent::AutofillUsernameAndPasswordDataReceived(
-    const FormsPredictionsMap& predictions) {
-  form_predictions_.insert(predictions.begin(), predictions.end());
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // PasswordAutofillAgent, private:
 
@@ -1392,7 +1368,7 @@ void PasswordAutofillAgent::CleanupOnDocumentShutdown() {
   web_input_to_password_info_.clear();
   password_to_username_.clear();
   last_supplied_password_info_iter_ = web_input_to_password_info_.end();
-  provisionally_saved_form_.Reset();
+  browser_has_form_to_process_ = false;
   field_data_manager_.ClearData();
   username_autofill_state_ = WebAutofillState::kNotFilled;
   password_autofill_state_ = WebAutofillState::kNotFilled;
@@ -1447,14 +1423,13 @@ void PasswordAutofillAgent::ProvisionallySavePassword(
   if (!FrameCanAccessPasswordManager())
     return;
 
-  provisionally_saved_form_.Set(std::move(password_form), form, element);
 
   if (has_password) {
-    GetPasswordManagerDriver()->ShowManualFallbackForSaving(
-        provisionally_saved_form_.password_form());
+    GetPasswordManagerDriver()->ShowManualFallbackForSaving(*password_form);
   } else {
     GetPasswordManagerDriver()->HideManualFallbackForSaving();
   }
+  browser_has_form_to_process_ = true;
 }
 
 bool PasswordAutofillAgent::FillUserNameAndPassword(
@@ -1615,19 +1590,6 @@ void PasswordAutofillAgent::OnProvisionallySaveForm(
   }
 
   DCHECK_EQ(ElementChangeSource::WILL_SEND_SUBMIT_EVENT, source);
-  // Forms submitted via XHR are not seen by WillSubmitForm if the default
-  // onsubmit handler is overridden. Such submission first gets detected in
-  // DidStartProvisionalLoad, which no longer knows about the particular form,
-  // and uses the candidate stored in |provisionally_saved_form_|.
-  //
-  // User-typed password will get stored to |provisionally_saved_form_| in
-  // TextDidChangeInTextField. Autofilled or JavaScript-copied passwords need to
-  // be saved here.
-  //
-  // Only non-empty passwords are saved here. Empty passwords were likely
-  // cleared by some scripts (http://crbug.com/28910, http://crbug.com/391693).
-  // Had the user cleared the password, |provisionally_saved_form_| would
-  // already have been updated in TextDidChangeInTextField.
   ProvisionallySavePassword(form, input_element,
                             RESTRICTION_NON_EMPTY_PASSWORD);
 }

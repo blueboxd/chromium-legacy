@@ -15,14 +15,15 @@ FakeConnectionDelegate::FakeConnectionDelegate() = default;
 
 FakeConnectionDelegate::~FakeConnectionDelegate() = default;
 
-mojom::ConnectionDelegatePtr FakeConnectionDelegate::GenerateInterfacePtr() {
-  mojom::ConnectionDelegatePtr interface_ptr;
-  bindings_.AddBinding(this, mojo::MakeRequest(&interface_ptr));
-  return interface_ptr;
+mojo::PendingRemote<mojom::ConnectionDelegate>
+FakeConnectionDelegate::GenerateRemote() {
+  mojo::PendingRemote<mojom::ConnectionDelegate> remote;
+  receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
+  return remote;
 }
 
-void FakeConnectionDelegate::DisconnectGeneratedPtrs() {
-  bindings_.CloseAllBindings();
+void FakeConnectionDelegate::DisconnectGeneratedRemotes() {
+  receivers_.Clear();
 }
 
 void FakeConnectionDelegate::OnConnectionAttemptFailure(

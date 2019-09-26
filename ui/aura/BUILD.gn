@@ -162,6 +162,8 @@ jumbo_component("aura") {
     public += [ "screen_ozone.h" ]
     sources += [ "screen_ozone.cc" ]
   }
+
+  configs += [ "//build/config/compiler:noshadowing" ]
 }
 
 jumbo_static_library("test_support") {

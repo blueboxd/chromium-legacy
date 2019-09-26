@@ -738,10 +738,6 @@ callback MarkCacheAsMountedCallback = void();
 callback GetVolumeMetadataListCallback =
     void(VolumeMetadata[] volumeMetadataList);
 
-// |fileTransferCancelStatuses| The list of FileTransferCancelStatus.
-callback CancelFileTransfersCallback =
-    void(FileTransferCancelStatus[] fileTransferCancelStatuses);
-
 // |copyId| ID of the copy task. Can be used to identify the progress, and to
 // cancel the task.
 callback StartCopyCallback = void(long copyId);
@@ -775,9 +771,6 @@ callback GetDriveConnectionStateCallback = void(DriveConnectionState result);
 
 // |result| true if the length is in the valid range, false otherwise.
 callback ValidatePathNameLengthCallback = void(boolean result);
-
-// |accessToken| OAuth2 access token, or an empty string if failed to fetch.
-callback RequestAccessTokenCallback = void(DOMString accessToken);
 
 // |accessToken| OAuth2 access token, or an empty string if failed to fetch.
 callback RequestWebStoreAccessTokenCallback = void(DOMString accessToken);
@@ -950,20 +943,6 @@ interface Functions {
                            boolean pin,
                            SimpleCallback callback);
 
-  // If |entry| is a Drive file, ensures the file is downloaded to the cache.
-  // Otherwise, finishes immediately in success. For example, when the file is
-  // under Downloads, MTP, removeable media, or provided by extensions for
-  // other cloud storage services than Google Drive, this does nothing.
-  // This is a workaround to avoid intermittent and duplicated downloading of
-  // a Drive file by current implementation of Drive integration when an
-  // extension reads a file sequentially but intermittently.
-  // |entry| A regular file entry to be read.
-  // |callback| Callback called after having the file in cache.
-  //     $(ref:runtime.lastError) will be set if there was an error.
-  [nocompile]
-  static void ensureFileDownloaded([instanceof=Entry] object entry,
-                           SimpleCallback callback);
-
   // Resolves entries in the isolated file system and returns corresponding
   // entries in the external file system mounted to Chrome OS file manager
   // backend. If resolving entry fails, the entry will be just ignored and the
@@ -996,13 +975,6 @@ interface Functions {
   // Get the list of mounted volumes.
   // |callback|
   static void getVolumeMetadataList(GetVolumeMetadataListCallback callback);
-
-  // Cancels ongoing file transfers for selected files.
-  // |entries| Array of files for which ongoing transfer should be canceled.
-  // |callback| Completion callback of the cancel.
-  [nocompile]
-  static void cancelFileTransfers([instanceof=Entry] object[] entries,
-                                  SimpleCallback callback);
 
   // Starts to copy an entry. If the source is a directory, the copy is done
   // recursively.
@@ -1099,13 +1071,6 @@ interface Functions {
   // |operation| Zooming mode.
   static void zoom(ZoomOperationType operation);
 
-  // Requests a Drive API OAuth2 access token.
-  // |refresh| Whether the token should be refetched instead of using the cached
-  //     one.
-  // |callback|
-  static void requestAccessToken(boolean refresh,
-                                 RequestAccessTokenCallback callback);
-
   // Requests a Webstore API OAuth2 access token.
   // |callback|
   static void requestWebStoreAccessToken(
@@ -1117,14 +1082,6 @@ interface Functions {
   [nocompile]
   static void getDownloadUrl([instanceof=Entry] object entry,
                              GetUrlCallback callback);
-
-  // Requests to share drive files.
-  // |entry| Entry to be shared.
-  // |shareType| Type of access that is getting granted.
-  [nocompile]
-  static void requestDriveShare([instanceof=Entry] object entry,
-                                DriveShareType shareType,
-                                SimpleCallback callback);
 
   // Obtains a list of profiles that are logged-in.
   static void getProfiles(GetProfilesCallback callback);

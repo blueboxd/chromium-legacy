@@ -7,9 +7,9 @@
 
 #include "base/macros.h"
 #include "chromeos/services/secure_channel/public/mojom/secure_channel.mojom.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
@@ -22,8 +22,8 @@ class FakeConnectionDelegate : public mojom::ConnectionDelegate {
   FakeConnectionDelegate();
   ~FakeConnectionDelegate() override;
 
-  mojom::ConnectionDelegatePtr GenerateInterfacePtr();
-  void DisconnectGeneratedPtrs();
+  mojo::PendingRemote<mojom::ConnectionDelegate> GenerateRemote();
+  void DisconnectGeneratedRemotes();
 
   const base::Optional<mojom::ConnectionAttemptFailureReason>&
   connection_attempt_failure_reason() const {
@@ -52,7 +52,7 @@ class FakeConnectionDelegate : public mojom::ConnectionDelegate {
   void OnChannelDisconnected(uint32_t disconnection_reason,
                              const std::string& disconnection_description);
 
-  mojo::BindingSet<mojom::ConnectionDelegate> bindings_;
+  mojo::ReceiverSet<mojom::ConnectionDelegate> receivers_;
   base::OnceClosure closure_for_next_delegate_callback_;
 
   base::Optional<mojom::ConnectionAttemptFailureReason>

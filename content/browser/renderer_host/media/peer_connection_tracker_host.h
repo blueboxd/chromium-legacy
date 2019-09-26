@@ -14,8 +14,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "content/public/browser/browser_thread.h"
 
-struct PeerConnectionInfo;
-
 namespace base {
 class ListValue;
 }  // namespace base
@@ -49,12 +47,12 @@ class PeerConnectionTrackerHost
 
  private:
   // Handlers for IPC messages coming from the renderer.
-  void OnAddPeerConnection(const PeerConnectionInfo& info);
   void OnAddStandardStats(int lid, const base::ListValue& value);
   void OnAddLegacyStats(int lid, const base::ListValue& value);
   void SendOnSuspendOnUIThread();
 
   // mojom::PeerConnectionTrackerHost implementation.
+  void AddPeerConnection(mojom::PeerConnectionInfoPtr info) override;
   void RemovePeerConnection(int lid) override;
   void UpdatePeerConnection(int lid,
                             const std::string& type,

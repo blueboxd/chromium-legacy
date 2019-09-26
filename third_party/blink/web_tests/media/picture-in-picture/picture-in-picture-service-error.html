@@ -15,7 +15,7 @@ class PictureInPictureServiceMock {
         blink.mojom.PictureInPictureService);
 
     this.interceptor_ =
-        new MojoInterfaceInterceptor(blink.mojom.PictureInPictureService.name);
+        new MojoInterfaceInterceptor(blink.mojom.PictureInPictureService.name, "context", true);
     this.interceptor_.oninterfacerequest =
         e => this.bindingSet_.addBinding(this, e.handle);
     this.interceptor_.start();

@@ -23,6 +23,12 @@ namespace media {
 // implementation must be thread-safe.
 class MEDIA_GPU_EXPORT DmabufVideoFramePool {
  public:
+  using DmabufId = const std::vector<base::ScopedFD>*;
+
+  // Get the identifier of Dmabuf-backed |frame|. Calling this method with the
+  // frames backed by the same Dmabuf should return the same result.
+  static DmabufId GetDmabufId(const VideoFrame& frame);
+
   DmabufVideoFramePool();
   virtual ~DmabufVideoFramePool();
 

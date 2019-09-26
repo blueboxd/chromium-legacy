@@ -72,4 +72,6 @@ bool DummyProducer::IsDummySystemProducerForTesting() {
   return true;
 }
 
+void DummyProducer::ResetSequenceForTesting() {}
+
 }  // namespace tracing

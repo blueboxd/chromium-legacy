@@ -33,6 +33,8 @@
 #include "chromeos/services/secure_channel/timer_factory_impl.h"
 #include "device/bluetooth/bluetooth_adapter_factory.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace chromeos {
@@ -273,7 +275,8 @@ class FakeClientConnectionParametersFactory
   // ClientConnectionParametersImpl::Factory:
   std::unique_ptr<ClientConnectionParameters> BuildInstance(
       const std::string& feature,
-      mojom::ConnectionDelegatePtr connection_delegate_ptr) override {
+      mojo::PendingRemote<mojom::ConnectionDelegate> connection_delegate_remote)
+      override {
     auto instance = std::make_unique<FakeClientConnectionParameters>(
         feature, base::BindOnce(
                      &FakeClientConnectionParametersFactory::OnInstanceDeleted,
@@ -377,8 +380,8 @@ class SecureChannelServiceTest : public testing::Test {
         fake_client_connection_parameters_factory_.get());
 
     service_ = SecureChannelInitializer::Factory::Get()->BuildInstance();
-    service_->BindRequest(mojo::MakeRequest(&secure_channel_ptr_));
-    secure_channel_ptr_.FlushForTesting();
+    service_->BindReceiver(secure_channel_remote_.BindNewPipeAndPassReceiver());
+    secure_channel_remote_.FlushForTesting();
   }
 
   void TearDown() override {
@@ -802,16 +805,16 @@ class SecureChannelServiceTest : public testing::Test {
     FakeConnectionDelegate fake_connection_delegate;
 
     if (is_listener) {
-      secure_channel_ptr_->ListenForConnectionFromDevice(
+      secure_channel_remote_->ListenForConnectionFromDevice(
           device_to_connect, local_device, feature, connection_priority,
-          fake_connection_delegate.GenerateInterfacePtr());
+          fake_connection_delegate.GenerateRemote());
     } else {
-      secure_channel_ptr_->InitiateConnectionToDevice(
+      secure_channel_remote_->InitiateConnectionToDevice(
           device_to_connect, local_device, feature, connection_priority,
-          fake_connection_delegate.GenerateInterfacePtr());
+          fake_connection_delegate.GenerateRemote());
     }
 
-    secure_channel_ptr_.FlushForTesting();
+    secure_channel_remote_.FlushForTesting();
   }
 
   FakeActiveConnectionManager* fake_active_connection_manager() {
@@ -864,7 +867,7 @@ class SecureChannelServiceTest : public testing::Test {
   bool is_adapter_powered_;
   bool is_adapter_present_;
 
-  mojom::SecureChannelPtr secure_channel_ptr_;
+  mojo::Remote<mojom::SecureChannel> secure_channel_remote_;
 
   DISALLOW_COPY_AND_ASSIGN(SecureChannelServiceTest);
 };

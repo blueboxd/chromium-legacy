@@ -641,20 +641,6 @@ chrome.fileManagerPrivate.getEntryProperties = function(entries, names,
 chrome.fileManagerPrivate.pinDriveFile = function(entry, pin, callback) {};
 
 /**
- * If |entry| is a Drive file, ensures the file is downloaded to the cache.
- * Otherwise, finishes immediately in success. For example, when the file is
- * under Downloads, MTP, removeable media, or provided by extensions for
- * other cloud storage services than Google Drive, this does nothing.
- * This is a workaround to avoid intermittent and duplicated downloading of
- * a Drive file by current implementation of Drive integration when an
- * extension reads a file sequentially but intermittently.
- * @param {!Entry} entry A regular file entry to be read.
- * @param {function()} callback Callback called after having the file in cache.
- *     runtime.lastError will be set if there was an error.
- */
-chrome.fileManagerPrivate.ensureFileDownloaded = function(entry, callback) {};
-
-/**
  * Resolves file entries in the isolated file system and returns corresponding
  * entries in the external file system mounted to Chrome OS file manager
  * backend. If resolving entry fails, the entry will be just ignored and the
@@ -701,14 +687,6 @@ chrome.fileManagerPrivate.markCacheAsMounted = function(
  *     chrome.fileManagerPrivate.VolumeMetadata representing mounted volumes.
  */
 chrome.fileManagerPrivate.getVolumeMetadataList = function(callback) {};
-
-/**
- * Cancels ongoing file transfers for selected files. |entries| Array of files
- * for which ongoing transfer should be canceled.
- * @param {!Array<!FileEntry>} entries
- * @param {function()} callback
- */
-chrome.fileManagerPrivate.cancelFileTransfers = function(entries, callback) {};
 
 /**
  * Starts to copy an entry. If the source is a directory, the copy is done
@@ -847,15 +825,6 @@ chrome.fileManagerPrivate.validatePathNameLength = function(
 chrome.fileManagerPrivate.zoom = function(operation) {};
 
 /**
- * Requests a Drive API OAuth2 access token. |refresh| Whether the token should
- * be refetched instead of using the cached one. |callback|
- * @param {boolean} refresh
- * @param {function((string|undefined))} callback |accessToken| OAuth2 access
- *     token, or an empty string if failed to fetch.
- */
-chrome.fileManagerPrivate.requestAccessToken = function(refresh, callback) {};
-
-/**
  * Requests a Webstore API OAuth2 access token. |callback|
  * @param {function((string|undefined))} callback |accessToken| OAuth2 access
  *     token, or an empty string if failed to fetch.
@@ -868,15 +837,6 @@ chrome.fileManagerPrivate.requestWebStoreAccessToken = function(callback) {};
  * @param {function((string|undefined))} callback Callback with the result url.
  */
 chrome.fileManagerPrivate.getDownloadUrl = function(entry, callback) {};
-
-/**
- * Requests to share drive files.
- * @param {!Entry} entry
- * @param {string} shareType
- * @param {function()} callback Callback that does not take arguments.
- */
-chrome.fileManagerPrivate.requestDriveShare = function(entry, shareType,
-    callback) {};
 
 /**
  * Obtains a list of profiles that are logged-in.

@@ -202,13 +202,8 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Stop streaming V4L2 input and output queues. Stop |device_poll_thread_|
   // before stopping streaming.
   bool StopStreamV4L2Queue();
-  // Schedule poll if we have any buffers queued and the poll thread is not
-  // stopped (on surface set change).
-  void SchedulePollTaskIfNeeded();
-  // Ran on device_poll_thread_ to wait for device events.
-  void DevicePollTask();
   // Try to dequeue input and output buffers from device.
-  void ServiceDeviceTask();
+  void ServiceDeviceTask(bool event);
 
   // Get the next bitsream ID.
   int32_t GetNextBitstreamId();
@@ -235,9 +230,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecoder : public VideoDecoder,
   // Thread to communicate with the device on. Most of internal methods and data
   // members are manipulated on this thread.
   const scoped_refptr<base::SequencedTaskRunner> decoder_task_runner_;
-
-  // Thread used to poll the device for events.
-  base::Thread device_poll_thread_;
 
   // State of the instance.
   State state_ = State::kUninitialized;

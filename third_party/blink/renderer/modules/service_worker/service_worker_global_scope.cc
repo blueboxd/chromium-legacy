@@ -238,6 +238,12 @@ void ServiceWorkerGlobalScope::FetchAndRunClassicScript(
     const v8_inspector::V8StackTraceId& stack_id) {
   DCHECK(!IsContextPaused());
 
+  if (installed_scripts_manager_) {
+    // This service worker is installed. Load and run the installed script.
+    LoadAndRunInstalledClassicScript(script_url, stack_id);
+    return;
+  }
+
   // Step 9. "Switching on job's worker type, run these substeps with the
   // following options:"
   // "classic: Fetch a classic worker script given job's serialized script url,
@@ -284,71 +290,15 @@ void ServiceWorkerGlobalScope::FetchAndRunModuleScript(
     WorkerResourceTimingNotifier& outside_resource_timing_notifier,
     network::mojom::CredentialsMode credentials_mode) {
   DCHECK(IsContextThread());
+
+  // Start fetching scripts regardless of whether this service worker is
+  // installed. For the installed case, the scripts will be read from the
+  // service worker script storage during module script fetch (see
+  // InstalledServiceWorkerModuleScriptFetcher).
   FetchModuleScript(module_url_record, outside_settings_object,
                     outside_resource_timing_notifier,
                     mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
                     ModuleScriptCustomFetchType::kWorkerConstructor,
-                    MakeGarbageCollected<ServiceWorkerModuleTreeClient>(
-                        Modulator::From(ScriptController()->GetScriptState())));
-}
-
-void ServiceWorkerGlobalScope::RunInstalledClassicScript(
-    const KURL& script_url,
-    const v8_inspector::V8StackTraceId& stack_id) {
-  DCHECK(IsContextThread());
-
-  DCHECK(installed_scripts_manager_);
-  DCHECK(installed_scripts_manager_->IsScriptInstalled(script_url));
-
-  // GetScriptData blocks until the script is received from the browser.
-  std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
-      installed_scripts_manager_->GetScriptData(script_url);
-  if (!script_data) {
-    ReportingProxy().DidFailToLoadClassicScript();
-    // This will eventually initiate worker thread termination. See
-    // ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() for details.
-    close();
-    return;
-  }
-  ReportingProxy().DidLoadClassicScript();
-
-  auto referrer_policy = network::mojom::ReferrerPolicy::kDefault;
-  if (!script_data->GetReferrerPolicy().IsNull()) {
-    SecurityPolicy::ReferrerPolicyFromHeaderValue(
-        script_data->GetReferrerPolicy(),
-        kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
-  }
-
-  // Construct a ContentSecurityPolicy object to convert
-  // ContentSecurityPolicyResponseHeaders to CSPHeaderAndType.
-  // TODO(nhiroki): Find an efficient way to do this.
-  auto* content_security_policy = MakeGarbageCollected<ContentSecurityPolicy>();
-  content_security_policy->DidReceiveHeaders(
-      script_data->GetContentSecurityPolicyResponseHeaders());
-
-  RunClassicScript(
-      script_url, referrer_policy, script_data->GetResponseAddressSpace(),
-      content_security_policy->Headers(),
-      script_data->CreateOriginTrialTokens().get(),
-      script_data->TakeSourceText(), script_data->TakeMetaData(), stack_id);
-}
-
-void ServiceWorkerGlobalScope::RunInstalledModuleScript(
-    const KURL& module_url_record,
-    const FetchClientSettingsObjectSnapshot& outside_settings_object,
-    network::mojom::CredentialsMode credentials_mode) {
-  DCHECK(IsContextThread());
-  // Currently we don't plumb performance timing for toplevel service worker
-  // script fetch. https://crbug.com/954005
-  auto* outside_resource_timing_notifier =
-      MakeGarbageCollected<NullWorkerResourceTimingNotifier>();
-
-  // The installed scripts will be read from the service worker script storage
-  // during module script fetch.
-  FetchModuleScript(module_url_record, outside_settings_object,
-                    *outside_resource_timing_notifier,
-                    mojom::RequestContextType::SERVICE_WORKER, credentials_mode,
-                    ModuleScriptCustomFetchType::kInstalledServiceWorker,
                     MakeGarbageCollected<ServiceWorkerModuleTreeClient>(
                         Modulator::From(ScriptController()->GetScriptState())));
 }
@@ -542,6 +492,47 @@ void ServiceWorkerGlobalScope::Initialize(
 
   // Service Workers don't use application cache.
   DCHECK_EQ(appcache_id, mojom::blink::kAppCacheNoCacheId);
+}
+
+void ServiceWorkerGlobalScope::LoadAndRunInstalledClassicScript(
+    const KURL& script_url,
+    const v8_inspector::V8StackTraceId& stack_id) {
+  DCHECK(IsContextThread());
+
+  DCHECK(installed_scripts_manager_);
+  DCHECK(installed_scripts_manager_->IsScriptInstalled(script_url));
+
+  // GetScriptData blocks until the script is received from the browser.
+  std::unique_ptr<InstalledScriptsManager::ScriptData> script_data =
+      installed_scripts_manager_->GetScriptData(script_url);
+  if (!script_data) {
+    ReportingProxy().DidFailToFetchClassicScript();
+    // This will eventually initiate worker thread termination. See
+    // ServiceWorkerGlobalScopeProxy::DidCloseWorkerGlobalScope() for details.
+    close();
+    return;
+  }
+  ReportingProxy().DidLoadClassicScript();
+
+  auto referrer_policy = network::mojom::ReferrerPolicy::kDefault;
+  if (!script_data->GetReferrerPolicy().IsNull()) {
+    SecurityPolicy::ReferrerPolicyFromHeaderValue(
+        script_data->GetReferrerPolicy(),
+        kDoNotSupportReferrerPolicyLegacyKeywords, &referrer_policy);
+  }
+
+  // Construct a ContentSecurityPolicy object to convert
+  // ContentSecurityPolicyResponseHeaders to CSPHeaderAndType.
+  // TODO(nhiroki): Find an efficient way to do this.
+  auto* content_security_policy = MakeGarbageCollected<ContentSecurityPolicy>();
+  content_security_policy->DidReceiveHeaders(
+      script_data->GetContentSecurityPolicyResponseHeaders());
+
+  RunClassicScript(
+      script_url, referrer_policy, script_data->GetResponseAddressSpace(),
+      content_security_policy->Headers(),
+      script_data->CreateOriginTrialTokens().get(),
+      script_data->TakeSourceText(), script_data->TakeMetaData(), stack_id);
 }
 
 // https://w3c.github.io/ServiceWorker/#run-service-worker-algorithm

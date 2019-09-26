@@ -94,7 +94,7 @@ class WorkerThreadDispatcher : public content::RenderThreadObserver,
   void OnMessageReceivedOnWorkerThread(int worker_thread_id,
                                        const IPC::Message& message);
 
-  base::TaskRunner* GetTaskRunnerFor(int worker_thread_id);
+  bool PostTaskToWorkerThread(int worker_thread_id, base::OnceClosure task);
 
   // IPC handlers.
   void OnResponseWorker(int worker_thread_id,

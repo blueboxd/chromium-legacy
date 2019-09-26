@@ -116,7 +116,7 @@ TEST_F(WebAppIconManagerTest, WriteAndReadIcon) {
 
   web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
 
-  sync_bridge().RegisterApp(std::move(web_app));
+  controller().RegisterApp(std::move(web_app));
 
   {
     base::RunLoop run_loop;
@@ -145,7 +145,7 @@ TEST_F(WebAppIconManagerTest, ReadIconFailed) {
   icons.push_back({icon_url, icon_size_px});
   web_app->SetIcons(std::move(icons));
 
-  sync_bridge().RegisterApp(std::move(web_app));
+  controller().RegisterApp(std::move(web_app));
 
   // Request non-existing icon size.
   EXPECT_FALSE(
@@ -175,7 +175,7 @@ TEST_F(WebAppIconManagerTest, FindExact) {
 
   web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
 
-  sync_bridge().RegisterApp(std::move(web_app));
+  controller().RegisterApp(std::move(web_app));
 
   {
     const bool icon_requested = icon_manager().ReadIcon(
@@ -210,7 +210,7 @@ TEST_F(WebAppIconManagerTest, FindSmallest) {
 
   web_app->SetIcons(ListIcons(web_app->launch_url(), sizes_px));
 
-  sync_bridge().RegisterApp(std::move(web_app));
+  controller().RegisterApp(std::move(web_app));
 
   {
     const bool icon_requested = icon_manager().ReadSmallestIcon(

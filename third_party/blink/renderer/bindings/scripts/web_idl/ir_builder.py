@@ -484,7 +484,7 @@ class _IRBuilder(object):
             idl_type = factory.simple_type(
                 name='object', debug_info=debug_info)
             assert value_token == '{}'
-            value = object()
+            value = dict()
             literal = '{}'
         else:
             assert False, 'Unknown literal type: {}'.format(type_token)

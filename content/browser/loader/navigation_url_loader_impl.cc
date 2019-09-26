@@ -39,6 +39,7 @@
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/browser/web_contents/web_contents_impl.h"
+#include "content/browser/web_package/bundled_exchanges_utils.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/web_package/signed_exchange_consts.h"
 #include "content/browser/web_package/signed_exchange_request_handler.h"
@@ -1021,17 +1022,23 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // different response. For e.g. AppCache may have fallback content.
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response) {
-    if (!default_loader_used_)
+    if (!default_loader_used_ &&
+        !bundled_exchanges_utils::CanLoadAsBundledExchanges(
+            url_, response.mime_type)) {
       return false;
-
+    }
     for (size_t i = 0u; i < interceptors_.size(); ++i) {
       NavigationLoaderInterceptor* interceptor = interceptors_[i].get();
       network::mojom::URLLoaderClientRequest response_client_request;
       bool skip_other_interceptors = false;
+      bool will_return_unsafe_redirect = false;
       if (interceptor->MaybeCreateLoaderForResponse(
               *resource_request_, response, &response_body_,
               &response_url_loader_, &response_client_request,
-              url_loader_.get(), &skip_other_interceptors)) {
+              url_loader_.get(), &skip_other_interceptors,
+              &will_return_unsafe_redirect)) {
+        if (will_return_unsafe_redirect)
+          bypass_redirect_checks_ = true;
         if (response_loader_binding_.is_bound())
           response_loader_binding_.Close();
         response_loader_binding_.Bind(std::move(response_client_request));
@@ -1194,7 +1201,9 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
   // protocol handlers.
   std::set<std::string> known_schemes_;
 
-  // If true, redirect checks will be handled in a proxy, and not here.
+  // True when a proxy will handle the redirect checks, or when an interceptor
+  // intentionally returned unsafe redirect response
+  // (eg: NavigationLoaderInterceptor for loading local bundled exchanges file).
   bool bypass_redirect_checks_;
 
   // Used to reset the state of ServiceWorkerProviderHost when

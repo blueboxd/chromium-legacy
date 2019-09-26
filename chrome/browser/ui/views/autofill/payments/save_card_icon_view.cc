@@ -14,6 +14,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/strings/grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/paint_vector_icon.h"
 
 namespace autofill {
 
@@ -26,9 +27,16 @@ SaveCardIconView::SaveCardIconView(CommandUpdater* command_updater,
   SetID(VIEW_ID_SAVE_CREDIT_CARD_BUTTON);
 
   SetUpForInOutAnimation();
+
+  loading_indicator_ =
+      AddChildView(std::make_unique<PageActionIconLoadingIndicatorView>());
+  loading_indicator_->SetVisible(false);
+  AddObserver(loading_indicator_);
 }
 
-SaveCardIconView::~SaveCardIconView() {}
+SaveCardIconView::~SaveCardIconView() {
+  RemoveObserver(loading_indicator_);
+}
 
 views::BubbleDialogDelegateView* SaveCardIconView::GetBubble() const {
   SaveCardBubbleController* controller = GetController();
@@ -47,12 +55,21 @@ bool SaveCardIconView::Update() {
 
   // |controller| may be nullptr due to lazy initialization.
   SaveCardBubbleController* controller = GetController();
-  bool enabled = controller && controller->IsIconVisible();
 
-  enabled &= SetCommandEnabled(enabled);
-  SetVisible(enabled);
+  bool command_enabled =
+      SetCommandEnabled(controller && controller->IsIconVisible());
+  SetVisible(command_enabled);
 
-  if (enabled && controller->ShouldShowCardSavedAnimation())
+  if (command_enabled && controller->ShouldShowSavingCardAnimation()) {
+    SetEnabled(false);
+    loading_indicator_->ShowAnimation();
+  } else {
+    loading_indicator_->StopAnimation();
+    UpdateIconImage();
+    SetEnabled(true);
+  }
+
+  if (command_enabled && controller->ShouldShowCardSavedLabelAnimation())
     AnimateIn(IDS_AUTOFILL_CARD_SAVED);
 
   return was_visible != GetVisible();
@@ -63,6 +80,14 @@ void SaveCardIconView::OnExecuting(
 
 const gfx::VectorIcon& SaveCardIconView::GetVectorIcon() const {
   return kCreditCardIcon;
+}
+
+const gfx::VectorIcon& SaveCardIconView::GetVectorIconBadge() const {
+  SaveCardBubbleController* controller = GetController();
+  if (controller && controller->ShouldShowSaveFailureBadge())
+    return kBlockedBadgeIcon;
+
+  return gfx::kNoneIcon;
 }
 
 base::string16 SaveCardIconView::GetTextForTooltipAndAccessibleName() const {

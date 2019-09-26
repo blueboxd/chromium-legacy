@@ -383,6 +383,8 @@ window.chrome.embeddedSearch.newTabPage.blocklistPromo;
  *  SearchBoxBindings::GetObjectTemplateBuilder()
  */
 window.chrome.embeddedSearch.searchBox;
+/** @param {number} line */
+window.chrome.embeddedSearch.searchBox.deleteAutocompleteMatch;
 window.chrome.embeddedSearch.searchBox.isKeyCaptureEnabled;
 window.chrome.embeddedSearch.searchBox.paste;
 window.chrome.embeddedSearch.searchBox.rtl;
@@ -420,13 +422,24 @@ let AutocompleteResultStatus;
  * @typedef {{
  *   input: string,
  *   matches: !Array<!AutocompleteMatch>,
- *   status: !AutocompleteResultStatus
+ *   status: !AutocompleteResultStatus,
  * }}
  */
 let AutocompleteResult;
 
 /** @type {function(!AutocompleteResult):void} */
 window.chrome.embeddedSearch.searchBox.onqueryautocompletedone;
+
+/**
+ * @typedef {{
+ *   success: boolean,
+ *   matches: !Array<!AutocompleteMatch>,
+ * }}
+ */
+let DeleteAutocompleteMatchResult;
+
+/** @type {function(!DeleteAutocompleteMatchResult):void} */
+window.chrome.embeddedSearch.searchBox.ondeleteautocompletematch;
 
 /**************************** Translated Strings *****************************/
 

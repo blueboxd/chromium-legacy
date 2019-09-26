@@ -123,12 +123,6 @@ class DirectoryCryptographer : public Cryptographer {
   // will become the new default).
   bool AddNonDefaultKey(const KeyParams& params);
 
-  // TODO(crbug.com/967417): Remove when transition of NigoriSyncBridgeImpl is
-  // finished.
-  void AddAllUnknownKeysFrom(const NigoriKeyBag& other);
-  void SelectDefaultEncryptionKey(const std::string& key_name);
-  void ClearPendingKeys();
-
   // Decrypts |encrypted| and uses its contents to initialize Nigori instances.
   // Returns true unless decryption of |encrypted| fails. The caller is
   // responsible for checking that CanDecrypt(encrypted) == true.

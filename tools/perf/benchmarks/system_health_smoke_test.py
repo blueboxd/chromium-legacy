@@ -46,6 +46,7 @@ _DISABLED_TESTS = frozenset({
   'system_health.memory_mobile/browse:social:tumblr_infinite_scroll',
   'system_health.memory_mobile/browse:tools:maps',
   'system_health.memory_mobile/browse:news:cnn',
+  'system_health.memory_mobile/browse:news:washingtonpost',
   'system_health.memory_mobile/load:media:facebook_photos',
   'system_health.memory_mobile/load:news:cnn',
   'system_health.memory_mobile/load:news:nytimes',
@@ -155,6 +156,10 @@ _DISABLED_TESTS = frozenset({
 
   # crbug.com/978358
   'system_health.memory_desktop/browse:news:flipboard:2018',
+
+  # crbug.com/1008001
+  'system_health.memory_desktop/browse:tools:sheets:2019',
+  'system_health.memory_desktop/browse:tools:maps:2019',
 
   # The following tests are disabled because they are disabled on the perf
   # waterfall (using tools/perf/expectations.config) on one platform or another.

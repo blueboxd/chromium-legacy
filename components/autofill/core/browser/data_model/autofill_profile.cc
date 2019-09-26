@@ -482,14 +482,6 @@ bool AutofillProfile::operator!=(const AutofillProfile& profile) const {
   return !operator==(profile);
 }
 
-bool AutofillProfile::IsSubsetOf(const AutofillProfile& profile,
-                                 const std::string& app_locale) const {
-  ServerFieldTypeSet types;
-  GetSupportedTypes(&types);
-  return IsSubsetOfForFieldSet(AutofillProfileComparator(app_locale), profile,
-                               app_locale, types);
-}
-
 bool AutofillProfile::IsSubsetOfForFieldSet(
     const AutofillProfileComparator& comparator,
     const AutofillProfile& profile,

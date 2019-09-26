@@ -63,6 +63,7 @@
 #include "ipc/ipc_sync_message_filter.h"
 #include "mojo/core/embedder/scoped_ipc_support.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "mojo/public/cpp/platform/named_platform_channel.h"
@@ -237,7 +238,8 @@ mojo::IncomingInvitation InitializeMojoIPCChannel() {
 
 class ChannelBootstrapFilter : public ConnectionFilter {
  public:
-  explicit ChannelBootstrapFilter(IPC::mojom::ChannelBootstrapPtrInfo bootstrap)
+  explicit ChannelBootstrapFilter(
+      mojo::PendingRemote<IPC::mojom::ChannelBootstrap> bootstrap)
       : bootstrap_(std::move(bootstrap)) {}
 
  private:
@@ -253,13 +255,13 @@ class ChannelBootstrapFilter : public ConnectionFilter {
 
     if (interface_name == IPC::mojom::ChannelBootstrap::Name_) {
       DCHECK(bootstrap_.is_valid());
-      mojo::FuseInterface(
-          IPC::mojom::ChannelBootstrapRequest(std::move(*interface_pipe)),
-          std::move(bootstrap_));
+      mojo::FusePipes(mojo::PendingReceiver<IPC::mojom::ChannelBootstrap>(
+                          std::move(*interface_pipe)),
+                      std::move(bootstrap_));
     }
   }
 
-  IPC::mojom::ChannelBootstrapPtrInfo bootstrap_;
+  mojo::PendingRemote<IPC::mojom::ChannelBootstrap> bootstrap_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelBootstrapFilter);
 };
@@ -554,11 +556,11 @@ void ChildThreadImpl::OnFieldTrialGroupFinalized(
 
 void ChildThreadImpl::ConnectChannel() {
   DCHECK(service_manager_connection_);
-  IPC::mojom::ChannelBootstrapPtr bootstrap;
+  mojo::PendingRemote<IPC::mojom::ChannelBootstrap> bootstrap;
   mojo::ScopedMessagePipeHandle handle =
-      mojo::MakeRequest(&bootstrap).PassMessagePipe();
+      bootstrap.InitWithNewPipeAndPassReceiver().PassPipe();
   service_manager_connection_->AddConnectionFilter(
-      std::make_unique<ChannelBootstrapFilter>(bootstrap.PassInterface()));
+      std::make_unique<ChannelBootstrapFilter>(std::move(bootstrap)));
 
   channel_->Init(
       IPC::ChannelMojo::CreateClientFactory(

@@ -1,6 +1,6 @@
-// Copyright 2016 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright 2016 The Chromium Authors. All rights reserved.  Use of this source
+// code is governed by a BSD-style license that can be found in the LICENSE
+// file.
 
 #ifndef COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SQL_TABLE_BUILDER_H_
 #define COMPONENTS_PASSWORD_MANAGER_CORE_BROWSER_SQL_TABLE_BUILDER_H_
@@ -76,15 +76,6 @@ class SQLTableBuilder {
   // referenced in |columns| must be unique and exist in the current version.
   void AddIndex(std::string name, std::vector<std::string> columns);
 
-  // Renames index |old_name| to |new_name|. |new_name| can not exist already
-  // and |old_name| must have been added in a previously sealed version, and can
-  // not have been renamed already.
-  void RenameIndex(const std::string& old_name, const std::string& new_name);
-
-  // Removes index |name|. |name| must have been added in a previously sealed
-  // version.
-  void DropIndex(const std::string& name);
-
   // Increments the internal version counter and marks the current state of the
   // table as that version. Returns the sealed version. Calling any of the
   // *Column* and *Index* methods above will result in starting a new version
@@ -121,17 +112,9 @@ class SQLTableBuilder {
   // version. The last version must be sealed.
   std::vector<base::StringPiece> AllPrimaryKeyNames() const;
 
-  // Returns a vector of all index names that are present in the last
-  // version. The last version must be sealed.
-  std::vector<base::StringPiece> AllIndexNames() const;
-
   // Returns the number of all columns present in the last version. The last
   // version must be sealed.
   size_t NumberOfColumns() const;
-
-  // Returns the number of all indices present in the last version. The last
-  // version must be sealed.
-  size_t NumberOfIndices() const;
 
  private:
   // Stores the information about one column (name, type, etc.).

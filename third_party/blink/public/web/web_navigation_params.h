@@ -344,6 +344,10 @@ struct BLINK_EXPORT WebNavigationParams {
   WebVector<int> initiator_origin_trial_features;
 
   base::Optional<WebOriginPolicy> origin_policy;
+
+  // The base URL which will be set for the document to support relative path
+  // subresource loading in unsigned bundled exchanges file.
+  WebURL base_url_override_for_bundled_exchanges;
 };
 
 }  // namespace blink

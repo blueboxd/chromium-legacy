@@ -1523,30 +1523,6 @@ std::string PersonalDataManager::MergeProfile(
   return guid;
 }
 
-bool PersonalDataManager::IsCountryOfInterest(
-    const std::string& country_code) const {
-  DCHECK_EQ(2U, country_code.size());
-
-  const std::vector<AutofillProfile*>& profiles = GetProfiles();
-  std::list<std::string> country_codes;
-  for (size_t i = 0; i < profiles.size(); ++i) {
-    country_codes.push_back(base::ToLowerASCII(
-        base::UTF16ToASCII(profiles[i]->GetRawInfo(ADDRESS_HOME_COUNTRY))));
-  }
-
-  std::string timezone_country = CountryCodeForCurrentTimezone();
-  if (!timezone_country.empty())
-    country_codes.push_back(base::ToLowerASCII(timezone_country));
-
-  // Only take the locale into consideration if all else fails.
-  if (country_codes.empty()) {
-    country_codes.push_back(base::ToLowerASCII(
-        AutofillCountry::CountryCodeForLocale(app_locale())));
-  }
-
-  return base::Contains(country_codes, base::ToLowerASCII(country_code));
-}
-
 const std::string& PersonalDataManager::GetDefaultCountryCodeForNewAddress()
     const {
   if (default_country_code_.empty())

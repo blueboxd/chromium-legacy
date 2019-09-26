@@ -3,6 +3,7 @@ include_rules = [
   "+components/bookmarks/test",
   "+components/browsing_data/core",
   "+components/component_updater",
+  "+components/component_updater/installer_policies",
   "+components/content_settings",
   "+components/crash/core/common",
   "+components/favicon/core",

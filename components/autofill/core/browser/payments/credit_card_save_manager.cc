@@ -329,6 +329,9 @@ void CreditCardSaveManager::OnDidUploadCard(
 
   // Show credit card upload feedback.
   client_->CreditCardUploadCompleted(result == AutofillClient::SUCCESS);
+
+  if (observer_for_testing_)
+    observer_for_testing_->OnShowCardSavedFeedback();
 }
 
 CreditCardSaveStrikeDatabase*

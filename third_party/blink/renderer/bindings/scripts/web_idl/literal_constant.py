@@ -47,7 +47,7 @@ class LiteralConstant(object):
         The values of the following literals are represented as follows.
         - null: None
         - []: list()
-        - {}: object()
+        - {}: dict()
         - true / false: True / False
         - INTEGER_NUMERICS: an instance of long
         - FLOATING_POINTS: an instance of float

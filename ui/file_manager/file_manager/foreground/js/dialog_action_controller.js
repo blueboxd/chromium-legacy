@@ -245,133 +245,30 @@ class DialogActionController {
    */
   selectFilesAndClose_(selection) {
     const currentRootType = this.directoryModel_.getCurrentRootType();
-    const callSelectFilesApiAndClose = callback => {
-      const onFileSelected = () => {
-        callback();
-        if (!chrome.runtime.lastError) {
-          // Call next method on a timeout, as it's unsafe to
-          // close a window from a callback.
-          setTimeout(window.close.bind(window), 0);
-        }
-      };
-      // Record the root types of chosen files in OPEN dialog.
-      if (this.dialogType_ == DialogType.SELECT_OPEN_FILE ||
-          this.dialogType_ == DialogType.SELECT_OPEN_MULTI_FILE) {
-        metrics.recordEnum(
-            'OpenFiles.RootType', currentRootType,
-            VolumeManagerCommon.RootTypesForUMA);
-      }
-      if (selection.multiple) {
-        chrome.fileManagerPrivate.selectFiles(
-            selection.urls, this.allowedPaths_ === AllowedPaths.NATIVE_PATH,
-            onFileSelected);
-      } else {
-        chrome.fileManagerPrivate.selectFile(
-            selection.urls[0], selection.filterIndex,
-            this.dialogType_ !==
-                DialogType.SELECT_SAVEAS_FILE /* for opening */,
-            this.allowedPaths_ === AllowedPaths.NATIVE_PATH, onFileSelected);
+    const onFileSelected = () => {
+      if (!chrome.runtime.lastError) {
+        // Call next method on a timeout, as it's unsafe to
+        // close a window from a callback.
+        setTimeout(window.close.bind(window), 0);
       }
     };
-
-    if (currentRootType !== VolumeManagerCommon.VolumeType.DRIVE ||
-        this.dialogType_ === DialogType.SELECT_SAVEAS_FILE) {
-      callSelectFilesApiAndClose(() => {});
-      return;
+    // Record the root types of chosen files in OPEN dialog.
+    if (this.dialogType_ == DialogType.SELECT_OPEN_FILE ||
+        this.dialogType_ == DialogType.SELECT_OPEN_MULTI_FILE) {
+      metrics.recordEnum(
+          'OpenFiles.RootType', currentRootType,
+          VolumeManagerCommon.RootTypesForUMA);
     }
-
-    const shade = document.createElement('div');
-    shade.className = 'shade';
-    const footer = this.dialogFooter_.element;
-    const progress = footer.querySelector('.progress-track');
-    progress.style.width = '0%';
-    const cancelled = false;
-
-    const progressMap = {};
-    let filesStarted = 0;
-    let filesTotal = selection.urls.length;
-    for (let index = 0; index < selection.urls.length; index++) {
-      progressMap[selection.urls[index]] = -1;
+    if (selection.multiple) {
+      chrome.fileManagerPrivate.selectFiles(
+          selection.urls, this.allowedPaths_ === AllowedPaths.NATIVE_PATH,
+          onFileSelected);
+    } else {
+      chrome.fileManagerPrivate.selectFile(
+          selection.urls[0], selection.filterIndex,
+          this.dialogType_ !== DialogType.SELECT_SAVEAS_FILE /* for opening */,
+          this.allowedPaths_ === AllowedPaths.NATIVE_PATH, onFileSelected);
     }
-    let lastPercent = 0;
-    let bytesTotal = 0;
-    let bytesDone = 0;
-
-    const onFileTransfersUpdated = status => {
-      if (!(status.fileUrl in progressMap)) {
-        return;
-      }
-      if (status.total === -1) {
-        return;
-      }
-
-      let old = progressMap[status.fileUrl];
-      if (old === -1) {
-        // -1 means we don't know file size yet.
-        bytesTotal += status.total;
-        filesStarted++;
-        old = 0;
-      }
-      bytesDone += status.processed - old;
-      progressMap[status.fileUrl] = status.processed;
-
-      let percent = bytesTotal === 0 ? 0 : bytesDone / bytesTotal;
-      // For files we don't have information about, assume the progress is zero.
-      percent = percent * filesStarted / filesTotal * 100;
-      // Do not decrease the progress. This may happen, if first downloaded
-      // file is small, and the second one is large.
-      lastPercent = Math.max(lastPercent, percent);
-      progress.style.width = lastPercent + '%';
-    };
-
-    const setup = () => {
-      document.querySelector('.dialog-container').appendChild(shade);
-      setTimeout(() => {
-        shade.setAttribute('fadein', 'fadein');
-      }, 100);
-      footer.setAttribute('progress', 'progress');
-      this.dialogFooter_.cancelButton.removeEventListener(
-          'click', this.onCancelBound_);
-      this.dialogFooter_.cancelButton.addEventListener('click', onCancel);
-      chrome.fileManagerPrivate.onFileTransfersUpdated.addListener(
-          onFileTransfersUpdated);
-    };
-
-    const cleanup = () => {
-      shade.parentNode.removeChild(shade);
-      footer.removeAttribute('progress');
-      this.dialogFooter_.cancelButton.removeEventListener('click', onCancel);
-      this.dialogFooter_.cancelButton.addEventListener(
-          'click', this.onCancelBound_);
-      chrome.fileManagerPrivate.onFileTransfersUpdated.removeListener(
-          onFileTransfersUpdated);
-    };
-
-    const onCancel = () => {
-      // According to API cancel may fail, but there is no proper UI to reflect
-      // this. So, we just silently assume that everything is cancelled.
-      util.URLsToEntries(selection.urls).then(entries => {
-        chrome.fileManagerPrivate.cancelFileTransfers(
-            entries, util.checkAPIError);
-      });
-    };
-
-    const onProperties = properties => {
-      for (let i = 0; i < properties.length; i++) {
-        if (properties[i].present) {
-          // For files already in GCache, we don't get any transfer updates.
-          filesTotal--;
-        }
-      }
-      callSelectFilesApiAndClose(cleanup);
-    };
-
-    setup();
-
-    // TODO(mtomasz): Use Entry instead of URLs, if possible.
-    util.URLsToEntries(selection.urls, entries => {
-      this.metadataModel_.get(entries, ['present']).then(onProperties);
-    });
   }
 
   /**

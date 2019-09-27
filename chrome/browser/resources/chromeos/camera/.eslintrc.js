@@ -150,6 +150,7 @@ module.exports = {
     // Adds BigInt64Array here since current version of eslint does not treat
     // BigInt64Array as a defined type.
     'BigInt64Array': 'readable',
+    'chromeosCamera': 'readable',
     'cros': 'readable',
     'ImageCapture': 'readable',
     'webkitRequestFileSystem': 'readable',

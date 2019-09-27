@@ -170,19 +170,22 @@ class TestHintsFetcher : public optimization_guide::HintsFetcher {
 
   bool FetchOptimizationGuideServiceHints(
       const std::vector<std::string>& hosts,
+      optimization_guide::proto::RequestContext request_context,
       optimization_guide::HintsFetchedCallback hints_fetched_callback)
       override {
     switch (fetch_state_) {
       case HintsFetcherEndState::kFetchFailed:
-        std::move(hints_fetched_callback).Run(base::nullopt);
+        std::move(hints_fetched_callback).Run(request_context, base::nullopt);
         return false;
       case HintsFetcherEndState::kFetchSuccessWithHints:
         hints_fetched_ = true;
-        std::move(hints_fetched_callback).Run(BuildHintsResponse({"host.com"}));
+        std::move(hints_fetched_callback)
+            .Run(request_context, BuildHintsResponse({"host.com"}));
         return true;
       case HintsFetcherEndState::kFetchSuccessWithNoHints:
         hints_fetched_ = true;
-        std::move(hints_fetched_callback).Run(BuildHintsResponse({}));
+        std::move(hints_fetched_callback)
+            .Run(request_context, BuildHintsResponse({}));
         return true;
     }
     return true;

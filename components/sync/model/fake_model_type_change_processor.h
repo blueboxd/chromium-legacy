@@ -37,7 +37,7 @@ class FakeModelTypeChangeProcessor : public ModelTypeChangeProcessor {
                         MetadataChangeList* metadata_change_list) override;
   void UntrackEntityForStorageKey(const std::string& storage_key) override;
   void UntrackEntityForClientTagHash(
-      const std::string& client_tag_hash) override;
+      const ClientTagHash& client_tag_hash) override;
   bool IsEntityUnsynced(const std::string& storage_key) override;
   base::Time GetEntityCreationTime(
       const std::string& storage_key) const override;

@@ -1138,14 +1138,7 @@ TEST_F(DesktopWidgetTest, MinimumSizeConstraints) {
   EXPECT_EQ(minimum_size, widget->GetClientAreaBoundsInScreen().size());
 
   widget->SetSize(smaller_size);
-#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
-  // TODO(tapted): Desktop Linux ignores size constraints for SetSize. Fix it.
-  const bool use_small_size = true;
-#else
-  const bool use_small_size = false;
-#endif
-  EXPECT_EQ(use_small_size ? smaller_size : minimum_size,
-            widget->GetClientAreaBoundsInScreen().size());
+  EXPECT_EQ(minimum_size, widget->GetClientAreaBoundsInScreen().size());
 }
 
 // Tests that SetBounds() and GetWindowBoundsInScreen() is symmetric when the

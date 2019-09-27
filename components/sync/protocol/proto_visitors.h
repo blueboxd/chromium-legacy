@@ -7,7 +7,6 @@
 
 #include "components/sync/base/model_type.h"
 #include "components/sync/protocol/app_list_specifics.pb.h"
-#include "components/sync/protocol/app_notification_specifics.pb.h"
 #include "components/sync/protocol/app_setting_specifics.pb.h"
 #include "components/sync/protocol/app_specifics.pb.h"
 #include "components/sync/protocol/arc_package_specifics.pb.h"
@@ -101,16 +100,6 @@ VISIT_PROTO_FIELDS(const sync_pb::AppListSpecifics& proto) {
   VISIT(item_pin_ordinal);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::AppNotification& proto) {
-  VISIT(guid);
-  VISIT(app_id);
-  VISIT(creation_timestamp_ms);
-  VISIT(title);
-  VISIT(body_text);
-  VISIT(link_url);
-  VISIT(link_text);
-}
-
 VISIT_PROTO_FIELDS(const sync_pb::AppNotificationSettings& proto) {
   VISIT(initial_setup_done);
   VISIT(disabled);
@@ -140,16 +129,6 @@ VISIT_PROTO_FIELDS(const sync_pb::ArcPackageSpecifics& proto) {
   VISIT(package_version);
   VISIT(last_backup_android_id);
   VISIT(last_backup_time);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::ArticlePage& proto) {
-  VISIT(url);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::ArticleSpecifics& proto) {
-  VISIT(entry_id);
-  VISIT(title);
-  VISIT_REP(pages);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::AutofillCullingFlags& proto) {
@@ -383,16 +362,14 @@ VISIT_PROTO_FIELDS(const sync_pb::EntityMetadata& proto) {
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
-  static_assert(46 == ModelType::NUM_ENTRIES,
+  static_assert(39 == ModelType::NUM_ENTRIES,
                 "When adding a new protocol type, you will likely need to add "
                 "it here as well.");
   VISIT(encrypted);
   VISIT(app);
   VISIT(app_list);
-  VISIT(app_notification);
   VISIT(app_setting);
   VISIT(arc_package);
-  VISIT(article);
   VISIT(autofill);
   VISIT(autofill_profile);
   VISIT(autofill_wallet);
@@ -405,9 +382,7 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(favicon_image);
   VISIT(favicon_tracking);
   VISIT(history_delete_directive);
-  VISIT(managed_user);
   VISIT(managed_user_setting);
-  VISIT(managed_user_shared_setting);
   VISIT(managed_user_whitelist);
   VISIT(mountain_share);
   VISIT(nigori);
@@ -420,8 +395,6 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(security_event);
   VISIT(send_tab_to_self);
   VISIT(session);
-  VISIT(synced_notification);
-  VISIT(synced_notification_app_info);
   VISIT(theme);
   VISIT(typed_url);
   VISIT(user_consent);
@@ -429,7 +402,6 @@ VISIT_PROTO_FIELDS(const sync_pb::EntitySpecifics& proto) {
   VISIT(wallet_metadata);
   VISIT(web_app);
   VISIT(wifi_configuration);
-  VISIT(wifi_credential);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::ExperimentsSpecifics& proto) {
@@ -576,24 +548,6 @@ VISIT_PROTO_FIELDS(const sync_pb::ManagedUserSettingSpecifics& proto) {
   VISIT(value);
 }
 
-VISIT_PROTO_FIELDS(const sync_pb::ManagedUserSharedSettingSpecifics& proto) {
-  VISIT(mu_id);
-  VISIT(key);
-  VISIT(value);
-  VISIT(acknowledged);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::ManagedUserSpecifics& proto) {
-  VISIT(id);
-  VISIT(name);
-  VISIT(acknowledged);
-  VISIT(master_key);
-  VISIT(chrome_avatar);
-  VISIT(chromeos_avatar);
-  VISIT(password_signature_key);
-  VISIT(password_encryption_key);
-}
-
 VISIT_PROTO_FIELDS(const sync_pb::ManagedUserWhitelistSpecifics& proto) {
   VISIT(id);
   VISIT(name);
@@ -675,7 +629,6 @@ VISIT_PROTO_FIELDS(const sync_pb::NigoriSpecifics& proto) {
   VISIT(encrypt_apps);
   VISIT(encrypt_search_engines);
   VISIT(encrypt_dictionary);
-  VISIT(encrypt_articles);
   VISIT(encrypt_app_list);
   VISIT(encrypt_arc_package);
   VISIT(encrypt_reading_list);
@@ -863,10 +816,6 @@ VISIT_PROTO_FIELDS(const sync_pb::SyncEntity& proto) {
   VISIT(client_defined_unique_tag);
   VISIT_BYTES(ordinal_in_parent);
 }
-
-VISIT_PROTO_FIELDS(const sync_pb::SyncedNotificationAppInfoSpecifics& proto) {}
-
-VISIT_PROTO_FIELDS(const sync_pb::SyncedNotificationSpecifics& proto) {}
 
 VISIT_PROTO_FIELDS(const sync_pb::SecurityEventSpecifics& proto) {
   VISIT(gaia_password_reuse_event);
@@ -1135,12 +1084,6 @@ VISIT_PROTO_FIELDS(const sync_pb::WebAppSpecifics& proto) {
   VISIT(name);
   VISIT_ENUM(launch_container);
   VISIT(theme_color);
-}
-
-VISIT_PROTO_FIELDS(const sync_pb::WifiCredentialSpecifics& proto) {
-  VISIT_BYTES(ssid);
-  VISIT_ENUM(security_class);
-  VISIT_BYTES(passphrase);
 }
 
 VISIT_PROTO_FIELDS(const sync_pb::WifiConfigurationSpecifics& proto) {

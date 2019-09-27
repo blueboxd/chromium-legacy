@@ -8,6 +8,7 @@
 #include "base/metrics/user_metrics.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/version.h"
+#include "components/signin/ios/browser/features.h"
 #include "components/signin/public/base/signin_metrics.h"
 #include "components/version_info/version_info.h"
 #include "ios/chrome/app/tests_hook.h"
@@ -178,6 +179,9 @@ NSSet* GaiaIdSetWithIdentities(NSArray* identities) {
 
 + (BOOL)shouldBePresentedForBrowserState:
     (ios::ChromeBrowserState*)browserState {
+  if (signin::ForceStartupSigninPromo())
+    return YES;
+
   if (tests_hook::DisableSigninRecallPromo())
     return NO;
 

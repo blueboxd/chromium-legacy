@@ -66,12 +66,6 @@ struct SyncStatus {
   int num_local_overwrites_total;
   int num_server_overwrites_total;
 
-  // Nudge counts for each possible source
-  // TODO(crbug.com/1007969): Remove these; they're always 0.
-  int nudge_source_notification;
-  int nudge_source_local;
-  int nudge_source_local_refresh;
-
   // Encryption related.
   ModelTypeSet encrypted_types;
   bool cryptographer_can_encrypt;

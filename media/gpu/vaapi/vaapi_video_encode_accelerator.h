@@ -144,8 +144,8 @@ class MEDIA_GPU_EXPORT VaapiVideoEncodeAccelerator
   // and will free them on destruction.
   scoped_refptr<VaapiWrapper> vaapi_wrapper_;
 
-  // The coded size of an input buffer.
-  gfx::Size coded_size_;
+  // The aligned size of the allocated physical buffer for input buffer.
+  gfx::Size aligned_input_size_;
 
   // Size in bytes required for output bitstream buffers.
   size_t output_buffer_byte_size_;

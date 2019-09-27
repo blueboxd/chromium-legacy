@@ -647,4 +647,108 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
   accessibility_manager->SetCursorHighlightEnabled(false);
   EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
 }
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenCaretHighlightEnabled) {
+  // Verifies that the state of the caret highlight accessibility feature on
+  // the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
+
+  // Manually enable the caret highlight.
+  accessibility_manager->SetCaretHighlightEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsCaretHighlightEnabled());
+
+  // Disable the caret highlight through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_caret_highlight_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityCaretHighlightEnabled);
+
+  // Verify that the pref which controls the caret highlight in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityCaretHighlightEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityCaretHighlightEnabled));
+
+  // Verify that the caret highlight cannot be enabled manually anymore.
+  accessibility_manager->SetCaretHighlightEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
+
+  // Enable the caret highlight through device policy as a recommended value and
+  // wait for the change to take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_caret_highlight_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_caret_highlight_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityCaretHighlightEnabled);
+
+  // Verify that the pref which controls the caret highlight in the login
+  // profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityCaretHighlightEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityCaretHighlightEnabled));
+
+  // Verify that the caret highlight can be enabled manually again.
+  accessibility_manager->SetCaretHighlightEnabled(false);
+  EXPECT_FALSE(accessibility_manager->IsCaretHighlightEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenMonoAudioEnabled) {
+  // Verifies that the state of the mono audio accessibility feature on
+  // the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
+
+  // Manually enable the mono audio.
+  accessibility_manager->EnableMonoAudio(true);
+  EXPECT_TRUE(accessibility_manager->IsMonoAudioEnabled());
+
+  // Disable the mono audio through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()->set_login_screen_mono_audio_enabled(
+      false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityMonoAudioEnabled);
+
+  // Verify that the pref which controls the mono audio in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityMonoAudioEnabled));
+
+  // Verify that the mono audio cannot be enabled manually anymore.
+  accessibility_manager->EnableMonoAudio(true);
+  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
+
+  // Enable the mono audio through device policy as a recommended value and wait
+  // for the change to take effect.
+  proto.mutable_accessibility_settings()->set_login_screen_mono_audio_enabled(
+      true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_mono_audio_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityMonoAudioEnabled);
+
+  // Verify that the pref which controls the mono audio in the login
+  // profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityMonoAudioEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityMonoAudioEnabled));
+
+  // Verify that the mono audio can be enabled manually again.
+  accessibility_manager->EnableMonoAudio(false);
+  EXPECT_FALSE(accessibility_manager->IsMonoAudioEnabled());
+}
 }  // namespace policy

@@ -17,3 +17,12 @@ mojom("common") {
     "//ui/gfx/geometry/mojom",
   ]
 }
+
+mojom("camera_app_helper") {
+  sources = [
+    "camera_app_helper.mojom",
+  ]
+  deps = [
+    "//components/arc/mojom:camera_intent",
+  ]
+}

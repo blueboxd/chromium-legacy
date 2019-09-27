@@ -121,6 +121,7 @@ source_set("unit_test") {
   ]
   deps = [
     ":v4l2",
+    "//media:test_support",
     "//testing/gtest",
     "//ui/gfx:test_support",
     "//ui/gl",

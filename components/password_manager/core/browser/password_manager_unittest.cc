@@ -1481,7 +1481,9 @@ TEST_F(PasswordManagerTest,
 
 // Tests whether two submissions to the same origin but different schemes
 // result in only saving the first submission, which has a secure scheme.
-TEST_F(PasswordManagerTest, AttemptedSavePasswordSameOriginInsecureScheme) {
+// TODO(crbug.com/1008818): reenable this test after addressing the linked bug.
+TEST_F(PasswordManagerTest,
+       DISABLED_AttemptedSavePasswordSameOriginInsecureScheme) {
   PasswordForm secure_form(MakeSimpleForm());
   secure_form.origin = GURL("https://example.com/login");
   secure_form.action = GURL("https://example.com/login");

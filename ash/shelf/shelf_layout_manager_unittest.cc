@@ -3416,9 +3416,9 @@ TEST_P(HotseatShelfLayoutManagerTest, TappingActiveWindowHidesHotseat) {
 }
 
 // Tests that releasing the hotseat gesture below the threshold results in a
-// kHidden hotseat.
-TEST_P(HotseatShelfLayoutManagerTest, ReleasingSlowDragBelowThreshold) {
-  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+// kHidden hotseat when the shelf is shown.
+TEST_F(HotseatShelfLayoutManagerTest, ReleasingSlowDragBelowThreshold) {
+  GetPrimaryShelf()->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
   TabletModeControllerTestApi().EnterTabletMode();
   std::unique_ptr<aura::Window> window =
       AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
@@ -3427,20 +3427,18 @@ TEST_P(HotseatShelfLayoutManagerTest, ReleasingSlowDragBelowThreshold) {
   gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   const gfx::Point start(display_bounds.bottom_center());
-  const int shelf_size = GetPrimaryShelf()
-                             ->shelf_widget()
-                             ->shelf_view_for_testing()
-                             ->GetBoundsInScreen()
-                             .height();
-  const gfx::Point end(start + gfx::Vector2d(0, -shelf_size / 4));
+  const int hotseat_size = GetPrimaryShelf()
+                               ->shelf_widget()
+                               ->hotseat_widget()
+                               ->GetWindowBoundsInScreen()
+                               .height();
+  const gfx::Point end(start + gfx::Vector2d(0, -hotseat_size / 2 + 1));
   const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(1000);
   const int kNumScrollSteps = 4;
   GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
                                              kNumScrollSteps);
 
   EXPECT_EQ(HotseatState::kHidden, GetShelfLayoutManager()->hotseat_state());
-  if (GetParam() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
-    EXPECT_EQ(SHELF_AUTO_HIDE_HIDDEN, GetPrimaryShelf()->GetAutoHideState());
 }
 
 // Tests that releasing the hotseat gesture above the threshold results in a
@@ -3455,12 +3453,12 @@ TEST_P(HotseatShelfLayoutManagerTest, ReleasingSlowDragAboveThreshold) {
   gfx::Rect display_bounds =
       display::Screen::GetScreen()->GetPrimaryDisplay().bounds();
   const gfx::Point start(display_bounds.bottom_center());
-  const int shelf_size = GetPrimaryShelf()
-                             ->shelf_widget()
-                             ->shelf_view_for_testing()
-                             ->GetBoundsInScreen()
-                             .height();
-  const gfx::Point end(start + gfx::Vector2d(0, -2 * shelf_size));
+  const int hotseat_size = GetPrimaryShelf()
+                               ->shelf_widget()
+                               ->hotseat_widget()
+                               ->GetWindowBoundsInScreen()
+                               .height();
+  const gfx::Point end(start + gfx::Vector2d(0, -hotseat_size * 3.0f / 2.0f));
   const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(1000);
   const int kNumScrollSteps = 4;
   GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
@@ -3494,6 +3492,35 @@ TEST_P(HotseatShelfLayoutManagerTest, ShowingOverviewFromShownAnimatesOnce) {
   GetEventGenerator()->GestureTapAt(overview_button_center);
 
   state_watcher_->CheckEqual({HotseatState::kExtended, HotseatState::kShown});
+}
+
+// Tests that the hotseat is not flush with the bottom of the screen when home
+// launcher is showing.
+TEST_P(HotseatShelfLayoutManagerTest, HotseatNotFlushWhenHomeLauncherShowing) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  TabletModeControllerTestApi().EnterTabletMode();
+  const int display_height =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().height();
+  const int hotseat_bottom = GetPrimaryShelf()
+                                 ->shelf_widget()
+                                 ->hotseat_widget()
+                                 ->GetWindowBoundsInScreen()
+                                 .bottom();
+  EXPECT_LT(hotseat_bottom, display_height);
+}
+
+// Tests that the hotseat is flush with the bottom of the screen when in
+// clamshell mode and the shelf is oriented on the bottom.
+TEST_P(HotseatShelfLayoutManagerTest, HotseatFlushWithScreenBottomInClamshell) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  const int display_height =
+      display::Screen::GetScreen()->GetPrimaryDisplay().bounds().height();
+  const int hotseat_bottom = GetPrimaryShelf()
+                                 ->shelf_widget()
+                                 ->hotseat_widget()
+                                 ->GetWindowBoundsInScreen()
+                                 .bottom();
+  EXPECT_EQ(hotseat_bottom, display_height);
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {

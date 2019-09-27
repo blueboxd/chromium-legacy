@@ -58,7 +58,7 @@ class PLATFORM_EXPORT OriginAccessEntry {
       network::mojom::CorsDomainMatchMode,
       network::mojom::CorsOriginAccessMatchPriority priority =
           network::mojom::CorsOriginAccessMatchPriority::kDefaultPriority);
-  OriginAccessEntry(OriginAccessEntry&& from) noexcept;
+  OriginAccessEntry(OriginAccessEntry&& from);
 
   network::cors::OriginAccessEntry::MatchResult MatchesOrigin(
       const SecurityOrigin&) const;

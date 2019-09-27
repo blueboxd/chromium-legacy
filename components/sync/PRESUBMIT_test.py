@@ -77,8 +77,7 @@ MOCK_PROTOFILE_CONTENTS = ('\n'
   '    AppSpecifics app = 456;\n'
   '    AppSettingSpecifics app_setting = 789;\n'
   '    ExtensionSettingSpecifics extension_setting = 910;\n'
-  '    ManagedUserSharedSettingSpecifics managed_user_shared_setting'
-                                                                    ' = 915;\n'
+  '    ExperimentsSpecifics experiments = 161496;\n'
   '    //comment\n'
   '  }\n'
   '}\n'
@@ -114,10 +113,9 @@ class ModelTypeInfoChangeTest(unittest.TestCase):
     self.assertEqual(0, len(results))
 
   def testValidChangeDeprecatedEntry(self):
-    results = self._testChange('{DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS,'
-    '"MANAGED_USER_SHARED_SETTING", "managed_user_shared_settings",'
-    '"Managed User Shared Settings",'
-    'sync_pb::EntitySpecifics::kManagedUserSharedSettingFieldNumber, 30},')
+    results = self._testChange('{DEPRECATED_EXPERIMENTS, "EXPERIMENTS",'
+      '"experiments", "Experiments",'
+      'sync_pb::EntitySpecifics::kExperimentsFieldNumber, 19},')
     self.assertEqual(0, len(results))
 
   def testInvalidChangeMismatchedNotificationType(self):

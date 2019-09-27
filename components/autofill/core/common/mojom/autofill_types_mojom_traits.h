@@ -18,7 +18,6 @@
 #include "components/autofill/core/common/form_field_data_predictions.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "components/autofill/core/common/password_form_generation_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
@@ -575,32 +574,6 @@ struct StructTraits<autofill::mojom::PasswordFormDataView,
 
   static bool Read(autofill::mojom::PasswordFormDataView data,
                    autofill::PasswordForm* out);
-};
-
-template <>
-struct StructTraits<autofill::mojom::PasswordFormFieldPredictionMapDataView,
-                    autofill::PasswordFormFieldPredictionMap> {
-  static std::vector<autofill::FormFieldData> keys(
-      const autofill::PasswordFormFieldPredictionMap& r);
-
-  static std::vector<autofill::mojom::PasswordFormFieldPredictionType> values(
-      const autofill::PasswordFormFieldPredictionMap& r);
-
-  static bool Read(autofill::mojom::PasswordFormFieldPredictionMapDataView data,
-                   autofill::PasswordFormFieldPredictionMap* out);
-};
-
-template <>
-struct StructTraits<autofill::mojom::FormsPredictionsMapDataView,
-                    autofill::FormsPredictionsMap> {
-  static std::vector<autofill::FormData> keys(
-      const autofill::FormsPredictionsMap& r);
-
-  static std::vector<autofill::PasswordFormFieldPredictionMap> values(
-      const autofill::FormsPredictionsMap& r);
-
-  static bool Read(autofill::mojom::FormsPredictionsMapDataView data,
-                   autofill::FormsPredictionsMap* out);
 };
 
 template <>

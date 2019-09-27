@@ -89,17 +89,8 @@ void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
       case ::syncer::EXTENSION_SETTINGS:                         \
         PER_DATA_TYPE_MACRO("ExtensionSettings");                \
         break;                                                   \
-      case ::syncer::DEPRECATED_APP_NOTIFICATIONS:               \
-        PER_DATA_TYPE_MACRO("AppNotifications");                 \
-        break;                                                   \
       case ::syncer::HISTORY_DELETE_DIRECTIVES:                  \
         PER_DATA_TYPE_MACRO("HistoryDeleteDirectives");          \
-        break;                                                   \
-      case ::syncer::DEPRECATED_SYNCED_NOTIFICATIONS:            \
-        PER_DATA_TYPE_MACRO("SyncedNotifications");              \
-        break;                                                   \
-      case ::syncer::DEPRECATED_SYNCED_NOTIFICATION_APP_INFO:    \
-        PER_DATA_TYPE_MACRO("SyncedNotificationAppInfo");        \
         break;                                                   \
       case ::syncer::DICTIONARY:                                 \
         PER_DATA_TYPE_MACRO("Dictionary");                       \
@@ -119,20 +110,8 @@ void SyncRecordModelTypeCountHistogram(syncer::ModelType model_type,
       case ::syncer::SUPERVISED_USER_SETTINGS:                   \
         PER_DATA_TYPE_MACRO("ManagedUserSetting");               \
         break;                                                   \
-      case ::syncer::DEPRECATED_SUPERVISED_USERS:                \
-        PER_DATA_TYPE_MACRO("ManagedUser");                      \
-        break;                                                   \
-      case ::syncer::DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS: \
-        PER_DATA_TYPE_MACRO("ManagedUserSharedSetting");         \
-        break;                                                   \
-      case ::syncer::DEPRECATED_ARTICLES:                        \
-        PER_DATA_TYPE_MACRO("Article");                          \
-        break;                                                   \
       case ::syncer::APP_LIST:                                   \
         PER_DATA_TYPE_MACRO("AppList");                          \
-        break;                                                   \
-      case ::syncer::DEPRECATED_WIFI_CREDENTIALS:                \
-        PER_DATA_TYPE_MACRO("WifiCredentials");                  \
         break;                                                   \
       case ::syncer::SUPERVISED_USER_WHITELISTS:                 \
         PER_DATA_TYPE_MACRO("ManagedUserWhitelist");             \

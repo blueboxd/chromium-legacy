@@ -22,12 +22,11 @@ namespace media {
 
 namespace {
 
-std::vector<VideoFrameLayout::Plane> CreatePlanes(
-    const std::vector<int32_t>& strides,
-    const std::vector<size_t>& offsets,
-    const std::vector<size_t>& sizes) {
+std::vector<ColorPlaneLayout> CreatePlanes(const std::vector<int32_t>& strides,
+                                           const std::vector<size_t>& offsets,
+                                           const std::vector<size_t>& sizes) {
   LOG_ASSERT(strides.size() == offsets.size());
-  std::vector<VideoFrameLayout::Plane> planes(strides.size());
+  std::vector<ColorPlaneLayout> planes(strides.size());
   for (size_t i = 0; i < strides.size(); i++) {
     planes[i].stride = strides[i];
     planes[i].offset = offsets[i];

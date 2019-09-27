@@ -70,6 +70,10 @@ class TabMenuBridgeTest : public ::testing::Test {
     return contents;
   }
 
+  content::WebContents* GetModelWebContentsAt(int index) {
+    return model()->GetWebContentsAt(index);
+  }
+
   void AddModelTabNamed(const std::string& name) {
     model()->AppendWebContents(CreateWebContents(name), true);
   }
@@ -100,6 +104,16 @@ class TabMenuBridgeTest : public ::testing::Test {
       // notification mechanism for TabStripModel, so manually synthesize the
       // update notification here.
       model()->UpdateWebContentsStateAt(index, TabChangeType::kAll);
+    }
+  }
+
+  void ReplaceModelTabNamed(const std::string& old_name,
+                            const std::string& new_name) {
+    int index = ModelIndexForTabNamed(old_name);
+    if (index >= 0) {
+      std::unique_ptr<content::WebContents> old_contents =
+          model()->ReplaceWebContentsAt(index, CreateWebContents(new_name));
+      // Let the old WebContents be destroyed here.
     }
   }
 
@@ -166,6 +180,11 @@ TEST_F(TabMenuBridgeTest, TracksModelUpdates) {
 
   RenameModelTabNamed("Tab 1", "Tab 4");
   ExpectDynamicTabsInMenuAre({"Tab 4", "Tab 3", "Tab 2"});
+
+  content::WebContents* old_contents = GetModelWebContentsAt(0);
+  ReplaceModelTabNamed("Tab 4", "Tab 5");
+  ASSERT_NE(GetModelWebContentsAt(0), old_contents);
+  ExpectDynamicTabsInMenuAre({"Tab 5", "Tab 3", "Tab 2"});
 }
 
 TEST_F(TabMenuBridgeTest, ClickingMenuActivatesTab) {

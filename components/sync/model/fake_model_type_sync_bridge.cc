@@ -10,7 +10,7 @@
 #include "base/bind.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/model/conflict_resolution.h"
 #include "components/sync/model/model_type_store.h"
 #include "components/sync/model/mutable_data_batch.h"
@@ -65,9 +65,9 @@ std::string FakeModelTypeSyncBridge::ClientTagFromKey(const std::string& key) {
 }
 
 // static
-std::string FakeModelTypeSyncBridge::TagHashFromKey(const std::string& key) {
-  return GenerateSyncableHash(PREFERENCES,
-                              FakeModelTypeSyncBridge::ClientTagFromKey(key));
+ClientTagHash FakeModelTypeSyncBridge::TagHashFromKey(const std::string& key) {
+  return ClientTagHash::FromUnhashed(
+      PREFERENCES, FakeModelTypeSyncBridge::ClientTagFromKey(key));
 }
 
 // static

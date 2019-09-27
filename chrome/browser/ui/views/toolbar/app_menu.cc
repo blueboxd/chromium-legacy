@@ -471,13 +471,6 @@ class AppMenu::ZoomView : public AppMenuView {
     // the keyboard navigation to work.
     DCHECK(Button::AsButton(fullscreen_button_));
 
-    fullscreen_button_->SetImage(
-        ImageButton::STATE_NORMAL,
-        gfx::CreateVectorIcon(
-            kFullscreenIcon,
-            GetNativeTheme()->GetSystemColor(
-                ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor)));
-
     // Since |fullscreen_button_| will reside in a menu, make it ALWAYS
     // focusable regardless of the platform.
     fullscreen_button_->SetFocusBehavior(FocusBehavior::ALWAYS);
@@ -549,6 +542,13 @@ class AppMenu::ZoomView : public AppMenuView {
     ui::NativeTheme* theme = GetNativeTheme();
     zoom_label_->SetEnabledColor(theme->GetSystemColor(
         ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor));
+
+    fullscreen_button_->SetImage(
+        ImageButton::STATE_NORMAL,
+        gfx::CreateVectorIcon(
+            kFullscreenIcon,
+            GetNativeTheme()->GetSystemColor(
+                ui::NativeTheme::kColorId_EnabledMenuItemForegroundColor)));
     gfx::ImageSkia hovered_fullscreen_image = gfx::CreateVectorIcon(
         kFullscreenIcon,
         theme->GetSystemColor(

@@ -225,13 +225,6 @@ IOSChromeSyncClient::GetSyncableServiceForType(syncer::ModelType type) {
       NOTREACHED();
       return nullptr;
     }
-    case syncer::DEPRECATED_ARTICLES: {
-      // DomDistillerService is used in iOS ReadingList. The distilled articles
-      // are saved separately and must not be synced.
-      // Add a not reached to avoid having ARTICLES sync be enabled silently.
-      NOTREACHED();
-      return base::WeakPtr<syncer::SyncableService>();
-    }
     case syncer::PASSWORDS: {
       return password_store_ ? password_store_->GetPasswordSyncableService()
                              : base::WeakPtr<syncer::SyncableService>();

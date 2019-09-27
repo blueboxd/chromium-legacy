@@ -44,6 +44,10 @@ using namespace html_names;
 
 namespace {
 
+// TODO(crbug.com/1008708): Remove this flag when we're sure the new behavior
+// is better than the previous one.
+constexpr bool kRestoreOnLoad = true;
+
 inline HTMLFormElement* OwnerFormForState(const ListedElement& control) {
   // Assume controls with form attribute have no owners because we restore
   // state during parsing and form owners of such controls might be
@@ -56,6 +60,20 @@ const AtomicString& ControlType(const ListedElement& control) {
   if (auto* control_element = DynamicTo<HTMLFormControlElement>(control))
     return control_element->type();
   return To<ElementInternals>(control).Target().localName();
+}
+
+bool IsDirtyControl(const ListedElement& control) {
+  if (control.IsFormControlElementWithState())
+    return ToHTMLFormControlElementWithState(control).UserHasEditedTheField();
+  if (control.IsElementInternals()) {
+    // We have no ways to know the dirtiness of a form-associated custom
+    // element.  Assume it is dirty if it has focus.
+    // TODO(tkent): If this approach is not enough, we should check existence
+    // of past user-input events such as 'mousedown', 'keydown', 'touchstart'.
+    return control.ToHTMLElement().HasFocusWithin();
+  }
+  DCHECK(!control.ClassSupportsStateRestore());
+  return false;
 }
 
 }  // namespace
@@ -425,6 +443,19 @@ void DocumentState::InvalidateControlList() {
   form_controls_dirty_ = true;
 }
 
+const DocumentState::FormElementList& DocumentState::ControlList() {
+  if (form_controls_dirty_) {
+    for (auto& element : Traversal<Element>::DescendantsOf(*document_)) {
+      if (auto* control = ListedElement::From(element)) {
+        if (control->ClassSupportsStateRestore())
+          form_controls_.push_back(control);
+      }
+    }
+    form_controls_dirty_ = false;
+  }
+  return form_controls_;
+}
+
 static String FormStateSignature() {
   // In the legacy version of serialized state, the first item was a name
   // attribute value of a form control. The following string literal should
@@ -435,19 +466,10 @@ static String FormStateSignature() {
 }
 
 Vector<String> DocumentState::ToStateVector() {
-  if (form_controls_dirty_) {
-    for (auto& element : Traversal<Element>::DescendantsOf(*document_)) {
-      if (auto* control = ListedElement::From(element)) {
-        if (control->ClassSupportsStateRestore())
-          form_controls_.push_back(control);
-      }
-    }
-    form_controls_dirty_ = false;
-  }
   auto* key_generator = MakeGarbageCollected<FormKeyGenerator>();
   std::unique_ptr<SavedFormStateMap> state_map =
       base::WrapUnique(new SavedFormStateMap);
-  for (auto& control : form_controls_) {
+  for (auto& control : ControlList()) {
     DCHECK(control->ToHTMLElement().isConnected());
     if (!control->ShouldSaveAndRestoreFormControlState())
       continue;
@@ -461,7 +483,7 @@ Vector<String> DocumentState::ToStateVector() {
   }
 
   Vector<String> state_vector;
-  state_vector.ReserveInitialCapacity(form_controls_.size() * 4);
+  state_vector.ReserveInitialCapacity(ControlList().size() * 4);
   state_vector.push_back(FormStateSignature());
   for (const auto& saved_form_state : *state_map) {
     state_vector.push_back(saved_form_state.key);
@@ -476,11 +498,13 @@ Vector<String> DocumentState::ToStateVector() {
 // ----------------------------------------------------------------------------
 
 FormController::FormController(Document& document)
-    : document_state_(MakeGarbageCollected<DocumentState>(document)) {}
+    : document_(document),
+      document_state_(MakeGarbageCollected<DocumentState>(document)) {}
 
 FormController::~FormController() = default;
 
 void FormController::Trace(Visitor* visitor) {
+  visitor->Trace(document_);
   visitor->Trace(document_state_);
   visitor->Trace(form_key_generator_);
 }
@@ -544,6 +568,8 @@ void FormController::WillDeleteForm(HTMLFormElement* form) {
 }
 
 void FormController::RestoreControlStateFor(ListedElement& control) {
+  if (kRestoreOnLoad && !document_->HasFinishedParsing())
+    return;
   // We don't save state of a control with
   // ShouldSaveAndRestoreFormControlState() == false. But we need to skip
   // restoring process too because a control in another form might have the same
@@ -553,11 +579,17 @@ void FormController::RestoreControlStateFor(ListedElement& control) {
   if (OwnerFormForState(control))
     return;
   FormControlState state = TakeStateForFormElement(control);
-  if (state.ValueSize() > 0)
-    control.RestoreFormControlState(state);
+  if (state.ValueSize() <= 0)
+    return;
+  // If a user already edited the control, we should not overwrite it.
+  if (IsDirtyControl(control))
+    return;
+  control.RestoreFormControlState(state);
 }
 
 void FormController::RestoreControlStateIn(HTMLFormElement& form) {
+  if (kRestoreOnLoad && !document_->HasFinishedParsing())
+    return;
   EventQueueScope scope;
   const ListedElement::List& elements = form.ListedElements();
   for (const auto& control : elements) {
@@ -568,10 +600,13 @@ void FormController::RestoreControlStateIn(HTMLFormElement& form) {
     if (OwnerFormForState(*control) != &form)
       continue;
     FormControlState state = TakeStateForFormElement(*control);
-    if (state.ValueSize() > 0) {
-      // restoreFormControlState might dispatch input/change events.
-      control->RestoreFormControlState(state);
-    }
+    if (state.ValueSize() <= 0)
+      continue;
+    // If a user already edited the control, we should not overwrite it.
+    if (IsDirtyControl(*control))
+      continue;
+    // RestoreFormControlState might dispatch input/change events.
+    control->RestoreFormControlState(state);
   }
 }
 
@@ -582,6 +617,29 @@ void FormController::RestoreControlStateOnUpgrade(ListedElement& control) {
   FormControlState state = TakeStateForFormElement(control);
   if (state.ValueSize() > 0)
     control.RestoreFormControlState(state);
+}
+
+void FormController::ScheduleRestore() {
+  if (!kRestoreOnLoad)
+    return;
+  document_->GetTaskRunner(TaskType::kInternalLoading)
+      ->PostTask(FROM_HERE,
+                 WTF::Bind(&FormController::RestoreAllControlsInDocumentOrder,
+                           WrapPersistent(this)));
+}
+
+void FormController::RestoreAllControlsInDocumentOrder() {
+  if (!document_->IsActive())
+    return;
+  HeapHashSet<Member<HTMLFormElement>> finished_forms;
+  EventQueueScope scope;
+  for (auto& control : document_state_->ControlList()) {
+    auto* owner = OwnerFormForState(*control);
+    if (!owner)
+      RestoreControlStateFor(*control);
+    else if (finished_forms.insert(owner).is_new_entry)
+      RestoreControlStateIn(*owner);
+  }
 }
 
 Vector<String> FormController::GetReferencedFilePaths(

@@ -281,6 +281,27 @@ static void PadToSameLength(InterpolationValue& value,
       NonInterpolableList::Create(std::move(new_non_interpolable_values));
 }
 
+static bool InterpolableListsAreCompatible(
+    const InterpolableList& a,
+    const InterpolableList& b,
+    wtf_size_t length,
+    ListInterpolationFunctions::LengthMatchingStrategy length_matching_strategy,
+    ListInterpolationFunctions::InterpolableValuesAreCompatibleCallback
+        interpolable_values_are_compatible) {
+  for (wtf_size_t i = 0; i < length; i++) {
+    if (length_matching_strategy ==
+            ListInterpolationFunctions::LengthMatchingStrategy::
+                kLowestCommonMultiple ||
+        (i < a.length() && i < b.length())) {
+      if (!interpolable_values_are_compatible.Run(a.Get(i % a.length()),
+                                                  b.Get(i % b.length()))) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
 static bool NonInterpolableListsAreCompatible(
     const NonInterpolableList& a,
     const NonInterpolableList& b,
@@ -315,6 +336,7 @@ void ListInterpolationFunctions::Composite(
     const InterpolationType& type,
     const InterpolationValue& value,
     LengthMatchingStrategy length_matching_strategy,
+    InterpolableValuesAreCompatibleCallback interpolable_values_are_compatible,
     NonInterpolableValuesAreCompatibleCallback
         non_interpolable_values_are_compatible,
     CompositeItemCallback composite_item) {
@@ -346,10 +368,20 @@ void ListInterpolationFunctions::Composite(
     return;
   }
 
-  const NonInterpolableList& non_interpolable_list =
-      ToNonInterpolableList(*value.non_interpolable_value);
   const wtf_size_t final_length =
       MatchLengths(underlying_length, value_length, length_matching_strategy);
+
+  if (!InterpolableListsAreCompatible(
+          ToInterpolableList(
+              *underlying_value_owner.Value().interpolable_value),
+          interpolable_list, final_length, length_matching_strategy,
+          interpolable_values_are_compatible)) {
+    underlying_value_owner.Set(type, value);
+    return;
+  }
+
+  const NonInterpolableList& non_interpolable_list =
+      ToNonInterpolableList(*value.non_interpolable_value);
   if (!NonInterpolableListsAreCompatible(
           ToNonInterpolableList(
               *underlying_value_owner.Value().non_interpolable_value),

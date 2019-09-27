@@ -14,6 +14,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/system/sys_info.h"
 #include "components/arc/video_accelerator/arc_video_accelerator_util.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/base/video_types.h"
 #include "media/gpu/gpu_video_encode_accelerator_factory.h"
@@ -31,7 +32,7 @@ base::Optional<media::VideoFrameLayout> CreateVideoFrameLayout(
     const gfx::GpuMemoryBufferHandle& gmb_handle) {
   const size_t num_planes = gmb_handle.native_pixmap_handle.planes.size();
 
-  std::vector<media::VideoFrameLayout::Plane> layout_planes(num_planes);
+  std::vector<media::ColorPlaneLayout> layout_planes(num_planes);
   for (size_t i = 0; i < num_planes; i++) {
     const auto& plane = gmb_handle.native_pixmap_handle.planes[i];
     if (!base::IsValueInRangeForNumericType<int32_t>(plane.stride)) {

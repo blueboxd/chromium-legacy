@@ -692,33 +692,6 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, TabMovedToOtherWindow) {
       {{base_url.spec()}, {new_window_url.spec(), moved_tab_url.spec()}}));
 }
 
-IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, SourceTabIDSet) {
-  ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
-  ASSERT_TRUE(CheckInitialState(0));
-
-  GURL base_url = GURL(kURL1);
-  ASSERT_TRUE(OpenTab(0, base_url));
-
-  WaitForURLOnServer(base_url);
-
-  GURL new_tab_url = GURL(kURL2);
-  ASSERT_TRUE(OpenTabFromSourceIndex(
-      0, 0, new_tab_url, WindowOpenDisposition::NEW_FOREGROUND_TAB));
-  WaitForHierarchyOnServer(
-      SessionsHierarchy({{base_url.spec(), new_tab_url.spec()}}));
-
-  content::WebContents* original_tab_contents =
-      GetBrowser(0)->tab_strip_model()->GetWebContentsAt(0);
-  content::WebContents* new_tab_contents =
-      GetBrowser(0)->tab_strip_model()->GetWebContentsAt(1);
-
-  SessionID source_tab_id = SessionTabHelper::IdForTab(original_tab_contents);
-  sync_sessions::SyncSessionsRouterTabHelper* new_tab_helper =
-      sync_sessions::SyncSessionsRouterTabHelper::FromWebContents(
-          new_tab_contents);
-  EXPECT_EQ(new_tab_helper->source_tab_id(), source_tab_id);
-}
-
 IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest, CookieJarMismatch) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
 

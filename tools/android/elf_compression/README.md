@@ -16,11 +16,17 @@ the file and adds compressed version of it instead. It then sets library
 constructor's symbols to point at the cutted range and to the compressed
 version.
 ### Library constructor
-TODO(https://crbug.com/998082): describe this.
+Located at `constructor/` path and should be build together with the target
+library.
+
+It decompresses data from compressed section, provided by compression script
+and populates the target range.
 
 ## Usage
-Firstly, the library needs to be build with the tool's constructor.
-TODO(https://crbug.com/998082): describe this.
+Firstly, the library needs to be build with the tool's constructor. To do this
+add the following to your build:
+
+    constructor/library_constructor.c
 
 After the library build is complete, the compression script must be applied to
 it in the following way:

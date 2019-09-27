@@ -606,22 +606,6 @@ FileManagerPrivateGetSizeStatsFunction::Run() {
   return RespondLater();
 }
 
-void FileManagerPrivateGetSizeStatsFunction::OnGetDriveAvailableSpace(
-    drive::FileError error,
-    int64_t bytes_total,
-    int64_t bytes_used) {
-  if (error == drive::FILE_ERROR_OK) {
-    const uint64_t bytes_total_unsigned = bytes_total;
-    // bytes_used can be larger than bytes_total (over quota).
-    const uint64_t bytes_remaining_unsigned =
-        std::max(bytes_total - bytes_used, int64_t(0));
-    OnGetSizeStats(&bytes_total_unsigned, &bytes_remaining_unsigned);
-  } else {
-    // If stats couldn't be gotten for drive, result should be left undefined.
-    Respond(NoArguments());
-  }
-}
-
 void FileManagerPrivateGetSizeStatsFunction::OnGetMtpAvailableSpace(
     device::mojom::MtpStorageInfoPtr mtp_storage_info,
     const bool error) {
@@ -883,18 +867,7 @@ void FileManagerPrivateInternalStartCopyFunction::RunAfterCheckDiskSpace(
     RunAfterFreeDiskSpace(true);
     return;
   }
-  // Also we can try to secure needed space by freeing Drive caches.
-  drive::FileSystemInterface* const drive_file_system =
-      drive::util::GetFileSystemByProfile(chrome_details_.GetProfile());
-  if (!drive_file_system) {
-    RunAfterFreeDiskSpace(false);
-    return;
-  }
-  drive_file_system->FreeDiskSpaceIfNeededFor(
-      space_needed,
-      base::Bind(
-          &FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace,
-          this));
+  RunAfterFreeDiskSpace(false);
 }
 
 void FileManagerPrivateInternalStartCopyFunction::RunAfterFreeDiskSpace(
@@ -1099,31 +1072,20 @@ FileManagerPrivateSearchFilesByHashesFunction::Run() {
   std::set<std::string> hashes(params->hash_list.begin(),
                                params->hash_list.end());
 
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(chrome_details_.GetProfile());
-  if (file_system) {
-    file_system->SearchByHashes(
-        hashes,
-        base::BindOnce(
-            &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByHashes,
-            this, hashes));
-  } else {
-    // |file_system| is NULL if the backend is DriveFs. It doesn't provide
-    // dedicated backup solution yet, so for now just walk the files and check
-    // MD5 extended attribute.
-    base::PostTaskAndReplyWithResult(
-        FROM_HERE,
-        {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
-        base::BindOnce(
-            &FileManagerPrivateSearchFilesByHashesFunction::SearchByAttribute,
-            this, hashes,
-            integration_service->GetMountPointPath().Append(
-                drive::util::kDriveMyDriveRootDirName),
-            base::FilePath("/").Append(drive::util::kDriveMyDriveRootDirName)),
-        base::BindOnce(
-            &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByAttribute,
-            this, hashes));
-  }
+  // DriveFs doesn't provide dedicated backup solution yet, so for now just walk
+  // the files and check MD5 extended attribute.
+  base::PostTaskAndReplyWithResult(
+      FROM_HERE,
+      {base::ThreadPool(), base::MayBlock(), base::TaskPriority::BEST_EFFORT},
+      base::BindOnce(
+          &FileManagerPrivateSearchFilesByHashesFunction::SearchByAttribute,
+          this, hashes,
+          integration_service->GetMountPointPath().Append(
+              drive::util::kDriveMyDriveRootDirName),
+          base::FilePath("/").Append(drive::util::kDriveMyDriveRootDirName)),
+      base::BindOnce(
+          &FileManagerPrivateSearchFilesByHashesFunction::OnSearchByAttribute,
+          this, hashes));
 
   return RespondLater();
 }
@@ -1251,64 +1213,6 @@ void FileManagerPrivateSearchFilesFunction::OnSearchByPattern(
   auto result = std::make_unique<base::DictionaryValue>();
   result->SetKey("entries", std::move(*entries));
   Respond(OneArgument(std::move(result)));
-}
-
-FileManagerPrivateInternalSetEntryTagFunction::
-    FileManagerPrivateInternalSetEntryTagFunction()
-    : chrome_details_(this) {}
-
-ExtensionFunction::ResponseAction
-FileManagerPrivateInternalSetEntryTagFunction::Run() {
-  using extensions::api::file_manager_private_internal::SetEntryTag::Params;
-  const std::unique_ptr<Params> params(Params::Create(*args_));
-  EXTENSION_FUNCTION_VALIDATE(params);
-
-  scoped_refptr<storage::FileSystemContext> file_system_context =
-      file_manager::util::GetFileSystemContextForRenderFrameHost(
-          Profile::FromBrowserContext(browser_context()), render_frame_host());
-  const storage::FileSystemURL file_system_url(
-      file_system_context->CrackURL(GURL(params->url)));
-  if (file_system_url.type() == storage::kFileSystemTypeDriveFs) {
-    return RespondNow(NoArguments());
-  }
-
-  const base::FilePath drive_path =
-      drive::util::ExtractDrivePath(file_system_url.path());
-  if (drive_path.empty())
-    return RespondNow(Error("Only Drive files and directories are supported."));
-
-  drive::FileSystemInterface* const file_system =
-      drive::util::GetFileSystemByProfile(chrome_details_.GetProfile());
-  // |file_system| is NULL if Drive is disabled.
-  if (!file_system)
-    return RespondNow(Error("Drive is disabled."));
-
-  google_apis::drive::Property::Visibility visibility;
-  switch (params->visibility) {
-    case extensions::api::file_manager_private::ENTRY_TAG_VISIBILITY_PRIVATE:
-      visibility = google_apis::drive::Property::VISIBILITY_PRIVATE;
-      break;
-    case extensions::api::file_manager_private::ENTRY_TAG_VISIBILITY_PUBLIC:
-      visibility = google_apis::drive::Property::VISIBILITY_PUBLIC;
-      break;
-    default:
-      NOTREACHED();
-      return RespondNow(Error("Invalid visibility."));
-      break;
-  }
-
-  file_system->SetProperty(
-      drive_path, visibility, params->key, params->value,
-      base::Bind(&FileManagerPrivateInternalSetEntryTagFunction::
-                     OnSetEntryPropertyCompleted,
-                 this));
-  return RespondLater();
-}
-
-void FileManagerPrivateInternalSetEntryTagFunction::OnSetEntryPropertyCompleted(
-    drive::FileError result) {
-  Respond(result == drive::FILE_ERROR_OK ? NoArguments()
-                                         : Error("Failed to set a tag."));
 }
 
 ExtensionFunction::ResponseAction

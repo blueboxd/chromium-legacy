@@ -420,8 +420,8 @@ TEST(VectorTest, AppendFirst) {
 class MojoMoveOnlyType final {
  public:
   MojoMoveOnlyType();
-  MojoMoveOnlyType(MojoMoveOnlyType&&) noexcept;
-  MojoMoveOnlyType& operator=(MojoMoveOnlyType&&) noexcept;
+  MojoMoveOnlyType(MojoMoveOnlyType&&);
+  MojoMoveOnlyType& operator=(MojoMoveOnlyType&&);
   ~MojoMoveOnlyType();
 
  private:

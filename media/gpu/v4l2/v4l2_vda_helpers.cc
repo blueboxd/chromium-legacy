@@ -4,6 +4,7 @@
 
 #include "media/gpu/v4l2/v4l2_vda_helpers.h"
 
+#include "media/base/color_plane_layout.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/v4l2_device.h"
 #include "media/gpu/v4l2/v4l2_image_processor.h"
@@ -25,8 +26,7 @@ base::Optional<VideoFrameLayout> CreateLayout(uint32_t fourcc,
     case V4L2_PIX_FMT_MM21:
       num_planes = 2;
       return VideoFrameLayout::CreateMultiPlanar(
-          PIXEL_FORMAT_NV12, size,
-          std::vector<VideoFrameLayout::Plane>(num_planes));
+          PIXEL_FORMAT_NV12, size, std::vector<ColorPlaneLayout>(num_planes));
 
     default:
       VideoPixelFormat pixel_format =
@@ -38,8 +38,7 @@ base::Optional<VideoFrameLayout> CreateLayout(uint32_t fourcc,
         return VideoFrameLayout::Create(pixel_format, size);
       else
         return VideoFrameLayout::CreateMultiPlanar(
-            pixel_format, size,
-            std::vector<VideoFrameLayout::Plane>(num_planes));
+            pixel_format, size, std::vector<ColorPlaneLayout>(num_planes));
       break;
   }
 }

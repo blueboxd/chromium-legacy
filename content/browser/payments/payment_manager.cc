@@ -25,13 +25,13 @@ PaymentManager::~PaymentManager() {
 
 PaymentManager::PaymentManager(
     PaymentAppContextImpl* payment_app_context,
-    mojo::InterfaceRequest<payments::mojom::PaymentManager> request)
+    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver)
     : payment_app_context_(payment_app_context),
-      binding_(this, std::move(request)) {
+      receiver_(this, std::move(receiver)) {
   DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
   DCHECK(payment_app_context);
 
-  binding_.set_connection_error_handler(base::BindOnce(
+  receiver_.set_disconnect_handler(base::BindOnce(
       &PaymentManager::OnConnectionError, weak_ptr_factory_.GetWeakPtr()));
 }
 
@@ -43,15 +43,15 @@ void PaymentManager::Init(const GURL& context_url, const std::string& scope) {
   scope_ = GURL(scope);
 
   if (!context_url_.is_valid()) {
-    binding_.CloseWithReason(0U, "Invalid context URL.");
+    receiver_.ResetWithReason(0U, "Invalid context URL.");
     return;
   }
   if (!scope_.is_valid()) {
-    binding_.CloseWithReason(1U, "Invalid scope URL.");
+    receiver_.ResetWithReason(1U, "Invalid scope URL.");
     return;
   }
   if (!url::IsSameOriginWith(context_url_, scope_)) {
-    binding_.CloseWithReason(
+    receiver_.ResetWithReason(
         2U, "Scope URL is not from the same origin of the context URL.");
     return;
   }

@@ -14,7 +14,6 @@
 #include "base/strings/string_piece.h"
 #include "components/autofill/content/renderer/html_based_username_detector.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "url/gurl.h"
 
@@ -33,15 +32,6 @@ namespace autofill {
 struct PasswordForm;
 
 class FieldDataManager;
-
-enum UsernameDetectionMethod {
-  NO_USERNAME_DETECTED,
-  BASE_HEURISTIC,
-  HTML_BASED_CLASSIFIER,
-  AUTOCOMPLETE_ATTRIBUTE,
-  SERVER_SIDE_PREDICTION,
-  USERNAME_DETECTION_METHOD_COUNT
-};
 
 // The susbset of autocomplete flags related to passwords.
 enum class AutocompleteFlag {
@@ -66,34 +56,11 @@ bool IsGaiaReauthenticationForm(const blink::WebFormElement& form);
 // Tests whether the given form is a GAIA form with a skip password argument.
 bool IsGaiaWithSkipSavePasswordForm(const blink::WebFormElement& form);
 
-// Create a PasswordForm from DOM form. Webkit doesn't allow storing
-// custom metadata to DOM nodes, so we have to do this every time an event
-// happens with a given form and compare against previously Create'd forms
-// to identify..which sucks.
-// If an element of |form| has an entry in |field_data_manager|, the associated
-// string is used instead of the element's value to create the PasswordForm.
-// |form_predictions| is Autofill server response, if present it's used for
-// overwriting default username element selection.
-// |username_detector_cache| is used by the built-in HTML based username
-// detector to cache results. Can be null.
-std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(
-    const blink::WebFormElement& form,
-    const FieldDataManager* field_data_manager,
-    const FormsPredictionsMap* form_predictions,
-    UsernameDetectorCache* username_detector_cache);
-
 // Creates a |PasswordForm| from DOM which only contains the |form_data| as well
 // as origin, action and gaia flags.
 std::unique_ptr<PasswordForm> CreateSimplifiedPasswordFormFromWebForm(
     const blink::WebFormElement& form,
-    const FieldDataManager* field_data_manager);
-
-// Same as CreatePasswordFormFromWebForm() but for input elements that are not
-// enclosed in <form> element.
-std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
-    const blink::WebLocalFrame& frame,
     const FieldDataManager* field_data_manager,
-    const FormsPredictionsMap* form_predictions,
     UsernameDetectorCache* username_detector_cache);
 
 // Same as CreateSimlePasswordFormFromWebForm() but for input elements that are
@@ -101,7 +68,8 @@ std::unique_ptr<PasswordForm> CreatePasswordFormFromUnownedInputElements(
 std::unique_ptr<PasswordForm>
 CreateSimplifiedPasswordFormFromUnownedInputElements(
     const blink::WebLocalFrame& frame,
-    const FieldDataManager* field_data_manager);
+    const FieldDataManager* field_data_manager,
+    UsernameDetectorCache* username_detector_cache);
 
 // The "Realm" for the sign-on. This is scheme, host, port.
 std::string GetSignOnRealm(const GURL& origin);

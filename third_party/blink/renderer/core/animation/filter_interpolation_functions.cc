@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "third_party/blink/renderer/core/animation/interpolable_length.h"
-#include "third_party/blink/renderer/core/animation/shadow_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_shadow.h"
 #include "third_party/blink/renderer/core/css/css_function_value.h"
 #include "third_party/blink/renderer/core/css/css_primitive_value.h"
 #include "third_party/blink/renderer/core/css/resolver/filter_operation_resolver.h"
@@ -106,11 +106,10 @@ InterpolationValue filter_interpolation_functions::MaybeConvertCSSFilter(
       break;
     }
 
-    case FilterOperation::DROP_SHADOW: {
-      result =
-          ShadowInterpolationFunctions::MaybeConvertCSSValue(filter.Item(0));
+    case FilterOperation::DROP_SHADOW:
+      result.interpolable_value =
+          InterpolableShadow::MaybeConvertCSSValue(filter.Item(0));
       break;
-    }
 
     default:
       NOTREACHED();
@@ -152,11 +151,10 @@ InterpolationValue filter_interpolation_functions::MaybeConvertFilter(
           To<BlurFilterOperation>(filter).StdDeviation(), zoom));
       break;
 
-    case FilterOperation::DROP_SHADOW: {
-      result = ShadowInterpolationFunctions::ConvertShadowData(
+    case FilterOperation::DROP_SHADOW:
+      result.interpolable_value = InterpolableShadow::Create(
           To<DropShadowFilterOperation>(filter).Shadow(), zoom);
       break;
-    }
 
     case FilterOperation::REFERENCE:
       return nullptr;
@@ -194,7 +192,7 @@ filter_interpolation_functions::CreateNoneValue(
       return InterpolableLength::CreateNeutral();
 
     case FilterOperation::DROP_SHADOW:
-      return ShadowInterpolationFunctions::CreateNeutralInterpolableValue();
+      return InterpolableShadow::CreateNeutral();
 
     default:
       NOTREACHED();
@@ -247,9 +245,8 @@ FilterOperation* filter_interpolation_functions::CreateFilter(
     }
 
     case FilterOperation::DROP_SHADOW: {
-      ShadowData shadow_data = ShadowInterpolationFunctions::CreateShadowData(
-          interpolable_value, non_interpolable_value.TypeNonInterpolableValue(),
-          state);
+      ShadowData shadow_data =
+          To<InterpolableShadow>(interpolable_value).CreateShadowData(state);
       if (shadow_data.GetColor().IsCurrentColor())
         shadow_data.OverrideColor(Color::kBlack);
       return DropShadowFilterOperation::Create(shadow_data);

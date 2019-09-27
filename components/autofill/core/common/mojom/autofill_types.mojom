@@ -294,17 +294,3 @@ struct PasswordForm {
   SubmissionIndicatorEvent submission_event;
   bool only_for_fallback;
 };
-
-// Note: Even though https://crbug.com/628104 is solved, we still can not use a
-// map directly as long as https://crbug.com/914074 is not fixed.
-struct PasswordFormFieldPredictionMap {
-  array<FormFieldData> keys;
-  array<PasswordFormFieldPredictionType> values;
-};
-
-// Note: Even though https://crbug.com/628104 is solved, we still can not use a
-// map directly as long as https://crbug.com/914074 is not fixed.
-struct FormsPredictionsMap {
-  array<FormData> keys;
-  array<PasswordFormFieldPredictionMap> values;
-};

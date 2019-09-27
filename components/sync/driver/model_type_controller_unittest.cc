@@ -301,7 +301,7 @@ TEST_F(ModelTypeControllerTest, ActivateWithError) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DataTypeController::FAILED, controller()->state());
   histogram_tester.ExpectBucketCount(
-      kStartFailuresHistogram, ModelTypeToHistogramInt(kTestModelType), 1);
+      kStartFailuresHistogram, ModelTypeHistogramValue(kTestModelType), 1);
   histogram_tester.ExpectTotalCount(kRunFailuresHistogram, 0);
 }
 
@@ -444,7 +444,7 @@ TEST_F(ModelTypeControllerTest, StopWhileStartingWithError) {
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(DataTypeController::FAILED, controller()->state());
   histogram_tester.ExpectBucketCount(kStartFailuresHistogram,
-                                     ModelTypeToHistogramInt(kTestModelType),
+                                     ModelTypeHistogramValue(kTestModelType),
                                      /*count=*/1);
   histogram_tester.ExpectTotalCount(kRunFailuresHistogram, 0);
 }
@@ -654,7 +654,7 @@ TEST_F(ModelTypeControllerTest, ReportErrorAfterLoaded) {
   EXPECT_EQ(DataTypeController::FAILED, controller()->state());
   histogram_tester.ExpectTotalCount(kStartFailuresHistogram, 0);
   histogram_tester.ExpectBucketCount(kRunFailuresHistogram,
-                                     ModelTypeToHistogramInt(kTestModelType),
+                                     ModelTypeHistogramValue(kTestModelType),
                                      /*count=*/1);
 }
 

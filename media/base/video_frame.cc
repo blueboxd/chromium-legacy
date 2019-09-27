@@ -19,6 +19,7 @@
 #include "base/strings/string_piece.h"
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/base/limits.h"
 #include "media/base/timestamp_constants.h"
@@ -141,7 +142,7 @@ static bool RequiresEvenSizeAllocation(VideoPixelFormat format) {
 static base::Optional<VideoFrameLayout> GetDefaultLayout(
     VideoPixelFormat format,
     const gfx::Size& coded_size) {
-  std::vector<VideoFrameLayout::Plane> planes;
+  std::vector<ColorPlaneLayout> planes;
 
   switch (format) {
     case PIXEL_FORMAT_I420: {
@@ -149,22 +150,21 @@ static base::Optional<VideoFrameLayout> GetDefaultLayout(
       int uv_height = (coded_size.height() + 1) / 2;
       int uv_stride = uv_width;
       int uv_size = uv_stride * uv_height;
-      planes = std::vector<VideoFrameLayout::Plane>{
-          VideoFrameLayout::Plane(coded_size.width(), 0, coded_size.GetArea()),
-          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea(), uv_size),
-          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea() + uv_size,
-                                  uv_size),
+      planes = std::vector<ColorPlaneLayout>{
+          ColorPlaneLayout(coded_size.width(), 0, coded_size.GetArea()),
+          ColorPlaneLayout(uv_stride, coded_size.GetArea(), uv_size),
+          ColorPlaneLayout(uv_stride, coded_size.GetArea() + uv_size, uv_size),
       };
       break;
     }
 
     case PIXEL_FORMAT_Y16:
-      planes = std::vector<VideoFrameLayout::Plane>{VideoFrameLayout::Plane(
+      planes = std::vector<ColorPlaneLayout>{ColorPlaneLayout(
           coded_size.width() * 2, 0, coded_size.GetArea() * 2)};
       break;
 
     case PIXEL_FORMAT_ARGB:
-      planes = std::vector<VideoFrameLayout::Plane>{VideoFrameLayout::Plane(
+      planes = std::vector<ColorPlaneLayout>{ColorPlaneLayout(
           coded_size.width() * 4, 0, coded_size.GetArea() * 4)};
       break;
 
@@ -173,9 +173,9 @@ static base::Optional<VideoFrameLayout> GetDefaultLayout(
       int uv_height = (coded_size.height() + 1) / 2;
       int uv_stride = uv_width * 2;
       int uv_size = uv_stride * uv_height;
-      planes = std::vector<VideoFrameLayout::Plane>{
-          VideoFrameLayout::Plane(coded_size.width(), 0, coded_size.GetArea()),
-          VideoFrameLayout::Plane(uv_stride, coded_size.GetArea(), uv_size),
+      planes = std::vector<ColorPlaneLayout>{
+          ColorPlaneLayout(coded_size.width(), 0, coded_size.GetArea()),
+          ColorPlaneLayout(uv_stride, coded_size.GetArea(), uv_size),
       };
       break;
     }

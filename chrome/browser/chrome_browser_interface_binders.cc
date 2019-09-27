@@ -5,6 +5,7 @@
 #include "chrome/browser/chrome_browser_interface_binders.h"
 
 #include "build/build_config.h"
+#include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -12,6 +13,7 @@
 #include "services/image_annotation/public/mojom/constants.mojom-forward.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/web_contents.h"
@@ -64,6 +66,8 @@ void PopulateChromeFrameBinders(
   map->Add<image_annotation::mojom::Annotator>(
       base::BindRepeating(&BindImageAnnotator));
 
+  map->Add<blink::mojom::AnchorElementMetricsHost>(
+      base::BindRepeating(&NavigationPredictor::Create));
 #if defined(OS_ANDROID)
   map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(
       &ForwardToJavaFrameRegistry<blink::mojom::InstalledAppProvider>));

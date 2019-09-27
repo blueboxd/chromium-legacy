@@ -299,22 +299,14 @@ void ModelTypeController::ReportModelError(SyncError::ErrorType error_type,
 
 void ModelTypeController::RecordStartFailure() const {
   DCHECK(CalledOnValidThread());
-  // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
-  // This is not strongly typed because historically, ModelTypeToHistogramInt()
-  // defines quite a different order from the type() enum.
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeStartFailures2",
-                            ModelTypeToHistogramInt(type()),
-                            static_cast<int>(ModelType::NUM_ENTRIES));
+                            ModelTypeHistogramValue(type()));
 }
 
 void ModelTypeController::RecordRunFailure() const {
   DCHECK(CalledOnValidThread());
-  // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
-  // This is not strongly typed because historically, ModelTypeToHistogramInt()
-  // defines quite a different order from the type() enum.
   UMA_HISTOGRAM_ENUMERATION("Sync.DataTypeRunFailures2",
-                            ModelTypeToHistogramInt(type()),
-                            static_cast<int>(ModelType::NUM_ENTRIES));
+                            ModelTypeHistogramValue(type()));
 }
 
 void ModelTypeController::OnDelegateStarted(

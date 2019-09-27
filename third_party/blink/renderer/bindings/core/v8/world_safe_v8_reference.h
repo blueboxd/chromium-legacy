@@ -47,40 +47,57 @@ class CORE_EXPORT WorldSafeV8ReferenceInternal final {
 // provides accessors that check whether the value is accessed in the same world
 // or not, also provides an accessor that clones the value when accessed across
 // worlds.
+//
+// TODO(crbug.com/1008765): Allow WorldSafeV8Reference created/set not in
+// context.
 template <typename V8Type>
 class WorldSafeV8Reference final {
   DISALLOW_NEW();
 
  public:
   WorldSafeV8Reference() = default;
+
   explicit WorldSafeV8Reference(v8::Isolate* isolate, v8::Local<V8Type> value)
-      : v8_reference_(isolate, value),
-        world_(&DOMWrapperWorld::Current(isolate)) {
-    WorldSafeV8ReferenceInternal::MaybeCheckCreationContextWorld(*world_.get(),
-                                                                 value);
+      : v8_reference_(isolate, value) {
+    // Basically, |world_| is a world when this V8 reference is created.
+    // However, when this V8 reference isn't created in context and value is
+    // object, we set |world_| to a value's creation cotext's world.
+    if (isolate->InContext()) {
+      world_ = &DOMWrapperWorld::Current(isolate);
+      WorldSafeV8ReferenceInternal::MaybeCheckCreationContextWorld(
+          *world_.get(), value);
+    } else if (value->IsObject()) {
+      ScriptState* script_state =
+          ScriptState::From(value.template As<v8::Object>()->CreationContext());
+      world_ = &script_state->World();
+    }
   }
   ~WorldSafeV8Reference() = default;
 
-  // Returns the V8 reference.  Crashes if |target_script_state|'s world is
-  // different from this V8 reference's world.
+  // Returns the V8 reference.  Crashes if |world_| is set and it is
+  // different from |target_script_state|'s world.
   v8::Local<V8Type> Get(ScriptState* target_script_state) const {
     DCHECK(!v8_reference_.IsEmpty());
-    CHECK_EQ(world_.get(), &target_script_state->World());
+    if (world_) {
+      CHECK_EQ(world_.get(), &target_script_state->World());
+    }
     return v8_reference_.NewLocal(target_script_state->GetIsolate());
   }
 
   // Returns a V8 reference that is safe to access in |target_script_state|.
   // The return value may be a cloned object.
   v8::Local<V8Type> GetAcrossWorld(ScriptState* target_script_state) const {
+    CHECK(world_);
     return WorldSafeV8ReferenceInternal::ToWorldSafeValue(
                target_script_state, v8_reference_, *world_.get())
         .template As<V8Type>();
   }
 
-  // Sets a new V8 reference.  Crashes if |new_value|'s world is different from
-  // this V8 reference's world.
+  // Sets a new V8 reference.  Crashes if |world_| is set and it is
+  // different from |new_value|'s world.
   void Set(v8::Isolate* isolate, v8::Local<V8Type> new_value) {
     DCHECK(!new_value.IsEmpty());
+    CHECK(isolate->InContext());
     const DOMWrapperWorld& new_world = DOMWrapperWorld::Current(isolate);
     WorldSafeV8ReferenceInternal::MaybeCheckCreationContextWorld(new_world,
                                                                  new_value);
@@ -93,6 +110,7 @@ class WorldSafeV8Reference final {
   // world of this V8 reference will be |new_value|'s world.
   void SetAcrossWorld(v8::Isolate* isolate, v8::Local<V8Type> new_value) {
     DCHECK(!new_value.IsEmpty());
+    CHECK(isolate->InContext());
     const DOMWrapperWorld& new_world = DOMWrapperWorld::Current(isolate);
     v8_reference_.Set(isolate, new_value);
     world_ = WrapRefCounted(&new_world);

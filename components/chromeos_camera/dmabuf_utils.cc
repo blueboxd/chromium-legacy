@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/time/time.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -34,7 +35,7 @@ scoped_refptr<media::VideoFrame> ConstructVideoFrame(
   const gfx::Rect visible_rect(coded_size);
 
   std::vector<base::ScopedFD> dma_buf_fds(num_planes);
-  std::vector<media::VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<media::ColorPlaneLayout> planes(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
     mojo::PlatformHandle handle =
         mojo::UnwrapPlatformHandle(std::move(dma_buf_planes[i]->fd_handle));
@@ -43,7 +44,7 @@ scoped_refptr<media::VideoFrame> ConstructVideoFrame(
       return nullptr;
     }
     dma_buf_fds[i] = handle.TakeFD();
-    planes[i] = media::VideoFrameLayout::Plane(
+    planes[i] = media::ColorPlaneLayout(
         dma_buf_planes[i]->stride,
         base::strict_cast<size_t>(dma_buf_planes[i]->offset),
         base::strict_cast<size_t>(dma_buf_planes[i]->size));

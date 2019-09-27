@@ -1156,12 +1156,12 @@ bool NGBlockLayoutAlgorithm::HandleNewFormattingContext(
       container_builder_.Size().inline_size, ConstraintSpace().Direction());
 
   if (ConstraintSpace().HasBlockFragmentation()) {
-    bool is_pushed_by_floats =
-        child_margin_got_separated ||
+    bool has_container_separation =
+        has_processed_first_child_ || child_margin_got_separated ||
         child_bfc_offset.block_offset > child_bfc_offset_estimate ||
         layout_result->IsPushedByFloats();
     if (BreakBeforeChild(child, *layout_result, previous_inflow_position,
-                         logical_offset.block_offset, is_pushed_by_floats))
+                         logical_offset.block_offset, has_container_separation))
       return true;
     EBreakBetween break_after = JoinFragmentainerBreakValues(
         layout_result->FinalBreakAfter(), child.Style().BreakAfter());
@@ -1642,9 +1642,14 @@ bool NGBlockLayoutAlgorithm::FinishInflow(
       fragment, layout_result->BfcLineOffset(), child_bfc_block_offset);
 
   if (ConstraintSpace().HasBlockFragmentation()) {
+    // Floats only cause container separation for the outermost block child that
+    // gets pushed down (the container and the child may have adjoining
+    // block-start margins).
+    bool has_container_separation =
+        has_processed_first_child_ || (layout_result->IsPushedByFloats() &&
+                                       !container_builder_.IsPushedByFloats());
     if (BreakBeforeChild(child, *layout_result, previous_inflow_position,
-                         logical_offset.block_offset,
-                         layout_result->IsPushedByFloats()))
+                         logical_offset.block_offset, has_container_separation))
       return true;
     EBreakBetween break_after = JoinFragmentainerBreakValues(
         layout_result->FinalBreakAfter(), child.Style().BreakAfter());
@@ -2002,10 +2007,10 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
     const NGLayoutResult& layout_result,
     NGPreviousInflowPosition* previous_inflow_position,
     LayoutUnit block_offset,
-    bool is_pushed_by_floats) {
+    bool has_container_separation) {
   DCHECK(ConstraintSpace().HasBlockFragmentation());
   BreakType break_type = BreakTypeBeforeChild(
-      child, layout_result, block_offset, is_pushed_by_floats);
+      child, layout_result, block_offset, has_container_separation);
   if (break_type == NoBreak)
     return false;
 
@@ -2091,14 +2096,10 @@ bool NGBlockLayoutAlgorithm::BreakBeforeChild(
     }
   }
 
-  if (!has_processed_first_child_ &&
-      (container_builder_.IsPushedByFloats() || !is_pushed_by_floats)) {
+  if (!has_container_separation) {
     // We're breaking before the first piece of in-flow content inside this
     // block, even if it's not a valid class C break point [1] in this case. We
-    // really don't want to break here, if we can find something better. A class
-    // C break point occurs if a first child has been pushed by floats, but this
-    // only applies to the outermost block that gets pushed (in case this parent
-    // and the child have adjoining top margins).
+    // really don't want to break here, if we can find something better.
     //
     // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
     container_builder_.SetHasLastResortBreak();
@@ -2133,7 +2134,7 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
     NGLayoutInputNode child,
     const NGLayoutResult& layout_result,
     LayoutUnit block_offset,
-    bool is_pushed_by_floats) const {
+    bool has_container_separation) const {
   if (!container_builder_.BfcBlockOffset().has_value())
     return NoBreak;
 
@@ -2157,9 +2158,11 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
   EBreakBetween break_between =
       container_builder_.JoinedBreakBetweenValue(break_before);
   if (IsForcedBreakValue(ConstraintSpace(), break_between)) {
-    // There should be a forced break before this child, and if we're not at the
-    // first in-flow child, just go ahead and break.
-    if (has_processed_first_child_)
+    // There should be a forced break before this child, and if we're at a valid
+    // breakpoint (class A or C), just go ahead and break. If we're not at a
+    // valid breakpoint, the forced break will be propagated upwards until we
+    // find a valid breakpoint.
+    if (has_container_separation)
       return ForcedBreak;
   }
 
@@ -2186,7 +2189,7 @@ NGBlockLayoutAlgorithm::BreakType NGBlockLayoutAlgorithm::BreakTypeBeforeChild(
     // content progression.
     //
     // [1] https://www.w3.org/TR/css-break-3/#possible-breaks
-    if (has_processed_first_child_ || is_pushed_by_floats) {
+    if (has_container_separation) {
       // This is a valid break point, and we can resolve the last-resort
       // situation.
       return SoftBreak;

@@ -45,7 +45,7 @@ class ForwardingModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   }
 
   void UntrackEntityForClientTagHash(
-      const std::string& client_tag_hash) override {
+      const ClientTagHash& client_tag_hash) override {
     other_->UntrackEntityForClientTagHash(client_tag_hash);
   }
 

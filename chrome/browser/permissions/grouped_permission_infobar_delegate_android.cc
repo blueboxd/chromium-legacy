@@ -55,7 +55,7 @@ base::string16 GroupedPermissionInfoBarDelegate::GetDescriptionText() const {
 }
 
 int GroupedPermissionInfoBarDelegate::GetIconId() const {
-  return permission_prompt_->GetIconId();
+  return IDR_ANDROID_INFOBAR_NOTIFICATIONS_OFF;
 }
 
 base::string16 GroupedPermissionInfoBarDelegate::GetMessageText() const {

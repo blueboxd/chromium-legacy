@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundStartupTracingTest, MAYBE_TestStartupTracing) {
   tracing::PrivacyFilteringCheck checker;
   checker.CheckProtoForUnexpectedFields(trace);
   EXPECT_GT(checker.stats().track_event, 0u);
-  EXPECT_EQ(checker.stats().process_desc, 0u);
+  EXPECT_GT(checker.stats().process_desc, 0u);
   EXPECT_GT(checker.stats().thread_desc, 0u);
   EXPECT_TRUE(checker.stats().has_interned_names);
   EXPECT_TRUE(checker.stats().has_interned_categories);

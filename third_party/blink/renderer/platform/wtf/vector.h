@@ -1018,8 +1018,8 @@ class Vector
   Vector& operator=(const Vector<T, otherCapacity, Allocator>&);
 
   // Moving.
-  Vector(Vector&&) noexcept;
-  Vector& operator=(Vector&&) noexcept;
+  Vector(Vector&&);
+  Vector& operator=(Vector&&);
 
   // Construct with an initializer list. You can do e.g.
   //     Vector<int> v({1, 2, 3});
@@ -1459,7 +1459,7 @@ operator=(const Vector<T, otherCapacity, Allocator>& other) {
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 Vector<T, inlineCapacity, Allocator>::Vector(
-    Vector<T, inlineCapacity, Allocator>&& other) noexcept {
+    Vector<T, inlineCapacity, Allocator>&& other) {
   size_ = 0;
   // It's a little weird to implement a move constructor using swap but this
   // way we don't have to add a move constructor to VectorBuffer.
@@ -1468,7 +1468,7 @@ Vector<T, inlineCapacity, Allocator>::Vector(
 
 template <typename T, wtf_size_t inlineCapacity, typename Allocator>
 Vector<T, inlineCapacity, Allocator>& Vector<T, inlineCapacity, Allocator>::
-operator=(Vector<T, inlineCapacity, Allocator>&& other) noexcept {
+operator=(Vector<T, inlineCapacity, Allocator>&& other) {
   swap(other);
   return *this;
 }

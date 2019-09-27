@@ -335,6 +335,11 @@ const char kSnapshotDrawViewName[] = "Use DrawViewHierarchy for Snapshots";
 const char kSnapshotDrawViewDescription[] =
     "When enabled, snapshots will be taken using |-drawViewHierarchy:|.";
 
+const char kForceStartupSigninPromoName[] = "Display the startup sign-in promo";
+const char kForceStartupSigninPromoDescription[] =
+    "When enabled, the startup sign-in promo is always displayed when starting "
+    "Chrome.";
+
 const char kSyncSandboxName[] = "Use Chrome Sync sandbox";
 const char kSyncSandboxDescription[] =
     "Connects to the testing server for Chrome Sync.";

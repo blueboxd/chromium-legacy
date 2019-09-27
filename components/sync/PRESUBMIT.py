@@ -27,13 +27,6 @@ EXCEPTION_MODEL_TYPES = [
   'SUPERVISED_USER_WHITELISTS',  # See previous.
 
   # Deprecated types:
-  'DEPRECATED_APP_NOTIFICATIONS',
-  'DEPRECATED_ARTICLES',
-  'DEPRECATED_SUPERVISED_USERS',
-  'DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS',
-  'DEPRECATED_SYNCED_NOTIFICATIONS',
-  'DEPRECATED_SYNCED_NOTIFICATION_APP_INFO',
-  'DEPRECATED_WIFI_CREDENTIALS',
   'DEPRECATED_EXPERIMENTS']
 
 # Root tags are used as prefixes when creating storage keys, so certain strings
@@ -176,8 +169,8 @@ def ParseModelTypeEntries(input_api, model_type_cc_path):
   for line in file_contents.splitlines():
     current_line_number += 1
     if line.strip().startswith('//'):
-        # Ignore comments.
-        continue
+      # Ignore comments.
+      continue
     if start_pattern.match(line):
       inside_enum = True
       continue
@@ -376,8 +369,7 @@ def FieldNumberToPrototypeString(field_number):
     => 'AppSpecifics'
   """
   return field_number.replace(FIELD_NUMBER_PREFIX, '').replace(
-    'FieldNumber', 'Specifics').replace(
-    'AppNotificationSpecifics', 'AppNotification')
+    'FieldNumber', 'Specifics')
 
 def CheckChangeLintsClean(input_api, output_api):
   source_filter = lambda x: input_api.FilterSourceFile(

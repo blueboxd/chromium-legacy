@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 sync_protocol_bases = [
-  "app_notification_specifics",
   "app_setting_specifics",
   "app_specifics",
   "app_list_specifics",
@@ -30,8 +29,6 @@ sync_protocol_bases = [
   "history_status",
   "loopback_server",
   "managed_user_setting_specifics",
-  "managed_user_shared_setting_specifics",
-  "managed_user_specifics",
   "managed_user_whitelist_specifics",
   "model_type_state",
   "model_type_store_schema_descriptor",
@@ -50,8 +47,6 @@ sync_protocol_bases = [
   "session_specifics",
   "sync",
   "sync_enums",
-  "synced_notification_app_info_specifics",
-  "synced_notification_specifics",
   "test",
   "theme_specifics",
   "typed_url_specifics",
@@ -61,7 +56,6 @@ sync_protocol_bases = [
   "user_event_specifics",
   "web_app_specifics",
   "wifi_configuration_specifics",
-  "wifi_credential_specifics",
 ]
 
 sync_protocol_sources = []

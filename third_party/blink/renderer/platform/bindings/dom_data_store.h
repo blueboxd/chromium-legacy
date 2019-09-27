@@ -230,12 +230,11 @@ class DOMDataStore {
         : TraceWrapperV8Reference(isolate, handle) {}
 
     // Move support without write barrier.
-    DOMWorldWrapperReference(DOMWorldWrapperReference&& other) noexcept
+    DOMWorldWrapperReference(DOMWorldWrapperReference&& other)
         : TraceWrapperV8Reference() {
       handle_ = std::move(other.handle_);
     }
-    DOMWorldWrapperReference& operator=(
-        DOMWorldWrapperReference&& rhs) noexcept {
+    DOMWorldWrapperReference& operator=(DOMWorldWrapperReference&& rhs) {
       handle_ = std::move(rhs.handle_);
       return *this;
     }

@@ -79,7 +79,10 @@ ModelType UserSelectableTypeToCanonicalModelType(UserSelectableType type) {
 }
 
 int UserSelectableTypeToHistogramInt(UserSelectableType type) {
-  return ModelTypeToHistogramInt(UserSelectableTypeToCanonicalModelType(type));
+  // TODO(crbug.com/1007293): Use ModelTypeHistogramValue instead of casting to
+  // int.
+  return static_cast<int>(
+      ModelTypeHistogramValue(UserSelectableTypeToCanonicalModelType(type)));
 }
 
 }  // namespace syncer

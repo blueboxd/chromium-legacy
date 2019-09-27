@@ -126,6 +126,41 @@ uint32_t FindFormsDifferences(const FormData& lhs, const FormData& rhs) {
   return differences_bitmask;
 }
 
+bool URLsEqualUpToScheme(const GURL& a, const GURL& b) {
+  return (a.GetContent() == b.GetContent());
+}
+
+bool URLsEqualUpToHttpHttpsSubstitution(const GURL& a, const GURL& b) {
+  if (a == b)
+    return true;
+
+  // The first-time and retry login forms action URLs sometimes differ in
+  // switching from HTTP to HTTPS, see http://crbug.com/400769.
+  if (a.SchemeIsHTTPOrHTTPS() && b.SchemeIsHTTPOrHTTPS())
+    return URLsEqualUpToScheme(a, b);
+
+  return false;
+}
+
+// Since empty or unspecified form's action is automatically set to the page
+// origin, this function checks if a form's action is empty by comparing it to
+// its origin.
+bool HasNonEmptyAction(const FormData& form) {
+  // TODO(crbug.com/1008798): The logic isn't accurate and should be fixed.
+  return form.action != form.url;
+}
+
+bool FormContainsFieldWithName(const FormData& form,
+                               const base::string16& element) {
+  if (element.empty())
+    return false;
+  for (const auto& field : form.fields) {
+    if (base::EqualsCaseInsensitiveASCII(field.name, element))
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 PasswordFormManager::PasswordFormManager(
@@ -212,10 +247,29 @@ bool PasswordFormManager::IsEqualToSubmittedForm(
     return false;
   if (IsHttpAuth())
     return false;
-  if (form.action == submitted_form_.action)
+
+  if (form.action.is_valid() && HasNonEmptyAction(form) &&
+      HasNonEmptyAction(submitted_form_) &&
+      URLsEqualUpToHttpHttpsSubstitution(submitted_form_.action, form.action)) {
     return true;
-  // TODO(https://crbug.com/831123): Implement other checks from a function
-  // IsPasswordFormReappeared from password_manager.cc.
+  }
+
+  // Match the form if username and password fields are same.
+  if (FormContainsFieldWithName(form,
+                                parsed_submitted_form_->username_element) &&
+      FormContainsFieldWithName(form,
+                                parsed_submitted_form_->password_element)) {
+    return true;
+  }
+
+  // Match the form if the observed username field has the same value as in
+  // the submitted form.
+  if (!parsed_submitted_form_->username_value.empty()) {
+    for (const auto& field : form.fields) {
+      if (field.value == parsed_submitted_form_->username_value)
+        return true;
+    }
+  }
   return false;
 }
 

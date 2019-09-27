@@ -17,7 +17,7 @@ import unittest
 import mock
 
 from core.results_processor import command_line
-from core.results_processor import processor
+from core.results_processor import formatters
 
 
 # To easily mock module level symbols within the command_line module.
@@ -133,7 +133,7 @@ class TestProcessOptions(ProcessOptionsTestCase):
     with self.assertRaises(SystemExit):
       self.ParseArgs(['--output-format', 'unknown'])
 
-  @mock.patch(module('SUPPORTED_FORMATS'), ['new-format'])
+  @mock.patch(module('HANDLED_NATIVELY'), ['new-format'])
   def testOutputFormatsSplit(self):
     self.legacy_formats = ['old-format']
     options = self.ParseArgs(
@@ -141,7 +141,7 @@ class TestProcessOptions(ProcessOptionsTestCase):
     self.assertEqual(options.output_formats, ['new-format'])
     self.assertEqual(options.legacy_output_formats, ['old-format'])
 
-  @mock.patch(module('SUPPORTED_FORMATS'), ['new-format'])
+  @mock.patch(module('HANDLED_NATIVELY'), ['new-format'])
   def testNoDuplicateOutputFormats(self):
     self.legacy_formats = ['old-format']
     options = self.ParseArgs(
@@ -160,23 +160,22 @@ class StandaloneTestProcessOptions(ProcessOptionsTestCase):
     with self.assertRaises(SystemExit):
       self.ParseArgs([])
 
-  @mock.patch(module('SUPPORTED_FORMATS'), ['new-format'])
   def testIntermediateDirRequired(self):
     with self.assertRaises(SystemExit):
-      self.ParseArgs(['--output-format', 'new-format'])
+      self.ParseArgs(['--output-format', 'json-test-results'])
 
-  @mock.patch(module('SUPPORTED_FORMATS'), ['new-format'])
   def testSuccessful(self):
     options = self.ParseArgs(
-        ['--output-format', 'new-format', '--intermediate-dir', 'some_dir'])
-    self.assertEqual(options.output_formats, ['new-format'])
+        ['--output-format', 'json-test-results',
+         '--intermediate-dir', 'some_dir'])
+    self.assertEqual(options.output_formats, ['json-test-results'])
     self.assertEqual(options.intermediate_dir, '/path/to/curdir/some_dir')
     self.assertEqual(options.output_dir, '/path/to/output_dir')
 
 
-class TestSupportedFormats(unittest.TestCase):
-  def testAllSupportedFormatsHaveFormatters(self):
-    for output_format in command_line.SUPPORTED_FORMATS:
+class TestNativelyHandledFormats(unittest.TestCase):
+  def testNativelyHandledFormatsHaveFormatters(self):
+    for output_format in command_line.HANDLED_NATIVELY:
       if output_format == 'none':
         continue
-      self.assertIn(output_format, processor.FORMATTERS)
+      self.assertIn(output_format, formatters.FORMATTERS)

@@ -12,6 +12,8 @@ jumbo_static_library("base") {
     "cancelation_observer.h",
     "cancelation_signal.cc",
     "cancelation_signal.h",
+    "client_tag_hash.cc",
+    "client_tag_hash.h",
     "data_type_histogram.cc",
     "data_type_histogram.h",
     "encryptor.h",

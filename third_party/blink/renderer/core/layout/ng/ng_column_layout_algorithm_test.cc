@@ -3228,6 +3228,43 @@ TEST_F(NGColumnLayoutAlgorithmTest, ClassCBreakPointBeforeLine) {
   EXPECT_EQ(expectation, dump);
 }
 
+TEST_F(NGColumnLayoutAlgorithmTest, ForcedBreakAtClassCBreakPoint) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #parent {
+        columns: 3;
+        column-gap: 10px;
+        column-fill: auto;
+        width: 320px;
+        height:100px;
+      }
+    </style>
+    <div id="container">
+      <div id="parent">
+        <div style="width:50px; height:50px;"></div>
+        <div style="float:left; width:100%; height:40px;"></div>
+        <div style="width:55px;">
+          <div style="display:flow-root; break-before:column; width:44px; height:20px;"></div>
+        </div>
+      </div>
+    </div>
+  )HTML");
+
+  String dump = DumpFragmentTree(GetElementById("container"));
+  String expectation = R"DUMP(.:: LayoutNG Physical Fragment Tree ::.
+  offset:unplaced size:1000x100
+    offset:0,0 size:320x100
+      offset:0,0 size:100x100
+        offset:0,0 size:50x50
+        offset:0,50 size:100x40
+        offset:0,50 size:55x50
+      offset:110,0 size:100x20
+        offset:0,0 size:55x20
+          offset:0,0 size:44x20
+)DUMP";
+  EXPECT_EQ(expectation, dump);
+}
+
 TEST_F(NGColumnLayoutAlgorithmTest, Nested) {
   SetBodyInnerHTML(R"HTML(
     <style>

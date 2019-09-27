@@ -24,6 +24,8 @@ chrome://version/?show-variations-cmd.
 Run with --help to get a complete list of options this script runs with.
 """
 
+from __future__ import print_function
+
 import logging
 import optparse
 import os
@@ -248,7 +250,7 @@ def Bisect(browser_type, url, extra_browser_args, variations_file, output_dir):
   runs = [variations_file]
   while runs:
     run = runs[0]
-    print 'Run Chrome with variations file', run
+    print('Run Chrome with variations file', run)
     variations_args = _LoadVariations(run)
     exit_status, stdout, stderr = _RunVariations(
         browser_path=browser_path, url=url,
@@ -260,7 +262,7 @@ def Bisect(browser_type, url, extra_browser_args, variations_file, output_dir):
       runs = split_variations_cmd.SplitVariationsCmdFromFile(run, output_dir)
       if len(runs) == 1:
         # Can divide no further.
-        print 'Bisecting succeeded:', ' '.join(variations_args)
+        print('Bisecting succeeded:', ' '.join(variations_args))
         return
     elif answer == 'n':
       if len(runs) == 1:

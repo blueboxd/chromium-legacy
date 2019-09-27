@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/modules/payments/payment_manager.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
 #include "third_party/blink/renderer/core/dom/dom_exception.h"
@@ -92,10 +92,9 @@ PaymentManager::PaymentManager(ServiceWorkerRegistration* registration)
   DCHECK(registration);
 
   if (ExecutionContext* context = registration->GetExecutionContext()) {
-    if (auto* interface_provider = context->GetInterfaceProvider()) {
-      interface_provider->GetInterface(manager_.BindNewPipeAndPassReceiver(
-          context->GetTaskRunner(TaskType::kUserInteraction)));
-    }
+    context->GetBrowserInterfaceBroker().GetInterface(
+        manager_.BindNewPipeAndPassReceiver(
+            context->GetTaskRunner(TaskType::kUserInteraction)));
   }
 
   manager_.set_disconnect_handler(WTF::Bind(

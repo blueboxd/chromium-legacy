@@ -73,8 +73,8 @@ class BLINK_MODULES_EXPORT VideoCaptureSettings {
 
   VideoCaptureSettings(const VideoCaptureSettings& other);
   VideoCaptureSettings& operator=(const VideoCaptureSettings& other);
-  VideoCaptureSettings(VideoCaptureSettings&& other) noexcept;
-  VideoCaptureSettings& operator=(VideoCaptureSettings&& other) noexcept;
+  VideoCaptureSettings(VideoCaptureSettings&& other);
+  VideoCaptureSettings& operator=(VideoCaptureSettings&& other);
   ~VideoCaptureSettings();
 
   bool HasValue() const { return !failed_constraint_name_; }
@@ -193,8 +193,8 @@ class BLINK_MODULES_EXPORT AudioCaptureSettings {
       const AudioProcessingProperties& audio_processing_properties);
   AudioCaptureSettings(const AudioCaptureSettings& other);
   AudioCaptureSettings& operator=(const AudioCaptureSettings& other);
-  AudioCaptureSettings(AudioCaptureSettings&& other) noexcept;
-  AudioCaptureSettings& operator=(AudioCaptureSettings&& other) noexcept;
+  AudioCaptureSettings(AudioCaptureSettings&& other);
+  AudioCaptureSettings& operator=(AudioCaptureSettings&& other);
 
   bool HasValue() const { return !failed_constraint_name_; }
 

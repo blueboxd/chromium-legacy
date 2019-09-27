@@ -1030,10 +1030,11 @@ class TitleWatcher : public WebContentsObserver {
   DISALLOW_COPY_AND_ASSIGN(TitleWatcher);
 };
 
-// Watches a RenderProcessHost and waits for specified destruction events.
+// Watches a RenderProcessHost and waits for a specified lifecycle event.
 class RenderProcessHostWatcher : public RenderProcessHostObserver {
  public:
   enum WatchType {
+    WATCH_FOR_PROCESS_READY,
     WATCH_FOR_PROCESS_EXIT,
     WATCH_FOR_HOST_DESTRUCTION
   };
@@ -1044,7 +1045,7 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
   RenderProcessHostWatcher(WebContents* web_contents, WatchType type);
   ~RenderProcessHostWatcher() override;
 
-  // Waits until the renderer process exits.
+  // Waits until the expected event is triggered.
   void Wait();
 
   // Returns true if a renderer process exited cleanly (without hitting
@@ -1054,6 +1055,7 @@ class RenderProcessHostWatcher : public RenderProcessHostObserver {
 
  private:
   // Overridden RenderProcessHost::LifecycleObserver methods.
+  void RenderProcessReady(RenderProcessHost* host) override;
   void RenderProcessExited(RenderProcessHost* host,
                            const ChildProcessTerminationInfo& info) override;
   void RenderProcessHostDestroyed(RenderProcessHost* host) override;

@@ -187,19 +187,8 @@ TEST_P(SkiaOutputSurfaceImplTest, SubmitPaint) {
   geometry.result_bounds = kSurfaceRect;
   geometry.result_selection = output_rect;
   geometry.sampling_bounds = kSurfaceRect;
+  geometry.readback_offset = gfx::Vector2d(0, 0);
 
-  if (gpu_service_holder_->is_vulkan_enabled()) {
-    // No flipping because Skia handles all co-ordinate transformation on the
-    // software readback path currently implemented for Vulkan.
-    geometry.readback_offset = geometry.readback_offset = gfx::Vector2d(0, 0);
-  } else {
-    // GLRendererCopier may need a vertical flip depending on output surface
-    // characteristics.
-    geometry.readback_offset =
-        output_surface_->capabilities().flipped_output_surface
-            ? geometry.readback_offset = gfx::Vector2d(0, 0)
-            : geometry.readback_offset = gfx::Vector2d(0, 90);
-  }
   output_surface_->CopyOutput(0, geometry, color_space, std::move(request));
   BlockMainThread();
 

@@ -103,9 +103,9 @@ TaskHandle::~TaskHandle() {
   Cancel();
 }
 
-TaskHandle::TaskHandle(TaskHandle&&) noexcept = default;
+TaskHandle::TaskHandle(TaskHandle&&) = default;
 
-TaskHandle& TaskHandle::operator=(TaskHandle&& other) noexcept {
+TaskHandle& TaskHandle::operator=(TaskHandle&& other) {
   TaskHandle tmp(std::move(other));
   runner_.swap(tmp.runner_);
   return *this;

@@ -49,25 +49,31 @@ class CORE_EXPORT InterpolableLength final : public InterpolableValue {
   bool HasPercentage() const;
   void SubtractFromOneHundredPercent();
 
+  std::unique_ptr<InterpolableLength> Clone() const {
+    return std::unique_ptr<InterpolableLength>(RawClone());
+  }
+  std::unique_ptr<InterpolableLength> CloneAndZero() const {
+    return std::unique_ptr<InterpolableLength>(RawCloneAndZero());
+  }
+
   // InterpolableValue:
+  void Interpolate(const InterpolableValue& to,
+                   const double progress,
+                   InterpolableValue& result) const final;
   bool IsLength() const final { return true; }
   bool Equals(const InterpolableValue& other) const final {
     NOTREACHED();
     return false;
-  }
-  std::unique_ptr<InterpolableValue> Clone() const final;
-  std::unique_ptr<InterpolableValue> CloneAndZero() const final {
-    return std::make_unique<InterpolableLength>(CSSLengthArray());
   }
   void Scale(double scale) final;
   void ScaleAndAdd(double scale, const InterpolableValue& other) final;
   void AssertCanInterpolateWith(const InterpolableValue& other) const final;
 
  private:
-  // InterpolableValue:
-  void Interpolate(const InterpolableValue& to,
-                   const double progress,
-                   InterpolableValue& result) const final;
+  InterpolableLength* RawClone() const final;
+  InterpolableLength* RawCloneAndZero() const final {
+    return new InterpolableLength(CSSLengthArray());
+  }
 
   bool IsLengthArray() const { return type_ == Type::kLengthArray; }
   bool IsExpression() const { return type_ == Type::kExpression; }

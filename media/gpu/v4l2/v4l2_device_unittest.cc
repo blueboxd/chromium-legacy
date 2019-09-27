@@ -8,6 +8,7 @@
 #include <sstream>
 #include <vector>
 
+#include "media/base/color_plane_layout.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/native_pixmap_handle.h"
 
@@ -78,7 +79,7 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutNV12) {
   ASSERT_TRUE(layout.has_value());
   EXPECT_EQ(PIXEL_FORMAT_NV12, layout->format());
   EXPECT_EQ(gfx::Size(300, 180), layout->coded_size());
-  std::vector<VideoFrameLayout::Plane> expected_planes(
+  std::vector<ColorPlaneLayout> expected_planes(
       {{320, 0u, 86400u}, {320, 57600u, 28800u}});
   EXPECT_EQ(expected_planes, layout->planes());
   EXPECT_EQ(layout->is_multi_planar(), false);
@@ -103,7 +104,7 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutNV12M) {
   ASSERT_TRUE(layout.has_value());
   EXPECT_EQ(PIXEL_FORMAT_NV12, layout->format());
   EXPECT_EQ(gfx::Size(300, 180), layout->coded_size());
-  std::vector<VideoFrameLayout::Plane> expected_planes(
+  std::vector<ColorPlaneLayout> expected_planes(
       {{320, 0u, 57600u}, {320, 0u, 28800u}});
   EXPECT_EQ(expected_planes, layout->planes());
   EXPECT_EQ(layout->is_multi_planar(), true);
@@ -128,7 +129,7 @@ TEST(V4L2DeviceTest, V4L2FormatToVideoFrameLayoutYUV420) {
   ASSERT_TRUE(layout.has_value());
   EXPECT_EQ(PIXEL_FORMAT_I420, layout->format());
   EXPECT_EQ(gfx::Size(300, 180), layout->coded_size());
-  std::vector<VideoFrameLayout::Plane> expected_planes(
+  std::vector<ColorPlaneLayout> expected_planes(
       {{320, 0u, 86400}, {160, 57600u, 14400u}, {160, 72000u, 14400u}});
   EXPECT_EQ(expected_planes, layout->planes());
   std::ostringstream ostream;

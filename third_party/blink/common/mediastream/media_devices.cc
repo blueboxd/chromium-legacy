@@ -13,8 +13,7 @@ WebMediaDeviceInfo::WebMediaDeviceInfo()
 WebMediaDeviceInfo::WebMediaDeviceInfo(const WebMediaDeviceInfo& other) =
     default;
 
-WebMediaDeviceInfo::WebMediaDeviceInfo(WebMediaDeviceInfo&& other) noexcept =
-    default;
+WebMediaDeviceInfo::WebMediaDeviceInfo(WebMediaDeviceInfo&& other) = default;
 
 WebMediaDeviceInfo::WebMediaDeviceInfo(const std::string& device_id,
                                        const std::string& label,
@@ -36,8 +35,8 @@ WebMediaDeviceInfo::~WebMediaDeviceInfo() = default;
 WebMediaDeviceInfo& WebMediaDeviceInfo::operator=(
     const WebMediaDeviceInfo& other) = default;
 
-WebMediaDeviceInfo& WebMediaDeviceInfo::operator=(
-    WebMediaDeviceInfo&& other) noexcept = default;
+WebMediaDeviceInfo& WebMediaDeviceInfo::operator=(WebMediaDeviceInfo&& other) =
+    default;
 
 bool operator==(const WebMediaDeviceInfo& first,
                 const WebMediaDeviceInfo& second) {

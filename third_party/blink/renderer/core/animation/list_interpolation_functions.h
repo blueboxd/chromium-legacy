@@ -49,6 +49,9 @@ class CORE_EXPORT ListInterpolationFunctions {
                           const InterpolationValue&,
                           EqualNonInterpolableValuesCallback);
 
+  using InterpolableValuesAreCompatibleCallback =
+      base::RepeatingCallback<bool(const InterpolableValue*,
+                                   const InterpolableValue*)>;
   using NonInterpolableValuesAreCompatibleCallback =
       base::RepeatingCallback<bool(const NonInterpolableValue*,
                                    const NonInterpolableValue*)>;
@@ -62,8 +65,15 @@ class CORE_EXPORT ListInterpolationFunctions {
                         const InterpolationType&,
                         const InterpolationValue&,
                         LengthMatchingStrategy,
+                        InterpolableValuesAreCompatibleCallback,
                         NonInterpolableValuesAreCompatibleCallback,
                         CompositeItemCallback);
+
+  // Used when the interpolable values are known to always be compatible.
+  static bool InterpolableValuesKnownCompatible(const InterpolableValue* a,
+                                                const InterpolableValue* b) {
+    return true;
+  }
 
   // We are moving towards elimination of |NonInterpolableValue|, and expect
   // more clients to assert no more usage with this function.

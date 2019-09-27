@@ -26,8 +26,13 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
  public:
   LockManager();
 
-  void CreateService(const url::Origin& origin,
-                     mojo::PendingReceiver<blink::mojom::LockManager> receiver);
+  // Binds |receiver| to this LockManager. |receiver| belongs to a frame or
+  // worker at |origin| hosted by |render_process_id|. If it belongs to a frame,
+  // |render_frame_id| identifies it, otherwise it is MSG_ROUTING_NONE.
+  void BindReceiver(int render_process_id,
+                    int render_frame_id,
+                    const url::Origin& origin,
+                    mojo::PendingReceiver<blink::mojom::LockManager> receiver);
 
   // Request a lock. When the lock is acquired, |callback| will be invoked with
   // a LockHandle.
@@ -56,8 +61,17 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
 
   // State for each client held in |receivers_|.
   struct ReceiverState {
-    url::Origin origin;
     std::string client_id;
+
+    // Process owning this receiver.
+    int render_process_id;
+
+    // Frame owning this receiver. MSG_ROUTING_NONE if the receiver is owned by
+    // a worker.
+    int render_frame_id;
+
+    // Origin of the frame or worker owning this receiver.
+    url::Origin origin;
   };
 
   bool IsGrantable(const url::Origin& origin,

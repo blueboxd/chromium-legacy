@@ -1157,7 +1157,7 @@ bool TestRecipeReplayer::ExecuteTypePasswordAction(
     return false;
 
   VLOG(1) << "Typing '" << value << "' inside `" << xpath << "`.";
-
+  PageActivityObserver page_activity_observer(frame);
   for (size_t index = 0; index < value->size(); index++) {
     ui::DomKey key = ui::DomKey::FromCharacter(value->at(index));
     ui::KeyboardCode key_code = ui::NonPrintableDomKeyToKeyboardCode(key);
@@ -1165,7 +1165,7 @@ bool TestRecipeReplayer::ExecuteTypePasswordAction(
     SimulateKeyPress(content::WebContents::FromRenderFrameHost(frame), key,
                      code, key_code, false, false, false, false);
   }
-
+  page_activity_observer.WaitTillPageIsIdle();
   return true;
 }
 

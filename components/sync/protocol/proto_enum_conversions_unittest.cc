@@ -74,11 +74,6 @@ TEST_F(ProtoEnumConversionsTest, GetWifiConfigurationProxyOptionString) {
                              ProxyConfiguration::ProxyOption_MAX);
 }
 
-TEST_F(ProtoEnumConversionsTest, GetWifiCredentialSecurityClassString) {
-  TestEnumStringFunction(sync_pb::WifiCredentialSpecifics::SecurityClass_MIN,
-                         sync_pb::WifiCredentialSpecifics::SecurityClass_MAX);
-}
-
 TEST_F(ProtoEnumConversionsTest, GetUpdatesSourceString) {
   TestEnumStringFunction(sync_pb::GetUpdatesCallerInfo::GetUpdatesSource_MIN,
                          sync_pb::GetUpdatesCallerInfo::PERIODIC);

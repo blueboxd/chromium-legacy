@@ -259,23 +259,8 @@ void UiControllerAndroid::SetupForState() {
       AllowShowingSoftKeyboard(true);
       SetSpinPoodle(false);
 
-      // make sure user sees the error message.
+      // Make sure the user sees the error message.
       ExpandBottomSheet();
-      {
-        const ClientSettings& settings = ui_delegate_->GetClientSettings();
-        if (settings.enable_graceful_shutdown) {
-          // Keep showing the current UI for a while, without getting updates
-          // from the controller, then shut down the UI portion.
-          //
-          // A controller might still get attached while the timer is running,
-          // canceling the destruction.
-          destroy_timer_ = std::make_unique<base::OneShotTimer>();
-          destroy_timer_->Start(
-              FROM_HERE, settings.graceful_shutdown_delay,
-              base::BindOnce(&UiControllerAndroid::DestroySelf,
-                             weak_ptr_factory_.GetWeakPtr()));
-        }
-      }
       Detach();
       return;
 

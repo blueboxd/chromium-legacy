@@ -18,7 +18,6 @@ option optimize_for = LITE_RUNTIME;
 package sync_pb;
 
 import "app_list_specifics.proto";
-import "app_notification_specifics.proto";
 import "app_setting_specifics.proto";
 import "app_specifics.proto";
 import "arc_package_specifics.proto";
@@ -38,8 +37,6 @@ import "favicon_tracking_specifics.proto";
 import "get_updates_caller_info.proto";
 import "history_delete_directive_specifics.proto";
 import "managed_user_setting_specifics.proto";
-import "managed_user_shared_setting_specifics.proto";
-import "managed_user_specifics.proto";
 import "managed_user_whitelist_specifics.proto";
 import "mountain_share_specifics.proto";
 import "nigori_specifics.proto";
@@ -53,8 +50,6 @@ import "security_event_specifics.proto";
 import "send_tab_to_self_specifics.proto";
 import "session_specifics.proto";
 import "sync_enums.proto";
-import "synced_notification_app_info_specifics.proto";
-import "synced_notification_specifics.proto";
 import "theme_specifics.proto";
 import "typed_url_specifics.proto";
 import "unique_position.proto";
@@ -62,7 +57,6 @@ import "user_consent_specifics.proto";
 import "user_event_specifics.proto";
 import "web_app_specifics.proto";
 import "wifi_configuration_specifics.proto";
-import "wifi_credential_specifics.proto";
 
 // Used for inspecting how long we spent performing operations in different
 // backends. All times must be in millis.
@@ -118,7 +112,6 @@ message EntitySpecifics {
     PreferenceSpecifics preference = 37702;
     TypedUrlSpecifics typed_url = 40781;
     ThemeSpecifics theme = 41210;
-    AppNotification app_notification = 45184;
     PasswordSpecifics password = 45873;
     NigoriSpecifics nigori = 47745;
     ExtensionSpecifics extension = 48119;
@@ -129,8 +122,6 @@ message EntitySpecifics {
     ExtensionSettingSpecifics extension_setting = 96159;
     AppSettingSpecifics app_setting = 103656;
     HistoryDeleteDirectiveSpecifics history_delete_directive = 150251;
-    SyncedNotificationSpecifics synced_notification = 153108;
-    SyncedNotificationAppInfoSpecifics synced_notification_app_info = 235816;
     DeviceInfoSpecifics device_info = 154522;
     ExperimentsSpecifics experiments = 161496;
     PriorityPreferenceSpecifics priority_preference = 163425;
@@ -138,12 +129,11 @@ message EntitySpecifics {
     FaviconTrackingSpecifics favicon_tracking = 181534;
     FaviconImageSpecifics favicon_image = 182019;
     ManagedUserSettingSpecifics managed_user_setting = 186662;
-    ManagedUserSpecifics managed_user = 194582;
-    ManagedUserSharedSettingSpecifics managed_user_shared_setting = 202026;
     ManagedUserWhitelistSpecifics managed_user_whitelist = 306060;
-    ArticleSpecifics article = 223759;
+    // TODO(crbug.com/1007942): |article| isn't used by Sync anymore, but it
+    // can't be removed because dom_distiller code uses it for local storage.
+    ArticleSpecifics article = 223759 [deprecated = true];
     AppListSpecifics app_list = 229170;
-    WifiCredentialSpecifics wifi_credential = 218175;
     AutofillWalletSpecifics autofill_wallet = 306270;
     WalletMetadataSpecifics wallet_metadata = 330441;
     ArcPackageSpecifics arc_package = 340906;
@@ -157,6 +147,18 @@ message EntitySpecifics {
     WebAppSpecifics web_app = 673225;
     WifiConfigurationSpecifics wifi_configuration = 662827;
   }
+  reserved 45184;
+  reserved "app_notification";
+  reserved 153108;
+  reserved "synced_notification";
+  reserved 194582;
+  reserved "managed_user";
+  reserved 202026;
+  reserved "managed_user_shared_setting";
+  reserved 218175;
+  reserved "wifi_credential";
+  reserved 235816;
+  reserved "synced_notification_app_info";
 }
 
 message SyncEntity {

@@ -13,6 +13,7 @@
 
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/protocol/sync.pb.h"
 
@@ -52,7 +53,7 @@ struct CommitResponseData {
   // |id|. It could be different because the server can change the sync id
   // (e.g. for newly created bookmarks),
   std::string id_in_request;
-  std::string client_tag_hash;
+  ClientTagHash client_tag_hash;
   int64_t sequence_number = 0;
   int64_t response_version = 0;
   std::string specifics_hash;

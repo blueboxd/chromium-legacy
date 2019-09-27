@@ -148,6 +148,8 @@ void CSSLengthListInterpolationType::Composite(
       underlying_value_owner, underlying_fraction, *this, value,
       ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
       WTF::BindRepeating(
+          ListInterpolationFunctions::InterpolableValuesKnownCompatible),
+      WTF::BindRepeating(
           ListInterpolationFunctions::VerifyNoNonInterpolableValues),
       WTF::BindRepeating([](UnderlyingValue& underlying_value,
                             double underlying_fraction,

@@ -62,7 +62,7 @@ constexpr int kTallestFrameHeight = kTallestTabHeight + 19;
 // change default theme assets, if you need themes to recreate their generated
 // images (which are cached), or if you changed how missing values are
 // generated.
-const int kThemePackVersion = 71;
+const int kThemePackVersion = 72;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // uint16_t. kHeaderID should always have the maximum value because we want the

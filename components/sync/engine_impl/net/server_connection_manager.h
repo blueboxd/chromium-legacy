@@ -123,7 +123,6 @@ class ServerConnectionManager {
     bool ReadBufferResponse(std::string* buffer_out,
                             HttpResponse* response,
                             bool require_response);
-    bool ReadDownloadResponse(HttpResponse* response, std::string* buffer_out);
 
    protected:
     std::string MakeConnectionURL(const std::string& sync_server,

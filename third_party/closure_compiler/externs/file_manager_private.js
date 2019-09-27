@@ -869,17 +869,6 @@ chrome.fileManagerPrivate.openSettingsSubpage = function(sub_page) {};
 chrome.fileManagerPrivate.computeChecksum = function(entry, callback) {};
 
 /**
- * Sets a tag on a file or a directory. Only Drive files are supported.
- * @param {!Entry} entry
- * @param {string} visibility 'private' or 'public'
- * @param {string} key
- * @param {string} value
- * @param {function()} callback
- */
-chrome.fileManagerPrivate.setEntryTag = function(entry, visibility, key,
-    value, callback) {};
-
-/**
  * Gets a flag indicating whether PiexLoader is enabled.
  * @param {function((boolean|undefined))} callback
  */

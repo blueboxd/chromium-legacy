@@ -227,11 +227,21 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   // Insert a fragmentainer break before the child if necessary.
   // Update previous in-flow position and return true if a break was inserted.
   // Otherwise return false.
+  // If |has_container_separation| is true, it means that we're at a valid
+  // breakpoint. We obviously prefer valid breakpoints, but sometimes we need to
+  // break at undesirable locations. Class A breakpoints occur between block
+  // siblings. Class B breakpoints between line boxes. Both these breakpoint
+  // classes imply that we're already past the first in-flow child in the
+  // container, but there's also another way of achieving container separation:
+  // class C breakpoints. Those occur if there's a positive gap between the
+  // block-start content edge of the container and the block-start margin edge
+  // of the first in-flow child. This can happen when in-flow content is pushed
+  // down by floats. https://www.w3.org/TR/css-break-3/#possible-breaks
   bool BreakBeforeChild(NGLayoutInputNode child,
                         const NGLayoutResult&,
                         NGPreviousInflowPosition*,
                         LayoutUnit block_offset,
-                        bool is_pushed_by_floats);
+                        bool has_container_separation);
 
   enum BreakType { NoBreak, SoftBreak, ForcedBreak };
 
@@ -240,7 +250,7 @@ class CORE_EXPORT NGBlockLayoutAlgorithm
   BreakType BreakTypeBeforeChild(NGLayoutInputNode child,
                                  const NGLayoutResult&,
                                  LayoutUnit block_offset,
-                                 bool is_pushed_by_floats) const;
+                                 bool has_container_separation) const;
 
   // Final adjustments before fragment creation. We need to prevent the fragment
   // from crossing fragmentainer boundaries, and rather create a break token if

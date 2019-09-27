@@ -24,9 +24,9 @@ cca.mojo.ChromeHelper = class {
   constructor() {
     /**
      * An interface remote that is used to communicate with Chrome.
-     * @type {cros.mojom.CameraAppHelperRemote}
+     * @type {chromeosCamera.mojom.CameraAppHelperRemote}
      */
-    this.remote_ = cros.mojom.CameraAppHelper.getRemote();
+    this.remote_ = chromeosCamera.mojom.CameraAppHelper.getRemote();
   }
 
   /**

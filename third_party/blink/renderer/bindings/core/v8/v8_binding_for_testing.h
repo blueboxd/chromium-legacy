@@ -27,6 +27,9 @@ class V8TestingScope {
   STACK_ALLOCATED();
 
  public:
+  // TODO(keishi): Define CreateDummyPageHolder in DummyPageHolder.
+  static std::unique_ptr<DummyPageHolder> CreateDummyPageHolder(
+      const KURL& url);
   explicit V8TestingScope(const KURL& url = KURL());
   ScriptState* GetScriptState() const;
   ExecutionContext* GetExecutionContext() const;

@@ -479,10 +479,6 @@ syncable::Directory* SyncManagerImpl::directory() {
   return share_->directory.get();
 }
 
-const SyncScheduler* SyncManagerImpl::scheduler() const {
-  return scheduler_.get();
-}
-
 // static
 std::string SyncManagerImpl::GenerateCacheGUIDForTest() {
   return GenerateCacheGUID();

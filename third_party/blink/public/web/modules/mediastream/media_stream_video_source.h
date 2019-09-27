@@ -285,8 +285,8 @@ class BLINK_MODULES_EXPORT MediaStreamVideoSource
         const VideoTrackFormatCallback& format_callback,
         std::unique_ptr<VideoTrackAdapterSettings> adapter_settings,
         const ConstraintsCallback& callback);
-    PendingTrackInfo(PendingTrackInfo&& other) noexcept;
-    PendingTrackInfo& operator=(PendingTrackInfo&& other) noexcept;
+    PendingTrackInfo(PendingTrackInfo&& other);
+    PendingTrackInfo& operator=(PendingTrackInfo&& other);
     ~PendingTrackInfo();
 
     MediaStreamVideoTrack* track;

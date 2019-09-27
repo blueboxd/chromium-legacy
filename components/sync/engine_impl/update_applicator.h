@@ -20,7 +20,6 @@ class Cryptographer;
 
 namespace syncable {
 class WriteTransaction;
-class Entry;
 }
 
 // An UpdateApplicator is used to iterate over a number of unapplied updates,
@@ -48,9 +47,6 @@ class UpdateApplicator {
   }
 
  private:
-  // If true, AttemptOneApplication will skip over |entry| and return true.
-  bool SkipUpdate(const syncable::Entry& entry);
-
   // Used to decrypt sensitive sync nodes.
   const Cryptographer* cryptographer_;
 

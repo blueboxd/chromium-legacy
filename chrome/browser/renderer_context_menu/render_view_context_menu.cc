@@ -2311,10 +2311,7 @@ void RenderViewContextMenu::ExecuteCommand(int id, int event_flags) {
       break;
 
     case IDC_CONTENT_CONTEXT_RELOADFRAME:
-      // We always obey the cache here.
-      // TODO(evanm): Perhaps we could allow shift-clicking the menu item to do
-      // a cache-ignoring reload of the frame.
-      source_web_contents_->ReloadFocusedFrame(false);
+      source_web_contents_->ReloadFocusedFrame();
       break;
 
     case IDC_CONTENT_CONTEXT_VIEWFRAMESOURCE:

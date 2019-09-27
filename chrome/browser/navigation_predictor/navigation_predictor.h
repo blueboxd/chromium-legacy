@@ -47,8 +47,8 @@ class NavigationPredictor : public blink::mojom::AnchorElementMetricsHost,
   ~NavigationPredictor() override;
 
   // Create and bind NavigationPredictor.
-  static void Create(mojo::PendingReceiver<AnchorElementMetricsHost> receiver,
-                     content::RenderFrameHost* render_frame_host);
+  static void Create(content::RenderFrameHost* render_frame_host,
+                     mojo::PendingReceiver<AnchorElementMetricsHost> receiver);
 
   // Enum describing the possible set of actions that navigation predictor may
   // take. This enum should remain synchronized with enum

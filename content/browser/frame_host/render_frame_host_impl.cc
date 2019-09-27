@@ -1063,6 +1063,13 @@ RenderFrameHostImpl::~RenderFrameHostImpl() {
   if (owned_render_widget_host_)
     owned_render_widget_host_->ShutdownAndDestroyWidget(false);
 
+  // TODO(https://crbug.com/1005077): There is no known reason for removing the
+  // RenderViewHostImpl here instead of automatically at the end of the
+  // destructor. In practise, not doing it here will prevent android WebView to
+  // display a new page after a long sequence of WebView creation / deletion.
+  // The real reason why this is needed needs to be investigated.
+  render_view_host_.reset();
+
   // If another frame is waiting for a beforeunload ACK from this frame,
   // simulate it now.
   RenderFrameHostImpl* beforeunload_initiator = GetBeforeUnloadInitiator();
@@ -4471,11 +4478,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
   registry_->AddInterface(base::BindRepeating(
       &GetRestrictedCookieManager, base::Unretained(this),
       GetProcess()->GetID(), routing_id_, GetProcess()->GetStoragePartition()));
-
-  if (base::FeatureList::IsEnabled(features::kSmsReceiver)) {
-    registry_->AddInterface(base::BindRepeating(
-        &RenderFrameHostImpl::BindSmsReceiverReceiver, base::Unretained(this)));
-  }
 }
 
 void RenderFrameHostImpl::ResetWaitingState() {
@@ -6445,7 +6447,7 @@ void RenderFrameHostImpl::GetFileSystemManager(
 
 void RenderFrameHostImpl::CreateLockManager(
     mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
-  GetProcess()->CreateLockManager(GetLastCommittedOrigin(),
+  GetProcess()->CreateLockManager(GetRoutingID(), GetLastCommittedOrigin(),
                                   std::move(receiver));
 }
 

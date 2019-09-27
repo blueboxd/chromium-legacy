@@ -169,7 +169,7 @@ class CrosNetworkConfigTest : public testing::Test {
 
   void SetupObserver() {
     observer_ = std::make_unique<CrosNetworkConfigTestObserver>();
-    cros_network_config_->AddObserver(observer_->GenerateInterfacePtr());
+    cros_network_config_->AddObserver(observer_->GenerateRemote());
   }
 
   mojom::NetworkStatePropertiesPtr GetNetworkState(const std::string& guid) {
@@ -965,7 +965,7 @@ TEST_F(CrosNetworkConfigTest, RequestNetworkScan) {
     bool wifi_scanning_ = false;
   };
   ScanningObserver observer(cros_network_config());
-  cros_network_config()->AddObserver(observer.GenerateInterfacePtr());
+  cros_network_config()->AddObserver(observer.GenerateRemote());
   base::RunLoop().RunUntilIdle();
 
   cros_network_config()->RequestNetworkScan(mojom::NetworkType::kWiFi);

@@ -45,7 +45,7 @@ void VerifyProtoRecursive(const MessageInfo* root,
         error << " : " << a;
       }
       error << " : " << f.id();
-      LOG(DFATAL) << error.rdbuf();
+      DCHECK(false) << error.rdbuf();
       continue;
     }
     if (root->sub_messages && root->sub_messages[index] != nullptr) {

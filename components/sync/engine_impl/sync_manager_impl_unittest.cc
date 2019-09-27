@@ -22,9 +22,9 @@
 #include "base/test/values_test_util.h"
 #include "base/values.h"
 #include "components/sync/base/cancelation_signal.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/extensions_activity.h"
 #include "components/sync/base/fake_encryptor.h"
-#include "components/sync/base/hash_util.h"
 #include "components/sync/base/mock_unrecoverable_error_handler.h"
 #include "components/sync/base/model_type_test_util.h"
 #include "components/sync/engine/engine_util.h"
@@ -90,6 +90,13 @@ using syncable::SPECIFICS;
 using syncable::kEncryptedString;
 
 namespace {
+
+// Tests in this file covers directory behavior, so we did't migrate them to
+// use ClientTagHash.
+std::string GenerateSyncableHash(ModelType type,
+                                 const std::string& client_tag) {
+  return ClientTagHash::FromUnhashed(type, client_tag).value();
+}
 
 // Makes a child node under the type root folder.  Returns the id of the
 // newly-created node.

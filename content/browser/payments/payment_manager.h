@@ -10,7 +10,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/common/content_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "url/gurl.h"
 
@@ -22,7 +23,7 @@ class CONTENT_EXPORT PaymentManager : public payments::mojom::PaymentManager {
  public:
   PaymentManager(
       PaymentAppContextImpl* payment_app_context,
-      mojo::InterfaceRequest<payments::mojom::PaymentManager> request);
+      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
 
   ~PaymentManager() override;
 
@@ -52,7 +53,7 @@ class CONTENT_EXPORT PaymentManager : public payments::mojom::PaymentManager {
       const std::vector<payments::mojom::PaymentDelegation>& delegations,
       EnableDelegationsCallback callback) override;
 
-  // Called when an error is detected on binding_.
+  // Called when an error is detected on receiver_.
   void OnConnectionError();
 
   void SetPaymentInstrumentIntermediateCallback(
@@ -65,7 +66,7 @@ class CONTENT_EXPORT PaymentManager : public payments::mojom::PaymentManager {
   bool should_set_payment_app_info_;
   GURL context_url_;
   GURL scope_;
-  mojo::Binding<payments::mojom::PaymentManager> binding_;
+  mojo::Receiver<payments::mojom::PaymentManager> receiver_;
   base::WeakPtrFactory<PaymentManager> weak_ptr_factory_{this};
   DISALLOW_COPY_AND_ASSIGN(PaymentManager);
 };

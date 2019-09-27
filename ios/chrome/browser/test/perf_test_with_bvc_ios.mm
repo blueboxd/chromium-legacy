@@ -46,7 +46,9 @@ PerfTestWithBVC::PerfTestWithBVC(std::string testGroup)
       web_client_(std::make_unique<ChromeWebClient>()),
       provider_(ios::CreateChromeBrowserProvider()),
       browser_state_manager_(
-          std::make_unique<TestChromeBrowserStateManager>(base::FilePath())) {}
+          std::make_unique<TestChromeBrowserStateManager>(base::FilePath())),
+      web_state_list_(&web_state_list_delegate_),
+      otr_web_state_list_(&web_state_list_delegate_) {}
 
 PerfTestWithBVC::PerfTestWithBVC(std::string testGroup,
                                  std::string firstLabel,
@@ -65,7 +67,9 @@ PerfTestWithBVC::PerfTestWithBVC(std::string testGroup,
       web_client_(std::make_unique<ChromeWebClient>()),
       provider_(ios::CreateChromeBrowserProvider()),
       browser_state_manager_(
-          std::make_unique<TestChromeBrowserStateManager>(base::FilePath())) {}
+          std::make_unique<TestChromeBrowserStateManager>(base::FilePath())),
+      web_state_list_(&web_state_list_delegate_),
+      otr_web_state_list_(&web_state_list_delegate_) {}
 
 PerfTestWithBVC::~PerfTestWithBVC() {}
 
@@ -102,13 +106,15 @@ void PerfTestWithBVC::SetUp() {
   // view controller, which is created in OpenStackView().
   tab_model_ =
       [[TabModel alloc] initWithSessionService:[SessionServiceIOS sharedService]
-                                  browserState:chrome_browser_state_.get()];
+                                  browserState:chrome_browser_state_.get()
+                                  webStateList:&web_state_list_];
   [tab_model_ restoreSessionWindow:session.sessionWindows[0]
                  forInitialRestore:YES];
   otr_tab_model_ = [[TabModel alloc]
       initWithSessionService:[SessionServiceIOS sharedService]
                 browserState:chrome_browser_state_
-                                 ->GetOffTheRecordChromeBrowserState()];
+                                 ->GetOffTheRecordChromeBrowserState()
+                webStateList:&otr_web_state_list_];
   [otr_tab_model_ restoreSessionWindow:session.sessionWindows[0]
                      forInitialRestore:YES];
 
@@ -149,7 +155,7 @@ void PerfTestWithBVC::TearDown() {
   bvc_ = nil;
   bvc_factory_ = nil;
   tab_model_ = nil;
-  [otr_tab_model_ browserStateDestroyed];
+  [otr_tab_model_ disconnect];
   otr_tab_model_ = nil;
 
   // The base class |TearDown| method calls the run loop so the

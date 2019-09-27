@@ -171,8 +171,6 @@ class SyncManagerImpl
   void NudgeForInitialDownload(ModelType type) override;
   void NudgeForCommit(ModelType type) override;
 
-  const SyncScheduler* scheduler() const;
-
   static std::string GenerateCacheGUIDForTest();
 
  protected:
@@ -196,8 +194,6 @@ class SyncManagerImpl
     // Returned pointer owned by the caller.
     base::DictionaryValue* ToValue() const;
   };
-
-  base::TimeDelta GetNudgeDelayTimeDelta(const ModelType& model_type);
 
   using NotificationInfoMap = std::map<ModelType, NotificationInfo>;
 

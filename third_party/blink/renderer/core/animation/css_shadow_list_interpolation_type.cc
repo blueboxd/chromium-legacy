@@ -8,8 +8,8 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "third_party/blink/renderer/core/animation/interpolable_shadow.h"
 #include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
-#include "third_party/blink/renderer/core/animation/shadow_interpolation_functions.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css/css_value_list.h"
@@ -44,8 +44,8 @@ InterpolationValue CSSShadowListInterpolationType::ConvertShadowList(
   const ShadowDataVector& shadows = shadow_list->Shadows();
   return ListInterpolationFunctions::CreateList(
       shadows.size(), [&shadows, zoom](wtf_size_t index) {
-        return ShadowInterpolationFunctions::ConvertShadowData(shadows[index],
-                                                               zoom);
+        return InterpolationValue(
+            InterpolableShadow::Create(shadows[index], zoom));
       });
 }
 
@@ -116,8 +116,8 @@ InterpolationValue CSSShadowListInterpolationType::MaybeConvertValue(
   const auto& value_list = To<CSSValueList>(value);
   return ListInterpolationFunctions::CreateList(
       value_list.length(), [&value_list](wtf_size_t index) {
-        return ShadowInterpolationFunctions::MaybeConvertCSSValue(
-            value_list.Item(index));
+        return InterpolationValue(
+            InterpolableShadow::MaybeConvertCSSValue(value_list.Item(index)));
       });
 }
 
@@ -127,7 +127,12 @@ PairwiseInterpolationValue CSSShadowListInterpolationType::MaybeMergeSingles(
   return ListInterpolationFunctions::MaybeMergeSingles(
       std::move(start), std::move(end),
       ListInterpolationFunctions::LengthMatchingStrategy::kPadToLargest,
-      WTF::BindRepeating(ShadowInterpolationFunctions::MaybeMergeSingles));
+      WTF::BindRepeating(
+          [](InterpolationValue&& start_item, InterpolationValue&& end_item) {
+            return InterpolableShadow::MaybeMergeSingles(
+                std::move(start_item.interpolable_value),
+                std::move(end_item.interpolable_value));
+          }));
 }
 
 InterpolationValue
@@ -145,9 +150,10 @@ void CSSShadowListInterpolationType::Composite(
   ListInterpolationFunctions::Composite(
       underlying_value_owner, underlying_fraction, *this, value,
       ListInterpolationFunctions::LengthMatchingStrategy::kPadToLargest,
+      WTF::BindRepeating(InterpolableShadow::CompatibleForCompositing),
       WTF::BindRepeating(
-          ShadowInterpolationFunctions::NonInterpolableValuesAreCompatible),
-      WTF::BindRepeating(ShadowInterpolationFunctions::Composite));
+          ListInterpolationFunctions::VerifyNoNonInterpolableValues),
+      WTF::BindRepeating(InterpolableShadow::Composite));
 }
 
 static scoped_refptr<ShadowList> CreateShadowList(
@@ -159,12 +165,11 @@ static scoped_refptr<ShadowList> CreateShadowList(
   wtf_size_t length = interpolable_list.length();
   if (length == 0)
     return nullptr;
-  const NonInterpolableList& non_interpolable_list =
-      ToNonInterpolableList(*non_interpolable_value);
   ShadowDataVector shadows;
-  for (wtf_size_t i = 0; i < length; i++)
-    shadows.push_back(ShadowInterpolationFunctions::CreateShadowData(
-        *interpolable_list.Get(i), non_interpolable_list.Get(i), state));
+  for (wtf_size_t i = 0; i < length; i++) {
+    shadows.push_back(To<InterpolableShadow>(interpolable_list.Get(i))
+                          ->CreateShadowData(state));
+  }
   return ShadowList::Adopt(shadows);
 }
 

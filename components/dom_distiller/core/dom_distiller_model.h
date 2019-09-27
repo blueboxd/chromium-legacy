@@ -16,7 +16,6 @@
 #include "base/macros.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/sync/model/sync_change.h"
-#include "components/sync/model/sync_change_processor.h"  // syncer::SyncChangeList
 #include "components/sync/model/sync_data.h"
 #include "url/gurl.h"
 
@@ -40,8 +39,6 @@ class DomDistillerModel {
 
   std::vector<ArticleEntry> GetEntries() const;
   size_t GetNumEntries() const;
-
-  syncer::SyncDataList GetAllSyncData() const;
 
   // Convert a SyncDataList to a SyncChangeList of add or update changes based
   // on the state of the model. Also calculate the entries missing from the

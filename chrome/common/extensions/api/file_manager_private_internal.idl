@@ -75,11 +75,6 @@ namespace fileManagerPrivateInternal {
     static void getFileTasks(DOMString[] urls,
                              GetFileTasksCallback callback);
     static void getDownloadUrl(DOMString url, GetUrlCallback callback);
-    static void setEntryTag(DOMString url,
-                            fileManagerPrivate.EntryTagVisibility visibility,
-                            DOMString key,
-                            DOMString value,
-                            SimpleCallback callback);
     static void startCopy(DOMString url,
                           DOMString parentUrl,
                           DOMString newName,

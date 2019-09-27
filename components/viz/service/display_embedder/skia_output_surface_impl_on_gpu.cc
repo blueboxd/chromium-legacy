@@ -930,7 +930,7 @@ void SkiaOutputSurfaceImplOnGpu::RemoveRenderPassResource(
 
 void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     RenderPassId id,
-    const copy_output::RenderPassGeometry& geometry,
+    copy_output::RenderPassGeometry geometry,
     const gfx::ColorSpace& color_space,
     std::unique_ptr<CopyOutputRequest> request,
     base::OnceCallback<bool()> deferred_framebuffer_draw_closure) {
@@ -942,6 +942,40 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
   base::ScopedClosureRunner cleanup(
       base::BindOnce([](std::vector<std::unique_ptr<SkDeferredDisplayList>>) {},
                      std::move(destroy_after_swap_)));
+
+  bool use_gl_renderer_copier =
+      !is_using_vulkan() && !features::IsUsingSkiaForGLReadback();
+  // Lazy initialize GLRendererCopier before draw because
+  // DirectContextProvider ctor the backbuffer.
+  if (use_gl_renderer_copier && !copier_) {
+    if (!MakeCurrent(true /* need_fbo0 */))
+      return;
+    auto client = std::make_unique<DirectContextProviderDelegateImpl>(
+        gpu_preferences_, dependency_->GetGpuDriverBugWorkarounds(),
+        dependency_->GetGpuFeatureInfo(), context_state_.get(),
+        dependency_->GetMailboxManager(), dependency_->GetSharedImageManager(),
+        CreateSyncPointClientState(dependency_, sequence_id_));
+    context_provider_ = base::MakeRefCounted<DirectContextProvider>(
+        context_state_->context(), gl_surface_, supports_alpha_,
+        gpu_preferences_, feature_info_.get(), std::move(client));
+    auto result = context_provider_->BindToCurrentThread();
+    if (result != gpu::ContextResult::kSuccess) {
+      DLOG(ERROR) << "Couldn't initialize GLRendererCopier";
+      context_provider_ = nullptr;
+      return;
+    }
+    context_current_task_runner_ =
+        base::MakeRefCounted<ContextCurrentTaskRunner>(this);
+    texture_deleter_ =
+        std::make_unique<TextureDeleter>(context_current_task_runner_);
+    copier_ = std::make_unique<GLRendererCopier>(context_provider_,
+                                                 texture_deleter_.get());
+    copier_->set_async_gl_task_runner(context_current_task_runner_);
+
+    // DirectContextProvider changed GL state. Reset Skia state tracking
+    // for potential draw below.
+    gr_context()->resetContext();
+  }
 
   if (deferred_framebuffer_draw_closure) {
     // returns false if context not set to current, i.e lost
@@ -978,37 +1012,19 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     surface->flush();
   }
 
-  if (!is_using_vulkan() && !features::IsUsingSkiaForGLReadback()) {
-    // Lazy initialize GLRendererCopier.
-    if (!copier_) {
-      auto client = std::make_unique<DirectContextProviderDelegateImpl>(
-          gpu_preferences_, dependency_->GetGpuDriverBugWorkarounds(),
-          dependency_->GetGpuFeatureInfo(), context_state_.get(),
-          dependency_->GetMailboxManager(),
-          dependency_->GetSharedImageManager(),
-          CreateSyncPointClientState(dependency_, sequence_id_));
-      context_provider_ = base::MakeRefCounted<DirectContextProvider>(
-          context_state_->context(), gl_surface_, supports_alpha_,
-          gpu_preferences_, feature_info_.get(), std::move(client));
-      auto result = context_provider_->BindToCurrentThread();
-      if (result != gpu::ContextResult::kSuccess) {
-        DLOG(ERROR) << "Couldn't initialize GLRendererCopier";
-        context_provider_ = nullptr;
-        return;
-      }
-      context_current_task_runner_ =
-          base::MakeRefCounted<ContextCurrentTaskRunner>(this);
-      texture_deleter_ =
-          std::make_unique<TextureDeleter>(context_current_task_runner_);
-      copier_ = std::make_unique<GLRendererCopier>(context_provider_,
-                                                   texture_deleter_.get());
-      copier_->set_async_gl_task_runner(context_current_task_runner_);
-    }
+  if (use_gl_renderer_copier) {
     surface->flush();
 
     GLuint gl_id = 0;
     GLenum internal_format = supports_alpha_ ? GL_RGBA : GL_RGB;
     bool flipped = from_fbo0 ? !capabilities().flipped_output_surface : false;
+    // readback_offset is in window co-ordinate space and must take into account
+    // flipping.
+    if (flipped) {
+      geometry.readback_offset.set_y(
+          size_.height() -
+          (geometry.readback_offset.y() + geometry.result_selection.height()));
+    }
 
     base::Optional<ScopedSurfaceToTexture> texture_mapper;
     if (!from_fbo0 || dependency_->IsOffscreen()) {

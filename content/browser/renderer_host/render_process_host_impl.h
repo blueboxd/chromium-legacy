@@ -505,10 +505,14 @@ class CONTENT_EXPORT RenderProcessHostImpl
     return file_system_manager_impl_.get();
   }
 
-  // Binds |receiver| to the LockManager instance owned by
-  // |storage_partition_impl_|, and is used by frames and workers via
-  // BrowserInterfaceBroker.
+  // Binds |receiver| to the LockManager owned by |storage_partition_impl_|.
+  // |receiver| belongs to a frame or worker at |origin| hosted by this process.
+  // If it belongs to a frame, |render_frame_id| identifies it, otherwise it is
+  // MSG_ROUTING_NONE.
+  //
+  // Used by frames and workers via BrowserInterfaceBroker.
   void CreateLockManager(
+      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::LockManager> receiver) override;
 
@@ -518,6 +522,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void CreatePermissionService(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver) override;
+
+  // Binds |receiver| to the PaymentManager instance owned by
+  // |storage_partition_impl_|, and is used by workers via
+  // BrowserInterfaceBroker.
+  void CreatePaymentManager(
+      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) override;
 
   // Adds a CORB (Cross-Origin Read Blocking) exception for |process_id|.  The
   // exception will be removed when the corresponding RenderProcessHostImpl is

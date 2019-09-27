@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/ptr_util.h"
 #include "build/build_config.h"
+#include "media/base/color_plane_layout.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/vaapi/vaapi_utils.h"
@@ -42,7 +43,7 @@ scoped_refptr<VideoFrame> CreateMappedVideoFrame(
   }
 
   // All the planes are stored in the same buffer, VAImage.va_buffer.
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<ColorPlaneLayout> planes(num_planes);
   std::vector<uint8_t*> addrs(num_planes, nullptr);
   for (size_t i = 0; i < num_planes; i++) {
     planes[i].stride = va_image->image()->pitches[i];

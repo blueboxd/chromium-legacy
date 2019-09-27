@@ -142,8 +142,8 @@ void InterpolableLength::SetExpression(
   expression_ = &expression;
 }
 
-std::unique_ptr<InterpolableValue> InterpolableLength::Clone() const {
-  return std::make_unique<InterpolableLength>(*this);
+InterpolableLength* InterpolableLength::RawClone() const {
+  return new InterpolableLength(*this);
 }
 
 bool InterpolableLength::HasPercentage() const {

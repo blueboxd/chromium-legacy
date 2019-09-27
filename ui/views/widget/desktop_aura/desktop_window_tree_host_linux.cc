@@ -33,25 +33,6 @@ void DesktopWindowTreeHostLinux::OnNativeWidgetCreated(
   DesktopWindowTreeHostPlatform::OnNativeWidgetCreated(params);
 }
 
-gfx::Size DesktopWindowTreeHostLinux::AdjustSizeForDisplay(
-    const gfx::Size& requested_size_in_pixels) {
-  std::vector<display::Display> displays =
-      display::Screen::GetScreen()->GetAllDisplays();
-  // Compare against all monitor sizes. The window manager can move the window
-  // to whichever monitor it wants.
-  for (const auto& display : displays) {
-    if (requested_size_in_pixels == display.GetSizeInPixel()) {
-      return gfx::Size(requested_size_in_pixels.width() - 1,
-                       requested_size_in_pixels.height() - 1);
-    }
-  }
-
-  // Do not request a 0x0 window size. It causes an XError.
-  gfx::Size size_in_pixels = requested_size_in_pixels;
-  size_in_pixels.SetToMax(gfx::Size(1, 1));
-  return size_in_pixels;
-}
-
 void DesktopWindowTreeHostLinux::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
@@ -77,12 +58,6 @@ void DesktopWindowTreeHostLinux::OnClosed() {
 void DesktopWindowTreeHostLinux::AddAdditionalInitProperties(
     const Widget::InitParams& params,
     ui::PlatformWindowInitProperties* properties) {
-  // Calculate initial bounds
-  gfx::Rect bounds_in_pixels = ToPixelRect(properties->bounds);
-  gfx::Size adjusted_size = AdjustSizeForDisplay(bounds_in_pixels.size());
-  bounds_in_pixels.set_size(adjusted_size);
-  properties->bounds = bounds_in_pixels;
-
   // Set the background color on startup to make the initial flickering
   // happening between the XWindow is mapped and the first expose event
   // is completely handled less annoying. If possible, we use the content

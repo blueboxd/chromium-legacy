@@ -41,7 +41,7 @@ class RevocableInterfacePtr : public InterfaceInvalidator::Observer {
   RevocableInterfacePtr(std::nullptr_t) {}
 
   // Takes over the binding of another RevocableInterfacePtr.
-  RevocableInterfacePtr(RevocableInterfacePtr&& other) noexcept {
+  RevocableInterfacePtr(RevocableInterfacePtr&& other) {
     interface_ptr_ = std::move(other.interface_ptr_);
     SetInvalidator(other.invalidator_.get());
     // Reset the other interface ptr to remove it as an observer of the
@@ -58,7 +58,7 @@ class RevocableInterfacePtr : public InterfaceInvalidator::Observer {
 
   // Takes over the binding of another RevocableInterfacePtr, and closes any
   // message pipe already bound to this pointer.
-  RevocableInterfacePtr& operator=(RevocableInterfacePtr&& other) noexcept {
+  RevocableInterfacePtr& operator=(RevocableInterfacePtr&& other) {
     reset();
     interface_ptr_ = std::move(other.interface_ptr_);
     SetInvalidator(other.invalidator_.get());

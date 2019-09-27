@@ -12,7 +12,7 @@
 #include "base/test/task_environment.h"
 #include "base/time/time.h"
 #include "components/sync/base/cancelation_signal.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/engine_impl/cycle/non_blocking_type_debug_info_emitter.h"
 #include "components/sync/engine_impl/model_type_worker.h"
 #include "components/sync/engine_impl/test_entry_factory.h"
@@ -30,11 +30,6 @@ namespace syncer {
 namespace {
 
 const ModelType kModelType = PREFERENCES;
-
-std::string GenerateTagHash(const std::string& tag) {
-  return GenerateSyncableHash(kModelType, tag);
-}
-
 const char kToken1[] = "token1";
 const char kTag1[] = "tag1";
 const char kTag2[] = "tag2";
@@ -42,7 +37,10 @@ const char kTag3[] = "tag3";
 const char kValue1[] = "value1";
 const char kValue2[] = "value2";
 const char kValue3[] = "value3";
-const std::string kHash1(GenerateTagHash(kTag1));
+
+ClientTagHash GenerateTagHash(const std::string& tag) {
+  return ClientTagHash::FromUnhashed(kModelType, tag);
+}
 
 sync_pb::EntitySpecifics GenerateSpecifics(const std::string& tag,
                                            const std::string& value) {
@@ -140,7 +138,7 @@ TEST_F(UssMigratorTest, Migrate) {
   const EntityData& entity = *update->entity;
 
   EXPECT_FALSE(entity.id.empty());
-  EXPECT_EQ(kHash1, entity.client_tag_hash);
+  EXPECT_EQ(GenerateTagHash(kTag1), entity.client_tag_hash);
   EXPECT_EQ(1, update->response_version);
   EXPECT_EQ(ctime, entity.creation_time);
   EXPECT_EQ(ctime, entity.modification_time);

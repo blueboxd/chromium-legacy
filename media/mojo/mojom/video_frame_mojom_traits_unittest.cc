@@ -11,6 +11,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/video_frame.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "media/mojo/mojom/traits_test_service.mojom.h"
@@ -107,8 +108,8 @@ TEST_F(VideoFrameStructTraitsTest, DmabufVideoFrame) {
   std::vector<size_t> sizes = {1280 * 720, 1280 * 720 / 2};
   auto layout = media::VideoFrameLayout::CreateWithPlanes(
       PIXEL_FORMAT_NV12, gfx::Size(1280, 720),
-      {media::VideoFrameLayout::Plane(strides[0], 0, sizes[0]),
-       media::VideoFrameLayout::Plane(strides[1], 0, sizes[1])});
+      {media::ColorPlaneLayout(strides[0], 0, sizes[0]),
+       media::ColorPlaneLayout(strides[1], 0, sizes[1])});
 
   // DMABUF needs device to create, use file fd instead.
   std::vector<int> fake_fds = {open("/dev/null", O_RDWR),

@@ -69,7 +69,7 @@ ContiguousContainerBase::ContiguousContainerBase(size_t max_object_size)
     : end_index_(0), max_object_size_(max_object_size) {}
 
 ContiguousContainerBase::ContiguousContainerBase(
-    ContiguousContainerBase&& source) noexcept
+    ContiguousContainerBase&& source)
     : ContiguousContainerBase(source.max_object_size_) {
   Swap(source);
 }
@@ -77,7 +77,7 @@ ContiguousContainerBase::ContiguousContainerBase(
 ContiguousContainerBase::~ContiguousContainerBase() = default;
 
 ContiguousContainerBase& ContiguousContainerBase::operator=(
-    ContiguousContainerBase&& source) noexcept {
+    ContiguousContainerBase&& source) {
   Swap(source);
   return *this;
 }

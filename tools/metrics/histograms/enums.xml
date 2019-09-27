@@ -18131,6 +18131,8 @@ Called by update_net_error_codes.py.-->
   <int value="611" label="DeviceLoginScreenDictationEnabled"/>
   <int value="612" label="DeviceLoginScreenSelectToSpeakEnabled"/>
   <int value="613" label="DeviceLoginScreenCursorHighlightEnabled"/>
+  <int value="614" label="DeviceLoginScreenCaretHighlightEnabled"/>
+  <int value="615" label="DeviceLoginScreenMonoAudioEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -20685,6 +20687,7 @@ Called by update_net_error_codes.py.-->
   <int value="1384" label="AUTOFILLPRIVATE_SETCREDITCARDFIDOAUTHENABLEDSTATE"/>
   <int value="1385" label="USERSPRIVATE_ISWHITELISTEDUSER"/>
   <int value="1386" label="PRINTINGMETRICS_GETPRINTJOBS"/>
+  <int value="1387" label="AUTOTESTPRIVATE_WAITFORASSISTANTQUERYSTATUS"/>
 </enum>
 
 <enum name="ExtensionIconState">

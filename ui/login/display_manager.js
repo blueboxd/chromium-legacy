@@ -304,7 +304,7 @@ cr.define('cr.ui.login', function() {
      */
     setShelfHeight: function(height) {
       document.documentElement.style.setProperty(
-          '--shelf-area-height', height + 'px');
+          '--shelf-area-height-base', height + 'px');
     },
 
     /**

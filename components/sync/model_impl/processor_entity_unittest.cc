@@ -8,6 +8,7 @@
 #include <vector>
 
 #include "base/test/metrics/histogram_tester.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
@@ -20,7 +21,7 @@ namespace syncer {
 namespace {
 
 const char kKey[] = "key";
-const char kHash[] = "hash";
+const ClientTagHash kHash = ClientTagHash::FromHashed("hash");
 const char kId[] = "id";
 const char kName[] = "name";
 const char kValue1[] = "value1";
@@ -36,7 +37,7 @@ sync_pb::EntitySpecifics GenerateSpecifics(const std::string& name,
   return specifics;
 }
 
-std::unique_ptr<EntityData> GenerateEntityData(const std::string& hash,
+std::unique_ptr<EntityData> GenerateEntityData(const ClientTagHash& hash,
                                                const std::string& name,
                                                const std::string& value) {
   std::unique_ptr<EntityData> entity_data(new EntityData());
@@ -48,7 +49,7 @@ std::unique_ptr<EntityData> GenerateEntityData(const std::string& hash,
 
 std::unique_ptr<UpdateResponseData> GenerateUpdate(
     const ProcessorEntity& entity,
-    const std::string& hash,
+    const ClientTagHash& hash,
     const std::string& id,
     const std::string& name,
     const std::string& value,
@@ -65,7 +66,7 @@ std::unique_ptr<UpdateResponseData> GenerateUpdate(
 
 std::unique_ptr<UpdateResponseData> GenerateTombstone(
     const ProcessorEntity& entity,
-    const std::string& hash,
+    const ClientTagHash& hash,
     const std::string& id,
     const std::string& name,
     const base::Time& mtime,
@@ -141,7 +142,7 @@ TEST_F(ProcessorEntityTest, DefaultEntity) {
   std::unique_ptr<ProcessorEntity> entity = CreateNew();
 
   EXPECT_EQ(kKey, entity->storage_key());
-  EXPECT_EQ(kHash, entity->metadata().client_tag_hash());
+  EXPECT_EQ(kHash.value(), entity->metadata().client_tag_hash());
   EXPECT_EQ("", entity->metadata().server_id());
   EXPECT_FALSE(entity->metadata().is_deleted());
   EXPECT_EQ(0, entity->metadata().sequence_number());

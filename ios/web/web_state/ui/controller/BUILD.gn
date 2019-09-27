@@ -10,6 +10,7 @@ source_set("controller") {
   ]
 
   deps = [
+    "//ios/third_party/webkit",
     "//ios/web/navigation:core",
     "//ios/web/net",
     "//ios/web/public",
@@ -18,8 +19,6 @@ source_set("controller") {
     "//ui/base",
     "//url",
   ]
-
-  libs = [ "WebKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

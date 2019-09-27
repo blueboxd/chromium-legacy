@@ -420,10 +420,10 @@ source_set("perf_tests") {
     "//base/test:test_support",
     "//ios/chrome/browser/browser_state:test_support",
     "//ios/chrome/test/base:perf_test_support",
+    "//ios/third_party/webkit",
     "//ios/web/common:web_view_creation_util",
     "//ios/web/public/test",
   ]
-  libs = [ "WebKit.framework" ]
 }
 
 source_set("feature_flags") {

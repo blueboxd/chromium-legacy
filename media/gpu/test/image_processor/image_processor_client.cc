@@ -120,8 +120,16 @@ scoped_refptr<VideoFrame> ImageProcessorClient::CreateInputFrame(
 #if defined(OS_CHROMEOS)
     LOG_ASSERT(image_processor_->input_storage_type() ==
                VideoFrame::STORAGE_DMABUFS);
+    // NV12 and YV12 are the only formats that can be allocated with
+    // gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE. So
+    // gfx::BufferUsage::GPU_READ_CPU_READ_WRITE is specified for RGB formats.
+    gfx::BufferUsage dst_buffer_usage =
+        IsYuvPlanar(input_image.PixelFormat())
+            ? gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE
+            : gfx::BufferUsage::GPU_READ_CPU_READ_WRITE;
     return CloneVideoFrame(CreateVideoFrameFromImage(input_image).get(),
-                           input_layout, VideoFrame::STORAGE_DMABUFS);
+                           input_layout, VideoFrame::STORAGE_DMABUFS,
+                           dst_buffer_usage);
 #endif
     return nullptr;
   }

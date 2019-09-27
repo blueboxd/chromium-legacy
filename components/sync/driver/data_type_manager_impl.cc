@@ -297,8 +297,7 @@ void DataTypeManagerImpl::Restart() {
     for (ModelType type : last_requested_types_) {
       // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureDataTypes",
-                                ModelTypeToHistogramInt(type),
-                                static_cast<int>(ModelType::NUM_ENTRIES));
+                                ModelTypeHistogramValue(type));
     }
   }
 

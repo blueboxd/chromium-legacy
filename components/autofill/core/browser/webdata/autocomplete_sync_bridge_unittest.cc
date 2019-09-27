@@ -23,7 +23,7 @@
 #include "components/autofill/core/browser/webdata/autofill_entry.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
 #include "components/autofill/core/browser/webdata/mock_autofill_webdata_backend.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/metadata_batch.h"
@@ -245,7 +245,7 @@ class AutocompleteSyncBridgeTest : public testing::Test {
       const AutofillSpecifics& specifics) {
     auto data = std::make_unique<EntityData>();
     *data->specifics.mutable_autofill() = specifics;
-    data->client_tag_hash = syncer::GenerateSyncableHash(
+    data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
         syncer::AUTOFILL, bridge()->GetClientTag(*data));
     return data;
   }

@@ -119,21 +119,6 @@ bool ServerConnectionManager::Connection::ReadBufferResponse(
   return true;
 }
 
-bool ServerConnectionManager::Connection::ReadDownloadResponse(
-    HttpResponse* response,
-    string* buffer_out) {
-  const int64_t bytes_read =
-      ReadResponse(buffer_out, static_cast<int>(response->content_length));
-
-  if (bytes_read != response->content_length) {
-    LOG(ERROR) << "Mismatched content lengths, server claimed "
-               << response->content_length << ", but sent " << bytes_read;
-    response->server_status = HttpResponse::IO_ERROR;
-    return false;
-  }
-  return true;
-}
-
 namespace {
 
 string StripTrailingSlash(const string& s) {

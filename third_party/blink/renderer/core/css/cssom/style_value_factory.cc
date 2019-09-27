@@ -131,10 +131,11 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       return CreateStyleValue(value);
     }
     case CSSPropertyID::kGridAutoFlow: {
-      const auto& value_list = To<CSSValueList>(value);
-      // Only single keywords are supported in level 1.
-      if (value_list.length() == 1U)
-        return CreateStyleValue(value_list.Item(0));
+      if (const auto* value_list = DynamicTo<CSSValueList>(value)) {
+        // Only single keywords are supported in level 1.
+        if (value_list->length() == 1U)
+          return CreateStyleValue(value_list->Item(0));
+      }
       return nullptr;
     }
     case CSSPropertyID::kTransform:
@@ -150,10 +151,11 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
     case CSSPropertyID::kTransformOrigin:
       return CSSPositionValue::FromCSSValue(value);
     case CSSPropertyID::kOffsetRotate: {
-      const auto& value_list = To<CSSValueList>(value);
-      // Only single keywords are supported in level 1.
-      if (value_list.length() == 1U)
-        return CreateStyleValue(value_list.Item(0));
+      if (const auto* value_list = DynamicTo<CSSValueList>(&value)) {
+        // Only single keywords are supported in level 1.
+        if (value_list->length() == 1U)
+          return CreateStyleValue(value_list->Item(0));
+      }
       return nullptr;
     }
     case CSSPropertyID::kAlignItems: {
@@ -171,10 +173,11 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       if (value.IsIdentifierValue())
         return CreateStyleValue(value);
 
-      const auto& value_list = To<CSSValueList>(value);
-      // Only single keywords are supported in level 1.
-      if (value_list.length() == 1U)
-        return CreateStyleValue(value_list.Item(0));
+      if (const auto* value_list = DynamicTo<CSSValueList>(&value)) {
+        // Only single keywords are supported in level 1.
+        if (value_list->length() == 1U)
+          return CreateStyleValue(value_list->Item(0));
+      }
       return nullptr;
     }
     case CSSPropertyID::kTextIndent: {
@@ -189,10 +192,11 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
     }
     case CSSPropertyID::kTransitionProperty:
     case CSSPropertyID::kTouchAction: {
-      const auto& value_list = To<CSSValueList>(value);
-      // Only single values are supported in level 1.
-      if (value_list.length() == 1U)
-        return CreateStyleValue(value_list.Item(0));
+      if (const auto* value_list = DynamicTo<CSSValueList>(value)) {
+        // Only single values are supported in level 1.
+        if (value_list->length() == 1U)
+          return CreateStyleValue(value_list->Item(0));
+      }
       return nullptr;
     }
     case CSSPropertyID::kWillChange: {

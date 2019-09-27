@@ -307,7 +307,9 @@ class LockManager::OriginState {
   LockManager* lock_manager_;
 };
 
-void LockManager::CreateService(
+void LockManager::BindReceiver(
+    int render_process_id,
+    int render_frame_id,
     const url::Origin& origin,
     mojo::PendingReceiver<blink::mojom::LockManager> receiver) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
@@ -316,7 +318,8 @@ void LockManager::CreateService(
   // and be the same opaque string seen in Service Worker client ids.
   const std::string client_id = base::GenerateGUID();
 
-  receivers_.Add(this, std::move(receiver), {origin, client_id});
+  receivers_.Add(this, std::move(receiver),
+                 {client_id, render_process_id, render_frame_id, origin});
 }
 
 void LockManager::RequestLock(

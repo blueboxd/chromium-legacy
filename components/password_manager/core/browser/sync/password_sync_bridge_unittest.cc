@@ -12,7 +12,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind_test_util.h"
 #include "components/password_manager/core/browser/password_store_sync.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/model/data_batch.h"
 #include "components/sync/model/entity_change.h"
 #include "components/sync/model/metadata_batch.h"
@@ -262,7 +262,7 @@ class PasswordSyncBridgeTest : public testing::Test {
       const sync_pb::PasswordSpecifics& specifics) {
     auto data = std::make_unique<syncer::EntityData>();
     *data->specifics.mutable_password() = specifics;
-    data->client_tag_hash = syncer::GenerateSyncableHash(
+    data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
         syncer::PASSWORDS, bridge()->GetClientTag(*data));
     return data;
   }

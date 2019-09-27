@@ -255,7 +255,7 @@
     WebStateList* webStateList = self.mainBrowser->GetWebStateList();
     breakpad::StopMonitoringTabStateForWebStateList(webStateList);
     breakpad::StopMonitoringURLsForWebStateList(webStateList);
-    [tabModel browserStateDestroyed];
+    [tabModel disconnect];
     _activeWebStateObservationForwarders[webStateList] = nullptr;
     webStateList->RemoveObserver(_webStateListObserver.get());
     webStateList->RemoveObserver(_webStateListForwardingObserver.get());
@@ -269,7 +269,7 @@
     TabModel* tabModel = self.otrBrowser->GetTabModel();
     WebStateList* webStateList = self.otrBrowser->GetWebStateList();
     breakpad::StopMonitoringTabStateForWebStateList(webStateList);
-    [tabModel browserStateDestroyed];
+    [tabModel disconnect];
     _activeWebStateObservationForwarders[webStateList] = nullptr;
     webStateList->RemoveObserver(_webStateListObserver.get());
     webStateList->RemoveObserver(_webStateListForwardingObserver.get());

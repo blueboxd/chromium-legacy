@@ -13,6 +13,7 @@
 #include "components/arc/mojom/video_common.mojom.h"
 #include "components/arc/video_accelerator/decoder_buffer.h"
 #include "components/arc/video_accelerator/video_frame_plane.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/decode_status.h"
 #include "media/base/video_codecs.h"
 #include "media/base/video_frame.h"
@@ -73,21 +74,15 @@ struct EnumTraits<arc::mojom::VideoPixelFormat, media::VideoPixelFormat> {
 
 template <>
 struct StructTraits<arc::mojom::MediaVideoFramePlaneDataView,
-                    media::VideoFrameLayout::Plane> {
-  static int32_t stride(const media::VideoFrameLayout::Plane& r) {
-    return r.stride;
-  }
+                    media::ColorPlaneLayout> {
+  static int32_t stride(const media::ColorPlaneLayout& r) { return r.stride; }
 
-  static uint32_t offset(const media::VideoFrameLayout::Plane& r) {
-    return r.offset;
-  }
+  static uint32_t offset(const media::ColorPlaneLayout& r) { return r.offset; }
 
-  static uint32_t size(const media::VideoFrameLayout::Plane& r) {
-    return r.size;
-  }
+  static uint32_t size(const media::ColorPlaneLayout& r) { return r.size; }
 
   static bool Read(arc::mojom::MediaVideoFramePlaneDataView data,
-                   media::VideoFrameLayout::Plane* out);
+                   media::ColorPlaneLayout* out);
 };
 
 // Because `media::VideoFrameLayout` doesn't have default constructor, we cannot
@@ -116,7 +111,7 @@ struct StructTraits<arc::mojom::VideoFrameLayoutDataView,
     return input->coded_size();
   }
 
-  static const std::vector<media::VideoFrameLayout::Plane>& planes(
+  static const std::vector<media::ColorPlaneLayout>& planes(
       const std::unique_ptr<media::VideoFrameLayout>& input) {
     DCHECK(input);
     return input->planes();

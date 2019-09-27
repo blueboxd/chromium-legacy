@@ -101,7 +101,17 @@ class ShapedNonClientFrameView : public NonClientFrameView {
   void UpdateWindowTitle() override {}
   void SizeConstraintsChanged() override {}
 
+  bool GetAndResetLayoutRequest() {
+    bool layout_requested = layout_requested_;
+    layout_requested_ = false;
+    return layout_requested;
+  }
+
  private:
+  void Layout() override { layout_requested_ = true; }
+
+  bool layout_requested_ = false;
+
   DISALLOW_COPY_AND_ASSIGN(ShapedNonClientFrameView);
 };
 
@@ -258,12 +268,10 @@ TEST_F(DesktopWindowTreeHostX11Test, DISABLED_Shape) {
 
     shape_rects = GetShapeRects(xid1);
     ASSERT_FALSE(shape_rects.empty());
-    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects,
-                                       maximized_bounds.width() - 1,
-                                       5));
-    EXPECT_TRUE(ShapeRectContainsPoint(shape_rects,
-                                       maximized_bounds.width() - 1,
-                                       15));
+    EXPECT_TRUE(
+        ShapeRectContainsPoint(shape_rects, maximized_bounds.width() - 1, 5));
+    EXPECT_TRUE(
+        ShapeRectContainsPoint(shape_rects, maximized_bounds.width() - 1, 15));
   }
 
   // 2) Test setting the window shape via Widget::SetShape().
@@ -306,13 +314,16 @@ TEST_F(DesktopWindowTreeHostX11Test, DISABLED_Shape) {
   EXPECT_FALSE(ShapeRectContainsPoint(shape_rects, 500, 500));
 }
 
-// Test that the widget ignores changes in fullscreen state initiated by the
+// Test that the widget reacts on changes in fullscreen state initiated by the
 // window manager (e.g. via a window manager accelerator key).
 TEST_F(DesktopWindowTreeHostX11Test, WindowManagerTogglesFullscreen) {
   if (!ui::WmSupportsHint(gfx::GetAtom("_NET_WM_STATE_FULLSCREEN")))
     return;
 
   std::unique_ptr<Widget> widget = CreateWidget(new ShapedWidgetDelegate());
+  auto* non_client_view = static_cast<ShapedNonClientFrameView*>(
+      widget->non_client_view()->frame_view());
+  ASSERT_TRUE(non_client_view);
   XID xid = widget->GetNativeWindow()->GetHost()->GetAcceleratedWidget();
   widget->Show();
   ui::X11EventSource::GetInstance()->DispatchXEvents();
@@ -325,8 +336,14 @@ TEST_F(DesktopWindowTreeHostX11Test, WindowManagerTogglesFullscreen) {
   }
   EXPECT_TRUE(widget->IsFullscreen());
 
+  // After the fullscreen state has been set, there must be a relayout request
+  EXPECT_TRUE(non_client_view->GetAndResetLayoutRequest());
+
+  // Ensure there is not request before we proceed.
+  EXPECT_FALSE(non_client_view->GetAndResetLayoutRequest());
+
   // Emulate the window manager exiting fullscreen via a window manager
-  // accelerator key. It should not affect the widget's fullscreen state.
+  // accelerator key. It should affect the widget's fullscreen state.
   {
     Display* display = gfx::GetXDisplay();
 
@@ -347,14 +364,13 @@ TEST_F(DesktopWindowTreeHostX11Test, WindowManagerTogglesFullscreen) {
     WMStateWaiter waiter(xid, "_NET_WM_STATE_FULLSCREEN", false);
     waiter.Wait();
   }
-  EXPECT_TRUE(widget->IsFullscreen());
-
-  // Calling Widget::SetFullscreen(false) should clear the widget's fullscreen
-  // state and clean things up.
-  widget->SetFullscreen(false);
   EXPECT_FALSE(widget->IsFullscreen());
   EXPECT_EQ(initial_bounds.ToString(),
             widget->GetWindowBoundsInScreen().ToString());
+
+  // Even though the unfullscreen request came from the window manager, we must
+  // still react and relayout.
+  EXPECT_TRUE(non_client_view->GetAndResetLayoutRequest());
 }
 
 // Tests that the minimization information is propagated to the content window.
@@ -371,7 +387,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
 
   // Minimize by sending _NET_WM_STATE_HIDDEN
   {
-    std::vector< ::Atom> atom_list;
+    std::vector<::Atom> atom_list;
     atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_HIDDEN"));
     ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
 
@@ -394,7 +410,7 @@ TEST_F(DesktopWindowTreeHostX11Test, ToggleMinimizePropogateToContentWindow) {
 
   // Show from minimized by sending _NET_WM_STATE_FOCUSED
   {
-    std::vector< ::Atom> atom_list;
+    std::vector<::Atom> atom_list;
     atom_list.push_back(gfx::GetAtom("_NET_WM_STATE_FOCUSED"));
     ui::SetAtomArrayProperty(xid, "_NET_WM_STATE", "ATOM", atom_list);
 

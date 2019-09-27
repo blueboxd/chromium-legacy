@@ -5,8 +5,20 @@
 import("//build/config/gclient_args.gni")
 import("//build/config/ios/ios_sdk.gni")
 
+group("webkit") {
+  if (checkout_ios_webkit) {
+    deps = [
+      ":compile_webkit",
+    ]
+  }
+
+  all_dependent_configs = [ ":_webkit_config" ]
+}
+
 if (checkout_ios_webkit) {
-  action("webkit") {
+  action("compile_webkit") {
+    visibility = [ ":webkit" ]
+
     script = "build_webkit.py"
 
     inputs = [
@@ -51,4 +63,21 @@ if (checkout_ios_webkit) {
       "-quiet",
     ]
   }
+}
+
+config("_webkit_config") {
+  if (checkout_ios_webkit) {
+    # From the ld documentation: "Directories specified with -F are searched in
+    # the order they appear on the command line and before the default search
+    # path."
+    common_flags = [
+      "-F",
+      rebase_path("$target_out_dir/Debug-iphonesimulator/", root_build_dir),
+    ]
+
+    cflags = common_flags
+    ldflags = common_flags
+  }
+
+  libs = [ "WebKit.framework" ]
 }

@@ -19,21 +19,11 @@
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/dom_distiller_test_util.h"
 #include "components/leveldb_proto/testing/fake_db.h"
-#include "components/sync/protocol/sync.pb.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Time;
 using leveldb_proto::test::FakeDB;
-using sync_pb::EntitySpecifics;
-using syncer::ModelType;
-using syncer::SyncChange;
-using syncer::SyncChangeList;
-using syncer::SyncChangeProcessor;
-using syncer::SyncData;
-using syncer::SyncDataList;
-using syncer::SyncError;
-using syncer::SyncErrorFactory;
 using testing::_;
 using testing::AssertionFailure;
 using testing::AssertionResult;
@@ -49,35 +39,6 @@ typedef std::map<std::string, ArticleEntry> EntryMap;
 void AddEntry(const ArticleEntry& e, EntryMap* map) {
   (*map)[e.entry_id()] = e;
 }
-
-class FakeSyncErrorFactory : public syncer::SyncErrorFactory {
- public:
-  syncer::SyncError CreateAndUploadError(const base::Location& location,
-                                         const std::string& message) override {
-    return syncer::SyncError();
-  }
-};
-
-class FakeSyncChangeProcessor : public syncer::SyncChangeProcessor {
- public:
-  explicit FakeSyncChangeProcessor(EntryMap* model) : model_(model) {}
-
-  syncer::SyncDataList GetAllSyncData(syncer::ModelType type) const override {
-    ADD_FAILURE() << "FakeSyncChangeProcessor::GetAllSyncData not implemented.";
-    return syncer::SyncDataList();
-  }
-
-  SyncError ProcessSyncChanges(const base::Location&,
-                               const syncer::SyncChangeList& changes) override {
-    for (auto it = changes.begin(); it != changes.end(); ++it) {
-      AddEntry(GetEntryFromChange(*it), model_);
-    }
-    return SyncError();
-  }
-
- private:
-  EntryMap* model_;
-};
 
 ArticleEntry CreateEntry(const std::string& entry_id,
                          const std::string& page_url1,
@@ -128,9 +89,7 @@ class DomDistillerStoreTest : public testing::Test {
  public:
   void SetUp() override {
     db_model_.clear();
-    sync_model_.clear();
     store_model_.clear();
-    next_sync_id_ = 1;
   }
 
   void TearDown() override {
@@ -146,31 +105,15 @@ class DomDistillerStoreTest : public testing::Test {
   }
 
  protected:
-  SyncData CreateSyncData(const ArticleEntry& entry) {
-    EntitySpecifics specifics = SpecificsFromEntry(entry);
-    return SyncData::CreateRemoteData(next_sync_id_++, specifics);
-  }
-
-  SyncDataList SyncDataFromEntryMap(const EntryMap& model) {
-    SyncDataList data;
-    for (auto it = model.begin(); it != model.end(); ++it) {
-      data.push_back(CreateSyncData(it->second));
-    }
-    return data;
-  }
-
   base::test::SingleThreadTaskEnvironment task_environment_;
 
   EntryMap db_model_;
-  EntryMap sync_model_;
   FakeDB<ArticleEntry>::EntryMap store_model_;
 
   std::unique_ptr<DomDistillerStore> store_;
 
   // Both owned by |store_|.
   FakeDB<ArticleEntry>* fake_db_;
-
-  int64_t next_sync_id_;
 };
 
 AssertionResult AreEntriesEqual(const DomDistillerStore::EntryVector& entries,

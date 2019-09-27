@@ -228,15 +228,12 @@ void WebEmbeddedWorkerImpl::StartWorkerThread(
       base::nullopt /* response_address_space */,
       nullptr /* OriginTrialTokens */, worker_start_data->devtools_worker_token,
       std::move(worker_settings),
-      static_cast<V8CacheOptions>(worker_start_data->v8_cache_options),
+      // Generate the full code cache in the first execution of the script.
+      kV8CacheOptionsFullCodeWithoutHeatCheck,
       nullptr /* worklet_module_respones_map */,
       std::move(interface_provider_info), std::move(browser_interface_broker),
       BeginFrameProviderParams(), nullptr /* parent_feature_policy */,
       base::UnguessableToken() /* agent_cluster_id */);
-
-  // Generate the full code cache in the first execution of the script.
-  global_scope_creation_params->v8_cache_options =
-      kV8CacheOptionsFullCodeWithoutHeatCheck;
 
   worker_thread_ = std::make_unique<ServiceWorkerThread>(
       std::make_unique<ServiceWorkerGlobalScopeProxy>(

@@ -13,6 +13,7 @@
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state_manager.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #include "ios/chrome/browser/infobars/infobar_manager_impl.h"
+#import "ios/chrome/browser/main/browser_web_state_list_delegate.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper_delegate.h"
 #include "ios/chrome/browser/sessions/ios_chrome_session_tab_helper.h"
@@ -23,6 +24,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/web/chrome_web_client.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
+#import "ios/chrome/browser/web_state_list/web_state_list_delegate.h"
 #import "ios/chrome/browser/web_state_list/web_state_opener.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler.h"
 #import "ios/chrome/browser/web_state_list/web_usage_enabler/web_state_list_web_usage_enabler_factory.h"
@@ -67,7 +69,11 @@ class TabModelTest
   TabModelTest()
       : scoped_browser_state_manager_(
             std::make_unique<TestChromeBrowserStateManager>(base::FilePath())),
-        web_client_(std::make_unique<ChromeWebClient>()) {
+        web_client_(std::make_unique<ChromeWebClient>()),
+        web_state_list_delegate_(
+            std::make_unique<BrowserWebStateListDelegate>()),
+        web_state_list_(
+            std::make_unique<WebStateList>(web_state_list_delegate_.get())) {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
 
     if (GetParam() == NavigationManagerChoice::LEGACY) {
@@ -105,7 +111,7 @@ class TabModelTest
     if (tab_model_) {
       web_usage_enabler_->SetWebStateList(nullptr);
       @autoreleasepool {
-        [tab_model_ browserStateDestroyed];
+        [tab_model_ disconnect];
         tab_model_ = nil;
       }
     }
@@ -118,7 +124,8 @@ class TabModelTest
                            SessionWindowIOS* session_window) {
     TabModel* tab_model([[TabModel alloc]
         initWithSessionService:session_service
-                  browserState:chrome_browser_state_.get()]);
+                  browserState:chrome_browser_state_.get()
+                  webStateList:web_state_list_.get()]);
     [tab_model restoreSessionWindow:session_window forInitialRestore:YES];
     [tab_model setPrimary:YES];
     return tab_model;
@@ -141,6 +148,8 @@ class TabModelTest
   web::WebTaskEnvironment task_environment_;
   IOSChromeScopedTestingChromeBrowserStateManager scoped_browser_state_manager_;
   web::ScopedTestingWebClient web_client_;
+  std::unique_ptr<WebStateListDelegate> web_state_list_delegate_;
+  std::unique_ptr<WebStateList> web_state_list_;
   SessionWindowIOS* session_window_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
   WebStateListWebUsageEnabler* web_usage_enabler_;
@@ -183,8 +192,8 @@ TEST_P(TabModelTest, BrowserStateDestroyedMultiple) {
                         openedByDOM:NO
                             atIndex:0
                        inBackground:NO];
-  [tab_model_ browserStateDestroyed];
-  [tab_model_ browserStateDestroyed];
+  [tab_model_ disconnect];
+  [tab_model_ disconnect];
 }
 
 TEST_P(TabModelTest, InsertUrlMultiple) {

@@ -1110,6 +1110,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindNFCReceiver(mojo::PendingReceiver<device::mojom::NFC> receiver);
 #endif
 
+  void BindSmsReceiverReceiver(
+      mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
+
   // https://mikewest.github.io/corpp/#initialize-embedder-policy-for-global
   network::mojom::CrossOriginEmbedderPolicy cross_origin_embedder_policy()
       const {
@@ -1611,9 +1614,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::Authenticator> receiver);
 #endif
 
-  void BindSmsReceiverReceiver(
-      mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
-
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,
                     mojo::ScopedMessagePipeHandle interface_pipe) override;
@@ -1892,7 +1892,7 @@ class CONTENT_EXPORT RenderFrameHostImpl
   //
   // TODO(creis): RenderViewHost will eventually go away and be replaced with
   // some form of page context.
-  const scoped_refptr<RenderViewHostImpl> render_view_host_;
+  scoped_refptr<RenderViewHostImpl> render_view_host_;
 
   RenderFrameHostDelegate* const delegate_;
 

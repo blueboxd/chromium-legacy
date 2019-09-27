@@ -32,10 +32,6 @@ class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
   AccountManagerPolicyControllerTest() = default;
   ~AccountManagerPolicyControllerTest() override = default;
 
-  void SetUpCommandLine(base::CommandLine* command_line) override {
-    scoped_feature_list_.InitAndEnableFeature(features::kAccountManager);
-  }
-
   void SetUpOnMainThread() override {
     // Prep private fields.
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -111,7 +107,6 @@ class AccountManagerPolicyControllerTest : public InProcessBrowserTest {
   }
 
  private:
-  base::test::ScopedFeatureList scoped_feature_list_;
   base::ScopedTempDir temp_dir_;
   // Non-owning pointer.
   AccountManager* account_manager_ = nullptr;

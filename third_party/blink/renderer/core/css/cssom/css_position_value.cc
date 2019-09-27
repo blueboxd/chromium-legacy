@@ -95,10 +95,11 @@ CSSPositionValue* CSSPositionValue::Create(CSSNumericValue* x,
 }
 
 CSSPositionValue* CSSPositionValue::FromCSSValue(const CSSValue& value) {
-  const auto& pair = To<CSSValuePair>(value);
-
-  CSSNumericValue* x = FromSingleValue(pair.First());
-  CSSNumericValue* y = FromSingleValue(pair.Second());
+  const auto* pair = DynamicTo<CSSValuePair>(&value);
+  if (!pair)
+    return nullptr;
+  CSSNumericValue* x = FromSingleValue(pair->First());
+  CSSNumericValue* y = FromSingleValue(pair->Second());
   DCHECK(x);
   DCHECK(y);
 

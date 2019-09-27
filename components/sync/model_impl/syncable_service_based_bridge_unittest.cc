@@ -12,7 +12,7 @@
 #include "base/test/bind_test_util.h"
 #include "base/test/mock_callback.h"
 #include "base/test/task_environment.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
 #include "components/sync/model/model_error.h"
 #include "components/sync/model/model_type_store_test_util.h"
@@ -156,8 +156,8 @@ class SyncableServiceBasedBridgeTest : public ::testing::Test {
   }
 
   const std::string kClientTag = "clienttag";
-  const std::string kClientTagHash =
-      GenerateSyncableHash(kModelType, kClientTag);
+  const ClientTagHash kClientTagHash =
+      ClientTagHash::FromUnhashed(kModelType, kClientTag);
 
   base::test::SingleThreadTaskEnvironment task_environment_;
   testing::NiceMock<MockSyncableService> syncable_service_;
@@ -207,7 +207,7 @@ TEST_F(SyncableServiceBasedBridgeTest,
                   kModelType, ElementsAre(SyncDataRemoteMatches("name1")),
                   NotNull(), NotNull()));
   worker_->UpdateFromServer(kClientTagHash, GetTestSpecifics("name1"));
-  EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash, _)));
+  EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash.value(), _)));
 }
 
 TEST_F(SyncableServiceBasedBridgeTest, ShouldWaitUntilModelReadyToSync) {
@@ -309,7 +309,7 @@ TEST_F(SyncableServiceBasedBridgeTest,
   // SyncableService being stopped.
   EXPECT_CALL(syncable_service_, StopSyncing(_)).Times(0);
   real_processor_->OnSyncStopping(KEEP_METADATA);
-  EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash, _)));
+  EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash.value(), _)));
 
   // Since the SyncableService wasn't stopped, it shouldn't get restarted either
   // when Sync starts up again.
@@ -375,9 +375,10 @@ TEST_F(SyncableServiceBasedBridgeTest,
   InitializeBridge();
   StartSyncing();
 
-  EXPECT_CALL(mock_processor_, Put(kClientTagHash, NotNull(), NotNull()));
+  EXPECT_CALL(mock_processor_,
+              Put(kClientTagHash.value(), NotNull(), NotNull()));
   worker_->UpdateFromServer();
-  EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash, _)));
+  EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash.value(), _)));
 }
 
 TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalCreation) {
@@ -387,7 +388,8 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalCreation) {
   ASSERT_THAT(start_syncing_sync_processor_, NotNull());
   ASSERT_THAT(GetAllData(), IsEmpty());
 
-  EXPECT_CALL(mock_processor_, Put(kClientTagHash, NotNull(), NotNull()));
+  EXPECT_CALL(mock_processor_,
+              Put(kClientTagHash.value(), NotNull(), NotNull()));
 
   SyncChangeList change_list;
   change_list.emplace_back(
@@ -396,7 +398,7 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalCreation) {
   const SyncError error =
       start_syncing_sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet());
-  EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash, _)));
+  EXPECT_THAT(GetAllData(), ElementsAre(Pair(kClientTagHash.value(), _)));
 }
 
 TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalUpdate) {
@@ -405,10 +407,10 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalUpdate) {
   worker_->UpdateFromServer(kClientTagHash, GetTestSpecifics("name1"));
   ASSERT_THAT(start_syncing_sync_processor_, NotNull());
   ASSERT_THAT(GetAllData(),
-              ElementsAre(Pair(kClientTagHash, HasName("name1"))));
+              ElementsAre(Pair(kClientTagHash.value(), HasName("name1"))));
 
-  EXPECT_CALL(mock_processor_, Put(GenerateSyncableHash(kModelType, kClientTag),
-                                   NotNull(), NotNull()));
+  EXPECT_CALL(mock_processor_,
+              Put(kClientTagHash.value(), NotNull(), NotNull()));
 
   SyncChangeList change_list;
   change_list.emplace_back(FROM_HERE, SyncChange::ACTION_UPDATE,
@@ -418,7 +420,7 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalUpdate) {
       start_syncing_sync_processor_->ProcessSyncChanges(FROM_HERE, change_list);
   EXPECT_FALSE(error.IsSet());
   EXPECT_THAT(GetAllData(),
-              ElementsAre(Pair(kClientTagHash, HasName("name2"))));
+              ElementsAre(Pair(kClientTagHash.value(), HasName("name2"))));
 }
 
 TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalDeletion) {
@@ -427,10 +429,9 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateLocalDeletion) {
   worker_->UpdateFromServer(kClientTagHash, GetTestSpecifics("name1"));
   ASSERT_THAT(start_syncing_sync_processor_, NotNull());
   ASSERT_THAT(GetAllData(),
-              ElementsAre(Pair(kClientTagHash, HasName("name1"))));
+              ElementsAre(Pair(kClientTagHash.value(), HasName("name1"))));
 
-  EXPECT_CALL(mock_processor_,
-              Delete(GenerateSyncableHash(kModelType, kClientTag), NotNull()));
+  EXPECT_CALL(mock_processor_, Delete(kClientTagHash.value(), NotNull()));
 
   SyncChangeList change_list;
   change_list.emplace_back(FROM_HERE, SyncChange::ACTION_DELETE,
@@ -480,7 +481,7 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateRemoteCreation) {
                                         SyncChange::ACTION_ADD, "name1"))));
   worker_->UpdateFromServer(kClientTagHash, GetTestSpecifics("name1"));
   EXPECT_THAT(GetAllData(),
-              ElementsAre(Pair(kClientTagHash, HasName("name1"))));
+              ElementsAre(Pair(kClientTagHash.value(), HasName("name1"))));
 }
 
 TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateRemoteUpdates) {
@@ -489,14 +490,14 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateRemoteUpdates) {
   worker_->UpdateFromServer(kClientTagHash, GetTestSpecifics("name1"));
   ASSERT_THAT(start_syncing_sync_processor_, NotNull());
   ASSERT_THAT(GetAllData(),
-              ElementsAre(Pair(kClientTagHash, HasName("name1"))));
+              ElementsAre(Pair(kClientTagHash.value(), HasName("name1"))));
 
   EXPECT_CALL(syncable_service_,
               ProcessSyncChanges(_, ElementsAre(SyncChangeMatches(
                                         SyncChange::ACTION_UPDATE, "name2"))));
   worker_->UpdateFromServer(kClientTagHash, GetTestSpecifics("name2"));
   EXPECT_THAT(GetAllData(),
-              ElementsAre(Pair(kClientTagHash, HasName("name2"))));
+              ElementsAre(Pair(kClientTagHash.value(), HasName("name2"))));
 
   // A second update for the same entity.
   EXPECT_CALL(syncable_service_,
@@ -504,7 +505,7 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateRemoteUpdates) {
                                         SyncChange::ACTION_UPDATE, "name3"))));
   worker_->UpdateFromServer(kClientTagHash, GetTestSpecifics("name3"));
   EXPECT_THAT(GetAllData(),
-              ElementsAre(Pair(kClientTagHash, HasName("name3"))));
+              ElementsAre(Pair(kClientTagHash.value(), HasName("name3"))));
 }
 
 TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateRemoteDeletion) {
@@ -513,7 +514,7 @@ TEST_F(SyncableServiceBasedBridgeTest, ShouldPropagateRemoteDeletion) {
   worker_->UpdateFromServer(kClientTagHash, GetTestSpecifics("name1"));
   ASSERT_THAT(start_syncing_sync_processor_, NotNull());
   ASSERT_THAT(GetAllData(),
-              ElementsAre(Pair(kClientTagHash, HasName("name1"))));
+              ElementsAre(Pair(kClientTagHash.value(), HasName("name1"))));
 
   EXPECT_CALL(syncable_service_,
               ProcessSyncChanges(_, ElementsAre(SyncChangeMatches(

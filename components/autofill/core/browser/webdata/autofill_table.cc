@@ -2595,11 +2595,12 @@ bool AutofillTable::MigrateToVersion78AddModelTypeColumns() {
                               "SELECT ?, storage_key, value "
                               "FROM autofill_sync_metadata"));
   // Note: This uses the *wrong* ID for the ModelType - instead of
-  // |syncer::ModelTypeToHistogramInt|, this should be |GetKeyValueForModelType|
+  // |syncer::ModelTypeHistogramValue|, this should be |GetKeyValueForModelType|
   // aka |syncer::ModelTypeToStableIdentifier|. But at this point, fixing it
   // here would just make an even bigger mess. Instead, we clean this up in the
   // migration to version 81. See also crbug.com/895826.
-  insert_metadata.BindInt(0, syncer::ModelTypeToHistogramInt(syncer::AUTOFILL));
+  insert_metadata.BindInt(
+      0, static_cast<int>(syncer::ModelTypeHistogramValue(syncer::AUTOFILL)));
 
   // Prior to this migration, the table was a singleton, containing only one
   // entry with id being hard-coded to 1.
@@ -2608,7 +2609,8 @@ bool AutofillTable::MigrateToVersion78AddModelTypeColumns() {
                               "(model_type, value) SELECT ?, value "
                               "FROM autofill_model_type_state WHERE id=1"));
   // Note: Like above, this uses the *wrong* ID for the ModelType.
-  insert_state.BindInt(0, syncer::ModelTypeToHistogramInt(syncer::AUTOFILL));
+  insert_state.BindInt(
+      0, static_cast<int>(syncer::ModelTypeHistogramValue(syncer::AUTOFILL)));
 
   if (!insert_metadata.Run() || !insert_state.Run()) {
     return false;
@@ -2641,7 +2643,7 @@ bool AutofillTable::MigrateToVersion81CleanUpWrongModelTypeData() {
   // in trying to recover anything, since by now it'll have been redownloaded
   // anyway.
   const int bad_model_type_id =
-      syncer::ModelTypeToHistogramInt(syncer::AUTOFILL);
+      static_cast<int>(syncer::ModelTypeHistogramValue(syncer::AUTOFILL));
   DCHECK_NE(bad_model_type_id, GetKeyValueForModelType(syncer::AUTOFILL));
 
   sql::Transaction transaction(db_);

@@ -297,7 +297,6 @@ class ElfHeader(ElfEntry):
       string_table_offset = self.e_shoff + self.e_shstrndx * self.e_shentsize
       string_table = StringTableHeader.FromBytes(self.byte_order, data,
                                                  string_table_offset)
-
       for shdr in self.shdrs:
         shdr.SetStrName(string_table.GetName(data, shdr.sh_name))
 
@@ -426,13 +425,21 @@ class ElfHeader(ElfEntry):
     self.phdrs.sort(key=HeaderToKey)
 
   def _PatchProgramHeaders(self, data):
-    """Patch all program headers."""
+    """Patches all program headers."""
     current_offset = self.e_phoff
     self._OrderProgramHeaders()
     for phdr in self.GetProgramHeaders():
       phdr_bytes = phdr.ToBytes()
       data[current_offset:current_offset + len(phdr_bytes)] = phdr_bytes
       current_offset += self.e_phentsize
+
+  def _PatchSectionHeaders(self, data):
+    """Patches all section headers."""
+    current_offset = self.e_shoff
+    for shdr in self.GetSectionHeaders():
+      shdr_bytes = shdr.ToBytes()
+      data[current_offset:current_offset + len(shdr_bytes)] = shdr_bytes
+      current_offset += self.e_shentsize
 
   def PatchData(self, data):
     """Patches the given data array to reflect all changes made to the header.
@@ -453,3 +460,4 @@ class ElfHeader(ElfEntry):
     elf_bytes = self.ToBytes()
     data[:len(elf_bytes)] = elf_bytes
     self._PatchProgramHeaders(data)
+    self._PatchSectionHeaders(data)

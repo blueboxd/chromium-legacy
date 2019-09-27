@@ -66,8 +66,8 @@ class ThirdPartyMetricsObserver
   // third party document.cookie access happens when the context's registrable
   // domain differs from the main frame's. A third party resource request
   // happens when the URL request's registrable domain differs from the main
-  // frame's. URLs which have no registrable domain are not considered third
-  // party.
+  // frame's. For URLs which have no registrable domain, the hostname is used
+  // instead.
   std::map<std::string, CookieAccessTypes> third_party_cookie_access_types_;
 
   // A map of third parties that have accessed storage other than cookies. A

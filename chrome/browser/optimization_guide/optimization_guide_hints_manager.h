@@ -172,27 +172,35 @@ class OptimizationGuideHintsManager
 
   // Method to decide whether to fetch new hints for user's top sites and
   // proceeds to schedule the fetch.
-  void MaybeScheduleHintsFetch();
+  void MaybeScheduleTopHostsHintsFetch();
 
   // Schedules |hints_fetch_timer_| to fire based on:
   // 1. The update time for the fetched hints in the store and
   // 2. The last time a fetch attempt was made.
-  void ScheduleHintsFetch();
+  void ScheduleTopHostsHintsFetch();
 
   // Called to make a request to fetch hints from the remote Optimization Guide
-  // Service.
-  void FetchHints();
+  // Service. Used to fetch hints for origins frequently visited by the user.
+  void FetchTopHostsHints();
 
   // Called when the hints have been fetched from the remote Optimization Guide
   // Service and are ready for parsing.
   void OnHintsFetched(
+      optimization_guide::proto::RequestContext request_context,
+      base::Optional<
+          std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
+          get_hints_response);
+
+  // Called when the hints for the top hosts have been fetched from the remote
+  // Optimization Guide Service and are ready for parsing.
+  void OnTopHostsHintsFetched(
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response);
 
   // Called when the fetched hints have been stored in |hint_cache| and are
   // ready to be used.
-  void OnFetchedHintsStored();
+  void OnFetchedTopHostsHintsStored();
 
   // Returns the time when a hints fetch request was last attempted.
   base::Time GetLastHintsFetchAttemptTime() const;
@@ -256,7 +264,7 @@ class OptimizationGuideHintsManager
 
   // The timer used to schedule fetching hints from the remote Optimization
   // Guide Service.
-  base::OneShotTimer hints_fetch_timer_;
+  base::OneShotTimer top_hosts_hints_fetch_timer_;
 
   // The clock used to schedule fetching from the remote Optimization Guide
   // Service.

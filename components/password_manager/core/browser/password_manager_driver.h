@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
-#include "components/autofill/core/common/password_form_field_prediction_map.h"
 
 namespace autofill {
 class AutofillDriver;

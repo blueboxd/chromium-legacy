@@ -1874,6 +1874,19 @@ bool SetCookie(BrowserContext* browser_context,
 }
 
 void FetchHistogramsFromChildProcesses() {
+  // Wait for all the renderer processes to be initialized before fetching
+  // histograms for the first time.
+  for (RenderProcessHost::iterator it(RenderProcessHost::AllHostsIterator());
+       !it.IsAtEnd(); it.Advance()) {
+    if (!it.GetCurrentValue()->IsReady()) {
+      RenderProcessHost* render_process_host = it.GetCurrentValue();
+      RenderProcessHostWatcher ready_watcher(
+          render_process_host,
+          RenderProcessHostWatcher::WATCH_FOR_PROCESS_READY);
+      ready_watcher.Wait();
+    }
+  }
+
   base::RunLoop run_loop;
 
   FetchHistogramsAsynchronously(
@@ -2333,6 +2346,11 @@ RenderProcessHostWatcher::~RenderProcessHostWatcher() {
 
 void RenderProcessHostWatcher::Wait() {
   run_loop_.Run();
+}
+
+void RenderProcessHostWatcher::RenderProcessReady(RenderProcessHost* host) {
+  if (type_ == WATCH_FOR_PROCESS_READY)
+    std::move(quit_closure_).Run();
 }
 
 void RenderProcessHostWatcher::RenderProcessExited(

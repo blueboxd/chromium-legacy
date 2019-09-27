@@ -186,7 +186,8 @@ void NonBlockingTypeCommitContribution::PopulateCommitProto(
   // Populate client_defined_unique_tag only for non-bookmark and non-Nigori
   // data types.
   if (type != BOOKMARKS && type != NIGORI) {
-    commit_proto->set_client_defined_unique_tag(entity_data.client_tag_hash);
+    commit_proto->set_client_defined_unique_tag(
+        entity_data.client_tag_hash.value());
   }
   commit_proto->set_version(commit_entity.base_version);
   commit_proto->set_deleted(entity_data.is_deleted());

@@ -66,7 +66,7 @@ class UiControllerAndroid : public ControllerObserver {
               Client* client,
               UiDelegate* ui_delegate);
 
-  // Detaches the UI from the its delegate. This guarantees the delegate is not
+  // Detaches the UI from its delegate. This guarantees the delegate is not
   // called anymore after the call.
   void Detach();
 

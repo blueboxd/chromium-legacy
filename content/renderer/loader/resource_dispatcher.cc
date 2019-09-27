@@ -21,7 +21,6 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/common/inter_process_time_ticks_converter.h"
-#include "content/common/mime_sniffing_throttle.h"
 #include "content/common/navigation_params.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/common/navigation_policy.h"
@@ -45,6 +44,7 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
+#include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
 
 namespace content {
 
@@ -553,7 +553,7 @@ int ResourceDispatcher::StartAsync(
     // MIME sniffing should be disabled for a request initiated by fetch().
     options |= network::mojom::kURLLoadOptionSniffMimeType;
     throttles.push_back(
-        std::make_unique<MimeSniffingThrottle>(loading_task_runner));
+        std::make_unique<blink::MimeSniffingThrottle>(loading_task_runner));
   }
   if (is_sync) {
     options |= network::mojom::kURLLoadOptionSynchronous;

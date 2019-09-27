@@ -11,7 +11,6 @@
 #include "base/android/application_status_listener.h"
 #include "base/android/path_utils.h"
 #include "base/big_endian.h"
-#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -22,7 +21,6 @@
 #include "build/build_config.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
-#include "gpu/command_buffer/service/gpu_switches.h"
 #include "gpu/config/gpu_finch_features.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/android_opengl/etc1/etc1.h"
@@ -198,14 +196,6 @@ void ThumbnailCache::Put(TabId tab_id,
   RemoveFromReadQueue(tab_id);
   MakeSpaceForNewItemIfNecessary(tab_id);
   cache_.Put(tab_id, std::move(thumbnail));
-
-  // Vulkan does not yet support compressed texture uploads. Disable compression
-  // and approximation when in experimental Vulkan mode.
-  // TODO(ericrk): Remove this restriction. https://crbug.com/906794
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(switches::kUseVulkan) ||
-      base::FeatureList::IsEnabled(features::kVulkan)) {
-    return;
-  }
 
   if (use_approximation_thumbnail_) {
     std::pair<SkBitmap, float> approximation =

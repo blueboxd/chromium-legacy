@@ -62,7 +62,6 @@ class TestSyncedTabDelegate : public SyncedTabDelegate {
   GetBlockedNavigations() const override;
   bool IsPlaceholderTab() const override;
   bool ShouldSync(SyncSessionsClient* sessions_client) override;
-  SessionID GetSourceTabID() const override;
   int64_t GetTaskIdForNavigationId(int nav_id) const override;
   int64_t GetParentTaskIdForNavigationId(int nav_id) const override;
   int64_t GetRootTaskIdForNavigationId(int nav_id) const override;
@@ -113,7 +112,6 @@ class PlaceholderTabDelegate : public SyncedTabDelegate {
   const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
   GetBlockedNavigations() const override;
   bool ShouldSync(SyncSessionsClient* sessions_client) override;
-  SessionID GetSourceTabID() const override;
   int64_t GetTaskIdForNavigationId(int nav_id) const override;
   int64_t GetParentTaskIdForNavigationId(int nav_id) const override;
   int64_t GetRootTaskIdForNavigationId(int nav_id) const override;

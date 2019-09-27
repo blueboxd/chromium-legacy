@@ -21,6 +21,7 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
+#include "content/public/common/content_features.h"
 #include "device/gamepad/gamepad_monitor.h"
 #include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "media/capture/mojom/image_capture.mojom.h"
@@ -37,9 +38,11 @@
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom.h"
 #include "third_party/blink/public/mojom/keyboard_lock/keyboard_lock.mojom.h"
 #include "third_party/blink/public/mojom/locks/lock_manager.mojom.h"
+#include "third_party/blink/public/mojom/payments/payment_app.mojom.h"
 #include "third_party/blink/public/mojom/permissions/permission.mojom.h"
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
+#include "third_party/blink/public/mojom/sms/sms_receiver.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
@@ -53,7 +56,6 @@
 #endif
 
 #if defined(OS_ANDROID)
-#include "content/public/common/content_features.h"
 #include "services/device/public/mojom/nfc.mojom.h"
 #endif
 
@@ -113,6 +115,11 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
 
+  if (base::FeatureList::IsEnabled(features::kSmsReceiver)) {
+    map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
+        &RenderFrameHostImpl::BindSmsReceiverReceiver, base::Unretained(host)));
+  }
+
   map->Add<blink::mojom::LockManager>(base::BindRepeating(
       &RenderFrameHostImpl::CreateLockManager, base::Unretained(host)));
 
@@ -138,6 +145,10 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<media::mojom::ImageCapture>(
       base::BindRepeating(&ImageCaptureImpl::Create));
+
+  map->Add<payments::mojom::PaymentManager>(
+      base::BindRepeating(&RenderProcessHost::CreatePaymentManager,
+                          base::Unretained(host->GetProcess())));
 
   map->Add<blink::mojom::WebBluetoothService>(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebBluetoothService, base::Unretained(host)));
@@ -196,14 +207,20 @@ void PopulateDedicatedWorkerBinders(DedicatedWorkerHost* host,
       &DedicatedWorkerHost::CreateIdleManager, base::Unretained(host)));
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
+  if (base::FeatureList::IsEnabled(features::kSmsReceiver)) {
+    map->Add<blink::mojom::SmsReceiver>(base::BindRepeating(
+        &DedicatedWorkerHost::BindSmsReceiverReceiver, base::Unretained(host)));
+  }
+  map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
+      &DedicatedWorkerHost::CreatePaymentManager, base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(
     DedicatedWorkerHost* host,
     service_manager::BinderMapWithContext<const url::Origin&>* map) {
-  map->Add<blink::mojom::LockManager>(
-      base::BindRepeating(&RenderProcessHost::CreateLockManager,
-                          base::Unretained(host->GetProcessHost())));
+  map->Add<blink::mojom::LockManager>(base::BindRepeating(
+      &RenderProcessHost::CreateLockManager,
+      base::Unretained(host->GetProcessHost()), MSG_ROUTING_NONE));
   map->Add<blink::mojom::PermissionService>(
       base::BindRepeating(&RenderProcessHost::CreatePermissionService,
                           base::Unretained(host->GetProcessHost())));
@@ -227,6 +244,8 @@ void PopulateSharedWorkerBinders(SharedWorkerHost* host,
       &SharedWorkerHost::CreateAppCacheBackend, base::Unretained(host)));
   map->Add<blink::mojom::ScreenEnumeration>(
       base::BindRepeating(&ScreenEnumerationImpl::Create));
+  map->Add<payments::mojom::PaymentManager>(base::BindRepeating(
+      &SharedWorkerHost::CreatePaymentManager, base::Unretained(host)));
 }
 
 void PopulateBinderMapWithContext(
@@ -236,9 +255,9 @@ void PopulateBinderMapWithContext(
   map->Add<blink::mojom::FileSystemManager>(
       base::BindRepeating(&RenderProcessHost::BindFileSystemManager,
                           base::Unretained(host->GetProcessHost())));
-  map->Add<blink::mojom::LockManager>(
-      base::BindRepeating(&RenderProcessHost::CreateLockManager,
-                          base::Unretained(host->GetProcessHost())));
+  map->Add<blink::mojom::LockManager>(base::BindRepeating(
+      &RenderProcessHost::CreateLockManager,
+      base::Unretained(host->GetProcessHost()), MSG_ROUTING_NONE));
   map->Add<blink::mojom::PermissionService>(
       base::BindRepeating(&RenderProcessHost::CreatePermissionService,
                           base::Unretained(host->GetProcessHost())));
@@ -267,6 +286,9 @@ void PopulateServiceWorkerBinders(ServiceWorkerProviderHost* host,
 
   map->Add<blink::mojom::PermissionService>(
       base::BindRepeating(&ServiceWorkerProviderHost::CreatePermissionService,
+                          base::Unretained(host)));
+  map->Add<payments::mojom::PaymentManager>(
+      base::BindRepeating(&ServiceWorkerProviderHost::CreatePaymentManager,
                           base::Unretained(host)));
 }
 

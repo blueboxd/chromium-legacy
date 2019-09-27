@@ -31,6 +31,7 @@ namespace optimization_guide {
 // to pass back the fetched hints response from the remote Optimization Guide
 // Service.
 using HintsFetchedCallback = base::OnceCallback<void(
+    optimization_guide::proto::RequestContext request_context,
     base::Optional<std::unique_ptr<proto::GetHintsResponse>>)>;
 
 // A class to handle requests for optimization hints from a remote Optimization
@@ -43,7 +44,7 @@ class HintsFetcher {
  public:
   HintsFetcher(
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      GURL optimization_guide_service_url,
+      const GURL& optimization_guide_service_url,
       PrefService* pref_service);
   virtual ~HintsFetcher();
 
@@ -54,6 +55,7 @@ class HintsFetcher {
   // testing.
   virtual bool FetchOptimizationGuideServiceHints(
       const std::vector<std::string>& hosts,
+      optimization_guide::proto::RequestContext request_context,
       HintsFetchedCallback hints_fetched_callback);
 
   // Set |time_clock_| for testing.
@@ -103,6 +105,10 @@ class HintsFetcher {
 
   // Holds the |URLLoader| for an active hints request.
   std::unique_ptr<network::SimpleURLLoader> url_loader_;
+
+  // Context of the fetch request. Opaque field that's returned back in the
+  // callback and is also included in the requests to the hints server.
+  optimization_guide::proto::RequestContext request_context_;
 
   // A reference to the PrefService for this profile. Not owned.
   PrefService* pref_service_ = nullptr;

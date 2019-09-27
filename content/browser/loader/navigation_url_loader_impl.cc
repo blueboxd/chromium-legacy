@@ -46,7 +46,6 @@
 #include "content/browser/web_package/signed_exchange_utils.h"
 #include "content/browser/webui/url_data_manager_backend.h"
 #include "content/browser/webui/web_ui_url_loader_factory_internal.h"
-#include "content/common/mime_sniffing_throttle.h"
 #include "content/common/net/record_load_histograms.h"
 #include "content/common/throttling_url_loader.h"
 #include "content/public/browser/browser_context.h"
@@ -84,6 +83,7 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "third_party/blink/public/common/loader/mime_sniffing_throttle.h"
 #include "third_party/blink/public/common/mime_util/mime_util.h"
 
 #if defined(OS_ANDROID)
@@ -550,7 +550,7 @@ class NavigationURLLoaderImpl::URLLoaderRequestController
       // Intercepted requests need MimeSniffingThrottle to do mime sniffing.
       // Non-intercepted requests usually go through the regular network
       // URLLoader, which does mime sniffing.
-      throttles.push_back(std::make_unique<MimeSniffingThrottle>(
+      throttles.push_back(std::make_unique<blink::MimeSniffingThrottle>(
           base::ThreadTaskRunnerHandle::Get()));
 
       default_loader_used_ = false;

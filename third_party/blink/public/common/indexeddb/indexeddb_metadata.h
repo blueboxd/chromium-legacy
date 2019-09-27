@@ -26,10 +26,10 @@ struct BLINK_COMMON_EXPORT IndexedDBIndexMetadata {
                          bool unique,
                          bool multi_entry);
   IndexedDBIndexMetadata(const IndexedDBIndexMetadata& other);
-  IndexedDBIndexMetadata(IndexedDBIndexMetadata&& other) noexcept;
+  IndexedDBIndexMetadata(IndexedDBIndexMetadata&& other);
   ~IndexedDBIndexMetadata();
   IndexedDBIndexMetadata& operator=(const IndexedDBIndexMetadata& other);
-  IndexedDBIndexMetadata& operator=(IndexedDBIndexMetadata&& other) noexcept;
+  IndexedDBIndexMetadata& operator=(IndexedDBIndexMetadata&& other);
   bool operator==(const IndexedDBIndexMetadata& other) const;
 
   base::string16 name;
@@ -50,12 +50,11 @@ struct BLINK_COMMON_EXPORT IndexedDBObjectStoreMetadata {
                                bool auto_increment,
                                int64_t max_index_id);
   IndexedDBObjectStoreMetadata(const IndexedDBObjectStoreMetadata& other);
-  IndexedDBObjectStoreMetadata(IndexedDBObjectStoreMetadata&& other) noexcept;
+  IndexedDBObjectStoreMetadata(IndexedDBObjectStoreMetadata&& other);
   ~IndexedDBObjectStoreMetadata();
   IndexedDBObjectStoreMetadata& operator=(
       const IndexedDBObjectStoreMetadata& other);
-  IndexedDBObjectStoreMetadata& operator=(
-      IndexedDBObjectStoreMetadata&& other) noexcept;
+  IndexedDBObjectStoreMetadata& operator=(IndexedDBObjectStoreMetadata&& other);
   bool operator==(const IndexedDBObjectStoreMetadata& other) const;
 
   base::string16 name;
@@ -77,11 +76,10 @@ struct BLINK_COMMON_EXPORT IndexedDBDatabaseMetadata {
                             int64_t version,
                             int64_t max_object_store_id);
   IndexedDBDatabaseMetadata(const IndexedDBDatabaseMetadata& other);
-  IndexedDBDatabaseMetadata(IndexedDBDatabaseMetadata&& other) noexcept;
+  IndexedDBDatabaseMetadata(IndexedDBDatabaseMetadata&& other);
   ~IndexedDBDatabaseMetadata();
   IndexedDBDatabaseMetadata& operator=(const IndexedDBDatabaseMetadata& other);
-  IndexedDBDatabaseMetadata& operator=(
-      IndexedDBDatabaseMetadata&& other) noexcept;
+  IndexedDBDatabaseMetadata& operator=(IndexedDBDatabaseMetadata&& other);
   bool operator==(const IndexedDBDatabaseMetadata& other) const;
 
   base::string16 name;

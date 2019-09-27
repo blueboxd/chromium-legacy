@@ -16,7 +16,6 @@
 #include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/notifications/platform_notification_context_impl.h"
-#include "content/browser/payments/payment_manager.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/quota_dispatcher_host.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
@@ -160,13 +159,6 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   parameterized_binder_registry_.AddInterface(
       base::BindRepeating(CreateWebSocketConnector));
 
-  parameterized_binder_registry_.AddInterface(base::Bind(
-      [](mojo::PendingReceiver<payments::mojom::PaymentManager> receiver,
-         RenderProcessHost* host, const url::Origin& origin) {
-        static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
-            ->GetPaymentAppContext()
-            ->CreatePaymentManager(std::move(receiver));
-      }));
   parameterized_binder_registry_.AddInterface(base::BindRepeating(
       [](mojo::PendingReceiver<blink::mojom::CacheStorage> receiver,
          RenderProcessHost* host, const url::Origin& origin) {

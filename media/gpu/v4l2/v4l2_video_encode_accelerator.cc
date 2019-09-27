@@ -27,6 +27,7 @@
 #include "base/trace_event/trace_event.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/unaligned_shared_memory.h"
 #include "media/base/video_frame_layout.h"
@@ -243,7 +244,7 @@ void V4L2VideoEncodeAccelerator::InitializeTask(const Config& config,
     // TODO(hiroh): Decide the appropriate planar in some way.
     auto input_layout = VideoFrameLayout::CreateMultiPlanar(
         config.input_format, visible_size_,
-        std::vector<VideoFrameLayout::Plane>(
+        std::vector<ColorPlaneLayout>(
             VideoFrame::NumPlanes(config.input_format)));
     if (!input_layout) {
       VLOGF(1) << "Invalid image processor input layout";
@@ -658,7 +659,7 @@ bool V4L2VideoEncodeAccelerator::ReconfigureFormatIfNeeded(
     // TODO(hiroh): Decide the appropriate planar in some way.
     auto input_layout = VideoFrameLayout::CreateMultiPlanar(
         format, new_frame_size,
-        std::vector<VideoFrameLayout::Plane>(VideoFrame::NumPlanes(format)));
+        std::vector<ColorPlaneLayout>(VideoFrame::NumPlanes(format)));
     if (!input_layout) {
       VLOGF(1) << "Invalid image processor input layout";
       return false;

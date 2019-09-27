@@ -115,8 +115,7 @@ SyncerError Commit::PostAndProcessResponse(
     ModelType request_type = it->first;
     request_types.Put(request_type);
     UMA_HISTOGRAM_ENUMERATION("Sync.PostedDataTypeCommitRequest",
-                              ModelTypeToHistogramInt(request_type),
-                              static_cast<int>(ModelType::NUM_ENTRIES));
+                              ModelTypeHistogramValue(request_type));
   }
 
   if (cycle->context()->debug_info_getter()) {

@@ -12,18 +12,11 @@ import json
 import os
 
 from core.results_processor import command_line
-from core.results_processor import json3_output
-from core.results_processor import histograms_output
-from core.results_processor import html_output
+from core.results_processor import formatters
 
 
 HTML_TRACE_NAME = 'trace.html'
 TELEMETRY_RESULTS = '_telemetry_results.jsonl'
-FORMATTERS = {
-    'json-test-results': json3_output,
-    'histograms': histograms_output,
-    'html': html_output,
-}
 
 
 def ProcessResults(options):
@@ -48,10 +41,10 @@ def ProcessResults(options):
   _UploadArtifacts(intermediate_results, options.upload_bucket)
 
   for output_format in options.output_formats:
-    if output_format not in FORMATTERS:
+    if output_format not in formatters.FORMATTERS:
       raise NotImplementedError(output_format)
 
-    formatter = FORMATTERS[output_format]
+    formatter = formatters.FORMATTERS[output_format]
     formatter.Process(intermediate_results, options)
 
 
@@ -106,5 +99,5 @@ def main(args=None):
   """Entry point for the standalone version of the results_processor script."""
   parser = command_line.ArgumentParser(standalone=True)
   options = parser.parse_args(args)
-  command_line.ProcessOptions(options)
+  command_line.ProcessOptions(options, standalone=True)
   return ProcessResults(options)

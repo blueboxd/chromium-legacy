@@ -41,6 +41,7 @@
 #include "components/security_state/core/features.h"
 #include "components/send_tab_to_self/features.h"
 #include "components/signin/core/browser/account_reconcilor.h"
+#include "components/signin/ios/browser/features.h"
 #include "components/signin/public/base/signin_switches.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -546,6 +547,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"password-leak-detection", flag_descriptions::kPasswordLeakDetectionName,
      flag_descriptions::kPasswordLeakDetectionDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(password_manager::features::kLeakDetection)},
+    {"force-startup-signin-promo",
+     flag_descriptions::kForceStartupSigninPromoName,
+     flag_descriptions::kForceStartupSigninPromoDescription, flags_ui::kOsIos,
+     FEATURE_VALUE_TYPE(signin::kForceStartupSigninPromo)},
 };
 
 // Add all switches from experimental flags to |command_line|.

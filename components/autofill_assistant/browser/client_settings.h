@@ -61,14 +61,6 @@ struct ClientSettings {
   // ready.
   int document_ready_check_count = 50;
 
-  // Whether graceful shutdown should be enabled. If false, the UI stays
-  // up until it's dismissed.
-  bool enable_graceful_shutdown = true;
-
-  // How long to wait before shutting down during graceful shutdown. If 0
-  // shutdown happens immediately.
-  base::TimeDelta graceful_shutdown_delay = base::TimeDelta::FromSeconds(5);
-
   // How much time to give users to tap undo when they tap a cancel button.
   base::TimeDelta cancel_delay = base::TimeDelta::FromSeconds(5);
 

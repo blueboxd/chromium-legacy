@@ -181,7 +181,7 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
 
    public:
     ChildList() = default;
-    void operator=(ChildList&& other) noexcept {
+    void operator=(ChildList&& other) {
       children_ = std::move(other.children_);
     }
 

@@ -10,7 +10,8 @@
 
 #include "base/macros.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace chromeos {
 namespace network_config {
@@ -20,7 +21,7 @@ class CrosNetworkConfigTestObserver : public mojom::CrosNetworkConfigObserver {
   CrosNetworkConfigTestObserver();
   ~CrosNetworkConfigTestObserver() override;
 
-  mojom::CrosNetworkConfigObserverPtr GenerateInterfacePtr();
+  mojo::PendingRemote<mojom::CrosNetworkConfigObserver> GenerateRemote();
 
   // mojom::CrosNetworkConfigObserver:
   void OnActiveNetworksChanged(
@@ -44,14 +45,14 @@ class CrosNetworkConfigTestObserver : public mojom::CrosNetworkConfigObserver {
   int GetNetworkChangedCount(const std::string& guid) const;
   void ResetNetworkChanges();
 
-  mojo::Binding<mojom::CrosNetworkConfigObserver>& binding() {
-    return binding_;
+  mojo::Receiver<mojom::CrosNetworkConfigObserver>& receiver() {
+    return receiver_;
   }
 
   void FlushForTesting();
 
  private:
-  mojo::Binding<mojom::CrosNetworkConfigObserver> binding_{this};
+  mojo::Receiver<mojom::CrosNetworkConfigObserver> receiver_{this};
   int active_networks_changed_ = 0;
   std::map<std::string, int> networks_changed_;
   int network_state_list_changed_ = 0;

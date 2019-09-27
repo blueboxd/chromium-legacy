@@ -1522,14 +1522,6 @@
         android:name="org.chromium.chrome.browser.incognito.IncognitoNotificationService"/>
     <service
         android:exported="false"
-        android:name="org.chromium.chrome.browser.invalidation.ChromeBrowserSyncAdapterService">
-      <intent-filter>
-        <action android:name="android.content.SyncAdapter"/>
-      </intent-filter>
-      <meta-data android:name="android.content.SyncAdapter" android:resource="@xml/syncadapter"/>
-    </service>
-    <service
-        android:exported="false"
         android:name="org.chromium.chrome.browser.media.MediaCaptureNotificationService"/>
     <service
         android:exported="false"

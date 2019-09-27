@@ -211,6 +211,10 @@ NSString* const kRootObjectKey = @"root";  // Key for the root object.
   SessionIOSFactory factory = [_pendingSessions objectForKey:sessionPath];
   [_pendingSessions removeObjectForKey:sessionPath];
   SessionIOS* session = factory();
+  // Because the factory may be called asynchronously after the underlying
+  // web state list is destroyed, the session may be nil; if so, do nothing.
+  if (!session)
+    return;
 
   @try {
     NSError* error = nil;

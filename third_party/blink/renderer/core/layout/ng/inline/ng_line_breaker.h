@@ -93,8 +93,10 @@ class CORE_EXPORT NGLineBreaker {
   }
 
  private:
-  const String& Text() const { return items_data_.text_content; }
+  const String& Text() const { return text_content_; }
   const Vector<NGInlineItem>& Items() const { return items_data_.items; }
+
+  String TextContentForLineBreak() const;
 
   NGInlineItemResult* AddItem(const NGInlineItem&,
                               unsigned end_offset,
@@ -159,7 +161,7 @@ class CORE_EXPORT NGLineBreaker {
 
   void HandleControlItem(const NGInlineItem&, NGLineInfo*);
   void HandleBidiControlItem(const NGInlineItem&, NGLineInfo*);
-  bool HandleAtomicInline(
+  void HandleAtomicInline(
       const NGInlineItem&,
       LayoutUnit percentage_resolution_block_size_for_min_max,
       NGLineInfo*);
@@ -212,6 +214,8 @@ class CORE_EXPORT NGLineBreaker {
 
   NGInlineNode node_;
 
+  NGLineBreakerMode mode_;
+
   // True if this line is the "first formatted line".
   // https://www.w3.org/TR/CSS22/selector.html#first-formatted-line
   bool is_first_formatted_line_ = false;
@@ -244,13 +248,13 @@ class CORE_EXPORT NGLineBreaker {
   // the next line.
   bool is_after_forced_break_ = false;
 
-  // Set in quirks mode when we're not supposed to break inside table cells
-  // between images, and between text and images.
-  bool sticky_images_quirk_ = false;
-
   const NGInlineItemsData& items_data_;
 
-  NGLineBreakerMode mode_;
+  // The text content of this node. This is same as |items_data_.text_content|
+  // except when sticky images quirk is needed. See
+  // |NGInlineNode::TextContentForContentSize|.
+  String text_content_;
+
   const NGConstraintSpace& constraint_space_;
   NGExclusionSpace* exclusion_space_;
   scoped_refptr<const NGInlineBreakToken> break_token_;

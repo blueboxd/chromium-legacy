@@ -304,13 +304,6 @@ class PasswordFormMetricsRecorder
   // Stores the user action associated with a generated password.
   void SetGeneratedPasswordStatus(GeneratedPasswordStatus status);
 
-  // Reports the priority of a PasswordGenerationRequirementsSpec for a
-  // generated password. This can be used for debugging as a 0 means that
-  // no spec was used, a 10 means that the spec came from autofill and was crowd
-  // sourced, a 20 means that it was overrideen per domain and a 30 means that
-  // is was overridden for the form.
-  void ReportSpecPriorityForGeneratedPassword(uint32_t spec_priority);
-
   // Stores the password manager action. During destruction the last
   // set value will be logged.
   void SetManagerAction(ManagerAction manager_action);
@@ -457,8 +450,6 @@ class PasswordFormMetricsRecorder
   // Contains the generated password's status, which resulted from a user
   // action.
   base::Optional<GeneratedPasswordStatus> generated_password_status_;
-
-  base::Optional<uint32_t> spec_priority_of_generated_password_;
 
   // Tracks which bubble is currently being displayed to the user.
   CurrentBubbleOfInterest current_bubble_ = CurrentBubbleOfInterest::kNone;

@@ -28,7 +28,7 @@ class STUB_WINDOW_EXPORT StubWindow : public PlatformWindow {
 
  private:
   // PlatformWindow:
-  void Show() override;
+  void Show(bool inactive) override;
   void Hide() override;
   void Close() override;
   bool IsVisible() const override;

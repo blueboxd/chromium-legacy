@@ -19,6 +19,7 @@
 
 namespace syncer {
 
+class ClientTagHash;
 class MetadataBatch;
 class MetadataChangeList;
 class ModelTypeSyncBridge;
@@ -65,7 +66,7 @@ class ModelTypeChangeProcessor {
   // datatypes that can't generate storage keys. The call is ignored if
   // |client_tag_hash| is unknown.
   virtual void UntrackEntityForClientTagHash(
-      const std::string& client_tag_hash) = 0;
+      const ClientTagHash& client_tag_hash) = 0;
 
   // Returns true if a tracked entity has local changes. A commit may or may not
   // be in progress at this time.

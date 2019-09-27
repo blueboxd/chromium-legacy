@@ -195,7 +195,7 @@ class CORE_EXPORT LocalFrameUkmAggregator
     STACK_ALLOCATED();
 
    public:
-    ScopedUkmHierarchicalTimer(ScopedUkmHierarchicalTimer&&) noexcept;
+    ScopedUkmHierarchicalTimer(ScopedUkmHierarchicalTimer&&);
     ~ScopedUkmHierarchicalTimer();
 
    private:

@@ -9,10 +9,9 @@
 namespace blink {
 
 TransferableMessage::TransferableMessage() = default;
-TransferableMessage::TransferableMessage(TransferableMessage&&) noexcept =
+TransferableMessage::TransferableMessage(TransferableMessage&&) = default;
+TransferableMessage& TransferableMessage::operator=(TransferableMessage&&) =
     default;
-TransferableMessage& TransferableMessage::operator=(
-    TransferableMessage&&) noexcept = default;
 TransferableMessage::~TransferableMessage() = default;
 
 }  // namespace blink

@@ -748,10 +748,9 @@ IPC_MESSAGE_ROUTED3(FrameMsg_AddMessageToConsole,
                     std::string /* message */,
                     bool /* discard_duplicates */)
 
-// Tells the renderer to reload the frame, optionally bypassing the cache while
-// doing so.
-IPC_MESSAGE_ROUTED1(FrameMsg_Reload,
-                    bool /* bypass_cache */)
+// TODO(https://crbug.com/995428): Deprecated.
+// Tells the renderer to reload the frame.
+IPC_MESSAGE_ROUTED0(FrameMsg_Reload)
 
 // Change the accessibility mode in the renderer process.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode, ui::AXMode)

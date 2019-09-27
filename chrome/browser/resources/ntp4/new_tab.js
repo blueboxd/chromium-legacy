@@ -108,6 +108,10 @@ cr.define('ntp', function() {
 
       startTime = Date.now();
 
+      cr.addWebUIListener('theme-changed', () => {
+        $('themecss').href =
+            'chrome://theme/css/new_tab_theme.css?' + Date.now();
+      });
       chrome.send('observeThemeChanges');
     });
   }
@@ -205,15 +209,6 @@ cr.define('ntp', function() {
     } else {
       menu.style.WebkitFlex = '0 1 ' + logoImg.width + 'px';
     }
-  }
-
-  /**
-   * Called when the theme has changed.
-   * @param {Object=} opt_themeData Not used; only exists to match equivalent
-   *     function in incognito NTP.
-   */
-  function themeChanged(opt_themeData) {
-    $('themecss').href = 'chrome://theme/css/new_tab_theme.css?' + Date.now();
   }
 
   function setBookmarkBarAttached(attached) {
@@ -390,7 +385,6 @@ cr.define('ntp', function() {
     setAppToBeHighlighted: setAppToBeHighlighted,
     setBookmarkBarAttached: setBookmarkBarAttached,
     setFaviconDominantColor: setFaviconDominantColor,
-    themeChanged: themeChanged,
     updateLogin: updateLogin
   };
 });

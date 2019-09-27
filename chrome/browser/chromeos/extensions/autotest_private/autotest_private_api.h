@@ -15,7 +15,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
-#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/machine_learning_service.mojom.h"
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
@@ -27,6 +26,8 @@ enum class CrostiniResult;
 }
 
 namespace extensions {
+
+class AssistantInteractionHelper;
 
 class AutotestPrivateLogoutFunction : public ExtensionFunction {
  public:
@@ -509,9 +510,7 @@ class AutotestPrivateSetAssistantEnabledFunction
 };
 
 // Send text query to Assistant and return response.
-class AutotestPrivateSendAssistantTextQueryFunction
-    : public ExtensionFunction,
-      public chromeos::assistant::mojom::AssistantInteractionSubscriber {
+class AutotestPrivateSendAssistantTextQueryFunction : public ExtensionFunction {
  public:
   AutotestPrivateSendAssistantTextQueryFunction();
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.sendAssistantTextQuery",
@@ -521,46 +520,39 @@ class AutotestPrivateSendAssistantTextQueryFunction
   ~AutotestPrivateSendAssistantTextQueryFunction() override;
   ResponseAction Run() override;
 
-  using AssistantInteractionMetadataPtr =
-      chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
-  using AssistantInteractionResolution =
-      chromeos::assistant::mojom::AssistantInteractionResolution;
-  using AssistantSuggestionPtr =
-      chromeos::assistant::mojom::AssistantSuggestionPtr;
-
-  // chromeos::assistant::mojom::AssistantInteractionSubscriber:
-  void OnHtmlResponse(const std::string& response,
-                      const std::string& fallback) override;
-  void OnTextResponse(const std::string& response) override;
-  void OnInteractionFinished(
-      AssistantInteractionResolution resolution) override;
-  void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override {
-  }
-  void OnSuggestionsResponse(
-      std::vector<AssistantSuggestionPtr> response) override {}
-  void OnOpenUrlResponse(const GURL& url, bool in_background) override {}
-  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
-                         OnOpenAppResponseCallback callback) override {}
-  void OnSpeechRecognitionStarted() override {}
-  void OnSpeechRecognitionIntermediateResult(
-      const std::string& high_confidence_text,
-      const std::string& low_confidence_text) override {}
-  void OnSpeechRecognitionEndOfUtterance() override {}
-  void OnSpeechRecognitionFinalResult(
-      const std::string& final_result) override {}
-  void OnSpeechLevelUpdated(float speech_level) override {}
-  void OnTtsStarted(bool due_to_error) override {}
-  void OnWaitStarted() override {}
+  // Called when the interaction finished with non-empty response.
+  void OnInteractionFinishedCallback(bool success);
 
   // Called when Assistant service fails to respond in a certain amount of
   // time. We will respond with an error.
   void Timeout();
 
-  chromeos::assistant::mojom::AssistantPtr assistant_;
-  mojo::Receiver<chromeos::assistant::mojom::AssistantInteractionSubscriber>
-      assistant_interaction_subscriber_receiver_{this};
+  std::unique_ptr<AssistantInteractionHelper> interaction_helper_;
   base::OneShotTimer timeout_timer_;
-  std::unique_ptr<base::DictionaryValue> result_;
+};
+
+// Wait for the next text/voice query interaction completed and respond with
+// the query status if any valid response was caught before time out.
+class AutotestPrivateWaitForAssistantQueryStatusFunction
+    : public ExtensionFunction {
+ public:
+  AutotestPrivateWaitForAssistantQueryStatusFunction();
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.waitForAssistantQueryStatus",
+                             AUTOTESTPRIVATE_WAITFORASSISTANTQUERYSTATUS)
+
+ private:
+  ~AutotestPrivateWaitForAssistantQueryStatusFunction() override;
+  ResponseAction Run() override;
+
+  // Called when the current interaction finished with non-empty response.
+  void OnInteractionFinishedCallback(bool success);
+
+  // Called when Assistant service fails to respond in a certain amount of
+  // time. We will respond with an error.
+  void Timeout();
+
+  std::unique_ptr<AssistantInteractionHelper> interaction_helper_;
+  base::OneShotTimer timeout_timer_;
 };
 
 // Set user pref value in the pref tree.

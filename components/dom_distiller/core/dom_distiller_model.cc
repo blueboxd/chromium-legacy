@@ -89,14 +89,6 @@ std::vector<ArticleEntry> DomDistillerModel::GetEntries() const {
   return entries_list;
 }
 
-SyncDataList DomDistillerModel::GetAllSyncData() const {
-  SyncDataList data;
-  for (auto it = entries_.begin(); it != entries_.end(); ++it) {
-    data.push_back(CreateLocalData(it->second));
-  }
-  return data;
-}
-
 void DomDistillerModel::CalculateChangesForMerge(
     const SyncDataList& data,
     SyncChangeList* changes_to_apply,

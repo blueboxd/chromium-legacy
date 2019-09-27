@@ -166,6 +166,7 @@ source_set("browser_view") {
     "//ios/public/provider/chrome/browser/ui",
     "//ios/public/provider/chrome/browser/voice",
     "//ios/third_party/material_components_ios",
+    "//ios/third_party/webkit",
     "//ios/web",
     "//ios/web/common",
     "//ios/web/public",
@@ -183,7 +184,6 @@ source_set("browser_view") {
     "MessageUI.framework",
     "Photos.framework",
     "UIKit.framework",
-    "WebKit.framework",
   ]
 }
 
@@ -267,6 +267,7 @@ source_set("eg_tests") {
     "//ios/chrome/test/app:test_support",
     "//ios/chrome/test/earl_grey:test_support",
     "//ios/third_party/earl_grey:earl_grey+link",
+    "//ios/third_party/webkit",
     "//ios/web:earl_grey_test_support",
     "//ios/web/public/test",
     "//ios/web/public/test/http_server",
@@ -275,7 +276,6 @@ source_set("eg_tests") {
   ]
   libs = [
     "UIKit.framework",
-    "WebKit.framework",
     "XCTest.framework",
   ]
 }

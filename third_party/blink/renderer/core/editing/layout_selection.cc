@@ -178,7 +178,7 @@ struct OldSelectedNodes {
  public:
   OldSelectedNodes()
       : paint_range(MakeGarbageCollected<SelectionPaintRange>()) {}
-  OldSelectedNodes(OldSelectedNodes&& other) noexcept {
+  OldSelectedNodes(OldSelectedNodes&& other) {
     paint_range = other.paint_range;
     selected_map = std::move(other.selected_map);
   }
@@ -205,8 +205,7 @@ struct NewPaintRangeAndSelectedNodes {
       HeapHashSet<Member<const Node>>&& passed_selected_objects)
       : paint_range(passed_paint_range),
         selected_objects(std::move(passed_selected_objects)) {}
-  NewPaintRangeAndSelectedNodes(
-      NewPaintRangeAndSelectedNodes&& other) noexcept {
+  NewPaintRangeAndSelectedNodes(NewPaintRangeAndSelectedNodes&& other) {
     paint_range = other.paint_range;
     selected_objects = std::move(other.selected_objects);
   }

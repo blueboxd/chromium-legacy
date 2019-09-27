@@ -397,20 +397,6 @@ TEST_F(SyncedSessionTrackerTest, LookupTabNodeIds) {
   EXPECT_THAT(tracker_.LookupTabNodeIds(kTag2), IsEmpty());
 }
 
-TEST_F(SyncedSessionTrackerTest, LookupUnmappedTabs) {
-  EXPECT_THAT(tracker_.LookupUnmappedTabs(kTag), IsEmpty());
-
-  sessions::SessionTab* tab = tracker_.GetTab(kTag, kTab1);
-  ASSERT_THAT(tab, NotNull());
-
-  EXPECT_THAT(tracker_.LookupUnmappedTabs(kTag), ElementsAre(tab));
-  EXPECT_THAT(tracker_.LookupUnmappedTabs(kTag2), IsEmpty());
-
-  tracker_.PutWindowInSession(kTag, kWindow1);
-  tracker_.PutTabInWindow(kTag, kWindow1, kTab1);
-  EXPECT_THAT(tracker_.LookupUnmappedTabs(kTag), IsEmpty());
-}
-
 TEST_F(SyncedSessionTrackerTest, SessionTracking) {
   ASSERT_TRUE(tracker_.Empty());
 

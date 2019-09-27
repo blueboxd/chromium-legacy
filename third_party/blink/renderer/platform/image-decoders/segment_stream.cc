@@ -10,10 +10,10 @@ namespace blink {
 
 SegmentStream::SegmentStream() = default;
 
-SegmentStream::SegmentStream(SegmentStream&& rhs) noexcept
+SegmentStream::SegmentStream(SegmentStream&& rhs)
     : reader_(std::move(rhs.reader_)), position_(rhs.position_) {}
 
-SegmentStream& SegmentStream::operator=(SegmentStream&& rhs) noexcept {
+SegmentStream& SegmentStream::operator=(SegmentStream&& rhs) {
   reader_ = std::move(rhs.reader_);
   position_ = rhs.position_;
 

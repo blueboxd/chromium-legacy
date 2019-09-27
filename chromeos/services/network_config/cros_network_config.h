@@ -10,9 +10,10 @@
 #include "chromeos/network/network_certificate_handler.h"
 #include "chromeos/network/network_state_handler_observer.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote_set.h"
 
 namespace base {
 class DictionaryValue;
@@ -48,7 +49,8 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   void BindReceiver(mojo::PendingReceiver<mojom::CrosNetworkConfig> receiver);
 
   // mojom::CrosNetworkConfig
-  void AddObserver(mojom::CrosNetworkConfigObserverPtr observer) override;
+  void AddObserver(
+      mojo::PendingRemote<mojom::CrosNetworkConfigObserver> observer) override;
   void GetNetworkState(const std::string& guid,
                        GetNetworkStateCallback callback) override;
   void GetNetworkStateList(mojom::NetworkFilterPtr filter,
@@ -163,7 +165,7 @@ class CrosNetworkConfig : public mojom::CrosNetworkConfig,
   NetworkConnectionHandler* network_connection_handler_;    // Unowned
   NetworkCertificateHandler* network_certificate_handler_;  // Unowned
 
-  mojo::InterfacePtrSet<mojom::CrosNetworkConfigObserver> observers_;
+  mojo::RemoteSet<mojom::CrosNetworkConfigObserver> observers_;
   mojo::ReceiverSet<mojom::CrosNetworkConfig> receivers_;
 
   int callback_id_ = 1;

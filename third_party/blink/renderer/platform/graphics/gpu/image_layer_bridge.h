@@ -64,8 +64,8 @@ class PLATFORM_EXPORT ImageLayerBridge
   // only with software compositing.
   struct RegisteredBitmap {
     RegisteredBitmap();
-    RegisteredBitmap(RegisteredBitmap&& other) noexcept;
-    RegisteredBitmap& operator=(RegisteredBitmap&& other) noexcept;
+    RegisteredBitmap(RegisteredBitmap&& other);
+    RegisteredBitmap& operator=(RegisteredBitmap&& other);
 
     scoped_refptr<cc::CrossThreadSharedBitmap> bitmap;
     cc::SharedBitmapIdRegistration registration;

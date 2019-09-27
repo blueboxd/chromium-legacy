@@ -124,6 +124,7 @@ class PreviewsOptimizationGuideImpl
   // is ready to be processed and stored for use. Virtual to be mocked in
   // testing.
   virtual void OnHintsFetched(
+      optimization_guide::proto::RequestContext request_context,
       base::Optional<
           std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
           get_hints_response);

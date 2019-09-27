@@ -86,7 +86,7 @@ class CORE_EXPORT NGConstraintSpace final {
     else
       bfc_offset_ = other.bfc_offset_;
   }
-  NGConstraintSpace(NGConstraintSpace&& other) noexcept
+  NGConstraintSpace(NGConstraintSpace&& other)
       : available_size_(other.available_size_),
         exclusion_space_(std::move(other.exclusion_space_)),
         bitfields_(other.bitfields_) {
@@ -110,7 +110,7 @@ class CORE_EXPORT NGConstraintSpace final {
     bitfields_ = other.bitfields_;
     return *this;
   }
-  NGConstraintSpace& operator=(NGConstraintSpace&& other) noexcept {
+  NGConstraintSpace& operator=(NGConstraintSpace&& other) {
     available_size_ = other.available_size_;
     if (HasRareData())
       delete rare_data_;

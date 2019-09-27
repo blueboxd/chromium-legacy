@@ -109,6 +109,10 @@ void ThirdPartyMetricsObserver::OnCookieAccess(const GURL& url,
   }
 
   // TODO(csharrison): Optimize the domain lookup.
+  // Note: If either |url| or |first_party_url| is empty, SameDomainOrHost will
+  // return false, and function execution will continue because it is considered
+  // 3rd party. Since |first_party_url| is actually the |site_for_cookies|, this
+  // will happen e.g. for a 3rd party iframe on document.cookie access.
   if (!url.is_valid() ||
       net::registry_controlled_domains::SameDomainOrHost(
           url, first_party_url,
@@ -120,8 +124,17 @@ void ThirdPartyMetricsObserver::OnCookieAccess(const GURL& url,
       net::registry_controlled_domains::GetDomainAndRegistry(
           url, net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES);
 
-  if (registrable_domain.empty())
-    return;
+  // |registrable_domain| can be empty e.g. if |url| is on an IP address, or the
+  // domain is itself a TLD, or it's a file URL (in which case it has no host),
+  // etc. See comment for GetDomainAndRegistry() in
+  // //net/base/registry_controlled_domains/registry_controlled_domains.h.
+  if (registrable_domain.empty()) {
+    if (url.has_host()) {
+      registrable_domain = url.host();
+    } else {
+      return;
+    }
+  }
 
   auto it = third_party_cookie_access_types_.find(registrable_domain);
 

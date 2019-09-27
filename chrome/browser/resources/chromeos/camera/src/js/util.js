@@ -857,7 +857,8 @@ cca.util.isWindowFullSize = function() {
   // App-window's isFullscreen, isMaximized state and window's outer-size may
   // not be updated immediately during resizing. Use if app-window's outerBounds
   // width matches screen width here as workarounds.
-  return chrome.app.window.current().outerBounds.width >= screen.width;
+  return chrome.app.window.current().outerBounds.width >= screen.width ||
+      chrome.app.window.current().outerBounds.height >= screen.height;
 };
 
 /**

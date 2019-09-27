@@ -4,7 +4,7 @@
 
 #include "components/sync/engine_impl/test_entry_factory.h"
 
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/syncable/directory.h"
 #include "components/sync/syncable/entry.h"
 #include "components/sync/syncable/model_neutral_mutable_entry.h"
@@ -311,7 +311,8 @@ void TestEntryFactory::PopulateEntry(const syncable::Id& parent_id,
   entry->PutId(item_id);
   entry->PutCtime(now);
   entry->PutMtime(now);
-  entry->PutUniqueClientTag(GenerateSyncableHash(model_type, name));
+  entry->PutUniqueClientTag(
+      ClientTagHash::FromUnhashed(model_type, name).value());
   entry->PutBaseVersion(version);
   entry->PutIsUnsynced(false);
   entry->PutNonUniqueName(name);

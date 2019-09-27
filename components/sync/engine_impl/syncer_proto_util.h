@@ -19,7 +19,6 @@ class ClientToServerMessage;
 class ClientToServerResponse;
 class ClientToServerResponse_Error;
 class CommitResponse_EntryResponse;
-class EntitySpecifics;
 class SyncEntity;
 }
 
@@ -69,13 +68,6 @@ class SyncerProtoUtil {
   // Extract the name field from a commit entry response.
   static const std::string& NameFromCommitEntryResponse(
       const sync_pb::CommitResponse_EntryResponse& entry);
-
-  // EntitySpecifics is used as a filter for the GetUpdates message to tell
-  // the server which datatypes to send back.  This adds a datatype so that
-  // it's included in the filter.
-  static void AddToEntitySpecificDatatypesFilter(
-      ModelType datatype,
-      sync_pb::EntitySpecifics* filter);
 
   // Get a debug string representation of the client to server response.
   static std::string ClientToServerResponseDebugString(

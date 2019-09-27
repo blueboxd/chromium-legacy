@@ -151,13 +151,6 @@ apiBridge.registerCustomHook(function(bindingsAPI) {
     fileManagerPrivateInternal.getDownloadUrl(url, callback);
   });
 
-  apiFunctions.setHandleRequest('setEntryTag', function(
-        entry, visibility, key, value, callback) {
-    var url = getEntryURL(entry);
-    fileManagerPrivateInternal.setEntryTag(
-        url, visibility, key, value, callback);
-  });
-
   apiFunctions.setHandleRequest('startCopy', function(
         entry, parentEntry, newName, callback) {
     var url = getEntryURL(entry);

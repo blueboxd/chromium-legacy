@@ -26,6 +26,7 @@
 #include "build/build_config.h"
 #include "components/chromeos_camera/gpu_jpeg_encode_accelerator_factory.h"
 #include "components/chromeos_camera/jpeg_encode_accelerator.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/test_data_util.h"
 #include "media/capture/video/chromeos/local_gpu_memory_buffer_manager.h"
 #include "media/gpu/buildflags.h"
@@ -92,7 +93,7 @@ scoped_refptr<media::VideoFrame> GetVideoFrameFromGpuMemoryBuffer(
   auto buffer_handle = buffer->CloneHandle().native_pixmap_handle;
 
   size_t num_planes = media::VideoFrame::NumPlanes(format);
-  std::vector<media::VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<media::ColorPlaneLayout> planes(num_planes);
   std::vector<base::ScopedFD> fds(num_planes);
   for (size_t i = 0; i < num_planes; i++) {
     auto& plane = buffer_handle.planes[i];

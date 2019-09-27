@@ -27,7 +27,7 @@ enum MediaDeviceType {
 struct BLINK_COMMON_EXPORT WebMediaDeviceInfo {
   WebMediaDeviceInfo();
   WebMediaDeviceInfo(const WebMediaDeviceInfo& other);
-  WebMediaDeviceInfo(WebMediaDeviceInfo&& other) noexcept;
+  WebMediaDeviceInfo(WebMediaDeviceInfo&& other);
   WebMediaDeviceInfo(
       const std::string& device_id,
       const std::string& label,
@@ -37,7 +37,7 @@ struct BLINK_COMMON_EXPORT WebMediaDeviceInfo {
       const media::VideoCaptureDeviceDescriptor& descriptor);
   ~WebMediaDeviceInfo();
   WebMediaDeviceInfo& operator=(const WebMediaDeviceInfo& other);
-  WebMediaDeviceInfo& operator=(WebMediaDeviceInfo&& other) noexcept;
+  WebMediaDeviceInfo& operator=(WebMediaDeviceInfo&& other);
 
   std::string device_id;
   std::string label;

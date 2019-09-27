@@ -378,7 +378,7 @@ TraceLog::TraceLog()
       num_traces_recorded_(0),
       process_sort_index_(0),
       process_id_hash_(0),
-      process_id_(0),
+      process_id_(base::kNullProcessId),
       trace_options_(kInternalRecordUntilFull),
       trace_config_(TraceConfig()),
       thread_shared_chunk_index_(0),

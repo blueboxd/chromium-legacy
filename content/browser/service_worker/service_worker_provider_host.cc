@@ -96,7 +96,7 @@ void CreateLockManagerImpl(
   if (!process)
     return;
 
-  process->CreateLockManager(origin, std::move(receiver));
+  process->CreateLockManager(MSG_ROUTING_NONE, origin, std::move(receiver));
 }
 
 void CreatePermissionServiceImpl(
@@ -109,6 +109,17 @@ void CreatePermissionServiceImpl(
     return;
 
   process->CreatePermissionService(origin, std::move(receiver));
+}
+
+void CreatePaymentManagerImpl(
+    int process_id,
+    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  auto* process = RenderProcessHost::FromID(process_id);
+  if (!process)
+    return;
+
+  process->CreatePaymentManager(std::move(receiver));
 }
 
 ServiceWorkerMetrics::EventType PurposeToEventType(
@@ -1422,6 +1433,16 @@ void ServiceWorkerProviderHost::CreatePermissionService(
       base::BindOnce(&CreatePermissionServiceImpl,
                      running_hosted_version_->script_origin(),
                      render_process_id_, std::move(receiver)));
+}
+
+void ServiceWorkerProviderHost::CreatePaymentManager(
+    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
+  DCHECK_CURRENTLY_ON(ServiceWorkerContext::GetCoreThreadId());
+  DCHECK(IsProviderForServiceWorker());
+  RunOrPostTaskOnThread(
+      FROM_HERE, BrowserThread::UI,
+      base::BindOnce(&CreatePaymentManagerImpl, render_process_id_,
+                     std::move(receiver)));
 }
 
 void ServiceWorkerProviderHost::SetExecutionReady() {

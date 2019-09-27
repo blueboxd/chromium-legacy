@@ -52,6 +52,8 @@ process is loaded. Other sections, such as .data, produce private pages and are
 therefore objectively 'worse' than the others.
 """
 
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
@@ -66,9 +68,9 @@ def _FindSection(section_list, section_name):
 
 def main():
   if len(sys.argv) < 2:
-    print r'Usage: %s PEFileName [OtherPeFileNames...]' % sys.argv[0]
-    print r'Sample: %s chrome.dll' % sys.argv[0]
-    print r'Sample: %s chrome.dll original\chrome.dll' % sys.argv[0]
+    print(r'Usage: %s PEFileName [OtherPeFileNames...]' % sys.argv[0])
+    print(r'Sample: %s chrome.dll' % sys.argv[0])
+    print(r'Sample: %s chrome.dll original\chrome.dll' % sys.argv[0])
     return 0
 
   # Track the name of the last PE (Portable Executable) file to be processed -
@@ -78,11 +80,11 @@ def main():
   for pe_path in sys.argv[1:]:
     results = []
     if not os.path.exists(pe_path):
-      print '%s does not exist!' % pe_path
+      print('%s does not exist!' % pe_path)
       continue
 
-    print 'Size of %s is %1.6f MB' % (pe_path, os.path.getsize(pe_path) / 1e6)
-    print '%10s:  %9s  ,  %9s' % ('name', 'mem size', 'disk size')
+    print('Size of %s is %1.6f MB' % (pe_path, os.path.getsize(pe_path) / 1e6))
+    print('%10s:  %9s  ,  %9s' % ('name', 'mem size', 'disk size'))
 
     sections = None
     # Pass the undocumented /nopdb header to avoid hitting symbol servers for
@@ -108,10 +110,10 @@ def main():
             # understand - 33.199959 is easier to read than 33199959. Decimal MB
             # is used to allow simple conversions to a precise number of bytes.
             if abs(memory_size - disk_size) < 512:
-              print '%10s: %9.6f MB' % (name, memory_size / 1e6)
+              print('%10s: %9.6f MB' % (name, memory_size / 1e6))
             else:
-              print '%10s: %9.6f MB, %9.6f MB' % (name, memory_size / 1e6,
-                                                  disk_size / 1e6)
+              print('%10s: %9.6f MB, %9.6f MB' % (name, memory_size / 1e6,
+                                                  disk_size / 1e6))
             results.append((name, memory_size))
             sections = None
     except WindowsError as error:
@@ -120,14 +122,14 @@ def main():
                r'Visual Studio\2017\Professional\VC\Auxiliary\Build'
                r'\vcvarsall.bat amd64" or similar to add dumpbin to the path.')
       else:
-        print error
+        print(error)
       break
 
-    print
+    print()
     pe_filepart = os.path.split(pe_path)[1]
     if pe_filepart.lower() == last_pe_filepart.lower():
       # Print out the section-by-section size changes, for memory sizes only.
-      print 'Memory size change from %s to %s' % (last_pe_path, pe_path)
+      print('Memory size change from %s to %s' % (last_pe_path, pe_path))
       total_delta = 0
       for i in range(len(results)):
         section_name = results[i][0]
@@ -140,7 +142,7 @@ def main():
           delta -= last_results[last_i][1]
         total_delta += delta
         if delta:
-          print '%12s: %7d bytes change' % (section_name, delta)
+          print('%12s: %7d bytes change' % (section_name, delta))
       for last_i in range(len(last_results)):
         section_name = last_results[last_i][0]
         # Find sections that exist only in last_results.
@@ -148,8 +150,8 @@ def main():
         if i < 0:
           delta = -last_results[last_i][1]
           total_delta += delta
-          print '%12s: %7d bytes change' % (section_name, delta)
-      print 'Total change: %7d bytes' % total_delta
+          print('%12s: %7d bytes change' % (section_name, delta))
+      print('Total change: %7d bytes' % total_delta)
     last_pe_filepart = pe_filepart
     last_pe_path = pe_path
     last_results = results

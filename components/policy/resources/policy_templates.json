@@ -648,6 +648,8 @@
         'DeviceLoginScreenDictationEnabled',
         'DeviceLoginScreenSelectToSpeakEnabled',
         'DeviceLoginScreenCursorHighlightEnabled',
+        'DeviceLoginScreenCaretHighlightEnabled',
+        'DeviceLoginScreenMonoAudioEnabled',
       ],
     },
     {
@@ -10454,6 +10456,58 @@
           If this policy is left unset, the cursor highlight is disabled on the login screen initially but can be enabled by the user anytime.''',
     },
     {
+      'name': 'DeviceLoginScreenCaretHighlightEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 614,
+      'caption': '''Enable the caret highlight on the login screen''',
+      'tags': [],
+      'desc': '''Enable the caret highlight accessibility feature on the login screen.
+
+          If this policy is set to true, the caret highlight will always be enabled on the login screen.
+
+          If this policy is set to false, the caret highlight will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the caret highlight is disabled on the login screen initially but can be enabled by the user anytime.''',
+    },
+    {
+      'name': 'DeviceLoginScreenMonoAudioEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 615,
+      'caption': '''Enable the mono audio on the login screen''',
+      'tags': [],
+      'desc': '''Enable the mono audio accessibility feature on the login screen.
+
+          This feature allows to switch the device mode from the default stereo audio to the mono audio.
+
+          If this policy is set to true, the mono audio will always be enabled on the login screen.
+
+          If this policy is set to false, the mono audio will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the mono audio is disabled on the login screen initially but can be enabled by the user anytime.''',
+    },
+    {
       'name': 'HideWebStoreIcon',
       'owners': ['file://components/policy/resources/OWNERS'],
       'type': 'main',
@@ -18245,6 +18299,8 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenDictationEnabled': 'accessibility_settings.login_screen_dictation_enabled',
     'DeviceLoginScreenSelectToSpeakEnabled': 'accessibility_settings.login_screen_select_to_speak_enabled',
     'DeviceLoginScreenCursorHighlightEnabled': 'accessibility_settings.login_screen_cursor_highlight_enabled',
+    'DeviceLoginScreenCaretHighlightEnabled': 'accessibility_settings.login_screen_caret_highlight_enabled',
+    'DeviceLoginScreenMonoAudioEnabled': 'accessibility_settings.login_screen_mono_audio_enabled',
     'AttestationEnabledForDevice': 'attestation_settings.attestation_enabled',
     'AttestationForContentProtectionEnabled': 'attestation_settings.content_protection_enabled',
     'SystemTimezone': 'system_timezone.timezone',
@@ -18745,6 +18801,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 613,
+  'highest_id_currently_used': 615,
   'highest_atomic_group_id_currently_used': 37
 }

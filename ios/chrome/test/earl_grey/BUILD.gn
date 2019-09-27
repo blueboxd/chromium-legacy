@@ -266,6 +266,7 @@ source_set("test_support") {
     "//ios/chrome/test/app:test_support",
     "//ios/testing/earl_grey:earl_grey_support",
     "//ios/third_party/material_components_ios",
+    "//ios/third_party/webkit",
     "//ios/web",
     "//ios/web:earl_grey_test_support",
     "//ios/web/common",
@@ -290,7 +291,6 @@ source_set("test_support") {
 
   libs = [
     "OCHamcrest.framework",
-    "WebKit.framework",
     "XCTest.framework",
     "IOKit.framework",
   ]

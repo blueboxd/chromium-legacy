@@ -4345,10 +4345,16 @@ Document::PageDismissalType Document::PageDismissalEventBeingDispatched()
 }
 
 void Document::SetParsingState(ParsingState parsing_state) {
+  ParsingState previous_state = parsing_state_;
   parsing_state_ = parsing_state;
 
   if (Parsing() && !element_data_cache_)
     element_data_cache_ = MakeGarbageCollected<ElementDataCache>();
+  if (previous_state != kFinishedParsing &&
+      parsing_state_ == kFinishedParsing) {
+    if (form_controller_ && form_controller_->HasFormStates())
+      form_controller_->ScheduleRestore();
+  }
 }
 
 bool Document::ShouldScheduleLayout() const {

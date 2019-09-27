@@ -15,6 +15,8 @@ function doneTest() {
     assert_equals(d.querySelector('my-control-1').lastRestoreMode, 'restore');
     assert_equals(d.querySelector('my-control-2').value, 'edit2');
     assert_equals(d.querySelector('my-control-2').lastRestoreMode, 'restore');
+    assert_equals(d.querySelector('#focus').value, 'initial');
+    assert_equals(d.querySelector('#nested-focus').value, 'initial');
     t.done();
   });
 }

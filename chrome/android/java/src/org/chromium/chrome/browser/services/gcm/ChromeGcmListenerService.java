@@ -14,7 +14,6 @@ import android.text.TextUtils;
 import com.google.android.gms.gcm.GcmListenerService;
 import com.google.ipc.invalidation.ticl.android2.channel.AndroidGcmController;
 
-import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
@@ -129,7 +128,7 @@ public class ChromeGcmListenerService extends GcmListenerService {
      * the next time Chrome is launched into foreground.
      */
     private static boolean maybePersistLazyMessage(GCMMessage message) {
-        if (ApplicationStatus.hasVisibleActivities()) {
+        if (isNativeLoaded()) {
             return false;
         }
 
@@ -235,5 +234,10 @@ public class ChromeGcmListenerService extends GcmListenerService {
             // the whole application as opposed to just this service.
             System.exit(-1);
         }
+    }
+
+    private static boolean isNativeLoaded() {
+        return ChromeBrowserInitializer.getInstance(ContextUtils.getApplicationContext())
+                .hasNativeInitializationCompleted();
     }
 }

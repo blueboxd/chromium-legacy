@@ -18,6 +18,7 @@
 #include "base/strings/stringprintf.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/simple_sync_token_client.h"
 #include "media/video/fake_gpu_memory_buffer.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -420,7 +421,7 @@ TEST(VideoFrame, WrapExternalDmabufs) {
   std::vector<int32_t> strides = {384, 192, 192};
   std::vector<size_t> offsets = {0, 100, 200};
   std::vector<size_t> sizes = {100, 50, 50};
-  std::vector<VideoFrameLayout::Plane> planes(strides.size());
+  std::vector<ColorPlaneLayout> planes(strides.size());
 
   for (size_t i = 0; i < planes.size(); i++) {
     planes[i].stride = strides[i];

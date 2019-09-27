@@ -111,6 +111,8 @@ jumbo_source_set("base") {
     "channel_mixer.h",
     "channel_mixing_matrix.cc",
     "channel_mixing_matrix.h",
+    "color_plane_layout.cc",
+    "color_plane_layout.h",
     "container_names.cc",
     "container_names.h",
     "content_decryption_module.cc",

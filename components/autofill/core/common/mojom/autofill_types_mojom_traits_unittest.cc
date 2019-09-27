@@ -110,39 +110,6 @@ void CreateTestPasswordForm(PasswordForm* form) {
       mojom::SubmissionIndicatorEvent::SAME_DOCUMENT_NAVIGATION;
 }
 
-void CreateTestFormsPredictionsMap(FormsPredictionsMap* predictions) {
-  FormsPredictionsMap& result_map = *predictions;
-  // 1st element.
-  FormData form_data;
-  test::CreateTestAddressFormData(&form_data);
-  ASSERT_TRUE(form_data.fields.size() >= 4);
-  result_map[form_data][form_data.fields[0]] =
-      PasswordFormFieldPredictionType::kUsername;
-  result_map[form_data][form_data.fields[1]] =
-      PasswordFormFieldPredictionType::kCurrentPassword;
-  result_map[form_data][form_data.fields[2]] =
-      PasswordFormFieldPredictionType::kNewPassword;
-  result_map[form_data][form_data.fields[3]] =
-      PasswordFormFieldPredictionType::kNotPassword;
-
-  // 2nd element.
-  form_data.fields.clear();
-  result_map[form_data] = {};
-
-  // 3rd element.
-  FormFieldData field_data;
-  test::CreateTestSelectField("TestLabel1", "TestName1", "TestValue1", kOptions,
-                              kOptions, 4, &field_data);
-  form_data.fields.push_back(field_data);
-  test::CreateTestSelectField("TestLabel2", "TestName2", "TestValue2", kOptions,
-                              kOptions, 4, &field_data);
-  form_data.fields.push_back(field_data);
-  result_map[form_data][form_data.fields[0]] =
-      PasswordFormFieldPredictionType::kNewPassword;
-  result_map[form_data][form_data.fields[1]] =
-      PasswordFormFieldPredictionType::kCurrentPassword;
-}
-
 void CreatePasswordGenerationUIData(
     password_generation::PasswordGenerationUIData* data) {
   data->bounds = gfx::RectF(1, 1, 200, 100);
@@ -248,12 +215,6 @@ class AutofillTypeTraitsTestImpl : public testing::Test,
     std::move(callback).Run(s);
   }
 
-  void PassFormsPredictionsMap(
-      const FormsPredictionsMap& s,
-      PassFormsPredictionsMapCallback callback) override {
-    std::move(callback).Run(s);
-  }
-
  private:
   base::test::TaskEnvironment task_environment_;
 
@@ -318,13 +279,6 @@ void ExpectPasswordGenerationUIData(
 void ExpectPasswordForm(const PasswordForm& expected,
                         base::OnceClosure closure,
                         const PasswordForm& passed) {
-  EXPECT_EQ(expected, passed);
-  std::move(closure).Run();
-}
-
-void ExpectFormsPredictionsMap(const FormsPredictionsMap& expected,
-                               base::OnceClosure closure,
-                               const FormsPredictionsMap& passed) {
   EXPECT_EQ(expected, passed);
   std::move(closure).Run();
 }
@@ -450,18 +404,6 @@ TEST_F(AutofillTypeTraitsTestImpl, PassPasswordForm) {
   mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
   remote->PassPasswordForm(
       input, base::BindOnce(&ExpectPasswordForm, input, loop.QuitClosure()));
-  loop.Run();
-}
-
-TEST_F(AutofillTypeTraitsTestImpl, PassFormsPredictionsMap) {
-  FormsPredictionsMap input;
-  CreateTestFormsPredictionsMap(&input);
-
-  base::RunLoop loop;
-  mojo::Remote<mojom::TypeTraitsTest> remote(GetTypeTraitsTestRemote());
-  remote->PassFormsPredictionsMap(
-      input,
-      base::BindOnce(&ExpectFormsPredictionsMap, input, loop.QuitClosure()));
   loop.Run();
 }
 

@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
 #include "base/sequence_checker.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/sync_stop_metadata_fate.h"
 #include "components/sync/engine/cycle/status_counters.h"
@@ -68,7 +69,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
                         MetadataChangeList* metadata_change_list) override;
   void UntrackEntityForStorageKey(const std::string& storage_key) override;
   void UntrackEntityForClientTagHash(
-      const std::string& client_tag_hash) override;
+      const ClientTagHash& client_tag_hash) override;
   bool IsEntityUnsynced(const std::string& storage_key) override;
   base::Time GetEntityCreationTime(
       const std::string& storage_key) const override;
@@ -191,8 +192,8 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // Looks up the client tag hash for the given |storage_key|, and regenerates
   // with |data| if the lookup finds nothing. Does not update the storage key to
   // client tag hash mapping.
-  std::string GetClientTagHash(const std::string& storage_key,
-                               const EntityData& data) const;
+  ClientTagHash GetClientTagHash(const std::string& storage_key,
+                                 const EntityData& data) const;
 
   // Gets the entity for the given storage key, or null if there isn't one.
   ProcessorEntity* GetEntityForStorageKey(const std::string& storage_key);
@@ -200,8 +201,9 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
       const std::string& storage_key) const;
 
   // Gets the entity for the given tag hash, or null if there isn't one.
-  ProcessorEntity* GetEntityForTagHash(const std::string& tag_hash);
-  const ProcessorEntity* GetEntityForTagHash(const std::string& tag_hash) const;
+  ProcessorEntity* GetEntityForTagHash(const ClientTagHash& tag_hash);
+  const ProcessorEntity* GetEntityForTagHash(
+      const ClientTagHash& tag_hash) const;
 
   // Create an entity in the entity map for |storage_key| and return a pointer
   // to it.
@@ -291,7 +293,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // A map of client tag hash to sync entities known to this processor. This
   // should contain entries and metadata for most everything, although the
   // entities may not always contain model type data/specifics.
-  std::map<std::string, std::unique_ptr<ProcessorEntity>> entities_;
+  std::map<ClientTagHash, std::unique_ptr<ProcessorEntity>> entities_;
 
   // The bridge wants to communicate entirely via storage keys that it is free
   // to define and can understand more easily. All of the sync machinery wants
@@ -302,7 +304,7 @@ class ClientTagBasedModelTypeProcessor : public ModelTypeProcessor,
   // GetStorageKey(). In this case the bridge is responsible for updating
   // storage key with UpdateStorageKey() call from within
   // MergeSyncData/ApplySyncChanges.
-  std::map<std::string, std::string> storage_key_to_tag_hash_;
+  std::map<std::string, ClientTagHash> storage_key_to_tag_hash_;
 
   // If the processor should behave as if |type_| is one of the commit only
   // model types. For this processor, being commit only means that on commit

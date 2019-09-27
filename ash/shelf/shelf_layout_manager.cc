@@ -1083,7 +1083,7 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
 
       if (shelf_widget_->hotseat_widget()->IsDraggedToExtended())
         return HotseatState::kExtended;
-      if (std::abs(last_drag_velocity_) >= 5) {
+      if (std::abs(last_drag_velocity_) >= 120) {
         if (last_drag_velocity_ > 0)
           return HotseatState::kHidden;
         return HotseatState::kExtended;
@@ -1094,8 +1094,10 @@ HotseatState ShelfLayoutManager::CalculateHotseatState(
               .bounds()
               .bottom() -
           shelf_widget_->hotseat_widget()->GetWindowBoundsInScreen().y();
-      if (top_of_hotseat_to_screen_bottom < ShelfConfig::Get()->shelf_size())
+      if (top_of_hotseat_to_screen_bottom <
+          ShelfConfig::Get()->hotseat_size() / 2) {
         return HotseatState::kHidden;
+      }
       return HotseatState::kExtended;
     }
     case kDragAppListInProgress:
@@ -1387,10 +1389,17 @@ void ShelfLayoutManager::CalculateTargetBounds(
     int hotseat_y;
     const int hotseat_size = Shell::Get()->shelf_config()->hotseat_size();
     switch (state_.hotseat_state) {
-      case HotseatState::kShown:
-        // Show the hotseat co-altitude with ShelfView.
-        hotseat_y = 0;
-        break;
+      case HotseatState::kShown: {
+        // When the hotseat state is HotseatState::kShown in tablet mode, the
+        // home launcher is showing. Elevate the hotseat a few px to match the
+        // navigation and status area.
+        const bool use_padding = chromeos::switches::ShouldShowShelfHotseat() &&
+                                 IsTabletModeEnabled();
+        hotseat_y =
+            use_padding
+                ? -Shell::Get()->shelf_config()->hotseat_bottom_padding()
+                : 0;
+      } break;
       case HotseatState::kHidden:
         // Show the hotseat offscreen.
         hotseat_y = hotseat_size;
@@ -1406,11 +1415,19 @@ void ShelfLayoutManager::CalculateTargetBounds(
         shelf_width - target_bounds->nav_bounds_in_shelf.size().width() -
         home_button_edge_spacing - ShelfConfig::Get()->app_icon_group_margin() -
         status_size.width();
-    const int hotseat_x = base::i18n::IsRTL()
-                              ? target_bounds->nav_bounds_in_shelf.x() -
-                                    home_button_edge_spacing - hotseat_width
-                              : target_bounds->nav_bounds_in_shelf.right() +
-                                    home_button_edge_spacing;
+
+    int hotseat_x = base::i18n::IsRTL()
+                        ? target_bounds->nav_bounds_in_shelf.x() -
+                              home_button_edge_spacing - hotseat_width
+                        : target_bounds->nav_bounds_in_shelf.right() +
+                              home_button_edge_spacing;
+
+    if (state_.hotseat_state != HotseatState::kShown) {
+      // Give the hotseat more space if it is shown outside of the shelf.
+      hotseat_width = available_bounds.width();
+      hotseat_x = 0;
+    }
+
     hotseat_origin = gfx::Point(hotseat_x, hotseat_y);
 
     hotseat_height = hotseat_size;

@@ -120,13 +120,6 @@ void ProfileSyncServiceAndroid::OnStateChanged(syncer::SyncService* sync) {
       env, weak_java_profile_sync_service_.get(env));
 }
 
-bool ProfileSyncServiceAndroid::IsSyncAllowedByAndroid() const {
-  DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  JNIEnv* env = AttachCurrentThread();
-  return Java_ProfileSyncService_isMasterSyncEnabled(
-      env, weak_java_profile_sync_service_.get(env));
-}
-
 // Pure ProfileSyncService calls.
 
 jboolean ProfileSyncServiceAndroid::IsSyncRequested(

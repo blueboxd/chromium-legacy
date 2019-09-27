@@ -194,12 +194,6 @@ enum EntryPropertyName {
   isArbitrarySyncFolder
 };
 
-// Entry property visibility for setEntryTag();
-enum EntryTagVisibility {
-  private,
-  public
-};
-
 // Source of the volume data.
 enum Source {
   file,
@@ -1100,14 +1094,6 @@ interface Functions {
   [nocompile]
   static void computeChecksum([instanceof=Entry] object entry,
                               ComputeChecksumCallback callback);
-
-  // Sets a tag on a file or a directory. Only Drive files are supported.
-  [nocompile]
-  static void setEntryTag([instanceof=Entry] object entry,
-                          EntryTagVisibility visibility,
-                          DOMString key,
-                          DOMString value,
-                          SimpleCallback callback);
 
   // Returns if Piex loader is enabled.
   static void isPiexLoaderEnabled(BooleanCallback callback);

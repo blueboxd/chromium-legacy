@@ -131,6 +131,20 @@ void TabMenuBridge::OnTabStripModelChanged(
   DCHECK(tab_strip_model);
   DCHECK_EQ(tab_strip_model, model_);
 
+  // The menu doesn't represent selection in any way, so ignore it.
+  if (change.type() == TabStripModelChange::kSelectionOnly)
+    return;
+
+  // If a single WebContents is being replaced, just regenerate that one menu
+  // item.
+  if (change.type() == TabStripModelChange::kReplaced) {
+    const TabStripModelChange::Replace* replace = change.GetReplace();
+    int menu_index = replace->index + dynamic_items_start_;
+    UpdateItemForWebContents([menu_item_.submenu itemAtIndex:menu_index],
+                             replace->new_contents);
+    return;
+  }
+
   // Rather than doing clever updating from |change|, just destroy the dynamic
   // menu items and re-add them.
   RemoveAllDynamicItems();

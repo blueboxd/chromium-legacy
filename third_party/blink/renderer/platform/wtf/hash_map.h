@@ -106,8 +106,8 @@ class HashMap {
 #endif
   HashMap(const HashMap&) = default;
   HashMap& operator=(const HashMap&) = default;
-  HashMap(HashMap&&) noexcept = default;
-  HashMap& operator=(HashMap&&) noexcept = default;
+  HashMap(HashMap&&) = default;
+  HashMap& operator=(HashMap&&) = default;
 
   // For example, HashMap<int, int>({{1, 11}, {2, 22}, {3, 33}}) will give you
   // a HashMap containing a mapping {1 -> 11, 2 -> 22, 3 -> 33}.

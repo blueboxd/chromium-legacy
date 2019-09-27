@@ -241,8 +241,7 @@ base::Optional<ModelError> BlockingModelTypeStoreImpl::CommitWriteBatch(
       static_cast<LevelDbWriteBatch*>(write_batch.release()));
   DCHECK_EQ(write_batch_impl->GetModelType(), type_);
   UMA_HISTOGRAM_ENUMERATION("Sync.ModelTypeStoreCommitCount",
-                            ModelTypeToHistogramInt(type_),
-                            static_cast<int>(ModelType::NUM_ENTRIES));
+                            ModelTypeHistogramValue(type_));
   return backend_->WriteModifications(
       LevelDbWriteBatch::ToLevelDbWriteBatch(std::move(write_batch_impl)));
 }

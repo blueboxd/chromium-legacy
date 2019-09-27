@@ -47,6 +47,7 @@
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/decoder_buffer.h"
 #include "media/base/media.h"
 #include "media/base/media_switches.h"
@@ -2113,7 +2114,7 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
   CHECK_LE(num_planes, 3u);
 
   uint8_t* frame_data[3] = {};
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<ColorPlaneLayout> planes(num_planes);
   size_t offset = position;
   // All the planes are stored in the same buffer, aligned_in_file_data[0].
   for (size_t i = 0; i < num_planes; i++) {
@@ -2145,9 +2146,10 @@ scoped_refptr<VideoFrame> VEAClient::CreateFrame(off_t position) {
               current_framerate_));
   if (video_frame && g_native_input) {
 #if defined(OS_LINUX)
-    video_frame =
-        test::CloneVideoFrame(video_frame.get(), video_frame->layout(),
-                              VideoFrame::STORAGE_GPU_MEMORY_BUFFER);
+    video_frame = test::CloneVideoFrame(
+        video_frame.get(), video_frame->layout(),
+        VideoFrame::STORAGE_GPU_MEMORY_BUFFER,
+        gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
 #else
     video_frame = nullptr;
 #endif
@@ -2670,7 +2672,7 @@ void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
   CHECK_LE(num_planes, 3u);
   std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
       aligned_data[3];
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<ColorPlaneLayout> planes(num_planes);
   std::vector<size_t> buffer_sizes(num_planes);
   uint8_t* frame_data[3] = {};
   // This VideoFrame is dummy. Each plane is stored in a separate buffer and

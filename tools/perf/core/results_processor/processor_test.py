@@ -15,11 +15,9 @@ import shutil
 import tempfile
 import unittest
 
-import mock
-
-from core.results_processor import json3_output
-from core.results_processor import histograms_output
-from core.results_processor import html_output
+from core.results_processor.formatters import json3_output
+from core.results_processor.formatters import histograms_output
+from core.results_processor.formatters import html_output
 from core.results_processor import processor
 from core.results_processor import testing
 
@@ -105,10 +103,6 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertEqual(artifacts['logs'], ['gs://logs.txt'])
     self.assertEqual(artifacts['trace.html'], ['gs://trace.html'])
 
-  # TODO(crbug.com/981349): Remove this mock when histograms format
-  # is enabled in results_processor.
-  @mock.patch('core.results_processor.command_line.SUPPORTED_FORMATS',
-              ['histograms'])
   def testHistogramsOutput(self):
     hist_file = os.path.join(self.output_dir,
                              histograms_output.HISTOGRAM_DICTS_NAME)
@@ -154,10 +148,6 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertIn([['documentation', 'url']], diag_values)
     self.assertIn(['label'], diag_values)
 
-  # TODO(crbug.com/981349): Remove this mock when histograms format
-  # is enabled in results_processor.
-  @mock.patch('core.results_processor.command_line.SUPPORTED_FORMATS',
-              ['histograms'])
   def testHistogramsOutputResetResults(self):
     hist_file = os.path.join(self.output_dir,
                              histograms_output.HISTOGRAM_DICTS_NAME)
@@ -199,10 +189,6 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertNotIn(['label1'], diag_values)
     self.assertIn(['label2'], diag_values)
 
-  # TODO(crbug.com/981349): Remove this mock when histograms format
-  # is enabled in results_processor.
-  @mock.patch('core.results_processor.command_line.SUPPORTED_FORMATS',
-              ['histograms'])
   def testHistogramsOutputAppendResults(self):
     hist_file = os.path.join(self.output_dir,
                              histograms_output.HISTOGRAM_DICTS_NAME)
@@ -243,10 +229,6 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertIn(['label1'], diag_values)
     self.assertIn(['label2'], diag_values)
 
-  # TODO(crbug.com/981349): Remove this mock when html format
-  # is enabled in results_processor.
-  @mock.patch('core.results_processor.command_line.SUPPORTED_FORMATS',
-              ['html'])
   def testHtmlOutput(self):
     hist_file = os.path.join(self.output_dir,
                              histograms_output.HISTOGRAM_DICTS_NAME)
@@ -292,10 +274,6 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertIn([['documentation', 'url']], diag_values)
     self.assertIn(['label'], diag_values)
 
-  # TODO(crbug.com/981349): Remove this mock when html format
-  # is enabled in results_processor.
-  @mock.patch('core.results_processor.command_line.SUPPORTED_FORMATS',
-              ['html'])
   def testHtmlOutputResetResults(self):
     self.SerializeIntermediateResults([])
 
@@ -324,10 +302,6 @@ class ResultsProcessorIntegrationTests(unittest.TestCase):
     self.assertNotIn(['label1'], diag_values)
     self.assertIn(['label2'], diag_values)
 
-  # TODO(crbug.com/981349): Remove this mock when html format
-  # is enabled in results_processor.
-  @mock.patch('core.results_processor.command_line.SUPPORTED_FORMATS',
-              ['html'])
   def testHtmlOutputAppendResults(self):
     self.SerializeIntermediateResults([])
 

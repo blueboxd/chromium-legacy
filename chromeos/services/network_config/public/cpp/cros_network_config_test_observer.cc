@@ -13,11 +13,9 @@ namespace network_config {
 CrosNetworkConfigTestObserver::CrosNetworkConfigTestObserver() = default;
 CrosNetworkConfigTestObserver::~CrosNetworkConfigTestObserver() = default;
 
-mojom::CrosNetworkConfigObserverPtr
-CrosNetworkConfigTestObserver::GenerateInterfacePtr() {
-  mojom::CrosNetworkConfigObserverPtr observer_ptr;
-  binding().Bind(mojo::MakeRequest(&observer_ptr));
-  return observer_ptr;
+mojo::PendingRemote<mojom::CrosNetworkConfigObserver>
+CrosNetworkConfigTestObserver::GenerateRemote() {
+  return receiver().BindNewPipeAndPassRemote();
 }
 
 int CrosNetworkConfigTestObserver::GetNetworkChangedCount(
@@ -64,7 +62,7 @@ void CrosNetworkConfigTestObserver::ResetNetworkChanges() {
 }
 
 void CrosNetworkConfigTestObserver::FlushForTesting() {
-  binding_.FlushForTesting();
+  receiver_.FlushForTesting();
 }
 
 }  // namespace network_config

@@ -18,9 +18,8 @@ VpnList::VpnList() {
 
   ash::GetNetworkConfigService(
       cros_network_config_.BindNewPipeAndPassReceiver());
-  chromeos::network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
-  cros_network_config_observer_.Bind(mojo::MakeRequest(&observer_ptr));
-  cros_network_config_->AddObserver(std::move(observer_ptr));
+  cros_network_config_->AddObserver(
+      cros_network_config_observer_.BindNewPipeAndPassRemote());
   OnVpnProvidersChanged();
 }
 

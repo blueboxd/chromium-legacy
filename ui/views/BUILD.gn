@@ -1223,11 +1223,15 @@ test("views_unittests") {
           "widget/desktop_aura/desktop_screen_x11_unittest.cc",
           "widget/desktop_aura/desktop_window_tree_host_x11_unittest.cc",
         ]
-      } else if (is_linux) {
+      }
+      if (is_linux || is_fuchsia) {
         sources += [
-          "widget/desktop_aura/desktop_drag_drop_client_ozone_unittest.cc",
           "widget/desktop_aura/desktop_window_tree_host_platform_unittest.cc",
         ]
+      }
+      if (use_ozone) {
+        sources +=
+            [ "widget/desktop_aura/desktop_drag_drop_client_ozone_unittest.cc" ]
       }
     }
   }

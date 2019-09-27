@@ -84,7 +84,7 @@ void ScenicWindow::SetTitle(const base::string16& title) {
   NOTIMPLEMENTED();
 }
 
-void ScenicWindow::Show() {
+void ScenicWindow::Show(bool inactive) {
   view_.AddChild(node_);
 
   // Call Present() to ensure that the scenic session commands are processed,
@@ -200,7 +200,6 @@ void ScenicWindow::UpdateSize() {
 
   delegate_->OnBoundsChanged(size_rect);
 }
-
 
 void ScenicWindow::OnScenicError(zx_status_t status) {
   LOG(ERROR) << "scenic::Session failed with code " << status << ".";

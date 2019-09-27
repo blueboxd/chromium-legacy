@@ -845,7 +845,7 @@ struct NetworkCertificate {
 // Interface for fetching and setting network configuration properties, e.g.
 // from Settings WebUI or the SystemTray.
 interface CrosNetworkConfig {
-  AddObserver(CrosNetworkConfigObserver observer);
+  AddObserver(pending_remote<CrosNetworkConfigObserver> observer);
 
   // Returns the state properties of the network matching |guid|. If the network
   // is not available returns null.

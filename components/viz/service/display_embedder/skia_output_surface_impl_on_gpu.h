@@ -141,7 +141,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void RemoveRenderPassResource(
       std::vector<std::unique_ptr<ImageContextImpl>> image_contexts);
   void CopyOutput(RenderPassId id,
-                  const copy_output::RenderPassGeometry& geometry,
+                  copy_output::RenderPassGeometry geometry,
                   const gfx::ColorSpace& color_space,
                   std::unique_ptr<CopyOutputRequest> request,
                   base::OnceCallback<bool()> deferred_framebuffer_draw_closure);

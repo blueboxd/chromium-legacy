@@ -57,7 +57,8 @@ class HintsFetcherTest : public testing::Test {
 
   ~HintsFetcherTest() override {}
 
-  void OnHintsFetched(base::Optional<std::unique_ptr<proto::GetHintsResponse>>
+  void OnHintsFetched(optimization_guide::proto::RequestContext request_context,
+                      base::Optional<std::unique_ptr<proto::GetHintsResponse>>
                           get_hints_response) {
     if (get_hints_response)
       hints_fetched_ = true;
@@ -98,8 +99,9 @@ class HintsFetcherTest : public testing::Test {
  protected:
   bool FetchHints(const std::vector<std::string>& hosts) {
     bool status = hints_fetcher_->FetchOptimizationGuideServiceHints(
-        hosts, base::BindOnce(&HintsFetcherTest::OnHintsFetched,
-                              base::Unretained(this)));
+        hosts, optimization_guide::proto::CONTEXT_BATCH_UPDATE,
+        base::BindOnce(&HintsFetcherTest::OnHintsFetched,
+                       base::Unretained(this)));
     RunUntilIdle();
     return status;
   }

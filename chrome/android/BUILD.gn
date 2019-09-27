@@ -1159,7 +1159,6 @@ jinja_template_resources("chrome_public_apk_template_resources") {
     "java/res_template/xml/file_paths.xml",
     "java/res_template/xml/launchershortcuts.xml",
     "java/res_template/xml/searchable.xml",
-    "java/res_template/xml/syncadapter.xml",
   ]
   res_dir = "java/res_template"
   variables = [ "manifest_package=$chrome_public_manifest_package" ]
@@ -1170,7 +1169,6 @@ jinja_template_resources("chrome_test_apk_template_resources") {
     "java/res_template/xml/file_paths.xml",
     "java/res_template/xml/launchershortcuts.xml",
     "java/res_template/xml/searchable.xml",
-    "java/res_template/xml/syncadapter.xml",
   ]
   res_dir = "java/res_template"
 

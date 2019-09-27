@@ -36,6 +36,7 @@
 #include "third_party/perfetto/include/perfetto/protozero/scattered_stream_writer.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/trace_packet.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/track_event/process_descriptor.pb.h"
 #include "third_party/perfetto/protos/perfetto/trace/track_event/thread_descriptor.pb.h"
 
 using TrackEvent = perfetto::protos::TrackEvent;
@@ -296,6 +297,13 @@ class TraceEventDataSourceTest : public testing::Test {
     // ThreadDescriptor is only emitted when incremental state was reset, and
     // thus also always serves as indicator for the state reset to the consumer.
     EXPECT_TRUE(packet->incremental_state_cleared());
+  }
+
+  void ExpectProcessDescriptor(const perfetto::protos::TracePacket* packet) {
+    EXPECT_TRUE(packet->has_process_descriptor());
+    EXPECT_NE(packet->process_descriptor().pid(), 0);
+    EXPECT_EQ(packet->process_descriptor().chrome_process_type(),
+              perfetto::protos::ProcessDescriptor::PROCESS_UNSPECIFIED);
   }
 
   void ExpectTraceEvent(const perfetto::protos::TracePacket* packet,
@@ -977,12 +985,15 @@ TEST_F(TraceEventDataSourceTest, FilteringSimpleTraceEvent) {
   CreateTraceEventDataSource(/* privacy_filtering_enabled =*/true);
   TRACE_EVENT_BEGIN0(kCategoryGroup, "bar");
 
-  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 3u);
 
-  auto* td_packet = producer_client()->GetFinalizedPacket();
+  auto* pd_packet = producer_client()->GetFinalizedPacket(0);
+  ExpectProcessDescriptor(pd_packet);
+
+  auto* td_packet = producer_client()->GetFinalizedPacket(1);
   ExpectThreadDescriptor(td_packet, 1u, 1u, /*filtering_enabled=*/true);
 
-  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  auto* e_packet = producer_client()->GetFinalizedPacket(2);
   ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
                    TRACE_EVENT_PHASE_BEGIN);
 
@@ -996,8 +1007,8 @@ TEST_F(TraceEventDataSourceTest, FilteringEventWithArgs) {
   TRACE_EVENT_INSTANT2(kCategoryGroup, "bar", TRACE_EVENT_SCOPE_THREAD, "foo",
                        42, "bar", "string_val");
 
-  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 2u);
-  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 3u);
+  auto* e_packet = producer_client()->GetFinalizedPacket(2);
   ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
                    TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
 
@@ -1019,8 +1030,8 @@ TEST_F(TraceEventDataSourceTest, FilteringEventWithFlagCopy) {
                            TRACE_EVENT_FLAG_JAVA_STRING_LITERALS,
                        "arg1_name", "arg1_val", "arg2_name", "arg2_val");
 
-  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 3u);
-  auto* e_packet = producer_client()->GetFinalizedPacket(1);
+  EXPECT_EQ(producer_client()->GetFinalizedPacketCount(), 4u);
+  auto* e_packet = producer_client()->GetFinalizedPacket(2);
   ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/1u,
                    TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
 
@@ -1031,7 +1042,7 @@ TEST_F(TraceEventDataSourceTest, FilteringEventWithFlagCopy) {
   ExpectEventNames(e_packet, {{1u, "PRIVACY_FILTERED"}});
   ExpectDebugAnnotationNames(e_packet, {});
 
-  e_packet = producer_client()->GetFinalizedPacket(2);
+  e_packet = producer_client()->GetFinalizedPacket(3);
   ExpectTraceEvent(e_packet, /*category_iid=*/1u, /*name_iid=*/2u,
                    TRACE_EVENT_PHASE_INSTANT, TRACE_EVENT_SCOPE_THREAD);
 

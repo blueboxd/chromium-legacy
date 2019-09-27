@@ -76,6 +76,8 @@ source_set("headers") {
     "indexeddb/indexeddb_key_range.h",
     "indexeddb/indexeddb_metadata.h",
     "indexeddb/web_idb_types.h",
+    "loader/mime_sniffing_throttle.h",
+    "loader/mime_sniffing_url_loader.h",
     "loader/request_destination.h",
     "loader/url_loader_factory_bundle.h",
     "loader/url_loader_factory_bundle_mojom_traits.h",

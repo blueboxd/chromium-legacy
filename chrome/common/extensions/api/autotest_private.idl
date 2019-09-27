@@ -189,12 +189,26 @@ namespace autotestPrivate {
   callback HistogramCallback = void (Histogram histogram);
 
   dictionary AssistantQueryResponse {
+    // Text response returned from server.
     DOMString? text;
+    // HTML response returned from server, usually accompanied with
+    // fallback text.
     DOMString? htmlResponse;
+    // Text messages used as the "fallback" for HTML card rendering.
+    // Generally the fallback text is similar to transcribed TTS,
+    // e.g. "It's exactly 6 o'clock." or "Turning bluetooth off.".
     DOMString? htmlFallback;
   };
-  callback AssistantQueryResponseCallback =
-      void(AssistantQueryResponse response);
+  dictionary AssistantQueryStatus {
+    // Indicates whether this might be a voice interaction.
+    boolean isMicOpen;
+    // Query text sent to Assistant. In the event of a voice interaction,
+    // this field will be same as the speech recognition final result.
+    DOMString queryText;
+    // Response for the current query.
+    AssistantQueryResponse queryResponse;
+  };
+  callback AssistantQueryStatusCallback = void (AssistantQueryStatus status);
 
   callback IsAppShownCallback = void (boolean appShown);
 
@@ -452,15 +466,38 @@ namespace autotestPrivate {
     // |callback|: Called when the operation has completed.
     static void bootstrapMachineLearningService(VoidCallback callback);
 
-    // Enable/disable the Google Assistant
+    // Enables/disables the Google Assistant.
     // |callback|: Called when the operation has completed.
     static void setAssistantEnabled(boolean enabled, long timeout_ms,
                                     VoidCallback callback);
 
-    // Send a text query via Google Assistant.
+    // Sends a text query via Google Assistant.
     // |callback|: Called when response has been received.
     static void sendAssistantTextQuery(DOMString query, long timeout_ms,
-                                       AssistantQueryResponseCallback callback);
+                                       AssistantQueryStatusCallback callback);
+
+    // Invokes |callback| once the current text/voice interaction is completed.
+    // Responds with the the query status if any valid response was caught
+    // before the timeout. This API should be called before sending the query.
+    // To use it for testing a voice query via OKG in Autotest, for example,
+    // you can do:
+    //
+    //    // Enable hotword setting for Assistant.
+    //    assistant_util.enable_hotword();
+    //
+    //    // Call this API with your callback function.
+    //    chrome.autotestPrivate.waitForAssistantQueryStatus(timeout_s,
+    //        function(status) {...});
+    //
+    // then start Assistant via OKG and send voice query before timeout.
+    //
+    // TODO(meilinw@): disable warmer welcome to avoid an unintended early
+    // return of this API when launching Assistant via hotkey.
+    // TODO(meilinw@): update the comment above to use Tast instead after
+    // adding API to enable hotword in Tast.
+    static void waitForAssistantQueryStatus(
+        long timeout_s,
+        AssistantQueryStatusCallback callback);
 
     // Set value for the specified user pref in the pref tree.
     static void setWhitelistedPref(DOMString pref_name, any value,

@@ -386,6 +386,7 @@ ios_framework_bundle("app_framework") {
     "//build/config/ios:xctest",
     "//ios/third_party/edo",
     "//ios/third_party/fishhook",
+    "//ios/third_party/webkit",
   ]
 
   public_deps = [
@@ -400,7 +401,6 @@ ios_framework_bundle("app_framework") {
     "Foundation.framework",
     "IOKit.framework",
     "QuartzCore.framework",
-    "WebKit.framework",
   ]
 
   public_configs = [ ":config" ]

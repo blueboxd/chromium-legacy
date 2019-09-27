@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/optional.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/media_export.h"
 #include "media/base/video_types.h"
 #include "ui/gfx/geometry/size.h"
@@ -35,27 +36,6 @@ class MEDIA_EXPORT VideoFrameLayout {
   // Note: This value is dependent on what's used by ffmpeg, do not change
   // without inspecting av_frame_get_buffer() first.
   static constexpr size_t kBufferAddressAlignment = 32;
-
-  struct Plane {
-    Plane() = default;
-    Plane(int32_t stride, size_t offset, size_t size)
-        : stride(stride), offset(offset), size(size) {}
-
-    bool operator==(const Plane& rhs) const;
-    bool operator!=(const Plane& rhs) const;
-
-    // Strides in bytes of a plane. Note that stride can be negative if the
-    // image layout is bottom-up.
-    int32_t stride = 0;
-
-    // Offset in bytes of a plane, which stands for the offset of a start point
-    // of a color plane from a buffer fd.
-    size_t offset = 0;
-
-    // Size in bytes of a plane. This |size| bytes data must contain all the
-    // data a decoder will access (e.g. visible area and padding).
-    size_t size = 0;
-  };
 
   // Factory functions.
   // |format| and |coded_size| must be specified.
@@ -84,7 +64,7 @@ class MEDIA_EXPORT VideoFrameLayout {
   static base::Optional<VideoFrameLayout> CreateWithPlanes(
       VideoPixelFormat format,
       const gfx::Size& coded_size,
-      std::vector<Plane> planes,
+      std::vector<ColorPlaneLayout> planes,
       size_t buffer_addr_align = kBufferAddressAlignment,
       uint64_t modifier = gfx::NativePixmapHandle::kNoModifier);
 
@@ -94,7 +74,7 @@ class MEDIA_EXPORT VideoFrameLayout {
   static base::Optional<VideoFrameLayout> CreateMultiPlanar(
       VideoPixelFormat format,
       const gfx::Size& coded_size,
-      std::vector<Plane> planes,
+      std::vector<ColorPlaneLayout> planes,
       size_t buffer_addr_align = kBufferAddressAlignment,
       uint64_t modifier = gfx::NativePixmapHandle::kNoModifier);
 
@@ -112,7 +92,7 @@ class MEDIA_EXPORT VideoFrameLayout {
   // Returns number of planes. Note that num_planes >= num_buffers.
   size_t num_planes() const { return planes_.size(); }
 
-  const std::vector<Plane>& planes() const { return planes_; }
+  const std::vector<ColorPlaneLayout>& planes() const { return planes_; }
 
   bool operator==(const VideoFrameLayout& rhs) const;
   bool operator!=(const VideoFrameLayout& rhs) const;
@@ -128,7 +108,7 @@ class MEDIA_EXPORT VideoFrameLayout {
  private:
   VideoFrameLayout(VideoPixelFormat format,
                    const gfx::Size& coded_size,
-                   std::vector<Plane> planes,
+                   std::vector<ColorPlaneLayout> planes,
                    bool is_multi_planar,
                    size_t buffer_addr_align,
                    uint64_t modifier);
@@ -143,7 +123,7 @@ class MEDIA_EXPORT VideoFrameLayout {
   gfx::Size coded_size_;
 
   // Layout property for each color planes, e.g. stride and buffer offset.
-  std::vector<Plane> planes_;
+  std::vector<ColorPlaneLayout> planes_;
 
   // Set to true when a format uses multiple backing buffers to store its
   // planes. Used by code for V4L2 API at the moment.
@@ -159,10 +139,6 @@ class MEDIA_EXPORT VideoFrameLayout {
   // by using NativePixmap.
   uint64_t modifier_;
 };
-
-// Outputs VideoFrameLayout::Plane to stream.
-MEDIA_EXPORT std::ostream& operator<<(std::ostream& ostream,
-                                      const VideoFrameLayout::Plane& plane);
 
 // Outputs VideoFrameLayout to stream.
 MEDIA_EXPORT std::ostream& operator<<(std::ostream& ostream,

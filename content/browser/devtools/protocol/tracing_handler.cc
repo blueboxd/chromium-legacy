@@ -972,20 +972,25 @@ void TracingHandler::OnCategoriesReceived(
 }
 
 void TracingHandler::RequestMemoryDump(
+    Maybe<bool> deterministic,
     std::unique_ptr<RequestMemoryDumpCallback> callback) {
   if (!IsTracing()) {
     callback->sendFailure(Response::Error("Tracing is not started"));
     return;
   }
 
+  auto determinism = deterministic.fromMaybe(false)
+                         ? base::trace_event::MemoryDumpDeterminism::FORCE_GC
+                         : base::trace_event::MemoryDumpDeterminism::NONE;
+
   auto on_memory_dump_finished =
       base::BindOnce(&TracingHandler::OnMemoryDumpFinished,
                      weak_factory_.GetWeakPtr(), std::move(callback));
+
   memory_instrumentation::MemoryInstrumentation::GetInstance()
       ->RequestGlobalDumpAndAppendToTrace(
           base::trace_event::MemoryDumpType::EXPLICITLY_TRIGGERED,
-          base::trace_event::MemoryDumpLevelOfDetail::DETAILED,
-          base::trace_event::MemoryDumpDeterminism::NONE,
+          base::trace_event::MemoryDumpLevelOfDetail::DETAILED, determinism,
           std::move(on_memory_dump_finished));
 }
 

@@ -248,81 +248,6 @@ DesktopWindowTreeHostX11::CreateDragDropClient(
   return base::WrapUnique(drag_drop_client_);
 }
 
-void DesktopWindowTreeHostX11::Show(ui::WindowShowState show_state,
-                                    const gfx::Rect& restore_bounds) {
-  if (compositor())
-    SetVisible(true);
-
-  if (!GetXWindow()->mapped_in_client() || IsMinimized())
-    MapWindow(show_state);
-
-  switch (show_state) {
-    case ui::SHOW_STATE_MAXIMIZED:
-      Maximize();
-      if (!restore_bounds.IsEmpty()) {
-        // Enforce |restored_bounds_in_pixels_| since calling Maximize() could
-        // have reset it.
-        restored_bounds_in_pixels_ = ToPixelRect(restore_bounds);
-      }
-      break;
-    case ui::SHOW_STATE_MINIMIZED:
-      Minimize();
-      break;
-    case ui::SHOW_STATE_FULLSCREEN:
-      SetFullscreen(true);
-      break;
-    default:
-      break;
-  }
-
-  native_widget_delegate()->AsWidget()->SetInitialFocus(show_state);
-
-  content_window()->Show();
-}
-
-void DesktopWindowTreeHostX11::SetSize(const gfx::Size& requested_size) {
-  gfx::Size size_in_pixels = ToPixelRect(gfx::Rect(requested_size)).size();
-  size_in_pixels = AdjustSizeForDisplay(size_in_pixels);
-
-  bool size_changed = GetBoundsInPixels().size() != size_in_pixels;
-
-  GetXWindow()->SetSize(size_in_pixels);
-
-  if (size_changed) {
-    OnHostResizedInPixels(size_in_pixels);
-    ResetWindowRegion();
-  }
-}
-
-void DesktopWindowTreeHostX11::GetWindowPlacement(
-    gfx::Rect* bounds,
-    ui::WindowShowState* show_state) const {
-  *bounds = GetRestoredBounds();
-
-  if (IsFullscreen()) {
-    *show_state = ui::SHOW_STATE_FULLSCREEN;
-  } else if (IsMinimized()) {
-    *show_state = ui::SHOW_STATE_MINIMIZED;
-  } else if (IsMaximized()) {
-    *show_state = ui::SHOW_STATE_MAXIMIZED;
-  } else if (!IsActive()) {
-    *show_state = ui::SHOW_STATE_INACTIVE;
-  } else {
-    *show_state = ui::SHOW_STATE_NORMAL;
-  }
-}
-
-gfx::Rect DesktopWindowTreeHostX11::GetRestoredBounds() const {
-  // We can't reliably track the restored bounds of a window, but we can get
-  // the 90% case down. When *chrome* is the process that requests maximizing
-  // or restoring bounds, we can record the current bounds before we request
-  // maximization, and clear it when we detect a state change.
-  if (!restored_bounds_in_pixels_.IsEmpty())
-    return ToDIPRect(restored_bounds_in_pixels_);
-
-  return GetWindowBoundsInScreen();
-}
-
 std::string DesktopWindowTreeHostX11::GetWorkspace() const {
   base::Optional<int> workspace = GetXWindow()->workspace();
   return workspace ? base::NumberToString(workspace.value()) : std::string();
@@ -357,66 +282,8 @@ bool DesktopWindowTreeHostX11::IsActive() const {
   return GetXWindow()->IsActive();
 }
 
-void DesktopWindowTreeHostX11::Maximize() {
-  // TODO(nickdiego): Move into XWindow. For now, it is kept outside
-  // it due to |AdjustSizeForDisplay|, which depends on display::Display, which
-  // is not accessible at Ozone layer.
-  if (GetXWindow()->IsFullscreen()) {
-    // Unfullscreen the window if it is fullscreen.
-    GetXWindow()->SetFullscreen(false);
-
-    // Resize the window so that it does not have the same size as a monitor.
-    // (Otherwise, some window managers immediately put the window back in
-    // fullscreen mode).
-    gfx::Rect bounds = GetBoundsInPixels();
-    gfx::Rect adjusted_bounds_in_pixels(bounds.origin(),
-                                        AdjustSizeForDisplay(bounds.size()));
-    if (adjusted_bounds_in_pixels != bounds)
-      SetBoundsInPixels(adjusted_bounds_in_pixels);
-  }
-
-  // When we are in the process of requesting to maximize a window, we can
-  // accurately keep track of our restored bounds instead of relying on the
-  // heuristics that are in the PropertyNotify and ConfigureNotify handlers.
-  restored_bounds_in_pixels_ = GetBoundsInPixels();
-
-  GetXWindow()->Maximize();
-  if (IsMinimized())
-    Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
-}
-
-void DesktopWindowTreeHostX11::Minimize() {
-  ReleaseCapture();
-  GetXWindow()->Minimize();
-}
-
-void DesktopWindowTreeHostX11::Restore() {
-  GetXWindow()->Unmaximize();
-  Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
-  GetXWindow()->Unhide();
-}
-
-bool DesktopWindowTreeHostX11::IsMaximized() const {
-  return GetXWindow()->IsMaximized();
-}
-
-bool DesktopWindowTreeHostX11::IsMinimized() const {
-  return GetXWindow()->IsMinimized();
-}
-
 bool DesktopWindowTreeHostX11::HasCapture() const {
   return g_current_capture == this;
-}
-
-void DesktopWindowTreeHostX11::SetVisible(bool visible) {
-  if (is_compositor_set_visible_ == visible)
-    return;
-
-  is_compositor_set_visible_ = visible;
-  if (compositor())
-    compositor()->SetVisible(visible);
-
-  native_widget_delegate()->OnNativeWidgetVisibilityChanged(visible);
 }
 
 void DesktopWindowTreeHostX11::SetVisibleOnAllWorkspaces(bool always_visible) {
@@ -474,60 +341,6 @@ void DesktopWindowTreeHostX11::FrameTypeChanged() {
                      weak_factory_.GetWeakPtr(), new_type));
 }
 
-void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
-  if (is_fullscreen_ == fullscreen)
-    return;
-
-  is_fullscreen_ = fullscreen;
-  if (is_fullscreen_)
-    GetXWindow()->CancelResize();
-
-  // Work around a bug where if we try to unfullscreen, metacity immediately
-  // fullscreens us again. This is a little flickery and not necessary if
-  // there's a gnome-panel, but it's not easy to detect whether there's a
-  // panel or not.
-  bool unmaximize_and_remaximize = !fullscreen && IsMaximized() &&
-                                   ui::GuessWindowManager() == ui::WM_METACITY;
-
-  if (unmaximize_and_remaximize)
-    Restore();
-
-  GetXWindow()->SetFullscreen(fullscreen);
-
-  if (unmaximize_and_remaximize)
-    Maximize();
-
-  // Try to guess the size we will have after the switch to/from fullscreen:
-  // - (may) avoid transient states
-  // - works around Flash content which expects to have the size updated
-  //   synchronously.
-  // See https://crbug.com/361408
-  gfx::Rect bounds = GetXWindow()->bounds();
-  if (fullscreen) {
-    display::Screen* screen = display::Screen::GetScreen();
-    const display::Display display = screen->GetDisplayNearestWindow(window());
-    restored_bounds_in_pixels_ = bounds;
-    bounds = ToPixelRect(display.bounds());
-  } else {
-    bounds = restored_bounds_in_pixels_;
-  }
-  GetXWindow()->set_bounds(bounds);
-
-  OnHostMovedInPixels(bounds.origin());
-  OnHostResizedInPixels(bounds.size());
-
-  if (GetXWindow()->IsFullscreen() == fullscreen) {
-    Relayout();
-    ResetWindowRegion();
-  }
-  // Else: the widget will be relaid out either when the window bounds change or
-  // when |xwindow_|'s fullscreen state changes.
-}
-
-bool DesktopWindowTreeHostX11::IsFullscreen() const {
-  return is_fullscreen_;
-}
-
 void DesktopWindowTreeHostX11::SetOpacity(float opacity) {
   GetXWindow()->SetOpacity(opacity);
 }
@@ -582,33 +395,6 @@ bool DesktopWindowTreeHostX11::ShouldCreateVisibilityController() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, aura::WindowTreeHost implementatio
-
-void DesktopWindowTreeHostX11::ShowImpl() {
-  Show(ui::SHOW_STATE_NORMAL, gfx::Rect());
-}
-
-void DesktopWindowTreeHostX11::HideImpl() {
-  if (GetXWindow()->Hide())
-    SetVisible(false);
-}
-
-void DesktopWindowTreeHostX11::SetBoundsInPixels(
-    const gfx::Rect& requested_bounds_in_pixel) {
-  gfx::Rect bounds = GetXWindow()->bounds();
-  gfx::Rect bounds_in_pixels(
-      requested_bounds_in_pixel.origin(),
-      AdjustSizeForDisplay(requested_bounds_in_pixel.size()));
-
-  bool size_changed = bounds.size() != bounds_in_pixels.size();
-
-  if (size_changed) {
-    // Only cancel the delayed resize task if we're already about to call
-    // OnHostResized in this function.
-    GetXWindow()->CancelResize();
-  }
-
-  platform_window()->SetBounds(bounds_in_pixels);
-}
 
 void DesktopWindowTreeHostX11::SetCapture() {
   if (HasCapture())
@@ -742,33 +528,6 @@ std::list<gfx::AcceleratedWidget>& DesktopWindowTreeHostX11::open_windows() {
   return *open_windows_;
 }
 
-void DesktopWindowTreeHostX11::MapWindow(ui::WindowShowState show_state) {
-  if (show_state != ui::SHOW_STATE_DEFAULT &&
-      show_state != ui::SHOW_STATE_NORMAL &&
-      show_state != ui::SHOW_STATE_INACTIVE &&
-      show_state != ui::SHOW_STATE_MAXIMIZED) {
-    // It will behave like SHOW_STATE_NORMAL.
-    NOTIMPLEMENTED_LOG_ONCE();
-  }
-
-  // If SHOW_STATE_INACTIVE, tell the window manager not to focus the window
-  // when mapping. This is done by setting the _NET_WM_USER_TIME to 0. See e.g.
-  // http://standards.freedesktop.org/wm-spec/latest/ar01s05.html
-  bool inactive = show_state == ui::SHOW_STATE_INACTIVE;
-
-  GetXWindow()->Map(inactive);
-}
-
-void DesktopWindowTreeHostX11::Relayout() {
-  Widget* widget = native_widget_delegate()->AsWidget();
-  NonClientView* non_client_view = widget->non_client_view();
-  // non_client_view may be NULL, especially during creation.
-  if (non_client_view) {
-    non_client_view->client_view()->InvalidateLayout();
-    non_client_view->InvalidateLayout();
-  }
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11 implementation:
 
@@ -835,50 +594,7 @@ void DesktopWindowTreeHostX11::OnClosed() {
 
 void DesktopWindowTreeHostX11::OnWindowStateChanged(
     ui::PlatformWindowState new_state) {
-  bool was_minimized = GetXWindow()->was_minimized();
-  bool is_minimized = IsMinimized();
-
-  // Propagate the window minimization information to the content window, so
-  // the render side can update its visibility properly. OnWMStateUpdated() is
-  // called by PropertyNofify event from DispatchEvent() when the browser is
-  // minimized or shown from minimized state. On Windows, this is realized by
-  // calling OnHostResizedInPixels() with an empty size. In particular,
-  // HWNDMessageHandler::GetClientAreaBounds() returns an empty size when the
-  // window is minimized. On Linux, returning empty size in GetBounds() or
-  // SetBoundsInPixels() does not work.
-  // We also propagate the minimization to the compositor, to makes sure that we
-  // don't draw any 'blank' frames that could be noticed in applications such as
-  // window manager previews, which show content even when a window is
-  // minimized.
-  if (is_minimized != was_minimized) {
-    if (is_minimized) {
-      SetVisible(false);
-      content_window()->Hide();
-    } else {
-      content_window()->Show();
-      SetVisible(true);
-    }
-  }
-
-  if (restored_bounds_in_pixels_.IsEmpty()) {
-    if (IsMaximized()) {
-      // The request that we become maximized originated from a different
-      // process. |bounds_in_pixels_| already contains our maximized bounds. Do
-      // a best effort attempt to get restored bounds by setting it to our
-      // previously set bounds (and if we get this wrong, we aren't any worse
-      // off since we'd otherwise be returning our maximized bounds).
-      restored_bounds_in_pixels_ = GetXWindow()->previous_bounds();
-    }
-  } else if (!IsMaximized() && !IsFullscreen()) {
-    // If we have restored bounds, but WM_STATE no longer claims to be
-    // maximized or fullscreen, we should clear our restored bounds.
-    restored_bounds_in_pixels_ = gfx::Rect();
-  }
-
-  // Now that we have different window properties, we may need to relayout the
-  // window. (The windows code doesn't need this because their window change is
-  // synchronous.)
-  Relayout();
+  DesktopWindowTreeHostPlatform::OnWindowStateChanged(new_state);
   ResetWindowRegion();
 }
 

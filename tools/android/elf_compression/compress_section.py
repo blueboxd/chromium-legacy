@@ -38,6 +38,15 @@ import elf_headers
 COMPRESSED_SECTION_NAME = '.compressed_library_data'
 ADDRESS_ALIGN = 0x1000
 
+CUT_RANGE_BEGIN_MAGIC = bytearray(
+    [0x2e, 0x2a, 0xee, 0xf6, 0x45, 0x03, 0xd2, 0x50])
+CUT_RANGE_END_MAGIC = bytearray(
+    [0x52, 0x40, 0xeb, 0x9d, 0xdb, 0x11, 0xed, 0x1a])
+COMPRESSED_RANGE_BEGIN_MAGIC = bytearray(
+    [0x5e, 0x49, 0x4a, 0x4c, 0xae, 0x28, 0xc8, 0xbb])
+COMPRESSED_RANGE_END_MAGIC = bytearray(
+    [0xdd, 0x60, 0xed, 0xcf, 0xc3, 0x29, 0xa6, 0xd6])
+
 # src/third_party/llvm-build/Release+Asserts/bin/llvm-objcopy
 OBJCOPY_PATH = pathlib.Path(__file__).resolve().parents[3].joinpath(
     'third_party/llvm-build/Release+Asserts/bin/llvm-objcopy')
@@ -253,7 +262,9 @@ def _MovePhdrToTheEnd(data):
 
 
 def _CreateLoadForCompressedSection(data):
-  """Creates a LOAD segment to previously created COMPRESSED_SECTION_NAME."""
+  """Creates a LOAD segment to previously created COMPRESSED_SECTION_NAME.
+
+  Returns the virtual address range corresponding to created segment."""
   elf_hdr = elf_headers.ElfHeader(data)
 
   section_offset = None
@@ -282,6 +293,7 @@ def _CreateLoadForCompressedSection(data):
           p_align=ADDRESS_ALIGN,
       ))
   elf_hdr.PatchData(data)
+  return new_vaddr, new_vaddr + section_size
 
 
 def _SplitLoadSegmentAndNullifyRange(data, l, r):
@@ -293,6 +305,8 @@ def _SplitLoadSegmentAndNullifyRange(data, l, r):
 
   The resulting LOAD segment containing [l, r) is edited so it sets the
   corresponding virtual address range to zeroes, ignoring file content.
+
+  Returns virtual address range corresponding to [l, r).
   """
   elf_hdr = elf_headers.ElfHeader(data)
 
@@ -349,6 +363,7 @@ def _SplitLoadSegmentAndNullifyRange(data, l, r):
   range_phdr.p_memsz = r - l
 
   elf_hdr.PatchData(data)
+  return central_segment_address, central_segment_address + (r - l)
 
 
 def _CutRangeAndCorrectFile(data, l, r):
@@ -397,6 +412,30 @@ def _CutRangeAndCorrectFile(data, l, r):
   elf.PatchData(data)
 
 
+def _PatchConstructorBytes(data, cut_range_virt_l, cut_range_virt_r,
+                           compressed_range_virt_l, compressed_range_virt_r):
+  """Sets magic bytes given by constructor to the given ranges."""
+  elf = elf_headers.ElfHeader(data)
+
+  to_patch = [
+      (CUT_RANGE_BEGIN_MAGIC, cut_range_virt_l, 'cut range begin'),
+      (CUT_RANGE_END_MAGIC, cut_range_virt_r, 'cut range end'),
+      (COMPRESSED_RANGE_BEGIN_MAGIC, compressed_range_virt_l,
+       'compressed range begin'),
+      (COMPRESSED_RANGE_END_MAGIC, compressed_range_virt_r,
+       'compressed range end'),
+  ]
+
+  for magic_bytes, new_value, name in to_patch:
+    magic_idx = data.find(magic_bytes)
+    if magic_idx == -1:
+      raise RuntimeError('failed to find %s magic bytes' % name)
+    if data.rfind(magic_bytes) != magic_idx:
+      raise RuntimeError('%s magic bytes occures more then once' % name)
+    new_value_bytes = new_value.to_bytes(length=8, byteorder=elf.byte_order)
+    data[magic_idx:magic_idx + 8] = new_value_bytes
+
+
 def _ShrinkRangeToAlignVirtualAddress(data, l, r):
   virtual_l, virtual_r = _FileRangeToVirtualAddressRange(data, l, r)
   # LOAD segments borders are being rounded to the page size so we have to
@@ -422,9 +461,12 @@ def main():
   _CopyRangeIntoCompressedSection(data, left_range, right_range)
   _MovePhdrToTheEnd(data)
 
-  _CreateLoadForCompressedSection(data)
-  _SplitLoadSegmentAndNullifyRange(data, left_range, right_range)
+  compressed_virt_l, compressed_virt_r = _CreateLoadForCompressedSection(data)
+  virt_l, virt_r = _SplitLoadSegmentAndNullifyRange(data, left_range,
+                                                    right_range)
   _CutRangeAndCorrectFile(data, left_range, right_range)
+  _PatchConstructorBytes(data, virt_l, virt_r, compressed_virt_l,
+                         compressed_virt_r)
 
   with open(args.output, 'wb') as f:
     f.write(data)

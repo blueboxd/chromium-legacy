@@ -245,7 +245,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   item.text =
       l10n_util::GetNSString(IDS_IOS_OPTIONS_ACCOUNTS_ADD_ACCOUNT_BUTTON);
   item.accessibilityIdentifier = kSettingsAccountsTableViewAddAccountCellId;
-  item.image = [UIImage imageNamed:@"settings_accounts_add_account"];
+  item.image = [[UIImage imageNamed:@"settings_accounts_add_account"]
+      imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
   return item;
 }
 

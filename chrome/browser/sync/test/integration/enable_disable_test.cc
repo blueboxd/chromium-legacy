@@ -171,14 +171,16 @@ IN_PROC_BROWSER_TEST_F(EnableDisableSingleClientTest, EnableOneAtATime) {
           << " for " << GetUserSelectableTypeName(type);
 
       if (syncer::CommitOnlyTypes().Has(grouped_type)) {
-        EXPECT_EQ(0, histogram_tester.GetBucketCount(
-                         "Sync.PostedDataTypeGetUpdatesRequest",
-                         ModelTypeToHistogramInt(grouped_type)))
+        EXPECT_EQ(0,
+                  histogram_tester.GetBucketCount(
+                      "Sync.PostedDataTypeGetUpdatesRequest",
+                      static_cast<int>(ModelTypeHistogramValue(grouped_type))))
             << " for " << ModelTypeToString(grouped_type);
       } else {
-        EXPECT_NE(0, histogram_tester.GetBucketCount(
-                         "Sync.PostedDataTypeGetUpdatesRequest",
-                         ModelTypeToHistogramInt(grouped_type)))
+        EXPECT_NE(0,
+                  histogram_tester.GetBucketCount(
+                      "Sync.PostedDataTypeGetUpdatesRequest",
+                      static_cast<int>(ModelTypeHistogramValue(grouped_type))))
             << " for " << ModelTypeToString(grouped_type);
       }
     }

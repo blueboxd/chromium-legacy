@@ -75,7 +75,6 @@
 #include "chrome/browser/metrics/chrome_browser_main_extra_parts_metrics.h"
 #include "chrome/browser/metrics/chrome_feature_list_creator.h"
 #include "chrome/browser/nacl_host/nacl_browser_delegate_impl.h"
-#include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "chrome/browser/net/chrome_network_delegate.h"
 #include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/net_benchmarking.h"
@@ -4412,9 +4411,6 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
         base::Bind(&payments::CreatePaymentRequest));
   }
 #endif
-
-  frame_interfaces_parameterized_->AddInterface(
-      base::BindRepeating(&NavigationPredictor::Create));
 
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(

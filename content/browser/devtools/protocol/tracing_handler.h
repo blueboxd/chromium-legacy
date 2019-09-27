@@ -73,6 +73,7 @@ class TracingHandler : public DevToolsDomainHandler, public Tracing::Backend {
   Response End() override;
   void GetCategories(std::unique_ptr<GetCategoriesCallback> callback) override;
   void RequestMemoryDump(
+      Maybe<bool> deterministic,
       std::unique_ptr<RequestMemoryDumpCallback> callback) override;
   Response RecordClockSyncMarker(const std::string& sync_id) override;
 

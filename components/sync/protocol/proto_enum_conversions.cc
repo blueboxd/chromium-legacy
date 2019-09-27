@@ -633,20 +633,6 @@ const char* ProtoEnumToString(
   return "";
 }
 
-const char* ProtoEnumToString(
-    sync_pb::WifiCredentialSpecifics::SecurityClass security_class) {
-  ASSERT_ENUM_BOUNDS(sync_pb::WifiCredentialSpecifics, SecurityClass,
-                     SECURITY_CLASS_INVALID, SECURITY_CLASS_PSK);
-  switch (security_class) {
-    ENUM_CASE(sync_pb::WifiCredentialSpecifics, SECURITY_CLASS_INVALID);
-    ENUM_CASE(sync_pb::WifiCredentialSpecifics, SECURITY_CLASS_NONE);
-    ENUM_CASE(sync_pb::WifiCredentialSpecifics, SECURITY_CLASS_WEP);
-    ENUM_CASE(sync_pb::WifiCredentialSpecifics, SECURITY_CLASS_PSK);
-  }
-  NOTREACHED();
-  return "";
-}
-
 #undef ASSERT_ENUM_BOUNDS
 #undef ENUM_CASE
 

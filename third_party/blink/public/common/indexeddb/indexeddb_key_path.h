@@ -22,10 +22,10 @@ class BLINK_COMMON_EXPORT IndexedDBKeyPath {
   explicit IndexedDBKeyPath(const base::string16&);
   explicit IndexedDBKeyPath(const std::vector<base::string16>&);
   IndexedDBKeyPath(const IndexedDBKeyPath& other);
-  IndexedDBKeyPath(IndexedDBKeyPath&& other) noexcept;
+  IndexedDBKeyPath(IndexedDBKeyPath&& other);
   ~IndexedDBKeyPath();
   IndexedDBKeyPath& operator=(const IndexedDBKeyPath& other);
-  IndexedDBKeyPath& operator=(IndexedDBKeyPath&& other) noexcept;
+  IndexedDBKeyPath& operator=(IndexedDBKeyPath&& other);
 
   bool IsNull() const { return type_ == blink::mojom::IDBKeyPathType::Null; }
   bool operator==(const IndexedDBKeyPath& other) const;

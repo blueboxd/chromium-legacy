@@ -76,12 +76,15 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // in order to display the views associated with the tabs. Waits until the views
 // are ready. |browserState| cannot be nil. |service| cannot be nil; this class
 // creates intermediate SessionWindowIOS objects which must be consumed by a
-// session service before they are deallocated. |window| can be nil to create
-// an empty TabModel. In that case no notification will be sent during object
-// creation.
+// session service before they are deallocated.
 - (instancetype)initWithSessionService:(SessionServiceIOS*)service
                           browserState:(ios::ChromeBrowserState*)browserState
+                          webStateList:(WebStateList*)webStateList
     NS_DESIGNATED_INITIALIZER;
+
+// Temporary backwards compatibility init which creates a webStateList.
+- (instancetype)initWithSessionService:(SessionServiceIOS*)service
+                          browserState:(ios::ChromeBrowserState*)browserState;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -129,9 +132,16 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // Sets whether the user is primarily interacting with this tab model.
 - (void)setPrimary:(BOOL)primary;
 
-// Called when the browser state provided to this instance is being destroyed.
+// Tells the receiver to disconnect from the model object it depends on. This
+// should be called before destroying the browser state that the receiver was
+// initialized with.
+// It is safe to call this method multiple times.
 // At this point the tab model will no longer ever be active, and will likely be
-// deallocated soon.
+// deallocated soon. Calling any other methods or accessing any properties on
+// the tab model after this is called is unsafe.
+- (void)disconnect;
+
+// Legacy method name for -disconnect, will be deleted very soon.
 - (void)browserStateDestroyed;
 
 @end

@@ -9,15 +9,6 @@ importer.MediaImportHandler = importer.MediaImportHandler || {};
 importer.MediaImportHandler.ImportTask =
     importer.MediaImportHandler.ImportTask || {};
 
-// The name of the Drive property used to tag imported files.  Used to look up
-// the property later.
-importer.MediaImportHandler.IMPORTS_TAG_KEY = 'cloud-import';
-
-// The value of the Drive property used to tag imported files.  Cloud import
-// only imports 'media' right now - change this to an enum if other types of
-// files start being imported.
-importer.MediaImportHandler.IMPORTS_TAG_VALUE = 'media';
-
 /**
  * Handler for importing media from removable devices into the user's Drive.
  *
@@ -71,7 +62,6 @@ importer.MediaImportHandlerImpl = class {
         directoryPromise, destination, this.getDisposition_);
 
     task.addObserver(this.onTaskProgress_.bind(this, task));
-    task.addObserver(this.onFileImported_.bind(this, task));
 
     // Schedule the task when it is initialized.
     scanResult.whenFinal()
@@ -183,37 +173,6 @@ importer.MediaImportHandlerImpl = class {
     };
     this.driveSyncHandler_.addEventListener(
         this.driveSyncHandler_.getCompletedEventName(), task.driveListener_);
-  }
-
-  /**
-   * Tags newly-imported files with a Drive property.
-   * @param {!importer.TaskQueue.Task} task
-   * @param {string} updateType
-   * @param {Object=} updateInfo
-   */
-  onFileImported_(task, updateType, updateInfo) {
-    if (updateType !==
-        importer.MediaImportHandler.ImportTask.UpdateType.ENTRY_CHANGED) {
-      return;
-    }
-    // Update info must exist for ENTRY_CHANGED notifications.
-    console.assert(updateInfo && updateInfo.destination);
-    const info =
-        /** @type {!importer.MediaImportHandler.ImportTask.EntryChangedInfo} */
-        (updateInfo);
-
-    // Tag the import with a private drive property.
-    chrome.fileManagerPrivate.setEntryTag(
-        info.destination,
-        'private',  // Scoped to just this app.
-        importer.MediaImportHandler.IMPORTS_TAG_KEY,
-        importer.MediaImportHandler.IMPORTS_TAG_VALUE, () => {
-          if (chrome.runtime.lastError) {
-            console.error(
-                'Unable to tag imported media: ' +
-                chrome.runtime.lastError.message);
-          }
-        });
   }
 };
 

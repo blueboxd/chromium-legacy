@@ -134,13 +134,13 @@ VideoCaptureSettings::VideoCaptureSettings(
 
 VideoCaptureSettings::VideoCaptureSettings(const VideoCaptureSettings& other) =
     default;
-VideoCaptureSettings::VideoCaptureSettings(
-    VideoCaptureSettings&& other) noexcept = default;
+VideoCaptureSettings::VideoCaptureSettings(VideoCaptureSettings&& other) =
+    default;
 VideoCaptureSettings::~VideoCaptureSettings() = default;
 VideoCaptureSettings& VideoCaptureSettings::operator=(
     const VideoCaptureSettings& other) = default;
 VideoCaptureSettings& VideoCaptureSettings::operator=(
-    VideoCaptureSettings&& other) noexcept = default;
+    VideoCaptureSettings&& other) = default;
 
 AudioCaptureSettings::AudioCaptureSettings() : AudioCaptureSettings("") {}
 
@@ -166,10 +166,10 @@ AudioCaptureSettings::AudioCaptureSettings(const AudioCaptureSettings& other) =
     default;
 AudioCaptureSettings& AudioCaptureSettings::operator=(
     const AudioCaptureSettings& other) = default;
-AudioCaptureSettings::AudioCaptureSettings(
-    AudioCaptureSettings&& other) noexcept = default;
+AudioCaptureSettings::AudioCaptureSettings(AudioCaptureSettings&& other) =
+    default;
 AudioCaptureSettings& AudioCaptureSettings::operator=(
-    AudioCaptureSettings&& other) noexcept = default;
+    AudioCaptureSettings&& other) = default;
 
 bool GetConstraintValueAsBoolean(
     const WebMediaConstraints& constraints,

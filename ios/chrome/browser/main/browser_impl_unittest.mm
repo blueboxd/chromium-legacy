@@ -19,29 +19,34 @@
 
 class BrowserImplTest : public PlatformTest {
  protected:
-  BrowserImplTest() : web_state_list_(&web_state_list_delegate_) {
+  BrowserImplTest()
+      : web_state_list_(
+            std::make_unique<WebStateList>(&web_state_list_delegate_)) {
     TestChromeBrowserState::Builder test_cbs_builder;
     chrome_browser_state_ = test_cbs_builder.Build();
 
     tab_model_ = [OCMockObject mockForClass:[TabModel class]];
-    OCMStub([tab_model_ webStateList]).andReturn(&web_state_list_);
+    OCMStub([tab_model_ webStateList]).andReturn(web_state_list_.get());
   }
 
   web::WebTaskEnvironment task_environment_;
   std::unique_ptr<TestChromeBrowserState> chrome_browser_state_;
 
   FakeWebStateListDelegate web_state_list_delegate_;
-  WebStateList web_state_list_;
+  // Unique ptr to the web_state_list_ to transfer into new Browser instances.
+  std::unique_ptr<WebStateList> web_state_list_;
   id tab_model_;
 };
 
 // Tests that the accessors return the expected values.
 TEST_F(BrowserImplTest, TestAccessors) {
-  BrowserImpl browser(chrome_browser_state_.get(), tab_model_);
+  WebStateList* web_state_list_weak_reference = web_state_list_.get();
+  BrowserImpl browser(chrome_browser_state_.get(), tab_model_,
+                      std::move(web_state_list_));
 
   EXPECT_EQ(chrome_browser_state_.get(), browser.GetBrowserState());
   EXPECT_EQ(tab_model_, browser.GetTabModel());
-  EXPECT_EQ(&web_state_list_, browser.GetWebStateList());
+  EXPECT_EQ(web_state_list_weak_reference, browser.GetWebStateList());
 }
 
 // Tests that the BrowserDestroyed() callback is sent when a browser is deleted.
@@ -53,7 +58,7 @@ TEST_F(BrowserImplTest, BrowserDestroyed) {
   // |-browserStateDestroyed| is expected to be executed before the
   // TabModelList's destructor.
   // TODO(crbug.com/783777): Remove when TabModel is no longer used.
-  [browser->GetTabModel() browserStateDestroyed];
+  [browser->GetTabModel() disconnect];
   browser = nullptr;
   EXPECT_TRUE(observer.browser_destroyed());
 }

@@ -428,15 +428,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       section_that_cycle->AddIntStat("Committed Count");
   Stat<int>* entries = section_that_cycle->AddIntStat("Entries");
 
-  Section* section_nudge_info =
-      section_list.AddSection("Nudge Source Counters");
-  Stat<int>* nudge_source_notification =
-      section_nudge_info->AddIntStat("Server Invalidations");
-  Stat<int>* nudge_source_local =
-      section_nudge_info->AddIntStat("Local Changes");
-  Stat<int>* nudge_source_local_refresh =
-      section_nudge_info->AddIntStat("Local Refreshes");
-
   // Populate all the fields we declared above.
   client_version->Set(GetVersionString(channel));
 
@@ -564,13 +555,6 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
         snapshot.model_neutral_state().num_updates_downloaded_total);
     committed_count->Set(snapshot.model_neutral_state().num_successful_commits);
     entries->Set(static_cast<int>(snapshot.num_entries()));
-  }
-
-  // Nudge Source Counters.
-  if (is_status_valid) {
-    nudge_source_notification->Set(full_status.nudge_source_notification);
-    nudge_source_local->Set(full_status.nudge_source_local);
-    nudge_source_local_refresh->Set(full_status.nudge_source_local_refresh);
   }
 
   // This list of sections belongs in the 'details' field of the returned

@@ -233,33 +233,6 @@ INSTANTIATE_TEST_SUITE_P(
         // Has a middle-name, too unusual
         ));
 
-TEST(AutofillDataUtilTest, ProfileMatchesFullName) {
-  autofill::AutofillProfile profile;
-  autofill::test::SetProfileInfo(
-      &profile, "First", "Middle", "Last", "fml@example.com", "Acme inc",
-      "123 Main", "Apt 2", "Laredo", "TX", "77300", "US", "832-555-1000");
-
-  EXPECT_TRUE(ProfileMatchesFullName(base::UTF8ToUTF16("First Last"), profile));
-
-  EXPECT_TRUE(
-      ProfileMatchesFullName(base::UTF8ToUTF16("First Middle Last"), profile));
-
-  EXPECT_TRUE(
-      ProfileMatchesFullName(base::UTF8ToUTF16("First M Last"), profile));
-
-  EXPECT_TRUE(
-      ProfileMatchesFullName(base::UTF8ToUTF16("First M. Last"), profile));
-
-  EXPECT_TRUE(
-      ProfileMatchesFullName(base::UTF8ToUTF16("Last First"), profile));
-
-  EXPECT_TRUE(
-      ProfileMatchesFullName(base::UTF8ToUTF16("LastFirst"), profile));
-
-  EXPECT_FALSE(
-      ProfileMatchesFullName(base::UTF8ToUTF16("Kirby Puckett"), profile));
-}
-
 struct ValidCountryCodeTestCase {
   std::string country_code;
   bool expected_result;

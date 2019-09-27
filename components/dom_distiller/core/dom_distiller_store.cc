@@ -11,23 +11,13 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/logging.h"
-#include "base/single_thread_task_runner.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/sync/model/sync_change.h"
-#include "components/sync/protocol/article_specifics.pb.h"
-#include "components/sync/protocol/sync.pb.h"
 
 using leveldb_proto::ProtoDatabase;
-using sync_pb::ArticleSpecifics;
-using sync_pb::EntitySpecifics;
-using syncer::ModelType;
 using syncer::SyncChange;
 using syncer::SyncChangeList;
-using syncer::SyncData;
 using syncer::SyncDataList;
-using syncer::SyncError;
-using syncer::SyncMergeResult;
 
 namespace dom_distiller {
 
@@ -227,48 +217,17 @@ bool DomDistillerStore::ApplyChangesToDatabase(
   return true;
 }
 
-SyncMergeResult DomDistillerStore::MergeDataWithModel(
-    const SyncDataList& data,
-    SyncChangeList* changes_applied,
-    SyncChangeList* changes_missing) {
+void DomDistillerStore::MergeDataWithModel(const SyncDataList& data,
+                                           SyncChangeList* changes_applied,
+                                           SyncChangeList* changes_missing) {
   // TODO(cjhopman): This naive merge algorithm could cause flip-flopping
   // between database/sync of multiple clients.
   DCHECK(changes_applied);
   DCHECK(changes_missing);
 
-  SyncMergeResult result(syncer::DEPRECATED_ARTICLES);
-  result.set_num_items_before_association(model_.GetNumEntries());
-
   SyncChangeList changes_to_apply;
   model_.CalculateChangesForMerge(data, &changes_to_apply, changes_missing);
-  SyncError error;
   ApplyChangesToModel(changes_to_apply, changes_applied, changes_missing);
-
-  int num_added = 0;
-  int num_modified = 0;
-  for (SyncChangeList::const_iterator it = changes_applied->begin();
-       it != changes_applied->end(); ++it) {
-    DCHECK(it->IsValid());
-    switch (it->change_type()) {
-      case SyncChange::ACTION_ADD:
-        num_added++;
-        break;
-      case SyncChange::ACTION_UPDATE:
-        num_modified++;
-        break;
-      default:
-        NOTREACHED();
-    }
-  }
-  result.set_num_items_added(num_added);
-  result.set_num_items_modified(num_modified);
-  result.set_num_items_deleted(0);
-
-  result.set_pre_association_version(0);
-  result.set_num_items_after_association(model_.GetNumEntries());
-  result.set_error(error);
-
-  return result;
 }
 
 }  // namespace dom_distiller

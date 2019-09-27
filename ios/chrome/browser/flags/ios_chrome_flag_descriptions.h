@@ -286,6 +286,10 @@ extern const char kSlimNavigationManagerDescription[];
 extern const char kSnapshotDrawViewName[];
 extern const char kSnapshotDrawViewDescription[];
 
+// Title and description for the flag to trigger the startup sign-in promo.
+extern const char kForceStartupSigninPromoName[];
+extern const char kForceStartupSigninPromoDescription[];
+
 // Title and description for the flag to control if Chrome Sync should use the
 // sandbox servers.
 extern const char kSyncSandboxName[];

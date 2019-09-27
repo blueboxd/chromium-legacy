@@ -85,6 +85,8 @@ void ExternalPolicyDataFetcher::Job::Start(
     network::mojom::URLLoaderFactory* url_loader_factory,
     const GURL& url,
     int64_t max_size) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   DCHECK_GE(max_size, 0);
   max_size_ = max_size;
 
@@ -129,12 +131,16 @@ void ExternalPolicyDataFetcher::Job::Start(
 }
 
 void ExternalPolicyDataFetcher::Job::Cancel() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   url_loader_.reset();
 }
 
 void ExternalPolicyDataFetcher::Job::OnResponseStarted(
     const GURL& /* final_url */,
     const network::mojom::URLResponseHead& response_head) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (response_head.content_length != -1 &&
       response_head.content_length > max_size_) {
     url_loader_.reset();
@@ -146,6 +152,8 @@ void ExternalPolicyDataFetcher::Job::OnResponseStarted(
 void ExternalPolicyDataFetcher::Job::OnDataReceived(
     base::StringPiece string_piece,
     base::OnceClosure resume) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   if (response_body_.length() + string_piece.length() >
       static_cast<uint64_t>(max_size_)) {
     url_loader_.reset();
@@ -199,6 +207,8 @@ void ExternalPolicyDataFetcher::Job::OnComplete(bool /* success */) {
 }
 
 void ExternalPolicyDataFetcher::Job::OnRetry(base::OnceClosure start_retry) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
   response_body_.clear();
   std::move(start_retry).Run();
 }
@@ -294,6 +304,7 @@ ExternalPolicyDataFetcherBackend::~ExternalPolicyDataFetcherBackend() {
 std::unique_ptr<ExternalPolicyDataFetcher>
 ExternalPolicyDataFetcherBackend::CreateFrontend(
     scoped_refptr<base::SequencedTaskRunner> frontend_task_runner) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   return std::make_unique<ExternalPolicyDataFetcher>(
       std::move(frontend_task_runner), weak_factory_.GetWeakPtr());
 }

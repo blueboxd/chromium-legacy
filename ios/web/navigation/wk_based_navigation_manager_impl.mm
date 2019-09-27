@@ -108,9 +108,19 @@ void WKBasedNavigationManagerImpl::OnNavigationStarted(const GURL& url) {
     restoration_timer_ = std::make_unique<base::ElapsedTimer>();
   } else if (!wk_navigation_util::IsRestoreSessionUrl(url)) {
     is_restore_session_in_progress_ = false;
-    DCHECK(restoration_timer_);
-    UMA_HISTOGRAM_TIMES(kRestoreNavigationTime, restoration_timer_->Elapsed());
-    restoration_timer_.reset();
+    // It's possible for there to be pending navigations for a session that is
+    // going to be restored (such as for the -ForwardHistoryClobber workaround).
+    // In this case, the pending navigation will start while the navigation
+    // manager is in restore mode.  There are other edges cases where a restore
+    // session finishes without trigger it's start, such as when restoring some
+    // with some app specific or blocked URLs, or when WKWebView's
+    // backForwardList state is out of sync. See crbug.com/1008026 for more
+    // details.
+    if (restoration_timer_) {
+      UMA_HISTOGRAM_TIMES(kRestoreNavigationTime,
+                          restoration_timer_->Elapsed());
+      restoration_timer_.reset();
+    }
 
     for (base::OnceClosure& callback : restore_session_completion_callbacks_) {
       std::move(callback).Run();

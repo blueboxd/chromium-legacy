@@ -157,6 +157,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   void RegisterWithTraceLog();
   void UnregisterFromTraceLog();
 
+  std::unique_ptr<perfetto::StartupTraceWriter> CreateTraceWriterLocked();
   ThreadLocalEventSink* CreateThreadLocalEventSink(bool thread_will_flush);
 
   // Callback from TraceLog, can be called from any thread.
@@ -176,6 +177,7 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   void LogHistograms();
   // Logs a given histogram in traces.
   void LogHistogram(base::HistogramBase* histogram);
+  void EmitProcessDescriptor();
 
   bool disable_interning_ = false;
   base::OnceClosure stop_complete_callback_;
@@ -198,11 +200,14 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventDataSource
   // SetupStartupTracing() is called.
   std::unique_ptr<perfetto::StartupTraceWriterRegistry>
       startup_writer_registry_;
+  std::unique_ptr<perfetto::StartupTraceWriter> trace_writer_;
   base::OneShotTimer startup_tracing_timer_;
   bool flushing_trace_log_ = false;
   base::OnceClosure flush_complete_task_;
   std::vector<std::string> histograms_;
   bool privacy_filtering_enabled_ = false;
+  std::string process_name_;
+  int process_id_ = base::kNullProcessId;
   SEQUENCE_CHECKER(perfetto_sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventDataSource);

@@ -20,10 +20,8 @@
 #include "components/autofill/content/renderer/field_data_manager.h"
 #include "components/autofill/content/renderer/form_tracker.h"
 #include "components/autofill/content/renderer/html_based_username_detector.h"
-#include "components/autofill/core/common/form_data_predictions.h"
 #include "components/autofill/core/common/mojom/autofill_types.mojom.h"
 #include "components/autofill/core/common/password_form.h"
-#include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/password_form_fill_data.h"
 #include "content/public/renderer/render_frame_observer.h"
 #include "content/public/renderer/render_view_observer.h"
@@ -493,10 +491,6 @@ class PasswordAutofillAgent : public content::RenderFrameObserver,
 
   // Records the username typed before suggestions preview.
   base::string16 username_query_prefix_;
-
-  // Contains server predictions for username, password and/or new password
-  // fields for individual forms.
-  FormsPredictionsMap form_predictions_;
 
   // The HTML based username detector's cache which maps form elements to
   // username predictions.

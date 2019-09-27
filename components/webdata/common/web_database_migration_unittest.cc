@@ -1698,8 +1698,9 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion80ToCurrent) {
     ASSERT_TRUE(s1.Step());
     // Note: This is the *wrong* ID for AUTOFILL, simulating the botched
     // migration in version 78. See crbug.com/895826.
-    ASSERT_EQ(syncer::ModelTypeToHistogramInt(syncer::AUTOFILL),
-              s1.ColumnInt(0));
+    ASSERT_EQ(
+        static_cast<int>(syncer::ModelTypeHistogramValue(syncer::AUTOFILL)),
+        s1.ColumnInt(0));
     ASSERT_EQ("storage_key1", s1.ColumnString(1));
     ASSERT_EQ("blob1", s1.ColumnString(2));
 
@@ -1715,8 +1716,9 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion80ToCurrent) {
         "SELECT model_type, value FROM autofill_model_type_state"));
     ASSERT_TRUE(s2.Step());
     // Like above: Bad value.
-    ASSERT_EQ(syncer::ModelTypeToHistogramInt(syncer::AUTOFILL),
-              s2.ColumnInt(0));
+    ASSERT_EQ(
+        static_cast<int>(syncer::ModelTypeHistogramValue(syncer::AUTOFILL)),
+        s2.ColumnInt(0));
     ASSERT_EQ("state1", s2.ColumnString(1));
     ASSERT_TRUE(s2.Step());
     // Good value.

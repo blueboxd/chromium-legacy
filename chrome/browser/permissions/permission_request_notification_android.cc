@@ -26,12 +26,11 @@
 
 namespace {
 const gfx::Image GetNotificationsSmallImage() {
-  // TODO(andypaicu): when the "notifications blocked" icon is submitted, use
-  // that icon instead of this one.
-  return gfx::Image(CreateVectorIcon(
-      vector_icons::kNotificationsIcon, message_center::kNotificationIconSize,
-      ui::NativeTheme::GetInstanceForWeb()->GetSystemColor(
-          ui::NativeTheme::kColorId_DefaultIconColor)));
+  return gfx::Image(
+      CreateVectorIcon(vector_icons::kNotificationsOffIcon,
+                       message_center::kNotificationIconSize,
+                       ui::NativeTheme::GetInstanceForWeb()->GetSystemColor(
+                           ui::NativeTheme::kColorId_DefaultIconColor)));
 }
 
 constexpr char kNotificationIdPrefix[] = "notification_permission_request_";

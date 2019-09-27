@@ -36,17 +36,13 @@ static const ModelType kStartOrder[] = {
     // in parallel with the UI types.
     PASSWORDS, AUTOFILL, AUTOFILL_PROFILE, AUTOFILL_WALLET_DATA,
     AUTOFILL_WALLET_METADATA, EXTENSION_SETTINGS, APP_SETTINGS, TYPED_URLS,
-    HISTORY_DELETE_DIRECTIVES, DEPRECATED_SYNCED_NOTIFICATIONS,
-    DEPRECATED_SYNCED_NOTIFICATION_APP_INFO,
+    HISTORY_DELETE_DIRECTIVES,
 
     // UI thread data types.
     BOOKMARKS, PREFERENCES, PRIORITY_PREFERENCES, EXTENSIONS, APPS, APP_LIST,
-    ARC_PACKAGE, READING_LIST, THEMES, SEARCH_ENGINES, SESSIONS,
-    DEPRECATED_APP_NOTIFICATIONS, DICTIONARY, FAVICON_IMAGES, FAVICON_TRACKING,
-    PRINTERS, USER_CONSENTS, USER_EVENTS, SUPERVISED_USER_SETTINGS,
-    SUPERVISED_USER_WHITELISTS, DEPRECATED_WIFI_CREDENTIALS,
-    DEPRECATED_SUPERVISED_USERS, MOUNTAIN_SHARES,
-    DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, DEPRECATED_ARTICLES,
+    ARC_PACKAGE, READING_LIST, THEMES, SEARCH_ENGINES, SESSIONS, DICTIONARY,
+    FAVICON_IMAGES, FAVICON_TRACKING, PRINTERS, USER_CONSENTS, USER_EVENTS,
+    SUPERVISED_USER_SETTINGS, SUPERVISED_USER_WHITELISTS, MOUNTAIN_SHARES,
     SEND_TAB_TO_SELF, SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS};
 
 static_assert(base::size(kStartOrder) ==
@@ -451,8 +447,7 @@ void ModelAssociationManager::ModelAssociationDone(State new_state) {
         dtc->state() != DataTypeController::STOPPING) {
       // TODO(wychen): enum uma should be strongly typed. crbug.com/661401
       UMA_HISTOGRAM_ENUMERATION("Sync.ConfigureFailed",
-                                ModelTypeToHistogramInt(dtc->type()),
-                                static_cast<int>(ModelType::NUM_ENTRIES));
+                                ModelTypeHistogramValue(dtc->type()));
       StopDatatypeImpl(SyncError(FROM_HERE, SyncError::DATATYPE_ERROR,
                                  "Association timed out.", dtc->type()),
                        STOP_SYNC, dtc, base::DoNothing());

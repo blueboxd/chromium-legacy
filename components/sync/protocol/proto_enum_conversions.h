@@ -131,9 +131,6 @@ const char* ProtoEnumToString(
     sync_pb::WifiConfigurationSpecificsData::ProxyConfiguration::ProxyOption
         proxy_option);
 
-const char* ProtoEnumToString(
-    sync_pb::WifiCredentialSpecifics::SecurityClass security_class);
-
 }  // namespace syncer
 
 #endif  // COMPONENTS_SYNC_PROTOCOL_PROTO_ENUM_CONVERSIONS_H_

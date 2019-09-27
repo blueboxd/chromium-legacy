@@ -10,7 +10,7 @@
 
 #include "base/base64.h"
 #include "base/hash/sha1.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/syncable/directory_cryptographer.h"
@@ -23,15 +23,15 @@ namespace {
 using sync_pb::EntitySpecifics;
 using sync_pb::SyncEntity;
 
-const char kTag[] = "tag";
+const ClientTagHash kTag = ClientTagHash::FromHashed("tag");
 const char kValue[] = "value";
 const char kURL[] = "url";
 const char kTitle[] = "title";
 
-EntitySpecifics GeneratePreferenceSpecifics(const std::string& tag,
+EntitySpecifics GeneratePreferenceSpecifics(const ClientTagHash& tag,
                                             const std::string& value) {
   EntitySpecifics specifics;
-  specifics.mutable_preference()->set_name(tag);
+  specifics.mutable_preference()->set_name(tag.value());
   specifics.mutable_preference()->set_value(value);
   return specifics;
 }
@@ -80,7 +80,7 @@ TEST(NonBlockingTypeCommitContributionTest, PopulateCommitProtoDefault) {
   EXPECT_EQ(creation_time.ToJsTime(), entity.ctime());
   EXPECT_FALSE(entity.name().empty());
   EXPECT_FALSE(entity.client_defined_unique_tag().empty());
-  EXPECT_EQ(kTag, entity.specifics().preference().name());
+  EXPECT_EQ(kTag.value(), entity.specifics().preference().name());
   EXPECT_FALSE(entity.deleted());
   EXPECT_EQ(kValue, entity.specifics().preference().value());
   EXPECT_TRUE(entity.parent_id_string().empty());
@@ -187,7 +187,7 @@ TEST(NonBlockingTypeCommitContributionTest,
   EXPECT_TRUE(entity.id_string().empty());
   EXPECT_EQ(7, entity.version());
   EXPECT_EQ("encrypted", entity.name());
-  EXPECT_EQ(kTag, entity.client_defined_unique_tag());
+  EXPECT_EQ(kTag.value(), entity.client_defined_unique_tag());
   EXPECT_FALSE(entity.deleted());
   EXPECT_FALSE(entity.specifics().has_encrypted());
   EXPECT_TRUE(entity.specifics().has_password());
@@ -248,7 +248,7 @@ TEST(NonBlockingTypeCommitContributionTest,
   EXPECT_TRUE(entity.id_string().empty());
   EXPECT_EQ(7, entity.version());
   EXPECT_EQ("encrypted", entity.name());
-  EXPECT_EQ(kTag, entity.client_defined_unique_tag());
+  EXPECT_EQ(kTag.value(), entity.client_defined_unique_tag());
   EXPECT_FALSE(entity.deleted());
   EXPECT_FALSE(entity.specifics().has_encrypted());
   EXPECT_TRUE(entity.specifics().has_password());

@@ -40,9 +40,6 @@ void WorldSafeV8ReferenceInternal::MaybeCheckCreationContextWorld(
     v8::Local<v8::Value> value) {
   if (!value->IsObject())
     return;
-  // TODO(crbug.com/v8/9713): Let JSModuleNamespaceObject have CreationContext.
-  if (value->IsModuleNamespaceObject())
-    return;
 
   ScriptState* script_state =
       ScriptState::From(value.As<v8::Object>()->CreationContext());

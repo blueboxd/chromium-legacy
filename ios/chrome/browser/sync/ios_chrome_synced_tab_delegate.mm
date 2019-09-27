@@ -55,12 +55,6 @@ bool IOSChromeSyncedTabDelegate::IsBeingDestroyed() const {
   return web_state_->IsBeingDestroyed();
 }
 
-// todo(pnoland): add logic to store and return the source tab id on ios.
-// http://crbug/695241
-SessionID IOSChromeSyncedTabDelegate::GetSourceTabID() const {
-  return SessionID::InvalidValue();
-}
-
 std::string IOSChromeSyncedTabDelegate::GetExtensionAppId() const {
   return std::string();
 }

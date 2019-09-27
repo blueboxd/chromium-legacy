@@ -426,6 +426,28 @@ void DedicatedWorkerHost::CreateIdleManager(
       ->CreateService(std::move(receiver));
 }
 
+void DedicatedWorkerHost::CreatePaymentManager(
+    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* worker_process_host = GetProcessHost();
+  if (!worker_process_host)
+    return;
+  worker_process_host->CreatePaymentManager(std::move(receiver));
+}
+
+void DedicatedWorkerHost::BindSmsReceiverReceiver(
+    mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver) {
+  RenderFrameHostImpl* ancestor_render_frame_host =
+      GetAncestorRenderFrameHost();
+  if (!ancestor_render_frame_host) {
+    // The ancestor frame may have already been closed. In that case, the worker
+    // will soon be terminated too, so abort the connection.
+    return;
+  }
+
+  ancestor_render_frame_host->BindSmsReceiverReceiver(std::move(receiver));
+}
+
 void DedicatedWorkerHost::ObserveNetworkServiceCrash(
     StoragePartitionImpl* storage_partition_impl) {
   auto params = network::mojom::URLLoaderFactoryParams::New();

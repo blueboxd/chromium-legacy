@@ -96,17 +96,22 @@ bool FlingController::ObserveAndFilterForTapSuppression(
 
 bool FlingController::ObserveAndMaybeConsumeGestureEvent(
     const GestureEventWithLatencyInfo& gesture_event) {
+  TRACE_EVENT0("input", "FlingController::ObserveAndMaybeConsumeGestureEvent");
   // FlingCancel events arrive when a finger is touched down regardless of
   // whether there is an ongoing fling. These can affect state so if there's no
   // on-going fling we should just discard these without letting the rest of
   // the fling system see it.
   if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingCancel &&
       !fling_curve_) {
+    TRACE_EVENT_INSTANT0("input", "NoActiveFling", TRACE_EVENT_SCOPE_THREAD);
     return true;
   }
 
-  if (ObserveAndFilterForTapSuppression(gesture_event))
+  if (ObserveAndFilterForTapSuppression(gesture_event)) {
+    TRACE_EVENT_INSTANT0("input", "FilterTapSuppression",
+                         TRACE_EVENT_SCOPE_THREAD);
     return true;
+  }
 
   if (gesture_event.event.GetType() == WebInputEvent::kGestureScrollUpdate) {
     last_seen_scroll_update_ = gesture_event.event.TimeStamp();

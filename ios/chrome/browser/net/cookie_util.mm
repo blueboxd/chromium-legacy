@@ -15,7 +15,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/task/post_task.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
-#include "ios/net/cookies/cookie_store_ios_persistent.h"
+#import "ios/net/cookies/cookie_store_ios.h"
 #import "ios/net/cookies/system_cookie_store.h"
 #include "ios/web/common/features.h"
 #include "ios/web/public/thread/web_task_traits.h"

@@ -385,7 +385,8 @@ void ArcApps::OnPackageInstalled(
 
 void ArcApps::OnPackageModified(
     const arc::mojom::ArcPackageInfo& package_info) {
-  ConvertAndPublishPackageApps(package_info);
+  static constexpr bool update_icon = false;
+  ConvertAndPublishPackageApps(package_info, update_icon);
 }
 
 void ArcApps::OnPackageListInitialRefreshed() {
@@ -435,7 +436,8 @@ apps::mojom::InstallSource GetInstallSource(const ArcAppListPrefs* prefs,
 
 apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
                                      const std::string& app_id,
-                                     const ArcAppListPrefs::AppInfo& app_info) {
+                                     const ArcAppListPrefs::AppInfo& app_info,
+                                     bool update_icon) {
   apps::mojom::AppPtr app = apps::mojom::App::New();
 
   app->app_type = apps::mojom::AppType::kArc;
@@ -446,11 +448,14 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
   app->name = app_info.name;
   app->short_name = app->name;
 
-  IconEffects icon_effects = IconEffects::kNone;
-  if (app_info.suspended) {
-    icon_effects = static_cast<IconEffects>(icon_effects | IconEffects::kGray);
+  if (update_icon) {
+    IconEffects icon_effects = IconEffects::kNone;
+    if (app_info.suspended) {
+      icon_effects =
+          static_cast<IconEffects>(icon_effects | IconEffects::kGray);
+    }
+    app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
   }
-  app->icon_key = icon_key_factory_.MakeIconKey(icon_effects);
 
   app->last_launch_time = app_info.last_launch_time;
   app->install_time = app_info.install_time;
@@ -492,7 +497,8 @@ void ArcApps::Publish(apps::mojom::AppPtr app) {
 }
 
 void ArcApps::ConvertAndPublishPackageApps(
-    const arc::mojom::ArcPackageInfo& package_info) {
+    const arc::mojom::ArcPackageInfo& package_info,
+    bool update_icon) {
   if (!package_info.permissions.has_value()) {
     return;
   }
@@ -503,7 +509,7 @@ void ArcApps::ConvertAndPublishPackageApps(
       std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
           prefs->GetApp(app_id);
       if (app_info) {
-        Publish(Convert(prefs, app_id, *app_info));
+        Publish(Convert(prefs, app_id, *app_info, update_icon));
       }
     }
   }

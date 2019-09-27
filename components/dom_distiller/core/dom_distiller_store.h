@@ -17,15 +17,11 @@
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_data.h"
-#include "components/sync/model/sync_error.h"
-#include "components/sync/model/sync_error_factory.h"
-#include "components/sync/model/sync_merge_result.h"
-#include "components/sync/model/syncable_service.h"
 #include "url/gurl.h"
 
 namespace dom_distiller {
 
-// Interface for accessing the stored/synced DomDistiller entries.
+// Interface for accessing the stored DomDistiller entries.
 class DomDistillerStoreInterface {
  public:
   virtual ~DomDistillerStoreInterface() {}
@@ -100,17 +96,9 @@ class DomDistillerStore : public DomDistillerStoreInterface {
   bool ChangeEntry(const ArticleEntry& entry,
                    syncer::SyncChange::SyncChangeType changeType);
 
-  syncer::SyncMergeResult MergeDataWithModel(
-      const syncer::SyncDataList& data,
-      syncer::SyncChangeList* changes_applied,
-      syncer::SyncChangeList* changes_missing);
-
-  // Convert a SyncDataList to a SyncChangeList of add or update changes based
-  // on the state of the in-memory model. Also calculate the entries missing
-  // from the SyncDataList.
-  void CalculateChangesForMerge(const syncer::SyncDataList& data,
-                                syncer::SyncChangeList* changes_to_apply,
-                                syncer::SyncChangeList* changes_missing);
+  void MergeDataWithModel(const syncer::SyncDataList& data,
+                          syncer::SyncChangeList* changes_applied,
+                          syncer::SyncChangeList* changes_missing);
 
   bool ApplyChangesToDatabase(const syncer::SyncChangeList& change_list);
 
@@ -122,8 +110,6 @@ class DomDistillerStore : public DomDistillerStoreInterface {
 
   void NotifyObservers(const syncer::SyncChangeList& changes);
 
-  std::unique_ptr<syncer::SyncChangeProcessor> sync_processor_;
-  std::unique_ptr<syncer::SyncErrorFactory> error_factory_;
   std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>> database_;
   bool database_loaded_;
   base::ObserverList<DomDistillerObserver>::Unchecked observers_;

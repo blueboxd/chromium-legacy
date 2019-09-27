@@ -461,10 +461,10 @@ MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(
       callback(callback) {}
 
 MediaStreamVideoSource::PendingTrackInfo::PendingTrackInfo(
-    PendingTrackInfo&& other) noexcept = default;
+    PendingTrackInfo&& other) = default;
 MediaStreamVideoSource::PendingTrackInfo&
 MediaStreamVideoSource::PendingTrackInfo::operator=(
-    MediaStreamVideoSource::PendingTrackInfo&& other) noexcept = default;
+    MediaStreamVideoSource::PendingTrackInfo&& other) = default;
 
 MediaStreamVideoSource::PendingTrackInfo::~PendingTrackInfo() {}
 

@@ -720,8 +720,6 @@ void EmbeddedWorkerInstance::Start(
 
   params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
   params->wait_for_debugger = false;
-  params->v8_cache_options = GetV8CacheOptions();
-
   params->subresource_loader_updater =
       subresource_loader_updater_.BindNewPipeAndPassReceiver();
 

@@ -289,7 +289,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientPasswordsSyncUssMigratorTest,
 
   EXPECT_EQ(1, histogram_tester.GetBucketCount(
                    "Sync.USSMigrationSuccess",
-                   syncer::ModelTypeToHistogramInt(syncer::PASSWORDS)));
+                   static_cast<int>(
+                       syncer::ModelTypeHistogramValue(syncer::PASSWORDS))));
   EXPECT_THAT(
       histogram_tester.GetAllSamples("Sync.USSMigrationEntityCount.PASSWORD"),
       ElementsAre(base::Bucket(/*min=*/2, /*count=*/1)));

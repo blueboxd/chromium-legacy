@@ -159,8 +159,8 @@ class DiscreteSet {
 
   DiscreteSet(const DiscreteSet& other) = default;
   DiscreteSet& operator=(const DiscreteSet& other) = default;
-  DiscreteSet(DiscreteSet&& other) noexcept = default;
-  DiscreteSet& operator=(DiscreteSet&& other) noexcept = default;
+  DiscreteSet(DiscreteSet&& other) = default;
+  DiscreteSet& operator=(DiscreteSet&& other) = default;
   ~DiscreteSet() = default;
 
   bool Contains(const T& value) const {

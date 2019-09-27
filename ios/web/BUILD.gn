@@ -39,6 +39,7 @@ source_set("web") {
     ":threads",
     "//base",
     "//components/leveldb_proto",
+    "//ios/third_party/webkit",
     "//ios/web/common",
     "//ios/web/download",
     "//ios/web/favicon",
@@ -65,8 +66,6 @@ source_set("web") {
     "network_context_owner.cc",
     "web_client.mm",
   ]
-
-  libs = [ "WebKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

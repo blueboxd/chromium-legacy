@@ -458,59 +458,6 @@ base::string16 JoinNameParts(base::StringPiece16 given,
   return base::JoinString(full_name, base::ASCIIToUTF16(separator));
 }
 
-bool ProfileMatchesFullName(base::StringPiece16 full_name,
-                            const autofill::AutofillProfile& profile) {
-  const base::string16 kSpace = base::ASCIIToUTF16(" ");
-  const base::string16 kPeriodSpace = base::ASCIIToUTF16(". ");
-
-  // First Last
-  base::string16 candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
-                             profile.GetRawInfo(autofill::NAME_LAST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  // First Middle Last
-  candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
-              profile.GetRawInfo(autofill::NAME_MIDDLE) + kSpace +
-              profile.GetRawInfo(autofill::NAME_LAST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  // First M Last
-  candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
-              profile.GetRawInfo(autofill::NAME_MIDDLE_INITIAL) + kSpace +
-              profile.GetRawInfo(autofill::NAME_LAST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  // First M. Last
-  candidate = profile.GetRawInfo(autofill::NAME_FIRST) + kSpace +
-              profile.GetRawInfo(autofill::NAME_MIDDLE_INITIAL) + kPeriodSpace +
-              profile.GetRawInfo(autofill::NAME_LAST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  // Last First
-  candidate = profile.GetRawInfo(autofill::NAME_LAST) + kSpace +
-              profile.GetRawInfo(autofill::NAME_FIRST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  // LastFirst
-  candidate = profile.GetRawInfo(autofill::NAME_LAST) +
-              profile.GetRawInfo(autofill::NAME_FIRST);
-  if (!full_name.compare(candidate)) {
-    return true;
-  }
-
-  return false;
-}
-
 const PaymentRequestData& GetPaymentRequestData(
     const std::string& issuer_network) {
   for (const PaymentRequestData& data : kPaymentRequestData) {

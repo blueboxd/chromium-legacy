@@ -387,7 +387,7 @@ void OptimizationGuideHintsManager::OnComponentHintsUpdated(
       optimization_guide::kComponentHintsUpdatedResultHistogramString,
       hints_updated);
 
-  MaybeScheduleHintsFetch();
+  MaybeScheduleTopHostsHintsFetch();
 
   MaybeRunUpdateClosure(std::move(update_closure));
 }
@@ -409,7 +409,7 @@ void OptimizationGuideHintsManager::SetHintsFetcherForTesting(
   hints_fetcher_ = std::move(hints_fetcher);
 }
 
-void OptimizationGuideHintsManager::MaybeScheduleHintsFetch() {
+void OptimizationGuideHintsManager::MaybeScheduleTopHostsHintsFetch() {
   if (!optimization_guide::features::IsHintsFetchingEnabled() ||
       !top_host_provider_) {
     return;
@@ -417,14 +417,14 @@ void OptimizationGuideHintsManager::MaybeScheduleHintsFetch() {
 
   if (optimization_guide::switches::ShouldOverrideFetchHintsTimer()) {
     SetLastHintsFetchAttemptTime(clock_->Now());
-    FetchHints();
+    FetchTopHostsHints();
   } else {
-    ScheduleHintsFetch();
+    ScheduleTopHostsHintsFetch();
   }
 }
 
-void OptimizationGuideHintsManager::ScheduleHintsFetch() {
-  DCHECK(!hints_fetch_timer_.IsRunning());
+void OptimizationGuideHintsManager::ScheduleTopHostsHintsFetch() {
+  DCHECK(!top_hosts_hints_fetch_timer_.IsRunning());
 
   const base::TimeDelta time_until_update_time =
       hint_cache_->FetchedHintsUpdateTime() - clock_->Now();
@@ -436,8 +436,9 @@ void OptimizationGuideHintsManager::ScheduleHintsFetch() {
     // Fetched hints in the store should be updated and an attempt has not
     // been made in last |kFetchRetryDelay|.
     SetLastHintsFetchAttemptTime(clock_->Now());
-    hints_fetch_timer_.Start(FROM_HERE, RandomFetchDelay(), this,
-                             &OptimizationGuideHintsManager::FetchHints);
+    top_hosts_hints_fetch_timer_.Start(
+        FROM_HERE, RandomFetchDelay(), this,
+        &OptimizationGuideHintsManager::FetchTopHostsHints);
   } else {
     if (time_until_update_time >= base::TimeDelta()) {
       // If the fetched hints in the store are still up-to-date, set a timer
@@ -449,13 +450,13 @@ void OptimizationGuideHintsManager::ScheduleHintsFetch() {
       // delay.
       fetcher_delay = time_until_retry;
     }
-    hints_fetch_timer_.Start(
+    top_hosts_hints_fetch_timer_.Start(
         FROM_HERE, fetcher_delay, this,
-        &OptimizationGuideHintsManager::ScheduleHintsFetch);
+        &OptimizationGuideHintsManager::ScheduleTopHostsHintsFetch);
   }
 }
 
-void OptimizationGuideHintsManager::FetchHints() {
+void OptimizationGuideHintsManager::FetchTopHostsHints() {
   DCHECK(top_host_provider_);
 
   size_t max_hints_to_fetch = optimization_guide::features::
@@ -473,37 +474,54 @@ void OptimizationGuideHintsManager::FetchHints() {
         pref_service_);
   }
   hints_fetcher_->FetchOptimizationGuideServiceHints(
-      top_hosts, base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
-                                ui_weak_ptr_factory_.GetWeakPtr()));
+      top_hosts, optimization_guide::proto::CONTEXT_BATCH_UPDATE,
+      base::BindOnce(&OptimizationGuideHintsManager::OnHintsFetched,
+                     ui_weak_ptr_factory_.GetWeakPtr()));
 }
 
 void OptimizationGuideHintsManager::OnHintsFetched(
+    optimization_guide::proto::RequestContext request_context,
+    base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
+        get_hints_response) {
+  switch (request_context) {
+    case optimization_guide::proto::CONTEXT_BATCH_UPDATE:
+      OnTopHostsHintsFetched(std::move(get_hints_response));
+      return;
+    case optimization_guide::proto::CONTEXT_PAGE_NAVIGATION:
+    case optimization_guide::proto::CONTEXT_UNSPECIFIED:
+      NOTREACHED();
+  }
+  NOTREACHED();
+}
+
+void OptimizationGuideHintsManager::OnTopHostsHintsFetched(
     base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
         get_hints_response) {
   if (get_hints_response) {
     hint_cache_->UpdateFetchedHints(
         std::move(*get_hints_response),
         clock_->Now() + kUpdateFetchedHintsDelay,
-        base::BindOnce(&OptimizationGuideHintsManager::OnFetchedHintsStored,
-                       ui_weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(
+            &OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored,
+            ui_weak_ptr_factory_.GetWeakPtr()));
   } else {
     // The fetch did not succeed so we will schedule to retry the fetch in
     // after delaying for |kFetchRetryDelay|
     // TODO(mcrouse): When the store is refactored from closures, the timer will
     // be scheduled on failure of the store instead.
-    hints_fetch_timer_.Start(
+    top_hosts_hints_fetch_timer_.Start(
         FROM_HERE, kFetchRetryDelay, this,
-        &OptimizationGuideHintsManager::ScheduleHintsFetch);
+        &OptimizationGuideHintsManager::ScheduleTopHostsHintsFetch);
   }
 }
 
-void OptimizationGuideHintsManager::OnFetchedHintsStored() {
+void OptimizationGuideHintsManager::OnFetchedTopHostsHintsStored() {
   LOCAL_HISTOGRAM_BOOLEAN("OptimizationGuide.FetchedHints.Stored", true);
 
-  hints_fetch_timer_.Stop();
-  hints_fetch_timer_.Start(
+  top_hosts_hints_fetch_timer_.Stop();
+  top_hosts_hints_fetch_timer_.Start(
       FROM_HERE, hint_cache_->FetchedHintsUpdateTime() - clock_->Now(), this,
-      &OptimizationGuideHintsManager::ScheduleHintsFetch);
+      &OptimizationGuideHintsManager::ScheduleTopHostsHintsFetch);
 }
 
 base::Time OptimizationGuideHintsManager::GetLastHintsFetchAttemptTime() const {

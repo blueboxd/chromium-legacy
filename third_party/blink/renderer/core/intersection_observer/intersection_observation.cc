@@ -73,9 +73,10 @@ void IntersectionObservation::Disconnect() {
     if (target_->isConnected() &&
         !observer_data->IsTargetOfImplicitRootObserver() &&
         !observer_data->IsRoot()) {
-      target_->GetDocument()
-          .EnsureIntersectionObserverController()
-          .RemoveTrackedElement(*target_);
+      IntersectionObserverController* controller =
+          target_->GetDocument().GetIntersectionObserverController();
+      if (controller)
+        controller->RemoveTrackedElement(*target_);
     }
   }
   entries_.clear();

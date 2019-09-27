@@ -55,7 +55,7 @@ bool IsValidFrameForQueueDMABuf(const VideoFrame* frame,
     return false;
   }
 
-  const std::vector<VideoFrameLayout::Plane>& planes = frame->layout().planes();
+  const auto& planes = frame->layout().planes();
   for (size_t i = frame->DmabufFds().size() - 1; i >= target_num_fds; --i) {
     // Assume that an fd is a duplicate of a previous plane's fd if offset != 0.
     // Otherwise, if offset == 0, return error as surface_it may be pointing to

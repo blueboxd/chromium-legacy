@@ -59,8 +59,7 @@ OriginAccessEntry::OriginAccessEntry(
                network::mojom::CorsPortMatchMode::kAllowOnlySpecifiedPort,
                priority) {}
 
-OriginAccessEntry::OriginAccessEntry(OriginAccessEntry&& from) noexcept =
-    default;
+OriginAccessEntry::OriginAccessEntry(OriginAccessEntry&& from) = default;
 
 network::cors::OriginAccessEntry::MatchResult OriginAccessEntry::MatchesOrigin(
     const SecurityOrigin& origin) const {

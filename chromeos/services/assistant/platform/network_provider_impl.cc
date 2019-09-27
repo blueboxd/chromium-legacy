@@ -25,9 +25,8 @@ NetworkProviderImpl::NetworkProviderImpl(mojom::Client* client)
     return;
   client->RequestNetworkConfig(
       cros_network_config_remote_.BindNewPipeAndPassReceiver());
-  network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
-  binding_.Bind(mojo::MakeRequest(&observer_ptr));
-  cros_network_config_remote_->AddObserver(std::move(observer_ptr));
+  cros_network_config_remote_->AddObserver(
+      receiver_.BindNewPipeAndPassRemote());
   cros_network_config_remote_->GetNetworkStateList(
       network_config::mojom::NetworkFilter::New(
           network_config::mojom::FilterType::kActive,

@@ -8,20 +8,20 @@
 // for the script. We expect library to not crash and return the 55 as a
 // result.
 
-#include <algorithm>
+#include <numeric>
 #include <vector>
 
 #include "libtest_array.h"  // NOLINT(build/include)
 
 extern "C" {
-int GetZeroes();
+int GetSum();
 }
 
-int GetZeroes() {
+int GetSum() {
   // We are using some c++ features here to better simulate a c++ library and
   // cause more code reach to catch potential memory errors.
   std::vector<int> sum_array(std::begin(array), std::end(array));
-  int count = std::count(sum_array.begin(), sum_array.end(), 0);
-  // count should be equal to 4096.
-  return count;
+  int sum = std::accumulate(sum_array.begin(), sum_array.end(), 0);
+  // sum should be equal to 1046543.
+  return sum;
 }

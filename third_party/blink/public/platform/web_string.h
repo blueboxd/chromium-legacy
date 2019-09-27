@@ -102,10 +102,10 @@ class WebString {
   BLINK_PLATFORM_EXPORT WebString(const WebUChar* data, size_t len);
 
   BLINK_PLATFORM_EXPORT WebString(const WebString&);
-  BLINK_PLATFORM_EXPORT WebString(WebString&&) noexcept;
+  BLINK_PLATFORM_EXPORT WebString(WebString&&);
 
   BLINK_PLATFORM_EXPORT WebString& operator=(const WebString&);
-  BLINK_PLATFORM_EXPORT WebString& operator=(WebString&&) noexcept;
+  BLINK_PLATFORM_EXPORT WebString& operator=(WebString&&);
 
   BLINK_PLATFORM_EXPORT void Reset();
 

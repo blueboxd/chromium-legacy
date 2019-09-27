@@ -27,7 +27,7 @@ constexpr gfx::Size kCodedSize(kWidth, kHeight);
 }  // namespace
 
 TEST(VideoAcceleratorStructTraitsTest, ConvertVideoFrameLayout) {
-  std::vector<media::VideoFrameLayout::Plane> planes;
+  std::vector<media::ColorPlaneLayout> planes;
   planes.emplace_back(kWidth, 0, kWidth * kHeight);
   planes.emplace_back(kWidth / 2, kWidth * kHeight, kWidth * kHeight / 4);
   planes.emplace_back(kWidth / 2, kWidth * kHeight + kWidth * kHeight / 4,

@@ -36,6 +36,7 @@
 #include "build/build_config.h"
 #include "components/chromeos_camera/gpu_mjpeg_decode_accelerator_factory.h"
 #include "components/chromeos_camera/mjpeg_decode_accelerator.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/base/test_data_util.h"
 #include "media/base/video_frame_layout.h"
@@ -348,7 +349,7 @@ MjpegDecodeAcceleratorTestEnvironment::CreateDmaBufVideoFrame(
   gmb->Unmap();
 
   // Create a VideoFrame from the NativePixmapHandle.
-  std::vector<media::VideoFrameLayout::Plane> planes;
+  std::vector<media::ColorPlaneLayout> planes;
   std::vector<base::ScopedFD> dmabuf_fds;
   for (size_t i = 0; i < num_planes; i++) {
     gfx::NativePixmapPlane& plane = gmb_handle.native_pixmap_handle.planes[i];

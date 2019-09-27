@@ -1136,6 +1136,7 @@ class OrderedNamedLinesCollector {
         ordered_named_auto_repeat_grid_lines_(
             is_row_axis ? style.AutoRepeatOrderedNamedGridColumnLines()
                         : style.AutoRepeatOrderedNamedGridRowLines()) {}
+  virtual ~OrderedNamedLinesCollector() = default;
 
   bool IsEmpty() const {
     return ordered_named_grid_lines_.IsEmpty() &&

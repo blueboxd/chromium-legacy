@@ -17,7 +17,7 @@
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/time/time.h"
 #include "components/history/core/browser/history_service.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/time.h"
 #include "components/sync/model/data_type_activation_request.h"
 #include "components/sync/model/entity_change.h"
@@ -235,8 +235,8 @@ base::Optional<syncer::ModelError> SessionSyncBridge::ApplySyncChanges(
 
         // Guaranteed by the processor.
         DCHECK_EQ(change->data().client_tag_hash,
-                  GenerateSyncableHash(syncer::SESSIONS,
-                                       SessionStore::GetClientTag(specifics)));
+                  syncer::ClientTagHash::FromUnhashed(
+                      syncer::SESSIONS, SessionStore::GetClientTag(specifics)));
 
         batch->PutAndUpdateTracker(specifics, change->data().modification_time);
         // If a favicon or favicon urls are present, load the URLs and visit

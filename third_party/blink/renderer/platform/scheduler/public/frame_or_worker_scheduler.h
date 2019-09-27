@@ -57,12 +57,11 @@ class PLATFORM_EXPORT FrameOrWorkerScheduler {
 
    public:
     SchedulingAffectingFeatureHandle() = default;
-    SchedulingAffectingFeatureHandle(
-        SchedulingAffectingFeatureHandle&&) noexcept;
+    SchedulingAffectingFeatureHandle(SchedulingAffectingFeatureHandle&&);
     inline ~SchedulingAffectingFeatureHandle() { reset(); }
 
     SchedulingAffectingFeatureHandle& operator=(
-        SchedulingAffectingFeatureHandle&&) noexcept;
+        SchedulingAffectingFeatureHandle&&);
 
     inline void reset() {
       if (scheduler_)

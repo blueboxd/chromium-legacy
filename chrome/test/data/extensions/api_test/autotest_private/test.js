@@ -243,6 +243,11 @@ var defaultTests = [
         chrome.test.callbackFail(
             'Assistant not allowed - state: 8'));
   },
+  function waitForAssistantQueryStatus() {
+    chrome.autotestPrivate.waitForAssistantQueryStatus(10 /* timeout_s */,
+        chrome.test.callbackFail(
+            'Assistant not allowed - state: 8'));
+  },
   function setWhitelistedPref() {
     chrome.autotestPrivate.setWhitelistedPref(
         'settings.voice_interaction.hotword.enabled' /* pref_name */,

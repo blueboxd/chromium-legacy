@@ -53,13 +53,15 @@ scoped_refptr<VideoFrame> ConvertVideoFrame(const VideoFrame* src_frame,
 // If |dst_storage_type| is STORAGE_DMABUFS, this function creates DMABUF-backed
 // VideoFrame with |dst_layout|. If |dst_storage_type| is STORAGE_OWNED_MEMORY,
 // this function creates memory-backed VideoFrame with |dst_layout|.
+// |dst_buffer_usage| must be specified if |dst_storage_type| is STORAGE_DMABUFS
+// or STORAGE_GPU_MEMORY_BUFFER . A graphic buffer is created with this usage.
 // The created VideoFrame's content is the same as |src_frame|. The created
 // VideoFrame owns the buffer. Returns nullptr on failure.
 scoped_refptr<VideoFrame> CloneVideoFrame(
     const VideoFrame* const src_frame,
     const VideoFrameLayout& dst_layout,
-    VideoFrame::StorageType dst_storage_type =
-        VideoFrame::STORAGE_OWNED_MEMORY);
+    VideoFrame::StorageType dst_storage_type = VideoFrame::STORAGE_OWNED_MEMORY,
+    base::Optional<gfx::BufferUsage> dst_buffer_usage = base::nullopt);
 
 // Get VideoFrame that contains Load()ed data. The returned VideoFrame doesn't
 // own the data and thus must not be changed.

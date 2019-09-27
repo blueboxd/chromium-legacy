@@ -31,7 +31,7 @@
 #include "components/autofill/core/browser/webdata/autofill_webdata_backend.h"
 #include "components/autofill/core/browser/webdata/mock_autofill_webdata_backend.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/driver/sync_driver_switches.h"
 #include "components/sync/model/entity_data.h"
 #include "components/sync/model/mock_model_type_change_processor.h"
@@ -269,7 +269,7 @@ class AutofillWalletSyncBridgeTest : public testing::Test {
       const AutofillWalletSpecifics& specifics) {
     auto data = std::make_unique<EntityData>();
     *data->specifics.mutable_autofill_wallet() = specifics;
-    data->client_tag_hash = syncer::GenerateSyncableHash(
+    data->client_tag_hash = syncer::ClientTagHash::FromUnhashed(
         syncer::AUTOFILL_WALLET_DATA, bridge()->GetClientTag(*data));
     return data;
   }

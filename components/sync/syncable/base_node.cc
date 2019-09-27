@@ -163,10 +163,6 @@ int64_t BaseNode::GetId() const {
   return GetEntry()->GetMetahandle();
 }
 
-base::Time BaseNode::GetModificationTime() const {
-  return GetEntry()->GetMtime();
-}
-
 bool BaseNode::GetIsFolder() const {
   return GetEntry()->GetIsDir();
 }
@@ -264,11 +260,6 @@ const sync_pb::WifiConfigurationSpecificsData&
 BaseNode::GetWifiConfigurationSpecifics() const {
   DCHECK_EQ(GetModelType(), WIFI_CONFIGURATIONS);
   return *wifi_configuration_data_;
-}
-
-const sync_pb::TypedUrlSpecifics& BaseNode::GetTypedUrlSpecifics() const {
-  DCHECK_EQ(GetModelType(), TYPED_URLS);
-  return GetEntitySpecifics().typed_url();
 }
 
 const sync_pb::EntitySpecifics& BaseNode::GetEntitySpecifics() const {

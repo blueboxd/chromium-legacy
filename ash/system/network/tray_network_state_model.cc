@@ -55,9 +55,8 @@ TrayNetworkStateModel::TrayNetworkStateModel()
 
   GetNetworkConfigService(
       remote_cros_network_config_.BindNewPipeAndPassReceiver());
-  chromeos::network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
-  cros_network_config_observer_receiver_.Bind(mojo::MakeRequest(&observer_ptr));
-  remote_cros_network_config_->AddObserver(std::move(observer_ptr));
+  remote_cros_network_config_->AddObserver(
+      cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());
 
   GetActiveNetworks();
   GetVirtualNetworks();

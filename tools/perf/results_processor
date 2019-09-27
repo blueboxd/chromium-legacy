@@ -7,6 +7,7 @@ import sys
 
 from core import path_util
 path_util.AddPyUtilsToPath()
+path_util.AddTracingToPath()
 
 from core import results_processor
 

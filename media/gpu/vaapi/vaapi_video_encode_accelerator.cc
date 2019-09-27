@@ -16,6 +16,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/bits.h"
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -67,6 +68,35 @@ enum VAVEAEncoderFailure {
 static void ReportToUMA(VAVEAEncoderFailure failure) {
   UMA_HISTOGRAM_ENUMERATION("Media.VAVEA.EncoderFailure", failure,
                             VAVEA_ENCODER_FAILURES_MAX + 1);
+}
+
+// Calculate the szie of the allocated buffer aligned to hardware/driver
+// requirements.
+gfx::Size GetInputFrameSize(VideoPixelFormat format,
+                            const gfx::Size& visible_size) {
+  if (format == PIXEL_FORMAT_I420) {
+    // Since we don't have gfx::BufferFormat for I420, replace I420 with YV12.
+    // Remove this workaround once crrev.com/c/1573718 is landed.
+    format = PIXEL_FORMAT_YV12;
+  }
+  // Get a VideoFrameLayout of a graphic buffer with the same gfx::BufferUsage
+  // as camera stack.
+  base::Optional<VideoFrameLayout> layout = GetPlatformVideoFrameLayout(
+      format, visible_size,
+      gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+  if (!layout || layout->planes().empty()) {
+    VLOGF(1) << "Failed to allocate VideoFrameLayout";
+    return gfx::Size();
+  }
+
+  int32_t stride = layout->planes()[0].stride;
+  size_t plane_size = layout->planes()[0].size;
+  if (stride == 0 || plane_size == 0) {
+    VLOGF(1) << "Unexpected stride=" << stride << ", plane_size=" << plane_size;
+    return gfx::Size();
+  }
+
+  return gfx::Size(stride, plane_size / stride);
 }
 
 }  // namespace
@@ -349,7 +379,13 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
     return;
   }
 
-  coded_size_ = encoder_->GetCodedSize();
+  aligned_input_size_ =
+      GetInputFrameSize(config.input_format, config.input_visible_size);
+  if (aligned_input_size_.IsEmpty()) {
+    NOTIFY_ERROR(kPlatformFailureError, "Failed to get frame size");
+    return;
+  }
+
   output_buffer_byte_size_ = encoder_->GetBitstreamBufferSize();
   const size_t max_ref_frames = encoder_->GetMaxNumOfRefFrames();
 
@@ -368,7 +404,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
       (native_input_mode_ ? 0 : kNumSurfacesPerInputVideoFrame);
 
   if (!vaapi_wrapper_->CreateContextAndSurfaces(
-          kVaSurfaceFormat, coded_size_,
+          kVaSurfaceFormat, aligned_input_size_,
           VaapiWrapper::SurfaceUsageHint::kVideoEncoder,
           (num_frames_in_flight + 1) * va_surfaces_per_video_frame_,
           &available_va_surface_ids_)) {
@@ -378,7 +414,7 @@ void VaapiVideoEncodeAccelerator::InitializeTask(const Config& config) {
 
   child_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Client::RequireBitstreamBuffers, client_,
-                                num_frames_in_flight, coded_size_,
+                                num_frames_in_flight, aligned_input_size_,
                                 output_buffer_byte_size_));
 
   SetState(kEncoding);
@@ -546,13 +582,13 @@ scoped_refptr<VaapiEncodeJob> VaapiVideoEncodeAccelerator::CreateEncodeJob(
     }
   } else {
     input_surface =
-        new VASurface(available_va_surface_ids_.back(), coded_size_,
+        new VASurface(available_va_surface_ids_.back(), aligned_input_size_,
                       kVaSurfaceFormat, base::BindOnce(va_surface_release_cb_));
     available_va_surface_ids_.pop_back();
   }
 
   scoped_refptr<VASurface> reconstructed_surface =
-      new VASurface(available_va_surface_ids_.back(), coded_size_,
+      new VASurface(available_va_surface_ids_.back(), aligned_input_size_,
                     kVaSurfaceFormat, base::BindOnce(va_surface_release_cb_));
   available_va_surface_ids_.pop_back();
 

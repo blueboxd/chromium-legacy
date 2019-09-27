@@ -33,15 +33,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // PlatformWindowDelegateBase:
   void OnClosed() override;
 
-  // Adjusts |requested_size| to avoid the WM "feature" where setting the
-  // window size to the monitor size causes the WM to set the EWMH for
-  // fullscreen.
-  //
-  // TODO(https://crbug.com/990756)): this method is mainly for X11
-  // impl (Wayland does not need this workaround). Move this to X11Window
-  // instead. We can't do it now as there are some methods that depend on this.
-  gfx::Size AdjustSizeForDisplay(const gfx::Size& requested_size_in_pixels);
-
  private:
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostLinuxTest, HitTest);
 

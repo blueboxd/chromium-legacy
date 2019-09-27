@@ -32,13 +32,8 @@ class ModelTypeStoreServiceImpl : public ModelTypeStoreService {
   const base::FilePath& GetSyncDataPath() const override;
   RepeatingModelTypeStoreFactory GetStoreFactory() override;
   scoped_refptr<base::SequencedTaskRunner> GetBackendTaskRunner() override;
-  std::unique_ptr<BlockingModelTypeStore>
-  CreateBlockingStoreFromBackendSequence(ModelType type) override;
 
  private:
-  void CreateModelTypeStore(ModelType type,
-                            ModelTypeStore::InitCallback callback);
-
   // The path to the base directory under which sync should store its
   // information.
   const base::FilePath sync_path_;

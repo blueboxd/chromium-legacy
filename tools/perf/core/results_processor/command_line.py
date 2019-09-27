@@ -15,14 +15,20 @@ import sys
 
 from py_utils import cloud_storage
 
+from core.results_processor import formatters
 
-SUPPORTED_FORMATS = ['none', 'json-test-results']
+
+# These formats are always handled natively, and never handed over to Telemetry.
+HANDLED_NATIVELY = ['none', 'json-test-results']
 
 
 def ArgumentParser(standalone=False, legacy_formats=None):
   """Create an ArgumentParser defining options required by the processor."""
-  all_output_formats = sorted(
-      set(SUPPORTED_FORMATS).union(legacy_formats or ()))
+  if standalone:
+    all_output_formats = formatters.FORMATTERS.keys()
+  else:
+    all_output_formats = sorted(
+        set(HANDLED_NATIVELY).union(legacy_formats or ()))
   parser, group = _CreateTopLevelParser(standalone)
   group.add_argument(
       '--output-format', action='append', dest='output_formats',
@@ -65,7 +71,7 @@ def ArgumentParser(standalone=False, legacy_formats=None):
   return parser
 
 
-def ProcessOptions(options):
+def ProcessOptions(options, standalone=False):
   """Adjust result processing options as needed before running benchmarks.
 
   Note: The intended scope of this function is limited to only adjust options
@@ -78,6 +84,8 @@ def ProcessOptions(options):
 
   Args:
     options: An options object with values parsed from the command line.
+    standalone: Whether this is a standalone Results Processor run (as
+      opposed to the run with Telemetry).
   """
   # The output_dir option is None or missing if the selected Telemetry command
   # does not involve output generation, e.g. "run_benchmark list", and the
@@ -116,7 +124,7 @@ def ProcessOptions(options):
   for output_format in chosen_formats:
     if output_format == 'none':
       continue
-    elif output_format in SUPPORTED_FORMATS:
+    elif standalone or output_format in HANDLED_NATIVELY:
       options.output_formats.append(output_format)
     else:
       options.legacy_output_formats.append(output_format)

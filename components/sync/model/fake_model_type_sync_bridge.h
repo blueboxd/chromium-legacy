@@ -22,6 +22,8 @@
 
 namespace syncer {
 
+class ClientTagHash;
+
 // A basic, functional implementation of ModelTypeSyncBridge for testing
 // purposes. It uses the PREFERENCES type to provide a simple key/value
 // interface, and uses its own simple in-memory Store class.
@@ -31,7 +33,7 @@ class FakeModelTypeSyncBridge : public ModelTypeSyncBridge {
   static std::string ClientTagFromKey(const std::string& key);
 
   // Generates the tag hash for a given key.
-  static std::string TagHashFromKey(const std::string& key);
+  static ClientTagHash TagHashFromKey(const std::string& key);
 
   // Generates entity specifics for the given key and value.
   static sync_pb::EntitySpecifics GenerateSpecifics(const std::string& key,

@@ -39,6 +39,7 @@
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_spacing.h"
 #include "third_party/blink/renderer/platform/fonts/shaping/shape_result_view.h"
 #include "third_party/blink/renderer/platform/wtf/text/character_names.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_buffer.h"
 
 namespace blink {
 
@@ -479,7 +480,7 @@ void NGInlineNode::PrepareLayout(
   DCHECK(data);
   CollectInlines(data, previous_data.get(), dirty_lines);
   SegmentText(data);
-  ShapeText(data, &previous_data->text_content);
+  ShapeText(data, previous_data ? &previous_data->text_content : nullptr);
   ShapeTextForFirstLineIfNeeded(data);
   AssociateItemsWithInlines(data);
   DCHECK_EQ(data, MutableData());
@@ -1426,6 +1427,50 @@ bool NGInlineNode::MarkLineBoxesDirty(LayoutBlockFlow* block_flow,
   ItemsBuilderForMarkLineBoxesDirty builder(&dirty_lines);
   CollectInlinesInternal(block_flow, &builder, nullptr);
   return !builder.ShouldAbort();
+}
+
+namespace {
+
+template <typename CharType>
+scoped_refptr<StringImpl> CreateTextContentForStickyImagesQuirk(
+    const CharType* text,
+    unsigned length,
+    base::span<const NGInlineItem> items) {
+  StringBuffer<CharType> buffer(length);
+  CharType* characters = buffer.Characters();
+  memcpy(characters, text, length * sizeof(CharType));
+  for (const NGInlineItem& item : items) {
+    if (item.Type() == NGInlineItem::kAtomicInline && item.IsImage()) {
+      DCHECK_EQ(characters[item.StartOffset()], kObjectReplacementCharacter);
+      characters[item.StartOffset()] = kNoBreakSpaceCharacter;
+    }
+  }
+  return buffer.Release();
+}
+
+}  // namespace
+
+// The stick images quirk changes the line breaking behavior around images. This
+// function returns a text content that has non-breaking spaces for images, so
+// that no changes are needed in the line breaking logic.
+// https://quirks.spec.whatwg.org/#the-table-cell-width-calculation-quirk
+// static
+String NGInlineNode::TextContentForStickyImagesQuirk(
+    const NGInlineItemsData& items_data) {
+  const String& text_content = items_data.text_content;
+  for (const NGInlineItem& item : items_data.items) {
+    if (item.Type() == NGInlineItem::kAtomicInline && item.IsImage()) {
+      if (text_content.Is8Bit()) {
+        return CreateTextContentForStickyImagesQuirk(
+            text_content.Characters8(), text_content.length(),
+            base::span<const NGInlineItem>(&item, items_data.items.end()));
+      }
+      return CreateTextContentForStickyImagesQuirk(
+          text_content.Characters16(), text_content.length(),
+          base::span<const NGInlineItem>(&item, items_data.items.end()));
+    }
+  }
+  return text_content;
 }
 
 static LayoutUnit ComputeContentSize(

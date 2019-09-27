@@ -158,7 +158,7 @@ class CopyAssignmentDeleted final {
   STACK_ALLOCATED();
 
  public:
-  CopyAssignmentDeleted& operator=(CopyAssignmentDeleted&&) noexcept;
+  CopyAssignmentDeleted& operator=(CopyAssignmentDeleted&&);
 
  private:
   CopyAssignmentDeleted& operator=(const CopyAssignmentDeleted&) = delete;
@@ -173,7 +173,7 @@ class CopyAssignmentPrivate final {
   STACK_ALLOCATED();
 
  public:
-  CopyAssignmentPrivate& operator=(CopyAssignmentPrivate&&) noexcept;
+  CopyAssignmentPrivate& operator=(CopyAssignmentPrivate&&);
 
  private:
   CopyAssignmentPrivate& operator=(const CopyAssignmentPrivate&);
@@ -188,7 +188,7 @@ class CopyAssignmentUndeclared final {
   STACK_ALLOCATED();
 
  public:
-  CopyAssignmentUndeclared& operator=(CopyAssignmentUndeclared&&) noexcept;
+  CopyAssignmentUndeclared& operator=(CopyAssignmentUndeclared&&);
 };
 
 static_assert(!std::is_copy_assignable<CopyAssignmentUndeclared>::value,

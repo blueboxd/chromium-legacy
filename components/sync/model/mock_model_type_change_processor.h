@@ -33,7 +33,7 @@ class MockModelTypeChangeProcessor : public ModelTypeChangeProcessor {
   MOCK_METHOD1(UntrackEntityForStorageKey,
                void(const std::string& storage_key));
   MOCK_METHOD1(UntrackEntityForClientTagHash,
-               void(const std::string& client_tag_hash));
+               void(const ClientTagHash& client_tag_hash));
   MOCK_METHOD1(IsEntityUnsynced, bool(const std::string& storage_key));
   MOCK_CONST_METHOD1(GetEntityCreationTime,
                      base::Time(const std::string& storage_key));

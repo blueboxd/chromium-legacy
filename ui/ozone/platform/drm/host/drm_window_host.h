@@ -58,7 +58,7 @@ class DrmWindowHost : public PlatformWindow,
   gfx::Rect GetCursorConfinedBounds() const;
 
   // PlatformWindow:
-  void Show() override;
+  void Show(bool inactive) override;
   void Hide() override;
   void Close() override;
   bool IsVisible() const override;
@@ -103,7 +103,7 @@ class DrmWindowHost : public PlatformWindow,
   DrmWindowHostManager* const window_manager_;    // Not owned.
   DrmDisplayHostManager* const display_manager_;  // Not owned.
   // TODO(crbug.com/936425): Remove after VizDisplayCompositor feature launches.
-  DrmOverlayManager* const overlay_manager_;      // Not owned.
+  DrmOverlayManager* const overlay_manager_;  // Not owned.
 
   gfx::Rect bounds_;
   const gfx::AcceleratedWidget widget_;

@@ -692,6 +692,38 @@ message AccessibilitySettingsProto {
   // status on the login screen is persisted between users.
   optional bool login_screen_cursor_highlight_enabled = 18;
   optional PolicyOptions login_screen_cursor_highlight_enabled_options = 19;
+
+  // Sets the state of the caret highlight accessibility feature on the login
+  // screen. If this policy is set to true, the caret highlight will be enabled
+  // when the login screen is shown. If this policy is set to false, the spoken
+  // feedback will be disabled when the caret highlight is shown. If the
+  // PolicyOptions mode was being mandatory then the user won't be able to
+  // change these settings. Only if PolicyOptions was being set as recommended
+  // users can temporarily override this setting by enabling or disabling the
+  // caret highlight. However, the user's choice is not persistent and the
+  // default is restored whenever the login screen is shown anew or the user
+  // remains idle on the login screen for a minute. If this policy is left
+  // unset, the caret highlight is disabled when the login screen is first
+  // shown. Users can enable or disable the caret highlight anytime and its
+  // status on the login screen is persisted between users.
+  optional bool login_screen_caret_highlight_enabled = 20;
+  optional PolicyOptions login_screen_caret_highlight_enabled_options = 21;
+
+  // Sets the state of the mono audio accessibility feature on the login
+  // screen. If this policy is set to true, the mono audio will be enabled
+  // when the login screen is shown. If this policy is set to false, the mono
+  // audio will be disabled when the mono audio is shown. If the PolicyOptions
+  // mode was being mandatory then the user won't be able to change these
+  // settings. Only if PolicyOptions was being set as recommended users can
+  // temporarily override this setting by enabling or disabling the mono audio.
+  // However, the user's choice is not persistent and the default is restored
+  // whenever the login screen is shown anew or the user remains idle on the
+  // login screen for a minute. If this policy is left unset, the mono audio is
+  // disabled when the login screen is first shown. Users can enable or disable
+  // the mono audio anytime and its status on the login screen is persisted
+  // between users.
+  optional bool login_screen_mono_audio_enabled = 22;
+  optional PolicyOptions login_screen_mono_audio_enabled_options = 23;
 }
 
 message SupervisedUsersSettingsProto {

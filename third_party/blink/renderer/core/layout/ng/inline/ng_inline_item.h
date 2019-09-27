@@ -124,6 +124,10 @@ class CORE_EXPORT NGInlineItem {
 
   LayoutObject* GetLayoutObject() const { return layout_object_; }
 
+  bool IsImage() const {
+    return GetLayoutObject() && GetLayoutObject()->IsLayoutImage();
+  }
+
   void SetOffset(unsigned start, unsigned end) {
     DCHECK_GE(end, start);
     start_offset_ = start;

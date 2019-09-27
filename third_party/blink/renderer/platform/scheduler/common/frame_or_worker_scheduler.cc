@@ -28,15 +28,14 @@ FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle::
 }
 
 FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle::
-    SchedulingAffectingFeatureHandle(
-        SchedulingAffectingFeatureHandle&& other) noexcept
+    SchedulingAffectingFeatureHandle(SchedulingAffectingFeatureHandle&& other)
     : feature_(other.feature_), scheduler_(std::move(other.scheduler_)) {
   other.scheduler_ = nullptr;
 }
 
 FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle&
 FrameOrWorkerScheduler::SchedulingAffectingFeatureHandle::operator=(
-    SchedulingAffectingFeatureHandle&& other) noexcept {
+    SchedulingAffectingFeatureHandle&& other) {
   feature_ = other.feature_;
   policy_ = std::move(other.policy_);
   scheduler_ = std::move(other.scheduler_);

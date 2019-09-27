@@ -310,6 +310,10 @@ These builders are run on some percentage of builds. Their results are ignored
 by CQ. These are often used to test new configurations before they are added
 as required builders.
 
+* [android-marshmallow-arm64-coverage-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-marshmallow-arm64-coverage-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/android-marshmallow-arm64-coverage-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+android-marshmallow-arm64-coverage-rel))
+
+  * Experimental percentage: 3
+
 * [android-pie-arm64-rel](https://ci.chromium.org/p/chromium/builders/luci.chromium.try/android-pie-arm64-rel) ([`commit-queue.cfg` entry](https://cs.chromium.org/search/?q=package:%5Echromium$+file:commit-queue.cfg+chromium/try/android-pie-arm64-rel)) ([matching builders](https://cs.chromium.org/search/?q=file:trybots.py+android-pie-arm64-rel))
 
   * Experimental percentage: 10

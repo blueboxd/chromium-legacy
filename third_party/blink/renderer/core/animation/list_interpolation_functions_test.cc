@@ -105,6 +105,27 @@ InterpolationValue CreateNonInterpolableList(const Vector<int>& values) {
       });
 }
 
+// A simple helper to specify which InterpolableValues in an InterpolableList
+// should be considered compatible.
+class InterpolableValuesCompatibilityHelper {
+ public:
+  // The input |answers| vector must be at least as large as the
+  // InterpolableList being tested, or |AreCompatible| will DCHECK.
+  InterpolableValuesCompatibilityHelper(Vector<bool> answers)
+      : answers_(answers), current_index_(0) {}
+
+  // Callers should pass a reference to this function to
+  // ListInterpolationFunctions::Composite.
+  bool AreCompatible(const InterpolableValue*, const InterpolableValue*) {
+    DCHECK(current_index_ < answers_.size());
+    return answers_.at(current_index_++);
+  }
+
+ private:
+  Vector<bool> answers_;
+  wtf_size_t current_index_;
+};
+
 bool NonInterpolableValuesAreCompatible(const NonInterpolableValue* a,
                                         const NonInterpolableValue* b) {
   return (a ? ToTestNonInterpolableValue(*a).GetValue() : 0) ==
@@ -193,6 +214,8 @@ TEST(ListInterpolationFunctionsTest, EqualCompositeSameLengths) {
   ListInterpolationFunctions::Composite(
       owner, 1.0, interpolation_type, list2,
       ListInterpolationFunctions::LengthMatchingStrategy::kEqual,
+      WTF::BindRepeating(
+          ListInterpolationFunctions::InterpolableValuesKnownCompatible),
       WTF::BindRepeating(NonInterpolableValuesAreCompatible),
       WTF::BindRepeating(Composite));
 
@@ -218,6 +241,8 @@ TEST(ListInterpolationFunctionsTest, EqualCompositeDifferentLengths) {
   ListInterpolationFunctions::Composite(
       owner, 1.0, interpolation_type, list2,
       ListInterpolationFunctions::LengthMatchingStrategy::kEqual,
+      WTF::BindRepeating(
+          ListInterpolationFunctions::InterpolableValuesKnownCompatible),
       WTF::BindRepeating(NonInterpolableValuesAreCompatible),
       WTF::BindRepeating(Composite));
 
@@ -230,7 +255,39 @@ TEST(ListInterpolationFunctionsTest, EqualCompositeDifferentLengths) {
 
 // If one (or more) of the element pairs are incompatible, the list as a whole
 // is non-interpolable. We expect the underlying value to be replaced.
-TEST(ListInterpolationFunctionsTest, EqualCompositeIncompatibleValues) {
+TEST(ListInterpolationFunctionsTest,
+     EqualCompositeIncompatibleInterpolableValues) {
+  auto list1 = CreateInterpolableList({1.0, 2.0, 3.0});
+  auto list2 = CreateInterpolableList({4.0, 5.0, 6.0});
+
+  InterpolableValuesCompatibilityHelper compatibility_helper(
+      {true, false, true});
+
+  PropertyHandle property_handle(GetCSSPropertyZIndex());
+  CSSNumberInterpolationType interpolation_type(property_handle);
+  UnderlyingValueOwner owner;
+  owner.Set(interpolation_type, std::move(list1));
+
+  ListInterpolationFunctions::Composite(
+      owner, 1.0, interpolation_type, list2,
+      ListInterpolationFunctions::LengthMatchingStrategy::kEqual,
+      WTF::BindRepeating(&InterpolableValuesCompatibilityHelper::AreCompatible,
+                         WTF::Unretained(&compatibility_helper)),
+      WTF::BindRepeating(NonInterpolableValuesAreCompatible),
+      WTF::BindRepeating(Composite));
+
+  const auto& result = ToInterpolableList(*owner.Value().interpolable_value);
+
+  ASSERT_EQ(result.length(), 3u);
+  EXPECT_EQ(ToInterpolableNumber(result.Get(0))->Value(), 4.0);
+  EXPECT_EQ(ToInterpolableNumber(result.Get(1))->Value(), 5.0);
+  EXPECT_EQ(ToInterpolableNumber(result.Get(2))->Value(), 6.0);
+}
+
+// If one (or more) of the element pairs are incompatible, the list as a whole
+// is non-interpolable. We expect the underlying value to be replaced.
+TEST(ListInterpolationFunctionsTest,
+     EqualCompositeIncompatibleNonInterpolableValues) {
   auto list1 = CreateInterpolableList({{1.0, 1}, {2.0, 2}, {3.0, 3}});
   auto list2 = CreateInterpolableList({{4.0, 1}, {5.0, 4}, {6.0, 3}});
 
@@ -242,6 +299,8 @@ TEST(ListInterpolationFunctionsTest, EqualCompositeIncompatibleValues) {
   ListInterpolationFunctions::Composite(
       owner, 1.0, interpolation_type, list2,
       ListInterpolationFunctions::LengthMatchingStrategy::kEqual,
+      WTF::BindRepeating(
+          ListInterpolationFunctions::InterpolableValuesKnownCompatible),
       WTF::BindRepeating(NonInterpolableValuesAreCompatible),
       WTF::BindRepeating(Composite));
 

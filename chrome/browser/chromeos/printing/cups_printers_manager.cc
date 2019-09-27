@@ -33,6 +33,7 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_member.h"
 #include "components/prefs/pref_service.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
@@ -75,10 +76,8 @@ class CupsPrintersManagerImpl
     ash::GetNetworkConfigService(
         remote_cros_network_config_.BindNewPipeAndPassReceiver());
 
-    chromeos::network_config::mojom::CrosNetworkConfigObserverPtr observer_ptr;
-    cros_network_config_observer_receiver_.Bind(
-        mojo::MakeRequest(&observer_ptr));
-    remote_cros_network_config_->AddObserver(std::move(observer_ptr));
+    remote_cros_network_config_->AddObserver(
+        cros_network_config_observer_receiver_.BindNewPipeAndPassRemote());
 
     // Prime the printer cache with the saved and enterprise printers.
     printers_.ReplacePrintersInClass(

@@ -8,13 +8,21 @@
 
 :root {
   --google-grey-700: rgb(95, 99, 104);
-  --shelf-area-height: 57px;
+  --shelf-area-height-base: 57px;
 }
 
 html,
 body {
   height: 100%;
   width: 100%;
+}
+
+html {
+  --shelf-area-height: var(--shelf-area-height-base);
+}
+
+html[screen=gaia-signin] {
+  --shelf-area-height: 0;
 }
 
 body {

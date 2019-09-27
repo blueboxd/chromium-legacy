@@ -8,6 +8,7 @@
 #include "base/bind_helpers.h"
 #include "base/files/scoped_file.h"
 #include "build/build_config.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/base/scopedfd_helper.h"
 #include "media/base/video_frame_layout.h"
@@ -48,7 +49,7 @@ scoped_refptr<VideoFrame> CreateVideoFrameOzone(VideoPixelFormat pixel_format,
     return nullptr;
 
   const size_t num_planes = VideoFrame::NumPlanes(pixel_format);
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<ColorPlaneLayout> planes(num_planes);
   for (size_t i = 0; i < num_planes; ++i) {
     planes[i].stride = pixmap->GetDmaBufPitch(i);
     planes[i].offset = pixmap->GetDmaBufOffset(i);

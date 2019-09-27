@@ -188,6 +188,14 @@ class PLATFORM_EXPORT V8PrivateProperty {
     return GetSymbol(isolate, "unexpected cached accessor");
   }
 
+  // This is a hack for PopStateEvent to get the same private property of
+  // History, named State.
+  static Symbol GetHistoryStateSymbol(v8::Isolate* isolate) {
+    // This key is used for uniquely identifying v8::Private.
+    static int private_property_key;
+    return GetSymbol(isolate, &private_property_key, "History#State");
+  }
+
   static Symbol GetSymbol(v8::Isolate* isolate, const char* symbol) {
     return Symbol(isolate, CreateCachedV8Private(isolate, symbol));
   }
@@ -199,13 +207,13 @@ class PLATFORM_EXPORT V8PrivateProperty {
     V8PrivateProperty* private_prop =
         V8PerIsolateData::From(isolate)->PrivateProperty();
     auto& symbol_map = private_prop->symbol_map_;
-    auto itr = symbol_map.find(key);
+    auto iter = symbol_map.find(key);
     v8::Local<v8::Private> v8_private;
-    if (UNLIKELY(itr == symbol_map.end())) {
+    if (UNLIKELY(iter == symbol_map.end())) {
       v8_private = CreateV8Private(isolate, desc);
       symbol_map.insert(key, v8::Eternal<v8::Private>(isolate, v8_private));
     } else {
-      v8_private = itr->value.Get(isolate);
+      v8_private = iter->value.Get(isolate);
     }
     return Symbol(isolate, v8_private);
   }

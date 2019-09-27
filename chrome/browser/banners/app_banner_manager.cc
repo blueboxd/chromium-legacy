@@ -23,6 +23,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "components/rappor/public/rappor_utils.h"
 #include "components/rappor/rappor_service_impl.h"
+#include "content/public/browser/back_forward_cache.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -554,6 +555,21 @@ void AppBannerManager::DidFinishNavigation(content::NavigationHandle* handle) {
       handle->IsSameDocument()) {
     return;
   }
+
+  // If the page gets stored in the back-forward cache we will not trigger the
+  // pipeline again when navigating back (DidFinishLoad will not trigger). So
+  // only allow the page to enter the cache if we know for sure that no
+  // installation is needed.
+  // Note: this check must happen before calling Terminate as it might set the
+  // installable_web_app_check_result_ to kNo.
+  if (installable_web_app_check_result_ != InstallableWebAppCheckResult::kNo) {
+    web_contents()
+        ->GetController()
+        .GetBackForwardCache()
+        .DisableForRenderFrameHost(handle->GetPreviousRenderFrameHostId(),
+                                   "banners::AppBannerManager");
+  }
+
   if (state_ != State::COMPLETE && state_ != State::INACTIVE)
     Terminate();
   ResetCurrentPageData();

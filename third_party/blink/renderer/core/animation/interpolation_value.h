@@ -27,11 +27,11 @@ struct InterpolationValue {
 
   InterpolationValue(std::nullptr_t) {}
 
-  InterpolationValue(InterpolationValue&& other) noexcept
+  InterpolationValue(InterpolationValue&& other)
       : interpolable_value(std::move(other.interpolable_value)),
         non_interpolable_value(std::move(other.non_interpolable_value)) {}
 
-  void operator=(InterpolationValue&& other) noexcept {
+  void operator=(InterpolationValue&& other) {
     interpolable_value = std::move(other.interpolable_value);
     non_interpolable_value = std::move(other.non_interpolable_value);
   }

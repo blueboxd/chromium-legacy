@@ -389,7 +389,7 @@ const base::Feature kDarkenWebsitesCheckboxInThemesSetting{
     "DarkenWebsitesCheckboxInThemesSetting", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kDirectActions{"DirectActions",
-                                   base::FEATURE_DISABLED_BY_DEFAULT};
+                                   base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kDrawVerticallyEdgeToEdge{
     "DrawVerticallyEdgeToEdge", base::FEATURE_DISABLED_BY_DEFAULT};

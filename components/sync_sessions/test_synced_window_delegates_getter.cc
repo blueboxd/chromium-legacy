@@ -160,10 +160,6 @@ bool TestSyncedTabDelegate::ShouldSync(SyncSessionsClient* sessions_client) {
   return http_count > 0;
 }
 
-SessionID TestSyncedTabDelegate::GetSourceTabID() const {
-  return SessionID::InvalidValue();
-}
-
 int64_t TestSyncedTabDelegate::GetTaskIdForNavigationId(int nav_id) const {
   // Task IDs are currently not used in the tests. -1 signals an unknown Task
   // ID.
@@ -266,10 +262,6 @@ PlaceholderTabDelegate::GetBlockedNavigations() const {
 bool PlaceholderTabDelegate::ShouldSync(SyncSessionsClient* sessions_client) {
   NOTREACHED();
   return false;
-}
-
-SessionID PlaceholderTabDelegate::GetSourceTabID() const {
-  return SessionID::InvalidValue();
 }
 
 int64_t PlaceholderTabDelegate::GetTaskIdForNavigationId(int nav_id) const {

@@ -51,9 +51,9 @@ namespace blink {
 WebString::~WebString() = default;
 WebString::WebString() = default;
 WebString::WebString(const WebString&) = default;
-WebString::WebString(WebString&&) noexcept = default;
+WebString::WebString(WebString&&) = default;
 WebString& WebString::operator=(const WebString&) = default;
-WebString& WebString::operator=(WebString&&) noexcept = default;
+WebString& WebString::operator=(WebString&&) = default;
 
 WebString::WebString(const WebUChar* data, size_t len)
     : impl_(StringImpl::Create8BitIfPossible(data, len)) {}

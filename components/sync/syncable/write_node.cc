@@ -9,7 +9,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/passphrase_enums.h"
 #include "components/sync/engine/engine_util.h"
 #include "components/sync/nigori/cryptographer.h"
@@ -271,7 +271,7 @@ BaseNode::InitByLookupResult WriteNode::InitByClientTagLookup(
   if (tag.empty())
     return INIT_FAILED_PRECONDITION;
 
-  const std::string hash = GenerateSyncableHash(model_type, tag);
+  const std::string hash = ClientTagHash::FromUnhashed(model_type, tag).value();
 
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
                                       syncable::GET_BY_CLIENT_TAG, hash);
@@ -362,7 +362,7 @@ WriteNode::InitUniqueByCreationResult WriteNode::InitUniqueByCreationImpl(
     return INIT_FAILED_EMPTY_TAG;
   }
 
-  const std::string hash = GenerateSyncableHash(model_type, tag);
+  const std::string hash = ClientTagHash::FromUnhashed(model_type, tag).value();
 
   // Start out with a dummy name.  We expect
   // the caller to set a meaningful name after creation.

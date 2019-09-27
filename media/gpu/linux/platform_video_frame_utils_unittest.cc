@@ -17,6 +17,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
 #include "media/base/video_frame_layout.h"
@@ -89,7 +90,7 @@ TEST(PlatformVideoFrameUtilsTest, CreateNativePixmapDmaBuf) {
   const size_t num_planes = video_frame->layout().num_planes();
   ASSERT_EQ(native_pixmap->ExportHandle().planes.size(), num_planes);
   for (size_t i = 0; i < num_planes; i++) {
-    const VideoFrameLayout::Plane& plane = video_frame->layout().planes()[i];
+    const ColorPlaneLayout& plane = video_frame->layout().planes()[i];
     // The original and duplicated FDs should be different.
     EXPECT_NE(native_pixmap->GetDmaBufFd(i), video_frame->DmabufFds()[i].get());
     EXPECT_EQ(native_pixmap->GetDmaBufPitch(i),

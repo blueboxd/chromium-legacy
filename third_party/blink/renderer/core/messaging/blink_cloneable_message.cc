@@ -9,9 +9,8 @@ namespace blink {
 BlinkCloneableMessage::BlinkCloneableMessage() = default;
 BlinkCloneableMessage::~BlinkCloneableMessage() = default;
 
-BlinkCloneableMessage::BlinkCloneableMessage(BlinkCloneableMessage&&) noexcept =
-    default;
+BlinkCloneableMessage::BlinkCloneableMessage(BlinkCloneableMessage&&) = default;
 BlinkCloneableMessage& BlinkCloneableMessage::operator=(
-    BlinkCloneableMessage&&) noexcept = default;
+    BlinkCloneableMessage&&) = default;
 
 }  // namespace blink

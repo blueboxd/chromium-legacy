@@ -99,11 +99,11 @@ void InjectCookie(content::StoragePartition* storage_partition) {
 
   base::RunLoop run_loop;
   cookie_manager->SetCanonicalCookie(
-      net::CanonicalCookie(kTestCookieName, kTestCookieValue, kTestCookieHost,
-                           "/", base::Time(), base::Time(), base::Time(), false,
-                           false, net::CookieSameSite::NO_RESTRICTION,
-                           net::COOKIE_PRIORITY_MEDIUM),
-      "http", net::CookieOptions(),
+      net::CanonicalCookie(
+          kTestCookieName, kTestCookieValue, kTestCookieHost, "/", base::Time(),
+          base::Time(), base::Time(), true /* secure */, false /* httponly*/,
+          net::CookieSameSite::NO_RESTRICTION, net::COOKIE_PRIORITY_MEDIUM),
+      "https", net::CookieOptions(),
       base::Bind(&InjectCookieDoneCallback, run_loop.QuitClosure()));
   run_loop.Run();
 }

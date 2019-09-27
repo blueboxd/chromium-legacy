@@ -9,6 +9,7 @@ source_set("web_state") {
     ":context_menu",
     ":web_state_impl_header",
     "//base",
+    "//ios/third_party/webkit",
     "//ios/web/common",
     "//ios/web/js_messaging",
     "//ios/web/navigation",
@@ -42,8 +43,6 @@ source_set("web_state") {
     "web_state_policy_decider.mm",
     "web_state_policy_decider_bridge.mm",
   ]
-
-  libs = [ "WebKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

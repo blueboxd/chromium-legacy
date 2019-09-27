@@ -329,9 +329,6 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTest, LoginFailed) {
-  // Log in, see a form on the landing page. That form is not related to the
-  // login form (=has a different action), so we should offer saving the
-  // password.
   NavigateToFile("/password/password_form.html");
 
   NavigationObserver observer(WebContents());

@@ -63,9 +63,6 @@ function setUp() {
         mockChrome.power.requestKeepAwakeStatus = false;
       }
     },
-    fileManagerPrivate: {
-      setEntryTag: function() {},
-    },
   };
 
   installMockChrome(mockChrome);
@@ -420,52 +417,6 @@ function testUpdatesHistoryAfterImport(callback) {
 
   scanResult.finalize();
   reportPromise(promise, callback);
-}
-
-/**
- * Tests that media imports tag entries after import.
- */
-function testTagsEntriesAfterImport(callback) {
-  const entries = setupFileSystem([
-    '/DCIM/photos0/IMG00001.jpg',
-    '/DCIM/photos1/IMG00003.jpg',
-  ]);
-
-  const scanResult = new TestScanResult(entries);
-  const importTask = mediaImporter.importFromScanResult(
-      scanResult, importer.Destination.GOOGLE_DRIVE, destinationFactory);
-
-  const whenImportDone = new Promise((resolve, reject) => {
-    importTask.addObserver(
-        /**
-         * @param {!importer.TaskQueue.UpdateType} updateType
-         * @param {Object=} opt_task
-         */
-        (updateType, opt_task) => {
-          switch (updateType) {
-            case importer.TaskQueue.UpdateType.COMPLETE:
-              resolve();
-              break;
-            case importer.TaskQueue.UpdateType.ERROR:
-              reject(new Error(importer.TaskQueue.UpdateType.ERROR));
-              break;
-          }
-        });
-  });
-
-  const taggedEntries = [];
-  // Replace chrome.fileManagerPrivate.setEntryTag with a listener.
-  mockChrome.fileManagerPrivate.setEntryTag = entry => {
-    taggedEntries.push(entry);
-  };
-
-  reportPromise(
-      whenImportDone.then(() => {
-        assertEquals(entries.length, taggedEntries.length);
-      }),
-      callback);
-
-  scanResult.finalize();
 }
 
 /**

@@ -104,15 +104,6 @@ class ServiceWorkerVersionTest : public testing::Test {
  protected:
   using FetchHandlerExistence = blink::mojom::FetchHandlerExistence;
 
-  struct RunningStateListener : public ServiceWorkerVersion::Observer {
-    RunningStateListener() : last_status(EmbeddedWorkerStatus::STOPPED) {}
-    ~RunningStateListener() override {}
-    void OnRunningStateChanged(ServiceWorkerVersion* version) override {
-      last_status = version->running_status();
-    }
-    EmbeddedWorkerStatus last_status;
-  };
-
   struct CachedMetadataUpdateListener : public ServiceWorkerVersion::Observer {
     CachedMetadataUpdateListener() = default;
     ~CachedMetadataUpdateListener() override = default;

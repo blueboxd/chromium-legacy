@@ -40,7 +40,7 @@ constexpr base::TimeDelta kHintsFetcherHostFetchedValidDuration =
 
 HintsFetcher::HintsFetcher(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    GURL optimization_guide_service_url,
+    const GURL& optimization_guide_service_url,
     PrefService* pref_service)
     : optimization_guide_service_url_(net::AppendOrReplaceQueryParameter(
           optimization_guide_service_url,
@@ -96,16 +96,19 @@ void HintsFetcher::RecordHintsFetcherCoverage(PrefService* pref_service,
 
 bool HintsFetcher::FetchOptimizationGuideServiceHints(
     const std::vector<std::string>& hosts,
+    optimization_guide::proto::RequestContext request_context,
     HintsFetchedCallback hints_fetched_callback) {
   SEQUENCE_CHECKER(sequence_checker_);
 
   if (content::GetNetworkConnectionTracker()->IsOffline()) {
-    std::move(hints_fetched_callback).Run(base::nullopt);
+    std::move(hints_fetched_callback).Run(request_context, base::nullopt);
     return false;
   }
 
   if (url_loader_)
     return false;
+
+  request_context_ = request_context;
 
   get_hints_request_ = std::make_unique<proto::GetHintsRequest>();
 
@@ -118,7 +121,7 @@ bool HintsFetcher::FetchOptimizationGuideServiceHints(
   // for clients to specify their supported optimization types or have a static
   // assert on the last OptimizationType.
 
-  get_hints_request_->set_context(proto::CONTEXT_BATCH_UPDATE);
+  get_hints_request_->set_context(request_context_);
 
   for (const auto& host : hosts) {
     proto::HostInfo* host_info = get_hints_request_->add_hosts();
@@ -204,9 +207,10 @@ void HintsFetcher::HandleResponse(const std::string& get_hints_response_data,
         "OptimizationGuide.HintsFetcher.GetHintsRequest.HintCount",
         get_hints_response->hints_size());
     UpdateHostsSuccessfullyFetched();
-    std::move(hints_fetched_callback_).Run(std::move(get_hints_response));
+    std::move(hints_fetched_callback_)
+        .Run(request_context_, std::move(get_hints_response));
   } else {
-    std::move(hints_fetched_callback_).Run(base::nullopt);
+    std::move(hints_fetched_callback_).Run(request_context_, base::nullopt);
   }
 }
 

@@ -50,7 +50,7 @@ class COMPONENT_EXPORT(OZONE) ScenicWindow
   gfx::Rect GetBounds() override;
   void SetBounds(const gfx::Rect& bounds) override;
   void SetTitle(const base::string16& title) override;
-  void Show() override;
+  void Show(bool inactive) override;
   void Hide() override;
   void Close() override;
   bool IsVisible() const override;

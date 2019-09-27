@@ -75,7 +75,10 @@ message NigoriSpecifics {
   optional bool encrypt_everything = 24;
 
   optional bool encrypt_extension_settings = 25;
-  optional bool encrypt_app_notifications = 26 [deprecated = true];
+
+  reserved 26;
+  reserved "encrypt_app_notifications";
+
   optional bool encrypt_app_settings = 27;
 
   // User device information. Contains information about each device that has a
@@ -132,8 +135,8 @@ message NigoriSpecifics {
   optional bool encrypt_favicon_images = 35;
   optional bool encrypt_favicon_tracking = 36;
 
-  // Boolean corresponding to whether articles should be encrypted.
-  optional bool encrypt_articles = 37;
+  reserved 37;
+  reserved "encrypt_articles";
 
   // Boolean corresponding to whether app list items should be encrypted.
   optional bool encrypt_app_list = 38;

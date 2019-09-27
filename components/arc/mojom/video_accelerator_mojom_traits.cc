@@ -239,9 +239,9 @@ bool StructTraits<arc::mojom::SizeDataView, gfx::Size>::Read(
 
 // static
 bool StructTraits<arc::mojom::MediaVideoFramePlaneDataView,
-                  media::VideoFrameLayout::Plane>::
+                  media::ColorPlaneLayout>::
     Read(arc::mojom::MediaVideoFramePlaneDataView data,
-         media::VideoFrameLayout::Plane* out) {
+         media::ColorPlaneLayout* out) {
   out->offset = data.offset();
   out->stride = data.stride();
   out->size = data.size();
@@ -255,7 +255,7 @@ bool StructTraits<arc::mojom::VideoFrameLayoutDataView,
          std::unique_ptr<media::VideoFrameLayout>* out) {
   media::VideoPixelFormat format;
   gfx::Size coded_size;
-  std::vector<media::VideoFrameLayout::Plane> planes;
+  std::vector<media::ColorPlaneLayout> planes;
   if (!data.ReadFormat(&format) || !data.ReadCodedSize(&coded_size) ||
       !data.ReadPlanes(&planes)) {
     return false;

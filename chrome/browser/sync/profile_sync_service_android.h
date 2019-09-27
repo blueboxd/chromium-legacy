@@ -184,9 +184,6 @@ class ProfileSyncServiceAndroid : public syncer::SyncServiceObserver {
                       const base::android::JavaParamRef<jobject>& obj);
 
  private:
-  // Returns whether sync is allowed by Android.
-  bool IsSyncAllowedByAndroid() const;
-
   // A reference to the Chrome profile object.
   Profile* profile_;
 

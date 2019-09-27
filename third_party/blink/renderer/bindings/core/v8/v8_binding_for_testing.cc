@@ -12,9 +12,8 @@
 
 namespace blink {
 
-namespace {
-
-std::unique_ptr<DummyPageHolder> CreateDummyPageHolder(const KURL& url) {
+std::unique_ptr<DummyPageHolder> V8TestingScope::CreateDummyPageHolder(
+    const KURL& url) {
   std::unique_ptr<DummyPageHolder> holder = std::make_unique<DummyPageHolder>();
   if (url.IsValid()) {
     holder->GetFrame().Loader().CommitNavigation(
@@ -24,8 +23,6 @@ std::unique_ptr<DummyPageHolder> CreateDummyPageHolder(const KURL& url) {
   }
   return holder;
 }
-
-}  // namespace
 
 V8TestingScope::V8TestingScope(const KURL& url)
     : holder_(CreateDummyPageHolder(url)),

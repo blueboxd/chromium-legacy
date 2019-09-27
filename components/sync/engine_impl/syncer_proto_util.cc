@@ -346,9 +346,8 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
           progress_marker.token();
       UMA_HISTOGRAM_ENUMERATION(
           "Sync.PostedDataTypeGetUpdatesRequest",
-          ModelTypeToHistogramInt(GetModelTypeFromSpecificsFieldNumber(
-              progress_marker.data_type_id())),
-          static_cast<int>(ModelType::NUM_ENTRIES));
+          ModelTypeHistogramValue(GetModelTypeFromSpecificsFieldNumber(
+              progress_marker.data_type_id())));
     }
   }
 

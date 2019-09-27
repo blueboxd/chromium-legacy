@@ -22,8 +22,7 @@ class SyncSessionsWebContentsRouter;
 
 // TabHelper class that forwards tab-level WebContentsObserver events to a
 // (per-profile) sessions router. The router is responsible for forwarding
-// these events to sessions sync. This class also tracks the source tab id
-// of its corresponding tab, if available.
+// these events to sessions sync.
 // A TabHelper is a WebContentsObserver tied to the top level WebContents for a
 // browser tab.
 // https://chromium.googlesource.com/chromium/src/+/master/docs/tab_helpers.md
@@ -67,35 +66,16 @@ class SyncSessionsRouterTabHelper
       bool icon_url_changed,
       const gfx::Image& image) override;
 
-  // Sets the source tab id for the given child WebContents to the id of the
-  // WebContents that owns this helper.
-  void SetSourceTabIdForChild(content::WebContents* child_contents);
-
-  // Get the tab id of the tab responsible for creating the tab this helper
-  // corresponds to. Returns an invalid ID if there is no such tab.
-  SessionID source_tab_id() const { return source_tab_id_; }
-
  private:
   friend class content::WebContentsUserData<SyncSessionsRouterTabHelper>;
 
   explicit SyncSessionsRouterTabHelper(content::WebContents* web_contents,
                                        SyncSessionsWebContentsRouter* router);
 
-  // Set the tab id of the tab reponsible for creating the tab this helper
-  // corresponds to.
-  void set_source_tab_id(SessionID id) { source_tab_id_ = id; }
-
   void NotifyRouter(bool page_load_completed = false);
 
   // |router_| is a KeyedService and is guaranteed to outlive |this|.
   SyncSessionsWebContentsRouter* router_;
-  // Tab id of the tab from which this tab was created. Example events that
-  // create this relationship:
-  // * From context menu, "Open link in new tab".
-  // * From context menu, "Open link in new window".
-  // * Ctrl-click.
-  // * Click on a link with target='_blank'.
-  SessionID source_tab_id_;
 
   ChromeTranslateClient* chrome_translate_client_;
 

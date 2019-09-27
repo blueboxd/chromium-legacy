@@ -54,14 +54,29 @@ TEST_F(ThirdPartyMetricsObserverTest, BlockedCookiesRead_NotRecorded) {
 }
 
 TEST_F(ThirdPartyMetricsObserverTest,
-       NoRegistrableDomainCookiesRead_NoneRecorded) {
+       NoRegistrableDomainNoHostCookiesRead_NoneRecorded) {
   NavigateAndCommit(GURL("https://top.com"));
 
-  SimulateCookiesRead(GURL("data:,Hello%2C%20World!"), GURL("https://top.com"),
-                      net::CookieList(), false /* blocked_by_policy */);
+  GURL url = GURL("data:,Hello%2C%20World!");
+  ASSERT_FALSE(url.has_host());
+  SimulateCookiesRead(url, GURL("https://top.com"), net::CookieList(),
+                      false /* blocked_by_policy */);
   NavigateToUntrackedUrl();
 
   histogram_tester().ExpectUniqueSample(kReadCookieHistogram, 0, 1);
+}
+
+TEST_F(ThirdPartyMetricsObserverTest,
+       NoRegistrableDomainWithHostCookiesRead_OneRecorded) {
+  NavigateAndCommit(GURL("https://top.com"));
+
+  GURL url = GURL("https://127.0.0.1/cookies");
+  ASSERT_TRUE(url.has_host());
+  SimulateCookiesRead(url, GURL("https://top.com"), net::CookieList(),
+                      false /* blocked_by_policy */);
+  NavigateToUntrackedUrl();
+
+  histogram_tester().ExpectUniqueSample(kReadCookieHistogram, 1, 1);
 }
 
 TEST_F(ThirdPartyMetricsObserverTest, OnlyFirstPartyCookiesRead_NotRecorded) {
@@ -138,13 +153,27 @@ TEST_F(ThirdPartyMetricsObserverTest, BlockedCookiesChanged_NotRecorded) {
 }
 
 TEST_F(ThirdPartyMetricsObserverTest,
-       NoRegistrableDomainCookiesChanged_NoneRecorded) {
+       NoRegistrableDomainNoHostCookiesChanged_NoneRecorded) {
   NavigateAndCommit(GURL("https://top.com"));
 
-  SimulateCookieChange(GURL("data:,Hello%2C%20World!"), GURL("https://top.com"),
-                       net::CanonicalCookie(), false /* blocked_by_policy */);
+  GURL url = GURL("data:,Hello%2C%20World!");
+  ASSERT_FALSE(url.has_host());
+  SimulateCookieChange(url, GURL("https://top.com"), net::CanonicalCookie(),
+                       false /* blocked_by_policy */);
   NavigateToUntrackedUrl();
   histogram_tester().ExpectUniqueSample(kWriteCookieHistogram, 0, 1);
+}
+
+TEST_F(ThirdPartyMetricsObserverTest,
+       NoRegistrableDomainWithHostCookiesChanged_OneRecorded) {
+  NavigateAndCommit(GURL("https://top.com"));
+
+  GURL url = GURL("https://127.0.0.1/cookies");
+  ASSERT_TRUE(url.has_host());
+  SimulateCookieChange(url, GURL("https://top.com"), net::CanonicalCookie(),
+                       false /* blocked_by_policy */);
+  NavigateToUntrackedUrl();
+  histogram_tester().ExpectUniqueSample(kWriteCookieHistogram, 1, 1);
 }
 
 TEST_F(ThirdPartyMetricsObserverTest,

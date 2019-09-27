@@ -30,7 +30,10 @@ class PlatformWindow : public PropertyHandler {
   PlatformWindow();
   ~PlatformWindow() override;
 
-  virtual void Show() = 0;
+  // PlatformWindow maybe called with the |inactive| set to true in some cases.
+  // That means that the Window Manager must not activate the window when it is
+  // shown. Most of PlatformWindow may ignore this value if not supported.
+  virtual void Show(bool inactive = false) = 0;
   virtual void Hide() = 0;
   virtual void Close() = 0;
 

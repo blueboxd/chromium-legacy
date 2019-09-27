@@ -9,7 +9,6 @@ public_headers = [
   "//components/autofill/core/common/form_field_data.h",
   "//components/autofill/core/common/form_field_data_predictions.h",
   "//components/autofill/core/common/password_form.h",
-  "//components/autofill/core/common/password_form_field_prediction_map.h",
   "//components/autofill/core/common/password_form_fill_data.h",
   "//components/autofill/core/common/password_form_generation_data.h",
   "//components/autofill/core/common/password_generation_util.h",

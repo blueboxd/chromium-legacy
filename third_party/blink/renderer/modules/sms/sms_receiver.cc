@@ -6,7 +6,7 @@
 
 #include "third_party/blink/renderer/modules/sms/sms_receiver.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/sms/sms_receiver.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise_resolver.h"
@@ -46,7 +46,7 @@ ScriptPromise SMSReceiver::receive(ScriptState* script_state,
       GetExecutionContext()->GetTaskRunner(TaskType::kInternalIPC);
 
   if (!service_) {
-    GetExecutionContext()->GetInterfaceProvider()->GetInterface(
+    GetExecutionContext()->GetBrowserInterfaceBroker().GetInterface(
         service_.BindNewPipeAndPassReceiver(task_runner));
     service_.set_disconnect_handler(WTF::Bind(
         &SMSReceiver::OnSMSReceiverConnectionError, WrapWeakPersistent(this)));

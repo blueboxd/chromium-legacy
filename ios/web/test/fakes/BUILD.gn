@@ -8,6 +8,7 @@ source_set("fakes") {
 
   deps = [
     "//base",
+    "//ios/third_party/webkit",
     "//ios/web/navigation",
     "//ios/web/navigation:core",
     "//ios/web/public",
@@ -38,6 +39,4 @@ source_set("fakes") {
     "mock_interstitial_delegate.h",
     "mock_interstitial_delegate.mm",
   ]
-
-  libs = [ "WebKit.framework" ]
 }

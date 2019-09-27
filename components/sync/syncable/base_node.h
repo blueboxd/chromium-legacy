@@ -30,7 +30,6 @@ class BookmarkSpecifics;
 class EntitySpecifics;
 class NigoriSpecifics;
 class PasswordSpecificsData;
-class TypedUrlSpecifics;
 class WifiConfigurationSpecificsData;
 }  // namespace sync_pb
 
@@ -84,9 +83,6 @@ class BaseNode {
   // different ID value.
   virtual int64_t GetId() const;
 
-  // Returns the modification time of the object.
-  base::Time GetModificationTime() const;
-
   // Nodes are hierarchically arranged into a single-rooted tree.
   // InitByRootLookup on ReadNode allows access to the root. GetParentId is
   // how you find a node's parent.
@@ -125,10 +121,6 @@ class BaseNode {
   // data.  Can only be called if GetModelType() == WIFI_CONFIGURATION.
   const sync_pb::WifiConfigurationSpecificsData& GetWifiConfigurationSpecifics()
       const;
-
-  // Getter specific to the TYPED_URLS datatype.  Returns protobuf
-  // data.  Can only be called if GetModelType() == TYPED_URLS.
-  const sync_pb::TypedUrlSpecifics& GetTypedUrlSpecifics() const;
 
   const sync_pb::EntitySpecifics& GetEntitySpecifics() const;
 

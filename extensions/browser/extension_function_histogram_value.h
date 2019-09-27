@@ -1447,6 +1447,7 @@ enum HistogramValue {
   AUTOFILLPRIVATE_SETCREDITCARDFIDOAUTHENABLEDSTATE = 1384,
   USERSPRIVATE_ISWHITELISTEDUSER = 1385,
   PRINTINGMETRICS_GETPRINTJOBS = 1386,
+  AUTOTESTPRIVATE_WAITFORASSISTANTQUERYSTATUS = 1387,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

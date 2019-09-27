@@ -36,9 +36,9 @@ class MoveOnly {
  public:
   explicit MoveOnly(int i = 0) : i_(i) {}
 
-  MoveOnly(MoveOnly&& other) noexcept : i_(other.i_) { other.i_ = 0; }
+  MoveOnly(MoveOnly&& other) : i_(other.i_) { other.i_ = 0; }
 
-  MoveOnly& operator=(MoveOnly&& other) noexcept {
+  MoveOnly& operator=(MoveOnly&& other) {
     if (this != &other) {
       i_ = other.i_;
       other.i_ = 0;
@@ -62,12 +62,12 @@ class MoveOnlyHashValue {
 
   explicit MoveOnlyHashValue(int value = kEmpty, int id = 0)
       : value_(value), id_(id) {}
-  MoveOnlyHashValue(MoveOnlyHashValue&& other) noexcept
+  MoveOnlyHashValue(MoveOnlyHashValue&& other)
       : value_(other.value_), id_(other.id_) {
     other.value_ = kMovedOut;
     other.id_ = 0;
   }
-  MoveOnlyHashValue& operator=(MoveOnlyHashValue&& other) noexcept {
+  MoveOnlyHashValue& operator=(MoveOnlyHashValue&& other) {
     value_ = other.value_;
     id_ = other.id_;
     other.value_ = kMovedOut;

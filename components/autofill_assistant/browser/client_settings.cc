@@ -44,13 +44,6 @@ void ClientSettings::UpdateFromProto(const ClientSettingsProto& proto) {
   if (proto.has_document_ready_check_count()) {
     document_ready_check_count = proto.document_ready_check_count();
   }
-  if (proto.has_enable_graceful_shutdown()) {
-    enable_graceful_shutdown = proto.enable_graceful_shutdown();
-  }
-  if (proto.has_graceful_shutdown_delay_ms()) {
-    graceful_shutdown_delay =
-        base::TimeDelta::FromMilliseconds(proto.graceful_shutdown_delay_ms());
-  }
   if (proto.has_cancel_delay_ms()) {
     cancel_delay = base::TimeDelta::FromMilliseconds(proto.cancel_delay_ms());
   }

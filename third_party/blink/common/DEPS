@@ -26,5 +26,5 @@ include_rules = [
     "+url",
 ]
 specific_include_rules = {
-  '.*unittest.?.cc': [ "+v8" ],
+  '.*unittest.?.cc': [ "+v8", "+services/network/test" ],
 }

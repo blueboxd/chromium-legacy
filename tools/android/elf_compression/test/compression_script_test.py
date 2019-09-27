@@ -17,11 +17,15 @@ import compress_section
 LIBRARY_CC_NAME = 'libtest.cc'
 OPENER_CC_NAME = 'library_opener.cc'
 
+CONSTRUCTOR_C_PATH = '../constructor/library_constructor.c'
 SCRIPT_PATH = '../compress_section.py'
 
 # src/third_party/llvm-build/Release+Asserts/bin/clang++
-LLVM_CLANG_PATH = pathlib.Path(__file__).resolve().parents[4].joinpath(
+LLVM_CLANG_CC_PATH = pathlib.Path(__file__).resolve().parents[4].joinpath(
     'third_party/llvm-build/Release+Asserts/bin/clang++')
+# src/third_party/llvm-build/Release+Asserts/bin/clang
+LLVM_CLANG_PATH = pathlib.Path(__file__).resolve().parents[4].joinpath(
+    'third_party/llvm-build/Release+Asserts/bin/clang')
 
 # The array that we are trying to cut out of the file have those bytes at
 # its start and end. This is done to simplify the test code to not perform
@@ -44,6 +48,7 @@ class CompressionScriptTest(unittest.TestCase):
     self.library_cc_path = os.path.join(script_dir, LIBRARY_CC_NAME)
     self.opener_cc_path = os.path.join(script_dir, OPENER_CC_NAME)
     self.script_path = os.path.join(script_dir, SCRIPT_PATH)
+    self.constructor_c_path = os.path.join(script_dir, CONSTRUCTOR_C_PATH)
 
   def tearDown(self):
     self.tmpdir_object.cleanup()
@@ -58,9 +63,23 @@ class CompressionScriptTest(unittest.TestCase):
 
   def _BuildLibrary(self):
     library_path = os.path.join(self.tmpdir, 'libtest.so')
+    library_object_path = os.path.join(self.tmpdir, 'libtest.o')
+    constructor_object_path = os.path.join(self.tmpdir, 'constructor.o')
+    library_object_build_result = subprocess.run([
+        LLVM_CLANG_CC_PATH, '-c', '-fPIC', '-O2', self.library_cc_path, '-o',
+        library_object_path
+    ])
+    self.assertEqual(library_object_build_result.returncode, 0)
+
+    constructor_object_build_result = subprocess.run([
+        LLVM_CLANG_PATH, '-c', '-fPIC', '-O2', self.constructor_c_path, '-o',
+        constructor_object_path
+    ])
+    self.assertEqual(constructor_object_build_result.returncode, 0)
+
     library_build_result = subprocess.run([
-        LLVM_CLANG_PATH, '-shared', '-fPIC', '-O2', self.library_cc_path, '-o',
-        library_path
+        LLVM_CLANG_PATH, '-shared', '-fPIC', '-O2', library_object_path,
+        constructor_object_path, '-o', library_path
     ])
     self.assertEqual(library_build_result.returncode, 0)
     return library_path
@@ -68,7 +87,8 @@ class CompressionScriptTest(unittest.TestCase):
   def _BuildOpener(self):
     opener_path = os.path.join(self.tmpdir, 'library_opener')
     opener_build_result = subprocess.run([
-        LLVM_CLANG_PATH, '-O2', self.opener_cc_path, '-o', opener_path, '-ldl'
+        LLVM_CLANG_CC_PATH, '-O2', self.opener_cc_path, '-o', opener_path,
+        '-ldl'
     ])
     self.assertEqual(opener_build_result.returncode, 0)
     return opener_path
@@ -117,7 +137,7 @@ class CompressionScriptTest(unittest.TestCase):
 
     patched_library_path = self._RunScript(library_path)
     opener_output = self._RunOpener(opener_path, patched_library_path)
-    self.assertEqual(opener_output, '4096\n')
+    self.assertEqual(opener_output, '1046543\n')
 
   def testAlignUp(self):
     """Tests for AlignUp method of the script."""

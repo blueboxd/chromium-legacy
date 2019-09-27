@@ -71,7 +71,7 @@ void ThemeHandler::SendThemeChanged() {
   // TODO(dbeam): why does this need to be a dictionary?
   base::DictionaryValue dictionary;
   dictionary.SetBoolean("hasCustomBackground", has_custom_bg);
-  CallJavascriptFunction("ntp.themeChanged", dictionary);
+  FireWebUIListener("theme-changed", dictionary);
 }
 
 void ThemeHandler::InitializeCSSCaches() {

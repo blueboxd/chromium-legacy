@@ -328,7 +328,6 @@ class FileManagerPrivateInternalComputeChecksumFunction
 };
 
 // Implements the chrome.fileManagerPrivate.searchFilesByHashes method.
-// TODO(b/883628): Write some tests maybe?
 class FileManagerPrivateSearchFilesByHashesFunction
     : public LoggedExtensionFunction {
  public:
@@ -378,26 +377,6 @@ class FileManagerPrivateSearchFilesFunction : public LoggedExtensionFunction {
       const std::vector<std::pair<base::FilePath, bool>>& results);
 
   const ChromeExtensionFunctionDetails chrome_details_;
-};
-
-// Implements the chrome.fileManagerPrivate.setEntryTag method.
-class FileManagerPrivateInternalSetEntryTagFunction
-    : public LoggedExtensionFunction {
- public:
-  FileManagerPrivateInternalSetEntryTagFunction();
-  DECLARE_EXTENSION_FUNCTION("fileManagerPrivateInternal.setEntryTag",
-                             FILEMANAGERPRIVATEINTERNAL_SETENTRYTAG)
- protected:
-  ~FileManagerPrivateInternalSetEntryTagFunction() override = default;
-
- private:
-  const ChromeExtensionFunctionDetails chrome_details_;
-
-  // Called when setting a tag is completed with either a success or an error.
-  void OnSetEntryPropertyCompleted(drive::FileError result);
-
-  ExtensionFunction::ResponseAction Run() override;
-  DISALLOW_COPY_AND_ASSIGN(FileManagerPrivateInternalSetEntryTagFunction);
 };
 
 // Implements the chrome.fileManagerPrivate.getDirectorySize method.

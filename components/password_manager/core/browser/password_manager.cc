@@ -21,7 +21,6 @@
 #include "components/autofill/core/browser/form_structure.h"
 #include "components/autofill/core/browser/logging/log_manager.h"
 #include "components/autofill/core/common/form_data_predictions.h"
-#include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/autofill/core/common/save_password_progress_logger.h"
 #include "components/password_manager/core/browser/browser_save_password_progress_logger.h"
 #include "components/password_manager/core/browser/form_saver_impl.h"
@@ -59,58 +58,6 @@ namespace {
 // Shorten the name to spare line breaks. The code provides enough context
 // already.
 using Logger = autofill::SavePasswordProgressLogger;
-
-bool URLsEqualUpToScheme(const GURL& a, const GURL& b) {
-  return (a.GetContent() == b.GetContent());
-}
-
-bool URLsEqualUpToHttpHttpsSubstitution(const GURL& a, const GURL& b) {
-  if (a == b)
-    return true;
-
-  // The first-time and retry login forms action URLs sometimes differ in
-  // switching from HTTP to HTTPS, see http://crbug.com/400769.
-  if (a.SchemeIsHTTPOrHTTPS() && b.SchemeIsHTTPOrHTTPS())
-    return URLsEqualUpToScheme(a, b);
-
-  return false;
-}
-
-// Since empty or unspecified form's action is automatically set to the page
-// origin, this function checks if a form's action is empty by comparing it to
-// its origin.
-bool HasNonEmptyAction(const PasswordForm& form) {
-  return form.action != form.origin;
-}
-
-// Checks if the observed form looks like the submitted one to handle "Invalid
-// password entered" case so we don't offer a password save when we shouldn't.
-bool IsPasswordFormReappeared(const PasswordForm& observed_form,
-                              const PasswordForm& submitted_form) {
-  if (observed_form.action.is_valid() && HasNonEmptyAction(observed_form) &&
-      HasNonEmptyAction(submitted_form) &&
-      URLsEqualUpToHttpHttpsSubstitution(submitted_form.action,
-                                         observed_form.action)) {
-    return true;
-  }
-
-  // Match the form if username and password fields are same.
-  if (base::EqualsCaseInsensitiveASCII(observed_form.username_element,
-                                       submitted_form.username_element) &&
-      base::EqualsCaseInsensitiveASCII(observed_form.password_element,
-                                       submitted_form.password_element)) {
-    return true;
-  }
-
-  // Match the form if the observed username field has the same value as in
-  // the submitted form.
-  if (!submitted_form.username_value.empty() &&
-      observed_form.username_value == submitted_form.username_value) {
-    return true;
-  }
-
-  return false;
-}
 
 bool AreAllFieldsEmpty(const PasswordForm& form) {
   return form.username_value.empty() && form.password_value.empty() &&
@@ -804,8 +751,7 @@ void PasswordManager::OnPasswordFormsRendered(
   if (submitted_manager->GetPendingCredentials().scheme ==
       PasswordForm::Scheme::kHtml) {
     for (const PasswordForm& form : all_visible_forms_) {
-      if (IsPasswordFormReappeared(
-              form, submitted_manager->GetPendingCredentials())) {
+      if (submitted_manager->IsEqualToSubmittedForm(form.form_data)) {
         if (submitted_manager->IsPossibleChangePasswordFormWithoutUsername() &&
             AreAllFieldsEmpty(form)) {
           continue;

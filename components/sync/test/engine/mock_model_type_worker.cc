@@ -56,7 +56,7 @@ std::vector<const CommitRequestData*> MockModelTypeWorker::GetNthPendingCommit(
 }
 
 bool MockModelTypeWorker::HasPendingCommitForHash(
-    const std::string& tag_hash) const {
+    const ClientTagHash& tag_hash) const {
   for (const CommitRequestDataList& commit : pending_commits_) {
     for (const std::unique_ptr<CommitRequestData>& data : commit) {
       if (data && data->entity->client_tag_hash == tag_hash) {
@@ -68,7 +68,7 @@ bool MockModelTypeWorker::HasPendingCommitForHash(
 }
 
 const CommitRequestData* MockModelTypeWorker::GetLatestPendingCommitForHash(
-    const std::string& tag_hash) const {
+    const ClientTagHash& tag_hash) const {
   // Iterate backward through the sets of commit requests to find the most
   // recent one that applies to the specified tag_hash.
   for (auto rev_it = pending_commits_.rbegin();
@@ -85,7 +85,7 @@ const CommitRequestData* MockModelTypeWorker::GetLatestPendingCommitForHash(
 
 void MockModelTypeWorker::VerifyNthPendingCommit(
     size_t n,
-    const std::vector<std::string>& tag_hashes,
+    const std::vector<ClientTagHash>& tag_hashes,
     const std::vector<sync_pb::EntitySpecifics>& specifics_list) {
   ASSERT_EQ(tag_hashes.size(), specifics_list.size());
   std::vector<const CommitRequestData*> list = GetNthPendingCommit(n);
@@ -100,7 +100,7 @@ void MockModelTypeWorker::VerifyNthPendingCommit(
 }
 
 void MockModelTypeWorker::VerifyPendingCommits(
-    const std::vector<std::vector<std::string>>& tag_hashes) {
+    const std::vector<std::vector<ClientTagHash>>& tag_hashes) {
   ASSERT_EQ(tag_hashes.size(), GetNumPendingCommits());
   for (size_t i = 0; i < tag_hashes.size(); i++) {
     std::vector<const CommitRequestData*> commits = GetNthPendingCommit(i);
@@ -123,13 +123,13 @@ void MockModelTypeWorker::UpdateFromServer() {
 }
 
 void MockModelTypeWorker::UpdateFromServer(
-    const std::string& tag_hash,
+    const ClientTagHash& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
   UpdateFromServer(tag_hash, specifics, 1);
 }
 
 void MockModelTypeWorker::UpdateFromServer(
-    const std::string& tag_hash,
+    const ClientTagHash& tag_hash,
     const sync_pb::EntitySpecifics& specifics,
     int64_t version_offset) {
   UpdateFromServer(tag_hash, specifics, version_offset,
@@ -137,7 +137,7 @@ void MockModelTypeWorker::UpdateFromServer(
 }
 
 void MockModelTypeWorker::UpdateFromServer(
-    const std::string& tag_hash,
+    const ClientTagHash& tag_hash,
     const sync_pb::EntitySpecifics& specifics,
     int64_t version_offset,
     const std::string& ekn) {
@@ -153,7 +153,7 @@ void MockModelTypeWorker::UpdateFromServer(UpdateResponseDataList updates) {
 
 std::unique_ptr<syncer::UpdateResponseData>
 MockModelTypeWorker::GenerateUpdateData(
-    const std::string& tag_hash,
+    const ClientTagHash& tag_hash,
     const sync_pb::EntitySpecifics& specifics,
     int64_t version_offset,
     const std::string& ekn) {
@@ -187,7 +187,7 @@ MockModelTypeWorker::GenerateUpdateData(
 
 std::unique_ptr<syncer::UpdateResponseData>
 MockModelTypeWorker::GenerateUpdateData(
-    const std::string& tag_hash,
+    const ClientTagHash& tag_hash,
     const sync_pb::EntitySpecifics& specifics) {
   return GenerateUpdateData(tag_hash, specifics, 1,
                             model_type_state_.encryption_key_name());
@@ -212,7 +212,7 @@ MockModelTypeWorker::GenerateTypeRootUpdateData(const ModelType& model_type) {
   return response_data;
 }
 
-void MockModelTypeWorker::TombstoneFromServer(const std::string& tag_hash) {
+void MockModelTypeWorker::TombstoneFromServer(const ClientTagHash& tag_hash) {
   int64_t old_version = GetServerVersion(tag_hash);
   int64_t version = old_version + 1;
   SetServerVersion(tag_hash, version);
@@ -262,7 +262,7 @@ CommitResponseData MockModelTypeWorker::SuccessfulCommitResponse(
     const CommitRequestData& request_data,
     int64_t version_offset) {
   const EntityData& entity = *request_data.entity;
-  const std::string& client_tag_hash = entity.client_tag_hash;
+  const ClientTagHash& client_tag_hash = entity.client_tag_hash;
 
   CommitResponseData response_data;
 
@@ -313,13 +313,12 @@ void MockModelTypeWorker::UpdateWithGarbageCollection(
   processor_->OnUpdateReceived(model_type_state_, std::move(update));
 }
 
-std::string MockModelTypeWorker::GenerateId(const std::string& tag_hash) {
-  return "FakeId:" + tag_hash;
+std::string MockModelTypeWorker::GenerateId(const ClientTagHash& tag_hash) {
+  return "FakeId:" + tag_hash.value();
 }
 
-int64_t MockModelTypeWorker::GetServerVersion(const std::string& tag_hash) {
-  std::map<const std::string, int64_t>::const_iterator it;
-  it = server_versions_.find(tag_hash);
+int64_t MockModelTypeWorker::GetServerVersion(const ClientTagHash& tag_hash) {
+  auto it = server_versions_.find(tag_hash);
   if (it == server_versions_.end()) {
     return 0;
   } else {
@@ -327,7 +326,7 @@ int64_t MockModelTypeWorker::GetServerVersion(const std::string& tag_hash) {
   }
 }
 
-void MockModelTypeWorker::SetServerVersion(const std::string& tag_hash,
+void MockModelTypeWorker::SetServerVersion(const ClientTagHash& tag_hash,
                                            int64_t version) {
   server_versions_[tag_hash] = version;
 }

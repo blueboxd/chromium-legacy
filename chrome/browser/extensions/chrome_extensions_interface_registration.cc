@@ -83,7 +83,8 @@ void HandleCameraResult(
     uint32_t intent_id,
     arc::mojom::CameraIntentAction action,
     const std::vector<uint8_t>& data,
-    cros::mojom::CameraAppHelper::HandleCameraResultCallback callback) {
+    chromeos_camera::mojom::CameraAppHelper::HandleCameraResultCallback
+        callback) {
   auto* intent_helper =
       arc::ArcIntentHelperBridge::GetForBrowserContext(context);
   intent_helper->HandleCameraResult(intent_id, action, data,
@@ -118,8 +119,9 @@ void ConnectToCameraAppDeviceProvider(
 }
 
 // Connects to CameraAppHelper that could handle camera intents.
-void ConnectToCameraAppHelper(cros::mojom::CameraAppHelperRequest request,
-                              content::RenderFrameHost* source) {
+void ConnectToCameraAppHelper(
+    chromeos_camera::mojom::CameraAppHelperRequest request,
+    content::RenderFrameHost* source) {
   auto handle_result_callback = base::BindRepeating(
       &HandleCameraResult, source->GetProcess()->GetBrowserContext());
   auto camera_app_helper =

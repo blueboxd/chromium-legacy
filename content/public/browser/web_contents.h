@@ -222,6 +222,12 @@ class WebContents : public PageNavigator,
     // default initialized then the value is not passed on to the WebContents
     // and GetLastActiveTime() will return the WebContents' creation time.
     base::TimeTicks last_active_time;
+
+    // Normal WebContents initialization is split between construction and the
+    // first time it is shown. Some WebContents are never shown though.
+    // Setting this to true will invoke the WebContents delayed initialization
+    // that doesn't require visibility.
+    bool is_never_visible;
   };
 
   // Creates a new WebContents.
@@ -623,7 +629,7 @@ class WebContents : public PageNavigator,
   virtual std::unique_ptr<WebContents> Clone() = 0;
 
   // Reloads the focused frame.
-  virtual void ReloadFocusedFrame(bool bypass_cache) = 0;
+  virtual void ReloadFocusedFrame() = 0;
 
   // Attains PauseSubresourceLoadingHandles for each frame in the web contents.
   // As long as these handles are not deleted, subresources will continue to be

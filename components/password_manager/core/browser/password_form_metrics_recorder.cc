@@ -16,7 +16,6 @@
 #include "components/password_manager/core/browser/password_bubble_experiment.h"
 #include "components/password_manager/core/browser/password_manager_metrics_util.h"
 #include "components/password_manager/core/browser/statistics_table.h"
-#include "password_form_metrics_recorder.h"
 
 using autofill::FieldPropertiesFlags;
 using autofill::FormData;
@@ -234,10 +233,6 @@ PasswordFormMetricsRecorder::~PasswordFormMetricsRecorder() {
     ukm_entry_builder_.SetGeneration_PopupShown(
         static_cast<int64_t>(password_generation_popup_shown_));
   }
-  if (spec_priority_of_generated_password_) {
-    ukm_entry_builder_.SetGeneration_SpecPriority(
-        spec_priority_of_generated_password_.value());
-  }
 
   if (showed_manual_fallback_for_saving_) {
     ukm_entry_builder_.SetSaving_ShowedManualFallbackForSaving(
@@ -292,11 +287,6 @@ void PasswordFormMetricsRecorder::MarkGenerationAvailable() {
 void PasswordFormMetricsRecorder::SetGeneratedPasswordStatus(
     GeneratedPasswordStatus status) {
   generated_password_status_ = status;
-}
-
-void PasswordFormMetricsRecorder::ReportSpecPriorityForGeneratedPassword(
-    uint32_t spec_priority) {
-  spec_priority_of_generated_password_ = spec_priority;
 }
 
 void PasswordFormMetricsRecorder::SetManagerAction(

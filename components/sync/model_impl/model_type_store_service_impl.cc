@@ -124,15 +124,4 @@ ModelTypeStoreServiceImpl::GetBackendTaskRunner() {
   return backend_task_runner_;
 }
 
-std::unique_ptr<BlockingModelTypeStore>
-ModelTypeStoreServiceImpl::CreateBlockingStoreFromBackendSequence(
-    ModelType type) {
-  DCHECK(backend_task_runner_->RunsTasksInCurrentSequence());
-  if (!store_backend_) {
-    return nullptr;
-  }
-  return std::make_unique<BlockingModelTypeStoreImpl>(type,
-                                                      store_backend_.get());
-}
-
 }  // namespace syncer

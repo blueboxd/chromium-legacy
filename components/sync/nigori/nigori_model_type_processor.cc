@@ -5,6 +5,7 @@
 #include "components/sync/nigori/nigori_model_type_processor.h"
 
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/data_type_histogram.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
@@ -21,7 +22,7 @@ namespace {
 // TODO(mamir): remove those and adjust the code accordingly. Similarly in
 // tests.
 const char kNigoriStorageKey[] = "NigoriStorageKey";
-const char kNigoriClientTagHash[] = "NigoriClientTagHash";
+const char kRawNigoriClientTagHash[] = "NigoriClientTagHash";
 
 }  // namespace
 
@@ -131,8 +132,8 @@ void NigoriModelTypeProcessor::OnUpdateReceived(
     } else {
       DCHECK(!updates[0]->entity->is_deleted());
       entity_ = ProcessorEntity::CreateNew(
-          kNigoriStorageKey, kNigoriClientTagHash, updates[0]->entity->id,
-          updates[0]->entity->creation_time);
+          kNigoriStorageKey, ClientTagHash::FromHashed(kRawNigoriClientTagHash),
+          updates[0]->entity->id, updates[0]->entity->creation_time);
       entity_->RecordAcceptedUpdate(*updates[0]);
       error = bridge_->MergeSyncData(std::move(*updates[0]->entity));
     }
@@ -300,7 +301,7 @@ void NigoriModelTypeProcessor::ModelReadyToSync(
     model_type_state_ = std::move(nigori_metadata.model_type_state);
     sync_pb::EntityMetadata metadata =
         std::move(*nigori_metadata.entity_metadata);
-    metadata.set_client_tag_hash(kNigoriClientTagHash);
+    metadata.set_client_tag_hash(kRawNigoriClientTagHash);
     entity_ = ProcessorEntity::CreateFromMetadata(kNigoriStorageKey,
                                                   std::move(metadata));
   } else {

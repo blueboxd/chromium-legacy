@@ -2943,9 +2943,8 @@ void RenderFrameImpl::PostMessageEvent(int32_t source_routing_id,
                                               msg_event);
 }
 
-void RenderFrameImpl::OnReload(bool bypass_cache) {
-  frame_->StartReload(bypass_cache ? WebFrameLoadType::kReloadBypassingCache
-                                   : WebFrameLoadType::kReload);
+void RenderFrameImpl::OnReload() {
+  frame_->StartReload(WebFrameLoadType::kReload);
 }
 
 bool RenderFrameImpl::RunJavaScriptDialog(JavaScriptDialogType type,

@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/memory/scoped_refptr.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/base/video_frame.h"
 #include "media/gpu/buildflags.h"
@@ -202,7 +203,8 @@ scoped_refptr<VideoFrame> ConvertVideoFrame(const VideoFrame* src_frame,
 scoped_refptr<VideoFrame> CloneVideoFrame(
     const VideoFrame* const src_frame,
     const VideoFrameLayout& dst_layout,
-    VideoFrame::StorageType dst_storage_type) {
+    VideoFrame::StorageType dst_storage_type,
+    base::Optional<gfx::BufferUsage> dst_buffer_usage) {
   if (!src_frame)
     return nullptr;
   if (!src_frame->IsMappable()) {
@@ -215,11 +217,14 @@ scoped_refptr<VideoFrame> CloneVideoFrame(
 #if BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     case VideoFrame::STORAGE_GPU_MEMORY_BUFFER:
     case VideoFrame::STORAGE_DMABUFS:
+      if (!dst_buffer_usage) {
+        LOG(ERROR) << "Buffer usage is not specified for a graphic buffer";
+        return nullptr;
+      }
       dst_frame = CreatePlatformVideoFrame(
           dst_layout.format(), dst_layout.coded_size(),
           src_frame->visible_rect(), src_frame->visible_rect().size(),
-          src_frame->timestamp(),
-          gfx::BufferUsage::SCANOUT_VEA_READ_CAMERA_AND_CPU_READ_WRITE);
+          src_frame->timestamp(), *dst_buffer_usage);
       break;
 #endif  // BUILDFLAG(USE_CHROMEOS_MEDIA_ACCELERATION)
     case VideoFrame::STORAGE_OWNED_MEMORY:
@@ -314,7 +319,7 @@ base::Optional<VideoFrameLayout> CreateVideoFrameLayout(VideoPixelFormat format,
                                                         const gfx::Size& size) {
   const size_t num_planes = VideoFrame::NumPlanes(format);
 
-  std::vector<VideoFrameLayout::Plane> planes(num_planes);
+  std::vector<ColorPlaneLayout> planes(num_planes);
   const auto strides = VideoFrame::ComputeStrides(format, size);
   size_t offset = 0;
   for (size_t i = 0; i < num_planes; ++i) {

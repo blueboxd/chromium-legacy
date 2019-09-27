@@ -564,13 +564,10 @@ scoped_refptr<StaticBitmapImage> CanvasResourceSharedImage::Bitmap() {
   scoped_refptr<StaticBitmapImage> image;
 
   // If its cross thread, then the sync token was already verified. If not, then
-  // it doesn't need to be verified.
-  if (!is_cross_thread())
-    owning_thread_data().mailbox_sync_mode = kUnverifiedSyncToken;
-
+  // we don't need one. The image lazily generates a token if needed.
+  gpu::SyncToken token = is_cross_thread() ? sync_token() : gpu::SyncToken();
   image = AcceleratedStaticBitmapImage::CreateFromCanvasMailbox(
-      mailbox(), is_cross_thread() ? sync_token() : GetSyncToken(),
-      texture_id_for_image, image_info, texture_target_,
+      mailbox(), token, texture_id_for_image, image_info, texture_target_,
       context_provider_wrapper_, owning_thread_id_, is_origin_top_left_,
       std::move(release_callback));
 

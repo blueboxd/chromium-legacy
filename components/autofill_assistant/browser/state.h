@@ -81,14 +81,13 @@ enum class AutofillAssistantState {
   // Autofill assistant is stopped, but the controller is still available.
   //
   // This is a final state for the UI, which, when entering this state, detaches
-  // itself from the controller, waits for a few seconds to let the user read
-  // the message and then disappears.
+  // itself from the controller and lets the user read  the message.
   //
   // In that scenario, the status message at the time of transition to STOPPED
   // is supposed to contain the final message.
   //
-  // Next states: TRACKING.
-  STOPPED
+  // Next states: TRACKING
+  STOPPED,
 };
 
 inline std::ostream& operator<<(std::ostream& out,

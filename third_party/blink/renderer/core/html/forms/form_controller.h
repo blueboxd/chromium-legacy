@@ -83,12 +83,15 @@ class CORE_EXPORT DocumentState final : public GarbageCollected<DocumentState> {
   DocumentState(Document& document);
   void Trace(Visitor*);
 
+  // TODO(tkent): Rename this to ControlList or something. The current
+  // name is confusing because it doesn't contain <form> elements.
+  using FormElementList = HeapVector<Member<ListedElement>, 64>;
   void InvalidateControlList();
+  const FormElementList& ControlList();
   Vector<String> ToStateVector();
 
  private:
   Member<Document> document_;
-  using FormElementList = HeapVector<Member<ListedElement>, 64>;
   FormElementList form_controls_;
   bool form_controls_dirty_ = true;
 };
@@ -114,6 +117,8 @@ class CORE_EXPORT FormController final
   // For a upgraded form-associated custom element.
   void RestoreControlStateOnUpgrade(ListedElement&);
 
+  void ScheduleRestore();
+
   static Vector<String> GetReferencedFilePaths(
       const Vector<String>& state_vector);
 
@@ -121,7 +126,9 @@ class CORE_EXPORT FormController final
   FormControlState TakeStateForFormElement(const ListedElement&);
   static void FormStatesFromStateVector(const Vector<String>&,
                                         SavedFormStateMap&);
+  void RestoreAllControlsInDocumentOrder();
 
+  Member<Document> document_;
   Member<DocumentState> document_state_;
   SavedFormStateMap saved_form_state_map_;
   Member<FormKeyGenerator> form_key_generator_;

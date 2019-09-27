@@ -347,6 +347,15 @@ void SharedWorkerHost::CreateAppCacheBackend(
       worker_process_host->GetID(), MSG_ROUTING_NONE, std::move(receiver));
 }
 
+void SharedWorkerHost::CreatePaymentManager(
+    mojo::PendingReceiver<payments::mojom::PaymentManager> receiver) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  RenderProcessHost* worker_process_host = GetProcessHost();
+  if (!worker_process_host)
+    return;
+  worker_process_host->CreatePaymentManager(std::move(receiver));
+}
+
 void SharedWorkerHost::Destruct() {
   // Ask the service to destroy |this| which will terminate the worker.
   service_->DestroyHost(this);

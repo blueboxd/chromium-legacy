@@ -56,6 +56,7 @@
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "chromeos/services/network_config/public/mojom/constants.mojom.h"  // nogncheck
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"  // nogncheck
+#include "components/chromeos_camera/common/camera_app_helper.mojom.h"
 #include "media/capture/video/chromeos/mojom/camera_app.mojom.h"
 #endif
 
@@ -158,12 +159,12 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
                 chrome::mojom::OfflinePageAutoFetcher,
                 chrome::mojom::PrerenderCanceler,
 #if defined(OS_CHROMEOS)
+                chromeos_camera::mojom::CameraAppHelper,
                 chromeos::crostini_installer::mojom::PageHandlerFactory,
                 chromeos::ime::mojom::InputEngineManager,
                 chromeos::machine_learning::mojom::PageHandler,
                 chromeos::media_perception::mojom::MediaPerception,
                 cros::mojom::CameraAppDeviceProvider,
-                cros::mojom::CameraAppHelper,
 #endif
                 contextual_search::mojom::ContextualSearchJsApiService,
                 dom_distiller::mojom::DistillabilityService,

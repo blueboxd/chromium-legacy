@@ -249,9 +249,6 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   bool ShouldHandleScroll(const gfx::Vector2dF& offset,
                           bool is_gesture_fling) const;
 
-  // Ensures that the app icons are shown correctly when scrolling ends.
-  void AdjustOffsetAfterScrolling();
-
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
   // Child views Owned by views hierarchy.

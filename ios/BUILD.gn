@@ -45,9 +45,5 @@ group("all") {
       "//ios/web_view:all_tests",
       "//ios/web_view/shell/test:all_tests",
     ]
-
-    if (checkout_ios_webkit) {
-      deps += [ "//ios/third_party/webkit" ]
-    }
   }
 }

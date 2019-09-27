@@ -22,8 +22,8 @@ namespace blink {
 // type can be serialized as a blink::mojom::TransferableMessage struct.
 struct BLINK_COMMON_EXPORT TransferableMessage : public CloneableMessage {
   TransferableMessage();
-  TransferableMessage(TransferableMessage&&) noexcept;
-  TransferableMessage& operator=(TransferableMessage&&) noexcept;
+  TransferableMessage(TransferableMessage&&);
+  TransferableMessage& operator=(TransferableMessage&&);
   ~TransferableMessage();
 
   // Any ports being transferred as part of this message.

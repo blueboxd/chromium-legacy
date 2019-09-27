@@ -38,7 +38,6 @@
 #include "third_party/blink/public/platform/web_content_security_policy.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/platform/web_url.h"
-#include "third_party/blink/public/web/web_settings.h"
 
 namespace blink {
 
@@ -54,15 +53,12 @@ struct WebEmbeddedWorkerStartData {
   // Unique worker token used by DevTools to attribute different instrumentation
   // to the same worker.
   base::UnguessableToken devtools_worker_token;
-  WebSettings::V8CacheOptions v8_cache_options;
 
   network::mojom::IPAddressSpace address_space;
 
   PrivacyPreferences privacy_preferences;
 
-  WebEmbeddedWorkerStartData()
-      : wait_for_debugger_mode(kDontWaitForDebugger),
-        v8_cache_options(WebSettings::V8CacheOptions::kDefault) {}
+  WebEmbeddedWorkerStartData() : wait_for_debugger_mode(kDontWaitForDebugger) {}
 };
 
 }  // namespace blink

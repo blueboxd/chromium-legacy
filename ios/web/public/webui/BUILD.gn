@@ -7,6 +7,7 @@ import("//ios/build/config.gni")
 source_set("webui") {
   deps = [
     "//base",
+    "//ios/third_party/webkit",
     "//net",
   ]
 
@@ -18,8 +19,6 @@ source_set("webui") {
     "web_ui_ios_data_source.h",
     "web_ui_ios_message_handler.h",
   ]
-
-  libs = [ "WebKit.framework" ]
 
   configs += [ "//build/config/compiler:enable_arc" ]
 }

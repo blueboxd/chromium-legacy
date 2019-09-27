@@ -63,8 +63,8 @@ void WinWindow::Destroy() {
     DestroyWindow(hwnd());
 }
 
-void WinWindow::Show() {
-  ShowWindow(hwnd(), SW_SHOWNORMAL);
+void WinWindow::Show(bool inactive) {
+  ShowWindow(hwnd(), inactive ? SW_SHOWNOACTIVATE : SW_SHOWNORMAL);
 }
 
 void WinWindow::Hide() {

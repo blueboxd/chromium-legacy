@@ -34,9 +34,8 @@ struct MODULES_EXPORT VideoInputDeviceCapabilities {
                                Vector<media::VideoCaptureFormat> formats,
                                media::VideoFacingMode facing_mode);
   VideoInputDeviceCapabilities();
-  VideoInputDeviceCapabilities(VideoInputDeviceCapabilities&& other) noexcept;
-  VideoInputDeviceCapabilities& operator=(
-      VideoInputDeviceCapabilities&& other) noexcept;
+  VideoInputDeviceCapabilities(VideoInputDeviceCapabilities&& other);
+  VideoInputDeviceCapabilities& operator=(VideoInputDeviceCapabilities&& other);
   ~VideoInputDeviceCapabilities();
 
   String device_id;
@@ -47,11 +46,10 @@ struct MODULES_EXPORT VideoInputDeviceCapabilities {
 
 struct MODULES_EXPORT VideoDeviceCaptureCapabilities {
   VideoDeviceCaptureCapabilities();
-  VideoDeviceCaptureCapabilities(
-      VideoDeviceCaptureCapabilities&& other) noexcept;
+  VideoDeviceCaptureCapabilities(VideoDeviceCaptureCapabilities&& other);
   ~VideoDeviceCaptureCapabilities();
   VideoDeviceCaptureCapabilities& operator=(
-      VideoDeviceCaptureCapabilities&& other) noexcept;
+      VideoDeviceCaptureCapabilities&& other);
 
   // Each capabilities field is independent of each other.
   // TODO(crbug.com/704136): Replace VideoInputDeviceCapabilities in the

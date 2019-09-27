@@ -127,6 +127,8 @@ void CSSCustomListInterpolationType::Composite(
   ListInterpolationFunctions::Composite(
       underlying_value_owner, underlying_fraction, *this, value,
       ListInterpolationFunctions::LengthMatchingStrategy::kEqual,
+      WTF::BindRepeating(
+          ListInterpolationFunctions::InterpolableValuesKnownCompatible),
       GetNonInterpolableValuesAreCompatibleCallback(),
       WTF::BindRepeating(composite_callback,
                          WTF::Unretained(inner_interpolation_type_.get()),

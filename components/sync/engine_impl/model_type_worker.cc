@@ -20,6 +20,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/memory_usage_estimator.h"
 #include "components/sync/base/cancelation_signal.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/hash_util.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/time.h"
@@ -40,14 +41,14 @@ bool ContainsDuplicate(std::vector<std::string> values) {
 }
 
 bool ContainsDuplicateClientTagHash(const UpdateResponseDataList& updates) {
-  std::vector<std::string> client_tag_hashes;
+  std::vector<std::string> raw_client_tag_hashes;
   for (const std::unique_ptr<UpdateResponseData>& update : updates) {
     DCHECK(update);
-    if (!update->entity->client_tag_hash.empty()) {
-      client_tag_hashes.push_back(update->entity->client_tag_hash);
+    if (!update->entity->client_tag_hash.value().empty()) {
+      raw_client_tag_hashes.push_back(update->entity->client_tag_hash.value());
     }
   }
-  return ContainsDuplicate(std::move(client_tag_hashes));
+  return ContainsDuplicate(std::move(raw_client_tag_hashes));
 }
 
 bool ContainsDuplicateServerID(const UpdateResponseDataList& updates) {
@@ -88,6 +89,104 @@ enum class BookmarkGUIDSource {
 
 inline void LogGUIDSource(BookmarkGUIDSource source) {
   base::UmaHistogramEnumeration("Sync.BookmarkGUIDSource", source);
+}
+
+void AdaptUniquePositionForBookmarks(const sync_pb::SyncEntity& update_entity,
+                                     syncer::EntityData* data) {
+  DCHECK(data);
+  bool has_position_scheme = false;
+  SyncPositioningScheme sync_positioning_scheme;
+  if (update_entity.has_unique_position()) {
+    data->unique_position = update_entity.unique_position();
+    has_position_scheme = true;
+    sync_positioning_scheme = SyncPositioningScheme::UNIQUE_POSITION;
+  } else if (update_entity.has_position_in_parent() ||
+             update_entity.has_insert_after_item_id()) {
+    bool missing_originator_fields = false;
+    if (!update_entity.has_originator_cache_guid() ||
+        !update_entity.has_originator_client_item_id()) {
+      DLOG(ERROR) << "Update is missing requirements for bookmark position.";
+      missing_originator_fields = true;
+    }
+
+    std::string suffix = missing_originator_fields
+                             ? UniquePosition::RandomSuffix()
+                             : GenerateSyncableBookmarkHash(
+                                   update_entity.originator_cache_guid(),
+                                   update_entity.originator_client_item_id());
+
+    if (update_entity.has_position_in_parent()) {
+      data->unique_position =
+          UniquePosition::FromInt64(update_entity.position_in_parent(), suffix)
+              .ToProto();
+      has_position_scheme = true;
+      sync_positioning_scheme = SyncPositioningScheme::POSITION_IN_PARENT;
+    } else {
+      // If update_entity has insert_after_item_id, use 0 index.
+      DCHECK(update_entity.has_insert_after_item_id());
+      data->unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
+      has_position_scheme = true;
+      sync_positioning_scheme = SyncPositioningScheme::INSERT_AFTER_ITEM_ID;
+    }
+  } else if (SyncerProtoUtil::ShouldMaintainPosition(update_entity) &&
+             !update_entity.deleted()) {
+    DLOG(ERROR) << "Missing required position information in update.";
+    has_position_scheme = true;
+    sync_positioning_scheme = SyncPositioningScheme::MISSING;
+  }
+  if (has_position_scheme) {
+    UMA_HISTOGRAM_ENUMERATION("Sync.Entities.PositioningScheme",
+                              sync_positioning_scheme);
+  }
+}
+
+void AdaptTitleForBookmarks(const sync_pb::SyncEntity& update_entity,
+                            sync_pb::EntitySpecifics* specifics,
+                            bool specifics_were_encrypted) {
+  DCHECK(specifics);
+  if (specifics_were_encrypted || update_entity.deleted()) {
+    // If encrypted, the name field is never populated (unencrypted) for privacy
+    // reasons. Encryption was also introduced after moving the name out of
+    // SyncEntity so this hack is not needed at all.
+    return;
+  }
+  // Legacy clients populate the name field in the SyncEntity instead of the
+  // title field in the BookmarkSpecifics.
+  if (!specifics->bookmark().has_title() && !update_entity.name().empty()) {
+    specifics->mutable_bookmark()->set_title(update_entity.name());
+  }
+}
+
+void AdaptGuidForBookmarks(const sync_pb::SyncEntity& update_entity,
+                           sync_pb::EntitySpecifics* specifics) {
+  DCHECK(specifics);
+  if (update_entity.deleted()) {
+    return;
+  }
+  // Legacy clients don't populate the guid field in the BookmarkSpecifics, so
+  // we use the originator_client_item_id instead, if it is a valid GUID.
+  // Otherwise, we leave the field empty.
+  if (specifics->bookmark().has_guid()) {
+    LogGUIDSource(BookmarkGUIDSource::kSpecifics);
+  } else if (base::IsValidGUID(update_entity.originator_client_item_id())) {
+    specifics->mutable_bookmark()->set_guid(
+        update_entity.originator_client_item_id());
+    LogGUIDSource(BookmarkGUIDSource::kValidOCII);
+  } else {
+    LogGUIDSource(BookmarkGUIDSource::kLeftEmpty);
+  }
+}
+
+void AdaptUpdateForCompatibilityAfterDecryption(
+    ModelType model_type,
+    const sync_pb::SyncEntity& update_entity,
+    sync_pb::EntitySpecifics* specifics,
+    bool specifics_were_encrypted) {
+  DCHECK(specifics);
+  if (model_type == BOOKMARKS) {
+    AdaptTitleForBookmarks(update_entity, specifics, specifics_were_encrypted);
+    AdaptGuidForBookmarks(update_entity, specifics);
+  }
 }
 
 }  // namespace
@@ -257,7 +356,8 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   auto data = std::make_unique<syncer::EntityData>();
   // Prepare the message for the model thread.
   data->id = update_entity.id_string();
-  data->client_tag_hash = update_entity.client_defined_unique_tag();
+  data->client_tag_hash =
+      ClientTagHash::FromHashed(update_entity.client_defined_unique_tag());
   data->creation_time = ProtoTimeToTime(update_entity.ctime());
   data->modification_time = ProtoTimeToTime(update_entity.mtime());
   data->name = update_entity.name();
@@ -270,55 +370,12 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   data->originator_cache_guid = update_entity.originator_cache_guid();
   data->originator_client_item_id = update_entity.originator_client_item_id();
 
-  // Handle deprecated positioning fields. Relevant only for bookmarks.
-  if (model_type == syncer::BOOKMARKS) {
-    bool has_position_scheme = false;
-    SyncPositioningScheme sync_positioning_scheme;
-    if (update_entity.has_unique_position()) {
-      data->unique_position = update_entity.unique_position();
-      has_position_scheme = true;
-      sync_positioning_scheme = SyncPositioningScheme::UNIQUE_POSITION;
-    } else if (update_entity.has_position_in_parent() ||
-               update_entity.has_insert_after_item_id()) {
-      bool missing_originator_fields = false;
-      if (!update_entity.has_originator_cache_guid() ||
-          !update_entity.has_originator_client_item_id()) {
-        DLOG(ERROR) << "Update is missing requirements for bookmark position.";
-        missing_originator_fields = true;
-      }
-
-      std::string suffix =
-          missing_originator_fields
-              ? UniquePosition::RandomSuffix()
-              : GenerateSyncableHash(
-                    syncer::GetModelType(update_entity),
-                    /*client_tag=*/update_entity.originator_cache_guid() +
-                        update_entity.originator_client_item_id());
-
-      if (update_entity.has_position_in_parent()) {
-        data->unique_position = UniquePosition::FromInt64(
-                                    update_entity.position_in_parent(), suffix)
-                                    .ToProto();
-        has_position_scheme = true;
-        sync_positioning_scheme = SyncPositioningScheme::POSITION_IN_PARENT;
-      } else {
-        // If update_entity has insert_after_item_id, use 0 index.
-        DCHECK(update_entity.has_insert_after_item_id());
-        data->unique_position = UniquePosition::FromInt64(0, suffix).ToProto();
-        has_position_scheme = true;
-        sync_positioning_scheme = SyncPositioningScheme::INSERT_AFTER_ITEM_ID;
-      }
-    } else if (SyncerProtoUtil::ShouldMaintainPosition(update_entity) &&
-               !update_entity.deleted()) {
-      DLOG(ERROR) << "Missing required position information in update.";
-      has_position_scheme = true;
-      sync_positioning_scheme = SyncPositioningScheme::MISSING;
-    }
-    if (has_position_scheme) {
-      UMA_HISTOGRAM_ENUMERATION("Sync.Entities.PositioningScheme",
-                                sync_positioning_scheme);
-    }
+  // Adapt the update for compatibility (all except specifics that may need
+  // encryption).
+  if (model_type == BOOKMARKS) {
+    AdaptUniquePositionForBookmarks(update_entity, data.get());
   }
+  // TODO(crbug.com/881289): Generate client tag hash for wallet data.
 
   // Deleted entities must use the default instance of EntitySpecifics in
   // order for EntityData to correctly reflect that they are deleted.
@@ -346,6 +403,9 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
                                   &data->specifics)) {
       return FAILED_TO_DECRYPT;
     }
+    AdaptUpdateForCompatibilityAfterDecryption(
+        model_type, update_entity, &data->specifics,
+        /*specifics_were_encrypted=*/true);
     response_data->entity = std::move(data);
     return SUCCESS;
   }
@@ -354,26 +414,9 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
   if (!specifics.has_encrypted()) {
     // No encryption.
     data->specifics = specifics;
-    // Legacy clients populates the name field in the SyncEntity instead of the
-    // title field in the BookmarkSpecifics.
-    if (model_type == BOOKMARKS && !update_entity.deleted() &&
-        !specifics.bookmark().has_title() && !update_entity.name().empty()) {
-      data->specifics.mutable_bookmark()->set_title(update_entity.name());
-    }
-    // Legacy clients don't populate the guid field in the BookmarkSpecifics, so
-    // we use the originator_client_item_id instead, if it is a valid GUID.
-    // Otherwise, we leave the field empty.
-    if (model_type == BOOKMARKS && !update_entity.deleted()) {
-      if (specifics.bookmark().has_guid()) {
-        LogGUIDSource(BookmarkGUIDSource::kSpecifics);
-      } else if (base::IsValidGUID(update_entity.originator_client_item_id())) {
-        data->specifics.mutable_bookmark()->set_guid(
-            update_entity.originator_client_item_id());
-        LogGUIDSource(BookmarkGUIDSource::kValidOCII);
-      } else {
-        LogGUIDSource(BookmarkGUIDSource::kLeftEmpty);
-      }
-    }
+    AdaptUpdateForCompatibilityAfterDecryption(
+        model_type, update_entity, &data->specifics,
+        /*specifics_were_encrypted=*/false);
     response_data->entity = std::move(data);
     return SUCCESS;
   }
@@ -384,21 +427,9 @@ ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
     if (!DecryptSpecifics(*cryptographer, specifics, &data->specifics)) {
       return FAILED_TO_DECRYPT;
     }
-
-    // Legacy clients don't populate the guid field in the BookmarkSpecifics, so
-    // we use the originator_client_item_id instead, if it is a valid GUID.
-    // Otherwise, we leave the field empty.
-    if (model_type == BOOKMARKS) {
-      if (data->specifics.bookmark().has_guid()) {
-        LogGUIDSource(BookmarkGUIDSource::kSpecifics);
-      } else if (base::IsValidGUID(update_entity.originator_client_item_id())) {
-        data->specifics.mutable_bookmark()->set_guid(
-            update_entity.originator_client_item_id());
-        LogGUIDSource(BookmarkGUIDSource::kValidOCII);
-      } else {
-        LogGUIDSource(BookmarkGUIDSource::kLeftEmpty);
-      }
-    }
+    AdaptUpdateForCompatibilityAfterDecryption(
+        model_type, update_entity, &data->specifics,
+        /*specifics_were_encrypted=*/true);
     response_data->entity = std::move(data);
     response_data->encryption_key_name = specifics.encrypted().key_name();
     return SUCCESS;
@@ -637,12 +668,18 @@ void ModelTypeWorker::DecryptStoredEntities() {
     decrypted_update->encryption_key_name = encryption_key_name;
     decrypted_update->entity = std::move(it->second->entity);
     decrypted_update->entity->specifics = std::move(specifics);
-    if (decrypted_update->entity->specifics.has_bookmark() &&
-        !decrypted_update->entity->specifics.bookmark().has_guid() &&
-        base::IsValidGUID(
-            decrypted_update->entity->originator_client_item_id)) {
-      decrypted_update->entity->specifics.mutable_bookmark()->set_guid(
-          decrypted_update->entity->originator_client_item_id);
+    // TODO(crbug.com/1007199): Reconcile with AdaptGuidForBookmarks().
+    if (decrypted_update->entity->specifics.has_bookmark()) {
+      if (decrypted_update->entity->specifics.bookmark().has_guid()) {
+        LogGUIDSource(BookmarkGUIDSource::kSpecifics);
+      } else if (base::IsValidGUID(
+                     decrypted_update->entity->originator_client_item_id)) {
+        decrypted_update->entity->specifics.mutable_bookmark()->set_guid(
+            decrypted_update->entity->originator_client_item_id);
+        LogGUIDSource(BookmarkGUIDSource::kValidOCII);
+      } else {
+        LogGUIDSource(BookmarkGUIDSource::kLeftEmpty);
+      }
     }
     pending_updates_.push_back(std::move(decrypted_update));
     it = entries_pending_decryption_.erase(it);
@@ -679,11 +716,11 @@ void ModelTypeWorker::DeduplicatePendingUpdatesBasedOnClientTagHash() {
   UpdateResponseDataList candidates;
   pending_updates_.swap(candidates);
 
-  std::map<std::string, size_t> tag_to_index;
+  std::map<ClientTagHash, size_t> tag_to_index;
   for (std::unique_ptr<UpdateResponseData>& candidate : candidates) {
     DCHECK(candidate);
     // Items with empty client tag hash just get passed through.
-    if (candidate->entity->client_tag_hash.empty()) {
+    if (candidate->entity->client_tag_hash.value().empty()) {
       pending_updates_.push_back(std::move(candidate));
       continue;
     }

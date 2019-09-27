@@ -10,10 +10,13 @@
 #include <set>
 #include <vector>
 
+#include "base/i18n/rtl.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "components/autofill/core/common/autofill_constants.h"
-#include "components/autofill/core/common/password_form_field_prediction_map.h"
+#include "components/autofill/core/common/form_data.h"
+#include "components/autofill/core/common/form_field_data.h"
+#include "components/autofill/core/common/mojom/autofill_types.mojom-shared.h"
 #include "third_party/blink/public/platform/web_vector.h"
 #include "third_party/blink/public/web/web_element_collection.h"
 #include "ui/gfx/geometry/rect_f.h"

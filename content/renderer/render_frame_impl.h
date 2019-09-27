@@ -1138,7 +1138,8 @@ class CONTENT_EXPORT RenderFrameImpl
                              const std::string& message,
                              bool discard_duplicates);
   void OnVisualStateRequest(uint64_t key);
-  void OnReload(bool bypass_cache);
+  // TODO(https://crbug.com/995428): Deprecated.
+  void OnReload();
   void OnSetAccessibilityMode(ui::AXMode new_mode);
   void OnSnapshotAccessibilityTree(int callback_id, ui::AXMode ax_mode);
   void OnUpdateOpener(int opener_routing_id);

@@ -252,8 +252,8 @@ NavigationPredictor::~NavigationPredictor() {
 }
 
 void NavigationPredictor::Create(
-    mojo::PendingReceiver<blink::mojom::AnchorElementMetricsHost> receiver,
-    content::RenderFrameHost* render_frame_host) {
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<blink::mojom::AnchorElementMetricsHost> receiver) {
   DCHECK(base::FeatureList::IsEnabled(blink::features::kNavigationPredictor));
 
   // Only valid for the main frame.

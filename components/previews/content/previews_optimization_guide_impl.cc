@@ -280,13 +280,14 @@ void PreviewsOptimizationGuideImpl::FetchHints() {
 
   if (top_hosts->size() > 0) {
     hints_fetcher_->FetchOptimizationGuideServiceHints(
-        *top_hosts,
+        *top_hosts, optimization_guide::proto::CONTEXT_BATCH_UPDATE,
         base::BindOnce(&PreviewsOptimizationGuideImpl::OnHintsFetched,
                        ui_weak_ptr_factory_.GetWeakPtr()));
   }
 }
 
 void PreviewsOptimizationGuideImpl::OnHintsFetched(
+    optimization_guide::proto::RequestContext request_context,
     base::Optional<std::unique_ptr<optimization_guide::proto::GetHintsResponse>>
         get_hints_response) {
   // TODO(mcrouse): this will be dropped into a backgroundtask as it will likely

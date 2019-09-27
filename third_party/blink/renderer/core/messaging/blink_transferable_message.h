@@ -24,8 +24,8 @@ struct CORE_EXPORT BlinkTransferableMessage : BlinkCloneableMessage {
   BlinkTransferableMessage();
   ~BlinkTransferableMessage();
 
-  BlinkTransferableMessage(BlinkTransferableMessage&&) noexcept;
-  BlinkTransferableMessage& operator=(BlinkTransferableMessage&&) noexcept;
+  BlinkTransferableMessage(BlinkTransferableMessage&&);
+  BlinkTransferableMessage& operator=(BlinkTransferableMessage&&);
 
   Vector<MessagePortChannel> ports;
 

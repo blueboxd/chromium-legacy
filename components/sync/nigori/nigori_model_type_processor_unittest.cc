@@ -10,6 +10,7 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/test/mock_callback.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/time.h"
 #include "components/sync/engine/commit_queue.h"
 #include "components/sync/nigori/nigori_sync_bridge.h"
@@ -26,7 +27,7 @@ using testing::Ne;
 using testing::NotNull;
 
 // TODO(mamir): remove those and adjust the code accordingly.
-const char kNigoriClientTagHash[] = "NigoriClientTagHash";
+const char kRawNigoriClientTagHash[] = "NigoriClientTagHash";
 
 const char kNigoriNonUniqueName[] = "nigori";
 const char kNigoriServerId[] = "nigori_server_id";
@@ -75,7 +76,8 @@ CommitResponseData CreateNigoriCommitResponseData(
     int response_version) {
   CommitResponseData commit_response_data;
   commit_response_data.id = kNigoriServerId;
-  commit_response_data.client_tag_hash = kNigoriClientTagHash;
+  commit_response_data.client_tag_hash =
+      ClientTagHash::FromHashed(kRawNigoriClientTagHash);
   commit_response_data.sequence_number = commit_request_data.sequence_number;
   commit_response_data.response_version = response_version;
   commit_response_data.specifics_hash = commit_request_data.specifics_hash;

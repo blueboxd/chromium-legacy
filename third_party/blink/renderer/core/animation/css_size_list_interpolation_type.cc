@@ -165,6 +165,8 @@ void CSSSizeListInterpolationType::Composite(
       underlying_value_owner, underlying_fraction, *this, value,
       ListInterpolationFunctions::LengthMatchingStrategy::kLowestCommonMultiple,
       WTF::BindRepeating(
+          ListInterpolationFunctions::InterpolableValuesKnownCompatible),
+      WTF::BindRepeating(
           SizeInterpolationFunctions::NonInterpolableValuesAreCompatible),
       WTF::BindRepeating(SizeInterpolationFunctions::Composite));
 }

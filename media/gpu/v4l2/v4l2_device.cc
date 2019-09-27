@@ -18,6 +18,7 @@
 #include "base/numerics/safe_conversions.h"
 #include "build/build_config.h"
 #include "media/base/bind_to_current_loop.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/video_types.h"
 #include "media/gpu/macros.h"
 #include "media/gpu/v4l2/generic_v4l2_device.h"
@@ -1555,7 +1556,7 @@ base::Optional<VideoFrameLayout> V4L2Device::V4L2FormatToVideoFrameLayout(
     return base::nullopt;
   }
   // Reserve capacity in advance to prevent unnecessary vector reallocation.
-  std::vector<VideoFrameLayout::Plane> planes;
+  std::vector<ColorPlaneLayout> planes;
   planes.reserve(num_color_planes);
   for (size_t i = 0; i < num_buffers; ++i) {
     const v4l2_plane_pix_format& plane_format = pix_mp.plane_fmt[i];

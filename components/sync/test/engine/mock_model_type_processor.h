@@ -69,9 +69,10 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   // return the value to the caller so the test framework can handle them as it
   // sees fit.
   std::unique_ptr<CommitRequestData> CommitRequest(
-      const std::string& tag_hash,
+      const ClientTagHash& tag_hash,
       const sync_pb::EntitySpecifics& specifics);
-  std::unique_ptr<CommitRequestData> DeleteRequest(const std::string& tag_hash);
+  std::unique_ptr<CommitRequestData> DeleteRequest(
+      const ClientTagHash& tag_hash);
 
   // Getters to access the log of received update responses.
   //
@@ -88,13 +89,13 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   sync_pb::ModelTypeState GetNthCommitState(size_t n) const;
 
   // Getters to access the lastest update response for a given tag_hash.
-  bool HasUpdateResponse(const std::string& tag_hash) const;
+  bool HasUpdateResponse(const ClientTagHash& tag_hash) const;
   const UpdateResponseData& GetUpdateResponse(
-      const std::string& tag_hash) const;
+      const ClientTagHash& tag_hash) const;
 
   // Getters to access the lastest commit response for a given tag_hash.
-  bool HasCommitResponse(const std::string& tag_hash) const;
-  CommitResponseData GetCommitResponse(const std::string& tag_hash) const;
+  bool HasCommitResponse(const ClientTagHash& tag_hash) const;
+  CommitResponseData GetCommitResponse(const ClientTagHash& tag_hash) const;
 
   void SetDisconnectCallback(const DisconnectCallback& callback);
 
@@ -117,17 +118,18 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
                             UpdateResponseDataList response_list);
 
   // Getter and setter for per-item sequence number tracking.
-  int64_t GetCurrentSequenceNumber(const std::string& tag_hash) const;
-  int64_t GetNextSequenceNumber(const std::string& tag_hash);
+  int64_t GetCurrentSequenceNumber(const ClientTagHash& tag_hash) const;
+  int64_t GetNextSequenceNumber(const ClientTagHash& tag_hash);
 
   // Getter and setter for per-item base version tracking.
-  int64_t GetBaseVersion(const std::string& tag_hash) const;
-  void SetBaseVersion(const std::string& tag_hash, int64_t version);
+  int64_t GetBaseVersion(const ClientTagHash& tag_hash) const;
+  void SetBaseVersion(const ClientTagHash& tag_hash, int64_t version);
 
   // Getters and setter for server-assigned ID values.
-  bool HasServerAssignedId(const std::string& tag_hash) const;
-  const std::string& GetServerAssignedId(const std::string& tag_hash) const;
-  void SetServerAssignedId(const std::string& tag_hash, const std::string& id);
+  bool HasServerAssignedId(const ClientTagHash& tag_hash) const;
+  const std::string& GetServerAssignedId(const ClientTagHash& tag_hash) const;
+  void SetServerAssignedId(const ClientTagHash& tag_hash,
+                           const std::string& id);
 
   // State related to the implementation of deferred work.
   // See SetSynchronousExecution() for details.
@@ -142,17 +144,17 @@ class MockModelTypeProcessor : public ModelTypeProcessor {
   std::vector<sync_pb::ModelTypeState> type_states_received_on_commit_;
 
   // Latest responses received, indexed by tag_hash.
-  std::map<const std::string, CommitResponseData> commit_response_items_;
-  std::map<const std::string, const UpdateResponseData*> update_response_items_;
+  std::map<ClientTagHash, CommitResponseData> commit_response_items_;
+  std::map<ClientTagHash, const UpdateResponseData*> update_response_items_;
 
   // The per-item state maps.
-  std::map<const std::string, int64_t> sequence_numbers_;
-  std::map<const std::string, int64_t> base_versions_;
-  std::map<const std::string, std::string> assigned_ids_;
+  std::map<ClientTagHash, int64_t> sequence_numbers_;
+  std::map<ClientTagHash, int64_t> base_versions_;
+  std::map<ClientTagHash, std::string> assigned_ids_;
 
   // Set of tag hashes which were deleted with DeleteRequest but haven't yet
   // been confirmed by the server with OnCommitCompleted.
-  std::set<std::string> pending_deleted_hashes_;
+  std::set<ClientTagHash> pending_deleted_hashes_;
 
   // Callback which will be call during disconnection
   DisconnectCallback disconnect_callback_;

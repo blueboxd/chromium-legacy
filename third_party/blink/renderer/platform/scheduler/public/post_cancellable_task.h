@@ -28,8 +28,8 @@ class PLATFORM_EXPORT TaskHandle {
   TaskHandle();
   ~TaskHandle();
 
-  TaskHandle(TaskHandle&&) noexcept;
-  TaskHandle& operator=(TaskHandle&&) noexcept;
+  TaskHandle(TaskHandle&&);
+  TaskHandle& operator=(TaskHandle&&);
 
   // Returns true if the task will run later. Returns false if the task is
   // cancelled or the task is run already.

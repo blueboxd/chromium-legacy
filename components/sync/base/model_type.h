@@ -92,13 +92,9 @@ enum ModelType {
   APP_SETTINGS,
   // An extension setting from the extension settings API.
   EXTENSION_SETTINGS,
-  // Deprecated.
-  DEPRECATED_APP_NOTIFICATIONS,
   // History delete directives, used to propagate history deletions (e.g. based
   // on a time range).
   HISTORY_DELETE_DIRECTIVES,
-  DEPRECATED_SYNCED_NOTIFICATIONS,
-  DEPRECATED_SYNCED_NOTIFICATION_APP_INFO,
   // Custom spelling dictionary entries.
   DICTIONARY,
   // Favicon images, including both the image URL and the actual pixels.
@@ -114,12 +110,8 @@ enum ModelType {
   PRIORITY_PREFERENCES,
   // Supervised user settings. Cannot be encrypted.
   SUPERVISED_USER_SETTINGS,
-  DEPRECATED_SUPERVISED_USERS,
-  DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS,
-  DEPRECATED_ARTICLES,
   // App List items, used by the ChromeOS app launcher.
   APP_LIST,
-  DEPRECATED_WIFI_CREDENTIALS,
   // Supervised user whitelists. Each item contains a CRX ID (like an extension
   // ID) and a name.
   SUPERVISED_USER_WHITELISTS,
@@ -256,16 +248,12 @@ constexpr ModelTypeSet ProtocolTypes() {
       BOOKMARKS, PREFERENCES, PASSWORDS, AUTOFILL_PROFILE, AUTOFILL,
       AUTOFILL_WALLET_DATA, AUTOFILL_WALLET_METADATA, THEMES, TYPED_URLS,
       EXTENSIONS, SEARCH_ENGINES, SESSIONS, APPS, APP_SETTINGS,
-      EXTENSION_SETTINGS, DEPRECATED_APP_NOTIFICATIONS,
-      HISTORY_DELETE_DIRECTIVES, DEPRECATED_SYNCED_NOTIFICATIONS,
-      DEPRECATED_SYNCED_NOTIFICATION_APP_INFO, DICTIONARY, FAVICON_IMAGES,
+      EXTENSION_SETTINGS, HISTORY_DELETE_DIRECTIVES, DICTIONARY, FAVICON_IMAGES,
       FAVICON_TRACKING, DEVICE_INFO, PRIORITY_PREFERENCES,
-      SUPERVISED_USER_SETTINGS, DEPRECATED_SUPERVISED_USERS,
-      DEPRECATED_SUPERVISED_USER_SHARED_SETTINGS, DEPRECATED_ARTICLES, APP_LIST,
-      DEPRECATED_WIFI_CREDENTIALS, SUPERVISED_USER_WHITELISTS, ARC_PACKAGE,
-      PRINTERS, READING_LIST, USER_EVENTS, NIGORI, DEPRECATED_EXPERIMENTS,
-      MOUNTAIN_SHARES, USER_CONSENTS, SEND_TAB_TO_SELF, SECURITY_EVENTS,
-      WEB_APPS, WIFI_CONFIGURATIONS);
+      SUPERVISED_USER_SETTINGS, APP_LIST, SUPERVISED_USER_WHITELISTS,
+      ARC_PACKAGE, PRINTERS, READING_LIST, USER_EVENTS, NIGORI,
+      DEPRECATED_EXPERIMENTS, MOUNTAIN_SHARES, USER_CONSENTS, SEND_TAB_TO_SELF,
+      SECURITY_EVENTS, WEB_APPS, WIFI_CONFIGURATIONS);
 }
 
 // These are the normal user-controlled types. This is to distinguish from
@@ -364,9 +352,6 @@ const char* ModelTypeToHistogramSuffix(ModelType model_type);
 // The mapping from ModelType to integer is defined here. It defines a
 // completely different order than the ModelType enum itself. The mapping should
 // match the SyncModelTypes mapping from integer to labels defined in enums.xml.
-// TODO(crbug.com/1007293): Update all histogram recording sites to use
-// ModelTypeHistogramValue() and remove ModelTypeToHistogramInt();
-int ModelTypeToHistogramInt(ModelType model_type);
 ModelTypeForHistograms ModelTypeHistogramValue(ModelType model_type);
 
 // Returns for every model_type a positive unique integer that is stable over

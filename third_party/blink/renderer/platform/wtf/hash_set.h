@@ -74,8 +74,8 @@ class HashSet {
   }
   HashSet(const HashSet&) = default;
   HashSet& operator=(const HashSet&) = default;
-  HashSet(HashSet&&) noexcept = default;
-  HashSet& operator=(HashSet&&) noexcept = default;
+  HashSet(HashSet&&) = default;
+  HashSet& operator=(HashSet&&) = default;
 
   HashSet(std::initializer_list<ValueType> elements);
   HashSet& operator=(std::initializer_list<ValueType> elements);

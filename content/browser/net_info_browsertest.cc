@@ -12,6 +12,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "build/build_config.h"
 #include "content/browser/net/network_quality_observer_impl.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test.h"
@@ -285,14 +286,13 @@ IN_PROC_BROWSER_TEST_F(NetInfoBrowserTest,
   // effective connection type.
   GetNetworkQualityTracker()->ReportEffectiveConnectionTypeForTesting(
       net::EFFECTIVE_CONNECTION_TYPE_2G);
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ("2g", RunScriptExtractString("getEffectiveType()"));
+
   GetNetworkQualityTracker()->ReportEffectiveConnectionTypeForTesting(
       net::EFFECTIVE_CONNECTION_TYPE_3G);
-  base::RunLoop().RunUntilIdle();
   EXPECT_EQ("3g", RunScriptExtractString("getEffectiveType()"));
+
   FetchHistogramsFromChildProcesses();
-  base::RunLoop().RunUntilIdle();
   EXPECT_GT(GetTotalSampleCount(&histogram_tester, "NQE.RenderThreadNotified"),
             samples);
 }

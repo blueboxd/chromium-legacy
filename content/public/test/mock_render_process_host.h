@@ -179,11 +179,15 @@ class MockRenderProcessHost : public RenderProcessHost {
   void BindIndexedDB(mojo::PendingReceiver<blink::mojom::IDBFactory> receiver,
                      const url::Origin& origin) override;
   void CreateLockManager(
+      int render_frame_id,
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::LockManager> receiver) override {}
   void CreatePermissionService(
       const url::Origin& origin,
       mojo::PendingReceiver<blink::mojom::PermissionService> receiver)
+      override {}
+  void CreatePaymentManager(
+      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver)
       override {}
   void CleanupCorbExceptionForPluginUponDestruction() override;
 

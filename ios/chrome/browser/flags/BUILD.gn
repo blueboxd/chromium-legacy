@@ -29,6 +29,7 @@ source_set("flags") {
     "//components/security_state/core",
     "//components/send_tab_to_self",
     "//components/signin/core/browser",
+    "//components/signin/ios/browser",
     "//components/signin/public/base",
     "//components/strings:components_strings",
     "//components/sync/driver",

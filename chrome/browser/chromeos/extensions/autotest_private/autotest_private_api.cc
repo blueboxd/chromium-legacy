@@ -78,6 +78,7 @@
 #include "chromeos/dbus/session_manager/session_manager_client.h"
 #include "chromeos/printing/printer_configuration.h"
 #include "chromeos/services/assistant/public/cpp/assistant_prefs.h"
+#include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/machine_learning/public/cpp/service_connection.h"
 #include "components/arc/arc_prefs.h"
 #include "components/arc/metrics/arc_metrics_constants.h"
@@ -1702,13 +1703,128 @@ void AutotestPrivateSetAssistantEnabledFunction::Timeout() {
   Respond(Error("Assistant service timed out"));
 }
 
+// AssistantInteractionHelper is a helper class used to interact with Assistant
+// server and store interaction states for tests. It is shared by
+// |AutotestPrivateSendAssistantTextQueryFunction| and
+// |AutotestPrivateWaitForAssistantQueryStatusFunction|.
+class AssistantInteractionHelper
+    : public chromeos::assistant::mojom::AssistantInteractionSubscriber {
+ public:
+  using OnInteractionFinishedCallback = base::OnceCallback<void(bool)>;
+
+  AssistantInteractionHelper()
+      : query_status_(std::make_unique<base::DictionaryValue>()) {}
+
+  ~AssistantInteractionHelper() override = default;
+
+  void Init(OnInteractionFinishedCallback on_interaction_finished_callback) {
+    // Bind to Assistant service interface.
+    AssistantClient::Get()->BindAssistant(mojo::MakeRequest(&assistant_));
+
+    // Subscribe to Assistant interaction events.
+    assistant_->AddAssistantInteractionSubscriber(
+        assistant_interaction_subscriber_receiver_.BindNewPipeAndPassRemote());
+
+    on_interaction_finished_callback_ =
+        std::move(on_interaction_finished_callback);
+  }
+
+  void SendTextQuery(const std::string& query, bool allow_tts) {
+    // Start text interaction with Assistant server.
+    assistant_->StartTextInteraction(query, allow_tts);
+
+    query_status_->SetKey("queryText", base::Value(query));
+  }
+
+  std::unique_ptr<base::DictionaryValue> GetQueryStatus() {
+    return std::move(query_status_);
+  }
+
+ private:
+  // chromeos::assistant::mojom::AssistantInteractionSubscriber:
+  using AssistantSuggestionPtr =
+      chromeos::assistant::mojom::AssistantSuggestionPtr;
+  using AssistantInteractionMetadataPtr =
+      chromeos::assistant::mojom::AssistantInteractionMetadataPtr;
+  using AssistantInteractionResolution =
+      chromeos::assistant::mojom::AssistantInteractionResolution;
+
+  void OnInteractionStarted(AssistantInteractionMetadataPtr metadata) override {
+    const bool is_voice_interaction =
+        chromeos::assistant::mojom::AssistantInteractionType::kVoice ==
+        metadata->type;
+    query_status_->SetKey("isMicOpen", base::Value(is_voice_interaction));
+  }
+
+  void OnInteractionFinished(
+      AssistantInteractionResolution resolution) override {
+    // Only invoke the callback when |result_| is not empty to avoid an early
+    // return before the entire session is completed. This happens when
+    // sending queries to modify device settings, e.g. "turn on bluetooth",
+    // which results in a round trip due to the need to fetch device state
+    // on the client and return that to the server as part of a follow-up
+    // interaction.
+    if (result_.empty())
+      return;
+
+    query_status_->SetKey("queryResponse", std::move(result_));
+
+    if (on_interaction_finished_callback_) {
+      const bool success =
+          (resolution == AssistantInteractionResolution::kNormal) ? true
+                                                                  : false;
+      std::move(on_interaction_finished_callback_).Run(success);
+    }
+  }
+
+  void OnHtmlResponse(const std::string& response,
+                      const std::string& fallback) override {
+    result_.SetKey("htmlResponse", base::Value(response));
+    result_.SetKey("htmlFallback", base::Value(fallback));
+  }
+
+  void OnTextResponse(const std::string& response) override {
+    result_.SetKey("text", base::Value(response));
+  }
+
+  void OnSpeechRecognitionFinalResult(
+      const std::string& final_result) override {
+    query_status_->SetKey("queryText", base::Value(final_result));
+  }
+
+  void OnSuggestionsResponse(
+      std::vector<AssistantSuggestionPtr> response) override {}
+  void OnOpenUrlResponse(const GURL& url, bool in_background) override {}
+  void OnOpenAppResponse(chromeos::assistant::mojom::AndroidAppInfoPtr app_info,
+                         OnOpenAppResponseCallback callback) override {}
+  void OnSpeechRecognitionStarted() override {}
+  void OnSpeechRecognitionIntermediateResult(
+      const std::string& high_confidence_text,
+      const std::string& low_confidence_text) override {}
+  void OnSpeechRecognitionEndOfUtterance() override {}
+  void OnSpeechLevelUpdated(float speech_level) override {}
+  void OnTtsStarted(bool due_to_error) override {}
+  void OnWaitStarted() override {}
+
+  chromeos::assistant::mojom::AssistantPtr assistant_;
+  mojo::Receiver<chromeos::assistant::mojom::AssistantInteractionSubscriber>
+      assistant_interaction_subscriber_receiver_{this};
+  std::unique_ptr<base::DictionaryValue> query_status_;
+  base::DictionaryValue result_;
+
+  // Callback triggered when interaction finished with non-empty response.
+  OnInteractionFinishedCallback on_interaction_finished_callback_;
+
+  DISALLOW_COPY_AND_ASSIGN(AssistantInteractionHelper);
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateSendAssistantTextQueryFunction
 ///////////////////////////////////////////////////////////////////////////////
 
 AutotestPrivateSendAssistantTextQueryFunction::
     AutotestPrivateSendAssistantTextQueryFunction()
-    : result_(std::make_unique<base::DictionaryValue>()) {}
+    : interaction_helper_(std::make_unique<AssistantInteractionHelper>()) {}
 
 AutotestPrivateSendAssistantTextQueryFunction::
     ~AutotestPrivateSendAssistantTextQueryFunction() = default;
@@ -1729,15 +1845,13 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
         "Assistant not allowed - state: %d", allowed_state)));
   }
 
-  // Bind to Assistant service interface.
-  AssistantClient::Get()->BindAssistant(mojo::MakeRequest(&assistant_));
-
-  // Subscribe to Assistant interaction events.
-  assistant_->AddAssistantInteractionSubscriber(
-      assistant_interaction_subscriber_receiver_.BindNewPipeAndPassRemote());
+  interaction_helper_->Init(
+      base::BindOnce(&AutotestPrivateSendAssistantTextQueryFunction::
+                         OnInteractionFinishedCallback,
+                     this));
 
   // Start text interaction with Assistant server.
-  assistant_->StartTextInteraction(params->query, /*allow_tts*/ false);
+  interaction_helper_->SendTextQuery(params->query, /*allow_tts=*/false);
 
   // Set up a delayed timer to wait for the query response and hold a reference
   // to |this| to avoid being destructed. Also make sure we stop and respond
@@ -1750,39 +1864,76 @@ AutotestPrivateSendAssistantTextQueryFunction::Run() {
   return RespondLater();
 }
 
-void AutotestPrivateSendAssistantTextQueryFunction::OnTextResponse(
-    const std::string& response) {
-  result_->SetKey("text", base::Value(response));
-}
-
-void AutotestPrivateSendAssistantTextQueryFunction::OnHtmlResponse(
-    const std::string& response,
-    const std::string& fallback) {
-  result_->SetKey("htmlResponse", base::Value(response));
-  result_->SetKey("htmlFallback", base::Value(fallback));
-}
-
-void AutotestPrivateSendAssistantTextQueryFunction::OnInteractionFinished(
-    AssistantInteractionResolution resolution) {
-  // Only return a result to the caller and stop the timer when |result_|
-  // is not empty to avoid an early return before the entire interaction is
-  // completed. This happens when sending queries to modify device settings,
-  // e.g. "turn on bluetooth", which results in two rounds of interaction.
-  if (result_->empty())
-    return;
-
-  if (resolution != AssistantInteractionResolution::kNormal) {
+void AutotestPrivateSendAssistantTextQueryFunction::
+    OnInteractionFinishedCallback(bool success) {
+  if (!success) {
     Respond(Error("Interaction ends abnormally."));
     timeout_timer_.AbandonAndStop();
     return;
   }
 
-  Respond(OneArgument(std::move(result_)));
+  Respond(OneArgument(interaction_helper_->GetQueryStatus()));
   timeout_timer_.AbandonAndStop();
 }
 
 void AutotestPrivateSendAssistantTextQueryFunction::Timeout() {
   Respond(Error("Assistant response timeout."));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateWaitForAssistantQueryStatusFunction
+///////////////////////////////////////////////////////////////////////////////
+AutotestPrivateWaitForAssistantQueryStatusFunction::
+    AutotestPrivateWaitForAssistantQueryStatusFunction()
+    : interaction_helper_(std::make_unique<AssistantInteractionHelper>()) {}
+
+AutotestPrivateWaitForAssistantQueryStatusFunction::
+    ~AutotestPrivateWaitForAssistantQueryStatusFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateWaitForAssistantQueryStatusFunction::Run() {
+  DVLOG(1) << "AutotestPrivateWaitForAssistantQueryStatusFunction";
+
+  std::unique_ptr<api::autotest_private::WaitForAssistantQueryStatus::Params>
+      params(api::autotest_private::WaitForAssistantQueryStatus::Params::Create(
+          *args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  Profile* profile = Profile::FromBrowserContext(browser_context());
+  ash::mojom::AssistantAllowedState allowed_state =
+      assistant::IsAssistantAllowedForProfile(profile);
+  if (allowed_state != ash::mojom::AssistantAllowedState::ALLOWED) {
+    return RespondNow(Error(base::StringPrintf(
+        "Assistant not allowed - state: %d", allowed_state)));
+  }
+
+  interaction_helper_->Init(
+      base::BindOnce(&AutotestPrivateWaitForAssistantQueryStatusFunction::
+                         OnInteractionFinishedCallback,
+                     this));
+
+  // Start waiting for the response before time out.
+  timeout_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromSeconds(params->timeout_s),
+      base::BindOnce(
+          &AutotestPrivateWaitForAssistantQueryStatusFunction::Timeout, this));
+  return RespondLater();
+}
+
+void AutotestPrivateWaitForAssistantQueryStatusFunction::
+    OnInteractionFinishedCallback(bool success) {
+  if (!success) {
+    Respond(Error("Interaction ends abnormally."));
+    timeout_timer_.AbandonAndStop();
+    return;
+  }
+
+  Respond(OneArgument(interaction_helper_->GetQueryStatus()));
+  timeout_timer_.AbandonAndStop();
+}
+
+void AutotestPrivateWaitForAssistantQueryStatusFunction::Timeout() {
+  Respond(Error("No query response received before time out."));
 }
 
 ///////////////////////////////////////////////////////////////////////////////

@@ -15,6 +15,8 @@
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/mojom/filesystem/file_system.mojom-forward.h"
 #include "third_party/blink/public/mojom/idle/idle_manager.mojom-forward.h"
+#include "third_party/blink/public/mojom/payments/payment_app.mojom-forward.h"
+#include "third_party/blink/public/mojom/sms/sms_receiver.mojom-forward.h"
 #include "third_party/blink/public/mojom/usb/web_usb_service.mojom-forward.h"
 #include "third_party/blink/public/mojom/websockets/websocket_connector.mojom-forward.h"
 #include "third_party/blink/public/mojom/worker/dedicated_worker_host.mojom.h"
@@ -68,6 +70,10 @@ class DedicatedWorkerHost final
       mojo::PendingReceiver<blink::mojom::FileSystemManager> receiver);
   void CreateIdleManager(
       mojo::PendingReceiver<blink::mojom::IdleManager> receiver);
+  void CreatePaymentManager(
+      mojo::PendingReceiver<payments::mojom::PaymentManager> receiver);
+  void BindSmsReceiverReceiver(
+      mojo::PendingReceiver<blink::mojom::SmsReceiver> receiver);
 
   // service_manager::mojom::InterfaceProvider:
   void GetInterface(const std::string& interface_name,

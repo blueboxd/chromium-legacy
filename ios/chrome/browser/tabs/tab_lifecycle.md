@@ -10,13 +10,13 @@ std::unique_ptr<web::WebState> web_state =  web::WebState::Create(params);
 AttachTabHelper(web_state.get());
 ````
 
-When a `WebState` is added to a `TabModel`'s `WebStateList`,
+When a `WebState` is added to a `Browser`'s `WebStateList`,
 `BrowserWebStateListDelegate` will invoke `AttachTabHelpers` if necessary.
 
 ```cpp
-TabModel* tab_model = ...;
+Browser* browser = ...;
 std::unique_ptr<web::WebState> web_state =  ...;
-[tab_model webStateList]->InsertWebState(0, std::move(web_state));
+browser->GetWebStateList()->InsertWebState(0, std::move(web_state));
 ```
 
 All Tab helpers are `WebStateUserData` thus they are destroyed after the

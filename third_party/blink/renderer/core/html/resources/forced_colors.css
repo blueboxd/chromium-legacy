@@ -120,6 +120,11 @@
     color: GrayText;
   }
 
+  /* same color as hyperlinks */
+  details summary {
+    color: LinkText;
+  }
+
   select:-internal-list-box {
     background-color: Window !important;
     border-color: ButtonText;

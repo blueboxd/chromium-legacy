@@ -5804,36 +5804,6 @@ class AssertForegroundHelper {
   DISALLOW_COPY_AND_ASSIGN(AssertForegroundHelper);
 };
 
-// Observer class that waits until the OS process for a specific
-// RenderProcessHost is ready to be used.
-// TODO(nasko): Consider moving this into RenderProcessHostWatcher.
-class RenderProcessReadyObserver : public RenderProcessHostObserver {
- public:
-  explicit RenderProcessReadyObserver(RenderProcessHost* render_process_host)
-      : render_process_host_(render_process_host),
-        quit_closure_(run_loop_.QuitClosure()) {
-    render_process_host_->AddObserver(this);
-  }
-  ~RenderProcessReadyObserver() override {
-    render_process_host_->RemoveObserver(this);
-  }
-
-  // Waits until the renderer process is ready.
-  void Wait() { run_loop_.Run(); }
-
- private:
-  // RenderProcessHostObserver overrides.
-  void RenderProcessReady(RenderProcessHost* host) override {
-    std::move(quit_closure_).Run();
-  }
-
-  RenderProcessHost* render_process_host_;
-  base::RunLoop run_loop_;
-  base::OnceClosure quit_closure_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderProcessReadyObserver);
-};
-
 }  // namespace
 
 // This is a regression test for https://crbug.com/560446. It ensures the
@@ -5887,7 +5857,8 @@ IN_PROC_BROWSER_TEST_F(
 
   // Wait for the underlying OS process to have launched and be ready to
   // receive IPCs.
-  RenderProcessReadyObserver process_observer(speculative_rph);
+  RenderProcessHostWatcher process_observer(
+      speculative_rph, RenderProcessHostWatcher::WATCH_FOR_PROCESS_READY);
   process_observer.Wait();
 
   // Kick off an infinite check against self that the process used for

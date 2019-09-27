@@ -70,6 +70,7 @@ if (is_chromeos) {
       ":camera_intent",
       ":media",
       ":notifications",
+      "//components/chromeos_camera/common:camera_app_helper",
       "//media/capture/video/chromeos/mojom:cros_camera",
       "//mojo/public/mojom/base",
       "//services/device/public/mojom:usb",

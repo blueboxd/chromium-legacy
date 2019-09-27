@@ -32,14 +32,9 @@ CrostiniInstallerUI::CrostiniInstallerUI(content::WebUI* web_ui)
   content::WebUIDataSource* source =
       content::WebUIDataSource::Create(chrome::kChromeUICrostiniInstallerHost);
 
-  source->AddResourcePath("app.html", IDR_CROSTINI_INSTALLER_APP_HTML);
   source->AddResourcePath("app.js", IDR_CROSTINI_INSTALLER_APP_JS);
-  source->AddResourcePath("browser_proxy.html",
-                          IDR_CROSTINI_INSTALLER_BROWSER_PROXY_HTML);
   source->AddResourcePath("browser_proxy.js",
                           IDR_CROSTINI_INSTALLER_BROWSER_PROXY_JS);
-  source->AddResourcePath("crostini_installer.mojom.html",
-                          IDR_CROSTINI_INSTALLER_MOJO_HTML);
   source->AddResourcePath("crostini_installer.mojom-lite.js",
                           IDR_CROSTINI_INSTALLER_MOJO_LITE_JS);
   source->SetDefaultResource(IDR_CROSTINI_INSTALLER_INDEX_HTML);

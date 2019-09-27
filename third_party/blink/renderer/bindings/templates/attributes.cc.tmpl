@@ -75,9 +75,14 @@ const v8::FunctionCallbackInfo<v8::Value>& info
 
   {% if attribute.cached_attribute_validation_method %}
   // [CachedAttribute]
+  {% if cpp_class == 'History' and attribute.camel_case_name == 'State' %}
+  V8PrivateProperty::Symbol property_symbol =
+      V8PrivateProperty::GetHistoryStateSymbol(info.GetIsolate());
+  {% else %}
   V8PrivateProperty::Symbol property_symbol =
       V8PrivateProperty::GetSymbol(info.GetIsolate(),
           "{{cpp_class}}#{{attribute.camel_case_name}}");
+  {% endif %}
   if (!static_cast<const {{cpp_class}}*>(impl)->{{attribute.cached_attribute_validation_method}}()) {
     v8::Local<v8::Value> v8_value;
     if (property_symbol.GetOrUndefined(holder).ToLocal(&v8_value) && !v8_value->IsUndefined()) {

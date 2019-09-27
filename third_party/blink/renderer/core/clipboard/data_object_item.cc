@@ -141,9 +141,12 @@ File* DataObjectItem::GetAsFile() const {
     SkPixmap pixmap;
     bitmap.peekPixels(&pixmap);
 
-    Vector<uint8_t> png_data;
+    // Set encoding options to favor speed over size.
     SkPngEncoder::Options options;
-    options.fZLibLevel = 1;  // Fastest compression.
+    options.fZLibLevel = 1;
+    options.fFilterFlags = SkPngEncoder::FilterFlag::kNone;
+
+    Vector<uint8_t> png_data;
     if (!ImageEncoder::Encode(&png_data, pixmap, options))
       return nullptr;
 

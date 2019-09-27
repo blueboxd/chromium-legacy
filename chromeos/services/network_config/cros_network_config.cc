@@ -1678,14 +1678,14 @@ void CrosNetworkConfig::BindReceiver(
 }
 
 void CrosNetworkConfig::AddObserver(
-    mojom::CrosNetworkConfigObserverPtr observer) {
+    mojo::PendingRemote<mojom::CrosNetworkConfigObserver> observer) {
   if (!network_state_handler_->HasObserver(this))
     network_state_handler_->AddObserver(this, FROM_HERE);
   if (network_certificate_handler_ &&
       !network_certificate_handler_->HasObserver(this)) {
     network_certificate_handler_->AddObserver(this);
   }
-  observers_.AddPtr(std::move(observer));
+  observers_.Add(std::move(observer));
 }
 
 void CrosNetworkConfig::GetNetworkState(const std::string& guid,
@@ -2418,9 +2418,8 @@ void CrosNetworkConfig::StartDisconnectFailure(
 void CrosNetworkConfig::SetVpnProviders(
     std::vector<mojom::VpnProviderPtr> providers) {
   vpn_providers_ = std::move(providers);
-  observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
+  for (auto& observer : observers_)
     observer->OnVpnProvidersChanged();
-  });
 }
 
 void CrosNetworkConfig::GetVpnProviders(GetVpnProvidersCallback callback) {
@@ -2447,15 +2446,13 @@ void CrosNetworkConfig::GetNetworkCertificates(
 
 // NetworkStateHandlerObserver
 void CrosNetworkConfig::NetworkListChanged() {
-  observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
+  for (auto& observer : observers_)
     observer->OnNetworkStateListChanged();
-  });
 }
 
 void CrosNetworkConfig::DeviceListChanged() {
-  observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
+  for (auto& observer : observers_)
     observer->OnDeviceStateListChanged();
-  });
 }
 
 void CrosNetworkConfig::ActiveNetworksChanged(
@@ -2467,9 +2464,8 @@ void CrosNetworkConfig::ActiveNetworksChanged(
     if (mojo_network)
       result.emplace_back(std::move(mojo_network));
   }
-  observers_.ForAllPtrs([&result](mojom::CrosNetworkConfigObserver* observer) {
+  for (auto& observer : observers_)
     observer->OnActiveNetworksChanged(mojo::Clone(result));
-  });
 }
 
 void CrosNetworkConfig::NetworkPropertiesUpdated(const NetworkState* network) {
@@ -2479,10 +2475,8 @@ void CrosNetworkConfig::NetworkPropertiesUpdated(const NetworkState* network) {
       NetworkStateToMojo(network_state_handler_, vpn_providers_, network);
   if (!mojo_network)
     return;
-  observers_.ForAllPtrs(
-      [&mojo_network](mojom::CrosNetworkConfigObserver* observer) {
-        observer->OnNetworkStateChanged(mojo_network.Clone());
-      });
+  for (auto& observer : observers_)
+    observer->OnNetworkStateChanged(mojo_network.Clone());
 }
 
 void CrosNetworkConfig::DevicePropertiesUpdated(const DeviceState* device) {
@@ -2496,9 +2490,8 @@ void CrosNetworkConfig::OnShuttingDown() {
 }
 
 void CrosNetworkConfig::OnCertificatesChanged() {
-  observers_.ForAllPtrs([](mojom::CrosNetworkConfigObserver* observer) {
+  for (auto& observer : observers_)
     observer->OnNetworkCertificatesChanged();
-  });
 }
 
 const std::string& CrosNetworkConfig::GetServicePathFromGuid(

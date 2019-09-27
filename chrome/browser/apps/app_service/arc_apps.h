@@ -95,10 +95,12 @@ class ArcApps : public KeyedService,
 
   apps::mojom::AppPtr Convert(ArcAppListPrefs* prefs,
                               const std::string& app_id,
-                              const ArcAppListPrefs::AppInfo& app_info);
+                              const ArcAppListPrefs::AppInfo& app_info,
+                              bool update_icon = true);
   void Publish(apps::mojom::AppPtr app);
   void ConvertAndPublishPackageApps(
-      const arc::mojom::ArcPackageInfo& package_info);
+      const arc::mojom::ArcPackageInfo& package_info,
+      bool update_icon = true);
   void UpdateAppIntentFilters(
       std::string package_name,
       arc::ArcIntentHelperBridge* intent_helper_bridge,

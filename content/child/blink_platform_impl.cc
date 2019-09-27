@@ -134,16 +134,6 @@ int ToMessageID(int resource_id) {
       return IDS_MEDIA_TRACKS_NO_LABEL;
     case WebLocalizedString::kTextTracksOff:
       return IDS_MEDIA_TRACKS_OFF;
-    case WebLocalizedString::kUnitsKibibytes:
-      return IDS_UNITS_KIBIBYTES;
-    case WebLocalizedString::kUnitsMebibytes:
-      return IDS_UNITS_MEBIBYTES;
-    case WebLocalizedString::kUnitsGibibytes:
-      return IDS_UNITS_GIBIBYTES;
-    case WebLocalizedString::kUnitsTebibytes:
-      return IDS_UNITS_TEBIBYTES;
-    case WebLocalizedString::kUnitsPebibytes:
-      return IDS_UNITS_PEBIBYTES;
     // There is no matched IDS_FOO for kBlockedPluginText. Return -1.
     case WebLocalizedString::kBlockedPluginText:
       return -1;

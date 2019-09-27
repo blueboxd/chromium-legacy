@@ -35,11 +35,6 @@ class SyncedTabDelegate {
   virtual SessionID GetSessionId() const = 0;
   virtual bool IsBeingDestroyed() const = 0;
 
-  // Get the tab id of the tab responsible for opening this tab, if applicable.
-  // Returns an invalid ID if no such tab relationship is known.
-  // TODO(mastiz): Rename to GetSourceTabSessionId().
-  virtual SessionID GetSourceTabID() const = 0;
-
   // Method derived from extensions TabHelper.
   virtual std::string GetExtensionAppId() const = 0;
 

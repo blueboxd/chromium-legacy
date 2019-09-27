@@ -515,7 +515,7 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     ParseBeginOrEnd(value.GetString(), kBegin);
     if (isConnected()) {
       ConnectConditions();
-      InstanceListChanged(kBegin, Elapsed());
+      InstanceListChanged(kBegin);
       if (time_container_)
         time_container_->NotifyIntervalsChanged();
     }
@@ -528,7 +528,7 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     ParseBeginOrEnd(value.GetString(), kEnd);
     if (isConnected()) {
       ConnectConditions();
-      InstanceListChanged(kEnd, Elapsed());
+      InstanceListChanged(kEnd);
       if (time_container_)
         time_container_->NotifyIntervalsChanged();
     }
@@ -724,9 +724,6 @@ static void InsertSortedAndUnique(Vector<SMILTimeWithOrigin>& list,
 void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
                                      SMILTime time,
                                      SMILTimeOrigin origin) {
-  SMILTime current_presentation_time =
-      time_container_ ? time_container_->CurrentDocumentTime() : SMILTime();
-  DCHECK(!current_presentation_time.IsUnresolved());
   // Ignore new instance times for 'end' if the element is not active
   // and the origin is script.
   if (begin_or_end == kEnd && GetActiveState() == kInactive &&
@@ -736,7 +733,7 @@ void SVGSMILElement::AddInstanceTime(BeginOrEnd begin_or_end,
       begin_or_end == kBegin ? begin_times_ : end_times_;
   InsertSortedAndUnique(list, SMILTimeWithOrigin(time, origin));
 
-  InstanceListChanged(begin_or_end, current_presentation_time);
+  InstanceListChanged(begin_or_end);
   if (time_container_)
     time_container_->NotifyIntervalsChanged();
 }
@@ -870,16 +867,19 @@ SMILTime SVGSMILElement::NextInterestingTime(SMILTime presentation_time) const {
                   FindInstanceTime(kBegin, presentation_time, false));
 }
 
-void SVGSMILElement::InstanceListChanged(BeginOrEnd begin_or_end,
-                                         SMILTime event_time) {
+void SVGSMILElement::InstanceListChanged(BeginOrEnd begin_or_end) {
   if (is_waiting_for_first_interval_) {
     ResolveFirstInterval();
     return;
   }
+  SMILTime current_presentation_time =
+      time_container_ ? time_container_->CurrentDocumentTime() : SMILTime();
+  DCHECK(!current_presentation_time.IsUnresolved());
   if (begin_or_end == kEnd) {
     // If we have no current interval, or the current interval ends before the
     // indicated time, then a new 'end' instance time will have no effect.
-    if (!interval_.IsResolved() || interval_.EndsBefore(event_time))
+    if (!interval_.IsResolved() ||
+        interval_.EndsBefore(current_presentation_time))
       return;
     SMILTime new_end = FindInstanceTime(kEnd, interval_.begin, false);
     if (interval_.EndsBefore(new_end))
@@ -894,21 +894,25 @@ void SVGSMILElement::InstanceListChanged(BeginOrEnd begin_or_end,
   // Never resolve more than one interval when restart is 'never'.
   if (GetRestart() == kRestartNever)
     return;
-  SMILTime new_begin = FindInstanceTime(kBegin, event_time, true);
+  SMILTime new_begin =
+      FindInstanceTime(kBegin, current_presentation_time, true);
   if (!new_begin.IsFinite())
     return;
   // If the current interval is active and contains the new begin time, then we
   // will pick up a potentially new interval during the regular interval
   // update.
-  if (interval_.BeginsBefore(new_begin) && interval_.EndsAfter(event_time))
+  if (interval_.BeginsBefore(new_begin) &&
+      interval_.EndsAfter(current_presentation_time))
     return;
   // Begin time changed, re-resolve the interval.
   SMILTime old_begin = interval_.begin;
-  interval_ = ResolveInterval(event_time, event_time);
+  interval_ =
+      ResolveInterval(current_presentation_time, current_presentation_time);
   DCHECK(interval_.IsResolved());
   if (interval_.begin != old_begin) {
-    if (GetActiveState() == kActive && interval_.BeginsAfter(event_time)) {
-      active_state_ = DetermineActiveState(event_time);
+    if (GetActiveState() == kActive &&
+        interval_.BeginsAfter(current_presentation_time)) {
+      active_state_ = DetermineActiveState(current_presentation_time);
       if (GetActiveState() != kActive)
         EndedActiveInterval();
     }

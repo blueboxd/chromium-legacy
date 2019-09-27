@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "build/build_config.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/format_utils.h"
 #include "media/mojo/common/mojo_shared_buffer_video_frame.h"
 #include "mojo/public/cpp/base/time_mojom_traits.h"
@@ -173,7 +174,7 @@ bool StructTraits<media::mojom::VideoFrameDataView,
     if (num_planes != dmabuf_fds_data.size())
       return false;
 
-    std::vector<media::VideoFrameLayout::Plane> planes(num_planes);
+    std::vector<media::ColorPlaneLayout> planes(num_planes);
     for (size_t i = 0; i < num_planes; i++) {
       planes[i].stride = strides[i];
       planes[i].offset = 0;

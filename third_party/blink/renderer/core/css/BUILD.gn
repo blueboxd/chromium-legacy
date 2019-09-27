@@ -616,6 +616,7 @@ blink_core_tests("unit_tests") {
     "cssom/css_unit_value_test.cc",
     "cssom/css_unparsed_value_test.cc",
     "cssom/css_unsupported_color_value_test.cc",
+    "cssom/inline_style_property_map_test.cc",
     "cssom/paint_worklet_style_property_map_test.cc",
     "cssom/prepopulated_computed_style_property_map_test.cc",
     "drag_update_test.cc",

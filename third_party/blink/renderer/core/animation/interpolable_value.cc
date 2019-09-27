@@ -63,11 +63,11 @@ void InterpolableList::Interpolate(const InterpolableValue& to,
   }
 }
 
-std::unique_ptr<InterpolableValue> InterpolableList::CloneAndZero() const {
-  auto result = std::make_unique<InterpolableList>(length());
+InterpolableList* InterpolableList::RawCloneAndZero() const {
+  auto* result = new InterpolableList(length());
   for (wtf_size_t i = 0; i < length(); i++)
     result->Set(i, values_[i]->CloneAndZero());
-  return std::move(result);
+  return result;
 }
 
 void InterpolableNumber::Scale(double scale) {

@@ -27,7 +27,6 @@
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_client.h"
 #include "third_party/blink/public/web/modules/service_worker/web_service_worker_context_proxy.h"
 #include "third_party/blink/public/web/web_embedded_worker_start_data.h"
-#include "third_party/blink/public/web/web_settings.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource_error.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
 #include "third_party/blink/renderer/platform/scheduler/public/thread.h"
@@ -209,7 +208,6 @@ class WebEmbeddedWorkerImplTest : public testing::Test {
     start_data->script_type = mojom::ScriptType::kClassic;
     start_data->wait_for_debugger_mode =
         WebEmbeddedWorkerStartData::kDontWaitForDebugger;
-    start_data->v8_cache_options = WebSettings::V8CacheOptions::kDefault;
     return start_data;
   }
 

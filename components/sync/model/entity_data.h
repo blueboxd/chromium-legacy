@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "base/values.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/protocol/sync.pb.h"
 
 namespace syncer {
@@ -36,7 +37,7 @@ struct EntityData {
   // Used for various map lookups. Should always be available for all data types
   // except bookmarks. Sent to the server as
   // SyncEntity::client_defined_unique_tag.
-  std::string client_tag_hash;
+  ClientTagHash client_tag_hash;
 
   // A GUID that identifies the the sync client who initially committed this
   // entity. It's relevant only for bookmarks. See the definition in sync.proto

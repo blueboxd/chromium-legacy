@@ -5,6 +5,8 @@
 #ifndef UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_PLATFORM_H_
 #define UI_VIEWS_WIDGET_DESKTOP_AURA_DESKTOP_WINDOW_TREE_HOST_PLATFORM_H_
 
+#include <vector>
+
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "ui/aura/window_tree_host_platform.h"
@@ -90,6 +92,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
 
   // WindowTreeHost:
   gfx::Transform GetRootTransform() const override;
+  void ShowImpl() override;
+  void HideImpl() override;
 
   // PlatformWindowDelegateBase:
   void DispatchEvent(ui::Event* event) override;
@@ -123,6 +127,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   Widget* GetWidget();
   const Widget* GetWidget() const;
 
+  // Set visibility and fire OnNativeWidgetVisibilityChanged() if it changed.
+  void SetVisible(bool visible);
+
   // There are platform specific properties that Linux may want to add.
   virtual void AddAdditionalInitProperties(
       const Widget::InitParams& params,
@@ -139,6 +146,11 @@ class VIEWS_EXPORT DesktopWindowTreeHostPlatform
   // children who we're responsible for closing when we CloseNow().
   DesktopWindowTreeHostPlatform* window_parent_ = nullptr;
   std::set<DesktopWindowTreeHostPlatform*> window_children_;
+
+  // Keep track of PlatformWindow state so that we would react correctly and set
+  // visibility only if the window was minimized or was unminimized from the
+  // normal state.
+  ui::PlatformWindowState old_state_ = ui::PlatformWindowState::kUnknown;
 
   base::WeakPtrFactory<DesktopWindowTreeHostPlatform> close_widget_factory_{
       this};

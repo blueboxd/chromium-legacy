@@ -9,7 +9,7 @@
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 #include "chromeos/services/network_config/public/mojom/cros_network_config.mojom.h"
 #include "libassistant/shared/public/platform_net.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 
 namespace chromeos {
@@ -40,7 +40,7 @@ class COMPONENT_EXPORT(ASSISTANT_SERVICE) NetworkProviderImpl
 
  private:
   ConnectionStatus connection_status_;
-  mojo::Binding<network_config::mojom::CrosNetworkConfigObserver> binding_{
+  mojo::Receiver<network_config::mojom::CrosNetworkConfigObserver> receiver_{
       this};
   mojo::Remote<network_config::mojom::CrosNetworkConfig>
       cros_network_config_remote_;

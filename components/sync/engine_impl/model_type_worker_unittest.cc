@@ -15,7 +15,7 @@
 #include "base/test/metrics/histogram_tester.h"
 #include "base/threading/thread.h"
 #include "components/sync/base/cancelation_signal.h"
-#include "components/sync/base/hash_util.h"
+#include "components/sync/base/client_tag_hash.h"
 #include "components/sync/base/unique_position.h"
 #include "components/sync/engine/model_type_processor.h"
 #include "components/sync/engine_impl/commit_contribution.h"
@@ -141,16 +141,16 @@ void VerifyCommitCount(const DataTypeDebugInfoEmitter* emitter,
 // convenience functions so we can emulate server behavior.
 class ModelTypeWorkerTest : public ::testing::Test {
  protected:
-  static std::string GenerateTagHash(const std::string& tag) {
+  static ClientTagHash GenerateTagHash(const std::string& tag) {
     if (tag.empty()) {
-      return std::string();
+      return ClientTagHash();
     }
-    return GenerateSyncableHash(PREFERENCES, tag);
+    return ClientTagHash::FromUnhashed(PREFERENCES, tag);
   }
 
-  const std::string kHash1 = GenerateTagHash(kTag1);
-  const std::string kHash2 = GenerateTagHash(kTag2);
-  const std::string kHash3 = GenerateTagHash(kTag3);
+  const ClientTagHash kHash1 = GenerateTagHash(kTag1);
+  const ClientTagHash kHash2 = GenerateTagHash(kTag2);
+  const ClientTagHash kHash3 = GenerateTagHash(kTag3);
 
   explicit ModelTypeWorkerTest(ModelType model_type = PREFERENCES)
       : model_type_(model_type),
@@ -323,7 +323,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
   }
 
   CommitRequestDataList GenerateCommitRequest(
-      const std::string& tag_hash,
+      const ClientTagHash& tag_hash,
       const EntitySpecifics& specifics) {
     CommitRequestDataList commit_request;
     commit_request.push_back(processor()->CommitRequest(tag_hash, specifics));
@@ -332,7 +332,7 @@ class ModelTypeWorkerTest : public ::testing::Test {
 
   CommitRequestDataList GenerateDeleteRequest(const std::string& tag) {
     CommitRequestDataList request;
-    const std::string tag_hash = GenerateTagHash(tag);
+    const ClientTagHash tag_hash = GenerateTagHash(tag);
     request.push_back(processor()->DeleteRequest(tag_hash));
     return request;
   }
@@ -562,7 +562,7 @@ TEST_F(ModelTypeWorkerTest, SimpleCommit) {
   processor()->SetCommitRequest(GenerateCommitRequest(kTag1, kValue1));
   DoSuccessfulCommit();
 
-  const std::string& client_tag_hash = GenerateTagHash(kTag1);
+  const ClientTagHash client_tag_hash = GenerateTagHash(kTag1);
 
   // Exhaustively verify the SyncEntity sent in the commit message.
   ASSERT_EQ(1U, server()->GetNumCommitMessages());
@@ -574,7 +574,7 @@ TEST_F(ModelTypeWorkerTest, SimpleCommit) {
   EXPECT_NE(0, entity.mtime());
   EXPECT_NE(0, entity.ctime());
   EXPECT_FALSE(entity.name().empty());
-  EXPECT_EQ(client_tag_hash, entity.client_defined_unique_tag());
+  EXPECT_EQ(client_tag_hash.value(), entity.client_defined_unique_tag());
   EXPECT_EQ(kTag1, entity.specifics().preference().name());
   EXPECT_FALSE(entity.deleted());
   EXPECT_EQ(kValue1, entity.specifics().preference().value());
@@ -630,7 +630,7 @@ TEST_F(ModelTypeWorkerTest, SimpleDelete) {
   ASSERT_TRUE(server()->HasCommitEntity(kHash1));
   const SyncEntity& entity = server()->GetLastCommittedEntity(kHash1);
   EXPECT_FALSE(entity.id_string().empty());
-  EXPECT_EQ(GenerateTagHash(kTag1), entity.client_defined_unique_tag());
+  EXPECT_EQ(GenerateTagHash(kTag1).value(), entity.client_defined_unique_tag());
   EXPECT_EQ(base_version, entity.version());
   EXPECT_TRUE(entity.deleted());
 
@@ -647,7 +647,7 @@ TEST_F(ModelTypeWorkerTest, SimpleDelete) {
 
   EXPECT_EQ(entity.id_string(), commit_response.id);
   EXPECT_EQ(entity.client_defined_unique_tag(),
-            commit_response.client_tag_hash);
+            commit_response.client_tag_hash.value());
   EXPECT_EQ(entity.version(), commit_response.response_version);
 }
 
@@ -716,7 +716,7 @@ TEST_F(ModelTypeWorkerTest, ReceiveUpdates) {
   EXPECT_EQ(0, emitter()->GetUpdateCounters().num_non_initial_updates_received);
   EXPECT_EQ(0, emitter()->GetUpdateCounters().num_updates_applied);
 
-  const std::string& tag_hash = GenerateTagHash(kTag1);
+  const ClientTagHash tag_hash = GenerateTagHash(kTag1);
 
   TriggerUpdateFromServer(10, kTag1, kValue1);
 
@@ -881,7 +881,7 @@ TEST_F(ModelTypeWorkerTest,
       GenerateSpecifics("key2", "value2"));
   // Mimic a bug on the server by modifying the second entity to have the same
   // tag as the first one.
-  entity2.set_client_defined_unique_tag(GenerateTagHash(kTag1));
+  entity2.set_client_defined_unique_tag(GenerateTagHash(kTag1).value());
   worker()->ProcessGetUpdatesResponse(
       server()->GetProgress(), server()->GetContext(), {&entity1, &entity2},
       status_controller());
@@ -1226,7 +1226,7 @@ TEST_F(ModelTypeWorkerTest, ReceiveCorruptEncryption) {
 
   // Manually create an update.
   SyncEntity entity;
-  entity.set_client_defined_unique_tag(GenerateTagHash(kTag1));
+  entity.set_client_defined_unique_tag(GenerateTagHash(kTag1).value());
   entity.set_id_string("SomeID");
   entity.set_version(1);
   entity.set_ctime(1000);
@@ -1350,7 +1350,7 @@ TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
   EXPECT_FALSE(data.id.empty());
   EXPECT_FALSE(data.parent_id.empty());
   EXPECT_FALSE(data.is_folder);
-  EXPECT_EQ("CLIENT_TAG", data.client_tag_hash);
+  EXPECT_EQ("CLIENT_TAG", data.client_tag_hash.value());
   EXPECT_EQ("SERVER_TAG", data.server_defined_unique_tag);
   EXPECT_FALSE(data.is_deleted());
   EXPECT_EQ(kTag1, data.specifics.preference().name());

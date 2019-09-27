@@ -4060,6 +4060,12 @@
   "DeviceLoginScreenCursorHighlightEnabled" : {
   },
 
+  "DeviceLoginScreenCaretHighlightEnabled" : {
+  },
+
+  "DeviceLoginScreenMonoAudioEnabled" : {
+  },
+
   "DeviceLoginScreenLocales" : {
   },
 

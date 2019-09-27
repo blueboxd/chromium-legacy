@@ -31,17 +31,6 @@ class CdmFactory;
 // media::ContentDecryptionModule.
 class MEDIA_MOJO_EXPORT MojoCdmService : public mojom::ContentDecryptionModule {
  public:
-  // Get the CDM associated with |cdm_id|, which is unique per process.
-  // Can be called on any thread. The returned CDM is not guaranteed to be
-  // thread safe.
-  // Note: This provides a generic hack to get the CDM in the process where
-  // MediaService is running, regardless of which render process or
-  // render frame the caller is associated with. In the future, we should move
-  // all out-of-process media players into the MediaService so that we can use
-  // MojoCdmServiceContext (per render frame) to get the CDM.
-  static scoped_refptr<::media::ContentDecryptionModule> LegacyGetCdm(
-      int cdm_id);
-
   // Constructs a MojoCdmService and strongly binds it to the |request|.
   // - |cdm_factory| is used to create CDM instances. Must not be null.
   // - |context| is used to keep track of all CDM instances such that we can

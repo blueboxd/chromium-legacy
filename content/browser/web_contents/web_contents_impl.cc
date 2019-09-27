@@ -4819,7 +4819,7 @@ void WebContentsImpl::OnDidRunContentWithCertificateErrors(
 
 void WebContentsImpl::DOMContentLoaded(RenderFrameHost* render_frame_host) {
   for (auto& observer : observers_)
-    observer.DocumentLoadedInFrame(render_frame_host);
+    observer.DOMContentLoaded(render_frame_host);
 }
 
 void WebContentsImpl::OnDidFinishLoad(RenderFrameHostImpl* source,

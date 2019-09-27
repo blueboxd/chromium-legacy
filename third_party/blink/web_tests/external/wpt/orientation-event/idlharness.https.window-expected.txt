@@ -1,10 +1,22 @@
 This is a testharness.js-based test.
-Found 67 tests; 63 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 79 tests; 75 PASS, 4 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
+PASS idl_test validation
 PASS Partial interface Window: original interface defined
+PASS Partial interface Window: member names are unique
 PASS Partial interface Window[2]: original interface defined
+PASS Partial interface Window[2]: member names are unique
 PASS Partial interface Window[3]: original interface defined
+PASS Partial interface Window[3]: member names are unique
 PASS Partial interface Window[4]: original interface defined
+PASS Partial interface Window[4]: member names are unique
+PASS Partial interface Window[5]: member names are unique
+PASS Window includes GlobalEventHandlers: member names are unique
+PASS Window includes WindowEventHandlers: member names are unique
+PASS Window includes WindowOrWorkerGlobalScope: member names are unique
+PASS Window includes AnimationFrameProvider: member names are unique
+PASS Window includes WindowSessionStorage: member names are unique
+PASS Window includes WindowLocalStorage: member names are unique
 PASS DeviceOrientationEvent interface: existence and properties of interface object
 PASS DeviceOrientationEvent interface object length
 PASS DeviceOrientationEvent interface object name

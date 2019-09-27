@@ -50,7 +50,7 @@ class WebContentsObserverProxy : public WebContentsObserver {
 
   void DidFinishLoad(RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
-  void DocumentLoadedInFrame(RenderFrameHost* render_frame_host) override;
+  void DOMContentLoaded(RenderFrameHost* render_frame_host) override;
   void NavigationEntryCommitted(
       const LoadCommittedDetails& load_details) override;
   void NavigationEntriesDeleted() override;

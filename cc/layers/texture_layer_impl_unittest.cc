@@ -102,7 +102,7 @@ TEST(TextureLayerImplTest, Occlusion) {
   }
 }
 
-TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
+TEST(TextureLayerImplTest, ResourceNotFreedOnMSAAToggle) {
   bool released = false;
   LayerTreeImplTestBase impl(
       FakeLayerTreeFrameSink::Create3dForGpuRasterization());
@@ -131,13 +131,10 @@ TEST(TextureLayerImplTest, ResourceNotFreedOnGpuRasterToggle) {
 
   impl.CalcDrawProps(viewport_size);
 
-  // Gpu rasterization is disabled by default.
-  EXPECT_FALSE(impl.host_impl()->use_gpu_rasterization());
   EXPECT_FALSE(released);
-  // Toggling the gpu rasterization clears all tilings on both trees.
-  impl.host_impl()->SetHasGpuRasterizationTrigger(true);
+  // Toggling MSAA clears all tilings on both trees.
+  impl.host_impl()->SetContentHasSlowPaths(true);
   impl.host_impl()->CommitComplete();
-  EXPECT_TRUE(impl.host_impl()->use_gpu_rasterization());
   EXPECT_FALSE(released);
 }
 

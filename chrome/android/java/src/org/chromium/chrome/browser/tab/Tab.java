@@ -1836,11 +1836,6 @@ public class Tab {
         if (view != null) view.requestFocus();
     }
 
-    @VisibleForTesting
-    public boolean hasPrerenderedUrl(String url) {
-        return TabJni.get().hasPrerenderedUrl(mNativeTabAndroid, Tab.this, url);
-    }
-
     /**
      * Update whether or not the current native tab and/or web contents are
      * currently visible (from an accessibility perspective), or whether
@@ -1917,7 +1912,6 @@ public class Tab {
                 long nativeTabAndroid, Tab caller, String url, String title);
         void createHistoricalTab(long nativeTabAndroid, Tab caller);
         void loadOriginalImage(long nativeTabAndroid, Tab caller);
-        boolean hasPrerenderedUrl(long nativeTabAndroid, Tab caller, String url);
         void attachDetachedTab(long nativeTabAndroid, Tab caller);
         boolean areRendererInputEventsIgnored(long nativeTabAndroid, Tab caller);
     }

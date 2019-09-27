@@ -48,7 +48,7 @@ class NigoriHandler {
 
   // Returns the full-blown DirectoryCryptographer API, available only if the
   // legacy directory-based implementation of NIGORI is active.
-  virtual const DirectoryCryptographer* GetDirectoryCryptographerForNigori(
+  virtual const DirectoryCryptographer* GetDirectoryCryptographer(
       const syncable::BaseTransaction* const trans) const = 0;
 
   // Returns the set of currently encrypted types.

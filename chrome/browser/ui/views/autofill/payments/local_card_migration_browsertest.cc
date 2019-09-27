@@ -903,6 +903,33 @@ IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
               ElementsAre(Bucket(2, 1)));
 }
 
+// Ensures that rejecting the migration bubble repeatedly adds 2 strikes every
+// time, even for the same tab.
+IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,
+                       ClosingBubbleAgainAddsLocalCardMigrationStrikes) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(
+      features::kAutofillLocalCardMigrationUsesStrikeSystemV2);
+  base::HistogramTester histogram_tester;
+
+  SaveLocalCard(kFirstCardNumber);
+  SaveLocalCard(kSecondCardNumber);
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+  ClickOnDialogViewAndWait(GetCloseButton(),
+                           GetLocalCardMigrationOfferBubbleViews());
+  // Do it again for the same tab.
+  UseCardAndWaitForMigrationOffer(kFirstCardNumber);
+  ClickOnDialogViewAndWait(GetCloseButton(),
+                           GetLocalCardMigrationOfferBubbleViews());
+
+  // No bubble should be showing.
+  EXPECT_EQ(nullptr, GetLocalCardMigrationOfferBubbleViews());
+  // Metrics: Added 2 strikes each time, for totals of 2 then 4.
+  EXPECT_THAT(histogram_tester.GetAllSamples(
+                  "Autofill.StrikeDatabase.NthStrikeAdded.LocalCardMigration"),
+              ElementsAre(Bucket(2, 1), Bucket(4, 1)));
+}
+
 // Ensures that reshowing and closing bubble after previously closing it does
 // not add strikes.
 IN_PROC_BROWSER_TEST_F(LocalCardMigrationBrowserTest,

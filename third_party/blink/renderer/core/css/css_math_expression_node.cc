@@ -662,26 +662,30 @@ bool CSSMathExpressionBinaryOperation::IsComputationallyIndependent() const {
          right_side_->IsComputationallyIndependent();
 }
 
-// static
-String CSSMathExpressionBinaryOperation::BuildCSSText(
-    const String& left_expression,
-    const String& right_expression,
-    CSSMathOperator op) {
+String CSSMathExpressionBinaryOperation::CustomCSSText() const {
   StringBuilder result;
-  result.Append('(');
-  result.Append(left_expression);
+
+  const bool left_side_needs_parentheses =
+      left_side_->IsBinaryOperation() && operator_ != CSSMathOperator::kAdd;
+  if (left_side_needs_parentheses)
+    result.Append('(');
+  result.Append(left_side_->CustomCSSText());
+  if (left_side_needs_parentheses)
+    result.Append(')');
+
   result.Append(' ');
-  result.Append(ToString(op));
+  result.Append(ToString(operator_));
   result.Append(' ');
-  result.Append(right_expression);
-  result.Append(')');
+
+  const bool right_side_needs_parentheses =
+      right_side_->IsBinaryOperation() && operator_ != CSSMathOperator::kAdd;
+  if (right_side_needs_parentheses)
+    result.Append('(');
+  result.Append(right_side_->CustomCSSText());
+  if (right_side_needs_parentheses)
+    result.Append(')');
 
   return result.ToString();
-}
-
-String CSSMathExpressionBinaryOperation::CustomCSSText() const {
-  return BuildCSSText(left_side_->CustomCSSText(), right_side_->CustomCSSText(),
-                      operator_);
 }
 
 bool CSSMathExpressionBinaryOperation::operator==(

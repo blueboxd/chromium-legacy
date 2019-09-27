@@ -22,10 +22,10 @@ const StatusClass = {
  * @return {Element} The newly added TR.
  */
 function addStatusRow(name, value, cssClass) {
-  const row = cr.doc.createElement('tr');
+  const row = document.createElement('tr');
 
-  const nameCol = row.appendChild(cr.doc.createElement('td'));
-  const valueCol = row.appendChild(cr.doc.createElement('td'));
+  const nameCol = row.appendChild(document.createElement('td'));
+  const valueCol = row.appendChild(document.createElement('td'));
 
   nameCol.textContent = name;
   valueCol.textContent = value;

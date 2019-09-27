@@ -106,7 +106,6 @@ enum class GpuRasterizationStatus {
   ON,
   ON_FORCED,
   OFF_DEVICE,
-  OFF_VIEWPORT,
   MSAA_CONTENT,
 };
 
@@ -522,7 +521,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   virtual bool InitializeFrameSink(LayerTreeFrameSink* layer_tree_frame_sink);
   TileManager* tile_manager() { return &tile_manager_; }
 
-  void SetHasGpuRasterizationTrigger(bool flag);
   void SetContentHasSlowPaths(bool flag);
   void SetContentHasNonAAPaint(bool flag);
   void GetGpuRasterizationCapabilities(bool* gpu_rasterization_enabled,
@@ -547,6 +545,14 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   }
 
   uint32_t next_frame_token() const { return *next_frame_token_; }
+
+  // Buffers |callback| until a relevant frame swap ocurrs, at which point the
+  // callback will be run on the compositor thread. A frame swap is considered
+  // relevant if the swapped frame's token is greater than or equal to
+  // |frame_token|.
+  void RegisterCompositorPresentationTimeCallback(
+      uint32_t frame_token,
+      LayerTreeHost::PresentationTimeCallback callback);
 
   virtual bool WillBeginImplFrame(const viz::BeginFrameArgs& args);
   virtual void DidFinishImplFrame();
@@ -1035,7 +1041,6 @@ class CC_EXPORT LayerTreeHostImpl : public InputHandler,
   bool need_update_gpu_rasterization_status_ = false;
   bool content_has_slow_paths_ = false;
   bool content_has_non_aa_paint_ = false;
-  bool has_gpu_rasterization_trigger_ = false;
   bool use_gpu_rasterization_ = false;
   bool use_oop_rasterization_ = false;
   bool use_msaa_ = false;

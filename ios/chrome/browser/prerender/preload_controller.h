@@ -31,13 +31,16 @@ class WebState;
 // PreloadController owns and manages a Tab that contains a prerendered
 // webpage.  This class contains methods to queue and cancel prerendering for a
 // given URL as well as a method to return the prerendered Tab.
-@interface PreloadController : NSObject<CRWNativeContentProvider,
-                                        CRWWebStateDelegate,
-                                        CRConnectionTypeObserverBridge>
+@interface PreloadController : NSObject
+
+@property(nonatomic, weak) id<PreloadControllerDelegate> delegate;
+
 // The URL of the currently prerendered Tab.  Empty if there is no prerendered
 // Tab.
 @property(nonatomic, readonly, assign) GURL prerenderedURL;
-@property(nonatomic, weak) id<PreloadControllerDelegate> delegate;
+
+// Whether prerendering is currently enabled.
+@property(nonatomic, readonly, getter=isEnabled) BOOL enabled;
 
 // Designated initializer.
 - (instancetype)initWithBrowserState:(ios::ChromeBrowserState*)browserState;

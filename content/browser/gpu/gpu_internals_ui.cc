@@ -115,7 +115,7 @@ std::unique_ptr<base::ListValue> DxDiagNodeToList(const gpu::DxDiagNode& node) {
   }
   return list;
 }
-#endif
+#endif  // OS_WIN
 
 std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
   std::string vendor = base::StringPrintf("0x%04x", gpu.vendor_id);
@@ -124,8 +124,17 @@ std::string GPUDeviceToString(const gpu::GPUInfo::GPUDevice& gpu) {
   std::string device = base::StringPrintf("0x%04x", gpu.device_id);
   if (!gpu.device_string.empty())
     device += " [" + gpu.device_string + "]";
-  return base::StringPrintf("VENDOR = %s, DEVICE= %s%s",
-      vendor.c_str(), device.c_str(), gpu.active ? " *ACTIVE*" : "");
+  std::string rt = base::StringPrintf("VENDOR= %s, DEVICE=%s", vendor.c_str(),
+                                      device.c_str());
+#if defined(OS_WIN)
+  if (gpu.sub_sys_id || gpu.revision) {
+    rt += base::StringPrintf(", SUBSYS=0x%08x, REV=%u", gpu.sub_sys_id,
+                             gpu.revision);
+  }
+#endif
+  if (gpu.active)
+    rt += " *ACTIVE*";
+  return rt;
 }
 
 std::unique_ptr<base::ListValue> BasicGpuInfoAsListValue(

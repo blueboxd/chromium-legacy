@@ -136,7 +136,8 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
 
   // This is called for each built chain, including ones which failed. It is
   // responsible for adding errors to the built chain if it is not acceptable.
-  void CheckPathAfterVerification(CertPathBuilderResultPath* path) override {
+  void CheckPathAfterVerification(const CertPathBuilder& path_builder,
+                                  CertPathBuilderResultPath* path) override {
     // If the path is already invalid, don't check revocation status. The chain
     // is expected to be valid when doing revocation checks (since for instance
     // the correct issuer for a certificate may need to be known). Also if
@@ -191,8 +192,8 @@ class PathBuilderDelegateImpl : public SimplePathBuilderDelegate {
     // respective certificates, so |errors->ContainsHighSeverityErrors()| will
     // reflect the revocation status of the chain after this call.
     CheckValidatedChainRevocation(
-        path->certs, policy, stapled_leaf_ocsp_response_, net_fetcher_,
-        &path->errors,
+        path->certs, policy, path_builder.deadline(),
+        stapled_leaf_ocsp_response_, net_fetcher_, &path->errors,
         &PathBuilderDelegateDataImpl::GetOrCreate(path)
              ->stapled_ocsp_verify_result);
   }
@@ -732,6 +733,10 @@ scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin(
     std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider) {
   return base::MakeRefCounted<CertVerifyProcBuiltin>(
       std::move(net_fetcher), std::move(system_trust_store_provider));
+}
+
+base::TimeDelta GetCertVerifyProcBuiltinTimeLimitForTesting() {
+  return kMaxVerificationTime;
 }
 
 }  // namespace net

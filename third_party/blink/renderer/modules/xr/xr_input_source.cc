@@ -81,7 +81,7 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
     updated_source->state_.handedness = desc->handedness;
     updated_source->state_.emulated_position = desc->emulated_position;
 
-    updated_source->pointer_transform_matrix_ =
+    updated_source->input_from_pointer_ =
         TryGetTransformationMatrix(desc->pointer_offset);
 
     updated_source->state_.profiles.clear();
@@ -90,7 +90,7 @@ XRInputSource* XRInputSource::CreateOrUpdateFrom(
     }
   }
 
-  updated_source->base_pose_matrix_ = TryGetTransformationMatrix(state->grip);
+  updated_source->mojo_from_input_ = TryGetTransformationMatrix(state->grip);
 
   return updated_source;
 }
@@ -114,10 +114,10 @@ XRInputSource::XRInputSource(const XRInputSource& other)
           MakeGarbageCollected<XRTargetRaySpace>(other.session_, this)),
       grip_space_(MakeGarbageCollected<XRGripSpace>(other.session_, this)),
       gamepad_(other.gamepad_),
-      base_pose_matrix_(
-          TryGetTransformationMatrix(other.base_pose_matrix_.get())),
-      pointer_transform_matrix_(
-          TryGetTransformationMatrix(other.pointer_transform_matrix_.get())) {}
+      mojo_from_input_(
+          TryGetTransformationMatrix(other.mojo_from_input_.get())),
+      input_from_pointer_(
+          TryGetTransformationMatrix(other.input_from_pointer_.get())) {}
 
 const String XRInputSource::handedness() const {
   switch (state_.handedness) {
@@ -186,10 +186,9 @@ bool XRInputSource::InvalidatesSameObject(
   return false;
 }
 
-void XRInputSource::SetPointerTransformMatrix(
-    const TransformationMatrix* pointer_transform_matrix) {
-  pointer_transform_matrix_ =
-      TryGetTransformationMatrix(pointer_transform_matrix);
+void XRInputSource::SetInputFromPointer(
+    const TransformationMatrix* input_from_pointer) {
+  input_from_pointer_ = TryGetTransformationMatrix(input_from_pointer);
 }
 
 void XRInputSource::SetGamepadConnected(bool state) {

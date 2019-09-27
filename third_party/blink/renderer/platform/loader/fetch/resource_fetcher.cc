@@ -32,6 +32,7 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/feature_list.h"
 #include "base/time/time.h"
 #include "services/network/public/cpp/request_mode.h"
@@ -948,6 +949,8 @@ Resource* ResourceFetcher::RequestResource(FetchParameters& params,
     // We don't expect the fetcher to be used, so count such unexpected use.
     UMA_HISTOGRAM_ENUMERATION("HTMLImport.UnexpectedRequest",
                               factory.GetType());
+
+    base::debug::DumpWithoutCrashing();
   }
 
   // If detached, we do very early return here to skip all processing below.

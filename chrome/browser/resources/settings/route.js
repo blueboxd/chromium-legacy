@@ -16,6 +16,7 @@
  *   APP_MANAGEMENT: (undefined|!settings.Route),
  *   APP_MANAGEMENT_DETAIL: (undefined|!settings.Route),
  *   APPS: (undefined|!settings.Route),
+ *   ANDROID_APPS: (undefined|!settings.Route),
  *   ANDROID_APPS_DETAILS: (undefined|!settings.Route),
  *   CROSTINI: (undefined|!settings.Route),
  *   CROSTINI_DETAILS: (undefined|!settings.Route),
@@ -453,6 +454,16 @@ cr.define('settings', function() {
       r.KERBEROS_ACCOUNTS = r.PEOPLE.createChild('/kerberosAccounts');
       r.LOCK_SCREEN = r.PEOPLE.createChild('/lockScreen');
       r.FINGERPRINT = r.LOCK_SCREEN.createChild('/lockScreen/fingerprint');
+    }
+
+    // Show Android Apps page in the browser if split settings is turned off.
+    if (!loadTimeData.getBoolean('isOSSettings') &&
+        loadTimeData.getBoolean('showOSSettings') &&
+        loadTimeData.valueExists('androidAppsVisible') &&
+        loadTimeData.getBoolean('androidAppsVisible')) {
+      r.ANDROID_APPS = r.BASIC.createSection('/androidApps', 'androidApps');
+      r.ANDROID_APPS_DETAILS =
+          r.ANDROID_APPS.createChild('/androidApps/details');
     }
 
     if (loadTimeData.valueExists('showCrostini') &&

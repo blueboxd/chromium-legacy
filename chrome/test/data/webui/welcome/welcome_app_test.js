@@ -27,23 +27,11 @@ suite('WelcomeWelcomeAppTest', function() {
   /** @type {NuxSetAsDefaultProxy} */
   let testSetAsDefaultProxy;
 
-  let base;
-
   function resetTestElement() {
     PolymerTest.clearBody();
-    navigateToForTest(Routes.LANDING, 'landing');
+    navigateTo(Routes.LANDING, 'landing');
     testElement = document.createElement('welcome-app');
     document.body.appendChild(testElement);
-  }
-
-  function navigateToForTest(route, name) {
-    if (base) {
-      document.head.removeChild(base);
-    }
-    navigateTo(route, name);
-    base = document.createElement('base');
-    base.href = 'chrome://welcome/';
-    document.head.appendChild(base);
   }
 
   function simulateCanSetDefault() {
@@ -97,7 +85,7 @@ suite('WelcomeWelcomeAppTest', function() {
 
   test('new user route (can set default)', function() {
     simulateCanSetDefault();
-    navigateToForTest(Routes.NEW_USER, 1);
+    navigateTo(Routes.NEW_USER, 1);
     return waitBeforeNextRender(testElement).then(() => {
       const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
       assertEquals(views.length, 5);
@@ -114,7 +102,7 @@ suite('WelcomeWelcomeAppTest', function() {
 
   test('new user route (cannot set default)', function() {
     simulateCannotSetDefault();
-    navigateToForTest(Routes.NEW_USER, 1);
+    navigateTo(Routes.NEW_USER, 1);
     return waitBeforeNextRender(testElement).then(() => {
       const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
       assertEquals(views.length, 4);
@@ -130,7 +118,7 @@ suite('WelcomeWelcomeAppTest', function() {
 
   test('returning user route (can set default)', function() {
     simulateCanSetDefault();
-    navigateToForTest(Routes.RETURNING_USER, 1);
+    navigateTo(Routes.RETURNING_USER, 1);
     return waitBeforeNextRender(testElement).then(() => {
       const views = testElement.shadowRoot.querySelectorAll('[slot=view]');
       assertEquals(views.length, 2);
@@ -141,7 +129,7 @@ suite('WelcomeWelcomeAppTest', function() {
 
   test('returning user route (cannot set default)', function() {
     simulateCannotSetDefault();
-    navigateToForTest(Routes.RETURNING_USER, 1);
+    navigateTo(Routes.RETURNING_USER, 1);
 
     // At this point, there should be no steps in the returning user, so
     // welcome_app should try to go to NTP.
@@ -160,7 +148,7 @@ suite('WelcomeWelcomeAppTest', function() {
 
       // Use the new-user route to test if nux-set-as-default module gets
       // initialized.
-      navigateToForTest(Routes.NEW_USER, 1);
+      navigateTo(Routes.NEW_USER, 1);
       return waitBeforeNextRender(testElement).then(() => {
         // Use the existence of the nux-set-as-default as indication of
         // whether or not the promise is resolved with the expected result.

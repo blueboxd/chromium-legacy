@@ -40,6 +40,12 @@ class ASH_EXPORT HotseatWidget : public views::Widget {
   // Finds the first or last focusable app shortcut and focuses it.
   void FocusFirstOrLastFocusableChild(bool last);
 
+  // Notifies children of tablet mode state changes.
+  void OnTabletModeChanged();
+
+  // Updates the opaque background which functions as the hotseat background.
+  void UpdateOpaqueBackground();
+
   // Sets the focus cycler and adds the hotseat to the cycle.
   void SetFocusCycler(FocusCycler* focus_cycler);
 
@@ -58,7 +64,8 @@ class ASH_EXPORT HotseatWidget : public views::Widget {
   ShelfView* shelf_view_ = nullptr;
   ScrollableShelfView* scrollable_shelf_view_ = nullptr;
 
-  // The contents view of this widget. Contains |shelf_view_|.
+  // The contents view of this widget. Contains |shelf_view_| and the background
+  // of the hotseat.
   DelegateView* delegate_view_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(HotseatWidget);

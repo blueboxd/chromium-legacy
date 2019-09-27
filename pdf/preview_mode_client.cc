@@ -7,10 +7,15 @@
 #include <stdint.h>
 
 #include "base/logging.h"
+#include "pdf/document_layout.h"
 
 namespace chrome_pdf {
 
 PreviewModeClient::PreviewModeClient(Client* client) : client_(client) {}
+
+void PreviewModeClient::ProposeDocumentLayout(const DocumentLayout& layout) {
+  NOTREACHED();
+}
 
 void PreviewModeClient::Invalidate(const pp::Rect& rect) {
   NOTREACHED();

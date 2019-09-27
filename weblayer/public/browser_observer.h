@@ -14,7 +14,7 @@ class BrowserObserver {
   virtual ~BrowserObserver() {}
 
   // The URL bar should be updated to |url|.
-  virtual void DisplayedURLChanged(const GURL& url) {}
+  virtual void DisplayedUrlChanged(const GURL& url) {}
 
   // Indicates that loading has started (|is_loading| is true) or is done
   // (|is_loading| is false). |to_different_document| will be true unless the

@@ -81,6 +81,7 @@ class SearchBoxViewTest : public views::test::WidgetTest,
     counter_view_ = new KeyPressCounterView(app_list_view_);
     widget_->GetContentsView()->AddChildView(view());
     widget_->GetContentsView()->AddChildView(counter_view_);
+    widget_->Show();
     counter_view_->Init(view_delegate_.GetModel());
     view()->set_contents_view(counter_view_);
   }

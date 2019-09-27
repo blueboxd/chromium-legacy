@@ -13,6 +13,10 @@ import "ui/gfx/geometry/mojom/geometry.mojom";
 struct GpuDevice {
   uint32 vendor_id;
   uint32 device_id;
+  [EnableIf=is_win]
+  uint32 sub_sys_id;
+  [EnableIf=is_win]
+  uint32 revision;
   bool active;
   string vendor_string;
   string device_string;

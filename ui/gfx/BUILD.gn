@@ -134,6 +134,8 @@ jumbo_component("gfx") {
     "ios/NSString+CrStringDrawing.mm",
     "ios/uikit_util.h",
     "ios/uikit_util.mm",
+    "linux/fontconfig_util.cc",
+    "linux/fontconfig_util.h",
     "mac/coordinate_conversion.h",
     "mac/coordinate_conversion.mm",
     "mac/nswindow_frame_controls.h",
@@ -849,7 +851,10 @@ test("gfx_unittests") {
   }
 
   if (is_linux) {
-    sources += [ "linux/native_pixmap_dmabuf_unittest.cc" ]
+    sources += [
+      "linux/fontconfig_util_unittest.cc",
+      "linux/native_pixmap_dmabuf_unittest.cc",
+    ]
     deps += [ "//third_party/fontconfig" ]
   }
 
@@ -880,4 +885,18 @@ fuzzer_test("color_transform_fuzzer") {
   ]
 
   libfuzzer_options = [ "max_len=4194304" ]
+}
+
+fuzzer_test("render_text_fuzzer") {
+  sources = [
+    "render_text_fuzzer.cc",
+  ]
+
+  deps = [
+    ":gfx",
+    "//base",
+    "//base/test:test_support",
+  ]
+
+  dict = "test/data/render_text/unicode_text_fuzzer.dict"
 }

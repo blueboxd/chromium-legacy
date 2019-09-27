@@ -173,7 +173,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   void FinishAccumulatingSquashingLayers(
       wtf_size_t next_squashed_layer_index,
       Vector<PaintLayer*>& layers_needing_paint_invalidation);
-  void UpdateRenderingContext();
   void UpdateShouldFlattenTransform();
   void UpdateElementId();
 

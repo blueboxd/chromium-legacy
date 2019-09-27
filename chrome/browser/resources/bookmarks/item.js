@@ -17,6 +17,11 @@ Polymer({
 
     ironListTabIndex: Number,
 
+    crIcon_: {
+      type: String,
+      value: 'icon-more-vert',
+    },
+
     /** @private {BookmarkNode} */
     item_: {
       type: Object,
@@ -27,6 +32,7 @@ Polymer({
     isSelectedItem_: {
       type: Boolean,
       reflectToAttribute: true,
+      observer: 'onIsSelectedItemChanged_',
     },
 
     /** @private */
@@ -130,6 +136,12 @@ Polymer({
       range: false,
       toggle: false,
     }));
+  },
+
+  /** @private */
+  onIsSelectedItemChanged_: function() {
+    this.crIcon_ = this.isSelectedItem_ ? 'icon-more-vert-light-mode' :
+        'icon-more-vert';
   },
 
   /** @private */

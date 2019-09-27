@@ -20,7 +20,7 @@ class WebuiLoadTimer : public content::WebContentsObserver {
  public:
   // Load times are reported to UMA using the provided strings which
   // must not be empty.
-  // * |document_initial_load_uma_id| - corresponds to DocumentLoadedInFrame
+  // * |document_initial_load_uma_id| - corresponds to DOMContentLoaded
   // * |document_load_completed_uma_id| - corresponds to
   //   DocumentOnLoadCompletedInMainFrame
   WebuiLoadTimer(content::WebContents* web_contents,
@@ -31,8 +31,7 @@ class WebuiLoadTimer : public content::WebContentsObserver {
   // WebContentsObserver
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override;
+  void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;
   void DocumentOnLoadCompletedInMainFrame() override;
 
  private:

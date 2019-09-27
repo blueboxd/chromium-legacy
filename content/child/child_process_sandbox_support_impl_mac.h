@@ -13,10 +13,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/platform/mac/web_sandbox_support.h"
 
-namespace service_manager {
-class Connector;
-}
-
 namespace content {
 
 // Implementation of the interface used by Blink to upcall to the privileged
@@ -24,7 +20,7 @@ namespace content {
 // the sandbox.
 class WebSandboxSupportMac : public blink::WebSandboxSupport {
  public:
-  explicit WebSandboxSupportMac(service_manager::Connector* connector);
+  WebSandboxSupportMac();
   ~WebSandboxSupportMac() override;
 
   // blink::WebSandboxSupport:

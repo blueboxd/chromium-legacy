@@ -14,6 +14,9 @@ class Profile;
 
 namespace web_app {
 
+// returns true if Chrome supports WebApp File Handling on this OS.
+bool OsSupportsWebAppFileHandling();
+
 // Do OS-specific registration to handle opening files with the specified
 // |file_extensions| with the PWA with the specified |app_id|.
 // This may also involve creating a shim app to launch Chrome from.

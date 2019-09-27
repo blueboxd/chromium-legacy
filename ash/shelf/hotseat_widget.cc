@@ -8,13 +8,21 @@
 #include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/public/cpp/shelf_config.h"
 #include "ash/public/cpp/shelf_model.h"
+#include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/shelf/scrollable_shelf_view.h"
 #include "ash/shelf/shelf_layout_manager.h"
 #include "ash/shelf/shelf_navigation_widget.h"
 #include "ash/shelf/shelf_view.h"
 #include "ash/shelf/shelf_widget.h"
+#include "ash/shell.h"
 #include "ash/system/status_area_widget.h"
+#include "ash/wallpaper/wallpaper_controller_impl.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "chromeos/constants/chromeos_switches.h"
+#include "ui/gfx/color_analysis.h"
+#include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
+#include "ui/gfx/geometry/rounded_corners_f.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget_delegate.h"
 
@@ -25,25 +33,110 @@ bool IsScrollableShelfEnabled() {
   return chromeos::switches::ShouldShowScrollableShelf();
 }
 
+bool ShouldShowHotseat() {
+  return chromeos::switches::ShouldShowShelfHotseat() &&
+         Shell::Get()->tablet_mode_controller() &&
+         Shell::Get()->tablet_mode_controller()->InTabletMode();
+}
+
 }  // namespace
 
-class HotseatWidget::DelegateView : public views::WidgetDelegateView {
+class HotseatWidget::DelegateView : public views::WidgetDelegateView,
+                                    public WallpaperControllerObserver {
  public:
-  explicit DelegateView() {}
-  ~DelegateView() override {}
+  explicit DelegateView(WallpaperControllerImpl* wallpaper_controller)
+      : opaque_background_(ui::LAYER_SOLID_COLOR),
+        wallpaper_controller_(wallpaper_controller) {}
+  ~DelegateView() override;
+
+  // Initializes the view.
+  void Init(ScrollableShelfView* scrollable_shelf_view,
+            ui::Layer* parent_layer);
+  // Updates the hotseat background.
+  void UpdateOpaqueBackground();
+  // Updates the hotseat background when tablet mode changes.
+  void OnTabletModeChanged();
 
   // views::WidgetDelegateView:
   bool CanActivate() const override;
+  void ReorderChildLayers(ui::Layer* parent_layer) override;
+
+  // WallpaperControllerObserver:
+  void OnWallpaperColorsChanged() override;
 
   void set_focus_cycler(FocusCycler* focus_cycler) {
     focus_cycler_ = focus_cycler;
   }
-
  private:
+  void SetParentLayer(ui::Layer* layer);
   FocusCycler* focus_cycler_ = nullptr;
+  // A background layer that may be visible depending on HotseatState.
+  ui::Layer opaque_background_;
+  ScrollableShelfView* scrollable_shelf_view_ = nullptr;  // unowned.
+  // The WallpaperController, responsible for providing proper colors.
+  WallpaperControllerImpl* wallpaper_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(DelegateView);
 };
+
+HotseatWidget::DelegateView::~DelegateView() {
+  if (wallpaper_controller_)
+    wallpaper_controller_->RemoveObserver(this);
+}
+
+void HotseatWidget::DelegateView::Init(
+    ScrollableShelfView* scrollable_shelf_view,
+    ui::Layer* parent_layer) {
+  if (wallpaper_controller_)
+    wallpaper_controller_->AddObserver(this);
+  SetLayoutManager(std::make_unique<views::FillLayout>());
+  SetParentLayer(parent_layer);
+
+  DCHECK(scrollable_shelf_view);
+  scrollable_shelf_view_ = scrollable_shelf_view;
+  UpdateOpaqueBackground();
+}
+
+void HotseatWidget::DelegateView::UpdateOpaqueBackground() {
+  if (!ShouldShowHotseat()) {
+    opaque_background_.SetVisible(false);
+    return;
+  }
+
+  opaque_background_.SetVisible(true);
+
+  // Fetches wallpaper color and darkens it.
+  auto darken_wallpaper = [&](int darkening_alpha) {
+    if (!wallpaper_controller_)
+      return ShelfConfig::Get()->shelf_default_base_color();
+    SkColor target_color =
+        wallpaper_controller_->GetProminentColor(color_utils::ColorProfile(
+            color_utils::LumaRange::DARK, color_utils::SaturationRange::MUTED));
+    if (target_color == kInvalidWallpaperColor)
+      return ShelfConfig::Get()->shelf_default_base_color();
+    return color_utils::GetResultingPaintColor(
+        SkColorSetA(ShelfConfig::Get()->shelf_default_base_color(),
+                    darkening_alpha),
+        target_color);
+  };
+
+  opaque_background_.SetColor(darken_wallpaper(
+      ShelfConfig::Get()->shelf_translucent_color_darken_alpha()));
+
+  const int radius = ShelfConfig::Get()->hotseat_size() / 2;
+  gfx::RoundedCornersF rounded_corners = {radius, radius, radius, radius};
+  if (opaque_background_.rounded_corner_radii() != rounded_corners)
+    opaque_background_.SetRoundedCornerRadius(rounded_corners);
+
+  gfx::Rect background_bounds =
+      scrollable_shelf_view_->GetHotseatBackgroundBounds();
+  if (opaque_background_.bounds() != background_bounds)
+    opaque_background_.SetBounds(background_bounds);
+}
+
+void HotseatWidget::DelegateView::OnTabletModeChanged() {
+  UpdateOpaqueBackground();
+}
 
 bool HotseatWidget::DelegateView::CanActivate() const {
   // We don't want mouse clicks to activate us, but we need to allow
@@ -51,7 +144,22 @@ bool HotseatWidget::DelegateView::CanActivate() const {
   return focus_cycler_ && focus_cycler_->widget_activating() == GetWidget();
 }
 
-HotseatWidget::HotseatWidget() : delegate_view_(new DelegateView()) {}
+void HotseatWidget::DelegateView::ReorderChildLayers(ui::Layer* parent_layer) {
+  views::View::ReorderChildLayers(parent_layer);
+  parent_layer->StackAtBottom(&opaque_background_);
+}
+
+void HotseatWidget::DelegateView::OnWallpaperColorsChanged() {
+  UpdateOpaqueBackground();
+}
+
+void HotseatWidget::DelegateView::SetParentLayer(ui::Layer* layer) {
+  layer->Add(&opaque_background_);
+  ReorderLayers();
+}
+
+HotseatWidget::HotseatWidget()
+    : delegate_view_(new DelegateView(Shell::Get()->wallpaper_controller())) {}
 
 void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
   DCHECK(container);
@@ -78,8 +186,7 @@ void HotseatWidget::Initialize(aura::Window* container, Shelf* shelf) {
         std::make_unique<ShelfView>(ShelfModel::Get(), shelf));
     shelf_view_->Init();
   }
-
-  delegate_view_->SetLayoutManager(std::make_unique<views::FillLayout>());
+  delegate_view_->Init(scrollable_shelf_view(), GetLayer());
 }
 
 void HotseatWidget::OnMouseEvent(ui::MouseEvent* event) {
@@ -139,7 +246,9 @@ bool HotseatWidget::IsDraggedToExtended() const {
           ->GetDisplayNearestView(GetShelfView()->GetWidget()->GetNativeView())
           .bounds()
           .bottom() -
-      ShelfConfig::Get()->shelf_size() * 2;
+      (ShelfConfig::Get()->shelf_size() +
+       ShelfConfig::Get()->hotseat_bottom_padding() +
+       ShelfConfig::Get()->hotseat_size());
   return GetWindowBoundsInScreen().y() == extended_y;
 }
 
@@ -156,6 +265,15 @@ void HotseatWidget::FocusOverflowShelf(bool last_element) {
 
 void HotseatWidget::FocusFirstOrLastFocusableChild(bool last) {
   GetShelfView()->FindFirstOrLastFocusableChild(last)->RequestFocus();
+}
+
+void HotseatWidget::OnTabletModeChanged() {
+  GetShelfView()->OnTabletModeChanged();
+  delegate_view_->OnTabletModeChanged();
+}
+
+void HotseatWidget::UpdateOpaqueBackground() {
+  delegate_view_->UpdateOpaqueBackground();
 }
 
 void HotseatWidget::SetFocusCycler(FocusCycler* focus_cycler) {

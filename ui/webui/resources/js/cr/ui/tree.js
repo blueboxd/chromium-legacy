@@ -265,7 +265,7 @@ cr.define('cr.ui', function() {
    * @type {!HTMLElement}
    */
   const treeItemProto = (function() {
-    const treeItem = cr.doc.createElement('div');
+    const treeItem = document.createElement('div');
     treeItem.className = 'tree-item';
     treeItem.innerHTML = '<div class="tree-row">' +
         '<span class="expand-icon"></span>' +

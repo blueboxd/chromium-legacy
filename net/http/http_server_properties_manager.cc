@@ -441,10 +441,10 @@ void HttpServerPropertiesManager::AddServerData(
     ParseNetworkStats(spdy_server, server_dict, &server_info);
 
   if (!server_info.empty()) {
-    server_info_map->Put(
-        HttpServerProperties::ServerInfoMapKey(
-            spdy_server, network_isolation_key, use_network_isolation_key),
-        std::move(server_info));
+    server_info_map->Put(HttpServerProperties::ServerInfoMapKey(
+                             std::move(spdy_server), network_isolation_key,
+                             use_network_isolation_key),
+                         std::move(server_info));
   }
 }
 

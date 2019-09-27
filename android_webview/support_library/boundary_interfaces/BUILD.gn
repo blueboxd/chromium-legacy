@@ -9,6 +9,7 @@ android_library("boundary_interface_java") {
   java_files = [
     "src/org/chromium/support_lib_boundary/FeatureFlagHolderBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/IsomorphicObjectBoundaryInterface.java",
+    "src/org/chromium/support_lib_boundary/JsReplyProxyBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/ProxyControllerBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/SafeBrowsingResponseBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/ServiceWorkerClientBoundaryInterface.java",
@@ -19,6 +20,7 @@ android_library("boundary_interface_java") {
     "src/org/chromium/support_lib_boundary/VisualStateCallbackBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebMessageBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebMessageCallbackBoundaryInterface.java",
+    "src/org/chromium/support_lib_boundary/WebMessageListenerBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebMessagePortBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebResourceErrorBoundaryInterface.java",
     "src/org/chromium/support_lib_boundary/WebResourceRequestBoundaryInterface.java",

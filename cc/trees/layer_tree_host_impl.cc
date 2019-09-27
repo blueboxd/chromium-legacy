@@ -2426,13 +2426,6 @@ int LayerTreeHostImpl::RequestedMSAASampleCount() const {
   return settings_.gpu_rasterization_msaa_sample_count;
 }
 
-void LayerTreeHostImpl::SetHasGpuRasterizationTrigger(bool flag) {
-  if (has_gpu_rasterization_trigger_ != flag) {
-    has_gpu_rasterization_trigger_ = flag;
-    need_update_gpu_rasterization_status_ = true;
-  }
-}
-
 void LayerTreeHostImpl::SetContentHasSlowPaths(bool flag) {
   if (content_has_slow_paths_ != flag) {
     content_has_slow_paths_ = flag;
@@ -2457,9 +2450,15 @@ void LayerTreeHostImpl::GetGpuRasterizationCapabilities(
   *max_msaa_samples = 0;
   *supports_disable_msaa = false;
 
-  if (!(layer_tree_frame_sink_ && layer_tree_frame_sink_->context_provider() &&
-        layer_tree_frame_sink_->worker_context_provider()))
+  if (settings_.gpu_rasterization_disabled) {
+    DCHECK(!settings_.gpu_rasterization_forced);
     return;
+  }
+
+  if (!(layer_tree_frame_sink_ && layer_tree_frame_sink_->context_provider() &&
+        layer_tree_frame_sink_->worker_context_provider())) {
+    return;
+  }
 
   viz::RasterContextProvider* context_provider =
       layer_tree_frame_sink_->worker_context_provider();
@@ -2545,8 +2544,6 @@ bool LayerTreeHostImpl::UpdateGpuRasterizationStatus() {
     }
   } else if (!gpu_rasterization_enabled) {
     gpu_rasterization_status_ = GpuRasterizationStatus::OFF_DEVICE;
-  } else if (!has_gpu_rasterization_trigger_) {
-    gpu_rasterization_status_ = GpuRasterizationStatus::OFF_VIEWPORT;
   } else if (content_has_slow_paths_ && using_msaa_for_slow_paths) {
     use_gpu = use_msaa = true;
     gpu_rasterization_status_ = GpuRasterizationStatus::MSAA_CONTENT;
@@ -2596,6 +2593,15 @@ void LayerTreeHostImpl::UpdateTreeResourcesForGpuRasterizationIfNeeded() {
   // Prevent the active tree from drawing until activation.
   // TODO(crbug.com/469175): Replace with RequiresHighResToDraw.
   SetRequiresHighResToDraw();
+}
+
+void LayerTreeHostImpl::RegisterCompositorPresentationTimeCallback(
+    uint32_t frame_token,
+    LayerTreeHost::PresentationTimeCallback callback) {
+  std::vector<LayerTreeHost::PresentationTimeCallback> as_vector;
+  as_vector.emplace_back(std::move(callback));
+  presentation_time_callbacks_.RegisterCompositorPresentationCallbacks(
+      frame_token, std::move(as_vector));
 }
 
 bool LayerTreeHostImpl::WillBeginImplFrame(const viz::BeginFrameArgs& args) {

@@ -9,13 +9,7 @@
 
 namespace chromeos {
 
-FakeUpdateEngineClient::FakeUpdateEngineClient()
-    : update_check_result_(UpdateEngineClient::UPDATE_RESULT_SUCCESS),
-      can_rollback_stub_result_(false),
-      reboot_after_update_call_count_(0),
-      request_update_check_call_count_(0),
-      rollback_call_count_(0),
-      can_rollback_call_count_(0) {}
+FakeUpdateEngineClient::FakeUpdateEngineClient() {}
 
 FakeUpdateEngineClient::~FakeUpdateEngineClient() = default;
 
@@ -94,6 +88,7 @@ void FakeUpdateEngineClient::GetEolStatus(GetEolStatusCallback callback) {
 void FakeUpdateEngineClient::SetUpdateOverCellularPermission(
     bool allowed,
     const base::Closure& callback) {
+  update_over_cellular_permission_count_++;
   base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
 }
 
@@ -101,6 +96,7 @@ void FakeUpdateEngineClient::SetUpdateOverCellularOneTimePermission(
     const std::string& target_version,
     int64_t target_size,
     const UpdateOverCellularOneTimePermissionCallback& callback) {
+  update_over_cellular_one_time_permission_count_++;
   callback.Run(true);
 }
 

@@ -75,7 +75,7 @@
 <translation id="1298536327547837046">Gjennomsøking etter skadelig programvare</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />Prøv å slette informasjonskapslene dine<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">Avviklede funksjoner</translation>
-<translation id="1314509827145471431">Bind høyre</translation>
+<translation id="1314509827145471431">Innbinding høyre</translation>
 <translation id="1320233736580025032">Prc1 (konvolutt)</translation>
 <translation id="132301787627749051">Søk etter bilde på utklippstavlen</translation>
 <translation id="1323433172918577554">Vis mer</translation>
@@ -547,6 +547,7 @@ brukere av denne nettleseren.</translation>
 <translation id="3658742229777143148">Versjon</translation>
 <translation id="366077651725703012">Oppdater kredittkortet</translation>
 <translation id="3676592649209844519">Enhets-ID:</translation>
+<translation id="3677008721441257057">Mente du &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Forespørselen kunne ikke undertegnes</translation>
 <translation id="3678529606614285348">Åpne siden i et nytt inkognitovindu (Ctrl + Shift + N)</translation>
 <translation id="3679803492151881375">Programstopprapport generert <ph name="CRASH_TIME" /> og lastet opp <ph name="UPLOAD_TIME" /></translation>
@@ -622,7 +623,6 @@ brukere av denne nettleseren.</translation>
 <translation id="4075732493274867456">Klienten og tjeneren støtter ingen felles SSL-protokollversjon eller -chifferserie.</translation>
 <translation id="4079302484614802869">Konfigurasjonen av proxytjeneren er angitt til å bruke en nettadresse med .pac-skript, ikke statiske proxytjenere.</translation>
 <translation id="4082393374666368382">Innstillinger – Administrasjon</translation>
-<translation id="4092411512356034591">Vil du fortsette til <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Villedende nettsted i sikte</translation>
 <translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
 <translation id="410351446219883937">Autoavspilling</translation>
@@ -867,7 +867,7 @@ brukere av denne nettleseren.</translation>
 <translation id="5252000469029418751">C7 (konvolutt)</translation>
 <translation id="5254958791078852567">E1</translation>
 <translation id="5261548214279761072">Betalingen er fullført</translation>
-<translation id="5266128565379329178">Bind topp</translation>
+<translation id="5266128565379329178">Innbinding topp</translation>
 <translation id="5269225904387178860">Fire hull bunn</translation>
 <translation id="5269999699920406580">Funksjoner som gjelder for hele systemet, kan bare angis av eieren: <ph name="OWNER_EMAIL" /></translation>
 <translation id="5273658854610202413">Advarsel: Denne regelen ble ikke sammenslått som angitt i PolicyDictionaryMultipleSourceMergeList-regelen fordi den ikke er en del av ordlistereglene som kan slås sammen.</translation>
@@ -1021,7 +1021,7 @@ brukere av denne nettleseren.</translation>
 <translation id="6025416945513303461"><ph name="TYPE_1" />, <ph name="TYPE_2" /> og <ph name="TYPE_3" /> (synkronisert)</translation>
 <translation id="6027201098523975773">Skriv inn et navn</translation>
 <translation id="603068602130820122">To stifter høyre</translation>
-<translation id="6032955021262906325">Bind venstre</translation>
+<translation id="6032955021262906325">Innbinding venstre</translation>
 <translation id="6034000775414344507">Lysegrå</translation>
 <translation id="6034283069659657473">10x14 (konvolutt)</translation>
 <translation id="6034514109191629503">Trekkspillfals</translation>
@@ -1173,7 +1173,6 @@ brukere av denne nettleseren.</translation>
 <translation id="6868206169573555318">Start på nytt for å oppdatere</translation>
 <translation id="6874604403660855544">&amp;Legg til likevel</translation>
 <translation id="6884662655240309489">Størrelse 1</translation>
-<translation id="6884796835813057577">Vil du fortsette til &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Innstillingsnivået støttes ikke.</translation>
 <translation id="6895330447102777224">Kortet ditt er bekreftet</translation>
@@ -1395,7 +1394,7 @@ brukere av denne nettleseren.</translation>
 <translation id="7956713633345437162">Bokmerker for mobil</translation>
 <translation id="7961015016161918242">Aldri</translation>
 <translation id="7977894662897852582">Edp</translation>
-<translation id="799149739215780103">Bind</translation>
+<translation id="799149739215780103">Innbinding</translation>
 <translation id="7995512525968007366">Ikke spesifisert</translation>
 <translation id="800218591365569300">Prøv å lukke andre faner eller programmer for å frigjøre minne.</translation>
 <translation id="8004582292198964060">Nettleser</translation>
@@ -1634,7 +1633,7 @@ Mer informasjon:
 <translation id="945855313015696284">Gå gjennom informasjonen nedenfor, og slett eventuelle ugyldige kort</translation>
 <translation id="950736567201356821">Tre hull topp</translation>
 <translation id="951104842009476243">Godkjente debetkort og forhåndsbetalte kort</translation>
-<translation id="961663415146723894">Bind bunn</translation>
+<translation id="961663415146723894">Innbinding bunn</translation>
 <translation id="962484866189421427">Dette innholdet kan prøve å installere villedende apper som gir seg ut for å være noe annet, eller samle inn data som kan brukes til å spore deg. <ph name="BEGIN_LINK" />Vis det likevel<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">Offisiell delversjon</translation>
 <translation id="973773823069644502">Legg til leveringsadresse</translation>

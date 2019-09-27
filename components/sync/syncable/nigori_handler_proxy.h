@@ -46,7 +46,8 @@ class NigoriHandlerProxy : public SyncEncryptionHandler::Observer,
   void OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                bool encrypt_everything) override;
   void OnEncryptionComplete() override;
-  void OnCryptographerStateChanged(Cryptographer* cryptographer) override;
+  void OnCryptographerStateChanged(Cryptographer* cryptographer,
+                                   bool has_pending_keys) override;
   void OnPassphraseTypeChanged(PassphraseType type,
                                base::Time passphrase_time) override;
 
@@ -60,7 +61,7 @@ class NigoriHandlerProxy : public SyncEncryptionHandler::Observer,
       const syncable::BaseTransaction* const trans) const override;
   const Cryptographer* GetCryptographer(
       const syncable::BaseTransaction* const trans) const override;
-  const DirectoryCryptographer* GetDirectoryCryptographerForNigori(
+  const DirectoryCryptographer* GetDirectoryCryptographer(
       const syncable::BaseTransaction* const trans) const override;
   ModelTypeSet GetEncryptedTypes(
       const syncable::BaseTransaction* const trans) const override;

@@ -79,10 +79,6 @@
 #include "extensions/common/mojom/keep_alive.mojom.h"  // nogncheck
 #endif
 
-#if defined(BROWSER_MEDIA_CONTROLS_MENU)
-#include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom.h"
-#endif
-
 const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
   static base::NoDestructor<service_manager::Manifest> manifest {
     service_manager::ManifestBuilder()
@@ -158,10 +154,6 @@ const service_manager::Manifest& GetChromeContentBrowserOverlayManifest() {
             service_manager::Manifest::InterfaceList<
                 autofill::mojom::AutofillDriver,
                 autofill::mojom::PasswordManagerDriver,
-                blink::mojom::InstalledAppProvider,
-#if defined(BROWSER_MEDIA_CONTROLS_MENU)
-                blink::mojom::MediaControlsMenuHost,
-#endif
                 blink::mojom::TextSuggestionHost,
                 chrome::mojom::OfflinePageAutoFetcher,
                 chrome::mojom::PrerenderCanceler,

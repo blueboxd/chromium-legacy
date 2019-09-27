@@ -179,9 +179,6 @@ class HistoryReportJniBridge;
 namespace gpu {
 class GpuChannelHost;
 }
-namespace leveldb {
-class LevelDBMojoProxy;
-}
 namespace leveldb_env {
 class DBTracker;
 }
@@ -407,7 +404,6 @@ class BASE_EXPORT ScopedAllowBaseSyncPrimitives {
   friend class functions::ExecScriptScopedAllowBaseSyncPrimitives;
   friend class history_report::HistoryReportJniBridge;
   friend class internal::TaskTracker;
-  friend class leveldb::LevelDBMojoProxy;
   friend class leveldb_env::DBTracker;
   friend class media::BlockingUrlProtocol;
   friend class mojo::core::ScopedIPCSupport;

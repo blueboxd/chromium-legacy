@@ -224,7 +224,7 @@ class XRSession final
   bool HasPendingActivity() const override;
 
   // Creates presentation frame based on current state of the session.
-  // State currently used in XRFrame creation is base_pose_matrix_ and
+  // State currently used in XRFrame creation is mojo_from_viewer_ and
   // world_information_. The created XRFrame also stores a reference to this
   // XRSession.
   XRFrame* CreatePresentationFrame();
@@ -233,7 +233,7 @@ class XRSession final
   // presentation frames.
   void UpdatePresentationFrameState(
       double timestamp,
-      std::unique_ptr<TransformationMatrix> base_pose_matrix,
+      std::unique_ptr<TransformationMatrix> mojo_from_viewer,
       const device::mojom::blink::XRFrameDataPtr& frame_data);
 
  private:
@@ -315,7 +315,8 @@ class XRSession final
       input_binding_;
 
   Member<XRFrameRequestCallbackCollection> callback_collection_;
-  std::unique_ptr<TransformationMatrix> base_pose_matrix_;
+  // Viewer pose in mojo space.
+  std::unique_ptr<TransformationMatrix> mojo_from_viewer_;
 
   bool ended_ = false;
   bool pending_frame_ = false;

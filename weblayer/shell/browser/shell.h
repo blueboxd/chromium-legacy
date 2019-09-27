@@ -82,7 +82,7 @@ class Shell : public BrowserObserver {
   void LoadingStateChanged(bool is_loading,
                            bool to_different_document) override;
   void LoadProgressChanged(double progress) override;
-  void DisplayedURLChanged(const GURL& url) override;
+  void DisplayedUrlChanged(const GURL& url) override;
 
   // Helper to create a new Shell.
   static Shell* CreateShell(

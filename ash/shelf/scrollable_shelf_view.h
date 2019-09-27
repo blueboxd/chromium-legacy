@@ -13,6 +13,7 @@
 #include "ash/shelf/shelf_container_view.h"
 #include "ash/shelf/shelf_tooltip_delegate.h"
 #include "ash/shelf/shelf_view.h"
+#include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/animation/ink_drop_host_view.h"
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/controls/button/button.h"
@@ -27,7 +28,8 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
                                        public ShellObserver,
                                        public ShelfButtonDelegate,
                                        public ShelfTooltipDelegate,
-                                       public views::ContextMenuController {
+                                       public views::ContextMenuController,
+                                       public ui::ImplicitAnimationObserver {
  public:
   enum LayoutStrategy {
     // The arrow buttons are not shown. It means that there is enough space to
@@ -62,6 +64,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   views::FocusTraversable* GetFocusTraversableParent() override;
   views::View* GetFocusTraversableParentView() override;
   views::View* GetDefaultFocusableChild() override;
+
+  // Returns the |available_space_|.
+  gfx::Rect GetHotseatBackgroundBounds();
 
   views::View* GetShelfContainerViewForTest();
 
@@ -169,6 +174,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   base::string16 GetTitleForView(const views::View* view) const override;
   views::View* GetViewForEvent(const ui::Event& event) override;
 
+  // ui::ImplicitAnimationObserver:
+  void OnImplicitAnimationsCompleted() override;
+
   // Returns the padding inset. Different Padding strategies for three scenarios
   // (1) display centering alignment
   // (2) scrollable shelf centering alignment
@@ -214,6 +222,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   FadeZone CalculateStartGradientZone() const;
   FadeZone CalculateEndGradientZone() const;
 
+  // Updates the visibility of gradient zones.
+  void UpdateGradientZoneState();
+
   // Returns the actual scroll offset on the view's main axis. When the left
   // arrow button shows, |shelf_view_| is translated due to the change in
   // |shelf_container_view_|'s bounds. That translation offset is not included
@@ -237,6 +248,9 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // the scrolling is triggered by touch pad or mouse wheel event.
   bool ShouldHandleScroll(const gfx::Vector2dF& offset,
                           bool is_gesture_fling) const;
+
+  // Ensures that the app icons are shown correctly when scrolling ends.
+  void AdjustOffsetAfterScrolling();
 
   LayoutStrategy layout_strategy_ = kNotShowArrowButtons;
 
@@ -277,6 +291,14 @@ class ASH_EXPORT ScrollableShelfView : public views::AccessiblePaneView,
   // Indicates whether the focus ring on shelf items contained by
   // ScrollableShelfView is enabled.
   bool focus_ring_activated_ = false;
+
+  // Indicates that the view is during the scrolling animation.
+  bool during_scrolling_animation_ = false;
+
+  // Indicates whether the gradient zone before/after the shelf container view
+  // should show.
+  bool should_show_start_gradient_zone_ = false;
+  bool should_show_end_gradient_zone_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ScrollableShelfView);
 };

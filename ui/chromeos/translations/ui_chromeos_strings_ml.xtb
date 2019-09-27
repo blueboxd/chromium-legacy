@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">പെൻഗ്വിൻ</translation>
 <translation id="183183971458492120">വിവരങ്ങൾ ലോഡ് ചെയ്യുന്നു...</translation>
 <translation id="1838709767668011582">Google സൈറ്റ്</translation>
-<translation id="1839704667838141620">ഈ ഫയൽ പങ്കിട്ട രീതി മാറ്റുക</translation>
 <translation id="1844692022597038441">ഈ ഫയൽ ഓഫ്‌ലൈനിൽ ലഭ്യമാകില്ല.</translation>
 <translation id="184633654410729720">തായ് കീബോർഡ് (കെഡ്‌മാനീ)</translation>
 <translation id="1847880352285315359">സംരക്ഷിച്ചു</translation>
-<translation id="1864676585353837027">ഈ ഫയലുകൾ പങ്കിടുന്ന രീതി മാറ്റുക</translation>
 <translation id="1864756863218646478">ഫയൽ കണ്ടെത്താൻ കഴിഞ്ഞില്ല.</translation>
 <translation id="1921986354447415460">ടർക്കിഷ്-എഫ് കീബോർഡ്</translation>
 <translation id="1931134289871235022">സ്ലോവാക്</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">പുതിയ സേവനം ഇൻസ്‌റ്റാൾ ചെയ്യുക</translation>
 <translation id="1947424002851288782">ജര്‍മന്‍ കീബോര്‍ഡ്</translation>
 <translation id="1972984168337863910">ഫയലുകളുടെ ഫീഡ്ബാക്ക് പാനലുകൾ വികസിപ്പിക്കുക</translation>
-<translation id="197560921582345123">എഡിറ്റുചെയ്യാനാകുന്നത്</translation>
 <translation id="1984603991036629094">അർമേനിയൻ സ്വരസൂചക കീബോർഡ്</translation>
 <translation id="2001796770603320721">ഡ്രൈവിൽ മാനേജ് ചെയ്യുക</translation>
 <translation id="2009067268969781306">ഒരു ഡ്രൈവ് ഫോർമാറ്റ് ചെയ്‌താൽ അതിൽ സൂക്ഷിച്ചിരിക്കുന്ന മുഴുവൻ ഡാറ്റയും ഇല്ലാതാക്കപ്പെടും. ഈ പ്രവൃത്തി പഴയപടിയാക്കാനാകില്ല.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">ഈ ഫയലുകൾ ലഭ്യമാക്കുന്നതിന് ഏകദേശം <ph name="FILE_SIZE" /> മൊബൈൽ ഡാറ്റ ഉപയോഗിക്കും.</translation>
 <translation id="7846076177841592234">തിരഞ്ഞെടുത്തത് റദ്ദാക്കുക</translation>
-<translation id="7850851215703745691">ഈ ഡ്രൈവ് ഫയലുകൾ ഇതുവരെ പങ്കിട്ടില്ല</translation>
 <translation id="7853966320808728790">ഫ്രഞ്ച് BÉPO</translation>
 <translation id="7864662577698025113">പുതിയ സേവനം ചേർക്കുക</translation>
 <translation id="7873831373602885875"><ph name="FOLDER_NAME" /> എന്നതിൽ സംരക്ഷിക്കാനാവില്ല. എല്ലാ എഡിറ്റുകളും 'ഡൗൺലോഡുകൾ' ഫോൾഡറിലെ <ph name="DOWNLOADS_FOLDER" /> എന്നതിൽ സംരക്ഷിക്കും.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">സ്ലോവേനിയന്‍</translation>
 <translation id="7982283708762922719">ഉയരം</translation>
 <translation id="7987485481246785146">സൊറാനി കുർദ്ദിഷ് അറബിക് അധിഷ്‌ഠിത കീബോർഡ്</translation>
-<translation id="799923393800005025">കാണാനാകുന്നത്</translation>
 <translation id="8008366997883261463">ജാക്ക് റസ്സൽ ടെറിയർ</translation>
 <translation id="8028993641010258682">വലുപ്പം</translation>
 <translation id="8031722894461705849">സ്ലോവാക് കീബോർഡ്</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">ഫയൽ ലിസ്‌റ്റ് ലഘുചിത്ര കാഴ്‌ചയിലേക്ക് മാറ്റിയിട്ടുണ്ട്.</translation>
 <translation id="8601932370724196034">Crostini ചിത്ര ഫയൽ</translation>
 <translation id="8669949407341943408">നീക്കുന്നു...</translation>
-<translation id="8671210955687109937">അഭിപ്രായമിടാനാകുന്നത്</translation>
-<translation id="8686213429977032554">ഈ ഡ്രൈവ് ഫയൽ ഇതുവരെ പങ്കിട്ടില്ല</translation>
 <translation id="8698464937041809063">Google ഡ്രോയിംഗ്</translation>
 <translation id="8714406895390098252">സൈക്കിള്‍</translation>
 <translation id="8719721339511222681">തിരഞ്ഞെടുത്ത <ph name="ENTRY_NAME" />.</translation>

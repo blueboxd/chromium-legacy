@@ -260,10 +260,6 @@ class CORE_EXPORT CSSMathExpressionBinaryOperation final
       const CSSMathExpressionNode* left_side,
       const CSSMathExpressionNode* right_side);
 
-  static String BuildCSSText(const String& left_expression,
-                             const String& right_expression,
-                             CSSMathOperator op);
-
   double Evaluate(double left_side, double right_side) const {
     return EvaluateOperator(left_side, right_side, operator_);
   }

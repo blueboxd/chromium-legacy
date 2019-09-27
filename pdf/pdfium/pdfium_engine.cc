@@ -2223,12 +2223,6 @@ int PDFiumEngine::GetMostVisiblePage() {
   return most_visible_page_;
 }
 
-pp::Rect PDFiumEngine::GetPageRect(int index) {
-  pp::Rect rc(pages_[index]->rect());
-  InsetPage(index, pages_.size(), /*multiplier=*/-1, &rc);
-  return rc;
-}
-
 pp::Rect PDFiumEngine::GetPageBoundsRect(int index) {
   return pages_[index]->rect();
 }
@@ -2556,7 +2550,7 @@ void PDFiumEngine::LoadPageInfo(bool reload) {
   CalculateVisiblePages();
   if (layout_.dirty()) {
     layout_.clear_dirty();
-    client_->DocumentSizeUpdated(layout_.size());
+    client_->ProposeDocumentLayout(layout_);
   }
 }
 

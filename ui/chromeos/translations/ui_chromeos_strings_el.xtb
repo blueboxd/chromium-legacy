@@ -76,11 +76,9 @@
 <translation id="1829129547161959350">Πιγκουίνος</translation>
 <translation id="183183971458492120">Γίνεται φόρτωση των πληροφοριών…</translation>
 <translation id="1838709767668011582">Ιστότοπος Google</translation>
-<translation id="1839704667838141620">Αλλάξτε τον τρόπο κοινοποίησης αυτού του αρχείου</translation>
 <translation id="1844692022597038441">Αυτό το αρχείο δεν είναι διαθέσιμο εκτός σύνδεσης.</translation>
 <translation id="184633654410729720">Πληκτρολόγιο Ταϊλανδικών (Kedmanee)</translation>
 <translation id="1847880352285315359">Αποθηκεύτηκε</translation>
-<translation id="1864676585353837027">Αλλάξτε τον τρόπο με τον οποίο κοινοποιούνται αυτά τα αρχεία</translation>
 <translation id="1864756863218646478">Δεν ήταν δυνατή η εύρεση του αρχείου.</translation>
 <translation id="1921986354447415460">Πληκτρολόγιο Τουρκικών-F</translation>
 <translation id="1931134289871235022">Σλοβακικά</translation>
@@ -91,7 +89,6 @@
 <translation id="1943097386230153518">Εγκατάσταση νέας υπηρεσίας</translation>
 <translation id="1947424002851288782">Πληκτρολόγιο με γερμανικούς χαρακτήρες</translation>
 <translation id="1972984168337863910">Ανάπτυξη πλαισίων σχολίων αρχείων</translation>
-<translation id="197560921582345123">Δυνατότητα επεξεργασίας</translation>
 <translation id="1984603991036629094">Αρμενικό φωνητικό πληκτρολόγιο</translation>
 <translation id="2001796770603320721">Διαχείριση στο Drive</translation>
 <translation id="2009067268969781306">Η διαμόρφωση ενός δίσκου θα διαγράψει όλα τα δεδομένα που έχουν αποθηκευτεί σε αυτόν. Δεν είναι δυνατή η αναίρεση αυτής της ενέργειας.</translation>
@@ -608,7 +605,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Για την ανάκτηση αυτών των αρχείων θα χρησιμοποιηθούν περίπου <ph name="FILE_SIZE" /> δεδομένων κινητής τηλεφωνίας.</translation>
 <translation id="7846076177841592234">Ακύρωση επιλογής</translation>
-<translation id="7850851215703745691">Αυτά τα αρχεία του Drive δεν έχουν κοινοποιηθεί ακόμα</translation>
 <translation id="7853966320808728790">Γαλλικά BÉPO</translation>
 <translation id="7864662577698025113">Προσθήκη νέας υπηρεσίας</translation>
 <translation id="7873831373602885875">Δεν είναι δυνατή η αποθήκευση στο <ph name="FOLDER_NAME" />. Όλες οι τροποποιήσεις θα αποθηκεύονται στο <ph name="DOWNLOADS_FOLDER" />, στον φάκελο Λήψεις.</translation>
@@ -624,7 +620,6 @@
 <translation id="7969525169268594403">Σλοβενικά</translation>
 <translation id="7982283708762922719">Ύψος</translation>
 <translation id="7987485481246785146">Πληκτρολόγιο Σορανί Κουρδικών βασισμένο στα Αραβικά</translation>
-<translation id="799923393800005025">Δυνατότητα προβολής</translation>
 <translation id="8008366997883261463">Τεριέ Τζακ Ράσελ</translation>
 <translation id="8028993641010258682">Μέγεθος</translation>
 <translation id="8031722894461705849">Πληκτρολόγιο Σλοβακικών</translation>
@@ -689,8 +684,6 @@
 <translation id="8600173386174225982">Η λίστα αρχείων έχει αλλάξει σε προβολή μικρογραφίας.</translation>
 <translation id="8601932370724196034">Αρχείο εικόνας Crostini</translation>
 <translation id="8669949407341943408">Μετακίνηση…</translation>
-<translation id="8671210955687109937">Δυνατότητα σχολιασμού</translation>
-<translation id="8686213429977032554">Δεν μοιράζεστε ακόμα αυτό το αρχείο του Drive</translation>
 <translation id="8698464937041809063">Σχέδιο Google</translation>
 <translation id="8714406895390098252">Ποδήλατο</translation>
 <translation id="8719721339511222681">Επιλογή <ph name="ENTRY_NAME" />.</translation>

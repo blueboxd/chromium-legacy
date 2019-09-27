@@ -680,6 +680,7 @@ crbug.com/951628 [ android no-passthrough ] conformance/rendering/blending.html 
 # Qualcomm (Pixel 2) failures
 crbug.com/906737 [ android qualcomm ] conformance/extensions/webgl-compressed-texture-astc.html [ Failure ]
 crbug.com/906742 [ android qualcomm no-passthrough ] conformance2/glsl3/compare-structs-containing-arrays.html [ Failure ]
+crbug.com/1008535 [ android qualcomm-adreno-(tm)-540 passthrough ] conformance2/textures/misc/tex-image-with-bad-args-from-dom-elements.html [ Skip ]
 crbug.com/906735 [ android qualcomm ] conformance2/textures/video/tex-2d-rgba8ui-rgba_integer-unsigned_byte.html [ Failure ]
 crbug.com/981216 [ android qualcomm-adreno-(tm)-540 ] deqp/functional/gles3/fbocolorbuffer/tex2d_01.html [ RetryOnFailure ]
 crbug.com/949321 [ android qualcomm ] deqp/functional/gles3/framebufferblit/default_framebuffer_02.html [ RetryOnFailure ]

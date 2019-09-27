@@ -1,11 +1,16 @@
 This is a testharness.js-based test.
-Found 107 tests; 104 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 112 tests; 109 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
+PASS idl_test validation
 PASS Partial interface URL: original interface defined
 PASS Partial interface URL: valid exposure set
+PASS Partial interface URL: member names are unique
 PASS Partial interface AudioTrack: original interface defined
+PASS Partial interface AudioTrack: member names are unique
 PASS Partial interface VideoTrack: original interface defined
+PASS Partial interface VideoTrack: member names are unique
 PASS Partial interface TextTrack: original interface defined
+PASS Partial interface TextTrack: member names are unique
 PASS MediaSource interface: existence and properties of interface object
 PASS MediaSource interface object length
 PASS MediaSource interface object name

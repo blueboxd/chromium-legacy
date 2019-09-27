@@ -4,11 +4,17 @@
 
 #include "pdf/test/test_client.h"
 
+#include "pdf/document_layout.h"
+
 namespace chrome_pdf {
 
 TestClient::TestClient() = default;
 
 TestClient::~TestClient() = default;
+
+void TestClient::ProposeDocumentLayout(const DocumentLayout& layout) {
+  CHECK(engine());
+}
 
 bool TestClient::Confirm(const std::string& message) {
   return false;

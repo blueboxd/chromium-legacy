@@ -21,24 +21,32 @@ namespace safety_tips {
 // These values are persisted to logs. Entries should not be renumbered and
 // numeric values should never be reused.
 enum class SafetyTipInteraction {
-  // The user dismissed the safety tip.
+  // The user dismissed the safety tip. Every time the user dismisses the
+  // dialog, a histogram will be recorded once with this value, and again with a
+  // more specific way of dismissing the safety tip (e.g. kDismissWithEsc).
   kDismiss = 0,
   // The user followed the safety tip's call to action to leave the site.
   kLeaveSite = 1,
   kNoAction = 2,
-  kMaxValue = kNoAction,
+  // The values below record specific ways that the user dismissed the safety
+  // tip.
+  kDismissWithEsc = 3,
+  kDismissWithClose = 4,
+  kDismissWithIgnore = 5,
+  kMaxValue = kDismissWithIgnore,
 };
 
 // Shows Safety Tip UI using the specified information if it is not already
 // showing. |virtual_url| is the virtual url of the page/frame the info applies
-// to. |safe_url| is the URL that the "Leave" action redirects
-// to. |close_callback| will be called when the dialog is closed; the argument
-// indicates the action that the user took (if any) to close the
-// dialog. Implemented in platform-specific files.
+// to. |suggested_url| is the URL that Chrome thinks the user may have wanted to
+// navigate to (if applicable). |close_callback| will be called when the dialog
+// is closed; the argument indicates the action that the user took (if any) to
+// close the dialog. Implemented in platform-specific files.
 void ShowSafetyTipDialog(
     content::WebContents* web_contents,
     security_state::SafetyTipStatus type,
     const GURL& virtual_url,
+    const GURL& suggested_url,
     base::OnceCallback<void(SafetyTipInteraction)> close_callback);
 
 }  // namespace safety_tips

@@ -53,15 +53,15 @@ bool StateIsConnected(mojom::ConnectionStateType connection_state) {
 int GetWirelessSignalStrength(const mojom::NetworkStateProperties* network) {
   switch (network->type) {
     case mojom::NetworkType::kCellular:
-      return network->cellular->signal_strength;
+      return network->type_state->get_cellular()->signal_strength;
     case mojom::NetworkType::kEthernet:
       return 0;
     case mojom::NetworkType::kTether:
-      return network->tether->signal_strength;
+      return network->type_state->get_tether()->signal_strength;
     case mojom::NetworkType::kVPN:
       return 0;
     case mojom::NetworkType::kWiFi:
-      return network->wifi->signal_strength;
+      return network->type_state->get_wifi()->signal_strength;
     case mojom::NetworkType::kAll:
     case mojom::NetworkType::kMobile:
     case mojom::NetworkType::kWireless:

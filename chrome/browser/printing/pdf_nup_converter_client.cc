@@ -24,7 +24,7 @@ void PdfNupConverterClient::DoNupPdfConvert(
     const gfx::Rect& printable_area,
     std::vector<base::ReadOnlySharedMemoryRegion> pdf_page_regions,
     mojom::PdfNupConverter::NupPageConvertCallback callback) {
-  auto& nup_converter = GetPdfNupConverterRequest(document_cookie);
+  auto& nup_converter = GetPdfNupConverterRemote(document_cookie);
   nup_converter->NupPageConvert(pages_per_sheet, page_size, printable_area,
                                 std::move(pdf_page_regions),
                                 std::move(callback));
@@ -37,7 +37,7 @@ void PdfNupConverterClient::DoNupPdfDocumentConvert(
     const gfx::Rect& printable_area,
     base::ReadOnlySharedMemoryRegion src_pdf_document,
     mojom::PdfNupConverter::NupDocumentConvertCallback callback) {
-  auto& nup_converter = GetPdfNupConverterRequest(document_cookie);
+  auto& nup_converter = GetPdfNupConverterRemote(document_cookie);
   nup_converter->NupDocumentConvert(
       pages_per_sheet, page_size, printable_area, std::move(src_pdf_document),
       base::BindOnce(&PdfNupConverterClient::OnDidNupPdfDocumentConvert,
@@ -50,12 +50,12 @@ void PdfNupConverterClient::OnDidNupPdfDocumentConvert(
     mojom::PdfNupConverter::NupDocumentConvertCallback callback,
     mojom::PdfNupConverter::Status status,
     base::ReadOnlySharedMemoryRegion region) {
-  RemovePdfNupConverterRequest(document_cookie);
+  RemovePdfNupConverterRemote(document_cookie);
   std::move(callback).Run(status, std::move(region));
 }
 
-mojom::PdfNupConverterPtr& PdfNupConverterClient::GetPdfNupConverterRequest(
-    int cookie) {
+mojo::Remote<mojom::PdfNupConverter>&
+PdfNupConverterClient::GetPdfNupConverterRemote(int cookie) {
   auto iter = pdf_nup_converter_map_.find(cookie);
   if (iter != pdf_nup_converter_map_.end()) {
     DCHECK(iter->second.is_bound());
@@ -63,21 +63,21 @@ mojom::PdfNupConverterPtr& PdfNupConverterClient::GetPdfNupConverterRequest(
   }
 
   auto iterator =
-      pdf_nup_converter_map_.emplace(cookie, CreatePdfNupConverterRequest())
+      pdf_nup_converter_map_.emplace(cookie, CreatePdfNupConverterRemote())
           .first;
   return iterator->second;
 }
 
-void PdfNupConverterClient::RemovePdfNupConverterRequest(int cookie) {
+void PdfNupConverterClient::RemovePdfNupConverterRemote(int cookie) {
   size_t erased = pdf_nup_converter_map_.erase(cookie);
   DCHECK_EQ(erased, 1u);
 }
 
-mojom::PdfNupConverterPtr
-PdfNupConverterClient::CreatePdfNupConverterRequest() {
-  mojom::PdfNupConverterPtr pdf_nup_converter;
+mojo::Remote<mojom::PdfNupConverter>
+PdfNupConverterClient::CreatePdfNupConverterRemote() {
+  mojo::Remote<mojom::PdfNupConverter> pdf_nup_converter;
   GetPrintingService()->BindPdfNupConverter(
-      mojo::MakeRequest(&pdf_nup_converter));
+      pdf_nup_converter.BindNewPipeAndPassReceiver());
   pdf_nup_converter->SetWebContentsURL(web_contents_->GetLastCommittedURL());
   return pdf_nup_converter;
 }

@@ -264,9 +264,12 @@ bool ChromeRuntimeAPIDelegate::CheckForUpdates(
                                                 true, kUpdateThrottled, "")));
   } else {
     info.callbacks.push_back(callback);
-    updater->CheckExtensionSoon(
-        extension_id, base::Bind(&ChromeRuntimeAPIDelegate::UpdateCheckComplete,
-                                 base::Unretained(this), extension_id));
+
+    extensions::ExtensionUpdater::CheckParams params;
+    params.ids = {extension_id};
+    params.callback = base::Bind(&ChromeRuntimeAPIDelegate::UpdateCheckComplete,
+                                 base::Unretained(this), extension_id);
+    updater->CheckNow(std::move(params));
   }
   return true;
 }

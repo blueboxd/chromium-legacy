@@ -15,11 +15,14 @@
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/screen_enumeration/screen_enumeration_impl.h"
 #include "content/browser/service_worker/service_worker_provider_host.h"
+#include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/browser/worker_host/dedicated_worker_host.h"
 #include "content/browser/worker_host/shared_worker_host.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/service_worker_context.h"
 #include "content/public/browser/shared_worker_instance.h"
+#include "device/gamepad/gamepad_monitor.h"
+#include "device/gamepad/public/mojom/gamepad.mojom.h"
 #include "media/capture/mojom/image_capture.mojom.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/sensor_provider.mojom.h"
@@ -38,12 +41,15 @@
 #include "third_party/blink/public/mojom/picture_in_picture/picture_in_picture.mojom.h"
 #include "third_party/blink/public/mojom/presentation/presentation.mojom.h"
 #include "third_party/blink/public/mojom/speech/speech_synthesis.mojom.h"
+#include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom.h"
 #include "third_party/blink/public/mojom/webaudio/audio_context_manager.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/virtual_authenticator.mojom.h"
 
 #if !defined(OS_ANDROID)
+#include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "third_party/blink/public/mojom/hid/hid.mojom.h"
+#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -88,6 +94,13 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
   map->Add<blink::mojom::IdleManager>(base::BindRepeating(
       &RenderFrameHostImpl::GetIdleManager, base::Unretained(host)));
 
+#if !defined(OS_ANDROID)
+  // The default (no-op) implementation of InstalledAppProvider. On Android, the
+  // real implementation is provided in Java.
+  map->Add<blink::mojom::InstalledAppProvider>(
+      base::BindRepeating(&InstalledAppProviderImplDefault::Create));
+#endif
+
   map->Add<blink::mojom::PermissionService>(base::BindRepeating(
       &RenderFrameHostImpl::CreatePermissionService, base::Unretained(host)));
 
@@ -105,6 +118,9 @@ void PopulateFrameBinders(RenderFrameHostImpl* host,
 
   map->Add<blink::mojom::FileChooser>(base::BindRepeating(
       &RenderFrameHostImpl::GetFileChooser, base::Unretained(host)));
+
+  map->Add<device::mojom::GamepadMonitor>(
+      base::BindRepeating(&device::GamepadMonitor::Create));
 
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(features::kWebNfc)) {
@@ -151,6 +167,8 @@ void PopulateBinderMapWithContext(
       base::BindRepeating(&KeyboardLockServiceImpl::CreateMojoService));
   map->Add<blink::mojom::PictureInPictureService>(
       base::BindRepeating(&PictureInPictureServiceImpl::Create));
+  map->Add<blink::mojom::WakeLockService>(
+      base::BindRepeating(&WakeLockServiceImpl::Create));
   GetContentClient()->browser()->RegisterBrowserInterfaceBindersForFrame(map);
 }
 

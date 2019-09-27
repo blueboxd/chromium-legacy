@@ -1383,7 +1383,6 @@ And in `//ui/gfx/geometry/mojo/geometry_mojom_traits.cc`:
 namespace mojo {
 
 // static
-template <>
 bool StructTraits<gfx::mojom::RectDataView, gfx::Rect>::Read(
     gfx::mojom::RectDataView data,
   gfx::Rect* out_rect) {

@@ -48,6 +48,17 @@ struct FindEligibleDevicesResponse {
   array<chromeos.multidevice.mojom.RemoteDevice> ineligible_devices;
 };
 
+enum ConnectivityStatus {
+  kOnline,
+  kOffline
+};
+
+struct DeviceActivityStatus {
+  string device_id;
+  mojo_base.mojom.Time last_activity_time;
+  ConnectivityStatus connectivity_status;
+};
+
 struct DebugInfo {
   // Enrollment stats:
   mojo_base.mojom.Time last_enrollment_time;
@@ -76,6 +87,7 @@ interface DeviceSyncObserver {
 };
 
 // TODO(khorimoto): Flesh out API.
+// Calls to this API run in the browser process.
 interface DeviceSync {
   // Adds an Observer of this API.
   AddObserver(DeviceSyncObserver observer) => ();
@@ -140,6 +152,20 @@ interface DeviceSync {
       chromeos.multidevice.mojom.SoftwareFeature software_feature) =>
           (NetworkRequestResult result_code,
            FindEligibleDevicesResponse? response);
+
+  // Retrieves the activity status of the user's devices. When this function
+  // is invoked, a network request will be sent to the CryptAuth server to
+  // retrieve the last time a device was used.
+  //
+  // On success, this function returns a null error_code with the activity
+  // statuses to the callback; on error, it returns a valid error_code string
+  // indicating the reason for failure along with a null activity statuses.
+  // 
+  // This method is expected to be used by multidevice_setup service running 
+  // in the browser process.
+  GetDevicesActivityStatus() =>
+          (NetworkRequestResult result_code,
+           array<DeviceActivityStatus>? device_activity_statuses);
 
   // Functions below are implemented for chrome://proximity-auth page, which is
   // intended for debugging purposes only.

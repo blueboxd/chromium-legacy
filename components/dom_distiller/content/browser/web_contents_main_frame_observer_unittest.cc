@@ -55,7 +55,7 @@ TEST_F(WebContentsMainFrameObserverTest, ListensForMainFrameNavigation) {
   EXPECT_TRUE(main_frame_observer_->is_initialized());
   EXPECT_FALSE(main_frame_observer_->is_document_loaded_in_main_frame());
 
-  main_frame_observer_->DocumentLoadedInFrame(main_rfh());
+  main_frame_observer_->DOMContentLoaded(main_rfh());
   EXPECT_TRUE(main_frame_observer_->is_document_loaded_in_main_frame());
 }
 
@@ -79,13 +79,13 @@ TEST_F(WebContentsMainFrameObserverTest,
 
   // Even if we didn't acknowledge a same-document navigation, if the main
   // frame loads, consider a load complete.
-  main_frame_observer_->DocumentLoadedInFrame(main_rfh());
+  main_frame_observer_->DOMContentLoaded(main_rfh());
   EXPECT_TRUE(main_frame_observer_->is_document_loaded_in_main_frame());
 }
 
 TEST_F(WebContentsMainFrameObserverTest, ResetOnPageNavigation) {
   Navigate(kMainFrame, kDifferentDocument);
-  main_frame_observer_->DocumentLoadedInFrame(main_rfh());
+  main_frame_observer_->DOMContentLoaded(main_rfh());
   EXPECT_TRUE(main_frame_observer_->is_document_loaded_in_main_frame());
 
   // Another navigation should result in waiting for a page load.
@@ -96,7 +96,7 @@ TEST_F(WebContentsMainFrameObserverTest, ResetOnPageNavigation) {
 
 TEST_F(WebContentsMainFrameObserverTest, DoesNotResetOnInPageNavigation) {
   Navigate(kMainFrame, kDifferentDocument);
-  main_frame_observer_->DocumentLoadedInFrame(main_rfh());
+  main_frame_observer_->DOMContentLoaded(main_rfh());
   EXPECT_TRUE(main_frame_observer_->is_document_loaded_in_main_frame());
 
   // Navigating withing the page should not result in waiting for a page load.

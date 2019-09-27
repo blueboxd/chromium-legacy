@@ -24,6 +24,7 @@
 #include "net/base/escape.h"
 #include "net/base/filename_util.h"
 #include "pdf/accessibility.h"
+#include "pdf/document_layout.h"
 #include "pdf/pdf.h"
 #include "pdf/pdf_features.h"
 #include "ppapi/c/dev/ppb_cursor_control_dev.h"
@@ -1284,20 +1285,20 @@ void OutOfProcessInstance::FillRect(const pp::Rect& rect, uint32_t color) {
   }
 }
 
-void OutOfProcessInstance::DocumentSizeUpdated(const pp::Size& size) {
-  document_size_ = size;
+void OutOfProcessInstance::ProposeDocumentLayout(const DocumentLayout& layout) {
+  document_size_ = layout.size();
 
   pp::VarDictionary dimensions;
   dimensions.Set(kType, kJSDocumentDimensionsType);
   dimensions.Set(kJSDocumentWidth, pp::Var(document_size_.width()));
   dimensions.Set(kJSDocumentHeight, pp::Var(document_size_.height()));
   pp::VarArray page_dimensions_array;
-  size_t num_pages = engine_->GetNumberOfPages();
+  size_t num_pages = layout.page_count();
   if (page_is_processed_.size() < num_pages)
     page_is_processed_.resize(num_pages);
 
   for (size_t i = 0; i < num_pages; ++i) {
-    pp::Rect page_rect = engine_->GetPageRect(i);
+    pp::Rect page_rect = layout.page_rect(i);
     pp::VarDictionary page_dimensions;
     page_dimensions.Set(kJSPageX, pp::Var(page_rect.x()));
     page_dimensions.Set(kJSPageY, pp::Var(page_rect.y()));

@@ -54,7 +54,6 @@ struct SameSizeAsLayer : public base::RefCounted<SameSizeAsLayer> {
     float opacity;
     SkBlendMode blend_mode;
     unsigned bitfields;
-    int sorting_context_id;
     gfx::PointF position;
     gfx::Transform transform;
     gfx::Point3F transform_origin;
@@ -108,7 +107,6 @@ Layer::Inputs::Inputs(int layer_id)
       has_will_change_transform_hint(false),
       trilinear_filtering(false),
       hide_layer_and_subtree(false),
-      sorting_context_id(0),
       background_color(0),
       backdrop_filter_quality(1.0f),
       corner_radii({0, 0, 0, 0}),
@@ -1122,16 +1120,6 @@ void Layer::SetDoubleSided(bool double_sided) {
   if (inputs_.double_sided == double_sided)
     return;
   inputs_.double_sided = double_sided;
-  SetNeedsCommit();
-  SetPropertyTreesNeedRebuild();
-  SetSubtreePropertyChanged();
-}
-
-void Layer::Set3dSortingContextId(int id) {
-  DCHECK(IsPropertyChangeAllowed());
-  if (id == inputs_.sorting_context_id)
-    return;
-  inputs_.sorting_context_id = id;
   SetNeedsCommit();
   SetPropertyTreesNeedRebuild();
   SetSubtreePropertyChanged();

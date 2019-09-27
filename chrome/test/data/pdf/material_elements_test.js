@@ -53,12 +53,12 @@ var tests = [
       selector.pageNo = e.detail.page + 1;
     });
 
-    changeInput("1000");
-    changeInput("1234");
-    changeInput("abcd");
-    changeInput("12pp");
-    changeInput("3.14");
-    changeInput("3000");
+    changeInput('1000');
+    changeInput('1234');
+    changeInput('abcd');
+    changeInput('12pp');
+    changeInput('3.14');
+    changeInput('3000');
 
     chrome.test.assertEq(4, navigatedPages.length);
     // The event page number is 0-based.
@@ -131,7 +131,7 @@ var tests = [
 
     var rootBookmarks =
         bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
-    chrome.test.assertEq(1, rootBookmarks.length, "one root bookmark");
+    chrome.test.assertEq(1, rootBookmarks.length, 'one root bookmark');
     var rootBookmark = rootBookmarks[0];
     rootBookmark.$.expand.click();
 
@@ -139,9 +139,9 @@ var tests = [
 
     var subBookmarks =
         rootBookmark.shadowRoot.querySelectorAll('viewer-bookmark');
-    chrome.test.assertEq(2, subBookmarks.length, "two sub bookmarks");
-    chrome.test.assertEq(1, subBookmarks[1].depth,
-                           "sub bookmark depth correct");
+    chrome.test.assertEq(2, subBookmarks.length, 'two sub bookmarks');
+    chrome.test.assertEq(
+        1, subBookmarks[1].depth, 'sub bookmark depth correct');
 
     var lastPageChange;
     rootBookmark.addEventListener('change-page', function(e) {

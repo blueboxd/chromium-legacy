@@ -22,6 +22,7 @@
 #include "base/system/sys_info.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "ui/events/platform/platform_event_source.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/gpu_fence.h"
 #include "ui/gl/angle_platform_impl.h"
@@ -37,9 +38,8 @@
 #include "ui/gl/sync_control_vsync_provider.h"
 
 #if defined(USE_X11)
-#include "ui/gfx/x/x11.h"
-
 #include "ui/base/x/x11_util_internal.h"  // nogncheck
+#include "ui/gfx/x/x11.h"
 #endif
 
 #if defined(OS_ANDROID)
@@ -148,6 +148,8 @@
 #endif /* EGL_ANGLE_feature_control */
 
 using ui::GetLastEGLErrorString;
+using ui::PlatformEvent;
+using ui::PlatformEventSource;
 
 namespace gl {
 
@@ -1179,6 +1181,30 @@ bool NativeViewGLSurfaceEGL::Initialize(GLSurfaceFormat format) {
     return false;
   }
 
+#if defined(USE_X11)
+  // Query all child windows and store them. ANGLE creates a child window when
+  // eglCreateWidnowSurface is called on X11 and expose events from this window
+  // need to be received by this class.
+  Display* x11_display = GetNativeDisplay();
+  Window root = 0;
+  Window parent = 0;
+  Window* children = nullptr;
+  unsigned num_children = 0;
+  if (XQueryTree(x11_display, window_, &root, &parent, &children,
+                 &num_children)) {
+    for (unsigned int i = 0; i < num_children; ++i) {
+      children_.push_back(children[i]);
+    }
+    if (num_children > 0) {
+      XFree(children);
+    }
+  }
+
+  if (PlatformEventSource* source = PlatformEventSource::GetInstance()) {
+    source->AddPlatformEventDispatcher(this);
+  }
+#endif
+
   if (g_driver_egl.ext.b_EGL_NV_post_sub_buffer) {
     EGLint surfaceVal;
     EGLBoolean retVal = eglQuerySurface(
@@ -1288,6 +1314,11 @@ void NativeViewGLSurfaceEGL::Destroy() {
   vsync_provider_internal_ = nullptr;
 
   if (surface_) {
+#if defined(USE_X11)
+    if (PlatformEventSource* source = PlatformEventSource::GetInstance()) {
+      source->RemovePlatformEventDispatcher(this);
+    }
+#endif
     if (!eglDestroySurface(GetDisplay(), surface_)) {
       LOG(ERROR) << "eglDestroySurface failed with error "
                  << GetLastEGLErrorString();
@@ -1766,6 +1797,30 @@ bool NativeViewGLSurfaceEGL::CommitAndClearPendingOverlays() {
   NOTIMPLEMENTED();
 #endif
   return success;
+}
+
+bool NativeViewGLSurfaceEGL::CanDispatchEvent(const PlatformEvent& event) {
+#if defined(USE_X11)
+  // When ANGLE is used for EGL, it creates an X11 child window. Expose events
+  // from this window need to be forwarded to this class.
+  return event->type == Expose &&
+         std::find(children_.begin(), children_.end(), event->xexpose.window) !=
+             children_.end();
+#else
+  return false;
+#endif
+}
+
+uint32_t NativeViewGLSurfaceEGL::DispatchEvent(const PlatformEvent& event) {
+#if defined(USE_X11)
+  XEvent x_event = *event;
+  x_event.xexpose.window = window_;
+
+  Display* x11_display = GetNativeDisplay();
+  XSendEvent(x11_display, window_, x11::False, ExposureMask, &x_event);
+  XFlush(x11_display);
+#endif
+  return ui::POST_DISPATCH_STOP_PROPAGATION;
 }
 
 PbufferGLSurfaceEGL::PbufferGLSurfaceEGL(const gfx::Size& size)

@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pingvinas</translation>
 <translation id="183183971458492120">Įkeliama informacija...</translation>
 <translation id="1838709767668011582">„Google“ svetainė</translation>
-<translation id="1839704667838141620">Keisti, kaip šis failas bendrinamas</translation>
 <translation id="1844692022597038441">Šis failas nepasiekiamas neprisijungus.</translation>
 <translation id="184633654410729720">Tailandietiška klaviatūra („Kedmanee“)</translation>
 <translation id="1847880352285315359">Išsaugota</translation>
-<translation id="1864676585353837027">Keiskite, kaip bendrinami šie failai</translation>
 <translation id="1864756863218646478">Nepavyko rasti failo.</translation>
 <translation id="1921986354447415460">Turkiška klaviatūra</translation>
 <translation id="1931134289871235022">Slovakų</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Naujos paslaugos diegimas</translation>
 <translation id="1947424002851288782">Vokiška klaviatūra</translation>
 <translation id="1972984168337863910">Išskleisti failų atsiliepimų skydelius</translation>
-<translation id="197560921582345123">Galima redaguoti</translation>
 <translation id="1984603991036629094">Armėniška fonetinė klaviatūra</translation>
 <translation id="2001796770603320721">Tvarkyti Diske</translation>
 <translation id="2009067268969781306">Formatuojant atmintuką bus ištrinti visi jame saugomi duomenys. Šio veiksmo anuliuoti negalima.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">Atsegti aplanką</translation>
 <translation id="3678559383040232393">Maltiečių klaviatūra</translation>
 <translation id="3685122418104378273">„Google“ disko sinchronizavimas pagal numatytuosius nustatymus yra išjungtas, kai naudojami mobiliojo ryšio duomenys.</translation>
+<translation id="3689865792480713551">Atšaukti <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Įrenginio negalima atidaryti, nes nepalaikoma jo failų išdėstymo sistema.</translation>
 <translation id="3741243925913727067">Kurkite atsargines medijos įrenginio nuotraukų ir vaizdo įrašų kopijas „Google“ diske.</translation>
 <translation id="3749289110408117711">Failo pavadinimas</translation>
@@ -466,6 +464,7 @@
 <translation id="6339145975392024142">JAV tarptautinė (AK) klaviatūra</translation>
 <translation id="6346310558342052870">Prieiga apribota</translation>
 <translation id="6353618411602605519">Kroatiška klaviatūra</translation>
+<translation id="6356685157277930264">Failų atsiliepimų langas</translation>
 <translation id="6358884629796491903">Drakonas</translation>
 <translation id="637062427944097960">Šis failas atidarytas kitame darbalaukyje. Perkelkite failus <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />), kad peržiūrėtumėte juos.</translation>
 <translation id="6395575651121294044">Elementų: <ph name="NUMBER_OF_FILES" /></translation>
@@ -591,7 +590,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Šiems failams gauti reikės apytiksliai <ph name="FILE_SIZE" /> duomenų mobiliesiems.</translation>
 <translation id="7846076177841592234">Atšaukti pasirinkimą</translation>
-<translation id="7850851215703745691">Šie Disko failai dar nebendrinami</translation>
 <translation id="7853966320808728790">Prancūziška BÉPO</translation>
 <translation id="7864662577698025113">Pridėti naują paslaugą</translation>
 <translation id="7873831373602885875">Nepavyko išsaugoti aplanke „<ph name="FOLDER_NAME" />“. Visi pakeitimai bus išsaugoti „Atsisiuntimų“ aplanko aplanke „<ph name="DOWNLOADS_FOLDER" />“.</translation>
@@ -607,7 +605,6 @@
 <translation id="7969525169268594403">Slovėnija</translation>
 <translation id="7982283708762922719">Aukštis</translation>
 <translation id="7987485481246785146">Soranių kurdų arabiška klaviatūra</translation>
-<translation id="799923393800005025">Galima peržiūrėti</translation>
 <translation id="8008366997883261463">Džeko Raselo terjeras</translation>
 <translation id="8028993641010258682">Dydis</translation>
 <translation id="8031722894461705849">Slovakiška klaviatūra</translation>
@@ -669,8 +666,6 @@
 <translation id="8600173386174225982">Failų sąrašas pakeistas į miniatiūrų rodinį.</translation>
 <translation id="8601932370724196034">„Crostini“ vaizdo failas</translation>
 <translation id="8669949407341943408">Perkeliama...</translation>
-<translation id="8671210955687109937">Galima komentuoti</translation>
-<translation id="8686213429977032554">Šis Disko failas dar nebendrinamas</translation>
 <translation id="8698464937041809063">„Google“ piešinys</translation>
 <translation id="8714406895390098252">Dviratis</translation>
 <translation id="8719721339511222681">Pasirinktas įrašas „<ph name="ENTRY_NAME" />“.</translation>

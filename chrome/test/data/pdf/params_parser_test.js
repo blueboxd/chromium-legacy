@@ -8,17 +8,18 @@ var tests = [
    */
   function testParamsParser() {
     var paramsParser = new OpenPdfParamsParser(function(destination) {
-      if (destination == 'RU')
+      if (destination == 'RU') {
         paramsParser.onNamedDestinationReceived(26);
-      else if (destination == 'US')
+      } else if (destination == 'US') {
         paramsParser.onNamedDestinationReceived(0);
-      else if (destination == 'UY')
+      } else if (destination == 'UY') {
         paramsParser.onNamedDestinationReceived(22);
-      else
+      } else {
         paramsParser.onNamedDestinationReceived(-1);
+      }
     });
 
-    var url = "http://xyz.pdf";
+    var url = 'http://xyz.pdf';
 
     // Checking #nameddest.
     paramsParser.getViewportFromUrlParams(`${url}#RU`, function(params) {

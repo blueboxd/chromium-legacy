@@ -229,6 +229,17 @@ typedef uint32_t MojoAcceptInvitationFlags;
 // |MOJO_SEND_INVITATION_FLAG_ISOLATED| for details.
 #define MOJO_ACCEPT_INVITATION_FLAG_ISOLATED ((MojoAcceptInvitationFlags)1)
 
+// The transport endpoint used to accept this invitation should be leaked, i.e.
+// never closed until it's implicitly closed on process death. This exists to
+// support adaptation of legacy code to Mojo IPC so that, e.g., a broken pipe
+// can be used as a reliable indication of remote process death.
+//
+// This flag should generally not be used unless strictly necessary, and it is
+// unsafe to use in any situation where a process may accept multiple
+// invitations over the course of its lifetime.
+#define MOJO_ACCEPT_INVITATION_FLAG_LEAK_TRANSPORT_ENDPOINT \
+  ((MojoAcceptInvitationFlags)2)
+
 // Options passed to |MojoAcceptInvitation()|.
 struct MOJO_ALIGNAS(8) MojoAcceptInvitationOptions {
   // The size of this structure, used for versioning.

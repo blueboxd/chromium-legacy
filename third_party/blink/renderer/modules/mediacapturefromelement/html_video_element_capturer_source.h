@@ -64,6 +64,7 @@ class MODULES_EXPORT HtmlVideoElementCapturerSource final
   media::VideoFramePool frame_pool_;
   SkBitmap bitmap_;
   std::unique_ptr<cc::PaintCanvas> canvas_;
+  gfx::Size natural_size_;
 
   const base::WeakPtr<blink::WebMediaPlayer> web_media_player_;
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

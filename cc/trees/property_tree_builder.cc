@@ -213,12 +213,6 @@ void PropertyTreeBuilderContext::AddClipNodeIfNeeded(
   layer->SetClipTreeIndex(data_for_children->clip_tree_parent);
 }
 
-bool IsAtBoundaryOf3dRenderingContext(Layer* layer) {
-  if (layer->parent())
-    return layer->parent()->sorting_context_id() != layer->sorting_context_id();
-  return layer->sorting_context_id() != 0;
-}
-
 bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
     const DataForRecursion& data_from_ancestor,
     Layer* layer,
@@ -247,13 +241,9 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
 
   const bool has_surface = created_render_surface;
 
-  const bool is_at_boundary_of_3d_rendering_context =
-      IsAtBoundaryOf3dRenderingContext(layer);
-
   DCHECK(!is_scrollable || is_snapped);
   bool requires_node = is_root || is_snapped || has_significant_transform ||
                        has_any_transform_animation || has_surface ||
-                       is_at_boundary_of_3d_rendering_context ||
                        layer->HasRoundedCorner();
 
   int parent_index = TransformTree::kRootNodeId;
@@ -293,7 +283,6 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
   node->scrolls = is_scrollable;
   node->should_be_snapped = is_snapped;
   node->flattens_inherited_transform = data_for_children->should_flatten;
-  node->sorting_context_id = layer->sorting_context_id();
 
   if (is_root) {
     // Root layer and page scale layer should not have transform or offset.
@@ -332,12 +321,6 @@ bool PropertyTreeBuilderContext::AddTransformNodeIfNeeded(
   return true;
 }
 
-bool LayerIsInExisting3DRenderingContext(Layer* layer) {
-  return layer->sorting_context_id() != 0 && layer->parent() &&
-         layer->parent()->sorting_context_id() != 0 &&
-         layer->parent()->sorting_context_id() == layer->sorting_context_id();
-}
-
 RenderSurfaceReason ComputeRenderSurfaceReason(const MutatorHost& mutator_host,
                                                Layer* layer,
                                                gfx::Transform current_transform,
@@ -372,14 +355,6 @@ RenderSurfaceReason ComputeRenderSurfaceReason(const MutatorHost& mutator_host,
 
   int num_descendants_that_draw_content =
       layer->NumDescendantsThatDrawContent();
-
-  // If the layer flattens its subtree, but it is treated as a 3D object by its
-  // parent (i.e. parent participates in a 3D rendering context).
-  if (LayerIsInExisting3DRenderingContext(layer) &&
-      layer->should_flatten_transform() &&
-      num_descendants_that_draw_content > 0) {
-    return RenderSurfaceReason::k3dTransformFlattening;
-  }
 
   if (!layer->is_fast_rounded_corner() && layer->HasRoundedCorner() &&
       num_descendants_that_draw_content > 1) {

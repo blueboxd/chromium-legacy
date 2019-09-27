@@ -1,7 +1,12 @@
 This is a testharness.js-based test.
-Found 51 tests; 29 PASS, 22 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 56 tests; 34 PASS, 22 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
+PASS idl_test validation
 PASS ResizeObserverEntry creator
+PASS Element includes ParentNode: member names are unique
+PASS Element includes NonDocumentTypeChildNode: member names are unique
+PASS Element includes ChildNode: member names are unique
+PASS Element includes Slotable: member names are unique
 PASS ResizeObserver interface: existence and properties of interface object
 PASS ResizeObserver interface object length
 PASS ResizeObserver interface object name

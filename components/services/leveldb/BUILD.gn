@@ -6,18 +6,13 @@ import("//testing/test.gni")
 
 static_library("lib") {
   sources = [
-    "env_mojo.cc",
-    "env_mojo.h",
     "leveldb_database_impl.cc",
     "leveldb_database_impl.h",
-    "leveldb_mojo_proxy.cc",
-    "leveldb_mojo_proxy.h",
     "leveldb_service_impl.cc",
     "leveldb_service_impl.h",
   ]
 
   public_deps = [
-    "//components/services/filesystem/public/mojom",
     "//components/services/leveldb/public/cpp",
     "//components/services/leveldb/public/mojom",
   ]
@@ -39,9 +34,6 @@ test("leveldb_service_unittests") {
     ":lib",
     "//base",
     "//base/test:test_support",
-    "//components/services/filesystem:lib",
-    "//components/services/filesystem:test_support",
-    "//components/services/filesystem/public/mojom",
     "//components/services/leveldb/public/cpp",
     "//components/services/leveldb/public/mojom",
     "//mojo/core/test:run_all_unittests",

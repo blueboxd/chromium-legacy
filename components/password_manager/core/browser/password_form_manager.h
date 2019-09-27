@@ -102,10 +102,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   bool is_submitted() { return is_submitted_; }
   void set_not_submitted() { is_submitted_ = false; }
 
-  void set_old_parsing_result(const autofill::PasswordForm& form) {
-    old_parsing_result_ = form;
-  }
-
   // Returns true if |*this| manages http authentication.
   bool IsHttpAuth() const;
 
@@ -171,7 +167,7 @@ class PasswordFormManager : public PasswordFormManagerForUI,
   void SetGenerationElement(const base::string16& generation_element);
   bool IsPossibleChangePasswordFormWithoutUsername() const;
   bool IsPasswordUpdate() const;
-  std::vector<base::WeakPtr<PasswordManagerDriver>> GetDrivers() const;
+  base::WeakPtr<PasswordManagerDriver> GetDriver() const;
   const autofill::PasswordForm* GetSubmittedForm() const;
 
 #if defined(OS_IOS)
@@ -353,11 +349,6 @@ class PasswordFormManager : public PasswordFormManagerForUI,
 
   // Controls whether to wait or not server before filling. It is used in tests.
   static bool wait_for_server_predictions_for_filling_;
-
-  // Used for comparison metrics.
-  // TODO(https://crbug.com/831123): Remove it when the old form parsing is
-  // removed.
-  autofill::PasswordForm old_parsing_result_;
 
   // Time when stored credentials are received from the store. Used for metrics.
   base::TimeTicks received_stored_credentials_time_;

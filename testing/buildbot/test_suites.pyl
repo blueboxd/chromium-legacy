@@ -2325,13 +2325,6 @@
           'shards': 3,
         },
       },
-      'nonperfetto_content_browsertests': {
-        'args': [
-          '--disable-perfetto',
-          '--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*',
-        ],
-        'test': 'content_browsertests',
-      },
       'perfetto_unittests': {},
       'services_unittests': {},
       'shell_dialogs_unittests': {},

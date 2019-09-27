@@ -261,7 +261,7 @@ OnScreenKeyboardDisplayManagerTabTip::OnScreenKeyboardDisplayManagerTabTip(
 OnScreenKeyboardDisplayManagerTabTip::~OnScreenKeyboardDisplayManagerTabTip() {}
 
 bool OnScreenKeyboardDisplayManagerTabTip::DisplayVirtualKeyboard() {
-  if (base::win::IsKeyboardPresentOnSlate(nullptr, ui::GetHiddenWindow()))
+  if (base::win::IsKeyboardPresentOnSlate(ui::GetHiddenWindow(), nullptr))
     return false;
 
   if (osk_path_.empty() && !GetOSKPath(&osk_path_)) {

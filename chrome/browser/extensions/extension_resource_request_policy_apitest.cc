@@ -293,9 +293,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   EXPECT_EQ(content::PAGE_TYPE_ERROR,
             controller.GetLastCommittedEntry()->GetPageType());
   EXPECT_EQ("chrome-error://chromewebdata/", result);
-  GURL nonaccessible_url = extension->GetResourceURL("/test2.png");
-  EXPECT_EQ(nonaccessible_url,
-            web_contents->GetMainFrame()->GetLastCommittedURL());
+  GURL invalid_url("chrome-extension://invalid/");
+  EXPECT_EQ(invalid_url, web_contents->GetMainFrame()->GetLastCommittedURL());
 
   // Redirects can sometimes occur before the load event, so use a
   // UrlLoadObserver instead of blocking waiting for two load events.
@@ -311,7 +310,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   EXPECT_EQ(accessible_url, web_contents->GetLastCommittedURL());
 
   ui_test_utils::UrlLoadObserver nonaccessible_observer(
-      nonaccessible_url, content::NotificationService::AllSources());
+      invalid_url, content::NotificationService::AllSources());
   GURL nonaccessible_client_redirect_resource(embedded_test_server()->GetURL(
       "/extensions/api_test/extension_resource_request_policy/"
       "web_accessible/nonaccessible_redirect_resource.html"));
@@ -320,7 +319,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,
   nonaccessible_observer.Wait();
   EXPECT_EQ(content::PAGE_TYPE_ERROR,
             controller.GetLastCommittedEntry()->GetPageType());
-  EXPECT_EQ(nonaccessible_url, web_contents->GetLastCommittedURL());
+  EXPECT_EQ(invalid_url, web_contents->GetLastCommittedURL());
 }
 
 IN_PROC_BROWSER_TEST_F(ExtensionResourceRequestPolicyTest,

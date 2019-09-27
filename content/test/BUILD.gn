@@ -2073,8 +2073,6 @@ test("content_unittests") {
     "//services/device/public/cpp:test_support",
     "//services/device/public/cpp/generic_sensor",
     "//services/device/public/mojom",
-    "//services/file:lib",
-    "//services/file/public/mojom",
     "//services/metrics/public/cpp:ukm_builders",
     "//services/metrics/public/mojom",
     "//services/network:network_service",

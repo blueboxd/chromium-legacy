@@ -684,7 +684,7 @@ void SkiaOutputSurfaceImplOnGpu::Reshape(
   }
 }
 
-void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
+bool SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     std::unique_ptr<SkDeferredDisplayList> ddl,
     std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
     std::vector<ImageContextImpl*> image_contexts,
@@ -698,7 +698,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
   DCHECK(!scoped_output_device_paint_);
 
   if (!MakeCurrent(true /* need_fbo0 */))
-    return;
+    return false;
 
   if (draw_rectangle)
     output_device_->SetDrawRectangle(*draw_rectangle);
@@ -771,7 +771,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
           scoped_promise_image_access.end_semaphores().empty())) {
       // TODO(penghuang): handle vulkan device lost.
       DLOG(ERROR) << "output_sk_surface()->flush() failed.";
-      return;
+      return false;
     }
     if (output_device_->need_swap_semaphore()) {
       auto& semaphore = scoped_promise_image_access.end_semaphores().back();
@@ -780,6 +780,7 @@ void SkiaOutputSurfaceImplOnGpu::FinishPaintCurrentFrame(
     }
   }
   ReleaseFenceSyncAndPushTextureUpdates(sync_fence_release);
+  return true;
 }
 
 void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
@@ -790,13 +791,15 @@ void SkiaOutputSurfaceImplOnGpu::ScheduleOutputSurfaceAsOverlay(
 
 void SkiaOutputSurfaceImplOnGpu::SwapBuffers(
     OutputSurfaceFrame frame,
-    base::OnceClosure deferred_framebuffer_draw_closure,
+    base::OnceCallback<bool()> deferred_framebuffer_draw_closure,
     uint64_t sync_fence_release) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::SwapBuffers");
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
 
   if (deferred_framebuffer_draw_closure) {
-    std::move(deferred_framebuffer_draw_closure).Run();
+    // Returns false if context not set to current, i.e lost
+    if (!std::move(deferred_framebuffer_draw_closure).Run())
+      return;
     DCHECK(context_state_->IsCurrent(nullptr /* surface */));
   } else {
     if (!MakeCurrent(!dependency_->IsOffscreen() /* need_fbo0 */))
@@ -930,7 +933,7 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
     const copy_output::RenderPassGeometry& geometry,
     const gfx::ColorSpace& color_space,
     std::unique_ptr<CopyOutputRequest> request,
-    base::OnceClosure deferred_framebuffer_draw_closure) {
+    base::OnceCallback<bool()> deferred_framebuffer_draw_closure) {
   TRACE_EVENT0("viz", "SkiaOutputSurfaceImplOnGpu::CopyOutput");
   // TODO(crbug.com/898595): Do this on the GPU instead of CPU with Vulkan.
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
@@ -941,7 +944,9 @@ void SkiaOutputSurfaceImplOnGpu::CopyOutput(
                      std::move(destroy_after_swap_)));
 
   if (deferred_framebuffer_draw_closure) {
-    std::move(deferred_framebuffer_draw_closure).Run();
+    // returns false if context not set to current, i.e lost
+    if (!std::move(deferred_framebuffer_draw_closure).Run())
+      return;
     DCHECK(context_state_->IsCurrent(nullptr /* surface */));
   } else {
     if (!MakeCurrent(true /* need_fbo0 */))
@@ -1197,6 +1202,8 @@ void SkiaOutputSurfaceImplOnGpu::ReleaseImageContexts(
 }
 
 void SkiaOutputSurfaceImplOnGpu::SetEnableDCLayers(bool enable) {
+  if (!MakeCurrent(false /* need_fbo0 */))
+    return;
   output_device_->SetEnableDCLayers(enable);
 }
 

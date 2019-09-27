@@ -510,7 +510,7 @@ class RenderTextTest : public testing::Test {
                         internal::TextRunHarfBuzz* run) {
     internal::TextRunHarfBuzz::FontParams font_params = run->font_params;
     font_params.ComputeRenderParamsFontSizeAndBaselineOffset();
-    font_params.SetFontAndRenderParams(font, render_params);
+    font_params.SetRenderParamsRematchFont(font, render_params);
     run->shape.missing_glyph_count = static_cast<size_t>(-1);
     std::vector<internal::TextRunHarfBuzz*> runs = {run};
     GetRenderText()->ShapeRunsWithFont(text, font_params, &runs);

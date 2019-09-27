@@ -51,7 +51,6 @@
 #include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_reply_thread_registrar.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/web/blink.h"
 #include "ui/base/buildflags.h"
 #include "ui/base/ui_base_features.h"
@@ -124,8 +123,7 @@ PpapiThread::PpapiThread(base::RepeatingClosure quit_closure,
     mojo::PendingRemote<
         discardable_memory::mojom::DiscardableSharedMemoryManager>
         manager_remote;
-    ChildThread::Get()->GetConnector()->Connect(
-        mojom::kSystemServiceName,
+    ChildThread::Get()->BindHostReceiver(
         manager_remote.InitWithNewPipeAndPassReceiver());
     discardable_shared_memory_manager_ = std::make_unique<
         discardable_memory::ClientDiscardableSharedMemoryManager>(

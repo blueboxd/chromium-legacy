@@ -344,7 +344,7 @@
 <translation id="2625385379895617796">Teie kell on ees</translation>
 <translation id="2634124572758952069">Hosti <ph name="HOST_NAME" /> serveri IP-aadressi ei leitud.</translation>
 <translation id="2638745661847473633">Server <ph name="ORIGIN" />, kuhu sisenete, nõuab, et
-    lähtekoha reeglit kohaldataks iga sisenemistaotluse puhul. Praegusel juhul
+    lähtekohareeglit kohaldataks iga sisenemistaotluse puhul. Praegusel juhul
     esitati sobimatu reegel, mistõttu ei saa brauser
     teie saidiga <ph name="SITE" /> seotud taotlust täita. Saidioperaatorid saavad kasutada
     lähtekohareegleid saidi turbe ja muude atribuutide seadistamiseks.</translation>
@@ -353,7 +353,7 @@
 <translation id="2650446666397867134">Faili juurde ei saa pääseda</translation>
 <translation id="2653659639078652383">Esita</translation>
 <translation id="2660650542324841986">Server <ph name="ORIGIN" />, kuhu sisenete, nõuab, et
-    lähtekoha reeglit kohaldataks iga sisenemistaotluse puhul. Reegli saatmine aga
+    lähtekohareeglit kohaldataks iga sisenemistaotluse puhul. Reegli saatmine aga
     ebaõnnestus, mis takistab brauseril täitmast
     teie sisenemistaotlust saidile <ph name="SITE" />. Saidioperaatorid saavad kasutada
     lähtekohareegleid saidi turbe ja muude atribuutide seadistamiseks.</translation>
@@ -547,12 +547,13 @@
 <translation id="3658742229777143148">Redaktsioon</translation>
 <translation id="366077651725703012">Värskenda krediitkaarti</translation>
 <translation id="3676592649209844519">Seadme ID:</translation>
+<translation id="3677008721441257057">Kas mõtlesite domeeni &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Taotlust ei saanud allkirjastada</translation>
 <translation id="3678529606614285348">Avage leht uues inkognito aknas (Ctrl + tõstuklahv + N)</translation>
 <translation id="3679803492151881375">Krahhiaruanne jäädvustati ajal <ph name="CRASH_TIME" />, see laaditi üles ajal <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Sertifikaadi andmed</translation>
 <translation id="3688109723158850780">Server <ph name="ORIGIN" />, kuhu sisenete, nõuab, et
-    lähtekoha reeglit kohaldataks iga sisenemistaotluse puhul. Reegli
+    lähtekohareeglit kohaldataks iga sisenemistaotluse puhul. Reegli
     saatmise asemel on see aga brauseri ümber suunanud mujale, mis takistab
     brauseril täitmast teie sisenemistaotlust saidile <ph name="SITE" />. Saidioperaatorid
     saavad kasutada lähtekohareegleid saidi turbe ja muude
@@ -622,7 +623,6 @@
 <translation id="4075732493274867456">Klient ja server ei toeta tavapärast SSL-protokolli versiooni ega šifreerimiskomplekti.</translation>
 <translation id="4079302484614802869">Puhverserveri konfigureerimine on määratud kasutama pac-skripti URL-i, mitte fikseeritud puhverservereid.</translation>
 <translation id="4082393374666368382">Seaded – haldus</translation>
-<translation id="4092411512356034591">Kas minna edasi domeenile <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Avatav sait on petturlik</translation>
 <translation id="4103249731201008433">Seadme seerianumber on kehtetu</translation>
 <translation id="410351446219883937">Automaatesitus</translation>
@@ -740,8 +740,8 @@
 <translation id="4594403342090139922">&amp;Võta kustutamine tagasi</translation>
 <translation id="4597348597567598915">Suurus 8</translation>
 <translation id="4600854749408232102">C6/C5 (ümbrik)</translation>
-<translation id="4635654612248442824">Sait <ph name="ORIGIN" /> nõuab, et lähtekohareegel
-    kohaldataks kõigile taotlustele, et reeglit ei saa praegu rakendada.</translation>
+<translation id="4635654612248442824">Sait <ph name="ORIGIN" /> nõuab, et lähtekohareeglit
+    kohaldataks kõigi taotluste puhul, kuid reeglit ei saa praegu rakendada.</translation>
 <translation id="464342062220857295">Otsingufunktsioonid</translation>
 <translation id="4646534391647090355">Vii mind kohe sinna</translation>
 <translation id="4658638640878098064">Kirjaklamber vasakul ülal</translation>
@@ -1173,7 +1173,6 @@
 <translation id="6868206169573555318">Taaskäivita värskendamiseks</translation>
 <translation id="6874604403660855544">&amp;Lisa uuesti</translation>
 <translation id="6884662655240309489">Suurus 1</translation>
-<translation id="6884796835813057577">Kas minna edasi domeenile &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Reegli taset ei toetata.</translation>
 <translation id="6895330447102777224">Teie kaart on kinnitatud</translation>

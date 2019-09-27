@@ -9,6 +9,8 @@
 
 #include "base/memory/ref_counted.h"
 #include "build/build_config.h"
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkTypeface.h"
 #include "ui/gfx/font.h"
 #include "ui/gfx/gfx_export.h"
 #include "ui/gfx/native_widget_types.h"
@@ -86,6 +88,13 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   // Returns the native font handle.
   virtual NativeFont GetNativeFont() const = 0;
 #endif
+
+  // Returns the underlying Skia typeface if this PlatformFont instance is
+  // backed by PlatformFontSkia, returns nullptr otherwise. Used in
+  // RenderTextHarfBuzz for having access to the exact Skia typeface returned by
+  // font fallback, as we would otherwise lose the handle to the correct
+  // platform font instance.
+  virtual sk_sp<SkTypeface> GetNativeSkTypefaceIfAvailable() const = 0;
 
  protected:
   virtual ~PlatformFont() {}

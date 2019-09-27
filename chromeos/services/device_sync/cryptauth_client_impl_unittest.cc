@@ -60,10 +60,10 @@ const char kFeatureType2[] = "feature_type2";
 const char kClientMetadataSessionId[] = "session_id";
 const int kLastActivityTimeSecs1 = 111;
 const int kLastActivityTimeSecs2 = 222;
-const cryptauthv2::OnlineStatus kOnlineStatus1 =
-    cryptauthv2::OnlineStatus::ONLINE;
-const cryptauthv2::OnlineStatus kOnlineStatus2 =
-    cryptauthv2::OnlineStatus::OFFLINE;
+const cryptauthv2::ConnectivityStatus kConnectivityStatus1 =
+    cryptauthv2::ConnectivityStatus::ONLINE;
+const cryptauthv2::ConnectivityStatus kConnectivityStatus2 =
+    cryptauthv2::ConnectivityStatus::OFFLINE;
 
 // Values for the DeviceClassifier field.
 const int kDeviceOsVersionCode = 100;
@@ -939,10 +939,10 @@ TEST_F(DeviceSyncCryptAuthClientTest, GetDevicesActivityStatusSuccess) {
     cryptauthv2::GetDevicesActivityStatusResponse response;
     response.add_device_activity_statuses()->CopyFrom(
         cryptauthv2::BuildDeviceActivityStatus(
-            kDeviceId1, kLastActivityTimeSecs1, kOnlineStatus1));
+            kDeviceId1, kLastActivityTimeSecs1, kConnectivityStatus1));
     response.add_device_activity_statuses()->CopyFrom(
         cryptauthv2::BuildDeviceActivityStatus(
-            kDeviceId2, kLastActivityTimeSecs2, kOnlineStatus2));
+            kDeviceId2, kLastActivityTimeSecs2, kConnectivityStatus2));
 
     FinishApiCallFlow(&response);
   }
@@ -952,11 +952,13 @@ TEST_F(DeviceSyncCryptAuthClientTest, GetDevicesActivityStatusSuccess) {
   EXPECT_EQ(kDeviceId1, result.device_activity_statuses(0).device_id());
   ASSERT_EQ(kLastActivityTimeSecs1,
             result.device_activity_statuses(0).last_activity_time_sec());
-  EXPECT_EQ(kOnlineStatus1, result.device_activity_statuses(0).online_status());
+  EXPECT_EQ(kConnectivityStatus1,
+            result.device_activity_statuses(0).connectivity_status());
   EXPECT_EQ(kDeviceId2, result.device_activity_statuses(1).device_id());
   ASSERT_EQ(kLastActivityTimeSecs2,
             result.device_activity_statuses(1).last_activity_time_sec());
-  EXPECT_EQ(kOnlineStatus2, result.device_activity_statuses(1).online_status());
+  EXPECT_EQ(kConnectivityStatus2,
+            result.device_activity_statuses(1).connectivity_status());
 }
 
 TEST_F(DeviceSyncCryptAuthClientTest, FetchAccessTokenFailure) {

@@ -33,7 +33,7 @@ function testHandleMouseOver() {
     return cr.ui.Menu.prototype.findMenuItem_.apply(this, arguments);
   };
 
-  var over = new MouseEvent('mouseover', {bubbles: true, target: cr.doc.body});
+  var over = new MouseEvent('mouseover', {bubbles: true, target: document.body});
   assertFalse(called);
   menu.dispatchEvent(over);
   assertTrue(called);

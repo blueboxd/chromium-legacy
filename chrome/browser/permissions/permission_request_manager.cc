@@ -199,7 +199,7 @@ void PermissionRequestManager::DocumentOnLoadCompletedInMainFrame() {
   ScheduleShowBubble();
 }
 
-void PermissionRequestManager::DocumentLoadedInFrame(
+void PermissionRequestManager::DOMContentLoaded(
     content::RenderFrameHost* render_frame_host) {
   ScheduleShowBubble();
 }

@@ -159,7 +159,7 @@ class PLATFORM_EXPORT CompositingReason {
         kPerspectiveWith3DDescendants | kPreserve3DWith3DDescendants |
         kActiveTransformAnimation,
     kDirectReasonsForEffectProperty = kActiveOpacityAnimation |
-                                      kWillChangeOpacity |
+                                      kWillChangeOpacity | kBackdropFilter |
                                       kActiveBackdropFilterAnimation,
     kDirectReasonsForFilterProperty = kActiveFilterAnimation,
   };

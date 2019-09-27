@@ -43,7 +43,12 @@ DateTimeAMPMFieldElement::DateTimeAMPMFieldElement(
     Document& document,
     FieldOwner& field_owner,
     const Vector<String>& ampm_labels)
-    : DateTimeSymbolicFieldElement(document, field_owner, ampm_labels, 0, 1) {
+    : DateTimeSymbolicFieldElement(document,
+                                   field_owner,
+                                   DateTimeField::kAMPM,
+                                   ampm_labels,
+                                   0,
+                                   1) {
   DEFINE_STATIC_LOCAL(AtomicString, ampm_pseudo_id,
                       ("-webkit-datetime-edit-ampm-field"));
   Initialize(ampm_pseudo_id, QueryString(IDS_AX_AM_PM_FIELD_TEXT));
@@ -79,6 +84,7 @@ DateTimeDayFieldElement::DateTimeDayFieldElement(Document& document,
                                                  const Range& range)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kDay,
                                   range,
                                   Range(1, 31),
                                   placeholder.IsEmpty() ? "--" : placeholder) {
@@ -124,6 +130,7 @@ DateTimeHourFieldElementBase::DateTimeHourFieldElementBase(
     const Step& step)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kHour,
                                   range,
                                   hard_limits,
                                   "--",
@@ -381,6 +388,7 @@ DateTimeMillisecondFieldElement::DateTimeMillisecondFieldElement(
     const Step& step)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kMillisecond,
                                   range,
                                   Range(0, 999),
                                   "---",
@@ -425,6 +433,7 @@ DateTimeMinuteFieldElement::DateTimeMinuteFieldElement(Document& document,
                                                        const Step& step)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kMinute,
                                   range,
                                   Range(0, 59),
                                   "--",
@@ -468,6 +477,7 @@ DateTimeMonthFieldElement::DateTimeMonthFieldElement(Document& document,
                                                      const Range& range)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kMonth,
                                   range,
                                   Range(1, 12),
                                   placeholder.IsEmpty() ? "--" : placeholder) {
@@ -510,6 +520,7 @@ DateTimeSecondFieldElement::DateTimeSecondFieldElement(Document& document,
                                                        const Step& step)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kSecond,
                                   range,
                                   Range(0, 59),
                                   "--",
@@ -555,6 +566,7 @@ DateTimeSymbolicMonthFieldElement::DateTimeSymbolicMonthFieldElement(
     int maximum)
     : DateTimeSymbolicFieldElement(document,
                                    field_owner,
+                                   DateTimeField::kMonth,
                                    labels,
                                    minimum,
                                    maximum) {
@@ -599,6 +611,7 @@ DateTimeWeekFieldElement::DateTimeWeekFieldElement(Document& document,
                                                    const Range& range)
     : DateTimeNumericFieldElement(document,
                                   field_owner,
+                                  DateTimeField::kWeek,
                                   range,
                                   Range(DateComponents::kMinimumWeekNumber,
                                         DateComponents::kMaximumWeekNumber),
@@ -643,6 +656,7 @@ DateTimeYearFieldElement::DateTimeYearFieldElement(
     : DateTimeNumericFieldElement(
           document,
           field_owner,
+          DateTimeField::kYear,
           Range(parameters.minimum_year, parameters.maximum_year),
           Range(DateComponents::MinimumYear(), DateComponents::MaximumYear()),
           parameters.placeholder.IsEmpty() ? "----" : parameters.placeholder),

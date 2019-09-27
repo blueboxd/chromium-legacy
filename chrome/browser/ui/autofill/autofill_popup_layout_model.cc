@@ -299,15 +299,6 @@ int AutofillPopupLayoutModel::GetIconResourceID(
   return result;
 }
 
-int AutofillPopupLayoutModel::GetIconAccessibleNameResourceId(
-    const std::string& resource_name) const {
-  for (size_t i = 0; i < base::size(kDataResources); ++i) {
-    if (resource_name == kDataResources[i].name)
-      return kDataResources[i].accessible_string_id;
-  }
-  return kResourceNotFoundId;
-}
-
 void AutofillPopupLayoutModel::SetUpForTesting(
     std::unique_ptr<PopupViewCommon> view_common) {
   view_common_ = std::move(view_common);

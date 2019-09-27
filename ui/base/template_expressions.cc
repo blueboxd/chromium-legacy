@@ -78,7 +78,7 @@ std::string PolymerParameterEscape(const std::string& in_string) {
         out.append("&quot;");
         break;
       case ',':
-        out.append("\\,");
+        out.append("\\\\,");
         break;
       default:
         out += c;

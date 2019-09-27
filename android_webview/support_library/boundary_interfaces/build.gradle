@@ -1,0 +1,26 @@
+// Copyright 2019 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// This file is to build WebView boundary interfaces as part of the AndroidX webkit library.
+// It is not meant to be used or build any targets in chromium project.
+
+import androidx.build.SupportConfig
+
+plugins {
+    id('com.android.library')
+}
+
+android {
+    // COMPILE_SDK_VERSION provided by AndroidX build scripts to build all AndroidX modules.
+    compileSdkVersion SupportConfig.COMPILE_SDK_VERSION
+
+    sourceSets {
+        main.manifest.srcFile 'AndroidManifest.xml'
+        main.java.srcDirs += ['src']
+    }
+
+    buildTypes.all {
+        consumerProguardFiles 'proguard.flags'
+    }
+}

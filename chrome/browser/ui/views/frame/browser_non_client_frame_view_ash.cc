@@ -80,26 +80,6 @@ bool IsV1AppBackButtonEnabled() {
       ash::switches::kAshEnableV1AppBackButton);
 }
 
-// Returns true if |window| is currently snapped in split view mode.
-bool IsSnappedInSplitView(const aura::Window* window) {
-  ash::SplitViewState state = ash::SplitViewNotifier::Get()->GetCurrentState();
-  ash::WindowStateType type = window->GetProperty(ash::kWindowStateTypeKey);
-  switch (state) {
-    case ash::SplitViewState::kNoSnap:
-      return false;
-    case ash::SplitViewState::kLeftSnapped:
-      return type == ash::WindowStateType::kLeftSnapped;
-    case ash::SplitViewState::kRightSnapped:
-      return type == ash::WindowStateType::kRightSnapped;
-    case ash::SplitViewState::kBothSnapped:
-      return type == ash::WindowStateType::kLeftSnapped ||
-             type == ash::WindowStateType::kRightSnapped;
-  }
-
-  NOTREACHED();
-  return false;
-}
-
 // Returns true if the header should be painted so that it looks the same as
 // the header used for packaged apps.
 bool UsePackagedAppHeaderStyle(const Browser* browser) {
@@ -126,7 +106,6 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
       IDC_BACK, this);
 
   ash::TabletMode::Get()->RemoveObserver(this);
-  ash::SplitViewNotifier::Get()->RemoveObserver(this);
 
   ImmersiveModeController* immersive_controller =
       browser_view()->immersive_mode_controller();
@@ -179,7 +158,6 @@ void BrowserNonClientFrameViewAsh::Init() {
     SetUpForWebApp();
 
   browser_view()->immersive_mode_controller()->AddObserver(this);
-  ash::SplitViewNotifier::Get()->AddObserver(this);
 
   UpdateFrameColor();
 }
@@ -568,12 +546,6 @@ void BrowserNonClientFrameViewAsh::EnabledStateChangedForCommand(int id,
     back_button_->SetEnabled(enabled);
 }
 
-void BrowserNonClientFrameViewAsh::OnSplitViewStateChanged(
-    ash::SplitViewState previous_state,
-    ash::SplitViewState new_state) {
-  OnOverviewOrSplitviewModeChanged();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // aura::WindowObserver:
 
@@ -588,7 +560,7 @@ void BrowserNonClientFrameViewAsh::OnWindowPropertyChanged(aura::Window* window,
     frame_header_->OnShowStateChanged(
         window->GetProperty(aura::client::kShowStateKey));
   } else if (key == ash::kIsShowingInOverviewKey) {
-    OnOverviewOrSplitviewModeChanged();
+    OnAddedToOrRemovedFromOverview();
   }
 }
 
@@ -656,7 +628,7 @@ bool BrowserNonClientFrameViewAsh::ShouldShowCaptionButtons() const {
     return false;
   }
 
-  return !IsInOverviewMode() || IsSnappedInSplitView(GetFrameWindow());
+  return !IsInOverviewMode();
 }
 
 int BrowserNonClientFrameViewAsh::GetTabStripLeftInset() const {
@@ -689,7 +661,7 @@ bool BrowserNonClientFrameViewAsh::ShouldPaint() const {
   return browser_view()->IsBrowserTypeNormal() || !IsInOverviewMode();
 }
 
-void BrowserNonClientFrameViewAsh::OnOverviewOrSplitviewModeChanged() {
+void BrowserNonClientFrameViewAsh::OnAddedToOrRemovedFromOverview() {
   const bool should_show_caption_buttons = ShouldShowCaptionButtons();
   caption_button_container_->SetVisible(should_show_caption_buttons);
   if (web_app_frame_toolbar())

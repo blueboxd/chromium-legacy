@@ -44,11 +44,6 @@ class FieldCandidates {
   // Determines the best type based on the current possible types.
   ServerFieldType BestHeuristicType() const;
 
-  // Returns the underlying candidates.
-  //
-  // This reference is only valid while the FieldCandidates object is valid.
-  const std::vector<FieldCandidate>& field_candidates() const;
-
  private:
   // Internal storage for all the possible types for a given field.
   std::vector<FieldCandidate> field_candidates_;

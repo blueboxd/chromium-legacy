@@ -15,7 +15,7 @@ cr.define('cr.ui', function() {
   function decorate(source, constr) {
     let elements;
     if (typeof source == 'string') {
-      elements = cr.doc.querySelectorAll(source);
+      elements = document.querySelectorAll(source);
     } else {
       elements = [source];
     }
@@ -36,7 +36,7 @@ cr.define('cr.ui', function() {
     if (opt_bag && opt_bag.ownerDocument) {
       doc = opt_bag.ownerDocument;
     } else {
-      doc = cr.doc;
+      doc = document;
     }
     return doc.createElement(tagName);
   }

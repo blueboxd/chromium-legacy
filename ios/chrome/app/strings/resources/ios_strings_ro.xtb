@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Imaginea nu s-a salvat</translation>
 <translation id="1180526666083833456">Sincronizează și personalizează pe toate dispozitivele.</translation>
 <translation id="1181037720776840403">Elimină</translation>
+<translation id="1207113853726624428">Căutare nouă</translation>
 <translation id="1209206284964581585">Ascunde momentan</translation>
 <translation id="1219674500290482172">Nu se poate realiza conexiunea la internet.</translation>
 <translation id="122699739164161391">Închide toate filele</translation>
@@ -131,6 +132,7 @@
 <translation id="2712127207578915686">Fișierul nu se deschide</translation>
 <translation id="2718352093833049315">Numai prin Wi-Fi</translation>
 <translation id="2747003861858887689">Câmpul anterior</translation>
+<translation id="2773292004659987824">Căutare incognito</translation>
 <translation id="2780046210906776326">Niciun cont e-mail</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Părăsește comutatorul de file</translation>
@@ -501,6 +503,7 @@ Datele au fost criptate cu expresia de acces pentru sincronizare la <ph name="TI
 <translation id="8261506727792406068">Șterge</translation>
 <translation id="8281781826761538115">Prestabilit – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Căutare nouă</translation>
+<translation id="8323906514956095947">Atinge lung pentru mai multe opțiuni de file</translation>
 <translation id="8328777765163860529">Închideți toate</translation>
 <translation id="8407669440184693619">Nu s-au găsit parole pentru acest site</translation>
 <translation id="842017693807136194">Conectat(ă) cu</translation>

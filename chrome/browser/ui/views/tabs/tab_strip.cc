@@ -974,7 +974,7 @@ void TabStrip::AddTabAt(int model_index, TabRendererData data, bool is_active) {
       (model_index > 0) ? (GetIndexOf(tab_at(model_index - 1)) + 1) : 0;
 
   Tab* tab = new Tab(this);
-  tab->set_context_menu_controller(this);
+  tab->set_context_menu_controller(&context_menu_controller_);
   AddChildViewAt(tab, view_index);
   const bool pinned = data.pinned;
   tabs_.Add(tab, model_index);
@@ -1160,6 +1160,10 @@ void TabStrip::ChangeTabGroup(int model_index,
       // move in terms of model indices.
       layout_helper_->UpdateGroupHeaderIndex(old_group.value());
     }
+  }
+  if (new_group.has_value()) {
+    // As above, ensure the header is in the right place.
+    layout_helper_->UpdateGroupHeaderIndex(new_group.value());
   }
   UpdateIdealBounds();
   AnimateToIdealBounds();
@@ -2697,6 +2701,25 @@ gfx::ImageSkia* TabStrip::GetDropArrowImage(bool is_down) {
       is_down ? IDR_TAB_DROP_DOWN : IDR_TAB_DROP_UP);
 }
 
+// TabStrip:TabContextMenuController:
+// ----------------------------------------------------------
+
+TabStrip::TabContextMenuController::TabContextMenuController(TabStrip* parent)
+    : parent_(parent) {}
+
+void TabStrip::TabContextMenuController::ShowContextMenuForViewImpl(
+    views::View* source,
+    const gfx::Point& point,
+    ui::MenuSourceType source_type) {
+  // We are only intended to be installed as a context-menu handler for tabs, so
+  // this cast should be safe.
+  DCHECK_EQ(Tab::kViewClassName, source->GetClassName());
+  Tab* const tab = static_cast<Tab*>(source);
+  if (tab->closing())
+    return;
+  parent_->controller()->ShowContextMenuForTab(tab, point, source_type);
+}
+
 // TabStrip:DropArrow:
 // ----------------------------------------------------------
 
@@ -2935,18 +2958,6 @@ void TabStrip::ButtonPressed(views::Button* sender, const ui::Event& event) {
     if (event.type() == ui::ET_GESTURE_TAP)
       TouchUMA::RecordGestureAction(TouchUMA::kGestureNewTabTap);
   }
-}
-
-void TabStrip::ShowContextMenuForViewImpl(views::View* source,
-                                          const gfx::Point& point,
-                                          ui::MenuSourceType source_type) {
-  // We only install ourselves as a context-menu handler for tabs, so this cast
-  // should be safe.
-  DCHECK_EQ(Tab::kViewClassName, source->GetClassName());
-  Tab* const tab = static_cast<Tab*>(source);
-  if (tab->closing())
-    return;
-  controller_->ShowContextMenuForTab(tab, point, source_type);
 }
 
 // Overridden to support automation. See automation_proxy_uitest.cc.

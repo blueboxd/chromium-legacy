@@ -110,8 +110,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
   viz::GpuHostImpl* gpu_host() { return gpu_host_.get(); }
 
  private:
-  class ConnectionFilterImpl;
-
   enum class GpuTerminationOrigin {
     kUnknownOrigin = 0,
     kOzoneWaylandProxy = 1,
@@ -211,8 +209,6 @@ class GpuProcessHost : public BrowserChildProcessHostDelegate,
 
   // Time Init started.  Used to log total GPU process startup time to UMA.
   base::TimeTicks init_start_time_;
-
-  int connection_filter_id_;
 
   // The GPU process reported failure to initialize.
   bool did_fail_initialize_ = false;

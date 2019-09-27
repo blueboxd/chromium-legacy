@@ -33,6 +33,8 @@ class LayerTreeHostPixelResourceTest : public LayerTreePixelTest {
 
   const char* GetRendererSuffix() const;
 
+  void InitializeSettings(LayerTreeSettings* settings) override;
+
   std::unique_ptr<RasterBufferProvider> CreateRasterBufferProvider(
       LayerTreeHostImpl* host_impl) override;
 

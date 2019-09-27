@@ -78,7 +78,6 @@ class CryptographerImpl : public Cryptographer {
                      sync_pb::EncryptedData* encrypted) const override;
   bool DecryptToString(const sync_pb::EncryptedData& encrypted,
                        std::string* decrypted) const override;
-  bool has_pending_keys() const override;
 
  private:
   CryptographerImpl(NigoriKeyBag key_bag,

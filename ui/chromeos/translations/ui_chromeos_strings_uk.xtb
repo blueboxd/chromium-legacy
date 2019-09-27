@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Пінгвін</translation>
 <translation id="183183971458492120">Завантаження інформації…</translation>
 <translation id="1838709767668011582">Сайт Google</translation>
-<translation id="1839704667838141620">Змінити налаштування доступу до цього файлу</translation>
 <translation id="1844692022597038441">Цей файл не доступний в режимі офлайн.</translation>
 <translation id="184633654410729720">Тайська клавіатура (кедмані)</translation>
 <translation id="1847880352285315359">Збережено</translation>
-<translation id="1864676585353837027">Змінити налаштування доступу до цих файлів</translation>
 <translation id="1864756863218646478">Файл неможливо знайти.</translation>
 <translation id="1921986354447415460">Турецька клавіатура F</translation>
 <translation id="1931134289871235022">Словацька</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Установити новий сервіс</translation>
 <translation id="1947424002851288782">Німецька розкладка</translation>
 <translation id="1972984168337863910">Розгортаються панелі відгуків про файли</translation>
-<translation id="197560921582345123">Може редагувати</translation>
 <translation id="1984603991036629094">Вірменська клавіатура (фонетична)</translation>
 <translation id="2001796770603320721">Керувати на Диску</translation>
 <translation id="2009067268969781306">Якщо відформатувати диск, усі збережені на ньому дані буде видалено. Цю дію не можна відмінити.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> ТБ</translation>
 <translation id="7839804798877833423">Для отримання цих файлів буде використано приблизно <ph name="FILE_SIZE" /> мобільного передавання даних.</translation>
 <translation id="7846076177841592234">Скасувати вибір</translation>
-<translation id="7850851215703745691">До цих файлів Диска ще не надано доступ</translation>
 <translation id="7853966320808728790">Французька клавіатура BÉPO</translation>
 <translation id="7864662577698025113">Додати нові сервіси</translation>
 <translation id="7873831373602885875">Не вдалося зберегти в папці "<ph name="FOLDER_NAME" />". Усі зміни буде збережено в папці "<ph name="DOWNLOADS_FOLDER" />" (папка "Завантаження").</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">Словенська</translation>
 <translation id="7982283708762922719">Висота</translation>
 <translation id="7987485481246785146">Курдська клавіатура сорані на основі арабської мови</translation>
-<translation id="799923393800005025">Може переглядати</translation>
 <translation id="8008366997883261463">Собака</translation>
 <translation id="8028993641010258682">Розмір</translation>
 <translation id="8031722894461705849">Словацька клавіатура</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">Список файлів тепер відображається у вигляді ескізів.</translation>
 <translation id="8601932370724196034">Файл зображення Crostini</translation>
 <translation id="8669949407341943408">Переміщення…</translation>
-<translation id="8671210955687109937">Може коментувати</translation>
-<translation id="8686213429977032554">Доступ до цього файлу Диска ще не надано</translation>
 <translation id="8698464937041809063">Малюнок Google</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8719721339511222681">Вибрано: <ph name="ENTRY_NAME" />.</translation>

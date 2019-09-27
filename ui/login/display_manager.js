@@ -287,11 +287,6 @@ cr.define('cr.ui.login', function() {
       return !!userCount;
     },
 
-    get isAdaptiveOobe() {
-      return loadTimeData.valueExists('adaptiveOobe') &&
-          loadTimeData.getBoolean('adaptiveOobe');
-    },
-
     /**
      * Sets the current size of the client area (display size).
      * @param {number} width client area width
@@ -752,36 +747,13 @@ cr.define('cr.ui.login', function() {
      * @param {!HTMLElement} screen Screen that is being shown.
      */
     updateScreenSize: function(screen) {
-      if (!this.isAdaptiveOobe) {
-        // Have to reset any previously predefined screen size first
-        // so that screen contents would define it instead.
-        $('inner-container').style.height = '';
-        $('inner-container').style.width = '';
-        screen.style.width = '';
-        screen.style.height = '';
-      }
-
       $('outer-container').classList.toggle(
         'fullscreen', screen.classList.contains('fullscreen'));
 
-      var width = screen.getPreferredSize().width;
-      var height = screen.getPreferredSize().height;
-
-      if (!this.isAdaptiveOobe) {
-        if (screen.classList.contains('fullscreen')) {
-          $('inner-container').style.height = '100%';
-          $('inner-container').style.width = '100%';
-        } else {
-          $('inner-container').style.height = height + 'px';
-          $('inner-container').style.width = width + 'px';
-        }
-        // This requires |screen| to have 'box-sizing: border-box'.
-        screen.style.width = width + 'px';
-        screen.style.height = height + 'px';
-        screen.style.margin = 'auto';
-      }
 
       if (this.showingViewsLogin) {
+        var width = screen.getPreferredSize().width;
+        var height = screen.getPreferredSize().height;
         chrome.send('updateOobeDialogSize', [width, height]);
         $('scroll-container').classList.toggle('disable-scroll', true);
         $('inner-container').classList.toggle('disable-scroll', true);
@@ -1034,8 +1006,6 @@ cr.define('cr.ui.login', function() {
     instance.initializeDemoModeMultiTapListener();
 
     window.addEventListener('resize', instance.onWindowResize_.bind(instance));
-    if (instance.isAdaptiveOobe)
-      document.documentElement.setAttribute('adaptive-oobe', '');
   };
 
   /**

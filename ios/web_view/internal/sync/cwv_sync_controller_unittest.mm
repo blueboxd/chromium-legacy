@@ -21,7 +21,9 @@
 #include "components/sync/driver/sync_service_observer.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/web_task_environment.h"
+#include "ios/web/public/web_client.h"
 #include "ios/web_view/internal/app/application_context.h"
 #include "ios/web_view/internal/signin/ios_web_view_signin_client.h"
 #include "ios/web_view/internal/signin/web_view_device_accounts_provider_impl.h"
@@ -67,7 +69,9 @@ std::unique_ptr<KeyedService> BuildMockSyncService(web::BrowserState* context) {
 
 class CWVSyncControllerTest : public TestWithLocaleAndResources {
  protected:
-  CWVSyncControllerTest() : browser_state_(/*off_the_record=*/false) {
+  CWVSyncControllerTest()
+      : web_client_(std::make_unique<web::WebClient>()),
+        browser_state_(/*off_the_record=*/false) {
     // Clear account info before each test.
     PrefService* pref_service = browser_state_.GetPrefs();
     pref_service->ClearPref(prefs::kGoogleServicesAccountId);
@@ -114,6 +118,7 @@ class CWVSyncControllerTest : public TestWithLocaleAndResources {
   }
 
   web::WebTaskEnvironment task_environment_;
+  web::ScopedTestingWebClient web_client_;
   ios_web_view::WebViewBrowserState browser_state_;
   std::unique_ptr<autofill::TestPersonalDataManager> personal_data_manager_;
   CWVSyncController* sync_controller_ = nil;

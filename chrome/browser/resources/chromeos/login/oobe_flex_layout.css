@@ -112,3 +112,9 @@
   right: 0;
   top: 0;
 }
+
+.oobe-illustration {
+  max-height: -webkit-fill-available;
+  max-width: -webkit-fill-available;
+  object-fit: contain;
+}

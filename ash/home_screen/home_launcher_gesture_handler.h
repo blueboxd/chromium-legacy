@@ -6,6 +6,7 @@
 #define ASH_HOME_SCREEN_HOME_LAUNCHER_GESTURE_HANDLER_H_
 
 #include <map>
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
@@ -42,6 +43,11 @@ class ASH_EXPORT HomeLauncherGestureHandler
     // Sliding up the MRU window to display launcher. If in overview mode,
     // slides up overview mode as well.
     kSlideUpToShow,
+    // Sliding up from the shelf to drag the MRU window (or one of the snapped
+    // window in splitview) around to enter either home launcher screen or to
+    // overview screen. If in overview mode, this mode is a no-op. Note: This
+    // mode is behind the feature flag kDragFromShelfToHomeOrOverview.
+    kDragWindowToHomeOrOverview,
     // Sliding down the MRU window to hide launcher.
     kSlideDownToHide,
   };
@@ -95,6 +101,8 @@ class ASH_EXPORT HomeLauncherGestureHandler
 
  private:
   class ScopedWindowModifier;
+  class DragWindowFromShelfController;
+
   FRIEND_TEST_ALL_PREFIXES(HomeLauncherModeGestureHandlerTest,
                            AnimatingToEndResetsState);
 
@@ -119,8 +127,9 @@ class ASH_EXPORT HomeLauncherGestureHandler
   // on the values in |window_values_| and |transient_descendants_values_|.
   // |progress| is between 0.0 and 1.0, where 0.0 means the window will have its
   // original opacity and transform, and 1.0 means the window will be faded out
-  // and transformed offscreen.
-  void UpdateWindows(double progress, bool animate);
+  // and transformed offscreen. This function is used by kSlideUpToShow and
+  // kSlideDownToHide mode.
+  void UpdateWindowsForSlideUpOrDown(double progress, bool animate);
 
   // Stop observing all windows and remove their local pointers.
   void RemoveObserversAndStopTracking();
@@ -137,9 +146,19 @@ class ASH_EXPORT HomeLauncherGestureHandler
 
   // Sets up windows that will be used in dragging and animation. If |window| is
   // not null for kSlideDownToHide mode, it will be set as the window to run
-  // slide down animation. |window| is not used for kSlideUpToShow mode. Returns
-  // true if windows are successfully set up.
-  bool SetUpWindows(Mode mode, aura::Window* window);
+  // slide down animation. |window| is not used for kSlideUpToShow or
+  // kDragWindowToHomeOrOverview mode. |location_in_screen| is only used for
+  // kDragWindowToHomeOrOverview mode to find the eligible widnow to drag.
+  // Returns true if windows are successfully set up.
+  bool SetUpWindows(Mode mode,
+                    aura::Window* window,
+                    base::Optional<gfx::Point> location_in_screen);
+
+  // Called by OnPress/Scroll/ReleaseEvent() when the drag from the shelf or
+  // from the top starts/continues/ends. |location| is in screen coordinate.
+  void OnDragStarted(const gfx::Point& location);
+  void OnDragContinued(const gfx::Point& location);
+  bool OnDragEnded(const gfx::Point& location);
 
   Mode mode_ = Mode::kNone;
 
@@ -186,6 +205,10 @@ class ASH_EXPORT HomeLauncherGestureHandler
 
   // The display where the windows are being processed.
   display::Display display_;
+
+  // The window drag controller that will be used in kDragWindowToHomeOrOverview
+  // mode. Will not be created in other modes.
+  std::unique_ptr<DragWindowFromShelfController> window_drag_controller_;
 
   base::ObserverList<HomeLauncherGestureHandlerObserver> observers_;
 

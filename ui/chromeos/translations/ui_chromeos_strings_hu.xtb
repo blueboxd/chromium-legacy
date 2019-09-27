@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pingvin</translation>
 <translation id="183183971458492120">Adatok betöltése…</translation>
 <translation id="1838709767668011582">Google-webhely</translation>
-<translation id="1839704667838141620">Módosítsa a fájl megosztási módját</translation>
 <translation id="1844692022597038441">Ez a fájl nem érhető el offline.</translation>
 <translation id="184633654410729720">Thai billentyűzet (Kedmanee)</translation>
 <translation id="1847880352285315359">Mentve</translation>
-<translation id="1864676585353837027">Módosítsa a fájlok megosztási módját</translation>
 <translation id="1864756863218646478">A fájl nem található.</translation>
 <translation id="1921986354447415460">Török (F-billentyűzet)</translation>
 <translation id="1931134289871235022">szlovák</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Új szolgáltatás telepítése</translation>
 <translation id="1947424002851288782">Német billentyűzet</translation>
 <translation id="1972984168337863910">A fájlokhoz tartozó visszajelzési párbeszédpanel kibontása</translation>
-<translation id="197560921582345123">Szerkeszthető</translation>
 <translation id="1984603991036629094">Örmény fonetikus billentyűzet</translation>
 <translation id="2001796770603320721">Kezelés a Drive-ban</translation>
 <translation id="2009067268969781306">A meghajtó formázásával törli a rajta lévő összes adatot. A művelet nem vonható vissza.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">E fájlok lekérése mintegy <ph name="FILE_SIZE" />-nyi mobiladat-forgalmat fog generálni.</translation>
 <translation id="7846076177841592234">Kijelölés törlése</translation>
-<translation id="7850851215703745691">Ezek a Drive-fájlok még nincsenek megosztva</translation>
 <translation id="7853966320808728790">Francia BÉPO</translation>
 <translation id="7864662577698025113">Új szolgáltatás hozzáadása</translation>
 <translation id="7873831373602885875">Nem lehet menteni a(z) <ph name="FOLDER_NAME" /> mappába. A módosításokat a rendszer a Letöltések mappán belüli <ph name="DOWNLOADS_FOLDER" /> mappába menti.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">szlovén</translation>
 <translation id="7982283708762922719">Magasság</translation>
 <translation id="7987485481246785146">Sorani kurd arab alapú billentyűzet</translation>
-<translation id="799923393800005025">Megtekinthető</translation>
 <translation id="8008366997883261463">Jack Russell-terrier</translation>
 <translation id="8028993641010258682">Méret</translation>
 <translation id="8031722894461705849">Szlovák billentyűzet</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">A fájllista nézete indexképnézetre változott.</translation>
 <translation id="8601932370724196034">Crostini-képfájl</translation>
 <translation id="8669949407341943408">Áthelyezés…</translation>
-<translation id="8671210955687109937">Megjegyzések fűzhetők hozzá</translation>
-<translation id="8686213429977032554">Ez a Drive-fájl még nincs megosztva</translation>
 <translation id="8698464937041809063">Google-rajz</translation>
 <translation id="8714406895390098252">Kerékpár</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> kijelölve.</translation>

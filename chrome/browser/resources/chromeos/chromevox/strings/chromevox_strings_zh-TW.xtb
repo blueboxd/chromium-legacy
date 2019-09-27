@@ -169,7 +169,7 @@
 <translation id="2220529011494928058">回報問題</translation>
 <translation id="2223693656926968778">對目前的項目進行操作</translation>
 <translation id="225732394367814946">加快說話速度</translation>
-<translation id="2267538686624070261">退出拼字錯誤</translation>
+<translation id="2267538686624070261">退出拼字錯誤區塊</translation>
 <translation id="2267945578749931355">下一個字元</translation>
 <translation id="2278490101488436824">以三指向左滑動</translation>
 <translation id="2281234842553884450">上一個滑桿</translation>
@@ -1115,7 +1115,7 @@
 <translation id="8446884382197647889">瞭解詳情</translation>
 <translation id="8455868257606149352">最大值：<ph name="X" /></translation>
 <translation id="84575901236241018">有快捷鍵「<ph name="KEY" />」</translation>
-<translation id="8463645336674919227">退出文法錯誤</translation>
+<translation id="8463645336674919227">退出文法錯誤區塊</translation>
 <translation id="847154984256717791">忙碌</translation>
 <translation id="8476408756881832830">ChromeVox 朗讀時暫停播放音訊</translation>
 <translation id="8476508772960940536">視窗總覽</translation>

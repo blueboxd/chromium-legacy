@@ -91,7 +91,7 @@ const Cryptographer* FakeSyncEncryptionHandler::GetCryptographer(
 }
 
 const DirectoryCryptographer*
-FakeSyncEncryptionHandler::GetDirectoryCryptographerForNigori(
+FakeSyncEncryptionHandler::GetDirectoryCryptographer(
     const syncable::BaseTransaction* const trans) const {
   return &cryptographer_;
 }

@@ -17,13 +17,15 @@ requirements) when this is fixed:
 is fixed.
 """
 
+from __future__ import print_function
+
 import os
 import subprocess
 import sys
 
 def usage():
-  print ('usage: %s {--api-version|--cflags|--ldflags|--libs|--libs-for-gn} '
-         '[sysroot]' % sys.argv[0])
+  print('usage: %s {--api-version|--cflags|--ldflags|--libs|--libs-for-gn} '
+        '[sysroot]' % sys.argv[0])
 
 
 def run_cups_config(cups_config, mode):

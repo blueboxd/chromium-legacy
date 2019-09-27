@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">ፔንግዊን</translation>
 <translation id="183183971458492120">መረጃ በመጫን ላይ...</translation>
 <translation id="1838709767668011582">የGoogle ጣቢያ</translation>
-<translation id="1839704667838141620">ይህ ፋይል እንዴት እንደሚጋራ ይቀይሩ</translation>
 <translation id="1844692022597038441">ይህ ፋይል ከመስመር ውጪ አይገኝም።</translation>
 <translation id="184633654410729720">የታይ ቁልፍ ሰሌዳ (ከድማኒ)</translation>
 <translation id="1847880352285315359">የተቀመጡ</translation>
-<translation id="1864676585353837027">እነዚህ ፋይሎች እንዴት እንደሚጋሩ ይቀይሩ</translation>
 <translation id="1864756863218646478">ፋይሉ ሊገኝ አልቻለም።</translation>
 <translation id="1921986354447415460">የቱርክኛ-F የቁልፍ ሰሌዳ</translation>
 <translation id="1931134289871235022">ስሎቫክኛ</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">አዲስ አገልግሎት ጫን</translation>
 <translation id="1947424002851288782">የጀርመንኛ ቁልፍ ሰሌዳ</translation>
 <translation id="1972984168337863910">የፋይሎች ግብረመልስ ፓነሎችን ዘርጋ</translation>
-<translation id="197560921582345123">ማርትዕ ይችላሉ</translation>
 <translation id="1984603991036629094">የአርሜኒያ ፎነቲክ ቁልፍ ሰሌዳ</translation>
 <translation id="2001796770603320721">በDrive ውስጥ ያስተዳድሩ</translation>
 <translation id="2009067268969781306">አንጻፊን መቅረጽ በላዩ ላይ ያለን ሁሉንም ውሂብ ይሰርዛል። ይህ እርምጃ ሊቀለበስ አይችልም።</translation>
@@ -590,7 +587,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> ቴባ</translation>
 <translation id="7839804798877833423">እነዚህን ፋይሎች ማምጣት <ph name="FILE_SIZE" /> ገደማ የተንቀሳቃሽ ስልክ ውሂብ ይጠቀማል።</translation>
 <translation id="7846076177841592234">ምርጫ ሰርዝ</translation>
-<translation id="7850851215703745691">እነዚህ የDrive ፋይሎች ገና አልተጋሩም</translation>
 <translation id="7853966320808728790">የፈረንሳይኛ BÉPO</translation>
 <translation id="7864662577698025113">አዲስ አገልግልቶ አክል</translation>
 <translation id="7873831373602885875">ወደ <ph name="FOLDER_NAME" /> ማስቀመጥ አልተቻለም። ሁሉም አርትዖቶች በውርዶች አቃፊው ውስጥ ወደ <ph name="DOWNLOADS_FOLDER" /> ይቀመጣሉ።</translation>
@@ -606,7 +602,6 @@
 <translation id="7969525169268594403">ስሎቪኛ</translation>
 <translation id="7982283708762922719">ቁመት</translation>
 <translation id="7987485481246785146">የሶራኒ ኩርድኛ በአረብኛ ላይ የተመሠረተ ቁልፍ ሰሌዳ</translation>
-<translation id="799923393800005025">ማየት ይችላሉ</translation>
 <translation id="8008366997883261463">ጃክ ራሰል ቴሪየር</translation>
 <translation id="8028993641010258682">መጠን</translation>
 <translation id="8031722894461705849">የስሎቫክኛ ቁልፍ ሰሌዳ</translation>
@@ -668,8 +663,6 @@
 <translation id="8600173386174225982">የፋይል ዝርዝር ወደ ድንክየ ዕይታ ተለውጧል።</translation>
 <translation id="8601932370724196034">የCrostini ምስል ፋይል</translation>
 <translation id="8669949407341943408">በመውሰድ ላይ...</translation>
-<translation id="8671210955687109937">አስተያየት መስጠት ይችላሉ</translation>
-<translation id="8686213429977032554">ይህ የDrive ፋይል ገና አልተጋራም</translation>
 <translation id="8698464937041809063">Google ስዕል</translation>
 <translation id="8714406895390098252">ቢስክሌት</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> ተመርጧል።</translation>

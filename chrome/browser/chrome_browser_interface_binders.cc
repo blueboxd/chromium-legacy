@@ -16,7 +16,11 @@
 #if defined(OS_ANDROID)
 #include "content/public/browser/web_contents.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/webshare/webshare.mojom.h"
+#if defined(BROWSER_MEDIA_CONTROLS_MENU)
+#include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom.h"
+#endif
 #if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
 #include "third_party/blink/public/mojom/page/spatial_navigation.mojom.h"
 #endif
@@ -47,12 +51,26 @@ void BindImageAnnotator(
       ->Connect(image_annotation::mojom::kServiceName, std::move(receiver));
 }
 
+#if defined(OS_ANDROID)
+template <typename Interface>
+void ForwardToJavaFrameRegistry(content::RenderFrameHost* render_frame_host,
+                                mojo::PendingReceiver<Interface> receiver) {
+  render_frame_host->GetJavaInterfaces()->GetInterface(std::move(receiver));
+}
+#endif
+
 void PopulateChromeFrameBinders(
     service_manager::BinderMapWithContext<content::RenderFrameHost*>* map) {
   map->Add<image_annotation::mojom::Annotator>(
       base::BindRepeating(&BindImageAnnotator));
 
 #if defined(OS_ANDROID)
+  map->Add<blink::mojom::InstalledAppProvider>(base::BindRepeating(
+      &ForwardToJavaFrameRegistry<blink::mojom::InstalledAppProvider>));
+#if defined(BROWSER_MEDIA_CONTROLS_MENU)
+  map->Add<blink::mojom::MediaControlsMenuHost>(base::BindRepeating(
+      &ForwardToJavaFrameRegistry<blink::mojom::MediaControlsMenuHost>));
+#endif
   map->Add<blink::mojom::ShareService>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::ShareService>));
 #if defined(ENABLE_SPATIAL_NAVIGATION_HOST)

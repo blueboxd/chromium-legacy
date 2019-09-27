@@ -7,19 +7,16 @@
 #include "base/metrics/histogram_functions.h"
 #include "build/build_config.h"
 #include "chrome/browser/ssl/security_state_tab_helper.h"
+#include "components/security_interstitials/core/common_string_util.h"
 #include "components/security_state/core/security_state.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/web_contents.h"
-#include "url/gurl.h"
+#include "ui/base/l10n/l10n_util.h"
 
-namespace {
+namespace safety_tips {
 
 // URL that the "leave site" button aborts to.
 const char kSafeUrl[] = "chrome://newtab";
-
-}  // namespace
-
-namespace safety_tips {
 
 void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
                                          SafetyTipInteraction interaction) {
@@ -33,27 +30,45 @@ void RecordSafetyTipInteractionHistogram(content::WebContents* web_contents,
       interaction);
 }
 
-void LeaveSite(content::WebContents* web_contents) {
+void LeaveSite(content::WebContents* web_contents, const GURL& safe_url) {
   RecordSafetyTipInteractionHistogram(web_contents,
                                       SafetyTipInteraction::kLeaveSite);
   content::OpenURLParams params(
-      GURL(kSafeUrl), content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
+      safe_url, content::Referrer(), WindowOpenDisposition::CURRENT_TAB,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false /* is_renderer_initiated */);
   params.should_replace_current_entry = true;
   web_contents->OpenURL(params);
 }
 
-int GetSafetyTipTitleId(security_state::SafetyTipStatus warning_type) {
-  switch (warning_type) {
+base::string16 GetSafetyTipTitle(
+    security_state::SafetyTipStatus safety_tip_status,
+    const GURL& url) {
+  switch (safety_tip_status) {
     case security_state::SafetyTipStatus::kBadReputation:
+      return l10n_util::GetStringUTF16(
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE);
     case security_state::SafetyTipStatus::kLookalike:
-#if defined(OS_ANDROID)
-      return IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_TITLE;
-#else
-      return IDS_PAGE_INFO_SAFETY_TIP_SUMMARY;
-#endif
+      return l10n_util::GetStringFUTF16(
+          IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_TITLE,
+          security_interstitials::common_string_util::GetFormattedHostName(
+              url));
     case security_state::SafetyTipStatus::kUnknown:
     case security_state::SafetyTipStatus::kNone:
+      NOTREACHED();
+  }
+
+  NOTREACHED();
+  return base::string16();
+}
+
+int GetSafetyTipDescriptionId(security_state::SafetyTipStatus warning_type) {
+  switch (warning_type) {
+    case security_state::SafetyTipStatus::kBadReputation:
+      return IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION;
+    case security_state::SafetyTipStatus::kLookalike:
+      return IDS_PAGE_INFO_SAFETY_TIP_LOOKALIKE_DESCRIPTION;
+    case security_state::SafetyTipStatus::kNone:
+    case security_state::SafetyTipStatus::kUnknown:
       NOTREACHED();
       return 0;
   }
@@ -61,18 +76,21 @@ int GetSafetyTipTitleId(security_state::SafetyTipStatus warning_type) {
   return 0;
 }
 
-int GetSafetyTipDescriptionId(security_state::SafetyTipStatus warning_type) {
+int GetSafetyTipLeaveButtonId(security_state::SafetyTipStatus warning_type) {
   switch (warning_type) {
-    case security_state::SafetyTipStatus::kBadReputation:
 #if defined(OS_ANDROID)
-      return IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_DESCRIPTION;
-#else
-      return IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION;
-#endif
+    case security_state::SafetyTipStatus::kBadReputation:
+      return IDS_SAFETY_TIP_ANDROID_LEAVE_BUTTON;
     case security_state::SafetyTipStatus::kLookalike:
-      return IDS_LOOKALIKE_URL_PRIMARY_PARAGRAPH;
-    case security_state::SafetyTipStatus::kNone:
+      return IDS_SAFETY_TIP_ANDROID_GO_TO_SITE_BUTTON;
+#else
+    case security_state::SafetyTipStatus::kBadReputation:
+      return IDS_PAGE_INFO_SAFETY_TIP_LEAVE_BUTTON;
+    case security_state::SafetyTipStatus::kLookalike:
+      return IDS_PAGE_INFO_SAFETY_TIP_GO_TO_SITE_BUTTON;
+#endif
     case security_state::SafetyTipStatus::kUnknown:
+    case security_state::SafetyTipStatus::kNone:
       NOTREACHED();
       return 0;
   }

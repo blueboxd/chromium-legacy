@@ -165,6 +165,7 @@ source_set("web_applications_browser_tests") {
 
   sources = [
     "pending_app_manager_impl_browsertest.cc",
+    "web_app_icon_manager_browsertest.cc",
   ]
 
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]

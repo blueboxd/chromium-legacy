@@ -27,11 +27,11 @@ BrowserObserverProxy::~BrowserObserverProxy() {
   browser_controller_->RemoveObserver(this);
 }
 
-void BrowserObserverProxy::DisplayedURLChanged(const GURL& url) {
+void BrowserObserverProxy::DisplayedUrlChanged(const GURL& url) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jstring_url(
       ConvertUTF8ToJavaString(env, url.spec()));
-  Java_BrowserObserverProxy_displayURLChanged(env, java_observer_, jstring_url);
+  Java_BrowserObserverProxy_visibleUrlChanged(env, java_observer_, jstring_url);
 }
 
 void BrowserObserverProxy::LoadingStateChanged(bool is_loading,

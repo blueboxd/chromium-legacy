@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Penguen</translation>
 <translation id="183183971458492120">Bilgiler yükleniyor...</translation>
 <translation id="1838709767668011582">Google sitesi</translation>
-<translation id="1839704667838141620">Bu dosyanın paylaşılma biçimini değiştirin.</translation>
 <translation id="1844692022597038441">Bu dosya çevrimdışı kullanılamıyor.</translation>
 <translation id="184633654410729720">Tayca klavye (Kedmanee)</translation>
 <translation id="1847880352285315359">Kaydedildi</translation>
-<translation id="1864676585353837027">Şu dosyaların paylaşılma biçimini değiştirin:</translation>
 <translation id="1864756863218646478">Dosya bulunamadı.</translation>
 <translation id="1921986354447415460">Türkçe F klavye</translation>
 <translation id="1931134289871235022">Slovakça</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Yeni hizmet ekle</translation>
 <translation id="1947424002851288782">Almanca klavye</translation>
 <translation id="1972984168337863910">Dosyalar geri bildirim panellerini genişlet</translation>
-<translation id="197560921582345123">Düzenleyebilir</translation>
 <translation id="1984603991036629094">Ermenice Fonetik klavye</translation>
 <translation id="2001796770603320721">Drive'da Yönet</translation>
 <translation id="2009067268969781306">Bir sürücünün biçimlendirilmesi, üzerinde depolanan tüm verileri siler. Bu işlem geri alınamaz.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Bu dosyaları getirmek için yaklaşık olarak <ph name="FILE_SIZE" /> mobil veri kullanılacak.</translation>
 <translation id="7846076177841592234">Seçimi iptal et</translation>
-<translation id="7850851215703745691">Bu Drive dosyaları henüz paylaşılmadı</translation>
 <translation id="7853966320808728790">Fransızca BÉPO</translation>
 <translation id="7864662577698025113">Yeni hizmet ekle</translation>
 <translation id="7873831373602885875"><ph name="FOLDER_NAME" /> dizinine kaydedilemiyor. Tüm düzenlemeler, İndirilenler klasöründeki <ph name="DOWNLOADS_FOLDER" /> dizinine kaydedilecek.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">Slovence</translation>
 <translation id="7982283708762922719">Yükseklik</translation>
 <translation id="7987485481246785146">Sorani Kürtçe Arapça temelli klavye</translation>
-<translation id="799923393800005025">Görüntüleyebilir</translation>
 <translation id="8008366997883261463">Jack Russell Teriyeri</translation>
 <translation id="8028993641010258682">Boyut</translation>
 <translation id="8031722894461705849">Slovakça klavye</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">Dosya listesi, küçük resim görünümü olarak değiştirildi.</translation>
 <translation id="8601932370724196034">Crostini resim dosyası</translation>
 <translation id="8669949407341943408">Taşınıyor...</translation>
-<translation id="8671210955687109937">Yorum yapabilir</translation>
-<translation id="8686213429977032554">Bu Drive dosyası henüz paylaşılmamış</translation>
 <translation id="8698464937041809063">Google çizimler</translation>
 <translation id="8714406895390098252">Bisiklet</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> seçildi.</translation>

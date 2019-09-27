@@ -100,20 +100,19 @@ TEST_F('OSSettingsAddUsersTest', 'AllJsTests', () => {
   mocha.run();
 });
 
-// Tests for the advanced page browser tests.
+// Tests for the main contents of the settings page.
 // eslint-disable-next-line no-var
-var OSSettingsAdvancedPageBrowserTest = class extends OSSettingsBrowserTest {
+var OSSettingsPageTest = class extends OSSettingsBrowserTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
       BROWSER_SETTINGS_PATH + '../test_util.js',
-      'os_advanced_page_browsertest.js',
+      'os_settings_page_test.js',
     ]);
   }
 };
 
-// Disabled due to flakiness on linux-chromeos-rel. https://crbug.com/992116
-TEST_F('OSSettingsAdvancedPageBrowserTest', 'DISABLED_AllJsTests', () => {
+TEST_F('OSSettingsPageTest', 'AllJsTests', () => {
   // Run all registered tests.
   mocha.run();
 });

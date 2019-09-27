@@ -8,6 +8,7 @@
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/common/chrome_features.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
 
@@ -44,9 +45,11 @@ bool CrostiniFeatures::IsExportImportUIAllowed(Profile* profile) {
 }
 
 bool CrostiniFeatures::IsRootAccessAllowed(Profile* profile) {
-  // TODO(crbug.com/1004708): Move implementation from crostini_util to here and
-  // redirect all callers.
-  return crostini::IsCrostiniRootAccessAllowed(profile);
+  if (base::FeatureList::IsEnabled(features::kCrostiniAdvancedAccessControls)) {
+    return profile->GetPrefs()->GetBoolean(
+        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy);
+  }
+  return true;
 }
 
 }  // namespace crostini

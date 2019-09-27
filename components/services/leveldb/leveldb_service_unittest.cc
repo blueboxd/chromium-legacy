@@ -10,9 +10,6 @@
 #include "base/task/post_task.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
-#include "components/services/filesystem/directory_test_helper.h"
-#include "components/services/filesystem/public/mojom/directory.mojom.h"
-#include "components/services/filesystem/public/mojom/types.mojom.h"
 #include "components/services/leveldb/leveldb_service_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
@@ -164,12 +161,18 @@ void AddKeyPrefixToGetManyRequest(const std::string& key_prefix,
 class LevelDBServiceTest : public testing::Test {
  public:
   LevelDBServiceTest()
-      : leveldb_service_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
-        leveldb_receiver_(&leveldb_service_,
-                          leveldb_remote_.BindNewPipeAndPassReceiver()) {}
-  ~LevelDBServiceTest() override = default;
+      : leveldb_service_(base::in_place),
+        leveldb_receiver_(&leveldb_service_.value(),
+                          leveldb_remote_.BindNewPipeAndPassReceiver()) {
+    CHECK(temp_dir_.CreateUniqueTempDir());
+  }
+
+  ~LevelDBServiceTest() override {
+    // Ensure that any bound database instances are torn down so that no files
+    // within |temp_dir_| remain open.
+    task_environment_.RunUntilIdle();
+    EXPECT_TRUE(temp_dir_.Delete());
+  }
 
  protected:
   void SetUp() override {
@@ -179,17 +182,15 @@ class LevelDBServiceTest : public testing::Test {
     feature_list_.InitAndEnableFeature(leveldb::kLevelDBRewriteFeature);
   }
 
-  mojo::Remote<filesystem::mojom::Directory> CreateTempDir() {
-    return directory_helper_.CreateTempDir();
-  }
+  const base::FilePath& temp_path() const { return temp_dir_.GetPath(); }
 
   mojo::Remote<mojom::LevelDBService>& leveldb() { return leveldb_remote_; }
 
  private:
   base::test::TaskEnvironment task_environment_;
   base::test::ScopedFeatureList feature_list_;
-  filesystem::DirectoryTestHelper directory_helper_;
-  LevelDBServiceImpl leveldb_service_;
+  base::ScopedTempDir temp_dir_;
+  base::Optional<LevelDBServiceImpl> leveldb_service_;
   mojo::Remote<mojom::LevelDBService> leveldb_remote_;
   mojo::Receiver<mojom::LevelDBService> leveldb_receiver_;
 
@@ -377,18 +378,13 @@ TEST_F(LevelDBServiceTest, WriteBatchPrefixesAndDeletes) {
 TEST_F(LevelDBServiceTest, Reconnect) {
   mojom::DatabaseError error;
 
-  mojo::Remote<filesystem::mojom::Directory> temp_directory = CreateTempDir();
-
   {
-    filesystem::mojom::DirectoryPtr directory;
-    temp_directory->Clone(MakeRequest(&directory));
-
     mojo::AssociatedRemote<mojom::LevelDBDatabase> database;
     leveldb_env::Options options;
     options.error_if_exists = true;
     options.create_if_missing = true;
     base::RunLoop run_loop;
-    leveldb()->OpenWithOptions(std::move(options), std::move(directory), "test",
+    leveldb()->OpenWithOptions(std::move(options), temp_path(), "test",
                                base::nullopt,
                                database.BindNewEndpointAndPassReceiver(),
                                Capture(&error, run_loop.QuitClosure()));
@@ -404,13 +400,10 @@ TEST_F(LevelDBServiceTest, Reconnect) {
   }
 
   {
-    filesystem::mojom::DirectoryPtr directory;
-    temp_directory->Clone(MakeRequest(&directory));
-
     // Reconnect to the database.
     mojo::AssociatedRemote<mojom::LevelDBDatabase> database;
     base::RunLoop run_loop;
-    leveldb()->Open(std::move(directory), "test", base::nullopt,
+    leveldb()->Open(temp_path(), "test", base::nullopt,
                     database.BindNewEndpointAndPassReceiver(),
                     Capture(&error, run_loop.QuitClosure()));
     run_loop.Run();
@@ -428,18 +421,13 @@ TEST_F(LevelDBServiceTest, Reconnect) {
 TEST_F(LevelDBServiceTest, Destroy) {
   mojom::DatabaseError error;
 
-  mojo::Remote<filesystem::mojom::Directory> temp_directory = CreateTempDir();
-
   {
-    filesystem::mojom::DirectoryPtr directory;
-    temp_directory->Clone(MakeRequest(&directory));
-
     mojo::AssociatedRemote<mojom::LevelDBDatabase> database;
     leveldb_env::Options options;
     options.error_if_exists = true;
     options.create_if_missing = true;
     base::RunLoop run_loop;
-    leveldb()->OpenWithOptions(std::move(options), std::move(directory), "test",
+    leveldb()->OpenWithOptions(std::move(options), temp_path(), "test",
                                base::nullopt,
                                database.BindNewEndpointAndPassReceiver(),
                                Capture(&error, run_loop.QuitClosure()));
@@ -455,25 +443,19 @@ TEST_F(LevelDBServiceTest, Destroy) {
   }
 
   {
-    filesystem::mojom::DirectoryPtr directory;
-    temp_directory->Clone(MakeRequest(&directory));
-
     // Destroy the database.
     base::RunLoop run_loop;
-    leveldb()->Destroy(std::move(directory), "test",
+    leveldb()->Destroy(temp_path(), "test",
                        Capture(&error, run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_EQ(mojom::DatabaseError::OK, error);
   }
 
   {
-    filesystem::mojom::DirectoryPtr directory;
-    temp_directory->Clone(MakeRequest(&directory));
-
     // Reconnect to the database should fail.
     mojo::AssociatedRemote<mojom::LevelDBDatabase> database;
     base::RunLoop run_loop;
-    leveldb()->Open(std::move(directory), "test", base::nullopt,
+    leveldb()->Open(temp_path(), "test", base::nullopt,
                     database.BindNewEndpointAndPassReceiver(),
                     Capture(&error, run_loop.QuitClosure()));
     run_loop.Run();
@@ -481,12 +463,9 @@ TEST_F(LevelDBServiceTest, Destroy) {
   }
 
   {
-    filesystem::mojom::DirectoryPtr directory;
-    temp_directory->Clone(MakeRequest(&directory));
-
     // Destroying a non-existant database should still succeed.
     base::RunLoop run_loop;
-    leveldb()->Destroy(std::move(directory), "test",
+    leveldb()->Destroy(temp_path(), "test",
                        Capture(&error, run_loop.QuitClosure()));
     run_loop.Run();
     EXPECT_EQ(mojom::DatabaseError::OK, error);
@@ -715,13 +694,12 @@ TEST_F(LevelDBServiceTest, Prefixed) {
 
 TEST_F(LevelDBServiceTest, RewriteDB) {
   mojom::DatabaseError error;
-  filesystem::mojom::DirectoryPtr directory(CreateTempDir().Unbind());
 
   mojo::AssociatedRemote<mojom::LevelDBDatabase> database;
   leveldb_env::Options options;
   options.create_if_missing = true;
   base::RunLoop run_loop;
-  leveldb()->OpenWithOptions(std::move(options), std::move(directory), "test",
+  leveldb()->OpenWithOptions(std::move(options), temp_path(), "test",
                              base::nullopt,
                              database.BindNewEndpointAndPassReceiver(),
                              Capture(&error, run_loop.QuitClosure()));

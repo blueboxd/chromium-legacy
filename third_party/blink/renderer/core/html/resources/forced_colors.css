@@ -139,8 +139,9 @@
   select:-internal-list-box:focus option:checked:hover,
   select:-internal-list-box option:checked,
   select:-internal-list-box option:checked:hover {
-    background-color: Window !important;
-    color: Highlight !important;
+    background-color: Highlight !important;
+    color: Window !important;
+    forced-color-adjust: none;
   }
 
   /* option both disabled and selected */
@@ -150,8 +151,9 @@
   select:-internal-list-box:disabled option:checked:hover,
   select:-internal-list-box option:checked:disabled,
   select:-internal-list-box option:checked:disabled:hover {
-    background-color: Window !important;
-    color: GrayText !important;
+    background-color: GrayText !important;
+    color: Window !important;
+    forced-color-adjust: none;
   }
 
   select:-internal-list-box option:hover {

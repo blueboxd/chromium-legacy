@@ -26,9 +26,9 @@ NetworkChangeManager::~NetworkChangeManager() {
   net::NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
-void NetworkChangeManager::AddRequest(
-    mojom::NetworkChangeManagerRequest request) {
-  bindings_.AddBinding(this, std::move(request));
+void NetworkChangeManager::AddReceiver(
+    mojo::PendingReceiver<mojom::NetworkChangeManager> receiver) {
+  receivers_.Add(this, std::move(receiver));
 }
 
 void NetworkChangeManager::RequestNotifications(

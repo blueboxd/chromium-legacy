@@ -253,7 +253,8 @@ Badge BadgeForNetworkTechnology(const NetworkStateProperties* network,
                                 IconType icon_type) {
   DCHECK(network->type == NetworkType::kCellular);
   Badge badge = {nullptr, GetDefaultColorForIconType(icon_type)};
-  const std::string& technology = network->cellular->network_technology;
+  const std::string& technology =
+      network->type_state->get_cellular()->network_technology;
   if (technology == onc::cellular::kTechnologyEvdo) {
     badge.icon = &kNetworkBadgeTechnologyEvdoIcon;
   } else if (technology == onc::cellular::kTechnologyCdma1Xrtt) {
@@ -375,7 +376,7 @@ bool NetworkIconImpl::UpdateCellularState(
     }
   }
 
-  bool roaming = network->cellular->roaming;
+  bool roaming = network->type_state->get_cellular()->roaming;
   if (roaming != is_roaming_) {
     VLOG(2) << "New is_roaming: " << roaming;
     is_roaming_ = roaming;
@@ -391,13 +392,13 @@ void NetworkIconImpl::GetBadges(const NetworkStateProperties* network,
   bool is_connected =
       chromeos::network_config::StateIsConnected(network->connection_state);
   if (type == NetworkType::kWiFi) {
-    if (network->wifi->security != SecurityType::kNone &&
+    if (network->type_state->get_wifi()->security != SecurityType::kNone &&
         !IsTrayIcon(icon_type_)) {
       badges->bottom_right = {&kUnifiedNetworkBadgeSecureIcon, icon_color};
     }
   } else if (type == NetworkType::kCellular) {
     // technology_badge_ is set in UpdateCellularState.
-    if (is_connected && network->cellular->roaming) {
+    if (is_connected && network->type_state->get_cellular()->roaming) {
       badges->bottom_right = {&kNetworkBadgeRoamingIcon, icon_color};
     }
   }
@@ -545,7 +546,8 @@ gfx::ImageSkia GetDisconnectedImageForNetworkType(NetworkType network_type) {
 
 base::string16 GetLabelForNetworkList(const NetworkStateProperties* network) {
   if (network->type == NetworkType::kCellular) {
-    ActivationStateType activation_state = network->cellular->activation_state;
+    ActivationStateType activation_state =
+        network->type_state->get_cellular()->activation_state;
     if (activation_state == ActivationStateType::kActivating) {
       return l10n_util::GetStringFUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_LIST_ACTIVATING,

@@ -9,7 +9,7 @@ package org.chromium.weblayer_private.aidl;
  *  BrowserObserver interface, but is a singleton to avoid unnecessary IPC.
  */
 interface IBrowserControllerClient {
-  void displayURLChanged(in String url) = 0;
+  void visibleUrlChanged(in String url) = 0;
   void loadingStateChanged(boolean is_loading, boolean to_different_document) = 1;
   void loadProgressChanged(double progress) = 2;
 }

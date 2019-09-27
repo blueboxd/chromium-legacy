@@ -29,10 +29,6 @@ namespace base {
 //
 // to reuse the instance of sha, call sha.Init();
 
-// TODO(jhawkins): Replace this implementation with a per-platform
-// implementation using each platform's crypto library.  See
-// http://crbug.com/47218
-
 class SecureHashAlgorithm {
  public:
   SecureHashAlgorithm() { Init(); }

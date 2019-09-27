@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "chrome/browser/chromeos/crostini/crostini_installer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/webui/chromeos/crostini_installer/crostini_installer_page_handler.h"
 #include "chrome/common/webui_url_constants.h"
@@ -68,7 +69,15 @@ void CrostiniInstallerUI::CreatePageHandler(
   DCHECK(pending_page.is_valid());
 
   page_handler_ = std::make_unique<CrostiniInstallerPageHandler>(
-      std::move(pending_page_handler), std::move(pending_page));
+      crostini::CrostiniInstaller::GetForProfile(Profile::FromWebUI(web_ui())),
+      std::move(pending_page_handler), std::move(pending_page),
+      // Using Unretained(this) because |page_handler_| will not out-live
+      // |this|.
+      //
+      // CloseDialog() is a no-op if we are not in a dialog (e.g. user
+      // access the page using the URL directly, which is not supported).
+      base::BindOnce(&CrostiniInstallerUI::CloseDialog, base::Unretained(this),
+                     nullptr));
 }
 
 }  // namespace chromeos

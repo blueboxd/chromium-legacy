@@ -57,6 +57,10 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
 
   AppListMainView* app_list_main_view() const { return main_view_; }
 
+ protected:
+  // Overridden from views::View:
+  void VisibilityChanged(View* starting_from, bool is_visible) override;
+
  private:
   friend class test::SearchResultListViewTest;
 
@@ -66,8 +70,9 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
   // Overridden from views::View:
   void Layout() override;
   int GetHeightForWidth(int w) const override;
-  // Log the set of recommendations (impression) that were shown to the user
-  // after a priod of time.
+
+  // Logs the set of recommendations (impressions) that were shown to the user
+  // after a period of time.
   void LogImpressions();
 
   AppListMainView* main_view_;          // Owned by views hierarchy.
@@ -77,8 +82,12 @@ class APP_LIST_EXPORT SearchResultListView : public SearchResultContainerView {
 
   std::vector<SearchResultView*> search_result_views_;  // Not owned.
 
-  // Used for logging impression shown to users.
+  // Used for logging impressions shown to users.
   base::OneShotTimer impression_timer_;
+  base::OneShotTimer zero_state_file_impression_timer_;
+  base::OneShotTimer drive_quick_access_impression_timer_;
+  bool previous_found_zero_state_file_ = false;
+  bool previous_found_drive_quick_access_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultListView);
 };

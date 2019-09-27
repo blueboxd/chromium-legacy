@@ -74,7 +74,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/wrapper_shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "storage/common/database/database_identifier.h"
@@ -198,14 +197,7 @@ RendererBlinkPlatformImpl::RendererBlinkPlatformImpl(
 #if defined(OS_LINUX) || defined(OS_MACOSX)
   if (sandboxEnabled()) {
 #if defined(OS_MACOSX)
-    std::unique_ptr<service_manager::Connector> sandbox_connector;
-    if (auto* thread = RenderThreadImpl::current()) {
-      sandbox_connector = thread->GetConnector()->Clone();
-    } else {
-      service_manager::mojom::ConnectorRequest request;
-      sandbox_connector = service_manager::Connector::Create(&request);
-    }
-    sandbox_support_.reset(new WebSandboxSupportMac(sandbox_connector.get()));
+    sandbox_support_ = std::make_unique<WebSandboxSupportMac>();
 #else
     sandbox_support_.reset(new WebSandboxSupportLinux(font_loader_));
 #endif

@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pingviini</translation>
 <translation id="183183971458492120">Ladataan tietoja…</translation>
 <translation id="1838709767668011582">Google-sivusto</translation>
-<translation id="1839704667838141620">Muuta tämän tiedoston jakotapaa</translation>
 <translation id="1844692022597038441">Tämä tiedosto ei ole käytettävissä offline-tilassa.</translation>
 <translation id="184633654410729720">Thainkielinen näppäimistö (kedmanee)</translation>
 <translation id="1847880352285315359">Tallennettu</translation>
-<translation id="1864676585353837027">Muuta tiedostojen jakotapaa</translation>
 <translation id="1864756863218646478">Tiedostoa ei löytynyt.</translation>
 <translation id="1921986354447415460">Näppäimistö: turkki (F-tyyppi)</translation>
 <translation id="1931134289871235022">slovakki</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Asenna uusi palvelu</translation>
 <translation id="1947424002851288782">Näppäimistö: saksa</translation>
 <translation id="1972984168337863910">Laajenna tiedostojen palautepaneelit</translation>
-<translation id="197560921582345123">Voi muokata</translation>
 <translation id="1984603991036629094">Armenialainen foneettinen näppäimistö</translation>
 <translation id="2001796770603320721">Ylläpidä Drivessa</translation>
 <translation id="2009067268969781306">Driven alustaminen poistaa kaiken sille tallennetun datan. Tätä toimintoa ei voi kumota.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> Tt</translation>
 <translation id="7839804798877833423">Mobiiliyhteyden kautta noudettavien tiedostojen koko on noin <ph name="FILE_SIZE" />.</translation>
 <translation id="7846076177841592234">Peruuta valinta</translation>
-<translation id="7850851215703745691">Näitä Drive-tiedostoja ei ole vielä jaettu</translation>
 <translation id="7853966320808728790">Ranskalainen BÉPO</translation>
 <translation id="7864662577698025113">Lisää uusi palvelu</translation>
 <translation id="7873831373602885875">Tallentaminen kansioon <ph name="FOLDER_NAME" /> ei onnistu. Kaikki muokkaukset tallennetaan Lataukset-kansion kohteeseen <ph name="DOWNLOADS_FOLDER" />.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">sloveeni</translation>
 <translation id="7982283708762922719">Korkeus</translation>
 <translation id="7987485481246785146">Soranîn arabiaan perustuva näppäimistö</translation>
-<translation id="799923393800005025">Voi tarkastella</translation>
 <translation id="8008366997883261463">Jackrussellinterrieri</translation>
 <translation id="8028993641010258682">Koko</translation>
 <translation id="8031722894461705849">Näppäimistö: slovakki</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">Tiedostot näkyvät nyt pikkukuvina.</translation>
 <translation id="8601932370724196034">Crostini-kuvatiedosto</translation>
 <translation id="8669949407341943408">Siirretään…</translation>
-<translation id="8671210955687109937">Voi kommentoida</translation>
-<translation id="8686213429977032554">Tätä Drive-tiedostoa ei ole vielä jaettu</translation>
 <translation id="8698464937041809063">Google-piirros</translation>
 <translation id="8714406895390098252">Polkupyörä</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> valittiin.</translation>

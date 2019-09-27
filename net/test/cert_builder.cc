@@ -167,7 +167,18 @@ void CertBuilder::EraseExtension(const der::Input& oid) {
 }
 
 void CertBuilder::SetCaIssuersUrl(const GURL& url) {
-  std::string url_spec = url.spec();
+  SetCaIssuersAndOCSPUrls({url}, {});
+}
+
+void CertBuilder::SetCaIssuersAndOCSPUrls(
+    const std::vector<GURL>& ca_issuers_urls,
+    const std::vector<GURL>& ocsp_urls) {
+  std::vector<std::pair<der::Input, GURL>> entries;
+  for (const auto& url : ca_issuers_urls)
+    entries.emplace_back(AdCaIssuersOid(), url);
+  for (const auto& url : ocsp_urls)
+    entries.emplace_back(AdOcspOid(), url);
+  ASSERT_GT(entries.size(), 0U);
 
   // From RFC 5280:
   //
@@ -178,25 +189,33 @@ void CertBuilder::SetCaIssuersUrl(const GURL& url) {
   //           accessMethod          OBJECT IDENTIFIER,
   //           accessLocation        GeneralName  }
   bssl::ScopedCBB cbb;
-  CBB aia, ca_issuer, access_method, access_location;
-  ASSERT_TRUE(CBB_init(cbb.get(), url_spec.size()));
+  CBB aia;
+  ASSERT_TRUE(CBB_init(cbb.get(), 64));
   ASSERT_TRUE(CBB_add_asn1(cbb.get(), &aia, CBS_ASN1_SEQUENCE));
-  ASSERT_TRUE(CBB_add_asn1(&aia, &ca_issuer, CBS_ASN1_SEQUENCE));
-  ASSERT_TRUE(CBB_add_asn1(&ca_issuer, &access_method, CBS_ASN1_OBJECT));
-  ASSERT_TRUE(CBBAddBytes(&access_method, AdCaIssuersOid().AsStringPiece()));
-  ASSERT_TRUE(CBB_add_asn1(&ca_issuer, &access_location,
-                           CBS_ASN1_CONTEXT_SPECIFIC | 6));
-  ASSERT_TRUE(CBBAddBytes(&access_location, url_spec));
+
+  for (const auto& entry : entries) {
+    CBB access_description, access_method, access_location;
+    ASSERT_TRUE(CBB_add_asn1(&aia, &access_description, CBS_ASN1_SEQUENCE));
+    ASSERT_TRUE(
+        CBB_add_asn1(&access_description, &access_method, CBS_ASN1_OBJECT));
+    ASSERT_TRUE(CBBAddBytes(&access_method, entry.first.AsStringPiece()));
+    ASSERT_TRUE(CBB_add_asn1(&access_description, &access_location,
+                             CBS_ASN1_CONTEXT_SPECIFIC | 6));
+    ASSERT_TRUE(CBBAddBytes(&access_location, entry.second.spec()));
+    ASSERT_TRUE(CBB_flush(&aia));
+  }
 
   SetExtension(AuthorityInfoAccessOid(), FinishCBB(cbb.get()));
 }
 
 void CertBuilder::SetCrlDistributionPointUrl(const GURL& url) {
-  std::string url_spec = url.spec();
+  SetCrlDistributionPointUrls({url});
+}
 
+void CertBuilder::SetCrlDistributionPointUrls(const std::vector<GURL>& urls) {
   bssl::ScopedCBB cbb;
-  ASSERT_TRUE(CBB_init(cbb.get(), url_spec.size()));
-  CBB dps, dp, dp_name, dp_fullname, dp_url;
+  ASSERT_TRUE(CBB_init(cbb.get(), 64));
+  CBB dps, dp, dp_name, dp_fullname;
 
   //    CRLDistributionPoints ::= SEQUENCE SIZE (1..MAX) OF DistributionPoint
   ASSERT_TRUE(CBB_add_asn1(cbb.get(), &dps, CBS_ASN1_SEQUENCE));
@@ -219,9 +238,13 @@ void CertBuilder::SetCrlDistributionPointUrl(const GURL& url) {
   //   GeneralNames ::= SEQUENCE SIZE (1..MAX) OF GeneralName
   //   GeneralName ::= CHOICE {
   // uniformResourceIdentifier       [6]     IA5String,
-  ASSERT_TRUE(
-      CBB_add_asn1(&dp_fullname, &dp_url, CBS_ASN1_CONTEXT_SPECIFIC | 6));
-  ASSERT_TRUE(CBBAddBytes(&dp_url, url_spec));
+  for (const auto& url : urls) {
+    CBB dp_url;
+    ASSERT_TRUE(
+        CBB_add_asn1(&dp_fullname, &dp_url, CBS_ASN1_CONTEXT_SPECIFIC | 6));
+    ASSERT_TRUE(CBBAddBytes(&dp_url, url.spec()));
+    ASSERT_TRUE(CBB_flush(&dp_fullname));
+  }
 
   SetExtension(CrlDistributionPointsOid(), FinishCBB(cbb.get()));
 }
@@ -266,6 +289,20 @@ void CertBuilder::SetSubjectAltName(const std::string& dns_name) {
   ASSERT_TRUE(CBBAddBytes(&general_name, dns_name));
 
   SetExtension(SubjectAltNameOid(), FinishCBB(cbb.get()));
+}
+
+void CertBuilder::SetValidity(base::Time not_before, base::Time not_after) {
+  // From RFC 5280:
+  //   Validity ::= SEQUENCE {
+  //        notBefore      Time,
+  //        notAfter       Time }
+  bssl::ScopedCBB cbb;
+  CBB validity;
+  ASSERT_TRUE(CBB_init(cbb.get(), 64));
+  ASSERT_TRUE(CBB_add_asn1(cbb.get(), &validity, CBS_ASN1_SEQUENCE));
+  ASSERT_TRUE(CBBAddTime(&validity, not_before));
+  ASSERT_TRUE(CBBAddTime(&validity, not_after));
+  validity_tlv_ = FinishCBB(cbb.get());
 }
 
 void CertBuilder::SetSignatureAlgorithmRsaPkca1(DigestAlgorithm digest) {

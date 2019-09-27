@@ -247,7 +247,7 @@ void WebContentsObserverSanityChecker::DocumentOnLoadCompletedInMainFrame() {
   AssertMainFrameExists();
 }
 
-void WebContentsObserverSanityChecker::DocumentLoadedInFrame(
+void WebContentsObserverSanityChecker::DOMContentLoaded(
     RenderFrameHost* render_frame_host) {
   AssertRenderFrameExists(render_frame_host);
 }

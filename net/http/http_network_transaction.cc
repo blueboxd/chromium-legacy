@@ -326,8 +326,7 @@ void HttpNetworkTransaction::PrepareForAuthRestart(HttpAuth::Target target) {
   if (target == HttpAuth::AUTH_SERVER &&
       auth_controllers_[target]->NeedsHTTP11()) {
     session_->http_server_properties()->SetHTTP11Required(
-        HttpServerProperties::GetNormalizedSchemeHostPort(request_->url),
-        network_isolation_key_);
+        url::SchemeHostPort(request_->url), network_isolation_key_);
   }
 
   bool keep_alive = false;

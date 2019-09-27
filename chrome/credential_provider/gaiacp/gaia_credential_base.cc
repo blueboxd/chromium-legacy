@@ -1698,12 +1698,20 @@ HRESULT CGaiaCredentialBase::ForkSaveAccountInfoStub(const base::Value& dict,
   // Write account info to stdin of child process.  This buffer is read by
   // SaveAccountInfoW() in dllmain.cpp.  If this fails, chrome won't pick up
   // the credentials from the credential provider and will need to sign in
-  // manually.  TODO(crbug.com/902911): Figure out how to handle this.
+  // manually.
   std::string json;
   if (base::JSONWriter::Write(dict, &json)) {
-    DWORD written;
-    if (!::WriteFile(parent_handles.hstdin_write.Get(), json.c_str(),
-                     json.length() + 1, &written, /*lpOverlapped=*/nullptr)) {
+    const DWORD buffer_size = json.length() + 1;
+    LOGFN(INFO) << "Json size: " << buffer_size;
+
+    DWORD written = 0;
+    // First, write the buffer size then write the buffer content.
+    if (!::WriteFile(parent_handles.hstdin_write.Get(), &buffer_size,
+                     sizeof(buffer_size), &written, /*lpOverlapped=*/nullptr)) {
+      HRESULT hrWrite = HRESULT_FROM_WIN32(::GetLastError());
+      LOGFN(ERROR) << "WriteFile hr=" << putHR(hrWrite);
+    } else if (!::WriteFile(parent_handles.hstdin_write.Get(), json.c_str(),
+                            buffer_size, &written, /*lpOverlapped=*/nullptr)) {
       HRESULT hrWrite = HRESULT_FROM_WIN32(::GetLastError());
       LOGFN(ERROR) << "WriteFile hr=" << putHR(hrWrite);
     }

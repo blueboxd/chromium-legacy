@@ -132,27 +132,36 @@ void NetworkListView::OnGetNetworkStateList(
         vpn_connected_ = true;
       continue;
     }
-    // If cellular is not enabled, skip cellular networks with no service.
-    ActivationStateType activation_state =
-        network->cellular ? network->cellular->activation_state
-                          : ActivationStateType::kUnknown;
-    if (network->type == NetworkType::kCellular &&
-        model()->GetDeviceState(NetworkType::kCellular) !=
-            DeviceStateType::kEnabled &&
-        activation_state == ActivationStateType::kNoService) {
-      continue;
-    }
-    if (network->type == NetworkType::kWiFi)
-      wifi_has_networks_ = true;
-    // Real (non 'default') Cellular networks are always connectable.
-    if (network->type == NetworkType::kCellular && network->connectable)
-      mobile_has_networks_ = true;
-    if (network->type == NetworkType::kTether) {
-      mobile_has_networks_ = true;
-      tether_has_networks_ = true;
-    }
 
     auto info = std::make_unique<NetworkInfo>(network->guid);
+    ActivationStateType activation_state = ActivationStateType::kUnknown;
+    switch (network->type) {
+      case NetworkType::kCellular:
+        activation_state =
+            network->type_state->get_cellular()->activation_state;
+        // If cellular is not enabled, skip cellular networks with no service.
+        if (model()->GetDeviceState(NetworkType::kCellular) !=
+                DeviceStateType::kEnabled &&
+            activation_state == ActivationStateType::kNoService) {
+          continue;
+        }
+        // Real (non 'default') Cellular networks are always connectable.
+        if (network->connectable)
+          mobile_has_networks_ = true;
+        break;
+      case NetworkType::kWiFi:
+        wifi_has_networks_ = true;
+        break;
+      case NetworkType::kTether:
+        mobile_has_networks_ = true;
+        tether_has_networks_ = true;
+        info->battery_percentage =
+            network->type_state->get_tether()->battery_percentage;
+        break;
+      default:
+        break;
+    }
+
     info->label = network_icon::GetLabelForNetworkList(network.get());
     // |network_list_| only contains non virtual networks.
     info->image = network_icon::GetImageForNonVirtualNetwork(
@@ -166,8 +175,6 @@ void NetworkListView::OnGetNetworkStateList(
 
     info->connection_state = connection_state;
 
-    if (network->tether)
-      info->battery_percentage = network->tether->battery_percentage;
     if (network->captive_portal_provider) {
       info->captive_portal_provider_name =
           network->captive_portal_provider->name;

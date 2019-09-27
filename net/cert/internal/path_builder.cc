@@ -618,7 +618,7 @@ CertPathBuilder::Result CertPathBuilder::Run() {
              << result_path->errors.ToDebugString(result_path->certs);
 
     // Give the delegate a chance to add errors to the path.
-    delegate_->CheckPathAfterVerification(result_path.get());
+    delegate_->CheckPathAfterVerification(*this, result_path.get());
 
     bool path_is_good = result_path->IsValid();
 

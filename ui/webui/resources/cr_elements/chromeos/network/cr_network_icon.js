@@ -134,9 +134,8 @@ Polymer({
     }
     if (this.networkState.type ==
         chromeos.networkConfig.mojom.NetworkType.kCellular) {
-      assert(this.networkState.cellular);
-      const technology =
-          this.getTechnologyId_(this.networkState.cellular.networkTechnology);
+      const technology = this.getTechnologyId_(
+          this.networkState.typeState.cellular.networkTechnology);
       if (technology != '') {
         return 'network:' + technology;
       }
@@ -189,6 +188,6 @@ Polymer({
       return false;
     }
     return this.networkState.type == mojom.NetworkType.kWiFi &&
-        this.networkState.wifi.security != mojom.SecurityType.kNone;
+        this.networkState.typeState.wifi.security != mojom.SecurityType.kNone;
   },
 });

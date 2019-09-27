@@ -597,10 +597,11 @@ void AXTree::UpdateData(const AXTreeData& new_data) {
     observer.OnTreeDataChanged(this, old_data, new_data);
 }
 
-gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
-                                        gfx::RectF bounds,
-                                        bool* offscreen,
-                                        bool clip_bounds) const {
+gfx::RectF AXTree::RelativeToTreeBoundsInternal(const AXNode* node,
+                                                gfx::RectF bounds,
+                                                bool* offscreen,
+                                                bool clip_bounds,
+                                                bool allow_recursion) const {
   // If |bounds| is uninitialized, which is not the same as empty,
   // start with the node bounds.
   if (bounds.width() == 0 && bounds.height() == 0) {
@@ -610,10 +611,16 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
     // try to compute good bounds from the children.
     // If a tree update is in progress, skip this step as children may be in a
     // bad state.
-    if (bounds.IsEmpty() && !GetTreeUpdateInProgressState()) {
+    if (bounds.IsEmpty() && !GetTreeUpdateInProgressState() &&
+        allow_recursion) {
       for (size_t i = 0; i < node->children().size(); i++) {
         ui::AXNode* child = node->children()[i];
-        bounds.Union(GetTreeBounds(child));
+
+        bool ignore_offscreen;
+        gfx::RectF child_bounds = RelativeToTreeBoundsInternal(
+            child, gfx::RectF(), &ignore_offscreen, clip_bounds,
+            /* allow_recursion = */ false);
+        bounds.Union(child_bounds);
       }
       if (bounds.width() > 0 && bounds.height() > 0) {
         return bounds;
@@ -624,19 +631,15 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
                   node->data().relative_bounds.bounds.y());
   }
 
+  const AXNode* original_node = node;
   while (node != nullptr) {
     if (node->data().relative_bounds.transform)
       node->data().relative_bounds.transform->TransformRect(&bounds);
-    const AXNode* container;
-
-    // Normally we apply any transforms and offsets for each node and
-    // then walk up to its offset container - however, if the node has
-    // no width or height, walk up to its nearest ancestor until we find
-    // one that has bounds.
-    if (bounds.width() == 0 && bounds.height() == 0)
-      container = node->parent();
-    else
-      container = GetFromId(node->data().relative_bounds.offset_container_id);
+    // Apply any transforms and offsets for each node and then walk up to
+    // its offset container. If no offset container is specified, coordinates
+    // are relative to the root node.
+    const AXNode* container =
+        GetFromId(node->data().relative_bounds.offset_container_id);
     if (!container && container != root())
       container = root();
     if (!container || container == node)
@@ -644,18 +647,6 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
 
     gfx::RectF container_bounds = container->data().relative_bounds.bounds;
     bounds.Offset(container_bounds.x(), container_bounds.y());
-
-    // If we don't have any size yet, take the size from this ancestor.
-    // The rationale is that it's not useful to the user for an object to
-    // have no width or height and it's probably a bug; it's better to
-    // reflect the bounds of the nearest ancestor rather than a 0x0 box.
-    // Tag this node as 'offscreen' because it has no true size, just a
-    // size inherited from the ancestor.
-    if (bounds.width() == 0 && bounds.height() == 0) {
-      bounds.set_size(container_bounds.size());
-      if (offscreen != nullptr)
-        *offscreen |= true;
-    }
 
     int scroll_x = 0;
     int scroll_y = 0;
@@ -672,7 +663,7 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
 
     // Calculate the clipped bounds to determine offscreen state.
     gfx::RectF clipped = bounds;
-    // If this is the root web area, make sure we clip the node to fit.
+    // If this node has the kClipsChildren attribute set, clip the rect to fit.
     if (container->data().GetBoolAttribute(
             ax::mojom::BoolAttribute::kClipsChildren)) {
       if (!intersection.IsEmpty()) {
@@ -718,7 +709,54 @@ gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
     node = container;
   }
 
+  // If we don't have any size yet, try to adjust the bounds to fill the
+  // nearest ancestor that does have bounds.
+  //
+  // The rationale is that it's not useful to the user for an object to
+  // have no width or height and it's probably a bug; it's better to
+  // reflect the bounds of the nearest ancestor rather than a 0x0 box.
+  // Tag this node as 'offscreen' because it has no true size, just a
+  // size inherited from the ancestor.
+  if (bounds.width() == 0 && bounds.height() == 0) {
+    const AXNode* ancestor = original_node->parent();
+    gfx::RectF ancestor_bounds;
+    while (ancestor) {
+      ancestor_bounds = ancestor->data().relative_bounds.bounds;
+      if (ancestor_bounds.width() > 0 || ancestor_bounds.height() > 0)
+        break;
+      ancestor = ancestor->parent();
+    }
+
+    if (ancestor && allow_recursion) {
+      bool ignore_offscreen;
+      bool allow_recursion = false;
+      ancestor_bounds = RelativeToTreeBoundsInternal(
+          ancestor, gfx::RectF(), &ignore_offscreen, clip_bounds,
+          allow_recursion);
+
+      gfx::RectF original_bounds = original_node->data().relative_bounds.bounds;
+      if (original_bounds.x() == 0 && original_bounds.y() == 0) {
+        bounds = ancestor_bounds;
+      } else {
+        bounds.set_width(std::max(0.0f, ancestor_bounds.right() - bounds.x()));
+        bounds.set_height(
+            std::max(0.0f, ancestor_bounds.bottom() - bounds.y()));
+      }
+      if (offscreen != nullptr)
+        *offscreen |= true;
+    }
+  }
+
   return bounds;
+}
+
+gfx::RectF AXTree::RelativeToTreeBounds(const AXNode* node,
+                                        gfx::RectF bounds,
+                                        bool* offscreen,
+                                        bool clip_bounds) const {
+  bool allow_recursion = true;
+  return RelativeToTreeBoundsInternal(node, bounds, offscreen, clip_bounds,
+                                      allow_recursion);
 }
 
 gfx::RectF AXTree::GetTreeBounds(const AXNode* node,

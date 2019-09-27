@@ -82,8 +82,10 @@ class WebviewRpcInstance : public WebviewController::Client,
 
   WebviewWindowManager* window_manager_;
 
-  int app_id_ = 0;
-  int window_id_ = 0;
+  // Initialize to negative values since the aura::Window properties use 0 as
+  // the default value if the property isn't found.
+  int app_id_ = -1;
+  int window_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(WebviewRpcInstance);
 };
@@ -111,7 +113,6 @@ WebviewRpcInstance::WebviewRpcInstance(
                                           base::Unretained(this));
 
   service_->RequestCreateWebview(&ctx_, &io_, cq_, cq_, &init_callback_);
-  window_manager_->AddObserver(this);
 }
 
 WebviewRpcInstance::~WebviewRpcInstance() {
@@ -181,6 +182,10 @@ bool WebviewRpcInstance::Initialize() {
 void WebviewRpcInstance::CreateWebview(int app_id, int window_id) {
   app_id_ = app_id;
   window_id_ = window_id;
+  // Only start listening for window events after the Webview is created. It
+  // doesn't make sense to listen before since there wouldn't be a Webview to
+  // parent.
+  window_manager_->AddObserver(this);
 
   content::BrowserContext* browser_context =
       shell::CastBrowserProcess::GetInstance()->browser_context();

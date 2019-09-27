@@ -250,6 +250,7 @@ instrumentation_test_apk("weblayer_instrumentation_test_apk") {
     "//third_party/android_support_test_runner:runner_java",
   ]
   java_files = [
+    "javatests/src/org/chromium/weblayer/test/BrowserObserverTest.java",
     "javatests/src/org/chromium/weblayer/test/NavigationTest.java",
     "javatests/src/org/chromium/weblayer/test/SmokeTest.java",
     "javatests/src/org/chromium/weblayer/test/RenderingTest.java",

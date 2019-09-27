@@ -109,6 +109,17 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Trình xử lý giao thức được đặt qua chính sách này không được sử dụng khi xử lý các cơ chế của Android.</translation>
 <translation id="1118093128235245168">Cho phép các trang web yêu cầu người dùng cấp quyền truy cập vào một thiết bị USB đã kết nối</translation>
+<translation id="1123594119609921068">Đặt trạng thái mặc định cho tính năng hỗ trợ tiếp cận về phản hồi bằng giọng nói trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này thành true, thì tính năng phản hồi bằng giọng nói sẽ bật khi màn hình đăng nhập hiển thị.
+
+          Nếu bạn đặt chính sách này thành false, thì tính năng phản hồi bằng giọng nói sẽ tắt khi màn hình đăng nhập hiển thị.
+
+          Nếu bạn đặt chính sách này, thì người dùng có thể tạm thời ghi đè chính sách bằng cách bật hoặc tắt tính năng phản hồi bằng giọng nói. Tuy nhiên, sự lựa chọn của người dùng là không cố định và chế độ mặc định sẽ được khôi phục mỗi khi màn hình đăng nhập hiển thị lại hoặc người dùng không dùng màn hình đăng nhập trong 1 phút.
+
+          Nếu bạn không đặt chính sách này, thì tính năng phản hồi bằng giọng nói sẽ tắt khi màn hình đăng nhập hiển thị lần đầu tiên. Người dùng có thể bật hoặc tắt tính năng phản hồi bằng giọng nói bất cứ lúc nào. Ngoài ra, trạng thái của tính năng này trên màn hình đăng nhập sẽ không thay đổi giữa những người dùng.
+
+          Lưu ý: <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
 <translation id="1128903365609589950">Định cấu hình thư mục mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ các tệp được lưu trữ trong bộ nhớ đệm trên đĩa.
 
       Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng thư mục được cung cấp bất kể người dùng có chỉ định cờ '--disk-cache-dir' hay không. Để tránh mất dữ liệu hoặc các lỗi không mong đợi khác, không nên đặt chính sách này thành thư mục gốc của ổ đĩa hoặc thành thư mục dùng cho các mục đích khác, vì <ph name="PRODUCT_NAME" /> quản lý các nội dung của nó.
@@ -1701,6 +1712,15 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Hãy xem https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables để biết danh sách các biến có thể được sử dụng.</translation>
 <translation id="3911737181201537215">Chính sách này không ảnh hưởng đến việc ghi nhật ký do Android thực hiện.</translation>
+<translation id="3912092044353890761">Bật tính năng hỗ trợ tiếp cận về bàn phím ảo trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này thành true, thì bàn phím ảo sẽ luôn bật trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này thành false, thì bàn phím ảo sẽ luôn tắt trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì ban đầu, bàn phím ảo sẽ tắt trên màn hình đăng nhập nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="391531815696899618">Tắt đồng bộ hóa Google Drive trong ứng dụng Tệp <ph name="PRODUCT_OS_NAME" /> khi được đặt thành True. Trong trường hợp đó, không có dữ liệu nào được tải lên Google Drive.
 
           Nếu không được đặt hoặc được đặt thành False thì người dùng có thể chuyển các tệp đến Google Drive.</translation>
@@ -1870,11 +1890,31 @@ Khi chính sách này được đặt thành false hoặc không được địn
           Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hoặc ghi đè chính sách.
 
           Nếu bạn không đặt chính sách này, thì ban đầu, các phím cố định sẽ tắt nhưng người dùng có thể bật bất cứ lúc nào.</translation>
+<translation id="4169692397912242417">Bật tính năng hỗ trợ tiếp cận về phản hồi bằng giọng nói trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này thành true, thì tính năng phản hồi bằng giọng nói sẽ luôn bật trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này thành false, thì tính năng phản hồi bằng giọng nói sẽ luôn tắt trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì ban đầu, tính năng phản hồi bằng giọng nói sẽ tắt trên màn hình đăng nhập nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="4171331498167688968">Nếu bạn đặt chính sách này thành false, thì phần mềm bên thứ ba sẽ được phép đưa mã thực thi vào các quy trình của Chrome. Nếu bạn không đặt chính sách này hoặc đặt chính sách này thành true, thì phần mềm bên thứ ba sẽ không được phép đưa mã thực thi vào các quy trình của Chrome.
 
       Bất kể chính sách này có giá trị như thế nào, thì trình duyệt cũng sẽ không ngăn cản phần mềm bên thứ ba đưa mã thực thi vào các quy trình của trình duyệt trên một máy liên kết với miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Cài đặt <ph name="FLASH_PLUGIN_NAME" /> mặc định</translation>
 <translation id="4192388905594723944">URL để xác thực mã thông báo xác thực ứng dụng truy cập từ xa</translation>
+<translation id="420007931282384740">Đặt trạng thái mặc định cho tính năng hỗ trợ tiếp cận về bàn phím ảo trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này thành true, thì bàn phím ảo sẽ bật khi màn hình đăng nhập hiển thị.
+
+          Nếu bạn đặt chính sách này thành false, thì bàn phím ảo sẽ tắt khi màn hình đăng nhập hiển thị.
+
+          Nếu bạn đặt chính sách này, thì người dùng có thể tạm thời ghi đè chính sách bằng cách bật hoặc tắt bàn phím ảo. Tuy nhiên, sự lựa chọn của người dùng là không cố định và chế độ mặc định sẽ được khôi phục mỗi khi màn hình đăng nhập hiển thị lại hoặc người dùng không dùng màn hình đăng nhập trong 1 phút.
+
+          Nếu bạn không đặt chính sách này, thì bàn phím ảo sẽ tắt khi màn hình đăng nhập hiển thị lần đầu tiên. Người dùng có thể bật hoặc tắt bàn phím ảo bất cứ lúc nào. Ngoài ra, trạng thái của bàn phím ảo trên màn hình đăng nhập sẽ không thay đổi giữa những người dùng.
+
+          Lưu ý: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
 <translation id="4203389617541558220">Giới hạn thời gian hoạt động của thiết bị bằng cách lên lịch tự động khởi động lại.
 
       Khi chính sách này được đặt, chính sách chỉ định lượng thời gian hoạt động của thiết bị mà sau lượng thời gian đó, khởi động lại tự động sẽ được lên lịch.
@@ -2475,6 +2515,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5323128137188992869">Cho phép truyền nội dung đến thiết bị này bằng cách sử dụng <ph name="PRODUCT_NAME" />.
 
           Nếu bạn đặt chính sách này thành False, người dùng sẽ không thể truyền nội dung đến thiết bị của họ. Nếu bạn đặt chính sách này thành True, người dùng sẽ được phép truyền nội dung. Nếu bạn không đặt chính sách này, người dùng sẽ không được phép truyền nội dung đến thiết bị Chrome OS đã đăng ký, nhưng có thể truyền đến các thiết bị không được đăng ký.</translation>
+<translation id="5323200200131319468">Bật tính năng phản hồi bằng giọng nói trên màn hình đăng nhập</translation>
 <translation id="5325625566921364045">Kiểm soát cách <ph name="PRODUCT_NAME" /> kiểm tra dữ liệu được tải lên, tải xuống, dán từ khay nhớ tạm hoặc kéo và thả xem có tuân thủ các quy tắc của doanh nghiệp hay không.
 
       Nếu bạn không đặt hoặc đặt chính sách này thành 'None', thì <ph name="PRODUCT_NAME" /> sẽ không kiểm tra tính tuân thủ của bất kỳ dữ liệu nào.
@@ -2673,6 +2714,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="5530347722229944744">Chặn các mục tải xuống có thể gây nguy hiểm</translation>
 <translation id="5535973522252703021">Danh sách trắng máy chủ ủy quyền Kerberos</translation>
 <translation id="554903022911579950">Kerberos</translation>
+<translation id="555022085242359084">Bật chế độ tương phản cao trên màn hình đăng nhập</translation>
 <translation id="555077880566103058">Cho phép tất cả các trang web tự động chạy plugin <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="5559079916187891399">Chính sách này không ảnh hưởng đến các ứng dụng Android.</translation>
 <translation id="5560039246134246593">Thêm thông số cho quá trình tìm nạp khởi đầu Biến thể trong <ph name="PRODUCT_NAME" />.
@@ -2936,6 +2978,7 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6089679180657323464">Kiểm soát các tùy chọn cài đặt của bộ điều khiển đo từ xa và chẩn đoán wilco.</translation>
 <translation id="6091233616732024397">Buộc người dùng đăng nhập để sử dụng trình duyệt</translation>
 <translation id="6093156968240188330">Cho phép người dùng ở xa tương tác với cửa sổ bật lên trong phiên hỗ trợ từ xa</translation>
+<translation id="6095048925836115505">Bật bàn phím ảo trên màn hình đăng nhập</translation>
 <translation id="6095999036251797924">Chỉ định khoảng thời gian không có thao tác nhập của người dùng mà sau khoảng thời gian đó màn hình bị khóa khi chạy trên nguồn AC hoặc pin.
 
           Khi được đặt thành giá trị lớn hơn không, khoảng thời gian này thể hiện khoảng thời gian mà người dùng không sử dụng trước khi <ph name="PRODUCT_OS_NAME" /> khóa màn hình.
@@ -3951,11 +3994,31 @@ Nếu bạn không đặt chính sách này thì người dùng sẽ có thể t
 
       Nếu không đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng giá trị mặc định là 5000 mili giây.</translation>
 <translation id="7841880500990419427">Phiên bản TLS tối thiểu để dự phòng sang</translation>
+<translation id="7842317008224536842">Đặt trạng thái mặc định cho tính năng hỗ trợ tiếp cận về độ tương phản cao trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này thành true, thì chế độ tương phản cao sẽ bật khi màn hình đăng nhập hiển thị.
+
+          Nếu bạn đặt chính sách này thành false, thì chế độ tương phản cao sẽ tắt khi màn hình đăng nhập hiển thị.
+
+          Nếu bạn đặt chính sách này, thì người dùng có thể tạm thời ghi đè chính sách bằng cách bật hoặc tắt chế độ tương phản cao. Tuy nhiên, sự lựa chọn của người dùng là không cố định và chế độ mặc định sẽ được khôi phục mỗi khi màn hình đăng nhập hiển thị lại hoặc người dùng không dùng màn hình đăng nhập trong 1 phút.
+
+          Nếu bạn không đặt chính sách này, thì chế độ tương phản cao sẽ tắt khi màn hình đăng nhập hiển thị lần đầu tiên. Người dùng có thể bật hoặc tắt chế độ tương phản cao bất cứ lúc nào. Ngoài ra, trạng thái của chế độ này trên màn hình đăng nhập sẽ không thay đổi giữa những người dùng.
+
+          Lưu ý: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> (nếu đã được chỉ định) sẽ ghi đè chính sách này.</translation>
 <translation id="7858404742201086014">Nếu bạn bật tùy chọn cài đặt này, các plugin lỗi thời sẽ được sử dụng như những plugin bình thường.
 
       Nếu bạn tắt tùy chọn cài đặt này, các plugin lỗi thời sẽ không được sử dụng và người dùng sẽ không được yêu cầu cấp quyền để chạy các plugin đó.
 
       Nếu bạn không đặt tùy chọn cài đặt này, người dùng sẽ được yêu cầu cấp quyền để chạy các plugin lỗi thời.</translation>
+<translation id="7863947545897944083">Bật tính năng hỗ trợ tiếp cận về độ tương phản cao trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này thành true, thì chế độ tương phản cao sẽ luôn bật trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này thành false, thì chế độ tương phản cao sẽ luôn tắt trên màn hình đăng nhập.
+
+          Nếu bạn đặt chính sách này, thì người dùng sẽ không thể thay đổi hay ghi đè chính sách.
+
+          Nếu bạn không đặt chính sách này, thì ban đầu, chế độ tương phản cao sẽ tắt trên màn hình đăng nhập nhưng người dùng có thể bật bất cứ lúc nào.</translation>
 <translation id="787125417158068494">Nếu được đặt thành SyncDisabled hoặc không được định cấu hình, các chứng chỉ <ph name="PRODUCT_OS_NAME" /> sẽ không khả dụng cho ứng dụng ARC.
 
       Nếu được đặt thành CopyCaCerts, tất cả các chứng chỉ CA đã cài đặt ONC có <ph name="WEB_TRUSTED_BIT" /> sẽ khả dụng cho ứng dụng ARC.</translation>

@@ -41,8 +41,7 @@ class SplitViewOverviewSessionTest;
 // the screen. It also observes the two snapped windows and decides when to exit
 // the split view mode.
 // TODO(xdai): Make it work for multi-display non mirror environment.
-class ASH_EXPORT SplitViewController : public SplitViewNotifier,
-                                       public aura::WindowObserver,
+class ASH_EXPORT SplitViewController : public aura::WindowObserver,
                                        public WindowStateObserver,
                                        public wm::ActivationChangeObserver,
                                        public ShellObserver,
@@ -173,10 +172,8 @@ class ASH_EXPORT SplitViewController : public SplitViewNotifier,
   void OnResizeLoopStarted(aura::Window* window) override;
   void OnResizeLoopEnded(aura::Window* window) override;
 
-  // SplitViewNotifier:
-  SplitViewState GetCurrentState() const override;
-  void AddObserver(SplitViewObserver* observer) override;
-  void RemoveObserver(SplitViewObserver* observer) override;
+  void AddObserver(SplitViewObserver* observer);
+  void RemoveObserver(SplitViewObserver* observer);
 
   // aura::WindowObserver:
   void OnWindowDestroyed(aura::Window* window) override;

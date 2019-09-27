@@ -42,8 +42,7 @@ PpapiBlinkPlatformImpl::PpapiBlinkPlatformImpl() {
   SkFontConfigInterface::SetGlobal(font_loader_);
   sandbox_support_.reset(new WebSandboxSupportLinux(font_loader_));
 #elif defined(OS_MACOSX)
-  sandbox_support_.reset(
-      new WebSandboxSupportMac(ChildThread::Get()->GetConnector()));
+  sandbox_support_ = std::make_unique<WebSandboxSupportMac>();
 #endif
 }
 

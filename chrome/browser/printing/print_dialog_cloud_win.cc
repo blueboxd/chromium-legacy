@@ -69,8 +69,7 @@ class PrintDataSetter : public content::WebContentsObserver {
 
  private:
   // Overridden from content::WebContentsObserver:
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override {
+  void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override {
     GURL url = web_contents()->GetURL();
     if (cloud_devices::IsCloudPrintURL(url)) {
       base::string16 origin = base::UTF8ToUTF16(url.GetOrigin().spec());

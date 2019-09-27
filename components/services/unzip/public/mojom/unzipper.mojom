@@ -16,13 +16,14 @@ interface UnzipFilter {
 interface Unzipper {
   // Unzip |zip_file| into |output_dir|.
   // Returns true on success, false otherwise.
-  Unzip(mojo_base.mojom.File zip_file, filesystem.mojom.Directory output_dir)
-      => (bool result);
+  Unzip(mojo_base.mojom.File zip_file,
+        pending_remote<filesystem.mojom.Directory> output_dir)
+       => (bool result);
 
   // Same as |unzip| but only includes the files for which |filter| returns
   // true. Note that this incurs one IPC for each file of the archive.
   UnzipWithFilter(
       mojo_base.mojom.File zip_file,
-      filesystem.mojom.Directory output_dir,
-      UnzipFilter filter) => (bool result);
+      pending_remote<filesystem.mojom.Directory> output_dir,
+      pending_remote<UnzipFilter> filter) => (bool result);
 };

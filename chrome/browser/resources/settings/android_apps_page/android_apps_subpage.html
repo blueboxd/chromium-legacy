@@ -16,8 +16,10 @@
     <style include="settings-shared"></style>
 
     <template is="dom-if" if="[[androidAppsInfo.settingsAppAvailable]]" restamp>
-      <cr-link-row id="manageApps" label="$i18n{androidAppsManageApps}"
-          on-click="onManageAndroidAppsTap_" external></cr-link-row>
+      <cr-link-row id="manageApps" icon-class="icon-external"
+          label="$i18n{androidAppsManageApps}"
+          on-click="onManageAndroidAppsTap_" external>
+      </cr-link-row>
     </template>
 
     <!-- Use 'restamp' so tests can check if the row exists. -->

@@ -35,7 +35,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
-#include "services/file/file_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -655,7 +654,7 @@ TEST_F(SessionStorageContextMojoTest, RecreateOnCommitFailure) {
   url::Origin origin3 = url::Origin::Create(GURL("http://example.com"));
 
   test::FakeLevelDBService fake_leveldb_service;
-  context()->GetFileServiceForTesting()->OverrideLevelDBBinderForTesting(
+  context()->OverrideLevelDBBinderForTesting(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&fake_leveldb_service)));
 
@@ -793,7 +792,7 @@ TEST_F(SessionStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));
 
   test::FakeLevelDBService fake_leveldb_service;
-  context()->GetFileServiceForTesting()->OverrideLevelDBBinderForTesting(
+  context()->OverrideLevelDBBinderForTesting(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&fake_leveldb_service)));
 

@@ -82,6 +82,24 @@ Vector<char> ChooserResourceLoader::GetMonthPickerJS() {
 #endif
 }
 
+Vector<char> ChooserResourceLoader::GetTimePickerStyleSheet() {
+#if !defined(OS_ANDROID)
+  return UncompressResourceAsBinary(IDR_TIME_PICKER_CSS);
+#else
+  NOTREACHED();
+  return Vector<char>();
+#endif
+}
+
+Vector<char> ChooserResourceLoader::GetTimePickerJS() {
+#if !defined(OS_ANDROID)
+  return UncompressResourceAsBinary(IDR_TIME_PICKER_JS);
+#else
+  NOTREACHED();
+  return Vector<char>();
+#endif
+}
+
 Vector<char> ChooserResourceLoader::GetColorSuggestionPickerStyleSheet() {
 #if !defined(OS_ANDROID)
   return UncompressResourceAsBinary(IDR_COLOR_SUGGESTION_PICKER_CSS);

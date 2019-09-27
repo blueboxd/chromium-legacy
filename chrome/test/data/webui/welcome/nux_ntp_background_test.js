@@ -17,13 +17,13 @@ suite('NuxNtpBackgroundTest', function() {
       title: 'Art',
       /* Image URLs are set to actual static images to prevent requesting
        * an external image. */
-      imageUrl: 'chrome://welcome/images/ntp_thumbnails/art.jpg',
+      imageUrl: './images/ntp_thumbnails/art.jpg',
       thumbnailClass: 'art',
     },
     {
       id: 1,
       title: 'Cityscape',
-      imageUrl: 'chrome://welcome/images/ntp_thumbnails/cityscape.jpg',
+      imageUrl: './images/ntp_thumbnails/cityscape.jpg',
       thumbnailClass: 'cityscape',
     },
   ];
@@ -49,16 +49,8 @@ suite('NuxNtpBackgroundTest', function() {
     testNtpBackgroundProxy.setBackgroundsList(backgrounds);
 
     PolymerTest.clearBody();
-    // Add <base> so that images in nux-google-apps will be loaded from the
-    // correct data source.
-    const base = document.createElement('base');
-    base.href = 'chrome://welcome/google_apps/';
-    document.head.appendChild(base);
     testElement = document.createElement('nux-ntp-background');
     document.body.appendChild(testElement);
-    // Remove <base> so that routing happens from a base of chrome://test, to
-    // prevent a security error.
-    document.head.removeChild(base);
 
     testElement.onRouteEnter();
     return Promise.all([

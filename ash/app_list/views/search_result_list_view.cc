@@ -18,9 +18,11 @@
 #include "ash/app_list/views/search_box_view.h"
 #include "ash/public/cpp/app_list/app_list_config.h"
 #include "ash/public/cpp/app_list/app_list_features.h"
+#include "ash/public/cpp/app_list/app_list_metrics.h"
 #include "ash/public/cpp/app_list/vector_icons/vector_icons.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/bind.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/time/time.h"
 #include "ui/events/event.h"
 #include "ui/gfx/animation/linear_animation.h"
@@ -36,6 +38,8 @@ namespace {
 
 constexpr base::TimeDelta kImpressionThreshold =
     base::TimeDelta::FromSeconds(3);
+constexpr base::TimeDelta kZeroStateImpressionThreshold =
+    base::TimeDelta::FromSeconds(1);
 
 constexpr SkColor kListVerticalBarIconColor =
     SkColorSetARGB(0xFF, 0xE8, 0xEA, 0xED);
@@ -125,6 +129,20 @@ ash::SearchResultIdWithPositionIndices GetSearchResultsForLogging(
   }
   return results;
 }
+
+bool IsZeroStateFile(const app_list::SearchResult& result) {
+  return result.result_type() == ash::SearchResultType::kZeroStateFile;
+}
+
+bool IsDriveQuickAccess(const app_list::SearchResult& result) {
+  return result.result_type() == ash::SearchResultType::kDriveQuickAccess;
+}
+
+void LogFileImpressions(app_list::SearchResultType result_type) {
+  UMA_HISTOGRAM_ENUMERATION("Apps.AppList.ZeroStateResultsList.FileImpressions",
+                            result_type, SEARCH_RESULT_TYPE_BOUNDARY);
+}
+
 }  // namespace
 
 SearchResultListView::SearchResultListView(AppListMainView* main_view,
@@ -177,6 +195,15 @@ SearchResultBaseView* SearchResultListView::GetFirstResultView() {
 }
 
 int SearchResultListView::DoUpdate() {
+  if (!GetWidget() || !GetWidget()->IsVisible()) {
+    for (size_t i = 0; i < results_container_->children().size(); ++i) {
+      SearchResultView* result_view = GetResultViewAt(i);
+      result_view->SetResult(nullptr);
+      result_view->SetVisible(false);
+    }
+    return 0;
+  }
+
   std::vector<SearchResult*> display_results =
       SearchModel::FilterSearchResultsByDisplayType(
           results(), ash::SearchResultDisplayType::kList, /*excludes=*/{},
@@ -188,9 +215,17 @@ int SearchResultListView::DoUpdate() {
   if (IsEmbeddedAssistantUiEnabled(view_delegate_))
     CalculateDisplayIcons(display_results, &assistant_item_icons);
 
+  bool found_zero_state_file = false;
+  bool found_drive_quick_access = false;
+
   for (size_t i = 0; i < results_container_->children().size(); ++i) {
     SearchResultView* result_view = GetResultViewAt(i);
     if (i < display_results.size()) {
+      if (IsZeroStateFile(*display_results[i])) {
+        found_zero_state_file = true;
+      } else if (IsDriveQuickAccess(*display_results[i])) {
+        found_drive_quick_access = true;
+      }
       if (assistant_item_icons[i]) {
         result_view->SetDisplayIcon(gfx::CreateVectorIcon(
             *(assistant_item_icons[i]),
@@ -220,6 +255,26 @@ int SearchResultListView::DoUpdate() {
     impression_timer_.Stop();
   impression_timer_.Start(FROM_HERE, kImpressionThreshold, this,
                           &SearchResultListView::LogImpressions);
+
+  // Log impressions for local zero state files.
+  if (!found_zero_state_file)
+    zero_state_file_impression_timer_.Stop();
+  if (found_zero_state_file && !previous_found_zero_state_file_) {
+    zero_state_file_impression_timer_.Start(
+        FROM_HERE, kZeroStateImpressionThreshold,
+        base::BindOnce(&LogFileImpressions, ZERO_STATE_FILE));
+  }
+  previous_found_zero_state_file_ = found_zero_state_file;
+
+  // Log impressions for Drive Quick Access files.
+  if (!found_drive_quick_access)
+    drive_quick_access_impression_timer_.Stop();
+  if (found_drive_quick_access && !previous_found_drive_quick_access_) {
+    drive_quick_access_impression_timer_.Start(
+        FROM_HERE, kZeroStateImpressionThreshold,
+        base::BindOnce(&LogFileImpressions, DRIVE_QUICK_ACCESS));
+  }
+  previous_found_drive_quick_access_ = found_drive_quick_access;
 
   set_container_score(
       display_results.empty() ? 0 : display_results.front()->display_score());
@@ -328,6 +383,19 @@ bool SearchResultListView::HandleVerticalFocusMovement(SearchResultView* view,
   }
 
   return false;
+}
+
+void SearchResultListView::VisibilityChanged(View* starting_from,
+                                             bool is_visible) {
+  SearchResultContainerView::VisibilityChanged(starting_from, is_visible);
+  // We only do this work when is_visible is false.
+  if (is_visible)
+    return;
+
+  zero_state_file_impression_timer_.Stop();
+  drive_quick_access_impression_timer_.Stop();
+  previous_found_zero_state_file_ = false;
+  previous_found_drive_quick_access_ = false;
 }
 
 }  // namespace app_list

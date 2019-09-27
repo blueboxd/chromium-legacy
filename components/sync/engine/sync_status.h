@@ -74,7 +74,7 @@ struct SyncStatus {
 
   // Encryption related.
   ModelTypeSet encrypted_types;
-  bool cryptographer_ready;
+  bool cryptographer_can_encrypt;
   bool crypto_has_pending_keys;
   bool has_keystore_key;
   base::Time keystore_migration_time;

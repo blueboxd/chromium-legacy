@@ -21,8 +21,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "components/services/leveldb/leveldb_service_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/browser/dom_storage/dom_storage_database.h"
@@ -30,6 +32,7 @@
 #include "content/browser/dom_storage/local_storage_database.pb.h"
 #include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/public/browser/storage_usage_info.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "sql/database.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "storage/common/database/database_identifier.h"
@@ -258,7 +261,7 @@ class LocalStorageContextMojo::StorageAreaHolder final
     // Delete any old database that might still exist if we successfully wrote
     // data to LevelDB, and our LevelDB is actually disk backed.
     if (error == leveldb::mojom::DatabaseError::OK && !deleted_old_data_ &&
-        !context_->subdirectory_.empty() && context_->task_runner_ &&
+        !context_->directory_.empty() && context_->task_runner_ &&
         !context_->old_localstorage_path_.empty()) {
       deleted_old_data_ = true;
       context_->task_runner_->PostShutdownBlockingTask(
@@ -400,10 +403,13 @@ LocalStorageContextMojo::LocalStorageContextMojo(
     const base::FilePath& old_localstorage_path,
     const base::FilePath& subdirectory,
     scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy)
-    : subdirectory_(subdirectory),
+    : directory_(subdirectory.empty()
+                     ? base::FilePath()
+                     : partition_directory.Append(subdirectory)),
       special_storage_policy_(std::move(special_storage_policy)),
-      force_in_memory_only_(partition_directory.empty()),
-      file_service_(partition_directory),
+      leveldb_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       memory_dump_id_(base::StringPrintf("LocalStorage/0x%" PRIXPTR,
                                          reinterpret_cast<uintptr_t>(this))),
       task_runner_(std::move(legacy_task_runner)),
@@ -684,7 +690,7 @@ LocalStorageContextMojo::~LocalStorageContextMojo() {
 void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
   DCHECK_NE(connection_state_, CONNECTION_SHUTDOWN);
 
-  // If we don't have a filesystem_connection_, we'll need to establish one.
+  // If we don't have a database connection, we'll need to establish one.
   if (connection_state_ == NO_CONNECTION) {
     connection_state_ = CONNECTION_IN_PROGRESS;
     InitiateConnection();
@@ -701,22 +707,43 @@ void LocalStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
 
 void LocalStorageContextMojo::InitiateConnection(bool in_memory_only) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
-  if (!subdirectory_.empty() && !in_memory_only && !force_in_memory_only_) {
-    // We were given a subdirectory to write to. Get it and use a disk backed
-    // database.
-    if (!file_system_)
-      file_service_.BindFileSystem(file_system_.BindNewPipeAndPassReceiver());
-    file_system_->GetSubDirectory(
-        subdirectory_.AsUTF8Unsafe(), MakeRequest(&directory_),
-        base::BindOnce(&LocalStorageContextMojo::OnDirectoryOpened,
-                       weak_ptr_factory_.GetWeakPtr()));
+
+  leveldb_service_.reset();
+  database_.reset();
+  if (leveldb_binder_override_) {
+    leveldb_binder_override_.Run(leveldb_service_.BindNewPipeAndPassReceiver());
+  } else {
+    // Spawn and connect to a new LevelDBServiceImpl running on the background
+    // thread pool.
+    leveldb_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver) {
+              mojo::MakeSelfOwnedReceiver(
+                  std::make_unique<leveldb::LevelDBServiceImpl>(),
+                  std::move(receiver));
+            },
+            leveldb_service_.BindNewPipeAndPassReceiver()));
+  }
+
+  if (!directory_.empty() && !in_memory_only) {
+    // We were given a subdirectory to write to, so use a disk-backed database.
+
+    leveldb_env::Options options;
+    options.create_if_missing = true;
+    options.max_open_files = 0;  // use minimum
+    // Default write_buffer_size is 4 MB but that might leave a 3.999
+    // memory allocation in RAM from a log file recovery.
+    options.write_buffer_size = 64 * 1024;
+    options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
+
+    leveldb_service_->OpenWithOptions(
+        std::move(options), directory_, "leveldb", memory_dump_id_,
+        database_.BindNewEndpointAndPassReceiver(),
+        base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
+                       weak_ptr_factory_.GetWeakPtr(), false));
   } else {
     // We were not given a subdirectory. Use a memory backed database.
-    leveldb_service_.reset();
-    file_service_.BindLevelDBService(
-        leveldb_service_.BindNewPipeAndPassReceiver());
-
-    database_.reset();
     leveldb_service_->OpenInMemory(
         memory_dump_id_, "local-storage",
         database_.BindNewEndpointAndPassReceiver(),
@@ -736,43 +763,6 @@ void LocalStorageContextMojo::OnMojoConnectionDestroyed() {
   database_.reset();
   // TODO(dullweber): Should we try to recover? E.g. try to reopen and if this
   // fails, call DeleteAndRecreateDatabase().
-}
-
-void LocalStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
-  if (err != base::File::Error::FILE_OK) {
-    // We failed to open the directory; continue with startup so that we create
-    // the |areas_|.
-    UMA_HISTOGRAM_ENUMERATION("LocalStorageContext.DirectoryOpenError", -err,
-                              -base::File::FILE_ERROR_MAX);
-    LogDatabaseOpenResult(OpenResult::DIRECTORY_OPEN_FAILED);
-    OnDatabaseOpened(false, leveldb::mojom::DatabaseError::OK);
-    return;
-  }
-
-  // Now that we have a directory, connect to the LevelDB service and get our
-  // database.
-  leveldb_service_.reset();
-  file_service_.BindLevelDBService(
-      leveldb_service_.BindNewPipeAndPassReceiver());
-
-  // We might still need to use the directory, so create a clone.
-  filesystem::mojom::DirectoryPtr directory_clone;
-  directory_->Clone(MakeRequest(&directory_clone));
-
-  leveldb_env::Options options;
-  options.create_if_missing = true;
-  options.max_open_files = 0;  // use minimum
-  // Default write_buffer_size is 4 MB but that might leave a 3.999
-  // memory allocation in RAM from a log file recovery.
-  options.write_buffer_size = 64 * 1024;
-  options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
-
-  database_.reset();
-  leveldb_service_->OpenWithOptions(
-      std::move(options), std::move(directory_clone), "leveldb",
-      memory_dump_id_, database_.BindNewEndpointAndPassReceiver(),
-      base::BindOnce(&LocalStorageContextMojo::OnDatabaseOpened,
-                     weak_ptr_factory_.GetWeakPtr(), false));
 }
 
 void LocalStorageContextMojo::OnDatabaseOpened(
@@ -850,11 +840,8 @@ void LocalStorageContextMojo::OnGotDatabaseVersion(
 
 void LocalStorageContextMojo::OnConnectionFinished() {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
-  if (!database_) {
-    directory_.reset();
-    file_system_.reset();
+  if (!database_)
     leveldb_service_.reset();
-  }
 
   // If connection was opened successfully, reset tried_to_recreate_during_open_
   // to enable recreating the database on future errors.
@@ -891,7 +878,7 @@ void LocalStorageContextMojo::DeleteAndRecreateDatabase(
 
   // If tried to recreate database on disk already, try again but this time
   // in memory.
-  if (tried_to_recreate_during_open_ && !subdirectory_.empty()) {
+  if (tried_to_recreate_during_open_ && !directory_.empty()) {
     recreate_in_memory = true;
   } else if (tried_to_recreate_during_open_) {
     // Give up completely, run without any database.
@@ -901,17 +888,10 @@ void LocalStorageContextMojo::DeleteAndRecreateDatabase(
 
   tried_to_recreate_during_open_ = true;
 
-  // Unit tests might not have a bound file_service_, in which case there is
-  // nothing to retry.
-  if (!file_system_.is_bound()) {
-    OnConnectionFinished();
-    return;
-  }
-
   // Destroy database, and try again.
-  if (directory_.is_bound()) {
+  if (!directory_.empty() && leveldb_service_.is_bound()) {
     leveldb_service_->Destroy(
-        std::move(directory_), "leveldb",
+        directory_, "leveldb",
         base::BindOnce(&LocalStorageContextMojo::OnDBDestroyed,
                        weak_ptr_factory_.GetWeakPtr(), recreate_in_memory));
   } else {

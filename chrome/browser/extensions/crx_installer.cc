@@ -963,27 +963,28 @@ void CrxInstaller::NotifyCrxInstallComplete(
     const base::Optional<CrxInstallError>& error) {
   const std::string extension_id =
       expected_id_.empty() && extension() ? extension()->id() : expected_id_;
-  InstallationReporter::ReportInstallationStage(
-      profile_, extension_id, InstallationReporter::Stage::COMPLETE);
+  InstallationReporter* installation_reporter =
+      InstallationReporter::Get(profile_);
+  installation_reporter->ReportInstallationStage(
+      extension_id, InstallationReporter::Stage::COMPLETE);
   const bool success = !error.has_value();
 
   if (!success && (!expected_id_.empty() || extension())) {
     switch (error->type()) {
       case CrxInstallErrorType::DECLINED:
-        InstallationReporter::ReportCrxInstallError(
-            profile_, extension_id,
+        installation_reporter->ReportCrxInstallError(
+            extension_id,
             InstallationReporter::FailureReason::CRX_INSTALL_ERROR_DECLINED,
             error->detail());
         break;
       case CrxInstallErrorType::SANDBOXED_UNPACKER_FAILURE:
-        InstallationReporter::ReportFailure(
-            profile_, extension_id,
-            InstallationReporter::FailureReason::
-                CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE);
+        installation_reporter->ReportFailure(
+            extension_id, InstallationReporter::FailureReason::
+                              CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE);
         break;
       case CrxInstallErrorType::OTHER:
-        InstallationReporter::ReportCrxInstallError(
-            profile_, extension_id,
+        installation_reporter->ReportCrxInstallError(
+            extension_id,
             InstallationReporter::FailureReason::CRX_INSTALL_ERROR_OTHER,
             error->detail());
         break;

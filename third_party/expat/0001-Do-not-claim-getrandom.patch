@@ -1,7 +1,7 @@
-diff --git a/third_party/expat/files/lib/expat_config.h b/third_party/expat/files/lib/expat_config.h
+diff --git a/third_party/expat/include/expat_config/expat_config.h b/third_party/expat/include/expat_config/expat_config.h
 index 278d7a8..c693a14a 100644
---- a/third_party/expat/files/lib/expat_config.h
-+++ b/third_party/expat/files/lib/expat_config.h
+--- a/third_party/expat/include/expat_config/expat_config.h
++++ b/third_party/expat/include/expat_config/expat_config.h
 @@ -23,7 +23,7 @@
  #define HAVE_GETPAGESIZE 1
  

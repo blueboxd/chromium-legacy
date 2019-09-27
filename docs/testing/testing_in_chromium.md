@@ -57,7 +57,6 @@ The following table shows which types of test works on which platforms.
 Only subset of browser tests are enabled on Android:
 *   components_browsertests
 *   content_browsertests
-*   nonperfetto_content_browsertests
 
 Other browser tests are not supported on Android yet. [crbug/611756]
 tracks the effort to enable them on Android.

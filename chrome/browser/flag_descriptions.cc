@@ -1224,6 +1224,12 @@ const char kKeepAliveRendererForKeepaliveRequestsDescription[] =
     "Keep a render process alive when the process has a pending fetch request "
     "with `keepalive' specified.";
 
+const char kLegacyTLSWarningsName[] =
+    "Show security warnings for sites using legacy TLS versions";
+const char kLegacyTLSWarningsDescription[] =
+    "Show security warnings for sites that use legacy TLS versions (TLS 1.0 "
+    "and TLS 1.1), which are deprecated and will be removed in the future.";
+
 const char kLoadMediaRouterComponentExtensionName[] =
     "Load Media Router Component Extension";
 const char kLoadMediaRouterComponentExtensionDescription[] =

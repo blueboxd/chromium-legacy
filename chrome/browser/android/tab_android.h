@@ -38,10 +38,6 @@ class DevToolsAgentHost;
 class WebContents;
 }
 
-namespace prerender {
-class PrerenderManager;
-}
-
 class TabAndroid {
  public:
   // A Java counterpart will be generated for this enum.
@@ -104,8 +100,6 @@ class TabAndroid {
 
   void SetWindowSessionID(SessionID window_id);
   void SetSyncId(int sync_id);
-
-  bool HasPrerenderedUrl(GURL gurl);
 
   // Returns true if this tab is currently presented in the context of custom
   // tabs. Tabs can be moved between different activities so the returned value
@@ -184,10 +178,6 @@ class TabAndroid {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& delegate);
 
-  bool HasPrerenderedUrl(JNIEnv* env,
-                         const base::android::JavaParamRef<jobject>& obj,
-                         const base::android::JavaParamRef<jstring>& url);
-
   scoped_refptr<content::DevToolsAgentHost> GetDevToolsAgentHost();
 
   void SetDevToolsAgentHost(scoped_refptr<content::DevToolsAgentHost> host);
@@ -200,8 +190,6 @@ class TabAndroid {
       const base::android::JavaParamRef<jobject>& obj);
 
  private:
-  prerender::PrerenderManager* GetPrerenderManager() const;
-
   JavaObjectWeakGlobalRef weak_java_tab_;
 
   // Identifier of the window the tab is in.

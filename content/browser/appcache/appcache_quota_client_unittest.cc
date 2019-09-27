@@ -168,11 +168,24 @@ class AppCacheQuotaClientTest : public testing::Test {
   base::WeakPtrFactory<AppCacheQuotaClientTest> weak_factory_{this};
 };
 
-
 TEST_F(AppCacheQuotaClientTest, BasicCreateDestroy) {
   base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
   Call_NotifyAppCacheReady(client);
   Call_OnQuotaManagerDestroyed(client);
+  Call_NotifyAppCacheDestroyed(client);
+}
+
+TEST_F(AppCacheQuotaClientTest, QuotaManagerDestroyedInCallback) {
+  base::WeakPtr<AppCacheQuotaClient> client = CreateClient();
+  Call_NotifyAppCacheReady(client);
+  client->DeleteOriginData(kOriginA, kTemp,
+                           base::BindOnce(
+                               [](AppCacheQuotaClientTest* test,
+                                  base::WeakPtr<AppCacheQuotaClient> client,
+                                  blink::mojom::QuotaStatusCode) {
+                                 test->Call_OnQuotaManagerDestroyed(client);
+                               },
+                               this, client));
   Call_NotifyAppCacheDestroyed(client);
 }
 

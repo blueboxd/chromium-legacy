@@ -173,6 +173,8 @@ class DirectoryCryptographer : public Cryptographer {
   // installs the new nigori as the default key.
   bool ImportNigoriKey(const std::string& serialized_nigori_key);
 
+  bool has_pending_keys() const;
+
   // Cryptographer overrides.
   std::unique_ptr<Cryptographer> Clone() const override;
   bool CanEncrypt() const override;
@@ -181,7 +183,6 @@ class DirectoryCryptographer : public Cryptographer {
                      sync_pb::EncryptedData* encrypted) const override;
   bool DecryptToString(const sync_pb::EncryptedData& encrypted,
                        std::string* decrypted) const override;
-  bool has_pending_keys() const override;
 
  private:
   // Initializes cryptographer with completely provided state.

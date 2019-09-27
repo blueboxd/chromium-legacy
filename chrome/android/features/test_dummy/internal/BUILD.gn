@@ -22,16 +22,19 @@ android_library("java") {
   ]
   java_files =
       [ "java/src/org/chromium/chrome/features/test_dummy/TestDummyImpl.java" ]
+
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
+  deps += [ "//base:jni_java" ]
 }
 
 source_set("native") {
   sources = [
-    "test_dummy.cc",
+    "test_dummy_impl.cc",
   ]
 
   deps = [
+    ":jni_headers",
     "//base",
-    "//chrome/android/features/test_dummy/public:native",
   ]
 }
 
@@ -48,33 +51,11 @@ android_library("base_module_java") {
   ]
   java_files = [
     "java/src/org/chromium/chrome/features/test_dummy/TestDummyActivity.java",
-    "java/src/org/chromium/chrome/features/test_dummy/TestDummySupport.java",
   ]
-
-  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
-  deps += [ "//base:jni_java" ]
 }
 
-buildflag_header("buildflags") {
-  header = "buildflags.h"
-  flags = [ "USE_NATIVE_MODULES=$use_native_modules" ]
-}
-
-source_set("base_module_native") {
+generate_jni("jni_headers") {
   sources = [
-    "test_dummy_client.cc",
-  ]
-  deps = [
-    ":test_dummy_jni_headers",
-    "//base",
-  ]
-  public_deps = [
-    ":buildflags",
-  ]
-}
-
-generate_jni("test_dummy_jni_headers") {
-  sources = [
-    "java/src/org/chromium/chrome/features/test_dummy/TestDummySupport.java",
+    "java/src/org/chromium/chrome/features/test_dummy/TestDummyImpl.java",
   ]
 }

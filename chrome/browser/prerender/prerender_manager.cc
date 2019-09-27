@@ -159,6 +159,35 @@ PrerenderManagerObserver::~PrerenderManagerObserver() {}
 PrerenderManager::PrerenderManagerMode PrerenderManager::mode_ =
     PRERENDER_MODE_NOSTATE_PREFETCH;
 
+// static
+bool PrerenderManager::MaybeUsePrerenderedPage(
+    Profile* profile,
+    content::WebContents* web_contents,
+    const GURL& url,
+    bool* loaded) {
+  DCHECK(loaded) << "|loaded| cannot be null";
+  auto* manager = PrerenderManagerFactory::GetForBrowserContext(profile);
+
+  // Getting the load status before MaybeUsePrerenderedPage() b/c it resets.
+  *loaded = false;
+  auto contents = manager->GetAllPrerenderingContents();
+  for (content::WebContents* content : contents) {
+    auto* prerender_contents = manager->GetPrerenderContents(content);
+    if (prerender_contents->prerender_url() == url &&
+        prerender_contents->has_finished_loading()) {
+      *loaded = true;
+      break;
+    }
+  }
+  if (!*loaded)
+    return false;
+
+  PrerenderManager::Params params(
+      /*uses_post=*/false, /*extra_headers=*/std::string(),
+      /*should_replace_current_entry=*/false, web_contents);
+  return manager->MaybeUsePrerenderedPage(url, &params);
+}
+
 struct PrerenderManager::NavigationRecord {
   NavigationRecord(const GURL& url, base::TimeTicks time, Origin origin)
       : url(url), time(time), origin(origin) {}

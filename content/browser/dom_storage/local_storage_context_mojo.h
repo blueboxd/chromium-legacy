@@ -24,8 +24,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/file/file_service.h"
-#include "services/file/public/mojom/file_system.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/storage_area.mojom.h"
 #include "url/origin.h"
 
@@ -96,7 +94,11 @@ class CONTENT_EXPORT LocalStorageContextMojo
   // Clears unused storage areas, when thresholds are reached.
   void PurgeUnusedAreasIfNeeded();
 
-  file::FileService* GetFileServiceForTesting() { return &file_service_; }
+  using LevelDBBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<leveldb::mojom::LevelDBService>)>;
+  void OverrideLevelDBBinderForTesting(LevelDBBinder binder) {
+    leveldb_binder_override_ = std::move(binder);
+  }
 
   void SetDatabaseForTesting(
       mojo::PendingAssociatedRemote<leveldb::mojom::LevelDBDatabase> database);
@@ -126,7 +128,6 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   // Part of our asynchronous directory opening called from RunWhenConnected().
   void InitiateConnection(bool in_memory_only = false);
-  void OnDirectoryOpened(base::File::Error err);
   void OnDatabaseOpened(bool in_memory, leveldb::mojom::DatabaseError status);
   void OnGotDatabaseVersion(leveldb::mojom::DatabaseError status,
                             const std::vector<uint8_t>& value);
@@ -169,7 +170,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   void LogDatabaseOpenResult(OpenResult result);
 
-  const base::FilePath subdirectory_;
+  const base::FilePath directory_;
 
   enum ConnectionState {
     NO_CONNECTION,
@@ -182,10 +183,7 @@ class CONTENT_EXPORT LocalStorageContextMojo
   bool force_keep_session_state_ = false;
   scoped_refptr<storage::SpecialStoragePolicy> special_storage_policy_;
 
-  bool force_in_memory_only_;
-  file::FileService file_service_;
-  mojo::Remote<file::mojom::FileSystem> file_system_;
-  filesystem::mojom::DirectoryPtr directory_;
+  const scoped_refptr<base::SequencedTaskRunner> leveldb_task_runner_;
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
@@ -210,6 +208,8 @@ class CONTENT_EXPORT LocalStorageContextMojo
 
   // Name of an extra histogram to log open results to, if not null.
   const char* open_result_histogram_ = nullptr;
+
+  LevelDBBinder leveldb_binder_override_;
 
   base::WeakPtrFactory<LocalStorageContextMojo> weak_ptr_factory_{this};
 };

@@ -22,9 +22,7 @@
 #include "chrome/browser/browser_about_handler.h"
 #include "chrome/browser/history/history_service_factory.h"
 #include "chrome/browser/infobars/infobar_service.h"
-#include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/prerender/prerender_manager.h"
-#include "chrome/browser/prerender/prerender_manager_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -200,23 +198,6 @@ void TabAndroid::SetWindowSessionID(SessionID window_id) {
   session_tab_helper->SetWindowID(session_window_id_);
 }
 
-bool TabAndroid::HasPrerenderedUrl(GURL gurl) {
-  prerender::PrerenderManager* prerender_manager = GetPrerenderManager();
-  if (!prerender_manager)
-    return false;
-
-  std::vector<content::WebContents*> contents =
-      prerender_manager->GetAllPrerenderingContents();
-  prerender::PrerenderContents* prerender_contents;
-  for (content::WebContents* content : contents) {
-    prerender_contents = prerender_manager->GetPrerenderContents(content);
-    if (prerender_contents->prerender_url() == gurl &&
-        prerender_contents->has_finished_loading()) {
-      return true;
-    }
-  }
-  return false;
-}
 
 bool TabAndroid::IsCurrentlyACustomTab() {
   JNIEnv* env = base::android::AttachCurrentThread();
@@ -383,19 +364,10 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
 
   // If the page was prerendered, use it.
   // Note in incognito mode, we don't have a PrerenderManager.
-
-  prerender::PrerenderManager* prerender_manager =
-      prerender::PrerenderManagerFactory::GetForBrowserContext(GetProfile());
-  if (prerender_manager) {
-    bool prefetched_page_loaded = HasPrerenderedUrl(gurl);
-    // Getting the load status before MaybeUsePrerenderedPage() b/c it resets.
-    prerender::PrerenderManager::Params params(
-        /*uses_post=*/false, /*extra_headers=*/std::string(),
-        /*should_replace_current_entry=*/false, web_contents());
-    if (prerender_manager->MaybeUsePrerenderedPage(gurl, &params)) {
-      return prefetched_page_loaded ?
-          FULL_PRERENDERED_PAGE_LOAD : PARTIAL_PRERENDERED_PAGE_LOAD;
-    }
+  bool loaded;
+  if (prerender::PrerenderManager::MaybeUsePrerenderedPage(
+          GetProfile(), web_contents(), gurl, &loaded)) {
+    return loaded ? FULL_PRERENDERED_PAGE_LOAD : PARTIAL_PRERENDERED_PAGE_LOAD;
   }
 
   GURL fixed_url(
@@ -470,13 +442,6 @@ void TabAndroid::SetActiveNavigationEntryTitleForUrl(
     entry->SetTitle(title);
 }
 
-prerender::PrerenderManager* TabAndroid::GetPrerenderManager() const {
-  Profile* profile = GetProfile();
-  if (!profile)
-    return nullptr;
-  return prerender::PrerenderManagerFactory::GetForBrowserContext(profile);
-}
-
 // static
 void TabAndroid::CreateHistoricalTabFromContents(WebContents* web_contents) {
   DCHECK(web_contents);
@@ -512,13 +477,6 @@ void TabAndroid::LoadOriginalImage(JNIEnv* env,
   mojo::AssociatedRemote<chrome::mojom::ChromeRenderFrame> renderer;
   render_frame_host->GetRemoteAssociatedInterfaces()->GetInterface(&renderer);
   renderer->RequestReloadImageForContextNode();
-}
-
-bool TabAndroid::HasPrerenderedUrl(JNIEnv* env,
-                                   const JavaParamRef<jobject>& obj,
-                                   const JavaParamRef<jstring>& url) {
-  GURL gurl(base::android::ConvertJavaStringToUTF8(env, url));
-  return HasPrerenderedUrl(gurl);
 }
 
 void TabAndroid::AttachDetachedTab(

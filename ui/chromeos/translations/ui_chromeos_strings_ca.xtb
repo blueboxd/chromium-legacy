@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pingüí</translation>
 <translation id="183183971458492120">S'està carregant la informació...</translation>
 <translation id="1838709767668011582">Lloc de Google</translation>
-<translation id="1839704667838141620">Canvieu de quina manera es comparteix el fitxer.</translation>
 <translation id="1844692022597038441">Aquest fitxer no està disponible sense connexió.</translation>
 <translation id="184633654410729720">Teclat tailandès (Kedmanee)</translation>
 <translation id="1847880352285315359">S'ha desat</translation>
-<translation id="1864676585353837027">Canvieu la manera de compartir aquests fitxers.</translation>
 <translation id="1864756863218646478">No s'ha pogut trobar el fitxer.</translation>
 <translation id="1921986354447415460">Teclat turc-F</translation>
 <translation id="1931134289871235022">Eslovac</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Instal·la un servei nou</translation>
 <translation id="1947424002851288782">Teclat alemany</translation>
 <translation id="1972984168337863910">Desplega els taulers amb informació dels fitxers</translation>
-<translation id="197560921582345123">Pot editar</translation>
 <translation id="1984603991036629094">Teclat fonètic armeni</translation>
 <translation id="2001796770603320721">Gestiona a Drive</translation>
 <translation id="2009067268969781306">En formatar una unitat, se'n suprimeixen totes les dades que s'hi hagin emmagatzemat. Aquesta acció no es pot desfer.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Per obtenir aquests fitxers s'utilitzaran aproximadament <ph name="FILE_SIZE" /> de dades mòbils.</translation>
 <translation id="7846076177841592234">Cancel·la la selecció</translation>
-<translation id="7850851215703745691">Aquests fitxers de Drive encara no s'han compartit</translation>
 <translation id="7853966320808728790">BÉPO francès</translation>
 <translation id="7864662577698025113">Afegeix un servei nou</translation>
 <translation id="7873831373602885875">No es pot desar a <ph name="FOLDER_NAME" />. Tots els canvis es desaran a <ph name="DOWNLOADS_FOLDER" />, a la carpeta Baixades.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">Eslovè</translation>
 <translation id="7982283708762922719">Alçada</translation>
 <translation id="7987485481246785146">Teclat de kurd sorani basat en l'àrab</translation>
-<translation id="799923393800005025">Pot consultar</translation>
 <translation id="8008366997883261463">Gos</translation>
 <translation id="8028993641010258682">Mida</translation>
 <translation id="8031722894461705849">Teclat eslovac</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">La llista de fitxers ha canviat a la visualització de miniatures.</translation>
 <translation id="8601932370724196034">Fitxer d'imatge de Crostini</translation>
 <translation id="8669949407341943408">S'estan traslladant...</translation>
-<translation id="8671210955687109937">Pot comentar</translation>
-<translation id="8686213429977032554">Aquest fitxer de Drive encara no s'ha compartit</translation>
 <translation id="8698464937041809063">Dibuix de Google</translation>
 <translation id="8714406895390098252">Bicicleta</translation>
 <translation id="8719721339511222681">S'ha seleccionat <ph name="ENTRY_NAME" />.</translation>

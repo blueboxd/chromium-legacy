@@ -26,23 +26,8 @@ class ASH_PUBLIC_EXPORT SplitViewObserver {
   virtual void OnSplitViewDividerPositionChanged() {}
 
  protected:
-  SplitViewObserver();
-  virtual ~SplitViewObserver();
-};
-
-// This object handles notifying observers of changes to split view state. It's
-// implemented in Ash via SplitViewController.
-class ASH_PUBLIC_EXPORT SplitViewNotifier {
- public:
-  static SplitViewNotifier* Get();
-
-  virtual SplitViewState GetCurrentState() const = 0;
-  virtual void AddObserver(SplitViewObserver* observer) = 0;
-  virtual void RemoveObserver(SplitViewObserver* observer) = 0;
-
- protected:
-  SplitViewNotifier();
-  virtual ~SplitViewNotifier();
+  SplitViewObserver() = default;
+  virtual ~SplitViewObserver() = default;
 };
 
 }  // namespace ash

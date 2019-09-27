@@ -45,6 +45,8 @@ class LayerTreeHostTilesPixelTest
     switch (raster_mode()) {
       case ONE_COPY:
         settings->use_zero_copy = false;
+        settings->gpu_rasterization_disabled = true;
+        settings->gpu_rasterization_forced = false;
         break;
       case GPU:
         settings->gpu_rasterization_forced = true;

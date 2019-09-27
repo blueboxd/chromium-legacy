@@ -6,6 +6,7 @@ import("//build/config/android/rules.gni")
 
 android_library("java") {
   java_files = [
+    "java/src/org/chromium/chrome/browser/util/AndroidTaskUtils.java",
     "java/src/org/chromium/chrome/browser/util/BitmapCache.java",
     "java/src/org/chromium/chrome/browser/util/ChromeContextUtil.java",
     "java/src/org/chromium/chrome/browser/util/ChromeFileProvider.java",

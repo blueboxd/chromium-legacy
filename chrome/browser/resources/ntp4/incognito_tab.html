@@ -30,6 +30,14 @@ document.write('<link id="incognitothemecss" rel="stylesheet" ' +
     <div class="bulletpoints first">$i18nRaw{incognitoTabFeatures}</div>
     <div class="bulletpoints">$i18nRaw{incognitoTabWarning}</div>
   </div>
+  <div id="cookie-controls" $i18n{hiddenIfCookieControlsDisabled}>
+    <div>
+      <em>$i18n{cookieControlsTitle}</em>
+    </div>
+    <div id="cookie-controls-description">
+      $i18n{cookieControlsDescription}
+    </div>
+  </div>
   <a class="learn-more-button" href="$i18n{learnMoreLink}">$i18n{learnMore}</a>
 </div>
 <script src="chrome://resources/js/cr.js"></script>

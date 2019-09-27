@@ -42,7 +42,9 @@ class DriveQuickAccessProvider : public SearchProvider {
   drive::DriveIntegrationService* const drive_service_;
   // Stores the last-returned results from the QuickAccess API.
   std::vector<drive::QuickAccessItem> results_cache_;
+
   base::TimeTicks query_start_time_;
+  base::TimeTicks latest_fetch_start_time_;
 
   SEQUENCE_CHECKER(sequence_checker_);
 

@@ -16,7 +16,8 @@
 #include "base/containers/unique_ptr_adapters.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "net/dns/dns_query.h"
 #include "net/dns/dns_response.h"
 #include "services/network/public/mojom/mdns_responder.mojom.h"
@@ -143,9 +144,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MdnsResponderManager {
   explicit MdnsResponderManager(net::MDnsSocketFactory* socket_factory);
   ~MdnsResponderManager();
 
-  // Creates an instance of MdnsResponder for the binding request from an
-  // InterfacePtr.
-  void CreateMdnsResponder(mojom::MdnsResponderRequest request);
+  // Creates an instance of MdnsResponder for the receiver.
+  void CreateMdnsResponder(
+      mojo::PendingReceiver<mojom::MdnsResponder> receiver);
   // The methods below are used to bookkeep names owned by responders, and
   // also for the extra uniqueness validation of these names. By default,
   // we use the RandomUuidNameGenerator (see mdns_responder.cc), which
@@ -262,7 +263,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MdnsResponderManager {
 class COMPONENT_EXPORT(NETWORK_SERVICE) MdnsResponder
     : public mojom::MdnsResponder {
  public:
-  MdnsResponder(mojom::MdnsResponderRequest request,
+  MdnsResponder(mojo::PendingReceiver<mojom::MdnsResponder> receiver,
                 MdnsResponderManager* manager);
   // When destroyed, clears all existing name-address associations owned by this
   // responder in the local network by sending out goodbye packets. See
@@ -312,7 +313,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) MdnsResponder
   std::map<std::string, net::IPAddress>::iterator FindNameCreatedForAddress(
       const net::IPAddress& address);
 
-  mojo::Binding<network::mojom::MdnsResponder> binding_;
+  mojo::Receiver<network::mojom::MdnsResponder> receiver_;
   // A back pointer to the responder manager that owns this responder. The
   // responder should be destroyed before |manager_| becomes invalid or a weak
   // reference should be used to access the manager when there is no such

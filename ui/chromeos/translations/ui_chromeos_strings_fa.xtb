@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">پنگوئن</translation>
 <translation id="183183971458492120">درحال بارگیری اطلاعات...</translation>
 <translation id="1838709767668011582">‏سایت Google</translation>
-<translation id="1839704667838141620">نحوه اشتراک‌گذاری این فایل را تغییر دهید</translation>
 <translation id="1844692022597038441">این فایل به‌صورت آفلاین در دسترس نیست.</translation>
 <translation id="184633654410729720">صفحه‌کلید تایلندی (کدمانی)</translation>
 <translation id="1847880352285315359">ذخیره شد</translation>
-<translation id="1864676585353837027">نحوه اشتراک‌گذاری این فایل‌ها را تغییر دهید</translation>
 <translation id="1864756863218646478">این فایل پیدا نشد.</translation>
 <translation id="1921986354447415460">‏صفحه‌کلید ترکی F</translation>
 <translation id="1931134289871235022">اسلواکی</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">نصب سرویس جدید</translation>
 <translation id="1947424002851288782">صفحه‌کلید آلمانی</translation>
 <translation id="1972984168337863910">بزرگ کردن پانل‌های بازخورد فایل‌ها</translation>
-<translation id="197560921582345123">می‌تواند ویرایش کند</translation>
 <translation id="1984603991036629094">صفحه‌کلید آوایی ارمنی</translation>
 <translation id="2001796770603320721">مدیریت در درایو</translation>
 <translation id="2009067268969781306">با قالب‌بندی درایو همه داده‌های ذخیره‌شده در آن حذف خواهد شد. این کنش واگردشدنی نیست.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> ترابایت</translation>
 <translation id="7839804798877833423">دریافت این فایل‌ها تقریباً <ph name="FILE_SIZE" /> از داده تلفن همراه شما را مصرف می‌کند.</translation>
 <translation id="7846076177841592234">لغو انتخاب</translation>
-<translation id="7850851215703745691">‏این فایل‌های Drive هنوز به اشتراک گذاشته نشده‌اند</translation>
 <translation id="7853966320808728790">‏BÉPO فرانسوی</translation>
 <translation id="7864662577698025113">افزودن سرویس جدید</translation>
 <translation id="7873831373602885875">در <ph name="FOLDER_NAME" /> ذخیره نشد. همه ویرایش‌ها در <ph name="DOWNLOADS_FOLDER" /> در پوشه «بارگیری‌ها» ذخیره می‌شوند.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">اسلوونیایی</translation>
 <translation id="7982283708762922719">ارتفاع</translation>
 <translation id="7987485481246785146">صفحه‌کلید کردی مبتنی بر عربی</translation>
-<translation id="799923393800005025">می‌تواند مشاهده کند</translation>
 <translation id="8008366997883261463">جک راسل تریر</translation>
 <translation id="8028993641010258682">اندازه</translation>
 <translation id="8031722894461705849">صفحه‌کلید اسلواکی</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">فهرست فایل به نمای تصویر کوچک تغییر کرده است.</translation>
 <translation id="8601932370724196034">‏فایل تصویری Crostini</translation>
 <translation id="8669949407341943408">در حال انتقال...</translation>
-<translation id="8671210955687109937">می‌تواند نظر بدهد</translation>
-<translation id="8686213429977032554">‏این فایل Drive هنوز به اشتراک گذاشته نشده است</translation>
 <translation id="8698464937041809063">‏طراحی Google </translation>
 <translation id="8714406895390098252">دوچرخه</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> انتخاب شد.</translation>

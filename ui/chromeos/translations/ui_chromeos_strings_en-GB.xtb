@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Penguin</translation>
 <translation id="183183971458492120">Loading information...</translation>
 <translation id="1838709767668011582">Google site</translation>
-<translation id="1839704667838141620">Change how this file is shared</translation>
 <translation id="1844692022597038441">This file is not available offline.</translation>
 <translation id="184633654410729720">Thai keyboard (Kedmanee)</translation>
 <translation id="1847880352285315359">Saved</translation>
-<translation id="1864676585353837027">Change how these files are shared</translation>
 <translation id="1864756863218646478">The file could not be found.</translation>
 <translation id="1921986354447415460">Turkish-F keyboard</translation>
 <translation id="1931134289871235022">Slovak</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Install new service</translation>
 <translation id="1947424002851288782">German keyboard</translation>
 <translation id="1972984168337863910">Expand files feedback panels</translation>
-<translation id="197560921582345123">Can edit</translation>
 <translation id="1984603991036629094">Armenian Phonetic keyboard</translation>
 <translation id="2001796770603320721">Manage in Drive</translation>
 <translation id="2009067268969781306">Formatting a drive will delete all data stored on it. This action cannot be undone.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">Unpin folder</translation>
 <translation id="3678559383040232393">Maltese keyboard</translation>
 <translation id="3685122418104378273">Google Drive sync is disabled by default, when using mobile data.</translation>
+<translation id="3689865792480713551">Cancel <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">This device cannot be opened because its file system is not supported.</translation>
 <translation id="3741243925913727067">Back up your media device’s photos and videos to Google Drive.</translation>
 <translation id="3749289110408117711">File name</translation>
@@ -466,6 +464,7 @@
 <translation id="6339145975392024142">US international (PC)</translation>
 <translation id="6346310558342052870">Access restricted</translation>
 <translation id="6353618411602605519">Croatian keyboard</translation>
+<translation id="6356685157277930264">Files feedback window</translation>
 <translation id="6358884629796491903">Dragon</translation>
 <translation id="637062427944097960">This file opened on a different desktop. Move to <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) to view it.</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> items</translation>
@@ -591,7 +590,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Fetching these files will use approximately <ph name="FILE_SIZE" /> of mobile data.</translation>
 <translation id="7846076177841592234">Cancel selection</translation>
-<translation id="7850851215703745691">These Drive files aren't shared yet</translation>
 <translation id="7853966320808728790">French BÉPO</translation>
 <translation id="7864662577698025113">Add new service</translation>
 <translation id="7873831373602885875">Cannot save to <ph name="FOLDER_NAME" />. All edits will be saved to <ph name="DOWNLOADS_FOLDER" /> in the Downloads folder.</translation>
@@ -607,7 +605,6 @@
 <translation id="7969525169268594403">Slovenian</translation>
 <translation id="7982283708762922719">Height</translation>
 <translation id="7987485481246785146">Sorani Kurdish Arabic-based keyboard</translation>
-<translation id="799923393800005025">Can view</translation>
 <translation id="8008366997883261463">Jack Russell Terrier</translation>
 <translation id="8028993641010258682">Size</translation>
 <translation id="8031722894461705849">Slovak keyboard</translation>
@@ -669,8 +666,6 @@
 <translation id="8600173386174225982">File list has changed to thumbnail view.</translation>
 <translation id="8601932370724196034">Crostini image file</translation>
 <translation id="8669949407341943408">Moving...</translation>
-<translation id="8671210955687109937">Can comment</translation>
-<translation id="8686213429977032554">This Drive file isn't shared yet</translation>
 <translation id="8698464937041809063">Google drawing</translation>
 <translation id="8714406895390098252">Bicycle</translation>
 <translation id="8719721339511222681">Selected <ph name="ENTRY_NAME" />.</translation>

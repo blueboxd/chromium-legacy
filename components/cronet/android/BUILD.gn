@@ -422,10 +422,12 @@ android_library("cronet_impl_native_base_java") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_common_base_java",
+    "//base:jni_java",
     "//third_party/android_deps:androidx_annotation_annotation_java",
     "//third_party/jsr-305:jsr_305_javalib",
   ]
   deps += cronet_impl_native_java_deps_to_package
+  annotation_processor_deps = [ "//base/android/jni_generator:jni_processor" ]
 
   srcjar_deps = cronet_impl_native_java_srcjar_deps
 }

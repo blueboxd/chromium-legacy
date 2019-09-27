@@ -54,6 +54,7 @@
 <translation id="2674318244760992338">voettekst</translation>
 <translation id="2709516037105925701">Automatisch aanvullen</translation>
 <translation id="2723001399770238859">audio</translation>
+<translation id="2725963129578236554">reacties</translation>
 <translation id="2746543609216772311">Waarde moet <ph name="MINIMUM_DATE_OR_TIME" /> of later zijn.</translation>
 <translation id="2759744352195237655">pop-upknop</translation>
 <translation id="2761667185364618470">Vink dit selectievakje aan als je wilt doorgaan.</translation>
@@ -61,7 +62,6 @@
 <translation id="2896972712917208084">groep met keuzerondjes</translation>
 <translation id="2908441821576996758">Voer een door komma's gescheiden lijst met e-mailadressen in.</translation>
 <translation id="2940813599313844715">object</translation>
-<translation id="2942448076852699108">gemarkeerde content</translation>
 <translation id="3040011195152428237">link</translation>
 <translation id="3049748772180311791"><ph name="QUANTITY" /> MB</translation>
 <translation id="3075154866155599887">Voer een geldige waarde in. Het veld is onvolledig of bevat een ongeldige datum.</translation>
@@ -83,6 +83,7 @@
 <translation id="3822383571486410024">Breid deze tekst uit tot <ph name="MIN_CHARACTERS" /> tekens of meer (je gebruikt momenteel <ph name="CURRENT_LENGTH" /> tekens).</translation>
 <translation id="383465348367842624">Het naamgedeelte vóór '<ph name="ATSIGN" />' mag niet het teken '<ph name="INVALIDCHARACTER" />' bevatten.</translation>
 <translation id="3846214748874656680">Volledig scherm sluiten</translation>
+<translation id="3889183436948184105">revisie</translation>
 <translation id="3920932319529768807">conclusie</translation>
 <translation id="3924558731517983934">app</translation>
 <translation id="3944740393230681990">proloog</translation>
@@ -161,6 +162,7 @@
 <translation id="6404546809543547843">scrollbar met audiotijd</translation>
 <translation id="6443871981718447451">ondertitelingsmenu weergeven</translation>
 <translation id="6453774872122745852">dankwoord</translation>
+<translation id="6475115390776617481">live aanwezigheid</translation>
 <translation id="648732519525291180">tijdkiezer</translation>
 <translation id="6550675742724504774">Opties</translation>
 <translation id="6572309429103589720">Ongeldige grammatica</translation>
@@ -184,6 +186,7 @@
 <translation id="6981594929165378967">invoeging</translation>
 <translation id="6989848892321993519">Breid deze tekst uit tot <ph name="MIN_CHARACTERS" /> tekens of meer (je gebruikt momenteel één teken).</translation>
 <translation id="7033340931668032222">omhoog en omlaag om het volume te wijzigen</translation>
+<translation id="7034405885550056553">suggestie</translation>
 <translation id="709897737746224366">Zorg dat de indeling voldoet aan de gevraagde indeling.</translation>
 <translation id="7118469954320184356">Geen beschrijving beschikbaar.</translation>
 <translation id="7139483182332611405">voorwoord</translation>
@@ -244,6 +247,7 @@
 <translation id="8711688047404765493">uitvoer</translation>
 <translation id="8750798805984357768">Selecteer een van deze opties.</translation>
 <translation id="8808573423886751634">hoofdstuk</translation>
+<translation id="8822203815165896261">informatie over auteur</translation>
 <translation id="8845239796550121995">Wordt nu gecast naar je tv</translation>
 <translation id="8851136666856101339">hoofd</translation>
 <translation id="8875657656876809964">Fout bij afspelen video</translation>

@@ -169,6 +169,7 @@ void CompositorFrameReportingController::DidPresentCompositorFrame(
       termination_status =
           CompositorFrameReporter::FrameTerminationStatus::kDidNotPresentFrame;
 
+    submitted_frame->reporter->SetVizBreakdown(details);
     submitted_frame->reporter->TerminateFrame(
         termination_status, details.presentation_feedback.timestamp);
     submitted_compositor_frames_.erase(submitted_frame);

@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_CORE_PAGE_LOAD_METRICS_OBSERVER_H_
 #define CHROME_BROWSER_PAGE_LOAD_METRICS_OBSERVERS_CORE_PAGE_LOAD_METRICS_OBSERVER_H_
 
+#include "chrome/browser/page_load_metrics/observers/click_input_tracker.h"
 #include "chrome/browser/page_load_metrics/observers/largest_contentful_paint_handler.h"
 #include "components/page_load_metrics/browser/page_load_metrics_observer.h"
 #include "services/metrics/public/cpp/ukm_source.h"
@@ -221,6 +222,7 @@ class CorePageLoadMetricsObserver
       content::NavigationHandle* navigation_handle) override;
 
  private:
+  void TrackPossibleClickBurst(const blink::WebInputEvent& event);
   void RecordTimingHistograms(
       const page_load_metrics::mojom::PageLoadTiming& main_frame_timing);
   void RecordByteAndResourceHistograms(
@@ -259,6 +261,9 @@ class CorePageLoadMetricsObserver
 
   page_load_metrics::LargestContentfulPaintHandler
       largest_contentful_paint_handler_;
+
+  // Tracks user input clicks for possible click burst.
+  page_load_metrics::ClickInputTracker click_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(CorePageLoadMetricsObserver);
 };

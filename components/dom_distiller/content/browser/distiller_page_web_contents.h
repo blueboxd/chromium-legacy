@@ -63,8 +63,7 @@ class DistillerPageWebContents : public DistillerPage,
       content::WebContents* web_contents) override;
 
   // content::WebContentsObserver implementation.
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override;
+  void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;
 
   void DidFailLoad(content::RenderFrameHost* render_frame_host,
                    const GURL& validated_url,

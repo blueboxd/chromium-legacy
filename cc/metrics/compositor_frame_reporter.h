@@ -12,6 +12,11 @@
 #include "cc/base/base_export.h"
 #include "cc/cc_export.h"
 #include "cc/metrics/frame_sequence_tracker.h"
+#include "components/viz/common/frame_timing_details.h"
+
+namespace viz {
+struct FrameTimingDetails;
+}
 
 namespace cc {
 class RollingTimeDeltaHistory;
@@ -78,6 +83,14 @@ class CC_EXPORT CompositorFrameReporter {
     kStageTypeCount
   };
 
+  enum class VizBreakdown {
+    kSubmitToReceiveCompositorFrame = 0,
+    kReceivedCompositorFrameToStartDraw = 1,
+    kStartDrawToSwapEnd = 2,
+    kSwapEndToPresentationCompositorFrame = 3,
+    kBreakdownCount
+  };
+
   CompositorFrameReporter(
       const base::flat_set<FrameSequenceTrackerType>* active_trackers,
       bool is_single_threaded = false);
@@ -94,6 +107,7 @@ class CC_EXPORT CompositorFrameReporter {
   void StartStage(StageType stage_type, base::TimeTicks start_time);
   void TerminateFrame(FrameTerminationStatus termination_status,
                       base::TimeTicks termination_time);
+  void SetVizBreakdown(const viz::FrameTimingDetails& viz_breakdown);
 
   int StageHistorySizeForTesting() { return stage_history_.size(); }
 
@@ -102,6 +116,13 @@ class CC_EXPORT CompositorFrameReporter {
     StageType stage_type;
     base::TimeTicks start_time;
     base::TimeTicks end_time;
+    viz::FrameTimingDetails viz_breakdown;
+    StageData();
+    StageData(StageType stage_type,
+              base::TimeTicks start_time,
+              base::TimeTicks end_time);
+    StageData(const StageData&);
+    ~StageData();
   };
 
   StageData current_stage_;
@@ -115,10 +136,18 @@ class CC_EXPORT CompositorFrameReporter {
   void TerminateReporter();
   void EndCurrentStage(base::TimeTicks end_time);
   void ReportStageHistograms(bool missed_frame) const;
+  void ReportStageHistogramWithBreakdown(
+      CompositorFrameReporter::MissedFrameReportTypes report_type,
+      FrameSequenceTrackerType frame_sequence_tracker_type,
+      CompositorFrameReporter::StageData stage) const;
+  void ReportVizBreakdown(
+      CompositorFrameReporter::MissedFrameReportTypes report_type,
+      FrameSequenceTrackerType frame_sequence_tracker_type,
+      CompositorFrameReporter::StageData stage) const;
   void ReportHistogram(
       CompositorFrameReporter::MissedFrameReportTypes report_type,
       FrameSequenceTrackerType intraction_type,
-      StageType stage_type,
+      const int stage_type_index,
       base::TimeDelta time_delta) const;
 
   // Returns true if the stage duration is greater than |kAbnormalityPercentile|

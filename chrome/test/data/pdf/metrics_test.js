@@ -15,13 +15,12 @@ chrome.test.runTests(function() {
       chrome.test.assertEq('PDF.Actions', metric.metricName);
       chrome.test.assertEq('test_histogram_log', metric.type);
       chrome.test.assertEq(1, metric.min);
-      chrome.test.assertEq(
-          PDFMetrics.UserAction.NUMBER_OF_ACTIONS, metric.max);
+      chrome.test.assertEq(PDFMetrics.UserAction.NUMBER_OF_ACTIONS, metric.max);
       chrome.test.assertEq(
           PDFMetrics.UserAction.NUMBER_OF_ACTIONS + 1, metric.buckets);
       this.actionCounter[value] = (this.actionCounter[value] + 1) || 1;
     }
-  };
+  }
 
   return [
     function testMetricsDocumentOpened() {
@@ -42,8 +41,9 @@ chrome.test.runTests(function() {
 
       chrome.metricsPrivate = new MockMetricsPrivate();
       PDFMetrics.record(PDFMetrics.UserAction.DOCUMENT_OPENED);
-      for (var i = 0; i < 4; i++)
+      for (var i = 0; i < 4; i++) {
         PDFMetrics.record(PDFMetrics.UserAction.ROTATE);
+      }
 
       chrome.test.assertEq(
           {

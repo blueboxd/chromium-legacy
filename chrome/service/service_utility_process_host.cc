@@ -34,7 +34,6 @@
 #include "content/public/app/content_browser_manifest.h"
 #include "content/public/app/content_utility_manifest.h"
 #include "content/public/common/child_process_host.h"
-#include "content/public/common/connection_filter.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/font_cache_dispatcher_win.h"
 #include "content/public/common/result_codes.h"
@@ -131,31 +130,6 @@ class ServicePdfToEmfConverterClientImpl
   }
 
   mojo::Binding<printing::mojom::PdfToEmfConverterClient> binding_;
-};
-
-class ConnectionFilterImpl : public content::ConnectionFilter {
- public:
-  ConnectionFilterImpl() {
-    registry_.AddInterface(
-        base::BindRepeating(&content::FontCacheDispatcher::Create));
-  }
-
-  ~ConnectionFilterImpl() override = default;
-
-  // content::ConnectionFilter:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle* interface_pipe,
-                       service_manager::Connector* connector) override {
-    registry_.TryBindInterface(interface_name, interface_pipe, source_info);
-  }
-
- private:
-  service_manager::BinderRegistryWithArgs<
-      const service_manager::BindSourceInfo&>
-      registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
 };
 
 }  // namespace
@@ -354,8 +328,6 @@ bool ServiceUtilityProcessHost::StartProcess(bool sandbox) {
   service_manager_connection_ = content::ServiceManagerConnection::Create(
       mojo::MakeRequest(&browser_proxy),
       base::SequencedTaskRunnerHandle::Get());
-  service_manager_connection_->AddConnectionFilter(
-      std::make_unique<ConnectionFilterImpl>());
 
   mojo::Remote<service_manager::mojom::ProcessMetadata> metadata;
   service_manager_->RegisterService(
@@ -504,6 +476,14 @@ void ServiceUtilityProcessHost::BindInterface(
       service_manager::ServiceFilter::ForExactIdentity(
           utility_service_instance_identity_),
       interface_name, std::move(interface_pipe));
+}
+
+void ServiceUtilityProcessHost::BindHostReceiver(
+    mojo::GenericPendingReceiver receiver) {
+  if (auto r = receiver.As<content::mojom::FontCacheWin>()) {
+    content::FontCacheDispatcher::Create(std::move(r));
+    return;
+  }
 }
 
 void ServiceUtilityProcessHost::OnMetafileSpooled(bool success) {

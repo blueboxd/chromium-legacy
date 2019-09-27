@@ -25,6 +25,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.annotations.UsedByReflection;
 
 import java.lang.reflect.InvocationTargetException;
@@ -214,10 +215,11 @@ public class ProxyChangeListener {
         }
 
         if (cfg != null) {
-            nativeProxySettingsChangedTo(
-                    mNativePtr, cfg.mHost, cfg.mPort, cfg.mPacUrl, cfg.mExclusionList);
+            ProxyChangeListenerJni.get().proxySettingsChangedTo(mNativePtr,
+                    ProxyChangeListener.this, cfg.mHost, cfg.mPort, cfg.mPacUrl,
+                    cfg.mExclusionList);
         } else {
-            nativeProxySettingsChanged(mNativePtr);
+            ProxyChangeListenerJni.get().proxySettingsChanged(mNativePtr, ProxyChangeListener.this);
         }
     }
 
@@ -293,9 +295,14 @@ public class ProxyChangeListener {
     /**
      * See net/proxy_resolution/proxy_config_service_android.cc
      */
-    @NativeClassQualifiedName("ProxyConfigServiceAndroid::JNIDelegate")
-    private native void nativeProxySettingsChangedTo(
-            long nativePtr, String host, int port, String pacUrl, String[] exclusionList);
-    @NativeClassQualifiedName("ProxyConfigServiceAndroid::JNIDelegate")
-    private native void nativeProxySettingsChanged(long nativePtr);
+
+    @NativeMethods
+    interface Natives {
+        @NativeClassQualifiedName("ProxyConfigServiceAndroid::JNIDelegate")
+        void proxySettingsChangedTo(long nativePtr, ProxyChangeListener caller, String host,
+                int port, String pacUrl, String[] exclusionList);
+
+        @NativeClassQualifiedName("ProxyConfigServiceAndroid::JNIDelegate")
+        void proxySettingsChanged(long nativePtr, ProxyChangeListener caller);
+    }
 }

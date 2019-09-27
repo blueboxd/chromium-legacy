@@ -199,12 +199,6 @@ void Core::SendBrokerClientInvitation(
       process_error_callback);
 }
 
-void Core::AcceptBrokerClientInvitation(ConnectionParams connection_params) {
-  RequestContext request_context;
-  GetNodeController()->AcceptBrokerClientInvitation(
-      std::move(connection_params));
-}
-
 void Core::ConnectIsolated(ConnectionParams connection_params,
                            const ports::PortRef& port,
                            base::StringPiece connection_name) {
@@ -1436,6 +1430,10 @@ MojoResult Core::AcceptInvitation(
   if (!connection_params.server_endpoint().is_valid()) {
     connection_params =
         ConnectionParams(PlatformChannelEndpoint(std::move(endpoint)));
+  }
+  if (options &&
+      options->flags & MOJO_ACCEPT_INVITATION_FLAG_LEAK_TRANSPORT_ENDPOINT) {
+    connection_params.set_leak_endpoint(true);
   }
 
   bool is_isolated =

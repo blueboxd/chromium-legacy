@@ -6,7 +6,6 @@ package org.chromium.chrome.browser.signin;
 
 import android.accounts.Account;
 import android.app.Activity;
-import android.content.Context;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.Nullable;
@@ -169,7 +168,6 @@ public class SigninManager
      * This is not final, as destroy() updates this.
      */
     private long mNativeSigninManagerAndroid;
-    private final Context mContext;
     private final AccountTrackerService mAccountTrackerService;
     private final IdentityManager mIdentityManager;
     private final IdentityMutator mIdentityMutator;
@@ -204,7 +202,6 @@ public class SigninManager
     /**
      * Called by native to create an instance of SigninManager.
      * @param nativeSigninManagerAndroid A pointer to native's SigninManagerAndroid.
-     * @return
      */
     @CalledByNative
     private static SigninManager create(long nativeSigninManagerAndroid,
@@ -214,18 +211,16 @@ public class SigninManager
         assert accountTrackerService != null;
         assert identityManager != null;
         assert identityMutator != null;
-        return new SigninManager(ContextUtils.getApplicationContext(), nativeSigninManagerAndroid,
-                accountTrackerService, identityManager, identityMutator, AndroidSyncSettings.get());
+        return new SigninManager(nativeSigninManagerAndroid, accountTrackerService, identityManager,
+                identityMutator, AndroidSyncSettings.get());
     }
 
     @VisibleForTesting
-    SigninManager(Context context, long nativeSigninManagerAndroid,
-            AccountTrackerService accountTrackerService, IdentityManager identityManager,
-            IdentityMutator identityMutator, AndroidSyncSettings androidSyncSettings) {
+    SigninManager(long nativeSigninManagerAndroid, AccountTrackerService accountTrackerService,
+            IdentityManager identityManager, IdentityMutator identityMutator,
+            AndroidSyncSettings androidSyncSettings) {
         ThreadUtils.assertOnUiThread();
-        assert context != null;
         assert androidSyncSettings != null;
-        mContext = context;
         mNativeSigninManagerAndroid = nativeSigninManagerAndroid;
         mAccountTrackerService = accountTrackerService;
         mIdentityManager = identityManager;
@@ -306,7 +301,7 @@ public class SigninManager
      *         Google Play Services installed.
      */
     public boolean isSigninSupported() {
-        return !ApiCompatibilityUtils.isDemoUser() && isGooglePlayServicesPresent(mContext)
+        return !ApiCompatibilityUtils.isDemoUser() && isGooglePlayServicesPresent()
                 && !SigninManagerJni.get().isMobileIdentityConsistencyEnabled();
     }
 
@@ -451,19 +446,16 @@ public class SigninManager
         assert mSignInState.mCoreAccountInfo != null;
 
         Log.d(TAG, "Checking if account has policy management enabled");
-        fetchAndApplyCloudPolicy(mSignInState.mCoreAccountInfo, this::onPolicyFetchedBeforeSignIn);
+        fetchAndApplyCloudPolicy(
+                mSignInState.mCoreAccountInfo, this::finishSignInAfterPolicyEnforced);
     }
 
-    @VisibleForTesting
     /**
-     * If the user is managed, its policy has been fetched and is being enforced; features like sync
-     * may now be disabled by policy, and the rest of the sign-in flow can be resumed.
+     * Finishes the sign-in flow. If the user is managed, the policy should be fetched and enforced
+     * before calling this method.
      */
-    void onPolicyFetchedBeforeSignIn() {
-        finishSignIn();
-    }
-
-    private void finishSignIn() {
+    @VisibleForTesting
+    void finishSignInAfterPolicyEnforced() {
         // This method should be called at most once per sign-in flow.
         assert mSignInState != null && mSignInState.mCoreAccountInfo != null;
 
@@ -677,8 +669,9 @@ public class SigninManager
         return SigninManagerJni.get().extractDomainName(email);
     }
 
-    private boolean isGooglePlayServicesPresent(Context context) {
-        return !ExternalAuthUtils.getInstance().isGooglePlayServicesMissing(context);
+    private boolean isGooglePlayServicesPresent() {
+        return !ExternalAuthUtils.getInstance().isGooglePlayServicesMissing(
+                ContextUtils.getApplicationContext());
     }
 
     private void fetchAndApplyCloudPolicy(CoreAccountInfo account, final Runnable callback) {

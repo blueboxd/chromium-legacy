@@ -6,6 +6,8 @@
 """Runs tests to ensure annotation tests are working as expected.
 """
 
+from __future__ import print_function
+
 import os
 import argparse
 import sys

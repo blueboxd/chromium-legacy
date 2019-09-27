@@ -14,12 +14,15 @@
 namespace blink {
 
 class Frame;
+class FrameSwapScope;
 class ResourceTimingInfo;
 
 // Oilpan: all FrameOwner instances are GCed objects. FrameOwner additionally
 // derives from GarbageCollectedMixin so that Member<FrameOwner> references can
 // be kept (e.g., Frame::m_owner.)
 class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
+  friend class FrameSwapScope;
+
  public:
   virtual ~FrameOwner() = default;
 
@@ -73,6 +76,42 @@ class CORE_EXPORT FrameOwner : public GarbageCollectedMixin {
 
   // Returns whether or not children of the owned frame should be lazily loaded.
   virtual bool ShouldLazyLoadChildren() const = 0;
+
+ protected:
+  virtual void FrameOwnerPropertiesChanged() {}
+
+ private:
+  virtual void SetIsSwappingFrames(bool) {}
+};
+
+// The purpose of this class is to suppress the propagation of frame owner
+// properties while a frame is being replaced. In particular, it prevents the
+// erroneous propagation of is_display_none=true, which would otherwise happen
+// when the old frame is detached prior to attaching the new frame. This class
+// will postpone the propagation until the properties are in their new stable
+// state.
+//
+// It is only intended to handle cases where one frame is detached and a new
+// frame immediately attached. For normal frame unload/teardown, we don't need
+// to suppress the propagation.
+class FrameSwapScope {
+  STACK_ALLOCATED();
+
+ public:
+  FrameSwapScope(FrameOwner* frame_owner) : frame_owner_(frame_owner) {
+    if (frame_owner)
+      frame_owner->SetIsSwappingFrames(true);
+  }
+
+  ~FrameSwapScope() {
+    if (frame_owner_) {
+      frame_owner_->SetIsSwappingFrames(false);
+      frame_owner_->FrameOwnerPropertiesChanged();
+    }
+  }
+
+ private:
+  Member<FrameOwner> frame_owner_;
 };
 
 // TODO(dcheng): This class is an internal implementation detail of provisional

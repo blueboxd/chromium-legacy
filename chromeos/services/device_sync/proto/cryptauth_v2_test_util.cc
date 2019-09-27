@@ -90,11 +90,11 @@ DeviceFeatureStatus BuildDeviceFeatureStatus(
 DeviceActivityStatus BuildDeviceActivityStatus(
     const std::string& device_id,
     int64_t last_activity_time_sec,
-    const OnlineStatus online_status) {
+    const ConnectivityStatus connectivity_status) {
   DeviceActivityStatus device_activity_status;
   device_activity_status.set_device_id(device_id);
   device_activity_status.set_last_activity_time_sec(last_activity_time_sec);
-  device_activity_status.set_online_status(online_status);
+  device_activity_status.set_connectivity_status(connectivity_status);
   return device_activity_status;
 }
 

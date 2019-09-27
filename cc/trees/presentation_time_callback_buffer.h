@@ -15,16 +15,19 @@ namespace cc {
 // Maintains a queue of callbacks and compositor frame times that we want to
 // buffer until a relevant frame is presented.
 //
-// Callbacks are queued through |RegisterMainThreadPresentationCallbacks|.
+// Callbacks are queued through |RegisterMainThreadPresentationCallbacks| and
+// |RegisterCompositorPresentationCallbacks| if the callback is to be run on
+// the main thread or compositor thread respectively.
 //
 // Once a frame is presented, users of this class can call
 // |PopPendingCallbacks| to get their callbacks back. This class never runs
-// callbacks itself so it's up to calling code to |PostTask| as needed.
+// callbacks itself so it's up to calling code to |PostTask| or call |Run()| as
+// needed.
 //
 // This class is thread unsafe so concurrent access would require external
 // synchronization. In practice, however, instances of this class are only used
-// on the compositor thread even though the buffered callbacks are intended to
-// be run on the renderer main thread.
+// on the compositor thread even though some of the buffered callbacks are
+// intended to be run on the renderer main thread.
 //
 // CC_EXPORT is only needed for testing.
 class CC_EXPORT PresentationTimeCallbackBuffer {
@@ -50,6 +53,13 @@ class CC_EXPORT PresentationTimeCallbackBuffer {
       uint32_t frame_token,
       std::vector<CallbackType> callbacks);
 
+  // Buffers the given |callbacks| in preparation for a GPU frame swap at or
+  // after the given |frame_token|. Calling code invokes these callbacks on the
+  // compositor thread once they're popped.
+  void RegisterCompositorPresentationCallbacks(
+      uint32_t frame_token,
+      std::vector<CallbackType> callbacks);
+
   // The given |frame_time| is associated with the given |frame_token| and will
   // be exposed through |PopPendingCallbacks| if there is an exact frame token
   // match. Note that it is an error to register distinct |frame_time|s against
@@ -72,6 +82,10 @@ class CC_EXPORT PresentationTimeCallbackBuffer {
     // Holds callbacks registered through
     // |RegisterMainThreadPresentationCallbacks|.
     std::vector<CallbackType> main_thread_callbacks;
+
+    // Holds callbacks registered through
+    // |RegisterCompositorPresentationCallbacks|.
+    std::vector<CallbackType> compositor_thread_callbacks;
 
     // Note: calling code needs to test against frame_time.is_null() because
     // frame_time is not always defined. See |PopPendingCallbacks|.
@@ -111,6 +125,9 @@ class CC_EXPORT PresentationTimeCallbackBuffer {
 
     // The callbacks to send back to the main thread.
     std::vector<CallbackType> main_thread_callbacks;
+
+    // The callbacks to invoke on the compositor thread.
+    std::vector<CallbackType> compositor_thread_callbacks;
   };
 
   // Returns a reference to a |FrameTokenInfo| with the given |frame_token|.

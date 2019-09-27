@@ -185,7 +185,6 @@ void CoreOobeHandler::GetAdditionalParameters(base::DictionaryValue* dict) {
                base::Value(DemoSetupController::IsDemoModeAllowed()));
   dict->SetKey("showTechnologyBadge",
                base::Value(!ash::features::IsSeparateNetworkIconsEnabled()));
-  dict->SetKey("adaptiveOobe", base::Value(features::IsAdaptiveOobeEnabled()));
 }
 
 void CoreOobeHandler::RegisterMessages() {

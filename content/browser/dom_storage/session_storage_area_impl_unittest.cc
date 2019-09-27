@@ -70,12 +70,10 @@ class SessionStorageAreaImplTest : public testing::Test {
         test_namespace_id2_(base::GenerateGUID()),
         test_origin1_(url::Origin::Create(GURL("https://host1.com:1/"))),
         test_origin2_(url::Origin::Create(GURL("https://host2.com:2/"))) {
-    auto file_runner =
-        base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()});
     CreateSelfOwnedreceiverOnTaskRunner(
         base::CreateSequencedTaskRunner({base::ThreadPool(), base::MayBlock()}),
         leveldb_service_.BindNewPipeAndPassReceiver(),
-        std::make_unique<leveldb::LevelDBServiceImpl>(std::move(file_runner)));
+        std::make_unique<leveldb::LevelDBServiceImpl>());
 
     leveldb_service_->OpenInMemory(
         base::nullopt, "SessionStorageAreaImplTestDatabase",

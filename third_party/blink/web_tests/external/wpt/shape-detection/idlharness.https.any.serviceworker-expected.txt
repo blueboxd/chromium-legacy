@@ -1,6 +1,7 @@
 This is a testharness.js-based test.
-Found 53 tests; 52 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 54 tests; 53 PASS, 1 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
+PASS idl_test validation
 PASS FaceDetector interface: existence and properties of interface object
 PASS FaceDetector interface object length
 PASS FaceDetector interface object name

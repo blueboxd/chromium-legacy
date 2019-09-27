@@ -446,49 +446,6 @@ void PaintLayer::UpdateTransform(const ComputedStyle* old_style,
     frame_view->SetNeedsUpdateGeometries();
 }
 
-static PaintLayer* EnclosingLayerForContainingBlock(PaintLayer* layer) {
-  if (LayoutObject* containing_block =
-          layer->GetLayoutObject().ContainingBlock())
-    return containing_block->EnclosingLayer();
-  return nullptr;
-}
-
-static const PaintLayer* EnclosingLayerForContainingBlock(
-    const PaintLayer* layer) {
-  if (const LayoutObject* containing_block =
-          layer->GetLayoutObject().ContainingBlock())
-    return containing_block->EnclosingLayer();
-  return nullptr;
-}
-
-PaintLayer* PaintLayer::RenderingContextRoot() {
-  PaintLayer* rendering_context = nullptr;
-
-  if (ShouldPreserve3D())
-    rendering_context = this;
-
-  for (PaintLayer* current = EnclosingLayerForContainingBlock(this);
-       current && current->ShouldPreserve3D();
-       current = EnclosingLayerForContainingBlock(current))
-    rendering_context = current;
-
-  return rendering_context;
-}
-
-const PaintLayer* PaintLayer::RenderingContextRoot() const {
-  const PaintLayer* rendering_context = nullptr;
-
-  if (ShouldPreserve3D())
-    rendering_context = this;
-
-  for (const PaintLayer* current = EnclosingLayerForContainingBlock(this);
-       current && current->ShouldPreserve3D();
-       current = EnclosingLayerForContainingBlock(current))
-    rendering_context = current;
-
-  return rendering_context;
-}
-
 TransformationMatrix PaintLayer::CurrentTransform() const {
   if (TransformationMatrix* transform = Transform())
     return *transform;

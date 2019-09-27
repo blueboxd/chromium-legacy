@@ -6,7 +6,9 @@
 
 #include <memory>
 
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/web_task_environment.h"
+#include "ios/web/public/web_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
 #include "ios/web_view/test/test_with_locale_and_resources.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -20,7 +22,11 @@ namespace ios_web_view {
 
 class CWVWebViewConfigurationTest : public TestWithLocaleAndResources {
  protected:
+  CWVWebViewConfigurationTest()
+      : web_client_(std::make_unique<web::WebClient>()) {}
+
   web::WebTaskEnvironment task_environment_;
+  web::ScopedTestingWebClient web_client_;
 };
 
 // Test CWVWebViewConfiguration initialization.

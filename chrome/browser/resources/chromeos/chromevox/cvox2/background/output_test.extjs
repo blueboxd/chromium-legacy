@@ -119,7 +119,8 @@ TEST_F('ChromeVoxOutputE2ETest', 'Links', function() {
         // Link earcon (based on the name).
         {value: {earconId: 'LINK'}, start: 0, end: 10},
 
-        {value: 'role', start: 11, end: 15}
+        {value: 'role', start: 11, end: 15},
+        {value: {'delay': true}, start:16, end:16}
       ]}, o.speechOutputForTest);
       checkBrailleOutput(
           'Click here lnk',
@@ -137,7 +138,8 @@ TEST_F('ChromeVoxOutputE2ETest', 'Checkbox', function() {
       checkSpeechOutput('|Check box|Not checked|Press Search+Space to toggle.',
           [
             {value: new Output.EarconAction('CHECK_OFF'), start: 0, end: 0},
-            {value: 'role', start: 1, end: 10}
+            {value: 'role', start: 1, end: 10},
+            {value: {'delay': true}, start:23, end:23}
           ],
           o);
       checkBrailleOutput(
@@ -710,7 +712,8 @@ TEST_F('ChromeVoxOutputE2ETest', 'ToggleButton', function() {
             spans_: [
         {value: {earconId: 'CHECK_ON'}, start: 0, end: 0},
         {value: 'name', start: 1, end:10},
-        {value: 'role', start: 11, end: 24}
+        {value: 'role', start: 11, end: 24},
+        {value: {'delay':true}, start:33, end:33}
       ]}, o.speechOutputForTest);
       assertEquals('Subscribe tgl btn =', o.brailleOutputForTest.string_);
   });

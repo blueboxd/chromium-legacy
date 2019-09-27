@@ -75,12 +75,12 @@
 <translation id="1298536327547837046">恶意软件扫描</translation>
 <translation id="129863573139666797"><ph name="BEGIN_LINK" />尝试清除 Cookie<ph name="END_LINK" /></translation>
 <translation id="1307966114820526988">已被弃用的功能</translation>
-<translation id="1314509827145471431">胶订（右侧）</translation>
+<translation id="1314509827145471431">装订（右侧）</translation>
 <translation id="1320233736580025032">Prc1 (Envelope)</translation>
 <translation id="132301787627749051">搜索剪贴板上的图片</translation>
 <translation id="1323433172918577554">展开</translation>
 <translation id="132390688737681464">保存并填写地址</translation>
-<translation id="1330449323196174374">门式折（左侧）</translation>
+<translation id="1330449323196174374">关门折（左侧）</translation>
 <translation id="1333989956347591814">以下各方<ph name="BEGIN_EMPHASIS" />可能仍会看到<ph name="END_EMPHASIS" />您的活动：
         <ph name="BEGIN_LIST" />
           <ph name="LIST_ITEM" />您访问的网站
@@ -108,7 +108,7 @@
 <translation id="1413809658975081374">隐私设置错误</translation>
 <translation id="1426410128494586442">是</translation>
 <translation id="1430915738399379752">打印</translation>
-<translation id="1442386063175183758">门式折（右侧）</translation>
+<translation id="1442386063175183758">关门折（右侧）</translation>
 <translation id="1442987760062738829">打孔</translation>
 <translation id="1455413310270022028">橡皮擦</translation>
 <translation id="1463543813647160932">5x7</translation>
@@ -267,7 +267,7 @@
 <translation id="2230458221926704099">请使用<ph name="BEGIN_LINK" />诊断应用<ph name="END_LINK" />修复网络连接</translation>
 <translation id="2239100178324503013">立即发送</translation>
 <translation id="2248949050832152960">使用 WebAuthn</translation>
-<translation id="2250931979407627383">压边缝合（左侧）</translation>
+<translation id="2250931979407627383">边缘装订（左侧）</translation>
 <translation id="225207911366869382">适用于该政策的此值已弃用。</translation>
 <translation id="2257315177824333709">抱歉，当前无法保存您的卡</translation>
 <translation id="2262243747453050782">HTTP 错误</translation>
@@ -308,7 +308,7 @@
 <translation id="2463739503403862330">填充</translation>
 <translation id="2465402087343596252">Architecture-E</translation>
 <translation id="2465655957518002998">选择速递方式</translation>
-<translation id="2465688316154986572">订书钉装订</translation>
+<translation id="2465688316154986572">订书钉</translation>
 <translation id="2467694685043708798"><ph name="BEGIN_LINK" />运行网络诊断<ph name="END_LINK" /></translation>
 <translation id="2473195200299095979">翻译此页</translation>
 <translation id="2479410451996844060">搜索网址无效。</translation>
@@ -343,12 +343,12 @@
 <translation id="2618023639789766142">C10 (Envelope)</translation>
 <translation id="2625385379895617796">您的时钟快了</translation>
 <translation id="2634124572758952069">找不到 <ph name="HOST_NAME" /> 的服务器 IP 地址。</translation>
-<translation id="2638745661847473633">您要访问的服务器 <ph name="ORIGIN" /> 已请求将一项来源政策应用于向其发出的所有请求。但该服务器现在提供了一项无效的政策，这意味着，浏览器无法满足您对 <ph name="SITE" /> 的访问请求。网站运营商可以使用来源政策为网站配置安全及其他属性。</translation>
+<translation id="2638745661847473633">您要访问的服务器 <ph name="ORIGIN" /> 已要求收到的所有请求都应用一项来源政策。但该服务器现在提供了一项无效的政策，这意味着，浏览器无法实现您对 <ph name="SITE" /> 的访问请求。网站运营商可以使用来源政策为网站配置安全及其他属性。</translation>
 <translation id="2639739919103226564">状态：</translation>
 <translation id="2649204054376361687"><ph name="COUNTRY" /><ph name="CITY" /></translation>
 <translation id="2650446666397867134">访问文件遭拒</translation>
 <translation id="2653659639078652383">提交</translation>
-<translation id="2660650542324841986">您要访问的服务器 <ph name="ORIGIN" /> 已请求将一项来源政策应用于向其发出的所有请求。但该服务器现在未能提供任何政策，这会阻止浏览器满足您对 <ph name="SITE" /> 的访问请求。网站运营商可以使用来源政策为网站配置安全及其他属性。</translation>
+<translation id="2660650542324841986">您要访问的服务器 <ph name="ORIGIN" /> 已要求收到的所有请求都应用一项来源政策。但该服务器现在未能提供任何政策，导致浏览器无法实现您对 <ph name="SITE" /> 的访问请求。网站运营商可以使用来源政策为网站配置安全及其他属性。</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{无}=1{1 个密码（用于 <ph name="DOMAIN_LIST" />）}=2{2 个密码（用于 <ph name="DOMAIN_LIST" />）}other{# 个密码（用于 <ph name="DOMAIN_LIST" />）}}</translation>
 <translation id="2666117266261740852">关闭其他标签页或应用</translation>
 <translation id="2674170444375937751">确定要从历史记录中删除这些页吗？</translation>
@@ -390,7 +390,7 @@
 <translation id="2878197950673342043">海报折</translation>
 <translation id="2878424575911748999">A1</translation>
 <translation id="2881276955470682203">保存卡片？</translation>
-<translation id="2882949212241984732">双重的门式折</translation>
+<translation id="2882949212241984732">关门再对折</translation>
 <translation id="2903493209154104877">地址</translation>
 <translation id="290376772003165898">网页的源语言不是<ph name="LANGUAGE" />？</translation>
 <translation id="2909946352844186028">检测到了网络变化。</translation>
@@ -400,7 +400,7 @@
 <translation id="2925673989565098301">递送方式</translation>
 <translation id="2928905813689894207">帐单邮寄地址</translation>
 <translation id="2929525460561903222">{SHIPPING_ADDRESS,plural, =0{<ph name="SHIPPING_ADDRESS_PREVIEW" />}=1{<ph name="SHIPPING_ADDRESS_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}other{<ph name="SHIPPING_ADDRESS_PREVIEW" />以及另外 <ph name="NUMBER_OF_ADDITIONAL_ADDRESSES" /> 个地址}}</translation>
-<translation id="2930577230479659665">每完成一个副本即裁切</translation>
+<translation id="2930577230479659665">完成每个副本后裁切</translation>
 <translation id="2934466151127459956">Government-Letter</translation>
 <translation id="2941952326391522266">此服务器无法证明它是<ph name="DOMAIN" />；其安全证书来自<ph name="DOMAIN2" />。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="2948083400971632585">您可以在设置页面中停用任何针对某个连接配置的代理。</translation>
@@ -533,11 +533,12 @@
 <translation id="3658742229777143148">修订版本</translation>
 <translation id="366077651725703012">更新信用卡</translation>
 <translation id="3676592649209844519">设备 ID：</translation>
+<translation id="3677008721441257057">您是想访问 &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; 吧？</translation>
 <translation id="3678029195006412963">无法签署该请求</translation>
 <translation id="3678529606614285348">在新的无痕式窗口中打开网页 (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">崩溃报告的获取时间：<ph name="CRASH_TIME" />；上传时间：<ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">证书信息</translation>
-<translation id="3688109723158850780">您要访问的服务器 <ph name="ORIGIN" /> 已请求将一项来源政策应用于向其发出的所有请求。但该服务器并未提供任何政策，而是将浏览器重定向到了别处，这会阻止浏览器满足您对 <ph name="SITE" /> 的访问请求。网站运营商可以使用来源政策为网站配置安全及其他属性。</translation>
+<translation id="3688109723158850780">您要访问的服务器 <ph name="ORIGIN" /> 已要求收到的所有请求都应用一项来源政策。但该服务器并未提供任何政策，而是将浏览器重定向到了别处，导致浏览器无法实现您对 <ph name="SITE" /> 的访问请求。网站运营商可以使用来源政策为网站配置安全及其他属性。</translation>
 <translation id="3701427423622901115">已确认要重置。</translation>
 <translation id="3704162925118123524">您正在使用的网络可能会要求您访问其登录页面。</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> - <ph name="BOOKMARKED" /> - <ph name="TITLE" /> - <ph name="DOMAIN" /></translation>
@@ -603,7 +604,6 @@
 <translation id="4075732493274867456">客户端和服务器不支持一般 SSL 协议版本或加密套件。</translation>
 <translation id="4079302484614802869">代理配置已设置为使用 .pac 脚本网址，而不是固定的代理服务器。</translation>
 <translation id="4082393374666368382">设置 - 管理</translation>
-<translation id="4092411512356034591">继续访问 <ph name="DOMAIN" />？</translation>
 <translation id="4098354747657067197">您要访问的是诈骗网站</translation>
 <translation id="4103249731201008433">设备序列号无效</translation>
 <translation id="410351446219883937">自动播放</translation>
@@ -721,7 +721,7 @@
 <translation id="4594403342090139922">撤消删除(&amp;U)</translation>
 <translation id="4597348597567598915">大小：8</translation>
 <translation id="4600854749408232102">C6/C5 (Envelope)</translation>
-<translation id="4635654612248442824">网站 <ph name="ORIGIN" /> 已请求将一项来政策应用于它的所有请求，但此政策目前无法应用。</translation>
+<translation id="4635654612248442824">网站 <ph name="ORIGIN" /> 已要求其所有请求都应用一项来源政策，但此政策目前无法应用。</translation>
 <translation id="464342062220857295">搜索功能</translation>
 <translation id="4646534391647090355">立即前往</translation>
 <translation id="4658638640878098064">钉装（左上角）</translation>
@@ -847,7 +847,7 @@
 <translation id="5252000469029418751">C7 (Envelope)</translation>
 <translation id="5254958791078852567">E1</translation>
 <translation id="5261548214279761072">付款已完成</translation>
-<translation id="5266128565379329178">胶订（顶部）</translation>
+<translation id="5266128565379329178">装订（顶部）</translation>
 <translation id="5269225904387178860">四孔（底部）</translation>
 <translation id="5269999699920406580">在整个系统范围内应用的功能只能由所有者 <ph name="OWNER_EMAIL" /> 设定</translation>
 <translation id="5273658854610202413">警告：系统未按照 PolicyDictionaryMultipleSourceMergeList 政策中指定的方式合并此政策，因为此政策不是可合并的字典政策的一部分。</translation>
@@ -877,7 +877,7 @@
 <translation id="5384855140246857529">要在所有设备上使用您的卡，请登录您的帐号并开启同步功能。</translation>
 <translation id="5386426401304769735">此网站的证书链包含使用 SHA-1 签署的证书。</translation>
 <translation id="538659543871111977">A4-Tab</translation>
-<translation id="5396631636586785122">压边缝合（右侧）</translation>
+<translation id="5396631636586785122">边缘装订（右侧）</translation>
 <translation id="540969355065856584">此服务器无法证明它是 <ph name="DOMAIN" />；其安全证书目前无效。出现此问题的原因可能是配置有误或您的连接被拦截了。</translation>
 <translation id="5421136146218899937">清除浏览数据...</translation>
 <translation id="5430298929874300616">移除书签</translation>
@@ -902,7 +902,7 @@
 <translation id="5510766032865166053">该文件可能已被移至别处或遭到删除。</translation>
 <translation id="5523118979700054094">政策名</translation>
 <translation id="552553974213252141">提取的内容是否正确？</translation>
-<translation id="55293785478302737">压边缝合</translation>
+<translation id="55293785478302737">边缘装订</translation>
 <translation id="553484882784876924">Prc6 (Envelope)</translation>
 <translation id="5540224163453853">找不到请求的文章。</translation>
 <translation id="5541546772353173584">添加电子邮件地址</translation>
@@ -971,7 +971,7 @@
 <translation id="5893752035575986141">接受信用卡。</translation>
 <translation id="5895138241574237353">重新启动</translation>
 <translation id="5901630391730855834">黄色</translation>
-<translation id="5905445707201418379">已被屏蔽，依据是 <ph name="ORIGIN" /> 的来源政策。</translation>
+<translation id="5905445707201418379">已根据 <ph name="ORIGIN" /> 的来源政策而屏蔽。</translation>
 <translation id="5908541034548427511"><ph name="TYPE_1" />（已同步）</translation>
 <translation id="5916664084637901428">启用</translation>
 <translation id="59174027418879706">已启用</translation>
@@ -1000,7 +1000,7 @@
 <translation id="6025416945513303461"><ph name="TYPE_1" />、<ph name="TYPE_2" />、<ph name="TYPE_3" />（已同步）</translation>
 <translation id="6027201098523975773">请输入名称</translation>
 <translation id="603068602130820122">双钉（右侧）</translation>
-<translation id="6032955021262906325">胶订（左侧）</translation>
+<translation id="6032955021262906325">装订（左侧）</translation>
 <translation id="6034000775414344507">浅灰色</translation>
 <translation id="6034283069659657473">10x14 (Envelope)</translation>
 <translation id="6034514109191629503">风琴折</translation>
@@ -1031,7 +1031,7 @@
 <translation id="6218753634732582820">要从 Chromium 中移除地址吗？</translation>
 <translation id="622039917539443112">平行折</translation>
 <translation id="6221345481584921695">Google安全浏览功能最近在<ph name="SITE" />上<ph name="BEGIN_LINK" />检测到了恶意软件<ph name="END_LINK" />。平常非常安全的网站有时也会感染恶意软件。检测到的恶意内容来自于<ph name="SUBRESOURCE_HOST" />，这是个已知的恶意软件散布方。</translation>
-<translation id="6234122620015464377">每完成一个文档即裁切</translation>
+<translation id="6234122620015464377">完成每份文档后裁切</translation>
 <translation id="6240447795304464094">Google Pay 徽标</translation>
 <translation id="6251924700383757765">隐私权政策</translation>
 <translation id="6254436959401408446">内存不足，无法打开此网页</translation>
@@ -1070,7 +1070,7 @@
 <translation id="6406765186087300643">C0 (Envelope)</translation>
 <translation id="6410264514553301377">请输入“<ph name="CREDIT_CARD" />”的到期日期和银行卡验证码 (CVC)</translation>
 <translation id="6415778972515849510">Chromium 可以帮助您保护您的 Google 帐号和更改密码。</translation>
-<translation id="6427730057873428458">门式折</translation>
+<translation id="6427730057873428458">关门折</translation>
 <translation id="6431585503458005759">不存储</translation>
 <translation id="6433490469411711332">修改联系信息</translation>
 <translation id="6433595998831338502"><ph name="HOST_NAME" /> 拒绝了我们的连接请求。</translation>
@@ -1151,7 +1151,6 @@
 <translation id="6868206169573555318">重新启动以进行更新</translation>
 <translation id="6874604403660855544">恢复添加(&amp;R)</translation>
 <translation id="6884662655240309489">大小：1</translation>
-<translation id="6884796835813057577">继续访问 &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;？</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">政策级别不受支持。</translation>
 <translation id="6895330447102777224">已确认您的信用卡</translation>
@@ -1370,11 +1369,11 @@
 <translation id="7942349550061667556">红色</translation>
 <translation id="7947285636476623132">请检查您的信用卡到期年份，然后重试</translation>
 <translation id="7951415247503192394">（32 位）</translation>
-<translation id="7953569069500808819">压边缝合（顶部）</translation>
+<translation id="7953569069500808819">边缘装订（顶部）</translation>
 <translation id="7956713633345437162">移动设备书签</translation>
 <translation id="7961015016161918242">一律不</translation>
 <translation id="7977894662897852582">Edp</translation>
-<translation id="799149739215780103">胶订</translation>
+<translation id="799149739215780103">装订</translation>
 <translation id="7995512525968007366">未指定</translation>
 <translation id="800218591365569300">请尝试关闭其他标签页或程序以释放内存。</translation>
 <translation id="8004582292198964060">浏览器</translation>
@@ -1435,7 +1434,7 @@
 <translation id="8253091569723639551">账单邮寄地址是必填项</translation>
 <translation id="825929999321470778">显示所有已保存的密码</translation>
 <translation id="8261506727792406068">删除</translation>
-<translation id="8262952874573525464">压边缝合（底部）</translation>
+<translation id="8262952874573525464">边缘装订（底部）</translation>
 <translation id="8267698848189296333">目前登录的帐号是 <ph name="USERNAME" /></translation>
 <translation id="8281084378435768645">Large-Photo</translation>
 <translation id="8286036467436129157">登录</translation>
@@ -1523,7 +1522,7 @@
 <translation id="8792621596287649091">您可能会无法再访问自己的 <ph name="ORG_NAME" /> 帐号，或者身份信息遭到盗用。Chromium 建议您立即更改密码。</translation>
 <translation id="8800988563907321413">此处将显示系统建议您浏览的附近网页</translation>
 <translation id="8805819170075074995">列表条目“<ph name="LANGUAGE_ID" />”：该条目因同时存在于 SpellcheckLanguage 政策中而被忽略。</translation>
-<translation id="8807160976559152894">每完成一页即裁切</translation>
+<translation id="8807160976559152894">完成每页后裁切</translation>
 <translation id="8820817407110198400">书签</translation>
 <translation id="883848425547221593">其他书签</translation>
 <translation id="884264119367021077">送货地址</translation>
@@ -1531,7 +1530,7 @@
 <translation id="885730110891505394">与 Google 分享</translation>
 <translation id="8858065207712248076">如果您在其他网站上重复使用了您的 <ph name="BEGIN_BOLD" /><ph name="ORG_NAME" /><ph name="END_BOLD" /> 密码，Chrome 建议您重置该密码。</translation>
 <translation id="8866481888320382733">解析策略设置时出错</translation>
-<translation id="8866928039507595380">折叠</translation>
+<translation id="8866928039507595380">对折</translation>
 <translation id="886872106311861689">B3</translation>
 <translation id="8870413625673593573">最近关闭的标签页</translation>
 <translation id="8874824191258364635">请输入有效的信用卡号</translation>
@@ -1614,7 +1613,7 @@
 <translation id="945855313015696284">请查看下面的信息，并删除所有无效卡片</translation>
 <translation id="950736567201356821">三孔（顶部）</translation>
 <translation id="951104842009476243">接受的借记卡和预付卡</translation>
-<translation id="961663415146723894">胶订（底部）</translation>
+<translation id="961663415146723894">装订（底部）</translation>
 <translation id="962484866189421427">此内容可能会尝试安装欺骗性应用，而这些应用能够冒充其他内容或收集可用于对您进行跟踪的数据。<ph name="BEGIN_LINK" />仍然显示<ph name="END_LINK" /></translation>
 <translation id="969892804517981540">正式版本</translation>
 <translation id="973773823069644502">添加速递地址</translation>

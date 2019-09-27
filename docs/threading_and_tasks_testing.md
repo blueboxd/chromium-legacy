@@ -49,7 +49,7 @@ tasks.
 Typically this will look something like this:
 
 foo.h
-```
+```c++
 class Foo {
  public:
   Foo() : owning_sequence_(base::SequencedTaskRunnerHandle::Get()) {}
@@ -69,7 +69,7 @@ class Foo {
 ```
 
 foo_unittest.cc
-```
+```c++
 TEST(FooTest, DoSomething) {
   base::test::SingleThreadTaskEnvironment task_environment;
 
@@ -101,7 +101,7 @@ seam :).
 Typical use case:
 
 foo_service.h
-```
+```c++
 class FooService {
  public:
   FooService()
@@ -130,7 +130,7 @@ class FooService {
 ```
 
 foo_service_unittest.cc
-```
+```c++
 TEST(FooServiceTest, FlushAndReply) {
   base::test::TaskEnvironment task_environment;
 
@@ -203,7 +203,7 @@ This makes it possible to test code with flush intervals, repeating timers,
 timeouts, etc. without any test-specific seams in the product code, e.g.:
 
 foo_storage.h
-```
+```c++
 class FooStorage {
  public:
   static constexpr base::TimeDelta::kFlushInterval =
@@ -215,7 +215,7 @@ class FooStorage {
 ```
 
 foo_unittest.cc
-```
+```c++
 class FooStorageTest {
  public:
   FooStorageTest() = default;
@@ -247,7 +247,7 @@ advance the clock enough that the delayed task becomes runnable, and then
 `TaskEnvironment::RunUntilIdle()` would run the delayed task, signalling the
 event.
 
-```
+```c++
 TEST(FooTest, TimeoutExceeded)
 {
   base::test::TaskEnvironment task_environment{
@@ -328,7 +328,7 @@ desired.
 This typically looks like this (in this case `FooTestBase` opts to enforce
 `MainThreadType::UI` and leaves other traits to be specified as desired):
 
-```
+```c++
 // Constructs a FooTestBase with |traits| being forwarded to its
 // TaskEnvironment. MainThreadType always defaults to UI and must not be
 // specified.

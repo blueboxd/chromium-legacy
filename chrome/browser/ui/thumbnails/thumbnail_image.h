@@ -19,11 +19,21 @@
 // uncompressed image to observers.
 class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
  public:
-  // Observes uncompressed versions of the thumbnail image as they are
-  // available.
+  // Smart pointer to reference-counted compressed image data; in this case
+  // JPEG format.
+  using CompressedThumbnailData =
+      scoped_refptr<base::RefCountedData<std::vector<uint8_t>>>;
+
+  // Observes uncompressed and/or compressed versions of the thumbnail image as
+  // they are available.
   class Observer : public base::CheckedObserver {
    public:
-    virtual void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image) = 0;
+    // Receives uncompressed thumbnail image data. Default is no-op.
+    virtual void OnThumbnailImageAvailable(gfx::ImageSkia thumbnail_image);
+
+    // Receives compressed thumbnail image data. Default is no-op.
+    virtual void OnCompressedThumbnailDataAvailable(
+        CompressedThumbnailData thumbnail_data);
   };
 
   // Represents the endpoint
@@ -63,17 +73,22 @@ class ThumbnailImage : public base::RefCounted<ThumbnailImage> {
 
  private:
   friend class Delegate;
+  friend class ThumbnailImageTest;
   friend class base::RefCounted<ThumbnailImage>;
 
   virtual ~ThumbnailImage();
 
   void AssignJPEGData(std::vector<uint8_t> data);
   bool ConvertJPEGDataToImageSkiaAndNotifyObservers();
-  void NotifyObservers(gfx::ImageSkia image);
+  void NotifyUncompressedDataObservers(gfx::ImageSkia image);
+  void NotifyCompressedDataObservers(CompressedThumbnailData data);
+
+  static std::vector<uint8_t> CompressBitmap(SkBitmap bitmap);
+  static gfx::ImageSkia UncompressImage(CompressedThumbnailData compressed);
 
   Delegate* delegate_;
 
-  scoped_refptr<base::RefCountedData<std::vector<uint8_t>>> data_;
+  CompressedThumbnailData data_;
 
   base::ObserverList<Observer> observers_;
 

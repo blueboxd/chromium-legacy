@@ -13,20 +13,19 @@ struct WebDeviceEmulationParams;
 
 namespace content {
 
-struct VisualProperties;
-
 // Consumers of RenderWidgetScreenMetricsEmulatorDelegate implement this
 // delegate in order to transport emulation information across processes.
 class CONTENT_EXPORT RenderWidgetScreenMetricsEmulatorDelegate {
  public:
-  // Synchronize visual properties with the widget.
-  virtual void SynchronizeVisualProperties(
-      const VisualProperties& visual_properties) = 0;
-
   // Passes device emulation parameters to the delegate.
   virtual void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) = 0;
+
+  // Passes an updated ScreenInfo and sizes to the delegate.
+  virtual void SetScreenInfoAndSize(const ScreenInfo& screen_info,
+                                    const gfx::Size& widget_size,
+                                    const gfx::Size& visible_viewport_size) = 0;
 
   // Passes new view bounds and window bounds in screen coordinates to the
   // delegate.

@@ -1,7 +1,9 @@
 This is a testharness.js-based test.
 PASS idl_test setup
+PASS idl_test validation
 PASS Partial namespace CSS: original namespace defined
 PASS Partial namespace CSS: valid exposure set
+PASS Partial namespace CSS: member names are unique
 PASS AnimationWorkletGlobalScope interface: existence and properties of interface object
 PASS WorkletAnimationEffect interface: existence and properties of interface object
 PASS WorkletAnimation interface: existence and properties of interface object

@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/process/process_handle.h"
 #include "base/strings/string_piece.h"
+#include "mojo/public/c/system/invitation.h"
 #include "mojo/public/cpp/platform/platform_channel_endpoint.h"
 #include "mojo/public/cpp/platform/platform_channel_server_endpoint.h"
 #include "mojo/public/cpp/system/handle.h"
@@ -169,7 +170,9 @@ class MOJO_CPP_SYSTEM_EXPORT IncomingInvitation {
   // by |NamedPlatformChannel::ConnectToServer|.
   //
   // Note that this performs blocking I/O on the calling thread.
-  static IncomingInvitation Accept(PlatformChannelEndpoint channel_endpoint);
+  static IncomingInvitation Accept(
+      PlatformChannelEndpoint channel_endpoint,
+      MojoAcceptInvitationFlags flags = MOJO_ACCEPT_INVITATION_FLAG_NONE);
 
   // Like above, but does not perform any blocking I/O. Not all platforms and
   // sandbox configurations are compatible with this API. In such cases, the

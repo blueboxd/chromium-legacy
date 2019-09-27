@@ -299,7 +299,7 @@ cr.define('cr.ui', function() {
             // Store |contextElement| since it'll be removed when handling the
             // 'activate' event.
             const contextElement = this.contextElement;
-            const activationEvent = cr.doc.createEvent('Event');
+            const activationEvent = document.createEvent('Event');
             activationEvent.initEvent('activate', true, true);
             activationEvent.originalEvent = e;
             if (item.dispatchEvent(activationEvent)) {

@@ -8,7 +8,6 @@
 
 #include "build/build_config.h"
 #include "content/browser/browser_process_sub_thread.h"
-#include "content/browser/service_manager/common_browser_interfaces.h"
 #include "content/browser/service_manager/service_manager_context.h"
 #include "content/browser/startup_data_impl.h"
 #include "content/public/common/service_manager_connection.h"
@@ -25,9 +24,7 @@ ServiceManagerEnvironment::ServiceManagerEnvironment(
           mojo::core::ScopedIPCSupport::ShutdownPolicy::FAST)),
       service_manager_context_(
           std::make_unique<ServiceManagerContext>(ipc_thread_->task_runner())) {
-  auto* system_connection = ServiceManagerConnection::GetForProcess();
-  RegisterCommonBrowserInterfaces(system_connection);
-  system_connection->Start();
+  ServiceManagerConnection::GetForProcess()->Start();
 }
 
 ServiceManagerEnvironment::~ServiceManagerEnvironment() = default;

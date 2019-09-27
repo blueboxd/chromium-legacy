@@ -38,8 +38,8 @@ class PatchParams : public base::RefCounted<PatchParams> {
 
   ~PatchParams() = default;
 
-  // The FilePatcherPtr is stored so it does not get deleted before the callback
-  // runs.
+  // The mojo::Remote<FilePatcher> is stored so it does not get deleted before
+  // the callback runs.
   mojo::Remote<mojom::FilePatcher> file_patcher_;
 
   PatchCallback callback_;

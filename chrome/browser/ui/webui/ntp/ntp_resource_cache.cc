@@ -34,6 +34,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/bookmarks/common/bookmark_pref_names.h"
+#include "components/content_settings/core/common/features.h"
 #include "components/google/core/common/google_util.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/identity_manager/identity_manager.h"
@@ -274,6 +275,14 @@ void NTPResourceCache::CreateNewTabIncognitoHTML() {
       l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_NOT_SAVED);
   replacements["learnMoreLink"] = kLearnMoreIncognitoUrl;
   replacements["title"] = l10n_util::GetStringUTF8(IDS_NEW_TAB_TITLE);
+  replacements["hiddenIfCookieControlsDisabled"] =
+      base::FeatureList::IsEnabled(content_settings::kImprovedCookieControls)
+          ? ""
+          : "hidden";
+  replacements["cookieControlsTitle"] =
+      l10n_util::GetStringUTF8(IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIE);
+  replacements["cookieControlsDescription"] =
+      l10n_util::GetStringUTF8(IDS_NEW_TAB_OTR_COOKIE_CONTROLS_DESCRIPTION);
 
   const ui::ThemeProvider& tp =
       ThemeService::GetThemeProviderForProfile(profile_);

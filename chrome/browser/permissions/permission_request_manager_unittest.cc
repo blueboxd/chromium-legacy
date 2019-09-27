@@ -86,7 +86,7 @@ class PermissionRequestManagerTest : public ChromeRenderViewHostTestHarness {
 
   void WaitForFrameLoad() {
     // PermissionRequestManager ignores all parameters. Yay?
-    manager_->DocumentLoadedInFrame(NULL);
+    manager_->DOMContentLoaded(NULL);
     base::RunLoop().RunUntilIdle();
   }
 

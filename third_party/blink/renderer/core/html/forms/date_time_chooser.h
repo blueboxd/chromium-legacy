@@ -62,6 +62,10 @@ struct DateTimeChooserParameters {
   double step_base;
   bool required;
   bool is_anchor_element_rtl;
+  // The fields below are used for type="time".
+  bool has_ampm;
+  bool has_second;
+  bool has_millisecond;
 
  private:
   // DateTimeSuggestionPtr is not copyable.

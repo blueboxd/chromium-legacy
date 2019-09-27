@@ -474,6 +474,7 @@ source_set("common") {
     # Called via JNI
     "//components/about_ui",
     "//components/autofill/core/common",
+    "//components/crash/android:crashpad_main",
     "//components/gwp_asan/buildflags",
     "//components/safe_browsing/android:safe_browsing_api_handler",
     "//components/services/heap_profiling/public/cpp",

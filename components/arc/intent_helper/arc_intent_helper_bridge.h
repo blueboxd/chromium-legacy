@@ -119,6 +119,9 @@ class ArcIntentHelperBridge : public KeyedService,
 
   static const char kArcIntentHelperPackageName[];
 
+  const std::vector<IntentFilter>& GetIntentFilterForPackage(
+      const std::string& package_name);
+
  private:
   THREAD_CHECKER(thread_checker_);
 
@@ -127,9 +130,13 @@ class ArcIntentHelperBridge : public KeyedService,
 
   internal::ActivityIconLoader icon_loader_;
 
-  // List of intent filters from Android. Used to determine if Chrome should
-  // handle a URL without handing off to Android.
-  std::vector<IntentFilter> intent_filters_;
+  // A map of each package name to the intent filters for that package.
+  // Used to determine if Chrome should handle a URL without handing off to
+  // Android.
+  // TODO(crbug.com/853604): Now the package name exists in the map key as well
+  // as the IntentFilter struct, it is a duplication. Should update the ARC
+  // mojom type to optimise the structure.
+  std::map<std::string, std::vector<IntentFilter>> intent_filters_;
 
   base::ObserverList<ArcIntentHelperObserver>::Unchecked observer_list_;
 

@@ -255,7 +255,7 @@ interface NetworkService {
 
   // Gets the NetworkChangeManager.
   GetNetworkChangeManager(
-      NetworkChangeManager& network_change_manager);
+      pending_receiver<NetworkChangeManager> network_change_manager);
 
   // Gets the NetworkQualityEstimatorManager.
   GetNetworkQualityEstimatorManager(

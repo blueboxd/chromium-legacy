@@ -6,7 +6,7 @@
 
 #include <algorithm>
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_screen_info.h"
 #include "third_party/blink/renderer/core/css/properties/css_property.h"
@@ -243,7 +243,7 @@ void MediaControlsTouchlessImpl::OnKeyDown(KeyboardEvent* event) {
 
 void MediaControlsTouchlessImpl::EnsureMediaControlsMenuHost() {
   if (!media_controls_host_) {
-    GetDocument().GetFrame()->GetInterfaceProvider().GetInterface(
+    GetDocument().GetBrowserInterfaceBroker().GetInterface(
         media_controls_host_.BindNewPipeAndPassReceiver(
             GetExecutionContext()->GetTaskRunner(
                 blink::TaskType::kMediaElementEvent)));

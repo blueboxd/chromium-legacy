@@ -10,10 +10,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 // Performs privileged operations on behalf of sandboxed child processes.
@@ -26,8 +22,7 @@ class SandboxSupportMacImpl : public mojom::SandboxSupportMac {
   SandboxSupportMacImpl();
   ~SandboxSupportMacImpl() override;
 
-  void BindRequest(mojo::PendingReceiver<mojom::SandboxSupportMac> receiver,
-                   const service_manager::BindSourceInfo& source_info);
+  void BindReceiver(mojo::PendingReceiver<mojom::SandboxSupportMac> receiver);
 
   // content::mojom::SandboxSupportMac:
   void GetSystemColors(GetSystemColorsCallback callback) override;

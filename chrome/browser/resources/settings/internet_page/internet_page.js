@@ -507,7 +507,7 @@ Polymer({
 
     if (!event.detail.bypassConnectionDialog &&
         type == mojom.NetworkType.kTether &&
-        !networkState.tether.hasConnectedToHost) {
+        !networkState.typeState.tether.hasConnectedToHost) {
       const params = new URLSearchParams;
       params.append('guid', networkState.guid);
       params.append('type', OncMojo.getNetworkTypeString(type));

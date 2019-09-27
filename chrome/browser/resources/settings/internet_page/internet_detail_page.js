@@ -519,15 +519,15 @@ Polymer({
     switch (networkState.type) {
       case mojom.NetworkType.kCellular:
         managedProperties.cellular.signalStrength =
-            networkState.cellular.signalStrength;
+            networkState.typeState.cellular.signalStrength;
         break;
       case mojom.NetworkType.kTether:
         managedProperties.tether.signalStrength =
-            networkState.tether.signalStrength;
+            networkState.typeState.tether.signalStrength;
         break;
       case mojom.NetworkType.kWiFi:
         managedProperties.wifi.signalStrength =
-            networkState.wifi.signalStrength;
+            networkState.typeState.wifi.signalStrength;
         break;
     }
     this.managedProperties_ = managedProperties;

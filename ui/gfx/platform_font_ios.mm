@@ -96,6 +96,10 @@ NativeFont PlatformFontIOS::GetNativeFont() const {
                          size:font_size_];
 }
 
+sk_sp<SkTypeface> PlatformFontIOS::GetNativeSkTypefaceIfAvailable() const {
+  return nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontIOS, private:
 

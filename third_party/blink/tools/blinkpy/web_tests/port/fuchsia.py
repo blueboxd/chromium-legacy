@@ -60,6 +60,8 @@ def _import_fuchsia_runner():
     # pylint: disable=import-error
     # pylint: disable=invalid-name
     # pylint: disable=redefined-outer-name
+    global aemu_target
+    import aemu_target
     global fuchsia_target
     import target as fuchsia_target
     global qemu_target
@@ -123,12 +125,20 @@ class SubprocessOutputLogger(object):
         self._process.kill()
 
 class _TargetHost(object):
-    def __init__(self, build_path, ports_to_forward):
+    def __init__(self, build_path, ports_to_forward, target_device):
         try:
             self._target = None
-            self._target = qemu_target.QemuTarget(
-                build_path, 'x64', cpu_cores=CPU_CORES, system_log_file=None,
-                require_kvm=True, ram_size_mb=8192)
+            target_args = { 'output_dir':build_path,
+                            'target_cpu':'x64',
+                            'system_log_file':None,
+                            'cpu_cores':CPU_CORES,
+                            'require_kvm':True,
+                            'emu_type':target_device,
+                            'ram_size_mb':8192}
+            if target_device == 'qemu':
+                self._target = qemu_target.QemuTarget(**target_args)
+            else:
+                self._target = aemu_target.AemuTarget(**target_args)
             self._target.Start()
             self._setup_target(build_path, ports_to_forward)
         except:
@@ -185,6 +195,7 @@ class FuchsiaPort(base.Port):
 
         self._operating_system = 'fuchsia'
         self._version = 'fuchsia'
+        self._target_device = self.get_option('device')
 
         # TODO(sergeyu): Add support for arm64.
         self._architecture = 'x86_64'
@@ -212,7 +223,7 @@ class FuchsiaPort(base.Port):
         super(FuchsiaPort, self).setup_test_run()
         try:
             self._target_host = _TargetHost(
-                self._build_path(), self.SERVER_PORTS)
+                self._build_path(), self.SERVER_PORTS, self._target_device)
 
             if self.get_option('zircon_logging'):
                 self._zircon_logger = SubprocessOutputLogger(

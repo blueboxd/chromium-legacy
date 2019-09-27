@@ -43,7 +43,8 @@ base::string16 GetSubLabelForConnectedNetwork(
   }
 
   if (network->type == NetworkType::kCellular) {
-    CellularStateProperties* cellular = network->cellular.get();
+    CellularStateProperties* cellular =
+        network->type_state->get_cellular().get();
     if (cellular->network_technology == onc::cellular::kTechnologyCdma1Xrtt) {
       return l10n_util::GetStringUTF16(
           IDS_ASH_STATUS_TRAY_NETWORK_CELLULAR_TYPE_ONE_X);
@@ -167,7 +168,8 @@ void NetworkFeaturePodButton::Update() {
   }
   // Check for Activating first since activating networks may be connected.
   if (network && network->type == NetworkType::kCellular &&
-      network->cellular->activation_state == ActivationStateType::kActivating) {
+      network->type_state->get_cellular()->activation_state ==
+          ActivationStateType::kActivating) {
     SetLabel(network_name);
     SetSubLabel(l10n_util::GetStringUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING_SUBLABEL));

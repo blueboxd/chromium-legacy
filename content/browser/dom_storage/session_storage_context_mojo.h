@@ -29,8 +29,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
-#include "services/file/file_service.h"
-#include "services/file/public/mojom/file_system.mojom.h"
 #include "third_party/blink/public/mojom/dom_storage/session_storage_namespace.mojom.h"
 #include "url/origin.h"
 
@@ -135,7 +133,11 @@ class CONTENT_EXPORT SessionStorageContextMojo
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
-  file::FileService* GetFileServiceForTesting() { return &file_service_; }
+  using LevelDBBinder = base::RepeatingCallback<void(
+      mojo::PendingReceiver<leveldb::mojom::LevelDBService>)>;
+  void OverrideLevelDBBinderForTesting(LevelDBBinder binder) {
+    leveldb_binder_override_ = std::move(binder);
+  }
 
   void PretendToConnectForTesting();
 
@@ -203,7 +205,6 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   // Part of our asynchronous directory opening called from RunWhenConnected().
   void InitiateConnection(bool in_memory_only = false);
-  void OnDirectoryOpened(base::File::Error err);
   void OnDatabaseOpened(bool in_memory, leveldb::mojom::DatabaseError status);
 
   void OnGotDatabaseMetadata(
@@ -251,10 +252,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
   } connection_state_ = NO_CONNECTION;
   bool database_initialized_ = false;
 
-  bool force_in_memory_only_;
-  file::FileService file_service_;
-  mojo::Remote<file::mojom::FileSystem> file_system_;
-  filesystem::mojom::DirectoryPtr partition_directory_;
+  const base::FilePath partition_directory_;
+  const scoped_refptr<base::SequencedTaskRunner> leveldb_task_runner_;
 
   base::trace_event::MemoryAllocatorDumpGuid memory_dump_id_;
 
@@ -288,6 +287,8 @@ class CONTENT_EXPORT SessionStorageContextMojo
 
   // Name of an extra histogram to log open results to, if not null.
   const char* open_result_histogram_ = nullptr;
+
+  LevelDBBinder leveldb_binder_override_;
 
   base::WeakPtrFactory<SessionStorageContextMojo> weak_ptr_factory_{this};
 };

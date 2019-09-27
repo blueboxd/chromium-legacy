@@ -107,10 +107,10 @@ class SyncEncryptionHandler {
     // types.
     virtual void OnEncryptionComplete() = 0;
 
-    // The cryptographer has been updated. Listeners should check that their
-    // own state matches the cryptographer.
-    // Used primarily for debugging.
-    virtual void OnCryptographerStateChanged(Cryptographer* cryptographer) = 0;
+    // The cryptographer has been updated and/or the presence of pending keys
+    // changed.
+    virtual void OnCryptographerStateChanged(Cryptographer* cryptographer,
+                                             bool has_pending_keys) = 0;
 
     // The passphrase type has changed. |type| is the new type,
     // |passphrase_time| is the time the passphrase was set (unset if |type|

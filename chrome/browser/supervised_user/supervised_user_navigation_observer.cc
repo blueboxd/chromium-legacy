@@ -12,6 +12,7 @@
 #include "chrome/browser/supervised_user/supervised_user_navigation_throttle.h"
 #include "chrome/browser/supervised_user/supervised_user_service.h"
 #include "chrome/browser/supervised_user/supervised_user_service_factory.h"
+#include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "components/history/content/browser/history_context_helper.h"
 #include "components/history/core/browser/history_service.h"
@@ -58,6 +59,13 @@ void SupervisedUserNavigationObserver::OnRequestBlocked(
 
   navigation_observer->OnRequestBlockedInternal(url, reason, navigation_id,
                                                 callback);
+}
+
+void SupervisedUserNavigationObserver::UpdateMainFrameFilteringStatus(
+    SupervisedUserURLFilter::FilteringBehavior behavior,
+    supervised_user_error_page::FilteringBehaviorReason reason) {
+  main_frame_filtering_behavior_ = behavior;
+  main_frame_filtering_behavior_reason_ = reason;
 }
 
 void SupervisedUserNavigationObserver::DidFinishNavigation(

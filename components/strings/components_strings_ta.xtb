@@ -535,6 +535,7 @@
 <translation id="3658742229777143148">மீள்திருத்தங்கள்</translation>
 <translation id="366077651725703012">கிரெடிட் கார்டைப் புதுப்பி</translation>
 <translation id="3676592649209844519">சாதன ஐடி:</translation>
+<translation id="3677008721441257057">இதைக் குறிப்பிட்டீர்களா: &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">கோரிக்கையில் கையொப்பமிட முடியவில்லை</translation>
 <translation id="3678529606614285348">புதிய மறைநிலைச் சாளரத்தில் பக்கத்தைத் திறக்கவும் (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375"><ph name="CRASH_TIME" /> அன்று சிதைவு அறிக்கை பதிவுசெய்யப்பட்டு, <ph name="UPLOAD_TIME" /> அன்று பதிவேற்றப்பட்டது</translation>
@@ -607,7 +608,6 @@
 <translation id="4075732493274867456">க்ளையன்ட்டும் சேவையகமும் பொதுவான SSL நெறிமுறைப் பதிப்பையோ சைஃபர் பொதியையோ ஆதரிக்கவில்லை.</translation>
 <translation id="4079302484614802869">ப்ராக்ஸி உள்ளமைவானது, .pac ஸ்கிரிப்ட் URL ஐப் பயன்படுத்தும்படி அமைக்கப்பட்டிருக்கிறது, நிலையான ப்ராக்ஸி சேவையகங்களுக்கு அல்ல.</translation>
 <translation id="4082393374666368382">அமைப்புகள் - நிர்வாகம்</translation>
-<translation id="4092411512356034591"><ph name="DOMAIN" /> இணைப்பிற்குச் செல்லவா?</translation>
 <translation id="4098354747657067197">மோசடிசெய்யும் தளம் உள்ளது</translation>
 <translation id="4103249731201008433">சாதன சீரியல் எண் தவறானது</translation>
 <translation id="410351446219883937">தானியங்கி</translation>
@@ -1155,7 +1155,6 @@
 <translation id="6868206169573555318">புதுப்பிக்க, மீண்டும் தொடங்கவும்</translation>
 <translation id="6874604403660855544">&amp;சேர்த்தலை மீண்டும் செய்</translation>
 <translation id="6884662655240309489">அளவு: 1</translation>
-<translation id="6884796835813057577">&lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; இணைப்பிற்குச் செல்லவா?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">கொள்கையின் நிலை ஆதரிக்கப்படவில்லை.</translation>
 <translation id="6895330447102777224">கார்டு உறுதிசெய்யப்பட்டது</translation>

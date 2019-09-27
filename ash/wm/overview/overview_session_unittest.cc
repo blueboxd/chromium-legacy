@@ -43,6 +43,7 @@
 #include "ash/wm/overview/rounded_rect_view.h"
 #include "ash/wm/resize_shadow.h"
 #include "ash/wm/resize_shadow_controller.h"
+#include "ash/wm/splitview/multi_display_overview_and_split_view_test.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
@@ -141,14 +142,14 @@ class TweenTester : public ui::LayerAnimationObserver {
 
 // TODO(bruthig): Move all non-simple method definitions out of class
 // declaration.
-class OverviewSessionTest : public AshTestBase {
+class OverviewSessionTest : public MultiDisplayOverviewAndSplitViewTest {
  public:
   OverviewSessionTest() = default;
   ~OverviewSessionTest() override = default;
 
   // AshTestBase:
   void SetUp() override {
-    AshTestBase::SetUp();
+    MultiDisplayOverviewAndSplitViewTest::SetUp();
 
     aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
     shelf_view_test_api_ = std::make_unique<ShelfViewTestAPI>(
@@ -166,7 +167,7 @@ class OverviewSessionTest : public AshTestBase {
         false);
     FpsCounter::SetForceReportZeroAnimationForTest(false);
     trace_names_.clear();
-    AshTestBase::TearDown();
+    MultiDisplayOverviewAndSplitViewTest::TearDown();
   }
 
   // Enters tablet mode. Needed by tests that test dragging and or splitview,
@@ -333,7 +334,7 @@ class OverviewSessionTest : public AshTestBase {
 };
 
 // Tests that an a11y alert is sent on entering overview mode.
-TEST_F(OverviewSessionTest, A11yAlertOnOverviewMode) {
+TEST_P(OverviewSessionTest, A11yAlertOnOverviewMode) {
   TestAccessibilityControllerClient client;
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   EXPECT_NE(AccessibilityAlert::WINDOW_OVERVIEW_MODE_ENTERED,
@@ -345,7 +346,7 @@ TEST_F(OverviewSessionTest, A11yAlertOnOverviewMode) {
 
 // Tests that there are no crashes when there is not enough screen space
 // available to show all of the windows.
-TEST_F(OverviewSessionTest, SmallDisplay) {
+TEST_P(OverviewSessionTest, SmallDisplay) {
   UpdateDisplay("3x1");
   gfx::Rect bounds(0, 0, 1, 1);
   std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds));
@@ -360,7 +361,7 @@ TEST_F(OverviewSessionTest, SmallDisplay) {
 }
 
 // Tests entering overview mode with two windows and selecting one by clicking.
-TEST_F(OverviewSessionTest, Basic) {
+TEST_P(OverviewSessionTest, Basic) {
   // Overview disabled by default.
   EXPECT_FALSE(InOverviewSession());
 
@@ -399,7 +400,7 @@ TEST_F(OverviewSessionTest, Basic) {
 }
 
 // Tests activating minimized window.
-TEST_F(OverviewSessionTest, ActivateMinimized) {
+TEST_P(OverviewSessionTest, ActivateMinimized) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 
   WindowState* window_state = WindowState::Get(window.get());
@@ -432,7 +433,7 @@ TEST_F(OverviewSessionTest, ActivateMinimized) {
 
 // Tests that the ordering of windows is stable across different overview
 // sessions even when the windows have the same bounds.
-TEST_F(OverviewSessionTest, WindowsOrder) {
+TEST_P(OverviewSessionTest, WindowsOrder) {
   std::unique_ptr<aura::Window> window1(CreateTestWindowInShellWithId(1));
   std::unique_ptr<aura::Window> window2(CreateTestWindowInShellWithId(2));
   std::unique_ptr<aura::Window> window3(CreateTestWindowInShellWithId(3));
@@ -461,7 +462,7 @@ TEST_F(OverviewSessionTest, WindowsOrder) {
 }
 
 // Tests selecting a window by tapping on it.
-TEST_F(OverviewSessionTest, BasicGesture) {
+TEST_P(OverviewSessionTest, BasicGesture) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   wm::ActivateWindow(window1.get());
@@ -477,7 +478,7 @@ TEST_F(OverviewSessionTest, BasicGesture) {
 // Tests that the user action WindowSelector_ActiveWindowChanged is
 // recorded when the mouse/touchscreen/keyboard are used to select a window
 // in overview mode which is different from the previously-active window.
-TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionRecorded) {
+TEST_P(OverviewSessionTest, ActiveWindowChangedUserActionRecorded) {
   base::UserActionTester user_action_tester;
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
@@ -511,7 +512,7 @@ TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionRecorded) {
 // recorded when the mouse/touchscreen/keyboard are used to select the
 // already-active window from overview mode. Also verifies that entering and
 // exiting overview without selecting a window does not record the action.
-TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionNotRecorded) {
+TEST_P(OverviewSessionTest, ActiveWindowChangedUserActionNotRecorded) {
   base::UserActionTester user_action_tester;
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
@@ -549,7 +550,7 @@ TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionNotRecorded) {
 
 // Tests that the user action WindowSelector_ActiveWindowChanged is not
 // recorded when overview mode exits as a result of closing its only window.
-TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionWindowClose) {
+TEST_P(OverviewSessionTest, ActiveWindowChangedUserActionWindowClose) {
   base::UserActionTester user_action_tester;
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
       nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(400, 400)));
@@ -569,7 +570,7 @@ TEST_F(OverviewSessionTest, ActiveWindowChangedUserActionWindowClose) {
 
 // Tests that we do not crash and overview mode remains engaged if the desktop
 // is tapped while a finger is already down over a window.
-TEST_F(OverviewSessionTest, NoCrashWithDesktopTap) {
+TEST_P(OverviewSessionTest, NoCrashWithDesktopTap) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(200, 300, 250, 450)));
 
@@ -592,7 +593,7 @@ TEST_F(OverviewSessionTest, NoCrashWithDesktopTap) {
 
 // Tests that we do not crash and a window is selected when appropriate when
 // we click on a window during touch.
-TEST_F(OverviewSessionTest, ClickOnWindowDuringTouch) {
+TEST_P(OverviewSessionTest, ClickOnWindowDuringTouch) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   wm::ActivateWindow(window2.get());
@@ -626,7 +627,7 @@ TEST_F(OverviewSessionTest, ClickOnWindowDuringTouch) {
 }
 
 // Tests that a window does not receive located events when in overview mode.
-TEST_F(OverviewSessionTest, WindowDoesNotReceiveEvents) {
+TEST_P(OverviewSessionTest, WindowDoesNotReceiveEvents) {
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(400, 400)));
   const gfx::Point point1 = window->bounds().CenterPoint();
   ui::MouseEvent event1(ui::ET_MOUSE_PRESSED, point1, point1,
@@ -654,7 +655,7 @@ TEST_F(OverviewSessionTest, WindowDoesNotReceiveEvents) {
 }
 
 // Tests that clicking on the close button effectively closes the window.
-TEST_F(OverviewSessionTest, CloseButton) {
+TEST_P(OverviewSessionTest, CloseButton) {
   std::unique_ptr<views::Widget> widget(CreateTestWidget());
   std::unique_ptr<views::Widget> minimized_widget(CreateTestWidget());
   minimized_widget->Minimize();
@@ -691,7 +692,7 @@ TEST_F(OverviewSessionTest, CloseButton) {
 }
 
 // Tests minimizing/unminimizing in overview mode.
-TEST_F(OverviewSessionTest, MinimizeUnminimize) {
+TEST_P(OverviewSessionTest, MinimizeUnminimize) {
   std::unique_ptr<views::Widget> widget(CreateTestWidget());
   aura::Window* window = widget->GetNativeWindow();
 
@@ -711,7 +712,7 @@ TEST_F(OverviewSessionTest, MinimizeUnminimize) {
 
 // Tests that clicking on the close button on a secondary display effectively
 // closes the window.
-TEST_F(OverviewSessionTest, CloseButtonOnMultipleDisplay) {
+TEST_P(OverviewSessionTest, CloseButtonOnMultipleDisplay) {
   UpdateDisplay("600x400,600x400");
 
   // We need a widget for the close button to work because windows are closed
@@ -737,7 +738,7 @@ TEST_F(OverviewSessionTest, CloseButtonOnMultipleDisplay) {
 }
 
 // Tests entering overview mode with two windows and selecting one.
-TEST_F(OverviewSessionTest, FullscreenWindow) {
+TEST_P(OverviewSessionTest, FullscreenWindow) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   wm::ActivateWindow(window1.get());
@@ -767,7 +768,7 @@ TEST_F(OverviewSessionTest, FullscreenWindow) {
 }
 
 // Tests entering overview mode with maximized window.
-TEST_F(OverviewSessionTest, MaximizedWindow) {
+TEST_P(OverviewSessionTest, MaximizedWindow) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   wm::ActivateWindow(window1.get());
@@ -795,7 +796,7 @@ TEST_F(OverviewSessionTest, MaximizedWindow) {
 // Tests that entering overview when a fullscreen window is active in maximized
 // mode correctly applies the transformations to the window and correctly
 // updates the window bounds on exiting overview mode: http://crbug.com/401664.
-TEST_F(OverviewSessionTest, FullscreenWindowTabletMode) {
+TEST_P(OverviewSessionTest, FullscreenWindowTabletMode) {
   UpdateDisplay("800x600");
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds));
@@ -864,7 +865,7 @@ TEST_F(OverviewSessionTest, FullscreenWindowTabletMode) {
                                   {0, 0, 3});
 }
 
-TEST_F(OverviewSessionTest, SkipOverviewWindow) {
+TEST_P(OverviewSessionTest, SkipOverviewWindow) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   window2->SetProperty(ash::kHideInOverviewKey, true);
@@ -883,7 +884,7 @@ TEST_F(OverviewSessionTest, SkipOverviewWindow) {
 
 // Tests that a minimized window's visibility and layer visibility
 // stay invisible (A minimized window is cloned during overview).
-TEST_F(OverviewSessionTest, MinimizedWindowState) {
+TEST_P(OverviewSessionTest, MinimizedWindowState) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   WindowState::Get(window1.get())->Minimize();
   EXPECT_FALSE(window1->IsVisible());
@@ -899,7 +900,7 @@ TEST_F(OverviewSessionTest, MinimizedWindowState) {
 }
 
 // Tests that a bounds change during overview is corrected for.
-TEST_F(OverviewSessionTest, BoundsChangeDuringOverview) {
+TEST_P(OverviewSessionTest, BoundsChangeDuringOverview) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindowInShellWithDelegate(nullptr, -1, gfx::Rect(400, 400)));
   // Use overview headers above the window in this test.
@@ -914,7 +915,7 @@ TEST_F(OverviewSessionTest, BoundsChangeDuringOverview) {
 
 // Tests that a change to the |kTopViewInset| window property during overview is
 // corrected for.
-TEST_F(OverviewSessionTest, TopViewInsetChangeDuringOverview) {
+TEST_P(OverviewSessionTest, TopViewInsetChangeDuringOverview) {
   std::unique_ptr<aura::Window> window = CreateTestWindow(gfx::Rect(400, 400));
   window->SetProperty(aura::client::kTopViewInset, 32);
   ToggleOverview();
@@ -926,7 +927,7 @@ TEST_F(OverviewSessionTest, TopViewInsetChangeDuringOverview) {
 }
 
 // Tests that a newly created window aborts overview.
-TEST_F(OverviewSessionTest, NewWindowCancelsOverview) {
+TEST_P(OverviewSessionTest, NewWindowCancelsOverview) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   ToggleOverview();
   EXPECT_TRUE(InOverviewSession());
@@ -937,7 +938,7 @@ TEST_F(OverviewSessionTest, NewWindowCancelsOverview) {
 }
 
 // Tests that a window activation exits overview mode.
-TEST_F(OverviewSessionTest, ActivationCancelsOverview) {
+TEST_P(OverviewSessionTest, ActivationCancelsOverview) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   window2->Focus();
@@ -955,7 +956,7 @@ TEST_F(OverviewSessionTest, ActivationCancelsOverview) {
 
 // Tests that if a window is dragged while overview is open, the activation
 // of the dragged window does not cancel overview.
-TEST_F(OverviewSessionTest, ActivateDraggedWindowNotCancelOverview) {
+TEST_P(OverviewSessionTest, ActivateDraggedWindowNotCancelOverview) {
   UpdateDisplay("800x600");
   EnterTabletMode();
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
@@ -981,7 +982,7 @@ TEST_F(OverviewSessionTest, ActivateDraggedWindowNotCancelOverview) {
 
 // Tests that activate a non-dragged window during window drag will not cancel
 // overview mode.
-TEST_F(OverviewSessionTest, ActivateAnotherWindowDuringDragNotCancelOverview) {
+TEST_P(OverviewSessionTest, ActivateAnotherWindowDuringDragNotCancelOverview) {
   UpdateDisplay("800x600");
   EnterTabletMode();
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
@@ -1005,7 +1006,7 @@ TEST_F(OverviewSessionTest, ActivateAnotherWindowDuringDragNotCancelOverview) {
 
 // Tests that if an overview item is dragged, the activation of the
 // corresponding window does not cancel overview.
-TEST_F(OverviewSessionTest, ActivateDraggedOverviewWindowNotCancelOverview) {
+TEST_P(OverviewSessionTest, ActivateDraggedOverviewWindowNotCancelOverview) {
   UpdateDisplay("800x600");
   EnterTabletMode();
   std::unique_ptr<aura::Window> window(CreateTestWindow());
@@ -1022,7 +1023,7 @@ TEST_F(OverviewSessionTest, ActivateDraggedOverviewWindowNotCancelOverview) {
 
 // Tests that if an overview item is dragged, the activation of the window
 // corresponding to another overview item does not cancel overview.
-TEST_F(OverviewSessionTest,
+TEST_P(OverviewSessionTest,
        ActivateAnotherOverviewWindowDuringOverviewDragNotCancelOverview) {
   UpdateDisplay("800x600");
   EnterTabletMode();
@@ -1041,7 +1042,7 @@ TEST_F(OverviewSessionTest,
 
 // Tests that if an overview item is dragged, the activation of a window
 // excluded from overview does not cancel overview.
-TEST_F(OverviewSessionTest,
+TEST_P(OverviewSessionTest,
        ActivateWindowExcludedFromOverviewDuringOverviewDragNotCancelOverview) {
   UpdateDisplay("800x600");
   EnterTabletMode();
@@ -1062,7 +1063,7 @@ TEST_F(OverviewSessionTest,
 
 // Tests that exiting overview mode without selecting a window restores focus
 // to the previously focused window.
-TEST_F(OverviewSessionTest, CancelRestoresFocus) {
+TEST_P(OverviewSessionTest, CancelRestoresFocus) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   wm::ActivateWindow(window.get());
   EXPECT_EQ(window.get(), window_util::GetFocusedWindow());
@@ -1078,7 +1079,7 @@ TEST_F(OverviewSessionTest, CancelRestoresFocus) {
 }
 
 // Tests that overview mode is exited if the last remaining window is destroyed.
-TEST_F(OverviewSessionTest, LastWindowDestroyed) {
+TEST_P(OverviewSessionTest, LastWindowDestroyed) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   ToggleOverview();
@@ -1090,7 +1091,7 @@ TEST_F(OverviewSessionTest, LastWindowDestroyed) {
 
 // Tests that entering overview mode restores a window to its original
 // target location.
-TEST_F(OverviewSessionTest, QuickReentryRestoresInitialTransform) {
+TEST_P(OverviewSessionTest, QuickReentryRestoresInitialTransform) {
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(400, 400)));
   gfx::Rect initial_bounds = GetTransformedBounds(window.get());
   ToggleOverview();
@@ -1111,7 +1112,7 @@ TEST_F(OverviewSessionTest, QuickReentryRestoresInitialTransform) {
 
 // Tests that windows with modal child windows are transformed with the modal
 // child even though not activatable themselves.
-TEST_F(OverviewSessionTest, ModalChild) {
+TEST_P(OverviewSessionTest, ModalChild) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window(CreateTestWindow(bounds));
   std::unique_ptr<aura::Window> child(CreateTestWindow(bounds));
@@ -1128,7 +1129,7 @@ TEST_F(OverviewSessionTest, ModalChild) {
 
 // Tests that clicking a modal window's parent activates the modal window in
 // overview.
-TEST_F(OverviewSessionTest, ClickModalWindowParent) {
+TEST_P(OverviewSessionTest, ClickModalWindowParent) {
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(180, 180)));
   std::unique_ptr<aura::Window> child(
       CreateTestWindow(gfx::Rect(200, 0, 180, 180)));
@@ -1149,7 +1150,7 @@ TEST_F(OverviewSessionTest, ClickModalWindowParent) {
 
 // Tests that windows remain on the display they are currently on in overview
 // mode, and that the close buttons are on matching displays.
-TEST_F(OverviewSessionTest, MultipleDisplays) {
+TEST_P(OverviewSessionTest, MultipleDisplays) {
   UpdateDisplay("600x400,600x400");
   aura::Window::Windows root_windows = Shell::GetAllRootWindows();
   gfx::Rect bounds1(0, 0, 400, 400);
@@ -1183,7 +1184,7 @@ TEST_F(OverviewSessionTest, MultipleDisplays) {
 }
 
 // Tests shutting down during overview.
-TEST_F(OverviewSessionTest, Shutdown) {
+TEST_P(OverviewSessionTest, Shutdown) {
   // These windows will be deleted when the test exits and the Shell instance
   // is shut down.
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
@@ -1196,7 +1197,7 @@ TEST_F(OverviewSessionTest, Shutdown) {
 }
 
 // Tests adding a display during overview.
-TEST_F(OverviewSessionTest, AddDisplay) {
+TEST_P(OverviewSessionTest, AddDisplay) {
   UpdateDisplay("400x400");
   ToggleOverview();
   EXPECT_TRUE(InOverviewSession());
@@ -1205,7 +1206,7 @@ TEST_F(OverviewSessionTest, AddDisplay) {
 }
 
 // Tests removing a display during overview.
-TEST_F(OverviewSessionTest, RemoveDisplay) {
+TEST_P(OverviewSessionTest, RemoveDisplay) {
   UpdateDisplay("400x400,400x400");
   std::unique_ptr<aura::Window> window1(CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window2(
@@ -1225,7 +1226,7 @@ TEST_F(OverviewSessionTest, RemoveDisplay) {
 }
 
 // Tests removing a display during overview with NON_ZERO_DURATION animation.
-TEST_F(OverviewSessionTest, RemoveDisplayWithAnimation) {
+TEST_P(OverviewSessionTest, RemoveDisplayWithAnimation) {
   UpdateDisplay("400x400,400x400");
   std::unique_ptr<aura::Window> window1(CreateTestWindow(gfx::Rect(100, 100)));
   std::unique_ptr<aura::Window> window2(
@@ -1249,7 +1250,7 @@ TEST_F(OverviewSessionTest, RemoveDisplayWithAnimation) {
 
 // Tests that dragging a window from the top of a display creates a drop target
 // on that display.
-TEST_F(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromTop) {
+TEST_P(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromTop) {
   UpdateDisplay("600x600,600x600");
   EnterTabletMode();
   // DisplayConfigurationObserver enables mirror mode when tablet mode is
@@ -1298,7 +1299,9 @@ TEST_F(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromTop) {
 
 // Tests that dragging a window from overview creates a drop target on the same
 // display.
-TEST_F(OverviewSessionTest, DropTargetOnCorrectDisplayForDraggingFromOverview) {
+// Disabled, test is flaky: crbug.com/1008408
+TEST_P(OverviewSessionTest,
+       DISABLED_DropTargetOnCorrectDisplayForDraggingFromOverview) {
   UpdateDisplay("600x600,600x600");
   EnterTabletMode();
   // DisplayConfigurationObserver enables mirror mode when tablet mode is
@@ -1371,7 +1374,7 @@ class TestDragWindowDelegate : public aura::test::TestWindowDelegate {
 }  // namespace
 
 // Tests that toggling overview on and off does not cancel drag.
-TEST_F(OverviewSessionTest, DragDropInProgress) {
+TEST_P(OverviewSessionTest, DragDropInProgress) {
   std::unique_ptr<aura::Window> window(CreateTestWindowInShellWithDelegate(
       new TestDragWindowDelegate(), -1, gfx::Rect(100, 100)));
 
@@ -1397,7 +1400,7 @@ TEST_F(OverviewSessionTest, DragDropInProgress) {
 
 // Tests that toggling overview on removes any resize shadows that may have been
 // present.
-TEST_F(OverviewSessionTest, DragWindowShadow) {
+TEST_P(OverviewSessionTest, DragWindowShadow) {
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(100, 100)));
   wm::ActivateWindow(window.get());
   Shell::Get()->resize_shadow_controller()->ShowShadow(window.get(), HTTOP);
@@ -1411,7 +1414,7 @@ TEST_F(OverviewSessionTest, DragWindowShadow) {
 }
 
 // Test that a label is created under the window on entering overview mode.
-TEST_F(OverviewSessionTest, CreateLabelUnderWindow) {
+TEST_P(OverviewSessionTest, CreateLabelUnderWindow) {
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(300, 500)));
   const base::string16 window_title = base::UTF8ToUTF16("My window");
   window->SetTitle(window_title);
@@ -1438,7 +1441,7 @@ TEST_F(OverviewSessionTest, CreateLabelUnderWindow) {
 
 // Tests that overview updates the window positions if the display orientation
 // changes.
-TEST_F(OverviewSessionTest, DisplayOrientationChanged) {
+TEST_P(OverviewSessionTest, DisplayOrientationChanged) {
   aura::Window* root_window = Shell::Get()->GetPrimaryRootWindow();
   UpdateDisplay("600x200");
   EXPECT_EQ(gfx::Rect(600, 200), root_window->bounds());
@@ -1464,7 +1467,7 @@ TEST_F(OverviewSessionTest, DisplayOrientationChanged) {
   }
 }
 
-TEST_F(OverviewSessionTest, AcceleratorInOverviewSession) {
+TEST_P(OverviewSessionTest, AcceleratorInOverviewSession) {
   ToggleOverview();
   auto* accelerator_controller = Shell::Get()->accelerator_controller();
   auto* ewh = accelerator_controller->GetExitWarningHandlerForTest();
@@ -1481,7 +1484,7 @@ TEST_F(OverviewSessionTest, AcceleratorInOverviewSession) {
 }
 
 // Tests hitting the escape and back keys exits overview mode.
-TEST_F(OverviewSessionTest, ExitOverviewWithKey) {
+TEST_P(OverviewSessionTest, ExitOverviewWithKey) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 
   ToggleOverview();
@@ -1509,7 +1512,7 @@ TEST_F(OverviewSessionTest, ExitOverviewWithKey) {
 }
 
 // Regression test for clusterfuzz crash. https://crbug.com/920568
-TEST_F(OverviewSessionTest, TypeThenPressEscapeTwice) {
+TEST_P(OverviewSessionTest, TypeThenPressEscapeTwice) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   ToggleOverview();
 
@@ -1524,7 +1527,7 @@ TEST_F(OverviewSessionTest, TypeThenPressEscapeTwice) {
   SendKey(ui::VKEY_ESCAPE);
 }
 
-TEST_F(OverviewSessionTest, CancelOverviewOnMouseClick) {
+TEST_P(OverviewSessionTest, CancelOverviewOnMouseClick) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(10, 10, 100, 100)));
   // Move mouse to point in the background page. Sending an event here will pass
@@ -1547,7 +1550,7 @@ TEST_F(OverviewSessionTest, CancelOverviewOnMouseClick) {
 }
 
 // Tests tapping on the desktop itself to cancel overview mode.
-TEST_F(OverviewSessionTest, CancelOverviewOnTap) {
+TEST_P(OverviewSessionTest, CancelOverviewOnTap) {
   std::unique_ptr<aura::Window> window(
       CreateTestWindow(gfx::Rect(10, 10, 100, 100)));
 
@@ -1569,7 +1572,7 @@ TEST_F(OverviewSessionTest, CancelOverviewOnTap) {
 
 // Start dragging a window and activate overview mode. This test should not
 // crash or DCHECK inside aura::Window::StackChildRelativeTo().
-TEST_F(OverviewSessionTest, OverviewWhileDragging) {
+TEST_P(OverviewSessionTest, OverviewWhileDragging) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
   std::unique_ptr<WindowResizer> resizer(CreateWindowResizer(
       window.get(), gfx::Point(), HTCAPTION, ::wm::WINDOW_MOVE_SOURCE_MOUSE));
@@ -1583,7 +1586,7 @@ TEST_F(OverviewSessionTest, OverviewWhileDragging) {
 
 // Verify that the overview no windows indicator appears when entering overview
 // mode with no windows.
-TEST_F(OverviewSessionTest, NoWindowsIndicator) {
+TEST_P(OverviewSessionTest, NoWindowsIndicator) {
   // Verify that by entering overview mode without windows, the no items
   // indicator appears.
   ToggleOverview();
@@ -1593,7 +1596,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicator) {
 }
 
 // Verify that the overview no windows indicator position is as expected.
-TEST_F(OverviewSessionTest, NoWindowsIndicatorPosition) {
+TEST_P(OverviewSessionTest, NoWindowsIndicatorPosition) {
   UpdateDisplay("400x300");
 
   ToggleOverview();
@@ -1620,7 +1623,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPosition) {
             no_windows_widget->GetWindowBoundsInScreen().CenterPoint());
 }
 
-TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
+TEST_P(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
   UpdateDisplay("400x300");
   EnterTabletMode();
   std::unique_ptr<aura::Window> window(CreateTestWindow());
@@ -1655,7 +1658,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionSplitview) {
 }
 
 // Tests that the no windows indicator shows properly after adding an item.
-TEST_F(OverviewSessionTest, NoWindowsIndicatorAddItem) {
+TEST_P(OverviewSessionTest, NoWindowsIndicatorAddItem) {
   EnterTabletMode();
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 
@@ -1671,7 +1674,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorAddItem) {
 
 // Verify that when opening overview mode with multiple displays, the no items
 // indicator on the primary grid if there are no windows.
-TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionMultiDisplay) {
+TEST_P(OverviewSessionTest, NoWindowsIndicatorPositionMultiDisplay) {
   UpdateDisplay("400x400,400x400,400x400");
 
   // Enter overview mode. Verify that the no windows indicator is located on the
@@ -1686,7 +1689,7 @@ TEST_F(OverviewSessionTest, NoWindowsIndicatorPositionMultiDisplay) {
 }
 
 // Tests that we do not exit overview mode until all the grids are empty.
-TEST_F(OverviewSessionTest, ExitOverviewWhenAllGridsEmpty) {
+TEST_P(OverviewSessionTest, ExitOverviewWhenAllGridsEmpty) {
   UpdateDisplay("400x400,400x400,400x400");
 
   // Create two windows with widgets (widgets are needed to close the windows
@@ -1732,7 +1735,7 @@ TEST_F(OverviewSessionTest, ExitOverviewWhenAllGridsEmpty) {
 }
 
 // Tests window list animation states are correctly updated.
-TEST_F(OverviewSessionTest, SetWindowListAnimationStates) {
+TEST_P(OverviewSessionTest, SetWindowListAnimationStates) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
@@ -1764,7 +1767,7 @@ TEST_F(OverviewSessionTest, SetWindowListAnimationStates) {
 
 // Tests window list animation states are correctly updated with selected
 // window.
-TEST_F(OverviewSessionTest, SetWindowListAnimationStatesWithSelectedWindow) {
+TEST_P(OverviewSessionTest, SetWindowListAnimationStatesWithSelectedWindow) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
@@ -1801,7 +1804,7 @@ TEST_F(OverviewSessionTest, SetWindowListAnimationStatesWithSelectedWindow) {
 }
 
 // Tests OverviewWindowAnimationObserver can handle deleted window.
-TEST_F(OverviewSessionTest,
+TEST_P(OverviewSessionTest,
        OverviewWindowAnimationObserverCanHandleDeletedWindow) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
@@ -1845,7 +1848,7 @@ TEST_F(OverviewSessionTest,
 }
 
 // Tests can handle OverviewWindowAnimationObserver was deleted.
-TEST_F(OverviewSessionTest, HandleOverviewWindowAnimationObserverWasDeleted) {
+TEST_P(OverviewSessionTest, HandleOverviewWindowAnimationObserverWasDeleted) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
@@ -1880,7 +1883,7 @@ TEST_F(OverviewSessionTest, HandleOverviewWindowAnimationObserverWasDeleted) {
 
 // Tests can handle |gained_active| window is not in the |overview_grid| when
 // OnWindowActivated.
-TEST_F(OverviewSessionTest, HandleActiveWindowNotInOverviewGrid) {
+TEST_P(OverviewSessionTest, HandleActiveWindowNotInOverviewGrid) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
@@ -1922,7 +1925,7 @@ TEST_F(OverviewSessionTest, HandleActiveWindowNotInOverviewGrid) {
 // Tests that AlwaysOnTopWindow can be handled correctly in new overview
 // animations.
 // Fails consistently; see https://crbug.com/812497.
-TEST_F(OverviewSessionTest, DISABLED_HandleAlwaysOnTopWindow) {
+TEST_P(OverviewSessionTest, DISABLED_HandleAlwaysOnTopWindow) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateTestWindow(bounds));
@@ -2104,7 +2107,7 @@ TEST_F(OverviewSessionTest, DISABLED_HandleAlwaysOnTopWindow) {
 
 // Verify that the selector item can animate after the item is dragged and
 // released.
-TEST_F(OverviewSessionTest, WindowItemCanAnimateOnDragRelease) {
+TEST_P(OverviewSessionTest, WindowItemCanAnimateOnDragRelease) {
   base::HistogramTester histogram_tester;
   UpdateDisplay("400x400");
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
@@ -2142,7 +2145,7 @@ TEST_F(OverviewSessionTest, WindowItemCanAnimateOnDragRelease) {
 
 // Verify that the overview items titlebar and close button change visibility
 // when a item is being dragged.
-TEST_F(OverviewSessionTest, WindowItemTitleCloseVisibilityOnDrag) {
+TEST_P(OverviewSessionTest, WindowItemTitleCloseVisibilityOnDrag) {
   base::HistogramTester histogram_tester;
   UpdateDisplay("400x400");
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
@@ -2188,7 +2191,7 @@ TEST_F(OverviewSessionTest, WindowItemTitleCloseVisibilityOnDrag) {
 }
 
 // Tests that overview widgets are stacked in the correct order.
-TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
+TEST_P(OverviewSessionTest, OverviewWidgetStackingOrder) {
   base::HistogramTester histogram_tester;
   // Create three windows, including one minimized.
   std::unique_ptr<aura::Window> minimized(CreateTestWindow());
@@ -2266,7 +2269,7 @@ TEST_F(OverviewSessionTest, OverviewWidgetStackingOrder) {
 
 // Test that dragging a window from the top creates a drop target stacked at the
 // bottom. Test that dropping into overview removes the drop target.
-TEST_F(OverviewSessionTest, DropTargetStackedAtBottomForWindowDraggedFromTop) {
+TEST_P(OverviewSessionTest, DropTargetStackedAtBottomForWindowDraggedFromTop) {
   UpdateDisplay("800x600");
   EnterTabletMode();
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
@@ -2290,7 +2293,7 @@ TEST_F(OverviewSessionTest, DropTargetStackedAtBottomForWindowDraggedFromTop) {
 
 // Test that dragging an overview item to snap creates a drop target stacked at
 // the bottom. Test that ending the drag removes the drop target.
-TEST_F(OverviewSessionTest, DropTargetStackedAtBottomForOverviewItem) {
+TEST_P(OverviewSessionTest, DropTargetStackedAtBottomForOverviewItem) {
   EnterTabletMode();
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
@@ -2313,7 +2316,7 @@ TEST_F(OverviewSessionTest, DropTargetStackedAtBottomForOverviewItem) {
 
 // Verify that a windows which enter overview mode have a visible backdrop, if
 // the window is to be letter or pillar fitted.
-TEST_F(OverviewSessionTest, Backdrop) {
+TEST_P(OverviewSessionTest, Backdrop) {
   // Add three windows which in overview mode will be considered wide, tall and
   // normal. Window |wide|, with size (400, 160) will be resized to (300, 160)
   // when the 400x300 is rotated to 300x400, and should be considered a normal
@@ -2374,7 +2377,7 @@ class OverviewSessionRoundedCornerTest : public OverviewSessionTest {
 // Test that the mask that is applied to add rounded corners in overview mode
 // is removed during animations.
 // TODO(https://crbug.com/1000730): Re-enable this test.
-TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
+TEST_P(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
@@ -2435,7 +2438,7 @@ TEST_F(OverviewSessionRoundedCornerTest, DISABLED_RoundedEdgeMaskVisibility) {
 
 // Test that the mask that is applied to add rounded corners in overview mode
 // is removed during drags.
-TEST_F(OverviewSessionRoundedCornerTest, ShadowVisibilityDragging) {
+TEST_P(OverviewSessionRoundedCornerTest, ShadowVisibilityDragging) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
@@ -2488,7 +2491,7 @@ TEST_F(OverviewSessionRoundedCornerTest, ShadowVisibilityDragging) {
 }
 
 // Tests that the shadows in overview mode are placed correctly.
-TEST_F(OverviewSessionTest, ShadowBounds) {
+TEST_P(OverviewSessionTest, ShadowBounds) {
   // Helper function to check if the bounds of a shadow owned by |shadow_parent|
   // is contained within the bounds of |widget|.
   auto contains = [](views::Widget* widget, OverviewItem* shadow_parent) {
@@ -2560,7 +2563,7 @@ TEST_F(OverviewSessionTest, ShadowBounds) {
 }
 
 // Verify that attempting to drag with a secondary finger works as expected.
-TEST_F(OverviewSessionTest, DraggingWithTwoFingers) {
+TEST_P(OverviewSessionTest, DraggingWithTwoFingers) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
 
@@ -2624,7 +2627,7 @@ TEST_F(OverviewSessionTest, DraggingWithTwoFingers) {
 }
 
 // Verify that shadows on windows disappear for the duration of overview mode.
-TEST_F(OverviewSessionTest, ShadowDisappearsInOverview) {
+TEST_P(OverviewSessionTest, ShadowDisappearsInOverview) {
   std::unique_ptr<aura::Window> window(CreateTestWindow());
 
   // Verify that the shadow is initially visible.
@@ -2641,7 +2644,7 @@ TEST_F(OverviewSessionTest, ShadowDisappearsInOverview) {
 }
 
 // Verify that PIP windows will be excluded from the overview, but not hidden.
-TEST_F(OverviewSessionTest, PipWindowShownButExcludedFromOverview) {
+TEST_P(OverviewSessionTest, PipWindowShownButExcludedFromOverview) {
   std::unique_ptr<aura::Window> pip_window(
       CreateTestWindow(gfx::Rect(200, 200)));
   WindowState* window_state = WindowState::Get(pip_window.get());
@@ -2657,7 +2660,7 @@ TEST_F(OverviewSessionTest, PipWindowShownButExcludedFromOverview) {
 }
 
 // Tests the PositionWindows function works as expected.
-TEST_F(OverviewSessionTest, PositionWindows) {
+TEST_P(OverviewSessionTest, PositionWindows) {
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
   std::unique_ptr<aura::Window> window2(CreateTestWindow());
   std::unique_ptr<aura::Window> window3(CreateTestWindow());
@@ -2699,7 +2702,7 @@ TEST_F(OverviewSessionTest, PositionWindows) {
 // Tests that overview mode is entered with kWindowDragged mode when a window is
 // dragged from the top of the screen. For the purposes of this test, we use a
 // browser window.
-TEST_F(OverviewSessionTest, DraggingFromTopAnimation) {
+TEST_P(OverviewSessionTest, DraggingFromTopAnimation) {
   EnterTabletMode();
   std::unique_ptr<views::Widget> widget(CreateTestWidget(
       nullptr, desks_util::GetActiveDeskContainerId(), gfx::Rect(200, 200)));
@@ -2724,7 +2727,7 @@ TEST_F(OverviewSessionTest, DraggingFromTopAnimation) {
 
 // Tests the grid bounds are as expected with different shelf auto hide
 // behaviors and alignments.
-TEST_F(OverviewSessionTest, GridBounds) {
+TEST_P(OverviewSessionTest, GridBounds) {
   UpdateDisplay("600x600");
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(200, 200)));
 
@@ -2760,7 +2763,7 @@ TEST_F(OverviewSessionTest, GridBounds) {
 
 // Tests that windows that have a backdrop can still be tapped normally.
 // Regression test for crbug.com/938645.
-TEST_F(OverviewSessionTest, SelectingWindowWithBackdrop) {
+TEST_P(OverviewSessionTest, SelectingWindowWithBackdrop) {
   std::unique_ptr<aura::Window> window(CreateTestWindow(gfx::Rect(500, 200)));
 
   ToggleOverview();
@@ -2775,7 +2778,7 @@ TEST_F(OverviewSessionTest, SelectingWindowWithBackdrop) {
   EXPECT_FALSE(InOverviewSession());
 }
 
-TEST_F(OverviewSessionTest, ShelfAlignmentChangeWhileInOverview) {
+TEST_P(OverviewSessionTest, ShelfAlignmentChangeWhileInOverview) {
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAlignment(SHELF_ALIGNMENT_BOTTOM);
   ToggleOverview();
@@ -2829,7 +2832,7 @@ class OverviewSessionNewLayoutTest : public OverviewSessionTest {
 };
 
 // Tests that windows are in proper positions in the new overview layout.
-TEST_F(OverviewSessionNewLayoutTest, CheckNewLayoutWindowPositions) {
+TEST_P(OverviewSessionNewLayoutTest, CheckNewLayoutWindowPositions) {
   auto windows = CreateTestWindows(6);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -2860,7 +2863,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckNewLayoutWindowPositions) {
   EXPECT_LT(item3_bounds.y(), item4_bounds.y());
 }
 
-TEST_F(OverviewSessionNewLayoutTest, CheckOffscreenWindows) {
+TEST_P(OverviewSessionNewLayoutTest, CheckOffscreenWindows) {
   auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -2889,7 +2892,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOffscreenWindows) {
 
 // Tests to see if windows are not shifted if all already available windows
 // fit on screen.
-TEST_F(OverviewSessionNewLayoutTest, CheckNoOverviewItemShift) {
+TEST_P(OverviewSessionNewLayoutTest, CheckNoOverviewItemShift) {
   auto windows = CreateTestWindows(4);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -2903,7 +2906,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckNoOverviewItemShift) {
 
 // Tests to see if windows are shifted if at least one window is
 // partially/completely positioned offscreen.
-TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemShift) {
+TEST_P(OverviewSessionNewLayoutTest, CheckOverviewItemShift) {
   auto windows = CreateTestWindows(7);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -2916,7 +2919,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemShift) {
 }
 
 // Tests to see if windows remain in bounds after scrolling extremely far.
-TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
+TEST_P(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
   auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -2945,7 +2948,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckOverviewItemScrollingBounds) {
 
 // Tests the windows are stacked correctly when entering or exiting splitview
 // while the new overivew layout is enabled.
-TEST_F(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
+TEST_P(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
 
@@ -2975,7 +2978,7 @@ TEST_F(OverviewSessionNewLayoutTest, StackingOrderSplitviewWindow) {
 
 // Test that scrolling occurs if started on top of a window using the window's
 // center-point as a start.
-TEST_F(OverviewSessionNewLayoutTest, HorizontalScrollingOnOverviewItem) {
+TEST_P(OverviewSessionNewLayoutTest, HorizontalScrollingOnOverviewItem) {
   auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -3059,7 +3062,7 @@ TEST_F(OverviewSessionNewLayoutFlingTest, BasicFling) {
 
 // Tests that a vertical scroll sequence will close the window it is scrolled
 // on.
-TEST_F(OverviewSessionNewLayoutTest, VerticalScrollingOnOverviewItem) {
+TEST_P(OverviewSessionNewLayoutTest, VerticalScrollingOnOverviewItem) {
   constexpr int kNumWidgets = 8;
   std::vector<std::unique_ptr<views::Widget>> widgets(kNumWidgets);
   for (int i = kNumWidgets - 1; i >= 0; --i)
@@ -3078,7 +3081,7 @@ TEST_F(OverviewSessionNewLayoutTest, VerticalScrollingOnOverviewItem) {
 }
 
 // Test that scrolling occurs if we hit the associated keyboard shortcut.
-TEST_F(OverviewSessionNewLayoutTest, CheckScrollingWithKeyboardShortcut) {
+TEST_P(OverviewSessionNewLayoutTest, CheckScrollingWithKeyboardShortcut) {
   auto windows = CreateTestWindows(8);
   ToggleOverview();
   ASSERT_TRUE(InOverviewSession());
@@ -3091,7 +3094,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckScrollingWithKeyboardShortcut) {
 }
 
 // Test that tapping a window in overview closes overview mode.
-TEST_F(OverviewSessionNewLayoutTest, CheckWindowActivateOnTap) {
+TEST_P(OverviewSessionNewLayoutTest, CheckWindowActivateOnTap) {
   base::UserActionTester user_action_tester;
   auto windows = CreateTestWindows(8);
   wm::ActivateWindow(windows[1].get());
@@ -3115,7 +3118,7 @@ TEST_F(OverviewSessionNewLayoutTest, CheckWindowActivateOnTap) {
 
 // Tests that windows snap through long press and drag to left or right side of
 // the screen.
-TEST_F(OverviewSessionNewLayoutTest, DragOverviewWindowToSnap) {
+TEST_P(OverviewSessionNewLayoutTest, DragOverviewWindowToSnap) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateTestWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateTestWindow(bounds));
@@ -3310,7 +3313,7 @@ class SplitViewOverviewSessionTest : public OverviewSessionTest {
 // Tests that dragging an overview item to the edge of the screen snaps the
 // window. If two windows are snapped to left and right side of the screen, exit
 // the overview mode.
-TEST_F(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
+TEST_P(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -3351,7 +3354,7 @@ TEST_F(SplitViewOverviewSessionTest, DragOverviewWindowToSnap) {
 }
 
 // Verify the correct behavior when dragging windows in overview mode.
-TEST_F(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
+TEST_P(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
   aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
 
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
@@ -3396,7 +3399,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewDragControllerBehavior) {
 
 // Verify that if the window item has been dragged enough vertically, the window
 // will be closed.
-TEST_F(SplitViewOverviewSessionTest, DragToClose) {
+TEST_P(SplitViewOverviewSessionTest, DragToClose) {
   // This test requires a widget.
   std::unique_ptr<views::Widget> widget(CreateTestWidget());
 
@@ -3426,7 +3429,7 @@ TEST_F(SplitViewOverviewSessionTest, DragToClose) {
 
 // Verify that if the window item has been flung enough vertically, the window
 // will be closed.
-TEST_F(SplitViewOverviewSessionTest, FlingToClose) {
+TEST_P(SplitViewOverviewSessionTest, FlingToClose) {
   // This test requires a widget.
   std::unique_ptr<views::Widget> widget(CreateTestWidget());
 
@@ -3465,7 +3468,7 @@ TEST_F(SplitViewOverviewSessionTest, FlingToClose) {
 // and one item which is about to be deleted by dragging. If the item is deleted
 // we still only have one row, so the other items should nudge while the item is
 // being dragged.
-TEST_F(SplitViewOverviewSessionTest, BasicNudging) {
+TEST_P(SplitViewOverviewSessionTest, BasicNudging) {
   // Set up three equal windows, which take up one row on the overview grid.
   // When one of them is deleted we are still left with all the windows on one
   // row.
@@ -3511,7 +3514,7 @@ TEST_F(SplitViewOverviewSessionTest, BasicNudging) {
 // Tests that no nudging occurs when the number of rows in overview mode change
 // if the item to be deleted results in the overview grid to change number of
 // rows.
-TEST_F(SplitViewOverviewSessionTest, NoNudgingWhenNumRowsChange) {
+TEST_P(SplitViewOverviewSessionTest, NoNudgingWhenNumRowsChange) {
   // Set up four equal windows, which would split into two rows in overview
   // mode. Removing one window would leave us with three windows, which only
   // takes a single row in overview.
@@ -3547,7 +3550,7 @@ TEST_F(SplitViewOverviewSessionTest, NoNudgingWhenNumRowsChange) {
 // Tests that no nudging occurs when the item to be deleted results in an item
 // from the previous row to drop down to the current row, thus causing the items
 // to the right of the item to be shifted right, which is visually unacceptable.
-TEST_F(SplitViewOverviewSessionTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
+TEST_P(SplitViewOverviewSessionTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
   // Set up five equal windows, which would split into two rows in overview
   // mode. Removing one window would cause the rows to rearrange, with the third
   // item dropping down from the first row to the second row. Create the windows
@@ -3602,7 +3605,7 @@ TEST_F(SplitViewOverviewSessionTest, NoNudgingWhenLastItemOnPreviousRowDrops) {
 
 // Verify the window grid size changes as expected when dragging items around in
 // overview mode when split view is enabled.
-TEST_F(SplitViewOverviewSessionTest,
+TEST_P(SplitViewOverviewSessionTest,
        OverviewGridSizeWhileDraggingWithSplitView) {
   // Add three windows and enter overview mode.
   std::unique_ptr<aura::Window> window1(CreateTestWindow());
@@ -3667,7 +3670,7 @@ TEST_F(SplitViewOverviewSessionTest,
 }
 
 // Tests dragging a unsnappable window.
-TEST_F(SplitViewOverviewSessionTest, DraggingUnsnappableAppWithSplitView) {
+TEST_P(SplitViewOverviewSessionTest, DraggingUnsnappableAppWithSplitView) {
   std::unique_ptr<aura::Window> unsnappable_window = CreateUnsnappableWindow();
 
   // The grid bounds should be the size of the root window minus the shelf.
@@ -3701,7 +3704,7 @@ TEST_F(SplitViewOverviewSessionTest, DraggingUnsnappableAppWithSplitView) {
 // Tests that if there is only one window in the MRU window list in the overview
 // mode, snapping the window to one side of the screen will not end the overview
 // mode even if there is no more window left in the overview window grid.
-TEST_F(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
+TEST_P(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
 
@@ -3775,7 +3778,7 @@ TEST_F(SplitViewOverviewSessionTest, EmptyWindowsListNotExitOverview) {
 }
 
 // Test the overview window drag functionalities when screen rotates.
-TEST_F(SplitViewOverviewSessionTest, SplitViewRotationTest) {
+TEST_P(SplitViewOverviewSessionTest, SplitViewRotationTest) {
   UpdateDisplay("807x407");
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
@@ -3904,7 +3907,7 @@ TEST_F(SplitViewOverviewSessionTest, SplitViewRotationTest) {
 // Test that when split view mode and overview mode are both active at the same
 // time, dragging the split view divider resizes the bounds of snapped window
 // and the bounds of overview window grids at the same time.
-TEST_F(SplitViewOverviewSessionTest, SplitViewOverviewBothActiveTest) {
+TEST_P(SplitViewOverviewSessionTest, SplitViewOverviewBothActiveTest) {
   UpdateDisplay("907x407");
 
   const gfx::Rect bounds(400, 400);
@@ -3953,7 +3956,7 @@ TEST_F(SplitViewOverviewSessionTest, SplitViewOverviewBothActiveTest) {
 
 // Verify that selecting an unsnappable window while in split view works as
 // intended.
-TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
+TEST_P(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
   // Create one snappable and one unsnappable window.
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   std::unique_ptr<aura::Window> unsnappable_window = CreateUnsnappableWindow();
@@ -4010,7 +4013,7 @@ TEST_F(SplitViewOverviewSessionTest, SelectUnsnappableWindowInSplitView) {
 
 // Verify that when in overview mode, the selector items unsnappable indicator
 // shows up when expected.
-TEST_F(SplitViewOverviewSessionTest, OverviewUnsnappableIndicatorVisibility) {
+TEST_P(SplitViewOverviewSessionTest, OverviewUnsnappableIndicatorVisibility) {
   // Create three windows; two normal and one unsnappable, so that when after
   // snapping |window1| to enter split view we can test the state of each normal
   // and unsnappable windows.
@@ -4055,7 +4058,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewUnsnappableIndicatorVisibility) {
 
 // Test that when splitview mode and overview mode are both active at the same
 // time, dragging divider behaviors are correct.
-TEST_F(SplitViewOverviewSessionTest, DragDividerToExitTest) {
+TEST_P(SplitViewOverviewSessionTest, DragDividerToExitTest) {
   UpdateDisplay("907x407");
 
   const gfx::Rect bounds(400, 400);
@@ -4103,7 +4106,7 @@ TEST_F(SplitViewOverviewSessionTest, DragDividerToExitTest) {
   EXPECT_EQ(window2.get(), window_util::GetActiveWindow());
 }
 
-TEST_F(SplitViewOverviewSessionTest, OverviewItemLongPressed) {
+TEST_P(SplitViewOverviewSessionTest, OverviewItemLongPressed) {
   std::unique_ptr<aura::Window> window1 = CreateTestWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindow();
 
@@ -4132,7 +4135,7 @@ TEST_F(SplitViewOverviewSessionTest, OverviewItemLongPressed) {
   EXPECT_EQ(window1.get(), window_util::GetActiveWindow());
 }
 
-TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsTest) {
+TEST_P(SplitViewOverviewSessionTest, SnappedWindowBoundsTest) {
   const gfx::Rect bounds(400, 400);
   const int kMinimumBoundSize = 100;
   const gfx::Size size(kMinimumBoundSize, kMinimumBoundSize);
@@ -4199,7 +4202,7 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowBoundsTest) {
 // Verify that if the split view divider is dragged all the way to the edge, the
 // window being dragged gets returned to the overview list, if overview mode is
 // still active.
-TEST_F(SplitViewOverviewSessionTest,
+TEST_P(SplitViewOverviewSessionTest,
        DividerDraggedToEdgeReturnsWindowToOverviewList) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -4242,7 +4245,7 @@ TEST_F(SplitViewOverviewSessionTest,
 // Verify that if the split view divider is dragged close to the edge, the grid
 // bounds will be fixed to a third of the work area width and start sliding off
 // the screen instead of continuing to shrink.
-TEST_F(SplitViewOverviewSessionTest,
+TEST_P(SplitViewOverviewSessionTest,
        OverviewHasMinimumBoundsWhenDividerDragged) {
   UpdateDisplay("600x400");
 
@@ -4300,7 +4303,7 @@ TEST_F(SplitViewOverviewSessionTest,
 // Test that when splitview mode is active, minimizing one of the snapped window
 // will insert the minimized window back to overview mode if overview mode is
 // active at the moment.
-TEST_F(SplitViewOverviewSessionTest, InsertMinimizedWindowBackToOverview) {
+TEST_P(SplitViewOverviewSessionTest, InsertMinimizedWindowBackToOverview) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -4345,7 +4348,7 @@ TEST_F(SplitViewOverviewSessionTest, InsertMinimizedWindowBackToOverview) {
 // Test that when splitview and overview are both active at the same time, if
 // overview is ended due to snapping a window in splitview, the tranform of each
 // window in the overview grid is restored.
-TEST_F(SplitViewOverviewSessionTest, SnappedWindowAnimationObserverTest) {
+TEST_P(SplitViewOverviewSessionTest, SnappedWindowAnimationObserverTest) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -4425,7 +4428,7 @@ TEST_F(SplitViewOverviewSessionTest, SnappedWindowAnimationObserverTest) {
 // Test that when split view and overview are both active at the same time,
 // double tapping on the divider can swap the window's position with the
 // overview window grid's postion.
-TEST_F(SplitViewOverviewSessionTest, SwapWindowAndOverviewGrid) {
+TEST_P(SplitViewOverviewSessionTest, SwapWindowAndOverviewGrid) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -4452,7 +4455,7 @@ TEST_F(SplitViewOverviewSessionTest, SwapWindowAndOverviewGrid) {
 
 // Verify the behavior when trying to exit overview with one snapped window
 // is as expected.
-TEST_F(SplitViewOverviewSessionTest, ExitOverviewWithOneSnapped) {
+TEST_P(SplitViewOverviewSessionTest, ExitOverviewWithOneSnapped) {
   std::unique_ptr<aura::Window> window(CreateWindow(gfx::Rect(400, 400)));
 
   // Tests that we cannot exit overview when there is one snapped window and no
@@ -4468,7 +4471,7 @@ TEST_F(SplitViewOverviewSessionTest, ExitOverviewWithOneSnapped) {
 }
 
 // Test that in tablet mode, pressing tab key in overview should not crash.
-TEST_F(SplitViewOverviewSessionTest, NoCrashWhenPressTabKey) {
+TEST_P(SplitViewOverviewSessionTest, NoCrashWhenPressTabKey) {
   std::unique_ptr<aura::Window> window(CreateWindow(gfx::Rect(400, 400)));
   std::unique_ptr<aura::Window> window2(CreateWindow(gfx::Rect(400, 400)));
 
@@ -4489,7 +4492,7 @@ TEST_F(SplitViewOverviewSessionTest, NoCrashWhenPressTabKey) {
 }
 
 // Tests closing a snapped window while in overview mode.
-TEST_F(SplitViewOverviewSessionTest, ClosingSplitViewWindow) {
+TEST_P(SplitViewOverviewSessionTest, ClosingSplitViewWindow) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -4512,7 +4515,7 @@ TEST_F(SplitViewOverviewSessionTest, ClosingSplitViewWindow) {
 
 // Test that you cannot drag from overview during the split view divider
 // animation.
-TEST_F(SplitViewOverviewSessionTest,
+TEST_P(SplitViewOverviewSessionTest,
        CannotDragFromOverviewDuringSplitViewDividerAnimation) {
   std::unique_ptr<aura::Window> snapped_window = CreateTestWindow();
   std::unique_ptr<aura::Window> overview_window = CreateTestWindow();
@@ -4581,7 +4584,7 @@ class SplitViewOverviewSessionInClamshellTest
 };
 
 // Test some basic functionalities in clamshell splitview mode.
-TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
+TEST_P(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
   UpdateDisplay("600x400");
   EXPECT_FALSE(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
@@ -4730,7 +4733,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, BasicFunctionalitiesTest) {
 // Test that when overview and splitview are both active, only resize that
 // happens on eligible window components will change snapped window bounds and
 // overview bounds at the same time.
-TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
+TEST_P(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
   UpdateDisplay("600x400");
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(
@@ -4795,7 +4798,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, ResizeWindowTest) {
 
 // Test that when laptop splitview mode is active, moving the snapped window
 // will end splitview and overview at the same time.
-TEST_F(SplitViewOverviewSessionInClamshellTest, MoveWindowTest) {
+TEST_P(SplitViewOverviewSessionInClamshellTest, MoveWindowTest) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithHitTestComponent(HTCAPTION, bounds));
@@ -4817,7 +4820,7 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, MoveWindowTest) {
 
 // Test that in clamshell splitview mode, if the snapped window is minimized,
 // splitview mode and overview mode are both ended.
-TEST_F(SplitViewOverviewSessionInClamshellTest, MinimizedWindowTest) {
+TEST_P(SplitViewOverviewSessionInClamshellTest, MinimizedWindowTest) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -4834,5 +4837,13 @@ TEST_F(SplitViewOverviewSessionInClamshellTest, MinimizedWindowTest) {
   EXPECT_FALSE(overview_controller()->InOverviewSession());
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
 }
+
+INSTANTIATE_TEST_SUITE_P(, OverviewSessionTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, OverviewSessionRoundedCornerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, OverviewSessionNewLayoutTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, SplitViewOverviewSessionTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         SplitViewOverviewSessionInClamshellTest,
+                         testing::Bool());
 
 }  // namespace ash

@@ -126,6 +126,8 @@ jumbo_static_library("browser") {
     "keyword_extensions_delegate.h",
     "keyword_provider.cc",
     "keyword_provider.h",
+    "local_history_zero_suggest_provider.cc",
+    "local_history_zero_suggest_provider.h",
     "location_bar_model.h",
     "location_bar_model_delegate.cc",
     "location_bar_model_delegate.h",

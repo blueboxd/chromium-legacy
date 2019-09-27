@@ -13,7 +13,6 @@
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
-#include "services/file/public/mojom/file_system.mojom.h"
 
 namespace content {
 namespace test {
@@ -49,7 +48,7 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
   ~FakeLevelDBService() override;
 
   void Open(
-      filesystem::mojom::DirectoryPtr,
+      const base::FilePath& directory,
       const std::string& dbname,
       const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
           memory_dump_id,
@@ -58,7 +57,7 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
 
   void OpenWithOptions(
       const leveldb_env::Options& options,
-      filesystem::mojom::DirectoryPtr,
+      const base::FilePath& directory,
       const std::string& dbname,
       const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
           memory_dump_id,
@@ -72,7 +71,7 @@ class FakeLevelDBService : public leveldb::mojom::LevelDBService {
       mojo::PendingAssociatedReceiver<leveldb::mojom::LevelDBDatabase> receiver,
       OpenCallback callback) override;
 
-  void Destroy(filesystem::mojom::DirectoryPtr,
+  void Destroy(const base::FilePath& directory,
                const std::string& dbname,
                DestroyCallback callback) override;
 

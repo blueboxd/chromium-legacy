@@ -7,15 +7,13 @@
 
 #include <memory>
 
-#include "content/common/visual_properties.h"
+#include "content/common/content_export.h"
+#include "content/public/common/screen_info.h"
 #include "third_party/blink/public/web/web_device_emulation_params.h"
-
-namespace gfx {
-class Rect;
-}
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace content {
-
 class RenderWidgetScreenMetricsEmulatorDelegate;
 struct ContextMenuParams;
 
@@ -27,53 +25,59 @@ class CONTENT_EXPORT RenderWidgetScreenMetricsEmulator {
  public:
   RenderWidgetScreenMetricsEmulator(
       RenderWidgetScreenMetricsEmulatorDelegate* delegate,
-      const blink::WebDeviceEmulationParams& params,
-      const VisualProperties& visual_properties,
+      const ScreenInfo& screen_info,
+      const gfx::Size& widget_size,
+      const gfx::Size& visible_viewport_size,
       const gfx::Rect& view_screen_rect,
       const gfx::Rect& window_screen_rect);
-  virtual ~RenderWidgetScreenMetricsEmulator();
+  ~RenderWidgetScreenMetricsEmulator();
 
-  // Scale and offset used to convert between host coordinates
-  // and webwidget coordinates.
-  const gfx::Size& original_size() const {
-    return original_visual_properties_.new_size;
-  }
-
-  float scale() const { return scale_; }
-  const gfx::Rect& applied_widget_rect() const { return applied_widget_rect_; }
+  const gfx::Size& original_size() const { return original_widget_size_; }
   const ScreenInfo& original_screen_info() const {
-    return original_visual_properties_.screen_info;
+    return original_screen_info_;
   }
   const gfx::Rect& original_screen_rect() const {
     return original_view_screen_rect_;
   }
 
+  float scale() const { return scale_; }
+  const gfx::Rect& applied_widget_rect() const { return applied_widget_rect_; }
+
+  // Disables emulation and applies non-emulated values to the RenderWidget.
+  // Call this before destroying the RenderWidgetScreenMetricsEmulator.
+  void DisableAndApply();
+
+  // Sets new parameters and applies them to the RenderWidget.
   void ChangeEmulationParams(const blink::WebDeviceEmulationParams& params);
 
-  // The following methods alter handlers' behavior for messages related to
-  // widget size and position.
-  void OnSynchronizeVisualProperties(const VisualProperties& params);
+  void OnSynchronizeVisualProperties(const ScreenInfo& screen_info,
+                                     const gfx::Size& widget_size,
+                                     const gfx::Size& visible_viewport_size);
   void OnUpdateScreenRects(const gfx::Rect& view_screen_rect,
                            const gfx::Rect& window_screen_rect);
-  void OnShowContextMenu(ContextMenuParams* params);
 
-  // Apply parameters to the render widget.
-  void Apply();
+  // Modify ContextMenuParams to account for emulation.
+  void OnShowContextMenu(ContextMenuParams* params);
 
  private:
   RenderWidgetScreenMetricsEmulatorDelegate* const delegate_;
+
+  // Applies emulated values to the RenderWidget.
+  void Apply();
 
   // Parameters as passed by RenderWidget::EnableScreenMetricsEmulation.
   blink::WebDeviceEmulationParams emulation_params_;
 
   // The computed scale and offset used to fit widget into browser window.
-  float scale_;
+  float scale_ = 1;
 
   // Widget rect as passed to webwidget.
   gfx::Rect applied_widget_rect_;
 
   // Original values to restore back after emulation ends.
-  VisualProperties original_visual_properties_;
+  ScreenInfo original_screen_info_;
+  gfx::Size original_widget_size_;
+  gfx::Size original_visible_viewport_size_;
   gfx::Rect original_view_screen_rect_;
   gfx::Rect original_window_screen_rect_;
 

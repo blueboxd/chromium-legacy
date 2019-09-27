@@ -22,6 +22,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/image/image.h"
 #include "ui/views/accessibility/view_accessibility.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
 
 class OmniboxPopupContentsView::AutocompletePopupWidget
@@ -148,6 +149,9 @@ OmniboxPopupContentsView::OmniboxPopupContentsView(
   // The contents is owned by the LocationBarView.
   set_owned_by_client();
 
+  SetLayoutManager(std::make_unique<views::BoxLayout>(
+      views::BoxLayout::Orientation::kVertical));
+
   for (size_t i = 0; i < AutocompleteResult::GetMaxMatches(); ++i) {
     OmniboxResultView* result_view =
         new OmniboxResultView(this, i, theme_provider);
@@ -273,7 +277,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
 
   if (popup_) {
     popup_->SetTargetBounds(new_target_bounds);
-    Layout();
+    InvalidateLayout();
     return;
   }
 
@@ -307,7 +311,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     result_view_at(0)->NotifyAccessibilityEvent(ax::mojom::Event::kSelection,
                                                 true);
   }
-  Layout();
+  InvalidateLayout();
 }
 
 void OmniboxPopupContentsView::OnMatchIconUpdated(size_t match_index) {
@@ -320,15 +324,6 @@ void OmniboxPopupContentsView::OnDragCanceled() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // OmniboxPopupContentsView, views::View overrides:
-
-void OmniboxPopupContentsView::Layout() {
-  // Size our children to the available content area.
-  LayoutChildren();
-
-  // We need to manually schedule a paint here since we are a layered window and
-  // won't implicitly require painting until we ask for one.
-  SchedulePaint();
-}
 
 bool OmniboxPopupContentsView::OnMouseDragged(const ui::MouseEvent& event) {
   size_t index = GetIndexForPoint(event.location());
@@ -399,18 +394,6 @@ gfx::Rect OmniboxPopupContentsView::GetTargetBounds() {
   // Finally, expand the widget to accomodate the custom-drawn shadows.
   content_rect.Inset(-RoundedOmniboxResultsFrame::GetShadowInsets());
   return content_rect;
-}
-
-void OmniboxPopupContentsView::LayoutChildren() {
-  gfx::Rect contents_rect = GetContentsBounds();
-  int top = contents_rect.y();
-  for (View* v : children()) {
-    if (v->GetVisible()) {
-      v->SetBounds(contents_rect.x(), top, contents_rect.width(),
-                   v->GetPreferredSize().height());
-      top = v->bounds().bottom();
-    }
-  }
 }
 
 bool OmniboxPopupContentsView::HasMatchAt(size_t index) const {

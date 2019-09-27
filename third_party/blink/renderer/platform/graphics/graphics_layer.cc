@@ -82,8 +82,7 @@ GraphicsLayer::GraphicsLayer(GraphicsLayerClient& client)
       parent_(nullptr),
       mask_layer_(nullptr),
       contents_layer_(nullptr),
-      contents_layer_id_(0),
-      rendering_context3d_(0) {
+      contents_layer_id_(0) {
 #if DCHECK_IS_ON()
   DCHECK(!RuntimeEnabledFeatures::CompositeAfterPaintEnabled());
   client.VerifyNotPainting();
@@ -467,7 +466,6 @@ void GraphicsLayer::SetupContentsLayer(cc::Layer* contents_layer) {
   // SetDrawsContent() and SetContentsVisible().
   contents_layer_->SetIsDrawable(contents_visible_);
   contents_layer_->SetHitTestable(contents_visible_);
-  contents_layer_->Set3dSortingContextId(rendering_context3d_);
 }
 
 void GraphicsLayer::ClearContentsLayerIfUnregistered() {
@@ -607,17 +605,6 @@ bool GraphicsLayer::ShouldFlattenTransform() const {
 
 void GraphicsLayer::SetShouldFlattenTransform(bool should_flatten) {
   CcLayer()->SetShouldFlattenTransform(should_flatten);
-}
-
-void GraphicsLayer::SetRenderingContext(int context) {
-  if (rendering_context3d_ == context)
-    return;
-
-  rendering_context3d_ = context;
-  CcLayer()->Set3dSortingContextId(context);
-
-  if (contents_layer_)
-    contents_layer_->Set3dSortingContextId(rendering_context3d_);
 }
 
 bool GraphicsLayer::MasksToBounds() const {

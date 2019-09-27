@@ -27,10 +27,6 @@ class ASH_EXPORT HomeScreenController : public OverviewObserver,
   HomeScreenController();
   ~HomeScreenController() override;
 
-  // Returns true if the home screen can be shown (generally corresponds to the
-  // device being in tablet mode).
-  bool IsHomeScreenAvailable();
-
   // Shows the home screen.
   void Show();
 

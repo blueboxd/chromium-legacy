@@ -194,15 +194,24 @@ struct GPU_EXPORT GPUInfo {
     GPUDevice& operator=(GPUDevice&& other) noexcept;
 
     // The DWORD (uint32_t) representing the graphics card vendor id.
-    uint32_t vendor_id;
+    uint32_t vendor_id = 0u;
 
     // The DWORD (uint32_t) representing the graphics card device id.
     // Device ids are unique to vendor, not to one another.
-    uint32_t device_id;
+    uint32_t device_id = 0u;
+
+#if defined(OS_WIN)
+    // The graphics card subsystem id.
+    // The lower 16 bits represents the subsystem vendor id.
+    uint32_t sub_sys_id = 0u;
+
+    // The graphics card revision number.
+    uint32_t revision = 0u;
+#endif  // OS_WIN
 
     // Whether this GPU is the currently used one.
     // Currently this field is only supported and meaningful on OS X.
-    bool active;
+    bool active = false;
 
     // The strings that describe the GPU.
     // In Linux these strings are obtained through libpci.
@@ -216,7 +225,7 @@ struct GPU_EXPORT GPUInfo {
 
     // NVIDIA CUDA compute capability, major version. 0 if undetermined. Can be
     // used to determine the hardware generation that the GPU belongs to.
-    int cuda_compute_capability_major;
+    int cuda_compute_capability_major = 0;
   };
 
   GPUInfo();

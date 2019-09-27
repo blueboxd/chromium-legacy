@@ -12,10 +12,6 @@
 #include "content/common/content_export.h"
 #include "content/public/common/font_cache_win.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 // Dispatches messages used for font caching on Windows. This is needed because
@@ -26,8 +22,7 @@ class CONTENT_EXPORT FontCacheDispatcher : public mojom::FontCacheWin {
   FontCacheDispatcher();
   ~FontCacheDispatcher() override;
 
-  static void Create(mojom::FontCacheWinRequest request,
-                     const service_manager::BindSourceInfo& source_info);
+  static void Create(mojom::FontCacheWinRequest request);
 
  private:
   // mojom::FontCacheWin:

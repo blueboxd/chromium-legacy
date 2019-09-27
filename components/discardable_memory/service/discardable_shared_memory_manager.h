@@ -35,10 +35,6 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace discardable_memory {
 
 // Implementation of DiscardableMemoryAllocator that allocates and manages
@@ -61,8 +57,7 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
 
   // Bind the manager to a mojo interface receiver.
   void Bind(
-      mojo::PendingReceiver<mojom::DiscardableSharedMemoryManager> receiver,
-      const service_manager::BindSourceInfo& source_info);
+      mojo::PendingReceiver<mojom::DiscardableSharedMemoryManager> receiver);
 
   // Overridden from base::DiscardableMemoryAllocator:
   std::unique_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(

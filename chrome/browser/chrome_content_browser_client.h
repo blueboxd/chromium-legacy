@@ -169,8 +169,6 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   bool IsHandledURL(const GURL& url) override;
   bool CanCommitURL(content::RenderProcessHost* process_host,
                     const GURL& url) override;
-  bool ShouldAllowOpenURL(content::SiteInstance* site_instance,
-                          const GURL& url) override;
   void OverrideNavigationParams(
       content::SiteInstance* site_instance,
       ui::PageTransition* transition,

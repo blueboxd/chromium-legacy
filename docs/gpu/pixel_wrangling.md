@@ -202,12 +202,18 @@ shift, and a calendar appointment.
     rebaselined.
     1. For a given build failing the pixel tests, look for either:
         1. One or more links named `gold_triage_link for <test name>`. This will
-           be the case if there are fewer than 10 links.
+           be the case if there are fewer than 10 links. If the test was run on
+           a trybot, the link will instead be named
+           `triage_link_for_entire_cl for <test name>` (the weird naming comes
+           with how the recipe processes and displays links).
         1. A single link named
            `Too many artifacts produced to link individually, click for links`.
            This will be the case if there are 10 or more links.
     1. In either case, follow the link(s) to the triage page for the image the
        failing test produced.
+        1. If the test was run on a trybot, all the links will point to the same
+           page, which will be the triage page for every untriaged image
+           produced by the CL being tested.
     1. Ensure you are signed in to the Gold server the links take you to (both
        @google.com and @chromium.org accounts work).
     1. Triage images on those pages (typically by approving them, but you can

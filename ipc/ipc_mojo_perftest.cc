@@ -25,9 +25,13 @@
 #include "mojo/core/embedder/embedder.h"
 #include "mojo/core/test/mojo_test_base.h"
 #include "mojo/core/test/multiprocess_test_helper.h"
-#include "mojo/public/cpp/bindings/associated_binding_set.h"
+#include "mojo/public/cpp/bindings/associated_receiver_set.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {
@@ -378,20 +382,22 @@ class InterfacePassingTestDriverImpl : public mojom::InterfacePassingTestDriver,
   // mojom::InterfacePassingTestDriver implementation:
   void Init(InitCallback callback) override { std::move(callback).Run(); }
 
-  void GetPingReceiver(std::vector<mojom::PingReceiverRequest> requests,
-                       GetPingReceiverCallback callback) override {
-    for (auto& request : requests)
-      ping_receiver_bindings_.AddBinding(this, std::move(request));
-    ping_receiver_bindings_.CloseAllBindings();
+  void GetPingReceiver(
+      std::vector<mojo::PendingReceiver<mojom::PingReceiver>> receivers,
+      GetPingReceiverCallback callback) override {
+    for (auto& receiver : receivers)
+      ping_receiver_receivers_.Add(this, std::move(receiver));
+    ping_receiver_receivers_.Clear();
     std::move(callback).Run();
   }
 
   void GetAssociatedPingReceiver(
-      std::vector<mojom::PingReceiverAssociatedRequest> requests,
+      std::vector<mojo::PendingAssociatedReceiver<mojom::PingReceiver>>
+          receivers,
       GetAssociatedPingReceiverCallback callback) override {
-    for (auto& request : requests)
-      ping_receiver_associated_bindings_.AddBinding(this, std::move(request));
-    ping_receiver_associated_bindings_.CloseAllBindings();
+    for (auto& receiver : receivers)
+      ping_receiver_associated_receivers_.Add(this, std::move(receiver));
+    ping_receiver_associated_receivers_.Clear();
     std::move(callback).Run();
   }
 
@@ -403,9 +409,9 @@ class InterfacePassingTestDriverImpl : public mojom::InterfacePassingTestDriver,
   // mojom::PingReceiver implementation:
   void Ping(PingCallback callback) override { std::move(callback).Run(); }
 
-  mojo::BindingSet<mojom::PingReceiver> ping_receiver_bindings_;
-  mojo::AssociatedBindingSet<mojom::PingReceiver>
-      ping_receiver_associated_bindings_;
+  mojo::ReceiverSet<mojom::PingReceiver> ping_receiver_receivers_;
+  mojo::AssociatedReceiverSet<mojom::PingReceiver>
+      ping_receiver_associated_receivers_;
   mojo::Binding<mojom::InterfacePassingTestDriver> binding_;
 
   base::Closure quit_closure_;
@@ -458,33 +464,34 @@ class MojoInterfacePassingPerfTest : public mojo::core::test::MojoTestBase {
 
   void DoNextRound() {
     if (associated_) {
-      std::vector<mojom::PingReceiverAssociatedPtr> associated_interfaces(
-          num_interfaces_);
+      std::vector<mojo::AssociatedRemote<mojom::PingReceiver>>
+          associated_remotes(num_interfaces_);
 
-      std::vector<mojom::PingReceiverAssociatedRequest> requests(
-          num_interfaces_);
+      std::vector<mojo::PendingAssociatedReceiver<mojom::PingReceiver>>
+          receivers(num_interfaces_);
       for (size_t i = 0; i < num_interfaces_; ++i) {
-        requests[i] = mojo::MakeRequest(&associated_interfaces[i]);
+        receivers[i] = associated_remotes[i].BindNewEndpointAndPassReceiver();
         // Force the interface pointer to do full initialization.
-        associated_interfaces[i].get();
+        associated_remotes[i].get();
       }
 
       driver_ptr_->GetAssociatedPingReceiver(
-          std::move(requests),
+          std::move(receivers),
           base::Bind(&MojoInterfacePassingPerfTest::OnGetReceiverCallback,
                      base::Unretained(this)));
     } else {
-      std::vector<mojom::PingReceiverPtr> interfaces(num_interfaces_);
+      std::vector<mojo::Remote<mojom::PingReceiver>> remotes(num_interfaces_);
 
-      std::vector<mojom::PingReceiverRequest> requests(num_interfaces_);
+      std::vector<mojo::PendingReceiver<mojom::PingReceiver>> receivers(
+          num_interfaces_);
       for (size_t i = 0; i < num_interfaces_; ++i) {
-        requests[i] = mojo::MakeRequest(&interfaces[i]);
+        receivers[i] = remotes[i].BindNewPipeAndPassReceiver();
         // Force the interface pointer to do full initialization.
-        interfaces[i].get();
+        remotes[i].get();
       }
 
       driver_ptr_->GetPingReceiver(
-          std::move(requests),
+          std::move(receivers),
           base::Bind(&MojoInterfacePassingPerfTest::OnGetReceiverCallback,
                      base::Unretained(this)));
     }

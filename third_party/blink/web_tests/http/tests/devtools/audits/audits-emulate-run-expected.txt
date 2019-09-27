@@ -12,7 +12,7 @@ Run audits: enabled visible
 
 =============== Lighthouse Results ===============
 URL: http://127.0.0.1:8000/devtools/audits/resources/audits-emulate-pass.html
-Version: 5.2.0
+Version: 5.4.0
 TestedAsMobileDevice: true
 ViewportDimensions: {
   "innerWidth": 412,

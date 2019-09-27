@@ -260,7 +260,7 @@ void WebNavigationTabObserver::DidFinishNavigation(
   HandleError(navigation_handle);
 }
 
-void WebNavigationTabObserver::DocumentLoadedInFrame(
+void WebNavigationTabObserver::DOMContentLoaded(
     content::RenderFrameHost* render_frame_host) {
   if (!navigation_state_.CanSendEvents(render_frame_host))
     return;

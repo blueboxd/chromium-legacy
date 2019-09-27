@@ -112,12 +112,6 @@ void CrosHealthdClient::InitializeFake() {
 }
 
 // static
-void CrosHealthdClient::InitializeFakeWithMockService(
-    mojo::PendingRemote<cros_healthd::mojom::CrosHealthdService> mock_service) {
-  new FakeCrosHealthdClient(std::move(mock_service));
-}
-
-// static
 void CrosHealthdClient::Shutdown() {
   DCHECK(g_instance);
   delete g_instance;

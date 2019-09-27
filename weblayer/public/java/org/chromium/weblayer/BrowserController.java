@@ -51,10 +51,10 @@ public final class BrowserController {
 
     private final class BrowserClientImpl extends IBrowserControllerClient.Stub {
         @Override
-        public void displayURLChanged(String url) {
+        public void visibleUrlChanged(String url) {
             Uri uri = Uri.parse(url);
             for (BrowserObserver observer : mObservers) {
-                observer.displayURLChanged(uri);
+                observer.visibleUrlChanged(uri);
             }
         }
 

@@ -22,23 +22,23 @@
       "drawsContent": false
     },
     {
-      "name": "LayoutBlockFlow DIV",
+      "name": "LayoutNGBlockFlow DIV",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#D3D3D3",
-      "transform": 2
+      "transform": 1
     },
     {
-      "name": "Squashing Layer (first squashed layer: LayoutBlockFlow (positioned) DIV id='target')",
+      "name": "Squashing Layer (first squashed layer: LayoutNGBlockFlow (positioned) DIV id='target')",
+      "position": [28, 28],
       "bounds": [100, 100],
       "paintInvalidations": [
         {
-          "object": "LayoutBlockFlow (positioned) DIV id='target'",
+          "object": "LayoutNGBlockFlow (positioned) DIV id='target'",
           "rect": [0, 0, 100, 100],
           "reason": "background"
         }
-      ],
-      "transform": 4
+      ]
     }
   ],
   "transforms": [
@@ -51,28 +51,6 @@
         [8, 8, 0, 1]
       ],
       "flattenInheritedTransform": false
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 3,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
-        [0, 0, 1, 0],
-        [28, 28, 0, 1]
-      ],
-      "flattenInheritedTransform": false
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
     }
   ]
 }

@@ -4,6 +4,7 @@
      found in the LICENSE file. -->
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    android:background="@color/sheet_bg_color"
     android:layout_height="wrap_content"
     android:layout_width="match_parent">
 

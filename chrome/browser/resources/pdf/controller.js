@@ -266,10 +266,12 @@ class PluginController extends ContentController {
       const position = this.viewport_.position;
       const zoom = this.viewport_.getZoom();
       const pinchPhase = this.viewport_.pinchPhase;
+      const layoutOptions = this.viewport_.getLayoutOptions();
       this.postMessage_({
         type: 'viewport',
         userInitiated: true,
         zoom: zoom,
+        layoutOptions: layoutOptions,
         xOffset: position.x,
         yOffset: position.y,
         pinchPhase: pinchPhase
@@ -285,6 +287,7 @@ class PluginController extends ContentController {
   afterZoom() {
     const position = this.viewport_.position;
     const zoom = this.viewport_.getZoom();
+    const layoutOptions = this.viewport_.getLayoutOptions();
     const pinchVector = this.viewport_.pinchPanVector || {x: 0, y: 0};
     const pinchCenter = this.viewport_.pinchCenter || {x: 0, y: 0};
     const pinchPhase = this.viewport_.pinchPhase;
@@ -293,6 +296,7 @@ class PluginController extends ContentController {
       type: 'viewport',
       userInitiated: this.getIsUserInitiatedCallback_(),
       zoom: zoom,
+      layoutOptions: layoutOptions,
       xOffset: position.x,
       yOffset: position.y,
       pinchPhase: pinchPhase,

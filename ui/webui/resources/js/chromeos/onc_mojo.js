@@ -464,8 +464,10 @@ class OncMojo {
       return OncMojo.getNetworkTypeDisplayName(network.type);
     }
     const mojom = chromeos.networkConfig.mojom;
-    if (network.type == mojom.NetworkType.kVPN && network.vpn.providerName) {
-      return OncMojo.getVpnDisplayName(network.name, network.vpn.providerName);
+    if (network.type == mojom.NetworkType.kVPN &&
+        network.typeState.vpn.providerName) {
+      return OncMojo.getVpnDisplayName(
+          network.name, network.typeState.vpn.providerName);
     }
     return network.name;
   }
@@ -495,11 +497,11 @@ class OncMojo {
     const NetworkType = chromeos.networkConfig.mojom.NetworkType;
     switch (network.type) {
       case NetworkType.kCellular:
-        return network.cellular.signalStrength;
+        return network.typeState.cellular.signalStrength;
       case NetworkType.kTether:
-        return network.tether.signalStrength;
+        return network.typeState.tether.signalStrength;
       case NetworkType.kWiFi:
-        return network.wifi.signalStrength;
+        return network.typeState.wifi.signalStrength;
     }
     assertNotReached();
     return 0;
@@ -524,10 +526,11 @@ class OncMojo {
       prohibitedByPolicy: false,
       source: mojom.OncSource.kNone,
       type: type,
+      typeState: {},
     };
     switch (type) {
       case mojom.NetworkType.kCellular:
-        result.cellular = {
+        result.typeState.cellular = {
           activationState: mojom.ActivationStateType.kUnknown,
           networkTechnology: '',
           roaming: false,
@@ -536,12 +539,12 @@ class OncMojo {
         };
         break;
       case mojom.NetworkType.kEthernet:
-        result.ethernet = {
+        result.typeState.ethernet = {
           authentication: mojom.AuthenticationType.kNone,
         };
         break;
       case mojom.NetworkType.kTether:
-        result.tether = {
+        result.typeState.tether = {
           batteryPercentage: 0,
           carrier: '',
           hasConnectedToHost: false,
@@ -549,14 +552,14 @@ class OncMojo {
         };
         break;
       case mojom.NetworkType.kVPN:
-        result.vpn = {
+        result.typeState.vpn = {
           type: mojom.VpnType.kOpenVPN,
           providerId: '',
           providerName: '',
         };
         break;
       case mojom.NetworkType.kWiFi:
-        result.wifi = {
+        result.typeState.wifi = {
           bssid: '',
           frequency: 0,
           hexSsid: opt_name || '',
@@ -565,6 +568,8 @@ class OncMojo {
           ssid: '',
         };
         break;
+      default:
+        assertNotReached();
     }
     return result;
   }
@@ -591,39 +596,42 @@ class OncMojo {
 
     switch (properties.type) {
       case mojom.NetworkType.kCellular:
-        networkState.cellular.activationState =
+        networkState.typeState.cellular.activationState =
             properties.cellular.activationState;
-        networkState.cellular.networkTechnology =
+        networkState.typeState.cellular.networkTechnology =
             properties.cellular.networkTechnology || '';
-        networkState.cellular.roaming =
+        networkState.typeState.cellular.roaming =
             properties.cellular.roamingState == 'Roaming';
-        networkState.cellular.signalStrength =
+        networkState.typeState.cellular.signalStrength =
             properties.cellular.signalStrength;
         break;
       case mojom.NetworkType.kEthernet:
-        networkState.ethernet.authentication =
+        networkState.typeState.ethernet.authentication =
             properties.ethernet.authentication == '8021X' ?
             mojom.AuthenticationType.k8021x :
             mojom.AuthenticationType.kNone;
         break;
       case mojom.NetworkType.kTether:
         if (properties.tether) {
-          networkState.tether = /** @type {!mojom.TetherStateProperties}*/ (
-              Object.assign({}, properties.tether));
+          networkState.typeState.tether =
+              /** @type {!mojom.TetherStateProperties}*/ (
+                  Object.assign({}, properties.tether));
         }
         break;
       case mojom.NetworkType.kVPN:
-        networkState.vpn.providerName = properties.vpn.providerName;
-        networkState.vpn.vpnType = properties.vpn.type;
+        networkState.typeState.vpn.providerName = properties.vpn.providerName;
+        networkState.typeState.vpn.vpnType = properties.vpn.type;
         break;
       case mojom.NetworkType.kWiFi:
-        networkState.wifi.bssid = properties.wifi.bssid || '';
-        networkState.wifi.frequency = properties.wifi.frequency;
-        networkState.wifi.hexSsid =
+        networkState.typeState.wifi.bssid = properties.wifi.bssid || '';
+        networkState.typeState.wifi.frequency = properties.wifi.frequency;
+        networkState.typeState.wifi.hexSsid =
             OncMojo.getActiveString(properties.wifi.hexSsid);
-        networkState.wifi.security = properties.wifi.security;
-        networkState.wifi.signalStrength = properties.wifi.signalStrength;
-        networkState.wifi.ssid = OncMojo.getActiveString(properties.wifi.ssid);
+        networkState.typeState.wifi.security = properties.wifi.security;
+        networkState.typeState.wifi.signalStrength =
+            properties.wifi.signalStrength;
+        networkState.typeState.wifi.ssid =
+            OncMojo.getActiveString(properties.wifi.ssid);
         break;
     }
     return networkState;

@@ -165,7 +165,7 @@ void WebContentsObserverProxy::DidFinishLoad(RenderFrameHost* render_frame_host,
       !render_frame_host->GetParent());
 }
 
-void WebContentsObserverProxy::DocumentLoadedInFrame(
+void WebContentsObserverProxy::DOMContentLoaded(
     RenderFrameHost* render_frame_host) {
   JNIEnv* env = AttachCurrentThread();
   Java_WebContentsObserverProxy_documentLoadedInFrame(

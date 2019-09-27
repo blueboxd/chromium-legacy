@@ -354,7 +354,7 @@
 <translation id="2653659639078652383">Kirim</translation>
 <translation id="2660650542324841986">Server yang akan Anda akses, <ph name="ORIGIN" />, telah meminta
     agar kebijakan asal diterapkan ke semua permintaannya. Namun, server tersebut kini telah
-    gagal menerapkan kebijakan, yang mencegah browser memenuhi
+    gagal menerapkan kebijakan, yang membuat browser tidak dapat memenuhi
     permintaan Anda untuk <ph name="SITE" />. Kebijakan asal dapat digunakan oleh
     operator situs guna mengonfigurasi keamanan dan properti lainnya untuk sebuah situs.</translation>
 <translation id="2664887757054927933">{COUNT,plural, =0{Tidak ada}=1{1 sandi (untuk <ph name="DOMAIN_LIST" />)}=2{2 sandi (untuk <ph name="DOMAIN_LIST" />)}other{# sandi (untuk <ph name="DOMAIN_LIST" />)}}</translation>
@@ -546,14 +546,15 @@
 <translation id="3658742229777143148">Revisi</translation>
 <translation id="366077651725703012">Perbarui Kartu Kredit</translation>
 <translation id="3676592649209844519">ID Perangkat:</translation>
+<translation id="3677008721441257057">Maksud Anda &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">Permintaan tidak dapat ditandatangani</translation>
 <translation id="3678529606614285348">Buka halaman dalam Jendela samaran baru (Ctrl-Shift-N)</translation>
 <translation id="3679803492151881375">Laporan kerusakan direkam pada <ph name="CRASH_TIME" />, diupload pada <ph name="UPLOAD_TIME" /></translation>
 <translation id="3681007416295224113">Informasi sertifikat</translation>
 <translation id="3688109723158850780">Server yang akan Anda akses, <ph name="ORIGIN" />, telah meminta
     agar kebijakan asal diterapkan ke semua permintaannya. Namun, bukannya
-    menerapkan kebijakan, server tersebut telah mengalihkan browser ke tempat lain, yang mencegah
-    browser agar tidak memenuhi permintaan Anda untuk <ph name="SITE" />. Kebijakan
+    menerapkan kebijakan, server tersebut telah mengalihkan browser ke tempat lain, yang membuat
+    browser tidak memenuhi permintaan Anda untuk <ph name="SITE" />. Kebijakan
     asal dapat digunakan oleh operator situs guna mengonfigurasi keamanan dan properti
     lainnya untuk sebuah situs.</translation>
 <translation id="3701427423622901115">Setel ulang dikonfirmasi.</translation>
@@ -621,7 +622,6 @@
 <translation id="4075732493274867456">Klien dan server tidak mendukung versi protokol SSL umum atau cipher suite.</translation>
 <translation id="4079302484614802869">Konfigurasi proxy disetel untuk menggunakan URL skrip .pac, bukan server proxy yang tetap.</translation>
 <translation id="4082393374666368382">Setelan - Pengelolaan</translation>
-<translation id="4092411512356034591">Lanjutkan ke <ph name="DOMAIN" />?</translation>
 <translation id="4098354747657067197">Situs yang akan dibuka berisi penipuan</translation>
 <translation id="4103249731201008433">Nomor seri perangkat tidak valid</translation>
 <translation id="410351446219883937">Putar otomatis</translation>
@@ -1172,7 +1172,6 @@
 <translation id="6868206169573555318">Luncurkan Kembali untuk Mengupdate</translation>
 <translation id="6874604403660855544">&amp;Ulangi penambahan</translation>
 <translation id="6884662655240309489">Ukuran 1</translation>
-<translation id="6884796835813057577">Lanjutkan ke &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Tingkat kebijakan tidak didukung.</translation>
 <translation id="6895330447102777224">Kartu telah dikonfirmasi</translation>

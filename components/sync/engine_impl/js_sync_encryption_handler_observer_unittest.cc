@@ -146,7 +146,7 @@ TEST_F(JsSyncEncryptionHandlerObserverTest, OnCryptographerStateChanged) {
 
   DirectoryCryptographer cryptographer;
   js_sync_encryption_handler_observer_.OnCryptographerStateChanged(
-      &cryptographer);
+      &cryptographer, /*has_pending_keys=*/false);
   PumpLoop();
 }
 

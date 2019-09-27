@@ -14,7 +14,7 @@ namespace syncer {
 
 AllStatus::AllStatus() {
   status_.notifications_enabled = false;
-  status_.cryptographer_ready = false;
+  status_.cryptographer_can_encrypt = false;
   status_.crypto_has_pending_keys = false;
 }
 
@@ -129,9 +129,9 @@ void AllStatus::SetEncryptedTypes(ModelTypeSet types) {
   status_.encrypted_types = types;
 }
 
-void AllStatus::SetCryptographerReady(bool ready) {
+void AllStatus::SetCryptographerCanEncrypt(bool can_encrypt) {
   ScopedStatusLock lock(this);
-  status_.cryptographer_ready = ready;
+  status_.cryptographer_can_encrypt = can_encrypt;
 }
 
 void AllStatus::SetCryptoHasPendingKeys(bool has_pending_keys) {

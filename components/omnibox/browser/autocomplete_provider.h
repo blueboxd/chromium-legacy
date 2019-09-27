@@ -44,6 +44,7 @@ typedef std::vector<metrics::OmniboxEventProto_ProviderInfo> ProvidersInfo;
 // Clipboard URL                                                       |  800
 // Zero Suggest (most visited, Android only)                           |  600--
 // Zero Suggest (default, may be overridden by server)                 |  100
+// Local History Zero Suggest                                          |  500--
 //
 // UNKNOWN input type:
 // --------------------------------------------------------------------|-----
@@ -149,6 +150,7 @@ class AutocompleteProvider
     TYPE_CLIPBOARD = 1 << 8,
     TYPE_DOCUMENT = 1 << 9,
     TYPE_ON_DEVICE_HEAD = 1 << 10,
+    TYPE_ZERO_SUGGEST_LOCAL_HISTORY = 1 << 11,
   };
 
   explicit AutocompleteProvider(Type type);

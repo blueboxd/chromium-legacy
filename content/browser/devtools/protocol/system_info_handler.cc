@@ -123,13 +123,18 @@ class AuxGPUInfoEnumerator : public gpu::GPUInfo::Enumerator {
 
 std::unique_ptr<GPUDevice> GPUDeviceToProtocol(
     const gpu::GPUInfo::GPUDevice& device) {
-  return GPUDevice::Create().SetVendorId(device.vendor_id)
-                            .SetDeviceId(device.device_id)
-                            .SetVendorString(device.vendor_string)
-                            .SetDeviceString(device.device_string)
-                            .SetDriverVendor(device.driver_vendor)
-                            .SetDriverVersion(device.driver_version)
-                            .Build();
+  return GPUDevice::Create()
+      .SetVendorId(device.vendor_id)
+      .SetDeviceId(device.device_id)
+#if defined(OS_WIN)
+      .SetSubSysId(device.sub_sys_id)
+      .SetRevision(device.revision)
+#endif
+      .SetVendorString(device.vendor_string)
+      .SetDeviceString(device.device_string)
+      .SetDriverVendor(device.driver_vendor)
+      .SetDriverVersion(device.driver_version)
+      .Build();
 }
 
 std::unique_ptr<SystemInfo::VideoDecodeAcceleratorCapability>

@@ -359,6 +359,10 @@ const FontRenderParams& PlatformFontWin::GetFontRenderParams() {
   return *params;
 }
 
+sk_sp<SkTypeface> PlatformFontWin::GetNativeSkTypefaceIfAvailable() const {
+  return nullptr;
+}
+
 NativeFont PlatformFontWin::GetNativeFont() const {
   return font_ref_->hfont();
 }

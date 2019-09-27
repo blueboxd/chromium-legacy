@@ -122,12 +122,15 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   const base::TimeTicks current_time = base::TimeTicks::Now();
   if (start_capture_time_.is_null())
     start_capture_time_ = current_time;
-  const blink::WebSize resolution = web_media_player_->NaturalSize();
 
   if (!canvas_ || is_opaque_ != web_media_player_->IsOpaque()) {
+    // TODO(crbug.com/964494): Avoid the explicit conversion to gfx::Size here.
+    // TODO(sandersd): Implement support for size changes rather than scaling.
+    if (!canvas_)
+      natural_size_ = gfx::Size(web_media_player_->NaturalSize());
     is_opaque_ = web_media_player_->IsOpaque();
     if (!bitmap_.tryAllocPixels(SkImageInfo::MakeN32(
-            resolution.width, resolution.height,
+            natural_size_.width(), natural_size_.height(),
             is_opaque_ ? kOpaque_SkAlphaType : kPremul_SkAlphaType))) {
       running_callback_.Run(false);
       return;
@@ -138,12 +141,11 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
   cc::PaintFlags flags;
   flags.setBlendMode(SkBlendMode::kSrc);
   flags.setFilterQuality(kLow_SkFilterQuality);
-  web_media_player_->Paint(
-      canvas_.get(), blink::WebRect(0, 0, resolution.width, resolution.height),
-      flags);
+  // TODO(crbug.com/964494): Avoid the explicit conversion to blink::WebRect
+  // here.
+  web_media_player_->Paint(canvas_.get(),
+                           blink::WebRect(gfx::Rect(natural_size_)), flags);
   DCHECK_NE(kUnknown_SkColorType, canvas_->imageInfo().colorType());
-  DCHECK_EQ(canvas_->imageInfo().width(), resolution.width);
-  DCHECK_EQ(canvas_->imageInfo().height(), resolution.height);
 
   DCHECK_NE(kUnknown_SkColorType, bitmap_.colorType());
   DCHECK(!bitmap_.drawsNothing());
@@ -153,11 +155,9 @@ void HtmlVideoElementCapturerSource::sendNewFrame() {
     return;
   }
 
-  // TODO(crbug.com/964494): Avoid the explicit convertion to gfx::Size here.
-  gfx::Size gfx_resolution = gfx::Size(resolution);
   scoped_refptr<media::VideoFrame> frame = frame_pool_.CreateFrame(
       is_opaque_ ? media::PIXEL_FORMAT_I420 : media::PIXEL_FORMAT_I420A,
-      gfx_resolution, gfx::Rect(gfx_resolution), gfx_resolution,
+      natural_size_, gfx::Rect(natural_size_), natural_size_,
       current_time - start_capture_time_);
 
   const uint32_t source_pixel_format =

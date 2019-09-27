@@ -17,6 +17,10 @@ static_library("device_sync") {
     "cryptauth_client_impl.h",
     "cryptauth_device.cc",
     "cryptauth_device.h",
+    "cryptauth_device_activity_getter.cc",
+    "cryptauth_device_activity_getter.h",
+    "cryptauth_device_activity_getter_impl.cc",
+    "cryptauth_device_activity_getter_impl.h",
     "cryptauth_device_manager.cc",
     "cryptauth_device_manager.h",
     "cryptauth_device_manager_impl.cc",
@@ -215,6 +219,7 @@ static_library("test_support") {
     "//chromeos/services/device_sync/proto:test_support",
     "//chromeos/services/device_sync/public/cpp",
     "//chromeos/services/device_sync/public/mojom",
+    "//chromeos/services/device_sync/public/mojom:unit_tests",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -226,6 +231,7 @@ source_set("unit_tests") {
   sources = [
     "cryptauth_api_call_flow_unittest.cc",
     "cryptauth_client_impl_unittest.cc",
+    "cryptauth_device_activity_getter_impl_unittest.cc",
     "cryptauth_device_manager_impl_unittest.cc",
     "cryptauth_device_registry_impl_unittest.cc",
     "cryptauth_device_syncer_impl_unittest.cc",

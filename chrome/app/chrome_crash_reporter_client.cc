@@ -45,6 +45,27 @@
 void ChromeCrashReporterClient::Create() {
   static base::NoDestructor<ChromeCrashReporterClient> crash_client;
   crash_reporter::SetCrashReporterClient(crash_client.get());
+
+  // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
+  // location to write crash dumps can be set.
+  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  std::string alternate_crash_dump_location;
+  base::FilePath crash_dumps_dir_path;
+  if (env->GetVar("BREAKPAD_DUMP_LOCATION", &alternate_crash_dump_location)) {
+    crash_dumps_dir_path =
+        base::FilePath::FromUTF8Unsafe(alternate_crash_dump_location);
+  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                 "breakpad-dump-location")) {
+    // This is needed for Android tests, where we want dumps to go to a location
+    // where they don't get uploaded/deleted, but we can't use environment
+    // variables.
+    crash_dumps_dir_path =
+        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
+            "breakpad-dump-location");
+  }
+  if (!crash_dumps_dir_path.empty()) {
+    base::PathService::Override(chrome::DIR_CRASH_DUMPS, crash_dumps_dir_path);
+  }
 }
 
 #if defined(OS_CHROMEOS)
@@ -115,15 +136,6 @@ base::FilePath ChromeCrashReporterClient::GetReporterLogFilename() {
 
 bool ChromeCrashReporterClient::GetCrashDumpLocation(
     base::FilePath* crash_dir) {
-  // By setting the BREAKPAD_DUMP_LOCATION environment variable, an alternate
-  // location to write breakpad crash dumps can be set.
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  std::string alternate_crash_dump_location;
-  if (env->GetVar("BREAKPAD_DUMP_LOCATION", &alternate_crash_dump_location)) {
-    base::FilePath crash_dumps_dir_path =
-        base::FilePath::FromUTF8Unsafe(alternate_crash_dump_location);
-    base::PathService::Override(chrome::DIR_CRASH_DUMPS, crash_dumps_dir_path);
-  }
   return base::PathService::Get(chrome::DIR_CRASH_DUMPS, crash_dir);
 }
 

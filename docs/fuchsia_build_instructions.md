@@ -193,7 +193,7 @@ group.
 
 ### Running test suites
 
-Building test suites generate a launcher script to run them on a QEMU instance
+Building test suites generate a launcher script to run them on an emulator
 or a physical device. These scripts are generated at `out/fuchsia/bin`. For
 instance,to run the `base_unittests` target, launch:
 
@@ -203,6 +203,10 @@ $ out/fuchsia/bin/run_base_unittests
 
 Common gtest arguments such as `--gtest_filter=...` are supported by the run
 script. The launcher script also symbolizes backtraces.
+
+The test suite, by default, will run on QEMU. AEMU can be used for running
+tests that interact with Fuchsia's window manager, Scenic. To change the device
+that Fuchsia will run on, use `--device={aemu|qemu|device}`.
 
 To run a test suite on an *unprovisioned device* in a zedboot state, simply add
 `-d` to the test runner script arguments. Subsequent runs of the test runner

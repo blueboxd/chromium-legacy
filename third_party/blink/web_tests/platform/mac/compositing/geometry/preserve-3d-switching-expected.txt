@@ -21,7 +21,7 @@ transform: translateZ(-100px) rotateY(45deg);
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (relative positioned) DIV id='container'",
+      "name": "LayoutNGBlockFlow (relative positioned) DIV id='container'",
       "position": [108, 73],
       "bounds": [304, 304]
     },
@@ -32,14 +32,14 @@ transform: translateZ(-100px) rotateY(45deg);
       "transform": 2
     },
     {
-      "name": "LayoutBlockFlow DIV id='parent'",
+      "name": "LayoutNGBlockFlow DIV id='parent'",
       "bounds": [280, 280],
       "contentsOpaque": true,
       "backgroundColor": "#FFFF00",
       "transform": 4
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
+      "name": "LayoutNGBlockFlow (positioned) DIV",
       "bounds": [200, 200],
       "opacity": 0.699999988079071,
       "contentsOpaque": true,
@@ -89,8 +89,7 @@ transform: translateZ(-100px) rotateY(45deg);
         [0, 0, 0, 1]
       ],
       "origin": [140, 140],
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
+      "flattenInheritedTransform": false
     },
     {
       "id": 5,
@@ -113,8 +112,7 @@ transform: translateZ(-100px) rotateY(45deg);
         [0, 0, 50, 1]
       ],
       "origin": [100, 100],
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
+      "flattenInheritedTransform": false
     }
   ]
 }

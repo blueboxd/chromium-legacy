@@ -43,6 +43,10 @@ namespace {
 
 constexpr SkColor kMediaControlsBackground = SkColorSetA(SK_ColorDKGRAY, 150);
 constexpr SkColor kMediaButtonColor = SK_ColorWHITE;
+constexpr SkColor kProgressBarForeground =
+    SkColorSetARGB(0xFF, 0x8A, 0xB4, 0xF8);
+constexpr SkColor kProgressBarBackground =
+    SkColorSetARGB(0x4C, 0x8A, 0xB4, 0xF8);
 
 // Maximum number of actions that should be displayed on |button_row_|.
 constexpr size_t kMaxActions = 5;
@@ -268,10 +272,13 @@ LockScreenMediaControlsView::LockScreenMediaControlsView(
 
   contents_view_->AddChildView(std::move(artwork_row));
 
-  progress_ = contents_view_->AddChildView(
+  auto progress_view =
       std::make_unique<media_message_center::MediaControlsProgressView>(
           base::BindRepeating(&LockScreenMediaControlsView::SeekTo,
-                              base::Unretained(this))));
+                              base::Unretained(this)));
+  progress_view->SetForegroundColor(kProgressBarForeground);
+  progress_view->SetBackgroundColor(kProgressBarBackground);
+  progress_ = contents_view_->AddChildView(std::move(progress_view));
 
   // |button_row_| contains the buttons for controlling playback.
   auto button_row = std::make_unique<NonAccessibleView>();

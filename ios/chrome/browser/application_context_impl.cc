@@ -53,6 +53,7 @@
 #include "ios/chrome/common/channel_info.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/socket/client_socket_pool_manager.h"
@@ -83,11 +84,11 @@ void RequestProxyResolvingSocketFactory(
                                 app_context, std::move(request)));
 }
 
-// Passed to NetworkConnectionTracker to bind a NetworkChangeManagerRequest.
-void BindNetworkChangeManagerRequest(
+// Passed to NetworkConnectionTracker to bind a NetworkChangeManager receiver.
+void BindNetworkChangeManagerReceiver(
     network::NetworkChangeManager* network_change_manager,
-    network::mojom::NetworkChangeManagerRequest request) {
-  network_change_manager->AddRequest(std::move(request));
+    mojo::PendingReceiver<network::mojom::NetworkChangeManager> receiver) {
+  network_change_manager->AddReceiver(std::move(receiver));
 }
 
 }  // namespace
@@ -353,7 +354,7 @@ ApplicationContextImpl::GetNetworkConnectionTracker() {
     }
     network_connection_tracker_ =
         std::make_unique<network::NetworkConnectionTracker>(base::BindRepeating(
-            &BindNetworkChangeManagerRequest,
+            &BindNetworkChangeManagerReceiver,
             base::Unretained(network_change_manager_.get())));
   }
   return network_connection_tracker_.get();

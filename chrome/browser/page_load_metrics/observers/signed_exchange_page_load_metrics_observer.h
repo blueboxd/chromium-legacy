@@ -35,6 +35,19 @@ extern const char
 extern const char kHistogramCachedSignedExchangeDomContentLoaded[];
 extern const char kHistogramCachedSignedExchangeLoad[];
 
+extern const char kHistogramNotCachedSignedExchangePrefix[];
+extern const char kHistogramNotCachedSignedExchangeParseStart[];
+extern const char kHistogramNotCachedSignedExchangeFirstInputDelay[];
+extern const char kHistogramNotCachedSignedExchangeFirstPaint[];
+extern const char kHistogramNotCachedSignedExchangeFirstContentfulPaint[];
+extern const char
+    kHistogramNotCachedSignedExchangeParseStartToFirstContentfulPaint[];
+extern const char kHistogramNotCachedSignedExchangeFirstMeaningfulPaint[];
+extern const char
+    kHistogramNotCachedSignedExchangeParseStartToFirstMeaningfulPaint[];
+extern const char kHistogramNotCachedSignedExchangeDomContentLoaded[];
+extern const char kHistogramNotCachedSignedExchangeLoad[];
+
 extern const char kHistogramAltSubSxgSignedExchangePrefix[];
 extern const char kHistogramAltSubSxgSignedExchangeParseStart[];
 extern const char kHistogramAltSubSxgSignedExchangeFirstInputDelay[];

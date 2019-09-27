@@ -1195,7 +1195,6 @@ chrome_common_shared_library("libchrome") {
   if (enable_vr) {
     deps += [ "//chrome/browser/android/vr:module_factory" ]
   }
-  deps += [ "//chrome/android/features/test_dummy/internal:base_module_native" ]
 
   allow_partitions = true
   module_descs = chrome_modern_module_descs
@@ -1212,7 +1211,6 @@ chrome_common_shared_library("libchromefortest") {
     ":chrome_jni_for_test_registration($default_toolchain)",
     "//base/test:test_support",
     "//chrome:chrome_android_core",
-    "//chrome/android/features/test_dummy/internal:base_module_native",
     "//chrome/browser/android/metrics:ukm_utils_for_test",
     "//components/autofill_assistant/browser:test_support",
     "//components/crash/android:crash_android",
@@ -1226,6 +1224,10 @@ chrome_common_shared_library("libchromefortest") {
   if (enable_vr) {
     deps += [ "//chrome/browser/android/vr:test_support" ]
   }
+
+  # TODO(http://crbug.com/1008123): Include module native code by enumerating
+  # module descriptors.
+  deps += [ "//chrome/android/modules/test_dummy/internal:native" ]
 }
 
 # Ensure that .pak files are built only once (build them in the default
@@ -1461,8 +1463,6 @@ template("libmonochrome_apk_or_bundle_tmpl") {
     if (enable_vr) {
       deps += [ "//chrome/browser/android/vr:module_factory" ]
     }
-    deps +=
-        [ "//chrome/android/features/test_dummy/internal:base_module_native" ]
 
     is_monochrome = true
     allow_partitions = true
@@ -1536,6 +1536,7 @@ generate_jni("test_support_jni_headers") {
     "javatests/src/org/chromium/chrome/browser/ServicificationBackgroundService.java",
     "javatests/src/org/chromium/chrome/browser/offlinepages/OfflineTestUtil.java",
     "javatests/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchTestBridge.java",
+    "javatests/src/org/chromium/chrome/browser/prerender/PrerenderTestHelper.java",
     "javatests/src/org/chromium/chrome/browser/test/MockCertVerifierRuleAndroid.java",
   ]
 }
@@ -1546,6 +1547,7 @@ android_library("browser_java_test_support") {
   java_files = [
     "javatests/src/org/chromium/chrome/browser/offlinepages/prefetch/PrefetchTestBridge.java",
     "javatests/src/org/chromium/chrome/browser/offlinepages/OfflineTestUtil.java",
+    "javatests/src/org/chromium/chrome/browser/prerender/PrerenderTestHelper.java",
     "javatests/src/org/chromium/chrome/browser/sync/FakeServerHelper.java",
     "javatests/src/org/chromium/chrome/browser/test/MockCertVerifierRuleAndroid.java",
     "javatests/src/org/chromium/chrome/browser/ServicificationBackgroundService.java",
@@ -1573,6 +1575,7 @@ static_library("browser_test_support") {
     "../browser/android/ssl/mock_cert_verifier_rule_android.h",
     "../browser/offline_pages/android/offline_test_util_jni.cc",
     "../browser/offline_pages/android/prefetch_test_bridge.cc",
+    "../browser/prerender/prerender_test_helper.cc",
   ]
   deps = [
     ":test_support_jni_headers",

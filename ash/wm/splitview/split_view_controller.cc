@@ -740,10 +740,6 @@ void SplitViewController::OnWindowDragEnded(
   }
 }
 
-SplitViewState SplitViewController::GetCurrentState() const {
-  return state_;
-}
-
 void SplitViewController::AddObserver(SplitViewObserver* observer) {
   observers_.AddObserver(observer);
 }

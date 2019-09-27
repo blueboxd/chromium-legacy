@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <iterator>
 #include <memory>
 #include <string>
 #include <utility>
@@ -50,6 +51,7 @@
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/audio/cras_audio_handler.h"
 #include "chromeos/dbus/cros_disks_client.h"
+#include "chromeos/dbus/cros_healthd/cros_healthd_client.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_update_engine_client.h"
 #include "chromeos/dbus/power/fake_power_manager_client.h"
@@ -152,6 +154,8 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
           emmc_lifetime_fetcher,
       const policy::DeviceStatusCollector::StatefulPartitionInfoFetcher&
           stateful_partition_info_fetcher,
+      const policy::DeviceStatusCollector::CrosHealthdDataFetcher&
+          cros_healthd_data_fetcher,
       bool is_enterprise_device)
       : policy::DeviceStatusCollector(pref_service,
                                       provider,
@@ -162,6 +166,7 @@ class TestingDeviceStatusCollector : public policy::DeviceStatusCollector {
                                       tpm_status_fetcher,
                                       emmc_lifetime_fetcher,
                                       stateful_partition_info_fetcher,
+                                      cros_healthd_data_fetcher,
                                       is_enterprise_device) {
     // Set the baseline time to a fixed value (1 hour after day start) to
     // prevent test flakiness due to a single activity period spanning two days.
@@ -351,6 +356,40 @@ em::StatefulPartitionInfo GetFakeStatefulPartitionInfo(
   return value;
 }
 
+void GetEmptyCrosHealthdData(
+    policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+  chromeos::cros_healthd::mojom::TelemetryInfoPtr empty_info;
+  std::move(receiver).Run(std::move(empty_info));
+}
+
+void GetFakeCrosHealthdData(
+    const std::string& sku_number,
+    const std::string& path,
+    int size,
+    const std::string& type,
+    uint8_t manufacturer_id,
+    const std::string& name,
+    int serial,
+    policy::DeviceStatusCollector::CrosHealthdDataReceiver receiver) {
+  chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr vector_init[] =
+      {chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfo::New(
+          path, size, type, manufacturer_id, name, serial)};
+  chromeos::cros_healthd::mojom::TelemetryInfo fake_info(
+      chromeos::cros_healthd::mojom::BatteryInfo::New(), /* battery_info */
+      base::Optional<std::vector<
+          chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>>(
+          std::vector<
+              chromeos::cros_healthd::mojom::NonRemovableBlockDeviceInfoPtr>{
+              std::make_move_iterator(std::begin(vector_init)),
+              std::make_move_iterator(
+                  std::end(vector_init))}), /* block_device_info */
+      chromeos::cros_healthd::mojom::CachedVpdInfo::New(
+          sku_number) /* vpd_info */
+  );
+
+  std::move(receiver).Run(fake_info.Clone());
+}
+
 }  // namespace
 
 namespace policy {
@@ -463,7 +502,8 @@ class DeviceStatusCollectorTest : public testing::Test {
                            base::BindRepeating(&GetEmptyAndroidStatus),
                            base::BindRepeating(&GetEmptyTpmStatus),
                            base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-                           base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+                           base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+                           base::BindRepeating(&GetEmptyCrosHealthdData));
 
     // Disable network interface reporting since it requires additional setup.
     scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -540,13 +580,15 @@ class DeviceStatusCollectorTest : public testing::Test {
       const policy::DeviceStatusCollector::EMMCLifetimeFetcher&
           emmc_lifetime_fetcher,
       const policy::DeviceStatusCollector::StatefulPartitionInfoFetcher&
-          stateful_partition_info_fetcher) {
+          stateful_partition_info_fetcher,
+      const policy::DeviceStatusCollector::CrosHealthdDataFetcher&
+          cros_healthd_data_fetcher) {
     std::vector<em::VolumeInfo> expected_volume_info;
     status_collector_ = std::make_unique<TestingDeviceStatusCollector>(
         &local_state_, &fake_statistics_provider_, volume_info, cpu_stats,
         cpu_temp_fetcher, android_status_fetcher, tpm_status_fetcher,
         emmc_lifetime_fetcher, stateful_partition_info_fetcher,
-        true /* is_enterprise_device */);
+        cros_healthd_data_fetcher, true /* is_enterprise_device */);
   }
 
   void GetStatus() {
@@ -862,7 +904,8 @@ TEST_F(DeviceStatusCollectorTest, StateKeptInPref) {
                          base::BindRepeating(&GetEmptyAndroidStatus),
                          base::BindRepeating(&GetEmptyTpmStatus),
                          base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-                         base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+                         base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+                         base::BindRepeating(&GetEmptyCrosHealthdData));
   status_collector_->Simulate(test_states,
                               sizeof(test_states) / sizeof(ui::IdleState));
 
@@ -1323,7 +1366,8 @@ TEST_F(DeviceStatusCollectorTest, TestVolumeInfo) {
       base::BindRepeating(&GetEmptyAndroidStatus),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
 
@@ -1419,7 +1463,8 @@ TEST_F(DeviceStatusCollectorTest, TestCPUSamples) {
       base::BindRepeating(&GetEmptyAndroidStatus),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
   GetStatus();
@@ -1469,7 +1514,8 @@ TEST_F(DeviceStatusCollectorTest, TestCPUInfos) {
       base::BindRepeating(&GetEmptyAndroidStatus),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
   int64_t timestamp_upperbound = base::Time::Now().ToJavaTime();
@@ -1548,7 +1594,8 @@ TEST_F(DeviceStatusCollectorTest, TestCPUTemp) {
       base::BindRepeating(&GetEmptyAndroidStatus),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
 
@@ -1588,7 +1635,8 @@ TEST_F(DeviceStatusCollectorTest, TestDiskLifetimeEstimation) {
       base::BindRepeating(&GetEmptyAndroidStatus),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetFakeEMMCLifetiemEstimation, est),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
   // Force finishing tasks posted by ctor of DeviceStatusCollector.
   content::RunAllTasksUntilIdle();
   scoped_testing_cros_settings_.device_settings()->SetBoolean(
@@ -1616,7 +1664,8 @@ TEST_F(DeviceStatusCollectorTest, KioskAndroidReporting) {
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
   status_collector_->set_kiosk_account(
       std::make_unique<DeviceLocalAccount>(fake_kiosk_device_local_account_));
   MockRunningKioskApp(fake_kiosk_device_local_account_, false /* arc_kiosk */);
@@ -1639,7 +1688,8 @@ TEST_F(DeviceStatusCollectorTest, NoKioskAndroidReportingWhenDisabled) {
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   // Mock Kiosk app, so some session status is reported
   status_collector_->set_kiosk_account(
@@ -1661,7 +1711,8 @@ TEST_F(DeviceStatusCollectorTest, RegularUserAndroidReporting) {
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1685,7 +1736,8 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReporting) {
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1717,7 +1769,8 @@ TEST_F(DeviceStatusCollectorTest, RegularUserCrostiniReportingNoData) {
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1740,7 +1793,8 @@ TEST_F(DeviceStatusCollectorTest, CrostiniTerminaVmKernelVersionReporting) {
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   // Prerequisites for any Crostini reporting to take place:
   const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
@@ -1782,7 +1836,8 @@ TEST_F(DeviceStatusCollectorTest, CrostiniAppUsageReporting) {
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1871,7 +1926,8 @@ TEST_F(DeviceStatusCollectorTest,
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail(kCrostiniUserEmail));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1912,7 +1968,8 @@ TEST_F(DeviceStatusCollectorTest, NoRegularUserReportingByDefault) {
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
   MockRegularUserWithAffiliation(account_id, true);
@@ -1935,7 +1992,8 @@ TEST_F(DeviceStatusCollectorTest,
       base::BindRepeating(&GetFakeAndroidStatus, kArcStatus, kDroidGuardInfo),
       base::BindRepeating(&GetEmptyTpmStatus),
       base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-      base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetEmptyCrosHealthdData));
 
   const AccountId account_id(AccountId::FromUserEmail("user0@managed.com"));
   MockRegularUserWithAffiliation(account_id, false);
@@ -1968,7 +2026,8 @@ TEST_F(DeviceStatusCollectorTest, TpmStatusReporting) {
                          base::BindRepeating(&GetEmptyAndroidStatus),
                          base::BindRepeating(&GetFakeTpmStatus, kFakeTpmStatus),
                          base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
-                         base::BindRepeating(&GetEmptyStatefulPartitionInfo));
+                         base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+                         base::BindRepeating(&GetEmptyCrosHealthdData));
 
   GetStatus();
 
@@ -2324,7 +2383,8 @@ TEST_F(DeviceStatusCollectorTest, TestStatefulPartitionInfo) {
                          base::BindRepeating(&GetEmptyTpmStatus),
                          base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
                          base::BindRepeating(&GetFakeStatefulPartitionInfo,
-                                             fakeStatefulPartitionInfo));
+                                             fakeStatefulPartitionInfo),
+                         base::BindRepeating(&GetEmptyCrosHealthdData));
 
   GetStatus();
 
@@ -2333,6 +2393,63 @@ TEST_F(DeviceStatusCollectorTest, TestStatefulPartitionInfo) {
             device_status_.stateful_partition_info().available_space());
   EXPECT_EQ(fakeStatefulPartitionInfo.total_space(),
             device_status_.stateful_partition_info().total_space());
+}
+
+TEST_F(DeviceStatusCollectorTest, TestCrosHealthdInfo) {
+  // Create a fake response from cros_healthd and populate it with some
+  // arbitrary values.
+  constexpr char kFakeSkuNumber[] = "fake_sku_number";
+  constexpr char kFakePath[] = "fake_path";
+  constexpr int kFakeSize = 123;
+  constexpr char kFakeType[] = "fake_type";
+  constexpr uint8_t kFakeManfid = 2;
+  constexpr char kFakeName[] = "fake_name";
+  constexpr int kFakeSerial = 789;
+
+  RestartStatusCollector(
+      base::BindRepeating(&GetEmptyVolumeInfo),
+      base::BindRepeating(&GetEmptyCPUStatistics),
+      base::BindRepeating(&GetEmptyCPUTempInfo),
+      base::BindRepeating(&GetEmptyAndroidStatus),
+      base::BindRepeating(&GetEmptyTpmStatus),
+      base::BindRepeating(&GetEmptyEMMCLifetimeEstimation),
+      base::BindRepeating(&GetEmptyStatefulPartitionInfo),
+      base::BindRepeating(&GetFakeCrosHealthdData, kFakeSkuNumber, kFakePath,
+                          kFakeSize, kFakeType, kFakeManfid, kFakeName,
+                          kFakeSerial));
+
+  // If neither kReportDevicePowerStatus nor kReportDeviceStorageStatus are set,
+  // expect that the data from cros_healthd isn't present in the protobuf.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDevicePowerStatus, false);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceStorageStatus, false);
+  GetStatus();
+  EXPECT_FALSE(device_status_.has_storage_status());
+  EXPECT_FALSE(device_status_.has_system_status());
+
+  // When kReportDevicePowerStatus and kReportDeviceStorageStatus are set,
+  // expect the protobuf to have the data from cros_healthd.
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDevicePowerStatus, true);
+  scoped_testing_cros_settings_.device_settings()->SetBoolean(
+      chromeos::kReportDeviceStorageStatus, true);
+  GetStatus();
+  ASSERT_TRUE(device_status_.has_storage_status());
+  ASSERT_EQ(device_status_.storage_status().disks_size(), 1);
+  const auto& disk = device_status_.storage_status().disks(0);
+  ASSERT_TRUE(disk.has_size());
+  EXPECT_EQ(disk.size(), kFakeSize);
+  ASSERT_TRUE(disk.has_type());
+  EXPECT_EQ(disk.type(), kFakeType);
+  ASSERT_TRUE(disk.has_manufacturer());
+  EXPECT_EQ(disk.manufacturer(), base::NumberToString(kFakeManfid));
+  ASSERT_TRUE(disk.has_model());
+  EXPECT_EQ(disk.model(), kFakeName);
+  ASSERT_TRUE(disk.has_serial());
+  EXPECT_EQ(disk.serial(), base::NumberToString(kFakeSerial));
+  ASSERT_TRUE(device_status_.system_status().has_vpd_sku_number());
+  EXPECT_EQ(device_status_.system_status().vpd_sku_number(), kFakeSkuNumber);
 }
 
 // Fake device state.

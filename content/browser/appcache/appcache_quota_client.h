@@ -88,6 +88,9 @@ class AppCacheQuotaClient : public storage::QuotaClient,
   base::WeakPtr<AppCacheServiceImpl> service_;
   bool appcache_is_ready_ = false;
   bool service_is_destroyed_ = false;
+  // This is used to prevent this object from being deleted in
+  // OnQuotaManagerDestroyed() while NotifyAppCacheDestroyed() is still running.
+  bool keep_alive_ = false;
   SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheQuotaClient);

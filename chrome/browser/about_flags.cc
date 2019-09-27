@@ -90,7 +90,6 @@
 #include "components/ntp_tiles/features.h"
 #include "components/offline_pages/core/offline_page_feature.h"
 #include "components/omnibox/browser/omnibox_field_trial.h"
-#include "components/omnibox/browser/zero_suggest_provider.h"
 #include "components/omnibox/common/omnibox_features.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
@@ -859,21 +858,38 @@ const FeatureEntry::FeatureVariation kOmniboxDocumentProviderVariations[] = {
 #endif  // defined(OS_LINUX) || defined(OS_MACOSX) || defined(OS_WIN)
 
 const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamSERP[] = {
-    {"ZeroSuggestVariant:6:*", ZeroSuggestProvider::kRemoteSendUrlVariant}};
-const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPOmnibox[] = {
-    {"ZeroSuggestVariant:7:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
-const FeatureEntry::FeatureParam kOmniboxOnFocusSuggestionsParamNTPRealbox[] = {
-    {"ZeroSuggestVariant:15:*", ZeroSuggestProvider::kRemoteNoUrlVariant}};
+    {"ZeroSuggestVariant:6:*", "RemoteSendUrl"}};
+const FeatureEntry::FeatureParam
+    kOmniboxOnFocusSuggestionsParamNTPOmniboxRemote[] = {
+        {"ZeroSuggestVariant:7:*", "RemoteNoUrl"}};
+const FeatureEntry::FeatureParam
+    kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal[] = {
+        {"ZeroSuggestVariant:7:*", "RemoteNoUrl,Local"}};
+const FeatureEntry::FeatureParam
+    kOmniboxOnFocusSuggestionsParamNTPRealboxRemote[] = {
+        {"ZeroSuggestVariant:15:*", "RemoteNoUrl"}};
+const FeatureEntry::FeatureParam
+    kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal[] = {
+        {"ZeroSuggestVariant:15:*", "RemoteNoUrl,Local"}};
 const FeatureEntry::FeatureVariation kOmniboxOnFocusSuggestionsVariations[] = {
     {"SERP - RemoteSendURL", kOmniboxOnFocusSuggestionsParamSERP,
-     base::size(kOmniboxOnFocusSuggestionsParamNTPOmnibox),
+     base::size(kOmniboxOnFocusSuggestionsParamSERP),
      "t3315869" /* variation_id */},
-    {"NTP Omnibox - Remote", kOmniboxOnFocusSuggestionsParamNTPOmnibox,
-     base::size(kOmniboxOnFocusSuggestionsParamNTPOmnibox),
+    {"NTP Omnibox - Remote", kOmniboxOnFocusSuggestionsParamNTPOmniboxRemote,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRemote),
      "t3316133" /* variation_id */},
-    {"NTP Realbox - Remote", kOmniboxOnFocusSuggestionsParamNTPRealbox,
-     base::size(kOmniboxOnFocusSuggestionsParamNTPRealbox),
+    {"NTP Omnibox - Remote,Local",
+     kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPOmniboxRemoteLocal),
      "t3316133" /* variation_id */},
+    {"NTP Realbox - Remote", kOmniboxOnFocusSuggestionsParamNTPRealboxRemote,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPRealboxRemote),
+     "t3316133" /* variation_id */},
+    {"NTP Realbox - Remote,Local",
+     kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal,
+     base::size(kOmniboxOnFocusSuggestionsParamNTPRealboxRemoteLocal),
+     "t3316133" /* variation_id */},
+
 };
 
 const FeatureEntry::FeatureParam kOmniboxUIMaxAutocompleteMatches3[] = {
@@ -4232,7 +4248,8 @@ const FeatureEntry kFeatureEntries[] = {
 
     {"allow-sync-xhr-in-page-dismissal",
      flag_descriptions::kAllowSyncXHRInPageDismissalName,
-     flag_descriptions::kAllowSyncXHRInPageDismissalDescription, kOsAll,
+     flag_descriptions::kAllowSyncXHRInPageDismissalDescription,
+     kOsAll | kDeprecated,
      FEATURE_VALUE_TYPE(blink::features::kAllowSyncXHRInPageDismissal)},
 
     {"form-controls-refresh", flag_descriptions::kFormControlsRefreshName,
@@ -4617,6 +4634,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"percent-based-scrolling", flag_descriptions::kPercentBasedScrollingName,
      flag_descriptions::kPercentBasedScrollingDescription, kOsAll,
      FEATURE_VALUE_TYPE(features::kPercentBasedScrolling)},
+
+#if !defined(OS_ANDROID)
+    {"show-legacy-tls-warnings", flag_descriptions::kLegacyTLSWarningsName,
+     flag_descriptions::kLegacyTLSWarningsDescription, kOsDesktop,
+     FEATURE_VALUE_TYPE(features::kLegacyTLSWarnings)},
+#endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum
     // "LoginCustomFlags" in tools/metrics/histograms/enums.xml. See "Flag

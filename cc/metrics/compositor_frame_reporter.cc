@@ -16,11 +16,14 @@ namespace cc {
 namespace {
 
 using StageType = CompositorFrameReporter::StageType;
+using VizBreakdown = CompositorFrameReporter::VizBreakdown;
 
 constexpr int kMissedFrameReportTypeCount =
     static_cast<int>(CompositorFrameReporter::MissedFrameReportTypes::
                          kMissedFrameReportTypeCount);
 constexpr int kStageTypeCount = static_cast<int>(StageType::kStageTypeCount);
+constexpr int kAllBreakdownCount =
+    static_cast<int>(VizBreakdown::kBreakdownCount);
 // For each possible FrameSequenceTrackerType there will be a UMA histogram
 // plus one for general case.
 constexpr int kFrameSequenceTrackerTypeCount =
@@ -42,8 +45,23 @@ constexpr const char* kStageNames[] = {
     [static_cast<int>(
         StageType::kSubmitCompositorFrameToPresentationCompositorFrame)] =
         "SubmitCompositorFrameToPresentationCompositorFrame",
-    [static_cast<int>(StageType::kTotalLatency)] = "TotalLatency"};
-static_assert(sizeof(kStageNames) / sizeof(kStageNames[0]) == kStageTypeCount,
+    [static_cast<int>(StageType::kTotalLatency)] = "TotalLatency",
+    [static_cast<int>(VizBreakdown::kSubmitToReceiveCompositorFrame) +
+        kStageTypeCount] =
+        "SubmitCompositorFrameToPresentationCompositorFrame."
+        "SubmitToReceiveCompositorFrame",
+    [static_cast<int>(VizBreakdown::kReceivedCompositorFrameToStartDraw) +
+        kStageTypeCount] =
+        "SubmitCompositorFrameToPresentationCompositorFrame."
+        "ReceivedCompositorFrameToStartDraw",
+    [static_cast<int>(VizBreakdown::kStartDrawToSwapEnd) + kStageTypeCount] =
+        "SubmitCompositorFrameToPresentationCompositorFrame.StartDrawToSwapEnd",
+    [static_cast<int>(VizBreakdown::kSwapEndToPresentationCompositorFrame) +
+        kStageTypeCount] =
+        "SubmitCompositorFrameToPresentationCompositorFrame."
+        "SwapEndToPresentationCompositorFrame"};
+static_assert(sizeof(kStageNames) / sizeof(kStageNames[0]) ==
+                  kStageTypeCount + kAllBreakdownCount,
               "Compositor latency stages has changed.");
 
 // Names for CompositorFrameReporter::MissedFrameReportTypes, which should be
@@ -60,7 +78,7 @@ static_assert(sizeof(kReportTypeNames) / sizeof(kReportTypeNames[0]) ==
 // CompositorFrameReporter::StageType
 constexpr int kMaxHistogramIndex = kMissedFrameReportTypeCount *
                                    kFrameSequenceTrackerTypeCount *
-                                   kStageTypeCount;
+                                   (kStageTypeCount + kAllBreakdownCount);
 constexpr int kHistogramMin = 1;
 constexpr int kHistogramMax = 350000;
 constexpr int kHistogramBucketCount = 50;
@@ -93,6 +111,14 @@ CompositorFrameReporter::~CompositorFrameReporter() {
   TerminateReporter();
 }
 
+CompositorFrameReporter::StageData::StageData() = default;
+CompositorFrameReporter::StageData::StageData(StageType stage_type,
+                                              base::TimeTicks start_time,
+                                              base::TimeTicks end_time)
+    : stage_type(stage_type), start_time(start_time), end_time(end_time) {}
+CompositorFrameReporter::StageData::StageData(const StageData&) = default;
+CompositorFrameReporter::StageData::~StageData() = default;
+
 void CompositorFrameReporter::StartStage(
     CompositorFrameReporter::StageType stage_type,
     base::TimeTicks start_time) {
@@ -111,7 +137,7 @@ void CompositorFrameReporter::EndCurrentStage(base::TimeTicks end_time) {
   if (current_stage_.start_time == base::TimeTicks())
     return;
   current_stage_.end_time = end_time;
-  stage_history_.emplace_back(current_stage_);
+  stage_history_.push_back(current_stage_);
   current_stage_.start_time = base::TimeTicks();
 }
 
@@ -125,6 +151,13 @@ void CompositorFrameReporter::TerminateFrame(
   frame_termination_status_ = termination_status;
   frame_termination_time_ = termination_time;
   EndCurrentStage(frame_termination_time_);
+}
+
+void CompositorFrameReporter::SetVizBreakdown(
+    const viz::FrameTimingDetails& viz_breakdown) {
+  DCHECK(current_stage_.viz_breakdown.received_compositor_frame_timestamp
+             .is_null());
+  current_stage_.viz_breakdown = viz_breakdown;
 }
 
 void CompositorFrameReporter::TerminateReporter() {
@@ -152,10 +185,8 @@ void CompositorFrameReporter::TerminateReporter() {
       NOTREACHED();
       break;
   }
-
   const char* submission_status_str =
       submitted_frame_missed_deadline_ ? "missed_frame" : "non_missed_frame";
-
   TRACE_EVENT_ASYNC_END_WITH_TIMESTAMP2(
       "cc,benchmark", "PipelineReporter", this, frame_termination_time_,
       "termination_status", TRACE_STR_COPY(termination_status_str),
@@ -165,9 +196,9 @@ void CompositorFrameReporter::TerminateReporter() {
   // Only report histograms if the frame was presented.
   if (report_latency) {
     DCHECK(stage_history_.size());
-    stage_history_.emplace_back(StageData{StageType::kTotalLatency,
-                                          stage_history_.front().start_time,
-                                          stage_history_.back().end_time});
+    stage_history_.emplace_back(StageType::kTotalLatency,
+                                stage_history_.front().start_time,
+                                stage_history_.back().end_time);
     ReportStageHistograms(submitted_frame_missed_deadline_);
   }
 }
@@ -179,24 +210,79 @@ void CompositorFrameReporter::ReportStageHistograms(bool missed_frame) const {
           : CompositorFrameReporter::MissedFrameReportTypes::kNonMissedFrame;
 
   for (const StageData& stage : stage_history_) {
-    base::TimeDelta stage_delta = stage.end_time - stage.start_time;
-    ReportHistogram(report_type, FrameSequenceTrackerType::kMaxType,
-                    stage.stage_type, stage_delta);
+    ReportStageHistogramWithBreakdown(
+        report_type, FrameSequenceTrackerType::kMaxType, stage);
 
     for (const auto& frame_sequence_tracker_type : *active_trackers_) {
-      ReportHistogram(report_type, frame_sequence_tracker_type,
-                      stage.stage_type, stage_delta);
+      // Report stage breakdowns.
+      ReportStageHistogramWithBreakdown(report_type,
+                                        frame_sequence_tracker_type, stage);
     }
   }
+}
+
+void CompositorFrameReporter::ReportStageHistogramWithBreakdown(
+    CompositorFrameReporter::MissedFrameReportTypes report_type,
+    FrameSequenceTrackerType frame_sequence_tracker_type,
+    CompositorFrameReporter::StageData stage) const {
+  base::TimeDelta stage_delta = stage.end_time - stage.start_time;
+  ReportHistogram(report_type, frame_sequence_tracker_type,
+                  static_cast<int>(stage.stage_type), stage_delta);
+  switch (stage.stage_type) {
+    case StageType::kSubmitCompositorFrameToPresentationCompositorFrame: {
+      ReportVizBreakdown(report_type, frame_sequence_tracker_type, stage);
+      break;
+    }
+    default:
+      break;
+  }
+}
+
+void CompositorFrameReporter::ReportVizBreakdown(
+    CompositorFrameReporter::MissedFrameReportTypes report_type,
+    FrameSequenceTrackerType frame_sequence_tracker_type,
+    CompositorFrameReporter::StageData stage) const {
+  // Check if viz_breakdown is set.
+  if (stage.viz_breakdown.received_compositor_frame_timestamp.is_null())
+    return;
+
+  int index_origin = static_cast<int>(StageType::kStageTypeCount);
+  base::TimeDelta submit_to_receive_compositor_frame_delta =
+      stage.viz_breakdown.received_compositor_frame_timestamp -
+      stage.start_time;
+  ReportHistogram(report_type, frame_sequence_tracker_type, index_origin,
+                  submit_to_receive_compositor_frame_delta);
+
+  if (stage.viz_breakdown.draw_start_timestamp.is_null())
+    return;
+  base::TimeDelta received_compositor_frame_to_start_draw_delta =
+      stage.viz_breakdown.draw_start_timestamp -
+      stage.viz_breakdown.received_compositor_frame_timestamp;
+  ReportHistogram(report_type, frame_sequence_tracker_type, index_origin + 1,
+                  received_compositor_frame_to_start_draw_delta);
+
+  if (stage.viz_breakdown.swap_timings.is_null())
+    return;
+  base::TimeDelta start_draw_to_swap_end_delta =
+      stage.viz_breakdown.swap_timings.swap_end -
+      stage.viz_breakdown.draw_start_timestamp;
+
+  ReportHistogram(report_type, frame_sequence_tracker_type, index_origin + 2,
+                  start_draw_to_swap_end_delta);
+
+  base::TimeDelta swap_end_to_presentation_compositor_frame_delta =
+      stage.end_time - stage.viz_breakdown.swap_timings.swap_end;
+
+  ReportHistogram(report_type, frame_sequence_tracker_type, index_origin + 3,
+                  swap_end_to_presentation_compositor_frame_delta);
 }
 
 void CompositorFrameReporter::ReportHistogram(
     CompositorFrameReporter::MissedFrameReportTypes report_type,
     FrameSequenceTrackerType frame_sequence_tracker_type,
-    CompositorFrameReporter::StageType stage_type,
+    const int stage_type_index,
     base::TimeDelta time_delta) const {
   const int report_type_index = static_cast<int>(report_type);
-  const int stage_type_index = static_cast<int>(stage_type);
   const int frame_sequence_tracker_type_index =
       static_cast<int>(frame_sequence_tracker_type);
   const int histogram_index =
@@ -205,7 +291,7 @@ void CompositorFrameReporter::ReportHistogram(
           kMissedFrameReportTypeCount +
       report_type_index;
 
-  CHECK_LT(stage_type_index, kStageTypeCount);
+  CHECK_LT(stage_type_index, kStageTypeCount + kAllBreakdownCount);
   CHECK_GE(stage_type_index, 0);
   CHECK_LT(report_type_index, kMissedFrameReportTypeCount);
   CHECK_GE(report_type_index, 0);

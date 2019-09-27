@@ -55,12 +55,26 @@ class CertBuilder {
   // Sets an AIA extension with a single caIssuers access method.
   void SetCaIssuersUrl(const GURL& url);
 
+  // Sets an AIA extension with the specified caIssuers and OCSP urls. Either
+  // list can have 0 or more URLs, but it is an error for both lists to be
+  // empty.
+  void SetCaIssuersAndOCSPUrls(const std::vector<GURL>& ca_issuers_urls,
+                               const std::vector<GURL>& ocsp_urls);
+
+  // Sets a cRLDistributionPoints extension with a single DistributionPoint
+  // with |url| in distributionPoint.fullName.
   void SetCrlDistributionPointUrl(const GURL& url);
+
+  // Sets a cRLDistributionPoints extension with a single DistributionPoint
+  // with |urls| in distributionPoints.fullName.
+  void SetCrlDistributionPointUrls(const std::vector<GURL>& urls);
 
   void SetSubjectCommonName(const std::string common_name);
 
   // Sets the SAN for the certificate to a single dNSName.
   void SetSubjectAltName(const std::string& dns_name);
+
+  void SetValidity(base::Time not_before, base::Time not_after);
 
   // Sets the signature algorithm for the certificate to either
   // sha256WithRSAEncryption or sha1WithRSAEncryption.

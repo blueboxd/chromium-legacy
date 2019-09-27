@@ -2142,6 +2142,8 @@ opus_int32 opus_encode_native(OpusEncoder *st, const opus_val16 *pcm, int frame_
           RESTORE_STACK;
           return 1;
        }
+    } else {
+       st->nb_no_activity_frames = 0;
     }
 #endif
 

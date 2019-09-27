@@ -169,6 +169,7 @@
 <translation id="2220529011494928058">సమస్యను నివేదించండి</translation>
 <translation id="2223693656926968778">ప్రస్తుత అంశంపై చర్య తీసుకోండి</translation>
 <translation id="225732394367814946">ప్రసంగ రేటు పెంచండి</translation>
+<translation id="2267538686624070261">తప్పుగా రాయబడిన పదం వ‌దిలిపెట్టబడింది</translation>
 <translation id="2267945578749931355">తరువాత అక్షరం</translation>
 <translation id="2278490101488436824">మూడు వేళ్లతో ఎడమవైపునకు స్వైప్ చేయండి</translation>
 <translation id="2281234842553884450">మునుపటి స్లయిడర్</translation>
@@ -207,6 +208,7 @@
 <translation id="257674075312929031">సమూహం</translation>
 <translation id="2582407057977008361">ప్రక్కన</translation>
 <translation id="2592212930811759050">సవరణను ప్రారంభించడానికి రెండుసార్లు నొక్కండి</translation>
+<translation id="2598495320872286378">వ్యాకరణ దోషం</translation>
 <translation id="2614981083756825552">గణిత ML లేఅవుట్</translation>
 <translation id="2624431853467395961">తెలుసుకునే మోడ్‌ను తెరవండి</translation>
 <translation id="2626530649491650971">క్లిక్ చేయదగినది</translation>
@@ -820,6 +822,7 @@
 <translation id="6833103209700200188">ఫుటర్</translation>
 <translation id="6858047746862060282">ప్రారంభం</translation>
 <translation id="6859876496651143278">ఒక వేలితో ఎడమవైపునకి స్వైప్ చేయండి</translation>
+<translation id="6865519907510167493">పదం తప్పుగా రాయబడింది</translation>
 <translation id="6871161210040114857">కేస్‌ను విస్మరిస్తోంది.</translation>
 <translation id="6877435256196695200">తరువాత గ్రాఫిక్ లేదు.</translation>
 <translation id="6897341342232909480">ఎడమవైపు తరలించండి</translation>
@@ -1110,6 +1113,7 @@ Chrome బ్రౌజర్ మెనూను తెరవడానికి, 
 <translation id="8446884382197647889">మరింత తెలుసుకోండి</translation>
 <translation id="8455868257606149352">గరిష్టం <ph name="X" /></translation>
 <translation id="84575901236241018">యాక్సెస్ కీ కలిగి ఉంది, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">వ్యాకరణ దోషాన్ని వదిలి పెడుతున్నారు</translation>
 <translation id="847154984256717791">బిజీ</translation>
 <translation id="8476408756881832830">ChromeVox మాట్లాడుతున్నప్పుడు ప్లేబ్యాక్‌ను పాజ్ చేయి</translation>
 <translation id="8476508772960940536">విండో స్థూలదృష్టి</translation>

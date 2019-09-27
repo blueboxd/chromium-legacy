@@ -97,12 +97,9 @@ Length CSSMathFunctionValue::ConvertToLength(
 static String BuildCSSText(const String& expression) {
   StringBuilder result;
   result.Append("calc");
-  bool expression_has_single_term = expression[0] != '(';
-  if (expression_has_single_term)
-    result.Append('(');
+  result.Append('(');
   result.Append(expression);
-  if (expression_has_single_term)
-    result.Append(')');
+  result.Append(')');
   return result.ToString();
 }
 

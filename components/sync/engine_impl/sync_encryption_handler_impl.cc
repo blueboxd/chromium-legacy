@@ -466,7 +466,8 @@ bool SyncEncryptionHandlerImpl::Init() {
   }
   for (auto& observer : observers_) {
     observer.OnCryptographerStateChanged(
-        &UnlockVaultMutable(trans.GetWrappedTrans())->cryptographer);
+        &UnlockVaultMutable(trans.GetWrappedTrans())->cryptographer,
+        UnlockVault(trans.GetWrappedTrans()).cryptographer.has_pending_keys());
   }
 
   // If the cryptographer is not ready (either it has pending keys or we
@@ -830,7 +831,8 @@ bool SyncEncryptionHandlerImpl::ApplyNigoriUpdate(
 
   for (auto& observer : observers_) {
     observer.OnCryptographerStateChanged(
-        &UnlockVaultMutable(trans)->cryptographer);
+        &UnlockVaultMutable(trans)->cryptographer,
+        UnlockVault(trans).cryptographer.has_pending_keys());
   }
 
   return true;
@@ -923,7 +925,7 @@ const Cryptographer* SyncEncryptionHandlerImpl::GetCryptographer(
 }
 
 const DirectoryCryptographer*
-SyncEncryptionHandlerImpl::GetDirectoryCryptographerForNigori(
+SyncEncryptionHandlerImpl::GetDirectoryCryptographer(
     const syncable::BaseTransaction* const trans) const {
   return &UnlockVault(trans).cryptographer;
 }
@@ -1527,7 +1529,8 @@ void SyncEncryptionHandlerImpl::FinishSetPassphrase(
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   for (auto& observer : observers_) {
     observer.OnCryptographerStateChanged(
-        &UnlockVaultMutable(trans->GetWrappedTrans())->cryptographer);
+        &UnlockVaultMutable(trans->GetWrappedTrans())->cryptographer,
+        UnlockVault(trans->GetWrappedTrans()).cryptographer.has_pending_keys());
   }
 
   // It's possible we need to change the bootstrap token even if we failed to
@@ -1864,7 +1867,8 @@ bool SyncEncryptionHandlerImpl::AttemptToMigrateNigoriToKeystore(
   }
 
   for (auto& observer : observers_) {
-    observer.OnCryptographerStateChanged(cryptographer);
+    observer.OnCryptographerStateChanged(cryptographer,
+                                         cryptographer->has_pending_keys());
   }
   if (*passphrase_type != new_passphrase_type) {
     *passphrase_type = new_passphrase_type;
@@ -2046,7 +2050,8 @@ bool SyncEncryptionHandlerImpl::DecryptPendingKeysWithKeystoreKey(
                                          PASSPHRASE_BOOTSTRAP_TOKEN);
       }
       for (auto& observer : observers_) {
-        observer.OnCryptographerStateChanged(cryptographer);
+        observer.OnCryptographerStateChanged(cryptographer,
+                                             cryptographer->has_pending_keys());
       }
       return true;
     }

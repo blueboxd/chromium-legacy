@@ -4,11 +4,6 @@
  */
 
 :root {
-  --oobe-dialog-host-height: 640px;
-  --oobe-dialog-host-width: 768px;
-}
-
-html[adaptive-oobe] {
   --oobe-dialog-host-height: 100%;
   --oobe-dialog-host-width: 100%;
 }
@@ -116,13 +111,7 @@ html:not([full-screen-dialog]) #oobe.tpm-error-message #inner-container {
   transform: translateY(50px) rotateX(-2.5deg);
 }
 
-html:not([adaptive-oobe]) body:not(.oobe-display) #inner-container {
-  height: 262px;
-  padding: 0;
-  width: 1100px;
-}
-
-html[adaptive-oobe] #oobe {
+#oobe {
   box-sizing: border-box;
   height: 100%;
   max-height: 864px; /* 768 + 48*2 */
@@ -136,9 +125,8 @@ html[adaptive-oobe] #oobe {
 
 #outer-container.fullscreen,
 #outer-container.fullscreen #oobe,
-html:not([adaptive-oobe]) #outer-container.fullscreen #oobe #inner-container,
-html[adaptive-oobe] #inner-container,
-html[adaptive-oobe] #inner-container > .step {
+#inner-container,
+#inner-container > .step {
   height: 100%;
   width: 100%;
 }

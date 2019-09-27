@@ -311,6 +311,10 @@ NativeFont PlatformFontMac::GetNativeFont() const {
   return [[native_font_.get() retain] autorelease];
 }
 
+sk_sp<SkTypeface> PlatformFontMac::GetNativeSkTypefaceIfAvailable() const {
+  return nullptr;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontMac, private:
 

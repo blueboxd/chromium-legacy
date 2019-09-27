@@ -42,6 +42,10 @@ NET_EXPORT scoped_refptr<CertVerifyProc> CreateCertVerifyProcBuiltin(
     scoped_refptr<CertNetFetcher> net_fetcher,
     std::unique_ptr<SystemTrustStoreProvider> system_trust_store_provider);
 
+// Returns the time limit used by CertVerifyProcBuiltin. Intended for test use.
+NET_EXPORT_PRIVATE base::TimeDelta
+GetCertVerifyProcBuiltinTimeLimitForTesting();
+
 }  // namespace net
 
 #endif  // NET_CERT_CERT_VERIFY_PROC_BUILTIN_H_

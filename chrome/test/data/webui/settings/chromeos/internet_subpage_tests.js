@@ -173,10 +173,12 @@ suite('InternetSubpage', function() {
           name: 'vpn3',
           type: mojom.NetworkType.kVPN,
           connectionState: mojom.ConnectionStateType.kNotConnected,
-          vpn: {
-            type: mojom.VpnType.kExtension,
-            providerId: 'extension_id1',
-            providerName: 'MyExntensionVPN1',
+          typeState: {
+            vpn: {
+              type: mojom.VpnType.kExtension,
+              providerId: 'extension_id1',
+              providerName: 'MyExntensionVPN1',
+            }
           }
         },
         {
@@ -184,10 +186,12 @@ suite('InternetSubpage', function() {
           name: 'vpn4',
           type: mojom.NetworkType.kVPN,
           connectionState: mojom.ConnectionStateType.kNotConnected,
-          vpn: {
-            type: mojom.VpnType.kExtension,
-            providerId: 'extension_id1',
-            providerName: 'MyExntensionVPN1',
+          typeState: {
+            vpn: {
+              type: mojom.VpnType.kExtension,
+              providerId: 'extension_id1',
+              providerName: 'MyExntensionVPN1',
+            }
           }
         },
         {
@@ -195,10 +199,12 @@ suite('InternetSubpage', function() {
           name: 'vpn5',
           type: mojom.NetworkType.kVPN,
           connectionState: mojom.ConnectionStateType.kNotConnected,
-          vpn: {
-            type: mojom.VpnType.kExtension,
-            providerId: 'extension_id2',
-            providerName: 'MyExntensionVPN2',
+          typeState: {
+            vpn: {
+              type: mojom.VpnType.kExtension,
+              providerId: 'extension_id2',
+              providerName: 'MyExntensionVPN2',
+            }
           }
         },
         {
@@ -206,10 +212,12 @@ suite('InternetSubpage', function() {
           name: 'vpn6',
           type: mojom.NetworkType.kVPN,
           connectionState: mojom.ConnectionStateType.kConnected,
-          vpn: {
-            type: mojom.VpnType.kArc,
-            providerId: 'vpn.app.package1',
-            providerName: 'MyArcVPN1',
+          typeState: {
+            vpn: {
+              type: mojom.VpnType.kArc,
+              providerId: 'vpn.app.package1',
+              providerName: 'MyArcVPN1',
+            }
           }
         },
         {
@@ -217,10 +225,12 @@ suite('InternetSubpage', function() {
           name: 'vpn7',
           type: mojom.NetworkType.kVPN,
           connectionState: mojom.ConnectionStateType.kNotConnected,
-          vpn: {
-            type: mojom.VpnType.kArc,
-            providerId: 'vpn.app.package1',
-            providerName: 'MyArcVPN1',
+          typeState: {
+            vpn: {
+              type: mojom.VpnType.kArc,
+              providerId: 'vpn.app.package1',
+              providerName: 'MyArcVPN1',
+            }
           }
         },
       ]);

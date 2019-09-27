@@ -9,6 +9,7 @@
 #include "chrome/browser/ui/webui/usb_internals/usb_internals_page_handler.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/browser_resources.h"
+#include "chrome/grit/usb_internals_resources.h"
 #include "content/public/browser/web_ui_data_source.h"
 
 UsbInternalsUI::UsbInternalsUI(content::WebUI* web_ui)

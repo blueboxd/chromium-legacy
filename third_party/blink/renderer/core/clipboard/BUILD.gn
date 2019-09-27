@@ -31,10 +31,6 @@ blink_core_sources("clipboard") {
   if (is_win) {
     sources += [ "clipboard_utilities_win.cc" ]
   }
-
-  deps = [
-    "//ui/gfx/codec",
-  ]
 }
 
 blink_core_tests("unit_tests") {

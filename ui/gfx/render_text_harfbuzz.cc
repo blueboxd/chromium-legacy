@@ -54,6 +54,10 @@
 #include "base/android/locale_utils.h"
 #endif  // defined(OS_ANDROID)
 
+#if defined(OS_WIN)
+#include "ui/gfx/platform_font.h"
+#endif
+
 #include <hb.h>
 
 namespace gfx {
@@ -781,9 +785,17 @@ size_t TextRunHarfBuzz::FontParams::Hash::operator()(
          static_cast<size_t>(key.script) << 24;
 }
 
-bool TextRunHarfBuzz::FontParams::SetFontAndRenderParams(
+bool TextRunHarfBuzz::FontParams::SetRenderParamsRematchFont(
     const Font& new_font,
     const FontRenderParams& new_render_params) {
+  // This takes the font family name from new_font, and calls
+  // SkTypeface::makeFromName() with that family name and the style information
+  // internal to this text run. So it triggers a new font match and looks for
+  // adjacent fonts in the family. This works for styling, e.g. styling a run in
+  // bold, italic or underline, but breaks font fallback in certain scenarios,
+  // as the fallback font may be of a different weight and style than the run's
+  // own, so this can lead to a failure of instantiating the correct fallback
+  // font.
   sk_sp<SkTypeface> new_skia_face(
       internal::CreateSkiaTypeface(new_font, italic, weight));
   if (!new_skia_face)
@@ -791,6 +803,30 @@ bool TextRunHarfBuzz::FontParams::SetFontAndRenderParams(
 
   skia_face = new_skia_face;
   font = new_font;
+  render_params = new_render_params;
+  return true;
+}
+
+bool TextRunHarfBuzz::FontParams::SetRenderParamsOverrideSkiaFaceFromFont(
+    const Font& fallback_font,
+    const FontRenderParams& new_render_params) {
+  sk_sp<SkTypeface> new_skia_face;
+#if defined(OS_WIN)
+  // TODO(https://crbug.com/1008407): Extend this to additional platforms that
+  // use PlatformFontSkia.
+  PlatformFont* platform_font = fallback_font.platform_font();
+  if (platform_font) {
+    new_skia_face = platform_font->GetNativeSkTypefaceIfAvailable();
+  }
+#endif
+
+  // If pass-through of the Skia native handle fails for PlatformFonts other
+  // than PlatformFontSkia, perform rematching.
+  if (!new_skia_face)
+    return SetRenderParamsRematchFont(fallback_font, new_render_params);
+
+  skia_face = new_skia_face;
+  font = fallback_font;
   render_params = new_render_params;
   return true;
 }
@@ -1989,10 +2025,11 @@ void RenderTextHarfBuzz::ShapeRuns(
 
   const Font& primary_font = font_list().GetPrimaryFont();
 
+  // Shaping with primary configured fonts from font_list().
   for (const Font& font : font_list().GetFonts()) {
     internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
-    if (test_font_params.SetFontAndRenderParams(font,
-                                                font.GetFontRenderParams())) {
+    if (test_font_params.SetRenderParamsRematchFont(
+            font, font.GetFontRenderParams())) {
       ShapeRunsWithFont(text, test_font_params, &runs);
     }
     if (runs.empty()) {
@@ -2031,7 +2068,7 @@ void RenderTextHarfBuzz::ShapeRuns(
           fallback_fonts_already_tried.insert(fallback_font).second;
       if (fallback_font_is_untried) {
         internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
-        if (test_font_params.SetFontAndRenderParams(
+        if (test_font_params.SetRenderParamsOverrideSkiaFaceFromFont(
                 fallback_font, fallback_font.GetFontRenderParams())) {
           ShapeRunsWithFont(text, test_font_params, &runs);
         }
@@ -2104,7 +2141,8 @@ void RenderTextHarfBuzz::ShapeRuns(
     query.style = font_params.italic ? Font::ITALIC : 0;
     FontRenderParams fallback_render_params = GetFontRenderParams(query, NULL);
     internal::TextRunHarfBuzz::FontParams test_font_params = font_params;
-    if (test_font_params.SetFontAndRenderParams(font, fallback_render_params)) {
+    if (test_font_params.SetRenderParamsOverrideSkiaFaceFromFont(
+            font, fallback_render_params)) {
       ShapeRunsWithFont(text, test_font_params, &runs);
     }
     if (runs.empty()) {

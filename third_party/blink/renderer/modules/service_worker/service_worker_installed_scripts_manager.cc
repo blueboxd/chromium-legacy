@@ -269,10 +269,10 @@ ServiceWorkerInstalledScriptsManager::ServiceWorkerInstalledScriptsManager(
 
   // Don't touch |installed_urls_| after this point. We're on the initiator
   // thread now, but |installed_urls_| will be accessed on the
-  // worker thread later, so they should keep isolated from the current thraed.
+  // worker thread later, so they should keep isolated from the current thread.
   for (const WebURL& url :
        installed_scripts_manager_params->installed_scripts_urls) {
-    installed_urls_.insert(url);
+    installed_urls_.insert(KURL(url).Copy());
   }
 
   PostCrossThreadTask(

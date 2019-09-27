@@ -98,6 +98,17 @@ Per ulteriori informazioni sui contesti sicuri, visita il sito https://www.w3.or
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">I gestori di protocollo impostati tramite questa norma non sono utilizzati durante la gestione degli intent di Android.</translation>
 <translation id="1118093128235245168">Consenti ai siti di chiedere all'utente di concedere l'accesso a un dispositivo USB collegato</translation>
+<translation id="1123594119609921068">Consente di impostare lo stato predefinito della funzione di accessibilità della lettura vocale sulla schermata di accesso.
+
+          Se questo criterio è impostato su true, la funzione di lettura vocale viene attivata quando si visualizza la schermata di accesso.
+
+          Se questo criterio è impostato su false, la funzione di lettura vocale viene disattivata quando si visualizza la schermata di accesso.
+
+          Se imposti questo criterio, gli utenti possono ignorarlo temporaneamente attivando o disattivando la funzione di lettura vocale. Poiché la scelta dell'utente non è permanente, il valore predefinito viene ripristinato quando si visualizza nuovamente la schermata di accesso, o quando l'utente rimane inattivo per un minuto sulla schermata di accesso.
+
+          Se questo criterio non viene impostato, la funzione di lettura vocale viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la funzione di lettura vocale in qualsiasi momento, e il relativo stato nella schermata di accesso persiste per tutto gli utenti.
+
+          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> sostituisce questo criterio.</translation>
 <translation id="1128903365609589950">Consente di configurare la directory che <ph name="PRODUCT_NAME" /> utilizza per archiviare i file memorizzati nella cache sul disco.
 
       Se la norma viene impostata, <ph name="PRODUCT_NAME" /> utilizza la directory fornita, indipendentemente dal fatto che l'utente abbia specificato o meno il flag "--disk-cache-dir". Per evitare perdite di dati o altri errori imprevisti, la norma non deve essere impostata su una directory radice del volume o su una directory utilizzata per altri scopi, poiché <ph name="PRODUCT_NAME" /> gestisce i relativi contenuti.
@@ -1642,6 +1653,15 @@ Per impostazione predefinita sono autorizzati tutti gli host di messaggi nativi 
 
       Visita il sito https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables per consultare un elenco di variabili utilizzabili.</translation>
 <translation id="3911737181201537215">Questa norma non influisce sulla registrazione effettuata da Android.</translation>
+<translation id="3912092044353890761">Consente di attivare la funzione di accessibilità della tastiera virtuale nella schermata di accesso.
+
+          Se questo criterio è impostato su true, la tastiera virtuale sarà sempre attivata nella schermata di accesso.
+
+          Se questo criterio è impostato su false, la tastiera virtuale sarà sempre disattivata nella schermata di accesso.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o sostituirlo.
+
+          Se questo criterio non viene impostato, inizialmente la tastiera virtuale è disattivata nella schermata di accesso, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="391531815696899618">Consente di disattivare la sincronizzazione di Google Drive nell'app File di <ph name="PRODUCT_OS_NAME" /> quando è impostata su True. In tal caso, non vengono caricati dati in Google Drive.
 
           Se questa norma non viene impostata o è impostata su False, gli utenti potranno trasferire file in Google Drive.</translation>
@@ -1801,11 +1821,31 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
           Se questo criterio viene impostato, gli utenti non potranno modificarlo o ignorarlo.
 
           Se questo criterio non viene impostato, i tasti permanenti sono inizialmente disattivati, ma possono essere attivati dall'utente in qualsiasi momento.</translation>
+<translation id="4169692397912242417">Consente di attivare la funzione di accessibilità di lettura vocale nella schermata di accesso.
+
+          Se questo criterio è impostato su true, la funzione di lettura vocale sarà sempre attivata nella schermata di accesso.
+
+          Se questo criterio è impostato su false, la funzione di lettura vocale sarà sempre disattivata nella schermata di accesso.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o sostituirlo.
+
+          Se questo criterio non viene impostato, inizialmente la funzione di lettura vocale è disattivata nella schermata di accesso, ma l'utente può attivarla in qualsiasi momento.</translation>
 <translation id="4171331498167688968">Se il criterio viene impostato su false, i programmi software di terze parti potranno inserire codice eseguibile nei processi di Chrome. Se il criterio non viene impostato o viene impostato su true, i programmi software di terze parti non potranno inserire codice eseguibile nei processi di Chrome.
 
       A prescindere dal valore di questo criterio, il browser al momento non impedisce a software di terze parti di inserire codice eseguibile nei propri processi su una macchina collegata a un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Impostazione predefinita per il plug-in <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL per la convalida del token di autenticazione del client di accesso remoto</translation>
+<translation id="420007931282384740">Consente di impostare lo stato predefinito della funzione di accessibilità della tastiera sullo schermo nella schermata di accesso.
+
+          Se questo criterio è impostato su true, la tastiera sullo schermo viene attivata quando si visualizza la schermata di accesso.
+
+          Se questo criterio è impostato su false, la tastiera sullo schermo viene disattivata quando si visualizza la schermata di accesso.
+
+          Se imposti questo criterio, gli utenti possono ignorarlo temporaneamente attivando o disattivando la tastiera sullo schermo. Poiché la scelta dell'utente non è permanente, il valore predefinito viene ripristinato quando si visualizza nuovamente la schermata di accesso, o quando l'utente rimane inattivo per un minuto sulla schermata di accesso.
+
+          Se questo criterio non viene impostato, la tastiera sullo schermo viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la tastiera sullo schermo in qualsiasi momento, e il relativo stato nella schermata di accesso persiste per tutto gli utenti.
+
+          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> sostituisce questo criterio.</translation>
 <translation id="4203389617541558220">Consente di limitare il tempo di attività del dispositivo programmando riavvii automatici.
 
 Se questa norma viene impostata consente di specificare il periodo di tempo di attività del dispositivo trascorso il quale è programmato un riavvio automatico.
@@ -2377,6 +2417,7 @@ Se la norma non viene impostata, <ph name="PRODUCT_NAME" /> caricherà tutti gli
 <translation id="5323128137188992869">Consente di trasmettere contenuti al dispositivo usando <ph name="PRODUCT_NAME" />.
 
           Se questa norma viene impostata su False, gli utenti non potranno trasmettere contenuti al proprio dispositivo. Se questa norma viene impostata su True, gli utenti potranno trasmettere contenuti. Se questa norma non viene impostata, gli utenti non potranno trasmettere contenuti a dispositivi Chrome OS registrati, ma potranno trasmetterli a dispositivi non registrati.</translation>
+<translation id="5323200200131319468">Attivare la funzione di lettura vocale nella schermata di accesso</translation>
 <translation id="5325625566921364045">Consente di controllare il modo in cui <ph name="PRODUCT_NAME" /> verifica la conformità dei dati caricati, scaricati, incollati dagli appunti o trascinati rispetto alle regole aziendali.
 
       Se questo criterio non viene impostato o se viene impostato su "Nessuno", <ph name="PRODUCT_NAME" /> non verificherà la conformità di alcun dato.
@@ -2567,6 +2608,7 @@ Se questa impostazione viene disattivata o non viene impostata, sia gli utenti l
 <translation id="5530347722229944744">Blocca download potenzialmente pericolosi</translation>
 <translation id="5535973522252703021">Whitelist server di delega Kerberos</translation>
 <translation id="554903022911579950">Kerberos</translation>
+<translation id="555022085242359084">Attivare l'alto contrasto nella schermata di accesso</translation>
 <translation id="555077880566103058">Consenti l'esecuzione automatica del plug-in <ph name="FLASH_PLUGIN_NAME" /> in tutti i siti</translation>
 <translation id="5559079916187891399">Questa norma non influisce sulle app Android.</translation>
 <translation id="5560039246134246593">Aggiungi un parametro al recupero del numero di inizializzazione delle varianti in <ph name="PRODUCT_NAME" />.
@@ -2821,6 +2863,7 @@ Il valore della norma deve essere specificato in millisecondi.</translation>
 <translation id="6089679180657323464">Consente di stabilire le impostazioni del controller DTC (Diagnostics and Telemetry Controller) wilco.</translation>
 <translation id="6091233616732024397">Obbliga gli utenti ad eseguire l'accesso per poter usare il browser</translation>
 <translation id="6093156968240188330">Consente agli utenti remoti di interagire con finestre con privilegi più elevati nelle sessioni di assistenza remota</translation>
+<translation id="6095048925836115505">Attivare la tastiera virtuale nella schermata di accesso</translation>
 <translation id="6095999036251797924">Consente di specificare il periodo di tempo senza input dell'utente trascorso il quale lo schermo viene bloccato durante l'utilizzo di alimentazione CA o batteria.
 
 Se il periodo di tempo viene impostato su un valore maggiore di zero, questo valore rappresenta il periodo di tempo per cui l'utente deve rimanere inattivo prima che <ph name="PRODUCT_OS_NAME" /> blocchi lo schermo.
@@ -3808,11 +3851,31 @@ Se questa norma viene impostata, il suo valore sostituisce il valore predefinito
 
 Se questa norma non viene impostata, <ph name="PRODUCT_NAME" /> utilizzerà il valore predefinito di 5000 millisecondi.</translation>
 <translation id="7841880500990419427">Versione TLS minima a cui retrocedere</translation>
+<translation id="7842317008224536842">Consente di impostare lo stato del valore predefinito della funzioni di accessibilità della modalità ad alto contrasto nella schermata di accesso.
+
+          Se questo criterio è impostato su true, la modalità ad alto contrasto sarà sempre attivata nella schermata di accesso.
+
+          Se questo criterio è impostato su false, la modalità ad alto contrasto sarà sempre disattivata nella schermata di accesso.
+
+          Se imposti questo criterio, gli utenti possono ignorarlo temporaneamente attivando o disattivando la modalità ad alto contrasto. Poiché la scelta dell'utente non è permanente, il valore predefinito viene ripristinato quando si visualizza nuovamente la schermata di accesso, o quando l'utente rimane inattivo per un minuto sulla schermata di accesso.
+
+          Se questo criterio non viene impostato, la modalità ad alto contrasto viene disattivata alla prima visualizzazione della schermata di accesso. Gli utenti possono attivare o disattivare la modalità ad alto contrasto in qualsiasi momento, e il relativo stato nella schermata di accesso persiste per tutto gli utenti.
+
+          Nota: se specificato, <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> sostituisce questo criterio.</translation>
 <translation id="7858404742201086014">Se attivi questa impostazione, i plug-in obsoleti vengono utilizzati come normali plug-in.
 
       Se disattivi questa impostazione, i plug-in obsoleti non vengono utilizzati e agli utenti non è richiesta l'autorizzazione per eseguirli.
 
       Se questa impostazione non è configurata, agli utenti verrà chiesta l'autorizzazione di eseguire i plug-in obsoleti.</translation>
+<translation id="7863947545897944083">Consente di attivare la funzione di accessibilità ad alto contrasto nella schermata di accesso.
+
+          Se questo criterio è impostato su true, l'alto contrasto sarà sempre attivato nella schermata di accesso.
+
+          Se questo criterio è impostato su false, l'alto contrasto sarà sempre disattivato nella schermata di accesso.
+
+          Se imposti questo criterio, gli utenti non potranno modificarlo o sostituirlo.
+
+          Se questo criterio non viene impostato, inizialmente l'alto contrasto è disattivato nella schermata di accesso, ma l'utente può attivarlo in qualsiasi momento.</translation>
 <translation id="787125417158068494">Se la norma viene impostata su SyncDisabled o non viene configurata, i certificati <ph name="PRODUCT_OS_NAME" /> non saranno disponibili per le app ARC.
 
       Se viene impostata su CopyCaCerts, per le app ARC saranno disponibili tutti i certificati CA installati su ONC con <ph name="WEB_TRUSTED_BIT" />.</translation>

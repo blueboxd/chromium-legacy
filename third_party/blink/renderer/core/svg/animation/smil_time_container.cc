@@ -258,7 +258,10 @@ void SMILTimeContainer::Unpause() {
 void SMILTimeContainer::SetElapsed(SMILTime elapsed) {
   presentation_time_ = elapsed;
 
-  // If the document hasn't finished loading, |m_presentationTime| will be
+  if (!GetDocument().IsActive())
+    return;
+
+  // If the document hasn't finished loading, |presentation_time_| will be
   // used as the start time to seek to once it's possible.
   if (!IsStarted())
     return;
@@ -285,6 +288,7 @@ void SMILTimeContainer::SetElapsed(SMILTime elapsed) {
 void SMILTimeContainer::ScheduleAnimationFrame(base::TimeDelta delay_time) {
   DCHECK(IsTimelineRunning());
   DCHECK(!wakeup_timer_.IsActive());
+  DCHECK(GetDocument().IsActive());
 
   const base::TimeDelta kLocalMinimumDelay =
       base::TimeDelta::FromSecondsD(DocumentTimeline::kMinimumDelay);
@@ -312,12 +316,17 @@ void SMILTimeContainer::ScheduleWakeUp(
 void SMILTimeContainer::WakeupTimerFired(TimerBase*) {
   DCHECK(frame_scheduling_state_ == kSynchronizeAnimations ||
          frame_scheduling_state_ == kFutureAnimationFrame);
-  if (frame_scheduling_state_ == kFutureAnimationFrame) {
+  FrameSchedulingState previous_frame_scheduling_state =
+      frame_scheduling_state_;
+  frame_scheduling_state_ = kIdle;
+  // TODO(fs): The timeline should not be running if we're in an inactive
+  // document, so this should be turned into a DCHECK.
+  if (!GetDocument().IsActive())
+    return;
+  if (previous_frame_scheduling_state == kFutureAnimationFrame) {
     DCHECK(IsTimelineRunning());
-    frame_scheduling_state_ = kIdle;
     ServiceOnNextFrame();
   } else {
-    frame_scheduling_state_ = kIdle;
     UpdateAnimationsAndScheduleFrameIfNeeded(Elapsed());
   }
 }
@@ -402,8 +411,11 @@ void SMILTimeContainer::ServiceOnNextFrame() {
 void SMILTimeContainer::ServiceAnimations() {
   if (frame_scheduling_state_ != kAnimationFrame)
     return;
-
   frame_scheduling_state_ = kIdle;
+  // TODO(fs): The timeline should not be running if we're in an inactive
+  // document, so this should be turned into a DCHECK.
+  if (!GetDocument().IsActive())
+    return;
   UpdateAnimationsAndScheduleFrameIfNeeded(Elapsed());
 }
 
@@ -419,8 +431,7 @@ bool SMILTimeContainer::CanScheduleFrame(SMILTime earliest_fire_time) const {
 
 void SMILTimeContainer::UpdateAnimationsAndScheduleFrameIfNeeded(
     SMILTime elapsed) {
-  if (!GetDocument().IsActive())
-    return;
+  DCHECK(GetDocument().IsActive());
 
   UpdateAnimationTimings(elapsed);
   ApplyAnimationValues(elapsed);

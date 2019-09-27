@@ -10,26 +10,11 @@
 #include "base/task/task_traits.h"
 #include "ui/gfx/codec/jpeg_codec.h"
 
-namespace {
+void ThumbnailImage::Observer::OnThumbnailImageAvailable(
+    gfx::ImageSkia thumbnail_image) {}
 
-std::vector<uint8_t> SkBitmapToJPEGData(SkBitmap bitmap) {
-  constexpr int kCompressionQuality = 97;
-  std::vector<uint8_t> data;
-  const bool result =
-      gfx::JPEGCodec::Encode(bitmap, kCompressionQuality, &data);
-  DCHECK(result);
-  return data;
-}
-
-gfx::ImageSkia JPEGDataToImageSkia(
-    scoped_refptr<base::RefCountedData<std::vector<uint8_t>>> data) {
-  gfx::ImageSkia result = gfx::ImageSkia::CreateFrom1xBitmap(
-      *gfx::JPEGCodec::Decode(data->data.data(), data->data.size()));
-  result.MakeThreadSafe();
-  return result;
-}
-
-}  // namespace
+void ThumbnailImage::Observer::OnCompressedThumbnailDataAvailable(
+    CompressedThumbnailData thumbnail_data) {}
 
 ThumbnailImage::Delegate::~Delegate() {
   if (thumbnail_)
@@ -79,7 +64,7 @@ void ThumbnailImage::AssignSkBitmap(SkBitmap bitmap) {
       FROM_HERE,
       {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&SkBitmapToJPEGData, std::move(bitmap)),
+      base::BindOnce(&ThumbnailImage::CompressBitmap, std::move(bitmap)),
       base::BindOnce(&ThumbnailImage::AssignJPEGData,
                      weak_ptr_factory_.GetWeakPtr()));
 }
@@ -92,6 +77,7 @@ void ThumbnailImage::RequestThumbnailImage() {
 void ThumbnailImage::AssignJPEGData(std::vector<uint8_t> data) {
   data_ = base::MakeRefCounted<base::RefCountedData<std::vector<uint8_t>>>(
       std::move(data));
+  NotifyCompressedDataObservers(data_);
   ConvertJPEGDataToImageSkiaAndNotifyObservers();
 }
 
@@ -105,15 +91,42 @@ bool ThumbnailImage::ConvertJPEGDataToImageSkiaAndNotifyObservers() {
       FROM_HERE,
       {base::ThreadPool(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&JPEGDataToImageSkia, data_),
-      base::BindOnce(&ThumbnailImage::NotifyObservers,
+      base::BindOnce(&ThumbnailImage::UncompressImage, data_),
+      base::BindOnce(&ThumbnailImage::NotifyUncompressedDataObservers,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ThumbnailImage::NotifyObservers(gfx::ImageSkia image) {
+void ThumbnailImage::NotifyUncompressedDataObservers(gfx::ImageSkia image) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (async_operation_finished_callback_)
     async_operation_finished_callback_.Run();
   for (auto& observer : observers_)
     observer.OnThumbnailImageAvailable(image);
+}
+
+void ThumbnailImage::NotifyCompressedDataObservers(
+    CompressedThumbnailData data) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  for (auto& observer : observers_)
+    observer.OnCompressedThumbnailDataAvailable(data);
+}
+
+// static
+std::vector<uint8_t> ThumbnailImage::CompressBitmap(SkBitmap bitmap) {
+  constexpr int kCompressionQuality = 97;
+  std::vector<uint8_t> data;
+  const bool result =
+      gfx::JPEGCodec::Encode(bitmap, kCompressionQuality, &data);
+  DCHECK(result);
+  return data;
+}
+
+// static
+gfx::ImageSkia ThumbnailImage::UncompressImage(
+    CompressedThumbnailData compressed) {
+  gfx::ImageSkia result =
+      gfx::ImageSkia::CreateFrom1xBitmap(*gfx::JPEGCodec::Decode(
+          compressed->data.data(), compressed->data.size()));
+  result.MakeThreadSafe();
+  return result;
 }

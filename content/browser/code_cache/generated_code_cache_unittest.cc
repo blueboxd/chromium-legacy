@@ -61,8 +61,8 @@ class GeneratedCodeCacheTest : public testing::Test {
                     const std::string& data,
                     base::Time response_time) {
     std::vector<uint8_t> vector_data(data.begin(), data.end());
-    generated_code_cache_->WriteData(url, origin_lock, response_time,
-                                     vector_data);
+    generated_code_cache_->WriteEntry(url, origin_lock, response_time,
+                                      vector_data);
   }
 
   void DeleteFromCache(const GURL& url, const GURL& origin_lock) {

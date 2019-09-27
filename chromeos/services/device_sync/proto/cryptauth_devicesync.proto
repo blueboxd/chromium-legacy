@@ -270,7 +270,7 @@ message GetDevicesActivityStatusRequest {
 }
 
 // Describes the device's network reachability.
-enum OnlineStatus {
+enum ConnectivityStatus {
   // Default value.
   UNKNOWN_CONNECTIVITY = 0;
   // The device appears to be unreachable.
@@ -289,7 +289,7 @@ message DeviceActivityStatus {
   int64 last_activity_time_sec = 2;
 
   // Online status of the device as inferred by reachability via FCM.
-  OnlineStatus online_status = 3;
+  ConnectivityStatus connectivity_status = 3;
 }
 
 // Response for GetDevicesActivityStatus.

@@ -7,6 +7,7 @@ package org.chromium.weblayer_private;
 import android.content.Context;
 import android.os.IBinder;
 import android.util.AndroidRuntimeException;
+import android.webkit.ValueCallback;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
@@ -20,8 +21,10 @@ import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.DeviceUtils;
 import org.chromium.ui.base.ResourceBundle;
+import org.chromium.weblayer_private.aidl.IObjectWrapper;
 import org.chromium.weblayer_private.aidl.IProfile;
 import org.chromium.weblayer_private.aidl.IWebLayer;
+import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 @UsedByReflection("WebLayer")
 public final class WebLayerImpl extends IWebLayer.Stub {
@@ -32,16 +35,21 @@ public final class WebLayerImpl extends IWebLayer.Stub {
     private static final String COMMAND_LINE_FILE = "/data/local/tmp/weblayer-command-line";
 
     @UsedByReflection("WebLayer")
-    public static IBinder create(Context context) {
-        return new WebLayerImpl(context);
+    public static IBinder create() {
+        return new WebLayerImpl();
     }
+
+    private WebLayerImpl() {}
 
     @Override
     public IProfile createProfile(String path) {
         return new ProfileImpl(path);
     }
 
-    private WebLayerImpl(Context context) {
+    @Override
+    public void initAndLoadAsync(
+            IObjectWrapper webLayerContextWrapper, IObjectWrapper loadedCallbackWrapper) {
+        Context context = ObjectWrapper.unwrap(webLayerContextWrapper, Context.class);
         ContextUtils.initApplicationContext(context);
         ResourceBundle.setNoAvailableLocalePaks();
         PathUtils.setPrivateDataDirectorySuffix(PRIVATE_DATA_DIRECTORY_SUFFIX);
@@ -65,6 +73,31 @@ public final class WebLayerImpl extends IWebLayer.Stub {
             throw new AndroidRuntimeException(e);
         }
 
+        try {
+            final ValueCallback<Boolean> loadedCallback =
+                    (ValueCallback<Boolean>) ObjectWrapper.unwrap(
+                            loadedCallbackWrapper, ValueCallback.class);
+            BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
+                    .startBrowserProcessesAsync(/* startGpu */ false,
+                            /* startServiceManagerOnly */ false,
+                            new BrowserStartupController.StartupCallback() {
+                                @Override
+                                public void onSuccess() {
+                                    loadedCallback.onReceiveValue(true);
+                                }
+                                @Override
+                                public void onFailure() {
+                                    loadedCallback.onReceiveValue(false);
+                                }
+                            });
+        } catch (ProcessInitException e) {
+            Log.e(TAG, "Unable to load native library.", e);
+            throw new AndroidRuntimeException(e);
+        }
+    }
+
+    @Override
+    public void loadSync() {
         try {
             BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
                     .startBrowserProcessesSync(

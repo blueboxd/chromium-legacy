@@ -358,14 +358,6 @@ bool IsCrostiniAnsibleInfrastructureEnabled() {
   return base::FeatureList::IsEnabled(features::kCrostiniAnsibleInfrastructure);
 }
 
-bool IsCrostiniRootAccessAllowed(Profile* profile) {
-  if (base::FeatureList::IsEnabled(features::kCrostiniAdvancedAccessControls)) {
-    return profile->GetPrefs()->GetBoolean(
-        crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy);
-  }
-  return true;
-}
-
 void LaunchCrostiniApp(Profile* profile,
                        const std::string& app_id,
                        int64_t display_id) {

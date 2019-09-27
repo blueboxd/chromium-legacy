@@ -392,7 +392,7 @@ bool HttpStreamFactory::Job::CanUseExistingSpdySession() const {
 
   if (proxy_info_.is_direct() &&
       session_->http_server_properties()->RequiresHTTP11(
-          HttpServerProperties::GetNormalizedSchemeHostPort(request_info_.url),
+          url::SchemeHostPort(request_info_.url),
           request_info_.network_isolation_key)) {
     return false;
   }
@@ -838,7 +838,7 @@ int HttpStreamFactory::Job::DoInitConnectionImpl() {
       session_->http_server_properties();
   if (http_server_properties) {
     http_server_properties->MaybeForceHTTP11(
-        HttpServerProperties::GetNormalizedSchemeHostPort(request_info_.url),
+        url::SchemeHostPort(request_info_.url),
         request_info_.network_isolation_key, &server_ssl_config_);
     if (proxy_info_.is_https()) {
       http_server_properties->MaybeForceHTTP11(

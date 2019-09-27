@@ -561,7 +561,7 @@ void ShelfAppButton::Layout() {
   // TODO: Find out why there is an extra pixel of padding between each item
   // and the inner side of the shelf.
   // clang-format off
-  int icon_padding = (ShelfConfig::Get()->shelf_size() -
+  int icon_padding = (ShelfConfig::Get()->hotseat_size() -
                       ShelfConfig::Get()->button_icon_size()) / 2 - 1;
   // clang-format on
   const int icon_size = ShelfConfig::Get()->button_icon_size();
@@ -721,7 +721,7 @@ void ShelfAppButton::OnGestureEvent(ui::GestureEvent* event) {
 
 std::unique_ptr<views::InkDropRipple> ShelfAppButton::CreateInkDropRipple()
     const {
-  const int ink_drop_small_size = ash::ShelfConfig::Get()->shelf_size();
+  const int ink_drop_small_size = ash::ShelfConfig::Get()->hotseat_size();
   return std::make_unique<views::SquareInkDropRipple>(
       gfx::Size(kInkDropLargeSize, kInkDropLargeSize),
       ink_drop_large_corner_radius(),

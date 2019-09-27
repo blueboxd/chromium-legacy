@@ -639,14 +639,14 @@ class DirectoryItem extends cr.ui.TreeItem {
    * @private
    */
   setupEjectButton_(rowElement) {
-    const ejectButton = cr.doc.createElement('button');
+    const ejectButton = document.createElement('button');
 
     ejectButton.className = 'root-eject align-right-icon';
     ejectButton.setAttribute('aria-label', str('UNMOUNT_DEVICE_BUTTON_LABEL'));
     ejectButton.setAttribute('tabindex', '0');
 
     // Add paper-ripple effect on the eject button.
-    const ripple = cr.doc.createElement('paper-ripple');
+    const ripple = document.createElement('paper-ripple');
     ripple.setAttribute('fit', '');
     ripple.className = 'circle recenteringTouch';
     ejectButton.appendChild(ripple);
@@ -666,7 +666,8 @@ class DirectoryItem extends cr.ui.TreeItem {
     });
     ejectButton.addEventListener('click', (event) => {
       event.stopPropagation();
-      const command = cr.doc.querySelector('command#unmount');
+      const command = /** @type {!cr.ui.Command} */ (
+          document.querySelector('command#unmount'));
       // Ensure 'canExecute' state of the command is properly setup for the
       // root before executing it.
       command.canExecuteChange(this);
@@ -1063,7 +1064,7 @@ class VolumeItem extends DirectoryItem {
    * @private
    */
   setupRenamePlaceholder_(rowElement) {
-    const placeholder = cr.doc.createElement('span');
+    const placeholder = document.createElement('span');
     placeholder.className = 'rename-placeholder';
     rowElement.querySelector('.label').insertAdjacentElement(
         'afterend', placeholder);
@@ -1614,7 +1615,7 @@ class AndroidAppItem extends cr.ui.TreeItem {
 
     // Create an external link icon. TODO(crbug.com/986169) does this icon
     // element need aria-label, role, tabindex, etc?
-    const externalLinkIcon = cr.doc.createElement('span');
+    const externalLinkIcon = document.createElement('span');
     externalLinkIcon.className = 'external-link-icon align-right-icon';
 
     // Add the external link as the last element of the tree row content.

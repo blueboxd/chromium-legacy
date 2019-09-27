@@ -55,6 +55,9 @@ DriveQuickAccessProvider::~DriveQuickAccessProvider() = default;
 void DriveQuickAccessProvider::Start(const base::string16& query) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   query_start_time_ = base::TimeTicks::Now();
+  UMA_HISTOGRAM_TIMES(
+      "Apps.AppList.DriveQuickAccessProvider.TimeFromFetchToZeroStateStart",
+      base::TimeTicks::Now() - latest_fetch_start_time_);
   ClearResultsSilently();
   // Results are launched via DriveFS, so DriveFS must be mounted.
   if (!query.empty() || !drive_service_ || !drive_service_->IsMounted())
@@ -83,10 +86,16 @@ void DriveQuickAccessProvider::AppListShown() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!drive_service_)
     return;
+  LOG(WARNING) << "Drive Quick Access items about to be requested.";
   GetQuickAccessItems();
 }
 
 void DriveQuickAccessProvider::GetQuickAccessItems() {
+  LOG(WARNING) << "Drive Quick Access items are being requested.";
+  // Invalidate weak pointers for existing callbacks to the Quick Access API.
+  weak_factory_.InvalidateWeakPtrs();
+  latest_fetch_start_time_ = base::TimeTicks::Now();
+
   drive_service_->GetQuickAccessItems(
       kMaxItems,
       base::BindOnce(&DriveQuickAccessProvider::OnGetQuickAccessItems,
@@ -97,6 +106,12 @@ void DriveQuickAccessProvider::OnGetQuickAccessItems(
     drive::FileError error,
     std::vector<drive::QuickAccessItem> drive_results) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  LOG(WARNING) << "Drive Quick Access provider returned with "
+               << drive_results.size() << " results.";
+  UMA_HISTOGRAM_TIMES(
+      "Apps.AppList.DriveQuickAccessProvider.GetQuickAccessItemsLatency",
+      base::TimeTicks::Now() - latest_fetch_start_time_);
+
   // An empty |drive_results| is likely caused by a failed call to ItemSuggest,
   // so don't replace the cache.
   if (!drive_results.empty()) {

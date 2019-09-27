@@ -1199,9 +1199,7 @@ void AssistantManagerServiceImpl::UpdateInternalOptions(
         assistant_client::InternalOptions::UserCredentialMode::SIGNED_OUT);
   }
 
-  if (assistant_settings_manager_->speaker_id_enrollment_done()) {
-    internal_options->EnableRequireVoiceMatchVerification();
-  }
+  internal_options->EnableRequireVoiceMatchVerification();
 
   assistant_manager_internal->SetOptions(*internal_options, [](bool success) {
     DVLOG(2) << "set options: " << success;

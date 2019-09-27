@@ -44,6 +44,7 @@ void LocalCardMigrationBubbleControllerImpl::ShowBubble(
     return;
 
   is_reshow_ = false;
+  should_add_strikes_on_bubble_close_ = true;
   local_card_migration_bubble_closure_ =
       std::move(local_card_migration_bubble_closure);
 

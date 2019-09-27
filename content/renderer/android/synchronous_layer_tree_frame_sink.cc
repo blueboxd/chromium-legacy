@@ -483,14 +483,13 @@ void SynchronousLayerTreeFrameSink::InvokeComposite(
   did_submit_frame_ = false;
   // Adjust transform so that the layer compositor draws the |viewport| rect
   // at its origin. The offset of the |viewport| we pass to the layer compositor
-  // is ignored for drawing, so its okay to not match the transform.
-  // TODO(danakj): Why do we pass a viewport origin and then not really use it
-  // (only for comparing to the viewport passed in
-  // SetExternalTilePriorityConstraints), surely this could be more clear?
+  // must also be zero, since the rect needs to be in the coordinates of the
+  // layer compositor.
   gfx::Transform adjusted_transform = transform;
   adjusted_transform.matrix().postTranslate(-viewport.x(), -viewport.y(), 0);
-  client_->OnDraw(adjusted_transform, viewport, in_software_draw_,
-                  false /*skip_draw*/);
+  // Don't propagate the viewport origin, as it will affect the clip rect.
+  client_->OnDraw(adjusted_transform, gfx::Rect(viewport.size()),
+                  in_software_draw_, false /*skip_draw*/);
 
   if (did_submit_frame_) {
     // This must happen after unwinding the stack and leaving the compositor.

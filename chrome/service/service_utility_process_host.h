@@ -127,6 +127,7 @@ class ServiceUtilityProcessHost : public content::ChildProcessHostDelegate {
   const base::Process& GetProcess() override;
   void BindInterface(const std::string& interface_name,
                      mojo::ScopedMessagePipeHandle interface_pipe) override;
+  void BindHostReceiver(mojo::GenericPendingReceiver receiver) override;
 
  private:
   // Starts a process.  Returns true iff it succeeded.

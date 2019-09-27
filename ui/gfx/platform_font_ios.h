@@ -32,6 +32,7 @@ class PlatformFontIOS : public PlatformFont {
   int GetFontSize() const override;
   const FontRenderParams& GetFontRenderParams() override;
   NativeFont GetNativeFont() const override;
+  sk_sp<SkTypeface> GetNativeSkTypefaceIfAvailable() const override;
 
  private:
   PlatformFontIOS(const std::string& font_name,

@@ -46,7 +46,7 @@ namespace {
 
 // Helper class to know how far in the loading process the current WebContents
 // has come. It will call the callback either after
-// DidCommitProvisionalLoadForFrame or DocumentLoadedInFrame is called for the
+// DidCommitProvisionalLoadForFrame or DOMContentLoaded is called for the
 // main frame, based on the value of |wait_for_document_loaded|.
 class WebContentsMainFrameHelper : public content::WebContentsObserver {
  public:
@@ -65,8 +65,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
       callback_.Run();
   }
 
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override {
+  void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override {
     if (wait_for_document_loaded_) {
       if (!render_frame_host->GetParent())
         callback_.Run();

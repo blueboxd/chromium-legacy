@@ -9,6 +9,7 @@ import android.webkit.WebViewClient;
 
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwRenderProcess;
+import org.chromium.android_webview.WebMessageListener;
 import org.chromium.android_webview.WebViewChromiumRunQueue;
 import org.chromium.base.ThreadUtils;
 import org.chromium.content_public.browser.MessagePort;
@@ -115,6 +116,24 @@ public class SharedWebViewChromium {
             return;
         }
         mAwContents.postMessageToMainFrame(message, targetOrigin, sentPorts);
+    }
+
+    public void addWebMessageListener(final String jsObjectName, final String[] allowedOriginRules,
+            final WebMessageListener listener) {
+        if (checkNeedsPost()) {
+            mRunQueue.addTask(
+                    () -> addWebMessageListener(jsObjectName, allowedOriginRules, listener));
+            return;
+        }
+        mAwContents.addWebMessageListener(jsObjectName, allowedOriginRules, listener);
+    }
+
+    public void removeWebMessageListener(final String jsObjectName) {
+        if (checkNeedsPost()) {
+            mRunQueue.addTask(() -> removeWebMessageListener(jsObjectName));
+            return;
+        }
+        mAwContents.removeWebMessageListener(jsObjectName);
     }
 
     public void setWebViewRendererClientAdapter(

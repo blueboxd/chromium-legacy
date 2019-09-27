@@ -9,6 +9,7 @@ import android.graphics.Canvas;
 import android.graphics.Point;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -697,11 +698,9 @@ public class NewTabPage implements NativePage, InvalidationAwareThumbnailProvide
 
     @Override
     public void destroy() {
-        // Temporarily removing asserts during window when they're not compiled out of release
-        // builds, see https://crbug.com/992585 for more information.
-        // assert !mIsDestroyed;
-        // assert !ViewCompat
-        //        .isAttachedToWindow(getView()) : "Destroy called before removed from window";
+        assert !mIsDestroyed;
+        assert !ViewCompat
+                .isAttachedToWindow(getView()) : "Destroy called before removed from window";
         if (mIsLoaded && !mTab.isHidden()) recordNTPHidden();
 
         mNewTabPageManager.onDestroy();

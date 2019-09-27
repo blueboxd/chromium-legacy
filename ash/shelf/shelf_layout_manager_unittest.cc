@@ -42,6 +42,7 @@
 #include "ash/shelf/shelf_view_test_api.h"
 #include "ash/shelf/shelf_widget.h"
 #include "ash/shell.h"
+#include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/status_area_widget_test_helper.h"
 #include "ash/system/unified/unified_system_tray.h"
@@ -3188,6 +3189,31 @@ class HotseatShelfLayoutManagerTest
   DISALLOW_COPY_AND_ASSIGN(HotseatShelfLayoutManagerTest);
 };
 
+// Records HotseatState transitions.
+class HotseatStateWatcher : public ShelfLayoutManagerObserver {
+ public:
+  HotseatStateWatcher(ShelfLayoutManager* shelf_layout_manager)
+      : shelf_layout_manager_(shelf_layout_manager) {
+    shelf_layout_manager_->AddObserver(this);
+  }
+  ~HotseatStateWatcher() override {
+    shelf_layout_manager_->RemoveObserver(this);
+  }
+
+  void OnHotseatStateChanged(HotseatState state) override {
+    state_changes_.push_back(state);
+  }
+
+  void CheckEqual(std::vector<HotseatState> state_changes) {
+    EXPECT_EQ(state_changes_, state_changes);
+  }
+
+ private:
+  ShelfLayoutManager* shelf_layout_manager_;
+  std::vector<HotseatState> state_changes_;
+  DISALLOW_COPY_AND_ASSIGN(HotseatStateWatcher);
+};
+
 // Used to test autohide and always shown shelf.
 INSTANTIATE_TEST_SUITE_P(,
                          HotseatShelfLayoutManagerTest,
@@ -3406,7 +3432,7 @@ TEST_P(HotseatShelfLayoutManagerTest, ReleasingSlowDragBelowThreshold) {
                              ->shelf_view_for_testing()
                              ->GetBoundsInScreen()
                              .height();
-  const gfx::Point end(start + gfx::Vector2d(0, -shelf_size / 2));
+  const gfx::Point end(start + gfx::Vector2d(0, -shelf_size / 4));
   const base::TimeDelta kTimeDelta = base::TimeDelta::FromMilliseconds(1000);
   const int kNumScrollSteps = 4;
   GetEventGenerator()->GestureScrollSequence(start, end, kTimeDelta,
@@ -3443,6 +3469,31 @@ TEST_P(HotseatShelfLayoutManagerTest, ReleasingSlowDragAboveThreshold) {
   EXPECT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
   if (GetParam() == SHELF_AUTO_HIDE_BEHAVIOR_ALWAYS)
     EXPECT_EQ(SHELF_AUTO_HIDE_SHOWN, GetPrimaryShelf()->GetAutoHideState());
+}
+
+// Tests that showing overview after showing the hotseat results in only one
+// animation, to |kShown|.
+TEST_P(HotseatShelfLayoutManagerTest, ShowingOverviewFromShownAnimatesOnce) {
+  GetPrimaryShelf()->SetAutoHideBehavior(GetParam());
+  TabletModeControllerTestApi().EnterTabletMode();
+  std::unique_ptr<aura::Window> window =
+      AshTestBase::CreateTestWindow(gfx::Rect(0, 0, 400, 400));
+  wm::ActivateWindow(window.get());
+
+  std::unique_ptr<HotseatStateWatcher> state_watcher_ =
+      std::make_unique<HotseatStateWatcher>(GetShelfLayoutManager());
+  SwipeUpOnShelf();
+  ASSERT_EQ(HotseatState::kExtended, GetShelfLayoutManager()->hotseat_state());
+
+  const gfx::Point overview_button_center = GetPrimaryShelf()
+                                                ->shelf_widget()
+                                                ->status_area_widget()
+                                                ->overview_button_tray()
+                                                ->GetBoundsInScreen()
+                                                .CenterPoint();
+  GetEventGenerator()->GestureTapAt(overview_button_center);
+
+  state_watcher_->CheckEqual({HotseatState::kExtended, HotseatState::kShown});
 }
 
 class ShelfLayoutManagerKeyboardTest : public AshTestBase {

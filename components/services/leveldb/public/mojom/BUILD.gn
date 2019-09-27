@@ -11,10 +11,6 @@ mojom("mojom") {
     "leveldb.mojom",
   ]
 
-  deps = [
-    "//components/services/filesystem/public/mojom",
-  ]
-
   public_deps = [
     "//mojo/public/mojom/base",
   ]

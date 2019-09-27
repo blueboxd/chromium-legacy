@@ -36,6 +36,7 @@
 #include "ash/wm/overview/overview_grid.h"
 #include "ash/wm/overview/overview_item.h"
 #include "ash/wm/overview/overview_observer.h"
+#include "ash/wm/splitview/multi_display_overview_and_split_view_test.h"
 #include "ash/wm/splitview/split_view_divider.h"
 #include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ash/wm/splitview/split_view_utils.h"
@@ -119,14 +120,14 @@ bool IsTabletMode() {
 
 }  // namespace
 
-class SplitViewControllerTest : public AshTestBase {
+class SplitViewControllerTest : public MultiDisplayOverviewAndSplitViewTest {
  public:
   SplitViewControllerTest() = default;
   ~SplitViewControllerTest() override = default;
 
   // test::AshTestBase:
   void SetUp() override {
-    AshTestBase::SetUp();
+    MultiDisplayOverviewAndSplitViewTest::SetUp();
     // Avoid TabletModeController::OnGetSwitchStates() from disabling tablet
     // mode.
     base::RunLoop().RunUntilIdle();
@@ -140,7 +141,7 @@ class SplitViewControllerTest : public AshTestBase {
         false);
     FpsCounter::SetForceReportZeroAnimationForTest(false);
     trace_names_.clear();
-    AshTestBase::TearDown();
+    MultiDisplayOverviewAndSplitViewTest::TearDown();
   }
 
   aura::Window* CreateWindow(
@@ -276,7 +277,7 @@ class TestWindowStateDelegate : public WindowStateDelegate {
 };
 
 // Tests the basic functionalities.
-TEST_F(SplitViewControllerTest, Basic) {
+TEST_P(SplitViewControllerTest, Basic) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -309,7 +310,7 @@ TEST_F(SplitViewControllerTest, Basic) {
 }
 
 // Tests that the default snapped window is the first window that gets snapped.
-TEST_F(SplitViewControllerTest, DefaultSnappedWindow) {
+TEST_P(SplitViewControllerTest, DefaultSnappedWindow) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -331,7 +332,7 @@ TEST_F(SplitViewControllerTest, DefaultSnappedWindow) {
 // only one snapped windows, closing the snapped window will end split view mode
 // and adjust the overview window grid bounds if the overview mode is active at
 // that moment.
-TEST_F(SplitViewControllerTest, WindowCloseTest) {
+TEST_P(SplitViewControllerTest, WindowCloseTest) {
   // 1 - First test one snapped window scenario.
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window0(CreateWindow(bounds));
@@ -406,7 +407,7 @@ TEST_F(SplitViewControllerTest, WindowCloseTest) {
 // only one snapped windows, minimizing the sanpped window will end split view
 // mode and adjust the overview window grid bounds if the overview mode is
 // active at that moment.
-TEST_F(SplitViewControllerTest, MinimizeWindowTest) {
+TEST_P(SplitViewControllerTest, MinimizeWindowTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
 
   // 1 - First test one snapped window scenario.
@@ -450,7 +451,7 @@ TEST_F(SplitViewControllerTest, MinimizeWindowTest) {
 
 // Tests that if one of the snapped window gets maximized / full-screened, the
 // split view mode ends.
-TEST_F(SplitViewControllerTest, WindowStateChangeTest) {
+TEST_P(SplitViewControllerTest, WindowStateChangeTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   // 1 - First test one snapped window scenario.
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -521,7 +522,7 @@ TEST_F(SplitViewControllerTest, WindowStateChangeTest) {
 
 // Tests that if split view mode is active, activate another window will snap
 // the window to the non-default side of the screen.
-TEST_F(SplitViewControllerTest, WindowActivationTest) {
+TEST_P(SplitViewControllerTest, WindowActivationTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -546,7 +547,7 @@ TEST_F(SplitViewControllerTest, WindowActivationTest) {
 // i.e., half of the screen is occupied by a snapped window and half of the
 // screen is occupied by the overview windows grid, the next activatable window
 // will be picked to snap when exiting the overview mode.
-TEST_F(SplitViewControllerTest, ExitOverviewTest) {
+TEST_P(SplitViewControllerTest, ExitOverviewTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -574,7 +575,7 @@ TEST_F(SplitViewControllerTest, ExitOverviewTest) {
 // Tests that if split view mode is active when entering overview, the overview
 // windows grid should show in the non-default side of the screen, and the
 // default snapped window should not be shown in the overview window grid.
-TEST_F(SplitViewControllerTest, EnterOverviewModeTest) {
+TEST_P(SplitViewControllerTest, EnterOverviewModeTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -600,7 +601,7 @@ TEST_F(SplitViewControllerTest, EnterOverviewModeTest) {
 // Tests that the split divider was created when the split view mode is active
 // and destroyed when the split view mode is ended. The split divider should be
 // always above the two snapped windows.
-TEST_F(SplitViewControllerTest, SplitDividerBasicTest) {
+TEST_P(SplitViewControllerTest, SplitDividerBasicTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -623,7 +624,7 @@ TEST_F(SplitViewControllerTest, SplitDividerBasicTest) {
 }
 
 // Verifys that the bounds of the two windows in splitview are as expected.
-TEST_F(SplitViewControllerTest, SplitDividerWindowBounds) {
+TEST_P(SplitViewControllerTest, SplitDividerWindowBounds) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -697,7 +698,7 @@ TEST_F(SplitViewControllerTest, SplitDividerWindowBounds) {
 
 // Tests that the bounds of the snapped windows and divider are adjusted when
 // the screen display configuration changes.
-TEST_F(SplitViewControllerTest, DisplayConfigurationChangeTest) {
+TEST_P(SplitViewControllerTest, DisplayConfigurationChangeTest) {
   UpdateDisplay("407x400");
   const gfx::Rect bounds(0, 0, 200, 200);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -742,7 +743,7 @@ TEST_F(SplitViewControllerTest, DisplayConfigurationChangeTest) {
 
 // Tests that the bounds of the snapped windows and divider are adjusted when
 // the internal screen display configuration changes.
-TEST_F(SplitViewControllerTest, InternalDisplayConfigurationChangeTest) {
+TEST_P(SplitViewControllerTest, InternalDisplayConfigurationChangeTest) {
   UpdateDisplay("407x400");
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
@@ -793,7 +794,7 @@ TEST_F(SplitViewControllerTest, InternalDisplayConfigurationChangeTest) {
 // Test that if the internal screen display configuration changes during the
 // divider snap animation, then this animation stops, and the bounds of the
 // snapped windows and divider are adjusted as normal.
-TEST_F(SplitViewControllerTest,
+TEST_P(SplitViewControllerTest,
        InternalDisplayConfigurationChangeDuringDividerSnap) {
   UpdateDisplay("407x400");
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -865,7 +866,7 @@ TEST_F(SplitViewControllerTest,
 // Test that if the internal screen display configuration changes during the
 // divider snap animation, and if the adjusted divider bounds place it at the
 // left edge of the screen, then split view ends.
-TEST_F(SplitViewControllerTest,
+TEST_P(SplitViewControllerTest,
        InternalDisplayConfigurationChangeDuringDividerSnapToLeft) {
   UpdateDisplay("407x400");
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -913,7 +914,7 @@ TEST_F(SplitViewControllerTest,
 // Test that if the internal screen display configuration changes during the
 // divider snap animation, and if the adjusted divider bounds place it at the
 // right edge of the screen, then split view ends.
-TEST_F(SplitViewControllerTest,
+TEST_P(SplitViewControllerTest,
        InternalDisplayConfigurationChangeDuringDividerSnapToRight) {
   UpdateDisplay("407x400");
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -960,7 +961,7 @@ TEST_F(SplitViewControllerTest,
 
 // Verify the left and right windows get swapped when SwapWindows is called or
 // the divider is double clicked.
-TEST_F(SplitViewControllerTest, SwapWindows) {
+TEST_P(SplitViewControllerTest, SwapWindows) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -1017,7 +1018,7 @@ TEST_F(SplitViewControllerTest, SwapWindows) {
 // Verify the left and right windows get swapped when the divider is double
 // tapped. SwapWindows() contains a long code comment that shows it is worth
 // having separate tests for double clicking and double tapping the divider.
-TEST_F(SplitViewControllerTest, DoubleTapDivider) {
+TEST_P(SplitViewControllerTest, DoubleTapDivider) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -1047,7 +1048,7 @@ TEST_F(SplitViewControllerTest, DoubleTapDivider) {
 
 // Verify the left and right windows do not get swapped when the divider is
 // dragged and double clicked.
-TEST_F(SplitViewControllerTest, DragAndDoubleClickDivider) {
+TEST_P(SplitViewControllerTest, DragAndDoubleClickDivider) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -1073,7 +1074,7 @@ TEST_F(SplitViewControllerTest, DragAndDoubleClickDivider) {
 
 // Verify the left and right windows do not get swapped when the divider is
 // dragged and double tapped.
-TEST_F(SplitViewControllerTest, DragAndDoubleTapDivider) {
+TEST_P(SplitViewControllerTest, DragAndDoubleTapDivider) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -1100,7 +1101,7 @@ TEST_F(SplitViewControllerTest, DragAndDoubleTapDivider) {
 }
 
 // Verify that you cannot snap a window during the divider snap animation.
-TEST_F(SplitViewControllerTest, SnapWindowDuringDividerSnapAnimation) {
+TEST_P(SplitViewControllerTest, SnapWindowDuringDividerSnapAnimation) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -1130,7 +1131,7 @@ TEST_F(SplitViewControllerTest, SnapWindowDuringDividerSnapAnimation) {
 }
 
 // Verify that you cannot start dragging the divider during its snap animation.
-TEST_F(SplitViewControllerTest, StartDraggingDividerDuringSnapAnimation) {
+TEST_P(SplitViewControllerTest, StartDraggingDividerDuringSnapAnimation) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -1154,7 +1155,7 @@ TEST_F(SplitViewControllerTest, StartDraggingDividerDuringSnapAnimation) {
   GetEventGenerator()->ReleaseLeftButton();
 }
 
-TEST_F(SplitViewControllerTest, LongPressEntersSplitView) {
+TEST_P(SplitViewControllerTest, LongPressEntersSplitView) {
   // Tests that with no active windows, split view does not get activated.
   LongPressOnOverivewButtonTray();
   EXPECT_FALSE(split_view_controller()->InSplitViewMode());
@@ -1171,7 +1172,7 @@ TEST_F(SplitViewControllerTest, LongPressEntersSplitView) {
 // Verify that when in split view mode with either one snapped or two snapped
 // windows, split view mode gets exited when the overview button gets a long
 // press event.
-TEST_F(SplitViewControllerTest, LongPressExitsSplitView) {
+TEST_P(SplitViewControllerTest, LongPressExitsSplitView) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -1236,7 +1237,7 @@ TEST_F(SplitViewControllerTest, LongPressExitsSplitView) {
 // Verify that if a window with a transient child which is not snappable is
 // activated, and the the overview tray is long pressed, we will enter splitview
 // with the transient parent snapped.
-TEST_F(SplitViewControllerTest, LongPressEntersSplitViewWithTransientChild) {
+TEST_P(SplitViewControllerTest, LongPressEntersSplitViewWithTransientChild) {
   // Add two windows with one being a transient child of the first.
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> parent(CreateWindow(bounds));
@@ -1252,7 +1253,7 @@ TEST_F(SplitViewControllerTest, LongPressEntersSplitViewWithTransientChild) {
   EXPECT_EQ(split_view_controller()->GetDefaultSnappedWindow(), parent.get());
 }
 
-TEST_F(SplitViewControllerTest, LongPressExitsSplitViewWithTransientChild) {
+TEST_P(SplitViewControllerTest, LongPressExitsSplitViewWithTransientChild) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> left_window(CreateWindow(bounds));
   std::unique_ptr<aura::Window> right_window(CreateWindow(bounds));
@@ -1284,7 +1285,7 @@ TEST_F(SplitViewControllerTest, LongPressExitsSplitViewWithTransientChild) {
 // Verify that split view mode get activated when long pressing on the overview
 // button while in overview mode iff we have more than two windows in the mru
 // list.
-TEST_F(SplitViewControllerTest, LongPressInOverviewMode) {
+TEST_P(SplitViewControllerTest, LongPressInOverviewMode) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   wm::ActivateWindow(window1.get());
@@ -1316,7 +1317,7 @@ TEST_F(SplitViewControllerTest, LongPressInOverviewMode) {
   CheckOverviewEnterExitHistogram("NoTransition", {2, 0}, {1, 0});
 }
 
-TEST_F(SplitViewControllerTest, LongPressWithUnsnappableWindow) {
+TEST_P(SplitViewControllerTest, LongPressWithUnsnappableWindow) {
   // Add one unsnappable window and two regular windows.
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> unsnappable_window(
@@ -1349,7 +1350,7 @@ TEST_F(SplitViewControllerTest, LongPressWithUnsnappableWindow) {
 }
 
 // Test the rotation functionalities in split view mode.
-TEST_F(SplitViewControllerTest, RotationTest) {
+TEST_P(SplitViewControllerTest, RotationTest) {
   UpdateDisplay("807x407");
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
@@ -1456,7 +1457,7 @@ TEST_F(SplitViewControllerTest, RotationTest) {
 
 // Test that if the split view mode is active when exiting tablet mode, we
 // should also end split view mode.
-TEST_F(SplitViewControllerTest, ExitTabletModeEndSplitView) {
+TEST_P(SplitViewControllerTest, ExitTabletModeEndSplitView) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
 
@@ -1469,7 +1470,7 @@ TEST_F(SplitViewControllerTest, ExitTabletModeEndSplitView) {
 
 // Tests that if a window's minimum size is larger than half of the display work
 // area's size, it can't be snapped.
-TEST_F(SplitViewControllerTest, SnapWindowWithMinimumSizeTest) {
+TEST_P(SplitViewControllerTest, SnapWindowWithMinimumSizeTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   EXPECT_TRUE(CanSnapInSplitview(window1.get()));
@@ -1490,7 +1491,7 @@ TEST_F(SplitViewControllerTest, SnapWindowWithMinimumSizeTest) {
 
 // Tests that the snapped window can not be moved outside of work area when its
 // minimum size is larger than its current desired resizing bounds.
-TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
+TEST_P(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager,
@@ -1644,7 +1645,7 @@ TEST_F(SplitViewControllerTest, ResizingSnappedWindowWithMinimumSizeTest) {
 
 // Tests that the divider should not be moved to a position that is smaller than
 // the snapped window's minimum size after resizing.
-TEST_F(SplitViewControllerTest,
+TEST_P(SplitViewControllerTest,
        DividerPositionOnResizingSnappedWindowWithMinimumSizeTest) {
   const gfx::Rect bounds(0, 0, 200, 200);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -1735,7 +1736,7 @@ TEST_F(SplitViewControllerTest,
 // Tests that the divider and snapped windows bounds should be updated if
 // snapping a new window with minimum size, which is larger than the bounds
 // of its snap position.
-TEST_F(SplitViewControllerTest,
+TEST_P(SplitViewControllerTest,
        DividerPositionWithWindowMinimumSizeOnSnapTest) {
   const gfx::Rect bounds(0, 0, 200, 300);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -1772,7 +1773,7 @@ TEST_F(SplitViewControllerTest,
 
 // Test that if display configuration changes in lock screen, the split view
 // mode doesn't end.
-TEST_F(SplitViewControllerTest, DoNotEndSplitViewInLockScreen) {
+TEST_P(SplitViewControllerTest, DoNotEndSplitViewInLockScreen) {
   display::test::DisplayManagerTestApi(display_manager())
       .SetFirstDisplayAsInternalDisplay();
   UpdateDisplay("800x400");
@@ -1800,7 +1801,7 @@ TEST_F(SplitViewControllerTest, DoNotEndSplitViewInLockScreen) {
 
 // Test that when split view and overview are both active when a new window is
 // added to the window hierarchy, overview is not ended.
-TEST_F(SplitViewControllerTest, NewWindowTest) {
+TEST_P(SplitViewControllerTest, NewWindowTest) {
   const gfx::Rect bounds(0, 0, 200, 300);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
 
@@ -1816,7 +1817,7 @@ TEST_F(SplitViewControllerTest, NewWindowTest) {
 
 // Tests that when split view ends because of a transition from tablet mode to
 // laptop mode during a resize operation, drags are properly completed.
-TEST_F(SplitViewControllerTest, ExitTabletModeDuringResizeCompletesDrags) {
+TEST_P(SplitViewControllerTest, ExitTabletModeDuringResizeCompletesDrags) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -1862,7 +1863,7 @@ TEST_F(SplitViewControllerTest, ExitTabletModeDuringResizeCompletesDrags) {
 
 // Tests that when a single window is present in split view mode is minimized
 // during a resize operation, then drags are properly completed.
-TEST_F(SplitViewControllerTest,
+TEST_P(SplitViewControllerTest,
        MinimizeSingleWindowDuringResizeCompletesDrags) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -1902,7 +1903,7 @@ TEST_F(SplitViewControllerTest,
 
 // Tests that when two windows are present in split view mode and one of them
 // is minimized during a resize, then drags are properly completed.
-TEST_F(SplitViewControllerTest,
+TEST_P(SplitViewControllerTest,
        MinimizeOneOfTwoWindowsDuringResizeCompletesDrags) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
@@ -1950,7 +1951,7 @@ TEST_F(SplitViewControllerTest,
 
 // Test that when a snapped window's resizablity property change from resizable
 // to unresizable, the split view mode is ended.
-TEST_F(SplitViewControllerTest, ResizabilityChangeTest) {
+TEST_P(SplitViewControllerTest, ResizabilityChangeTest) {
   const gfx::Rect bounds(0, 0, 200, 300);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
@@ -1963,7 +1964,7 @@ TEST_F(SplitViewControllerTest, ResizabilityChangeTest) {
 
 // Tests that shadows on windows disappear when the window is snapped, and
 // reappear when unsnapped.
-TEST_F(SplitViewControllerTest, ShadowDisappearsWhenSnapped) {
+TEST_P(SplitViewControllerTest, ShadowDisappearsWhenSnapped) {
   const gfx::Rect bounds(200, 200);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -2000,7 +2001,7 @@ TEST_F(SplitViewControllerTest, ShadowDisappearsWhenSnapped) {
 // windows in overview mode to snap to both side of the screen), or toggle
 // overview to end overview causes a window to snap, we should not have the
 // exiting animation.
-TEST_F(SplitViewControllerTest, OverviewExitAnimationTest) {
+TEST_P(SplitViewControllerTest, OverviewExitAnimationTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -2057,7 +2058,7 @@ TEST_F(SplitViewControllerTest, OverviewExitAnimationTest) {
 
 // Test the window state is normally maximized on splitview end, except when we
 // end it from home launcher.
-TEST_F(SplitViewControllerTest, WindowStateOnExit) {
+TEST_P(SplitViewControllerTest, WindowStateOnExit) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -2082,7 +2083,7 @@ TEST_F(SplitViewControllerTest, WindowStateOnExit) {
 
 // Test that if overview and splitview are both active at the same time,
 // activiate an unsnappable window should end both overview and splitview mode.
-TEST_F(SplitViewControllerTest, ActivateNonSnappableWindow) {
+TEST_P(SplitViewControllerTest, ActivateNonSnappableWindow) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -2100,7 +2101,7 @@ TEST_F(SplitViewControllerTest, ActivateNonSnappableWindow) {
 
 // Tests that if a snapped window has a bubble transient child, the bubble's
 // bounds should always align with the snapped window's bounds.
-TEST_F(SplitViewControllerTest, AdjustTransientChildBounds) {
+TEST_P(SplitViewControllerTest, AdjustTransientChildBounds) {
   std::unique_ptr<views::Widget> widget(CreateTestWidget());
   aura::Window* window = widget->GetNativeWindow();
   window->SetProperty(aura::client::kResizeBehaviorKey,
@@ -2129,7 +2130,7 @@ TEST_F(SplitViewControllerTest, AdjustTransientChildBounds) {
 
 // Tests the divider closest position ratio if work area is not starts from the
 // top of the display.
-TEST_F(SplitViewControllerTest, DividerClosestRatioOnWorkArea) {
+TEST_P(SplitViewControllerTest, DividerClosestRatioOnWorkArea) {
   UpdateDisplay("1200x800");
   // Docked magnifier will put a view port window on the top of the display.
   Shell::Get()->docked_magnifier_controller()->SetEnabled(true);
@@ -2190,7 +2191,7 @@ TEST_F(SplitViewControllerTest, DividerClosestRatioOnWorkArea) {
 
 // Test that if we snap an always on top window in splitscreen, there should be
 // no crash and the window should stay always on top.
-TEST_F(SplitViewControllerTest, AlwaysOnTopWindow) {
+TEST_P(SplitViewControllerTest, AlwaysOnTopWindow) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> always_on_top_window(CreateWindow(bounds));
   always_on_top_window->SetProperty(aura::client::kZOrderingKey,
@@ -2217,7 +2218,7 @@ TEST_F(SplitViewControllerTest, AlwaysOnTopWindow) {
 }
 
 // Test that pinning a window ends split view mode.
-TEST_F(SplitViewControllerTest, PinningWindowEndsSplitView) {
+TEST_P(SplitViewControllerTest, PinningWindowEndsSplitView) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
 
@@ -2230,7 +2231,7 @@ TEST_F(SplitViewControllerTest, PinningWindowEndsSplitView) {
 
 // Test that split view mode is disallowed while we're in pinned mode (there is
 // a pinned window).
-TEST_F(SplitViewControllerTest, PinnedWindowDisallowsSplitView) {
+TEST_P(SplitViewControllerTest, PinnedWindowDisallowsSplitView) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
 
@@ -2243,7 +2244,7 @@ TEST_F(SplitViewControllerTest, PinnedWindowDisallowsSplitView) {
 // Test that if split view ends while the divider is dragged to where a snapped
 // window is sliding off the screen because it has reached minimum size, then
 // the offset is cleared.
-TEST_F(SplitViewControllerTest, EndSplitViewWhileResizingBeyondMinimum) {
+TEST_P(SplitViewControllerTest, EndSplitViewWhileResizingBeyondMinimum) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager,
@@ -2291,7 +2292,7 @@ TEST_F(SplitViewControllerTest, EndSplitViewWhileResizingBeyondMinimum) {
 
 // Test if presentation time is recorded for multi window resizing
 // and resizing with overview.
-TEST_F(SplitViewControllerTest, ResizeTwoWindows) {
+TEST_P(SplitViewControllerTest, ResizeTwoWindows) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager,
@@ -2356,7 +2357,7 @@ TEST_F(SplitViewControllerTest, ResizeTwoWindows) {
 // Test that if split view ends during the divider snap animation while a
 // snapped window is sliding off the screen because it has reached minimum size,
 // then the animation is ended and the window offset is cleared.
-TEST_F(SplitViewControllerTest, EndSplitViewDuringDividerSnapAnimation) {
+TEST_P(SplitViewControllerTest, EndSplitViewDuringDividerSnapAnimation) {
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
   display::test::ScopedSetInternalDisplayId set_internal(display_manager,
@@ -2414,7 +2415,7 @@ class TestOverviewItemsOnOverviewModeEndObserver : public OverviewObserver {
   DISALLOW_COPY_AND_ASSIGN(TestOverviewItemsOnOverviewModeEndObserver);
 };
 
-TEST_F(SplitViewControllerTest, ItemsRemovedFromOverviewOnSnap) {
+TEST_P(SplitViewControllerTest, ItemsRemovedFromOverviewOnSnap) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
   std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
@@ -2436,7 +2437,7 @@ TEST_F(SplitViewControllerTest, ItemsRemovedFromOverviewOnSnap) {
 }
 
 // Test that resizing ends properly if split view ends during divider dragging.
-TEST_F(SplitViewControllerTest, EndSplitViewWhileDragging) {
+TEST_P(SplitViewControllerTest, EndSplitViewWhileDragging) {
   // Enter split view mode.
   std::unique_ptr<aura::Window> window = CreateTestWindow();
   split_view_controller()->SnapWindow(window.get(), SplitViewController::LEFT);
@@ -2620,7 +2621,7 @@ class SplitViewTabDraggingTest : public SplitViewControllerTest {
 
 // Test that in tablet mode, we only allow dragging on browser or chrome app
 // window's caption area.
-TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnBrowserOrChromeAppWindow) {
+TEST_P(SplitViewTabDraggingTest, OnlyAllowDraggingOnBrowserOrChromeAppWindow) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -2650,7 +2651,7 @@ TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnBrowserOrChromeAppWindow) {
 
 // Test that in tablet mode, we only allow dragging that happens on window
 // caption or top area.
-TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnCaptionOrTopArea) {
+TEST_P(SplitViewTabDraggingTest, OnlyAllowDraggingOnCaptionOrTopArea) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -2687,7 +2688,7 @@ TEST_F(SplitViewTabDraggingTest, OnlyAllowDraggingOnCaptionOrTopArea) {
 
 // Test that in tablet mode, if the dragging is from mouse event, the mouse
 // cursor should be properly locked.
-TEST_F(SplitViewTabDraggingTest, LockCursor) {
+TEST_P(SplitViewTabDraggingTest, LockCursor) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -2706,7 +2707,7 @@ TEST_F(SplitViewTabDraggingTest, LockCursor) {
 
 // Test that in tablet mode, if a window is in tab-dragging process, its
 // backdrop is disabled during dragging process.
-TEST_F(SplitViewTabDraggingTest, NoBackDropDuringDragging) {
+TEST_P(SplitViewTabDraggingTest, NoBackDropDuringDragging) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -2730,7 +2731,7 @@ TEST_F(SplitViewTabDraggingTest, NoBackDropDuringDragging) {
 
 // Test that in tablet mode, the window that is in tab-dragging process should
 // not be shown in overview mode.
-TEST_F(SplitViewTabDraggingTest, DoNotShowDraggedWindowInOverview) {
+TEST_P(SplitViewTabDraggingTest, DoNotShowDraggedWindowInOverview) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -2761,7 +2762,7 @@ TEST_F(SplitViewTabDraggingTest, DoNotShowDraggedWindowInOverview) {
 
 // Test that if a window is in tab-dragging process, the split divider is placed
 // below the current dragged window.
-TEST_F(SplitViewTabDraggingTest, DividerIsBelowDraggedWindow) {
+TEST_P(SplitViewTabDraggingTest, DividerIsBelowDraggedWindow) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -2789,7 +2790,7 @@ TEST_F(SplitViewTabDraggingTest, DividerIsBelowDraggedWindow) {
 
 // Test the functionalities that are related to dragging a maximized window's
 // tabs. See the expected behaviors described in go/tab-dragging-in-tablet-mode.
-TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
+TEST_P(SplitViewTabDraggingTest, DragMaximizedWindow) {
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
@@ -2953,7 +2954,7 @@ TEST_F(SplitViewTabDraggingTest, DragMaximizedWindow) {
 // kNone, then it will trigger the animation associated with snapping a window,
 // which is not an appropriate animation for the case where the preview area is
 // showing and you drag the window away from the edge of the screen.
-TEST_F(SplitViewTabDraggingTest, DragSnappedWindow) {
+TEST_P(SplitViewTabDraggingTest, DragSnappedWindow) {
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
@@ -3116,7 +3117,7 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindow) {
 // behaviors described in go/tab-dragging-in-tablet-mode. See the comment on
 // SplitViewTabDraggingTest.DragSnappedWindow for a note on expectations for
 // GetIndicatorState(resizer.get()).
-TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
+TEST_P(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
@@ -3250,7 +3251,7 @@ TEST_F(SplitViewTabDraggingTest, DragSnappedWindowWhileOverviewOpen) {
 // Test that if a window is in tab-dragging process when overview is open, the
 // new window item widget shows up when the drag starts, and is destroyed after
 // the drag ends.
-TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
+TEST_P(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -3310,7 +3311,7 @@ TEST_F(SplitViewTabDraggingTest, ShowNewWindowItemWhenDragStarts) {
 
 // Tests that if overview is ended because of releasing the dragged window, we
 // should not do animation when exiting overview.
-TEST_F(SplitViewTabDraggingTest, OverviewExitAnimationTest) {
+TEST_P(SplitViewTabDraggingTest, OverviewExitAnimationTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -3359,7 +3360,7 @@ TEST_F(SplitViewTabDraggingTest, OverviewExitAnimationTest) {
 
 // Tests that there is no top drag indicator if drag a window in portrait screen
 // orientation.
-TEST_F(SplitViewTabDraggingTest, DragIndicatorsInPortraitOrientationTest) {
+TEST_P(SplitViewTabDraggingTest, DragIndicatorsInPortraitOrientationTest) {
   UpdateDisplay("800x600");
   int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
   display::DisplayManager* display_manager = Shell::Get()->display_manager();
@@ -3403,7 +3404,7 @@ TEST_F(SplitViewTabDraggingTest, DragIndicatorsInPortraitOrientationTest) {
 
 // Tests that if dragging a window into the preview split area, overivew bounds
 // should be adjusted accordingly.
-TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
+TEST_P(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -3534,7 +3535,7 @@ TEST_F(SplitViewTabDraggingTest, AdjustOverviewBoundsDuringDragging) {
 
 // Tests that a dragged window's bounds should be updated before dropping onto
 // the drop target to add into overview.
-TEST_F(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
+TEST_P(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -3601,7 +3602,7 @@ TEST_F(SplitViewTabDraggingTest, WindowBoundsUpdatedBeforeAddingToOverview) {
 
 // Tests that window should be dropped into overview if has been dragged further
 // than half of the distance from top of display to the top of drop target.
-TEST_F(SplitViewTabDraggingTest, DropWindowIntoOverviewOnDragPositionTest) {
+TEST_P(SplitViewTabDraggingTest, DropWindowIntoOverviewOnDragPositionTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> browser_window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -3694,7 +3695,7 @@ TEST_F(SplitViewTabDraggingTest, DropWindowIntoOverviewOnDragPositionTest) {
 
 // Tests that a dragged window should have the active window shadow during
 // dragging.
-TEST_F(SplitViewTabDraggingTest, DraggedWindowShouldHaveActiveWindowShadow) {
+TEST_P(SplitViewTabDraggingTest, DraggedWindowShouldHaveActiveWindowShadow) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -3738,7 +3739,7 @@ TEST_F(SplitViewTabDraggingTest, DraggedWindowShouldHaveActiveWindowShadow) {
 // Test that if the source window needs to be scaled up/down because of dragging
 // a tab window out of it, other windows' visibilities and the home launcher's
 // visibility should change accordingly.
-TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
+TEST_P(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -3788,7 +3789,7 @@ TEST_F(SplitViewTabDraggingTest, SourceWindowBackgroundTest) {
 
 // Tests that the dragged window should be the active and top window if overview
 // ended because of window drag.
-TEST_F(SplitViewTabDraggingTest, OverviewEndedOnWindowDrag) {
+TEST_P(SplitViewTabDraggingTest, OverviewEndedOnWindowDrag) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -3837,7 +3838,7 @@ TEST_F(SplitViewTabDraggingTest, OverviewEndedOnWindowDrag) {
 
 // When tab dragging a window, the dragged window might need to merge back into
 // the source window when the drag ends. Tests the related functionalities.
-TEST_F(SplitViewTabDraggingTest, MergeBackToSourceWindow) {
+TEST_P(SplitViewTabDraggingTest, MergeBackToSourceWindow) {
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> dragged_window(
@@ -3926,7 +3927,7 @@ TEST_F(SplitViewTabDraggingTest, MergeBackToSourceWindow) {
 
 // Tests that if window being dragged into drop target when preview area is
 // shown, window should go to be snapped instead of being dropped into overview.
-TEST_F(SplitViewTabDraggingTest, DragWindowIntoPreviewAreaAndDropTarget) {
+TEST_P(SplitViewTabDraggingTest, DragWindowIntoPreviewAreaAndDropTarget) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> browser_window(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -3946,7 +3947,7 @@ TEST_F(SplitViewTabDraggingTest, DragWindowIntoPreviewAreaAndDropTarget) {
 
 // Tests that if a fling event happens on a tab, the tab might or might not
 // merge back into the source window depending on the fling event velocity.
-TEST_F(SplitViewTabDraggingTest, FlingTest) {
+TEST_P(SplitViewTabDraggingTest, FlingTest) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> dragged_window(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -3969,7 +3970,7 @@ TEST_F(SplitViewTabDraggingTest, FlingTest) {
 
 // Tests that in various cases, after the tab drag ends, the dragged window and
 // the source window should have correct bounds.
-TEST_F(SplitViewTabDraggingTest, BoundsTest) {
+TEST_P(SplitViewTabDraggingTest, BoundsTest) {
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
@@ -4076,7 +4077,7 @@ TEST_F(SplitViewTabDraggingTest, BoundsTest) {
 
 // Tests that press overview key in keyboard during drag should not put the
 // dragged window into overview.
-TEST_F(SplitViewTabDraggingTest, PressOverviewKeyDuringDrag) {
+TEST_P(SplitViewTabDraggingTest, PressOverviewKeyDuringDrag) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> dragged_window(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -4099,7 +4100,7 @@ TEST_F(SplitViewTabDraggingTest, PressOverviewKeyDuringDrag) {
 // Tests that if the dragged window is activated after the drag ends, but before
 // the dragged window gets snapped, the divider bar is placed correctly above
 // the snapped windows.
-TEST_F(SplitViewTabDraggingTest, DragActiveWindow) {
+TEST_P(SplitViewTabDraggingTest, DragActiveWindow) {
   UpdateDisplay("600x600");
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> window1(
@@ -4141,7 +4142,7 @@ TEST_F(SplitViewTabDraggingTest, DragActiveWindow) {
 
 // Tests that the divider bar should be placed on top after the drag ends, no
 // matter the dragged window is destroyed during the drag or not.
-TEST_F(SplitViewTabDraggingTest, DividerBarOnTopAfterDragEnds) {
+TEST_P(SplitViewTabDraggingTest, DividerBarOnTopAfterDragEnds) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> dragged_window(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -4174,7 +4175,7 @@ TEST_F(SplitViewTabDraggingTest, DividerBarOnTopAfterDragEnds) {
             split_view_divider()->divider_widget()->GetZOrderLevel());
 }
 
-TEST_F(SplitViewTabDraggingTest, IgnoreActivatedTabDraggingWindow) {
+TEST_P(SplitViewTabDraggingTest, IgnoreActivatedTabDraggingWindow) {
   const gfx::Rect bounds(0, 0, 400, 400);
   std::unique_ptr<aura::Window> dragged_window(
       CreateWindowWithType(bounds, AppType::BROWSER));
@@ -4217,7 +4218,7 @@ class SplitViewTabDraggingTestWithClamshellSupport
   DISALLOW_COPY_AND_ASSIGN(SplitViewTabDraggingTestWithClamshellSupport);
 };
 
-TEST_F(SplitViewTabDraggingTestWithClamshellSupport,
+TEST_P(SplitViewTabDraggingTestWithClamshellSupport,
        DragTabFromSnappedWindowToOverviewAndThenExitTablet) {
   // Snap a browser window in split view.
   std::unique_ptr<aura::Window> snapped_window(
@@ -4355,7 +4356,7 @@ class SplitViewAppDraggingTest : public SplitViewControllerTest {
 
 // Tests that drag the window that cannot be snapped from top of the display
 // will not snap the window into splitscreen.
-TEST_F(SplitViewAppDraggingTest, DragNonActiveMaximizedWindow) {
+TEST_P(SplitViewAppDraggingTest, DragNonActiveMaximizedWindow) {
   UpdateDisplay("800x600");
   InitializeWindow(false);
   EXPECT_TRUE(WindowState::Get(window())->IsMaximized());
@@ -4381,7 +4382,7 @@ TEST_F(SplitViewAppDraggingTest, DragNonActiveMaximizedWindow) {
 
 // Tests the functionalities that are related to dragging a maximized window
 // into splitscreen.
-TEST_F(SplitViewAppDraggingTest, DragActiveMaximizedWindow) {
+TEST_P(SplitViewAppDraggingTest, DragActiveMaximizedWindow) {
   UpdateDisplay("800x600");
   InitializeWindow();
   EXPECT_TRUE(WindowState::Get(window())->IsMaximized());
@@ -4432,7 +4433,7 @@ TEST_F(SplitViewAppDraggingTest, DragActiveMaximizedWindow) {
 }
 
 // Tests the shelf visibility when a fullscreened window is being dragged.
-TEST_F(SplitViewAppDraggingTest, ShelfVisibilityIfDraggingFullscreenedWindow) {
+TEST_P(SplitViewAppDraggingTest, ShelfVisibilityIfDraggingFullscreenedWindow) {
   UpdateDisplay("800x600");
   InitializeWindow();
   ShelfLayoutManager* shelf_layout_manager =
@@ -4470,7 +4471,7 @@ TEST_F(SplitViewAppDraggingTest, ShelfVisibilityIfDraggingFullscreenedWindow) {
 }
 
 // Tests the auto-hide shelf state during window dragging.
-TEST_F(SplitViewAppDraggingTest, AutoHideShelf) {
+TEST_P(SplitViewAppDraggingTest, AutoHideShelf) {
   UpdateDisplay("800x600");
   Shelf* shelf = GetPrimaryShelf();
   shelf->SetAutoHideBehavior(SHELF_AUTO_HIDE_BEHAVIOR_NEVER);
@@ -4508,7 +4509,7 @@ TEST_F(SplitViewAppDraggingTest, AutoHideShelf) {
 }
 
 // Tests the functionalities that fling the window when preview area is shown.
-TEST_F(SplitViewAppDraggingTest, FlingWhenPreviewAreaIsShown) {
+TEST_P(SplitViewAppDraggingTest, FlingWhenPreviewAreaIsShown) {
   InitializeWindow();
   EXPECT_TRUE(WindowState::Get(window())->IsMaximized());
   gfx::Rect display_bounds =
@@ -4565,7 +4566,7 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenPreviewAreaIsShown) {
 }
 
 // Tests the functionalities that fling a window when splitview is active.
-TEST_F(SplitViewAppDraggingTest, FlingWhenSplitViewIsActive) {
+TEST_P(SplitViewAppDraggingTest, FlingWhenSplitViewIsActive) {
   InitializeWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindowWithWidget(true);
 
@@ -4670,7 +4671,7 @@ TEST_F(SplitViewAppDraggingTest, FlingWhenSplitViewIsActive) {
 }
 
 // Tests the backdrop bounds during window drag.
-TEST_F(SplitViewAppDraggingTest, BackdropBoundsDuringDrag) {
+TEST_P(SplitViewAppDraggingTest, BackdropBoundsDuringDrag) {
   InitializeWindow();
   std::unique_ptr<aura::Window> window2 = CreateTestWindowWithWidget(true);
   split_view_controller()->SnapWindow(window(), SplitViewController::LEFT);
@@ -4715,5 +4716,12 @@ TEST_F(SplitViewAppDraggingTest, BackdropBoundsDuringDrag) {
   DCHECK(backdrop_window);
   EXPECT_EQ(backdrop_window->bounds(), active_desk_container->bounds());
 }
+
+INSTANTIATE_TEST_SUITE_P(, SplitViewControllerTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, SplitViewTabDraggingTest, testing::Bool());
+INSTANTIATE_TEST_SUITE_P(,
+                         SplitViewTabDraggingTestWithClamshellSupport,
+                         testing::Bool());
+INSTANTIATE_TEST_SUITE_P(, SplitViewAppDraggingTest, testing::Bool());
 
 }  // namespace ash

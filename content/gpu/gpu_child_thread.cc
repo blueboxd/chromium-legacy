@@ -33,8 +33,9 @@
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
+#include "services/metrics/public/cpp/mojo_ukm_recorder.h"
+#include "services/metrics/public/mojom/ukm_interface.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/shape_detection/public/mojom/shape_detection_service.mojom.h"
 #include "services/shape_detection/shape_detection_service.h"
 #include "services/viz/privileged/mojom/gl/gpu_service.mojom.h"
@@ -165,8 +166,7 @@ class QueueingConnectionFilter : public ConnectionFilter {
   DISALLOW_COPY_AND_ASSIGN(QueueingConnectionFilter);
 };
 
-viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies(
-    service_manager::Connector* connector) {
+viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies() {
   viz::VizMainImpl::ExternalDependencies deps;
   deps.create_display_compositor = features::IsVizDisplayCompositorEnabled();
   if (GetContentClient()->gpu()) {
@@ -179,7 +179,12 @@ viz::VizMainImpl::ExternalDependencies CreateVizMainDependencies(
   auto* process = ChildProcess::current();
   deps.shutdown_event = process->GetShutDownEvent();
   deps.io_thread_task_runner = process->io_task_runner();
-  deps.connector = connector;
+
+  mojo::PendingRemote<ukm::mojom::UkmRecorderInterface> ukm_recorder;
+  ChildThread::Get()->BindHostReceiver(
+      ukm_recorder.InitWithNewPipeAndPassReceiver());
+  deps.ukm_recorder =
+      std::make_unique<ukm::MojoUkmRecorder>(std::move(ukm_recorder));
   return deps;
 }
 
@@ -208,9 +213,7 @@ GpuChildThread::GpuChildThread(base::RepeatingClosure quit_closure,
                                const ChildThreadImpl::Options& options,
                                std::unique_ptr<gpu::GpuInit> gpu_init)
     : ChildThreadImpl(MakeQuitSafelyClosure(), options),
-      viz_main_(this,
-                CreateVizMainDependencies(GetConnector()),
-                std::move(gpu_init)),
+      viz_main_(this, CreateVizMainDependencies(), std::move(gpu_init)),
       quit_closure_(std::move(quit_closure)) {
   if (in_process_gpu()) {
     DCHECK(base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -395,21 +398,15 @@ std::unique_ptr<media::AndroidOverlay> GpuChildThread::CreateAndroidOverlay(
     media::AndroidOverlayConfig config) {
   media::mojom::AndroidOverlayProviderPtr overlay_provider;
   if (main_task_runner->RunsTasksInCurrentSequence()) {
-    ChildThread::Get()->GetConnector()->BindInterface(
-        content::mojom::kSystemServiceName, &overlay_provider);
+    ChildThread::Get()->BindHostReceiver(mojo::MakeRequest(&overlay_provider));
   } else {
-    // Create a connector on this sequence and bind it on the main thread.
-    service_manager::mojom::ConnectorRequest request;
-    auto connector = service_manager::Connector::Create(&request);
-    connector->BindInterface(content::mojom::kSystemServiceName,
-                             &overlay_provider);
-    auto bind_connector_request =
-        [](service_manager::mojom::ConnectorRequest request) {
-          ChildThread::Get()->GetConnector()->BindConnectorRequest(
-              std::move(request));
-        };
     main_task_runner->PostTask(
-        FROM_HERE, base::BindOnce(bind_connector_request, std::move(request)));
+        FROM_HERE,
+        base::BindOnce(
+            [](media::mojom::AndroidOverlayProviderRequest request) {
+              ChildThread::Get()->BindHostReceiver(std::move(request));
+            },
+            mojo::MakeRequest(&overlay_provider)));
   }
 
   return std::make_unique<media::MojoAndroidOverlay>(

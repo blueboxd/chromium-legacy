@@ -1016,7 +1016,7 @@ class IntegrationTest(unittest.TestCase):
                         'chrome-proxy-content-transform']
       if ('empty-image' in cpct_response):
         self.assertIn('empty-image', cpat_request)
-        self.assertTrue(int(content_length) < 100)
+        self.assertLess(int(content_length), 100)
         return True;
       return False;
     else:
@@ -1028,7 +1028,7 @@ class IntegrationTest(unittest.TestCase):
       self.assertNotIn('chrome-proxy-content-transform',
         http_response.response_headers)
       content_length = http_response.response_headers['content-length']
-      self.assertTrue(int(content_length) > 100)
+      self.assertGreater(int(content_length), 100)
       return False;
 
   def checkLitePageResponse(self, http_response):

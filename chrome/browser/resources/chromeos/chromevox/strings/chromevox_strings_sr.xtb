@@ -20,6 +20,7 @@
 <translation id="1087788677726983142">Сакриј филтере стрима догађаја</translation>
 <translation id="1088219014394087294">Нема заглавља.</translation>
 <translation id="1106741348836243114">Укључивање или искључивање звучних повратних информација (звучна обавештења).</translation>
+<translation id="1114836634143403764">Предлог</translation>
 <translation id="1120743664840974483">{"а": "авала", "б": "београд", "ц": "цетиње", "д": "дрина", "е": "европа", "ф": "футог", "г": "голија", "х": "херој", "и": "игало", "ј": "јадран", "к": "косово", "л": "ловћен", "м": "морава", "н": "ниш", "о": "обилић", "п": "пирот", "q": "кворум", "р": "рума", "с": "сава", "т": "тимок", "у": "ужице", "в": "ваљево", "w": "дупло ве", "x": "ксилофон", "y": "ипсилон", "з": "земун", "ћ": "ћуприја", "ч": "чачак", "џ": "џеп", "ђ": "ђаковица", "љ": "љубовија", "њ": "његош", "ш": "шабац", "ж": "жабљак"}</translation>
 <translation id="1120938014254001895">Превлачите нагоре помоћу два прста</translation>
 <translation id="1124771028211010580">Актуелни стил приказа је „упоредо“.</translation>
@@ -126,6 +127,7 @@
 <translation id="1845944666972354496">Додирните двапут ради активирања</translation>
 <translation id="1846771122725914429">Bluetooth Брајев екран</translation>
 <translation id="1865601187525349519">Крај текста</translation>
+<translation id="1875375785454778375">Присуство уживо</translation>
 <translation id="1876229593313240038">doc</translation>
 <translation id="188130072164734898">Изговара актуелно време и датум.</translation>
 <translation id="1902396333223336119">Ћелија</translation>
@@ -146,6 +148,7 @@
 <translation id="2009187674653301682">Није експонентни текст</translation>
 <translation id="2010555995361223825">ChromeVox менији</translation>
 <translation id="2045490512405922022">није означено</translation>
+<translation id="2049107626739254612">Информације о прављењу садржаја</translation>
 <translation id="20601713649439366">Нема претходног математичког израза.</translation>
 <translation id="2063539687800151747">Натпис</translation>
 <translation id="207477615537953741">Семантичко тумачење је искључено</translation>
@@ -156,6 +159,7 @@
 <translation id="2110480898214777136">Превуците са почетка на крај или са краја на почетак странице, дијалога или другог контејнера</translation>
 <translation id="2119965627982867824">дугме за промену вредности</translation>
 <translation id="2121067395472282800">приступни тастер:<ph name="KEY" /></translation>
+<translation id="2126597928985245619">Нема доступног текста за ову ставку</translation>
 <translation id="2127747486437921899">Курзив</translation>
 <translation id="2138345533858834403">Симулира приказ екрана са Брајевом азбуком који може да се освежава
         у ChromeVox окну при врху екрана.</translation>
@@ -261,6 +265,7 @@
 <translation id="2911433807131383493">Отварање ChromeVox водича</translation>
 <translation id="2912405967290226587">Превлачите надесно помоћу три прста</translation>
 <translation id="2932083475399492303">Пребацивање типа линије са линије структуре на линију распореда и обрнуто</translation>
+<translation id="293796669683825859">Коментари</translation>
 <translation id="2942710183375260152">Тамна сивоплава</translation>
 <translation id="2943596527105977722">Тамна златножута</translation>
 <translation id="2944762337049891859">Аутоматски прочитај страницу када заврши са учитавањем.</translation>
@@ -337,6 +342,7 @@
 <translation id="3324983252691184275">Јаркоцрвена</translation>
 <translation id="3338224621010291843"><ph name="VALUE" /> <ph name="NAME" /> клизач</translation>
 <translation id="335581015389089642">Говор</translation>
+<translation id="3356951775008366684">Описује фонетски изговор речи</translation>
 <translation id="3359142382821736686">разделник</translation>
 <translation id="3374537878095184207">{COUNT,plural, =1{знак плус}one{# знак плус}few{# знака плус}other{# знакова плус}}</translation>
 <translation id="338583716107319301">Разделник</translation>
@@ -533,6 +539,7 @@
 <translation id="4763480195061959176">видео</translation>
 <translation id="4764692524839457597">подразумевано</translation>
 <translation id="4772771694153161212">Није подвучено</translation>
+<translation id="4787577491510559358">Описује форматирање за тренутну ставку</translation>
 <translation id="479989351350248267">search</translation>
 <translation id="4804818685124855865">Прекини везу</translation>
 <translation id="481165870889056555">Објављивање наслова актуелне странице</translation>
@@ -569,6 +576,7 @@
 <translation id="4983588134362688868">Прелазак на врх странице</translation>
 <translation id="4986606102545753256">Прозор <ph name="NAME" /></translation>
 <translation id="4993152509206108683">Брзина у процентима: <ph name="PERCENT" /></translation>
+<translation id="4994420463726586413">Описује тренутни статус батерије</translation>
 <translation id="4996716799442435517">Визуелно</translation>
 <translation id="4997282455736854877">Дугме за избор <ph name="NAME" /> је изабрано</translation>
 <translation id="4997475792277222884">Нема следеће ставке која није линк.</translation>

@@ -120,8 +120,7 @@ DWriteFontProxyImpl::~DWriteFontProxyImpl() = default;
 
 // static
 void DWriteFontProxyImpl::Create(
-    mojo::PendingReceiver<blink::mojom::DWriteFontProxy> receiver,
-    const service_manager::BindSourceInfo& source_info) {
+    mojo::PendingReceiver<blink::mojom::DWriteFontProxy> receiver) {
   mojo::MakeSelfOwnedReceiver(std::make_unique<DWriteFontProxyImpl>(),
                               std::move(receiver));
 }

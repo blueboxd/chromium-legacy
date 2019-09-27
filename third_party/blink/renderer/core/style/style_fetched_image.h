@@ -61,8 +61,6 @@ class StyleFetchedImage final : public StyleImage,
   bool HasIntrinsicSize() const override;
   void AddClient(ImageResourceObserver*) override;
   void RemoveClient(ImageResourceObserver*) override;
-  void ImageNotifyFinished(ImageResourceContent*) override;
-  bool GetImageAnimationPolicy(ImageAnimationPolicy&) override;
   String DebugName() const override { return "StyleFetchedImage"; }
   scoped_refptr<Image> GetImage(const ImageResourceObserver&,
                                 const Document&,
@@ -80,6 +78,10 @@ class StyleFetchedImage final : public StyleImage,
  private:
   bool IsEqual(const StyleImage&) const override;
   void Dispose();
+
+  // ImageResourceObserver overrides
+  void ImageNotifyFinished(ImageResourceContent*) override;
+  bool GetImageAnimationPolicy(ImageAnimationPolicy&) override;
 
   Member<ImageResourceContent> image_;
   Member<const Document> document_;

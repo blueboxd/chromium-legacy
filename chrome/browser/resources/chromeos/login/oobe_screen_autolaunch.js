@@ -78,7 +78,7 @@ login.createScreen('AutolaunchScreen', 'autolaunch', function() {
     confirmAutoLaunchForTesting: function(confirm) {
       var button = confirm ? $('autolaunch-confirm-button') :
                              $('autolaunch-cancel-button');
-      var clickEvent = cr.doc.createEvent('Event');
+      var clickEvent = document.createEvent('Event');
       clickEvent.initEvent('click', true, true);
       button.dispatchEvent(clickEvent);
     }

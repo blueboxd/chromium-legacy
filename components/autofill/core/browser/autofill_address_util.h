@@ -75,11 +75,6 @@ void GetAddressComponents(const std::string& country_code,
                           base::ListValue* address_components,
                           std::string* components_language_code);
 
-// Sets data related to the country combobox.
-void SetCountryData(const PersonalDataManager& manager,
-                    base::DictionaryValue* localized_strings,
-                    const std::string& ui_language_code);
-
 }  // namespace autofill
 
 #endif  // COMPONENTS_AUTOFILL_CORE_BROWSER_AUTOFILL_ADDRESS_UTIL_H_

@@ -118,7 +118,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
                gfx::OverlayTransform transform,
                SkSurfaceCharacterization* characterization,
                base::WaitableEvent* event);
-  void FinishPaintCurrentFrame(
+  bool FinishPaintCurrentFrame(
       std::unique_ptr<SkDeferredDisplayList> ddl,
       std::unique_ptr<SkDeferredDisplayList> overdraw_ddl,
       std::vector<ImageContextImpl*> image_contexts,
@@ -129,7 +129,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
   void ScheduleOutputSurfaceAsOverlay(
       const OverlayProcessor::OutputSurfaceOverlayPlane& output_surface_plane);
   void SwapBuffers(OutputSurfaceFrame frame,
-                   base::OnceClosure deferred_framebuffer_draw_closure,
+                   base::OnceCallback<bool()> deferred_framebuffer_draw_closure,
                    uint64_t sync_fence_release);
   void EnsureBackbuffer() { output_device_->EnsureBackbuffer(); }
   void DiscardBackbuffer() { output_device_->DiscardBackbuffer(); }
@@ -144,7 +144,7 @@ class SkiaOutputSurfaceImplOnGpu : public gpu::ImageTransportSurfaceDelegate {
                   const copy_output::RenderPassGeometry& geometry,
                   const gfx::ColorSpace& color_space,
                   std::unique_ptr<CopyOutputRequest> request,
-                  base::OnceClosure deferred_framebuffer_draw_closure);
+                  base::OnceCallback<bool()> deferred_framebuffer_draw_closure);
 
   void BeginAccessImages(const std::vector<ImageContextImpl*>& image_contexts,
                          std::vector<GrBackendSemaphore>* begin_semaphores,

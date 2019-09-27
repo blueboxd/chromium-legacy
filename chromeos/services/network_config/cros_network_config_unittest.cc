@@ -455,9 +455,11 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
   EXPECT_EQ("wifi1_guid", network->guid);
   EXPECT_EQ(mojom::NetworkType::kWiFi, network->type);
   EXPECT_EQ(mojom::ConnectionStateType::kConnected, network->connection_state);
-  ASSERT_TRUE(network->wifi);
-  EXPECT_EQ(mojom::SecurityType::kNone, network->wifi->security);
-  EXPECT_EQ(50, network->wifi->signal_strength);
+  ASSERT_TRUE(network->type_state);
+  ASSERT_TRUE(network->type_state->is_wifi());
+  EXPECT_EQ(mojom::SecurityType::kNone,
+            network->type_state->get_wifi()->security);
+  EXPECT_EQ(50, network->type_state->get_wifi()->signal_strength);
   EXPECT_EQ(mojom::OncSource::kNone, network->source);
 
   network = GetNetworkState("wifi2_guid");
@@ -466,9 +468,11 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
   EXPECT_EQ(mojom::NetworkType::kWiFi, network->type);
   EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
             network->connection_state);
-  ASSERT_TRUE(network->wifi);
-  EXPECT_EQ(mojom::SecurityType::kWpaPsk, network->wifi->security);
-  EXPECT_EQ(100, network->wifi->signal_strength);
+  ASSERT_TRUE(network->type_state);
+  ASSERT_TRUE(network->type_state->is_wifi());
+  EXPECT_EQ(mojom::SecurityType::kWpaPsk,
+            network->type_state->get_wifi()->security);
+  EXPECT_EQ(100, network->type_state->get_wifi()->signal_strength);
   EXPECT_EQ(mojom::OncSource::kUserPolicy, network->source);
 
   network = GetNetworkState("wifi3_guid");
@@ -477,9 +481,11 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
   EXPECT_EQ(mojom::NetworkType::kWiFi, network->type);
   EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
             network->connection_state);
-  ASSERT_TRUE(network->wifi);
-  EXPECT_EQ(mojom::SecurityType::kWpaPsk, network->wifi->security);
-  EXPECT_EQ(0, network->wifi->signal_strength);
+  ASSERT_TRUE(network->type_state);
+  ASSERT_TRUE(network->type_state->is_wifi());
+  EXPECT_EQ(mojom::SecurityType::kWpaPsk,
+            network->type_state->get_wifi()->security);
+  EXPECT_EQ(0, network->type_state->get_wifi()->signal_strength);
   EXPECT_EQ(mojom::OncSource::kDevice, network->source);
 
   network = GetNetworkState("cellular_guid");
@@ -488,21 +494,24 @@ TEST_F(CrosNetworkConfigTest, GetNetworkState) {
   EXPECT_EQ(mojom::NetworkType::kCellular, network->type);
   EXPECT_EQ(mojom::ConnectionStateType::kNotConnected,
             network->connection_state);
-  ASSERT_TRUE(network->cellular);
-  EXPECT_EQ(0, network->cellular->signal_strength);
-  EXPECT_EQ("LTE", network->cellular->network_technology);
-  EXPECT_EQ(mojom::ActivationStateType::kActivated,
-            network->cellular->activation_state);
+  ASSERT_TRUE(network->type_state);
+  ASSERT_TRUE(network->type_state->is_cellular());
+  mojom::CellularStatePropertiesPtr& cellular =
+      network->type_state->get_cellular();
+  EXPECT_EQ(0, cellular->signal_strength);
+  EXPECT_EQ("LTE", cellular->network_technology);
+  EXPECT_EQ(mojom::ActivationStateType::kActivated, cellular->activation_state);
   EXPECT_EQ(mojom::OncSource::kNone, network->source);
-  EXPECT_TRUE(network->cellular->sim_locked);
+  EXPECT_TRUE(cellular->sim_locked);
 
   network = GetNetworkState("vpn_guid");
   ASSERT_TRUE(network);
   EXPECT_EQ("vpn_guid", network->guid);
   EXPECT_EQ(mojom::NetworkType::kVPN, network->type);
   EXPECT_EQ(mojom::ConnectionStateType::kConnecting, network->connection_state);
-  ASSERT_TRUE(network->vpn);
-  EXPECT_EQ(mojom::VpnType::kL2TPIPsec, network->vpn->type);
+  ASSERT_TRUE(network->type_state);
+  ASSERT_TRUE(network->type_state->is_vpn());
+  EXPECT_EQ(mojom::VpnType::kL2TPIPsec, network->type_state->get_vpn()->type);
   EXPECT_EQ(mojom::OncSource::kNone, network->source);
 
   // TODO(919691): Test ProxyMode once UIProxyConfigService logic is improved.
@@ -760,8 +769,9 @@ TEST_F(CrosNetworkConfigTest, ConfigureNetwork) {
   EXPECT_EQ(guid, network->guid);
   EXPECT_EQ(mojom::NetworkType::kWiFi, network->type);
   EXPECT_EQ(mojom::OncSource::kDevice, network->source);
-  ASSERT_TRUE(network->wifi);
-  EXPECT_EQ(ssid, network->wifi->ssid);
+  ASSERT_TRUE(network->type_state);
+  ASSERT_TRUE(network->type_state->is_wifi());
+  EXPECT_EQ(ssid, network->type_state->get_wifi()->ssid);
 }
 
 TEST_F(CrosNetworkConfigTest, ForgetNetwork) {

@@ -132,10 +132,6 @@ const base::Feature kDirectManipulationStylus = {
 const base::Feature kFormControlsRefresh = {"FormControlsRefresh",
                                             base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Enable WebUI accessibility enhancements for review and testing.
-const base::Feature kWebUIA11yEnhancements{"WebUIA11yEnhancements",
-                                           base::FEATURE_DISABLED_BY_DEFAULT};
-
 bool IsFormControlsRefreshEnabled() {
   return base::FeatureList::IsEnabled(features::kFormControlsRefresh);
 }

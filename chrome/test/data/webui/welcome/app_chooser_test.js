@@ -71,16 +71,8 @@ suite('AppChooserTest', function() {
 
     PolymerTest.clearBody();
 
-    // Add <base> so that images in nux-google-apps will be loaded from the
-    // correct data source.
-    const base = document.createElement('base');
-    base.href = 'chrome://welcome/google_apps/';
-    document.head.appendChild(base);
     testElement = document.createElement('nux-google-apps');
     document.body.appendChild(testElement);
-    // Remove <base> so that routing happens from a base of chrome://test, to
-    // prevent a security error.
-    document.head.removeChild(base);
 
     // Simulate nux-app's onRouteEnter call.
     testElement.onRouteEnter();

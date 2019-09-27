@@ -543,6 +543,7 @@
 <translation id="3658742229777143148">Ellenőrzés</translation>
 <translation id="366077651725703012">Hitelkártya frissítése</translation>
 <translation id="3676592649209844519">Eszközazonosító:</translation>
+<translation id="3677008721441257057">Erre gondolt: &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt;?</translation>
 <translation id="3678029195006412963">A kérést nem lehetett aláírni</translation>
 <translation id="3678529606614285348">Oldal megnyitása új inkognitóablakban (Ctrl+Shift+N)</translation>
 <translation id="3679803492151881375">A hibajelentés elkészítésének ideje: <ph name="CRASH_TIME" />; a feltöltés ideje: <ph name="UPLOAD_TIME" /></translation>
@@ -618,7 +619,6 @@
 <translation id="4075732493274867456">Az ügyfél és a szerver nem támogat ugyanolyan SSL-protokollverziót vagy rejtjelezési csomagot.</translation>
 <translation id="4079302484614802869">A proxykonfiguráció a .pac típusú szkript URL-cím, nem pedig a fix proxyszerverek használatára van beállítva.</translation>
 <translation id="4082393374666368382">Beállítások – kezelés</translation>
-<translation id="4092411512356034591">Továbblép a(z) <ph name="DOMAIN" /> webhelyre?</translation>
 <translation id="4098354747657067197">Megtévesztő webhely megnyitására készül</translation>
 <translation id="4103249731201008433">Az eszköz sorozatszáma érvénytelen</translation>
 <translation id="410351446219883937">Automatikus lejátszás</translation>
@@ -1168,7 +1168,6 @@
 <translation id="6868206169573555318">Újraindítás a frissítéshez</translation>
 <translation id="6874604403660855544">&amp;Hozzáadás újra</translation>
 <translation id="6884662655240309489">Méret: 1</translation>
-<translation id="6884796835813057577">Továbblép a(z) &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN" />&lt;/a&gt; webhelyre?</translation>
 <translation id="6886577214605505410"><ph name="LOCATION_TITLE" /> <ph name="SHORT_URL" /></translation>
 <translation id="6891596781022320156">Ezt a házirendszintet a rendszer nem támogatja.</translation>
 <translation id="6895330447102777224">Kártyáját ellenőriztük</translation>

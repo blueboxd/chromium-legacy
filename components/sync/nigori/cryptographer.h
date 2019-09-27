@@ -55,10 +55,6 @@ class Cryptographer {
   bool Decrypt(const sync_pb::EncryptedData& encrypted,
                ::google::protobuf::MessageLite* message) const;
 
-  // Returns whether there is a pending set of keys that needs to be decrypted.
-  // TODO(crbug.com/967417): Remove from cryptographer API.
-  virtual bool has_pending_keys() const = 0;
-
  private:
   DISALLOW_ASSIGN(Cryptographer);
 };

@@ -16,8 +16,7 @@
 namespace content {
 
 UtilityBlinkPlatformWithSandboxSupportImpl::
-    UtilityBlinkPlatformWithSandboxSupportImpl(
-        service_manager::Connector* connector) {
+    UtilityBlinkPlatformWithSandboxSupportImpl() {
 #if defined(OS_LINUX)
   mojo::PendingRemote<font_service::mojom::FontService> font_service;
   UtilityThread::Get()->BindHostReceiver(
@@ -26,7 +25,7 @@ UtilityBlinkPlatformWithSandboxSupportImpl::
   SkFontConfigInterface::SetGlobal(font_loader_);
   sandbox_support_ = std::make_unique<WebSandboxSupportLinux>(font_loader_);
 #elif defined(OS_MACOSX)
-  sandbox_support_ = std::make_unique<WebSandboxSupportMac>(connector);
+  sandbox_support_ = std::make_unique<WebSandboxSupportMac>();
 #endif
 }
 

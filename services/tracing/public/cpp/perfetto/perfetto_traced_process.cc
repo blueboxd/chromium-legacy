@@ -149,11 +149,17 @@ void PerfettoTracedProcess::ResetTaskRunnerForTesting(
   // call to Get()) which would then PostTask which would create races if we
   // reset the task runner right afterwards.
   DETACH_FROM_SEQUENCE(PerfettoTracedProcess::Get()->sequence_checker_);
+  // Call Get() explicitly. This ensures that we constructed the
+  // PerfettoTracedProcess. On some tests (like cast linux) the DETACH macro is
+  // compiled to nothing, which woud cause this PostTask to access a nullptr the
+  // producer requires a PostTask from inside the constructor.
+  PerfettoTracedProcess::Get();
   PerfettoTracedProcess::GetTaskRunner()->GetOrCreateTaskRunner()->PostTask(
       FROM_HERE, base::BindOnce([]() {
-        PerfettoTracedProcess::Get()
-            ->SystemProducerForTesting()
-            ->ResetSequenceForTesting();
+        auto* producer =
+            PerfettoTracedProcess::Get()->SystemProducerForTesting();
+        CHECK(producer);
+        producer->ResetSequenceForTesting();
       }));
 }
 

@@ -156,6 +156,14 @@ class LayerTreeHostImplTest : public testing::Test,
     return settings;
   }
 
+  // Settings with GPU rasterization disabled. New tests should test with GPU
+  // rasterization enabled by default.
+  LayerTreeSettings LegacySWSettings() {
+    LayerTreeSettings settings = DefaultSettings();
+    settings.gpu_rasterization_disabled = true;
+    return settings;
+  }
+
   void SetUp() override {
     CreateHostImpl(DefaultSettings(), CreateLayerTreeFrameSink());
   }
@@ -9116,9 +9124,16 @@ TEST_F(LayerTreeHostImplTestDrawAndTestDamage,
   EXPECT_SCOPED(ExpectFullDamageAndDraw(host_impl_.get()));
 }
 
-TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
+TEST_F(LayerTreeHostImplTest, RequireHighResAfterMSAAToggles) {
+  // Create a host impl with MSAA support and a forced sample count of 4.
+  LayerTreeSettings msaaSettings = DefaultSettings();
+  msaaSettings.gpu_rasterization_msaa_sample_count = 4;
+  EXPECT_TRUE(CreateHostImpl(
+      msaaSettings, FakeLayerTreeFrameSink::Create3dForGpuRasterization(
+                        msaaSettings.gpu_rasterization_msaa_sample_count)));
+
   ASSERT_TRUE(host_impl_->active_tree());
-  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
+  EXPECT_FALSE(host_impl_->use_msaa());
 
   // RequiresHighResToDraw is set when new output surface is used.
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
@@ -9126,15 +9141,14 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
   host_impl_->ResetRequiresHighResToDraw();
 
   host_impl_->SetContentHasSlowPaths(false);
-  host_impl_->SetHasGpuRasterizationTrigger(false);
   host_impl_->CommitComplete();
   EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
   host_impl_->NotifyReadyToActivate();
-  host_impl_->SetHasGpuRasterizationTrigger(true);
+  host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
   host_impl_->NotifyReadyToActivate();
-  host_impl_->SetHasGpuRasterizationTrigger(false);
+  host_impl_->SetContentHasSlowPaths(false);
   host_impl_->CommitComplete();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
   host_impl_->NotifyReadyToActivate();
@@ -9142,7 +9156,7 @@ TEST_F(LayerTreeHostImplTest, RequireHighResAfterGpuRasterizationToggles) {
   host_impl_->ResetRequiresHighResToDraw();
 
   EXPECT_FALSE(host_impl_->RequiresHighResToDraw());
-  host_impl_->SetHasGpuRasterizationTrigger(true);
+  host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
   EXPECT_TRUE(host_impl_->RequiresHighResToDraw());
   host_impl_->NotifyReadyToActivate();
@@ -9248,7 +9262,6 @@ TEST_F(LayerTreeHostImplTest,
       msaaSettings, FakeLayerTreeFrameSink::Create3dForGpuRasterization(
                         msaaSettings.gpu_rasterization_msaa_sample_count)));
 
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(false);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
@@ -9263,7 +9276,6 @@ TEST_F(LayerTreeHostImplTest,
   EXPECT_NE(viz::kInvalidResourceId, resource_id);
   EXPECT_FALSE(host_impl_->EvictedUIResourcesExist());
 
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
@@ -9288,7 +9300,6 @@ TEST_F(LayerTreeHostImplTest, ObeyMSAACaps) {
         FakeLayerTreeFrameSink::Create3dForGpuRasterization(
             msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
 
-    host_impl_->SetHasGpuRasterizationTrigger(true);
     host_impl_->SetContentHasSlowPaths(true);
     host_impl_->CommitComplete();
 
@@ -9307,7 +9318,6 @@ TEST_F(LayerTreeHostImplTest, ObeyMSAACaps) {
         FakeLayerTreeFrameSink::Create3dForGpuRasterization(
             msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
 
-    host_impl_->SetHasGpuRasterizationTrigger(true);
     host_impl_->SetContentHasSlowPaths(true);
     host_impl_->CommitComplete();
 
@@ -9326,7 +9336,6 @@ TEST_F(LayerTreeHostImplTest, ObeyMSAACaps) {
         FakeLayerTreeFrameSink::Create3dForOopRasterization(
             msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
 
-    host_impl_->SetHasGpuRasterizationTrigger(true);
     host_impl_->SetContentHasSlowPaths(true);
     host_impl_->CommitComplete();
 
@@ -9345,7 +9354,6 @@ TEST_F(LayerTreeHostImplTest, ObeyMSAACaps) {
         FakeLayerTreeFrameSink::Create3dForOopRasterization(
             msaaSettings.gpu_rasterization_msaa_sample_count, msaa_is_slow)));
 
-    host_impl_->SetHasGpuRasterizationTrigger(true);
     host_impl_->SetContentHasSlowPaths(true);
     host_impl_->CommitComplete();
 
@@ -11878,33 +11886,6 @@ TEST_F(LayerTreeHostImplTest, AddVideoFrameControllerOutsideFrame) {
   EXPECT_FALSE(controller.did_draw_frame());
 }
 
-// Tests that SetHasGpuRasterizationTrigger behaves as expected.
-TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusTrigger) {
-  // Set initial state, before varying GPU rasterization trigger.
-  host_impl_->SetHasGpuRasterizationTrigger(false);
-  host_impl_->SetContentHasSlowPaths(false);
-  host_impl_->CommitComplete();
-  EXPECT_EQ(GpuRasterizationStatus::OFF_VIEWPORT,
-            host_impl_->gpu_rasterization_status());
-  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
-  host_impl_->NotifyReadyToActivate();
-
-  // Toggle the trigger on.
-  host_impl_->SetHasGpuRasterizationTrigger(true);
-  host_impl_->CommitComplete();
-  EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
-  EXPECT_TRUE(host_impl_->use_gpu_rasterization());
-  host_impl_->NotifyReadyToActivate();
-
-  // And off.
-  host_impl_->SetHasGpuRasterizationTrigger(false);
-  host_impl_->CommitComplete();
-  EXPECT_EQ(GpuRasterizationStatus::OFF_VIEWPORT,
-            host_impl_->gpu_rasterization_status());
-  EXPECT_FALSE(host_impl_->use_gpu_rasterization());
-  host_impl_->NotifyReadyToActivate();
-}
-
 // Tests that SetContentHasSlowPaths behaves as expected.
 TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusSlowPaths) {
   LayerTreeSettings msaaSettings = DefaultSettings();
@@ -11914,7 +11895,6 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusSlowPaths) {
                         msaaSettings.gpu_rasterization_msaa_sample_count)));
 
   // Set initial state, with slow paths on.
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
@@ -11949,7 +11929,6 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusDeviceScaleFactor) {
       msaaSettings, FakeLayerTreeFrameSink::Create3dForGpuRasterization(4)));
 
   // Set initial state, before varying scale factor.
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
@@ -11984,7 +11963,6 @@ TEST_F(LayerTreeHostImplTest, GpuRasterizationStatusExplicitMSAACount) {
       msaaSettings, FakeLayerTreeFrameSink::Create3dForGpuRasterization(
                         msaaSettings.gpu_rasterization_msaa_sample_count)));
 
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
@@ -12004,10 +11982,8 @@ class GpuRasterizationDisabledLayerTreeHostImplTest
 // Tests that GPU rasterization overrides work as expected.
 TEST_F(GpuRasterizationDisabledLayerTreeHostImplTest,
        GpuRasterizationStatusOverrides) {
-  // GPU rasterization explicitly disabled.
   LayerTreeSettings settings = DefaultSettings();
   EXPECT_TRUE(CreateHostImpl(settings, FakeLayerTreeFrameSink::Create3d()));
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(false);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::OFF_DEVICE,
@@ -12018,7 +11994,6 @@ TEST_F(GpuRasterizationDisabledLayerTreeHostImplTest,
   settings.gpu_rasterization_forced = true;
   EXPECT_TRUE(CreateHostImpl(settings, FakeLayerTreeFrameSink::Create3d()));
 
-  host_impl_->SetHasGpuRasterizationTrigger(false);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::ON_FORCED,
@@ -12049,7 +12024,6 @@ TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
   // Ensure that without the msaa_is_slow or avoid_stencil_buffers caps
   // we raster slow paths with msaa.
   CreateHostImplWithCaps(false, false);
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::MSAA_CONTENT,
@@ -12060,7 +12034,6 @@ TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
   // we don't raster slow paths with msaa (we'll still use GPU raster, though).
   // msaa_is_slow = true, avoid_stencil_buffers = false
   CreateHostImplWithCaps(true, false);
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
@@ -12069,7 +12042,6 @@ TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
 
   // msaa_is_slow = false, avoid_stencil_buffers = true
   CreateHostImplWithCaps(false, true);
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
@@ -12078,7 +12050,6 @@ TEST_F(MsaaIsSlowLayerTreeHostImplTest, GpuRasterizationStatusMsaaIsSlow) {
 
   // msaa_is_slow = true, avoid_stencil_buffers = true
   CreateHostImplWithCaps(true, true);
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->CommitComplete();
   EXPECT_EQ(GpuRasterizationStatus::ON, host_impl_->gpu_rasterization_status());
@@ -12110,7 +12081,6 @@ TEST_F(MsaaCompatibilityLayerTreeHostImplTest,
   // Ensure that without non-aa paint and without multisample compatibility, we
   // raster slow paths with msaa.
   CreateHostImplWithMultisampleCompatibility(false);
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->SetContentHasNonAAPaint(false);
   host_impl_->CommitComplete();
@@ -12121,7 +12091,6 @@ TEST_F(MsaaCompatibilityLayerTreeHostImplTest,
   // Ensure that without non-aa paint and with multisample compatibility, we
   // raster slow paths with msaa.
   CreateHostImplWithMultisampleCompatibility(true);
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->SetContentHasNonAAPaint(false);
   host_impl_->CommitComplete();
@@ -12132,7 +12101,6 @@ TEST_F(MsaaCompatibilityLayerTreeHostImplTest,
   // Ensure that with non-aa paint and without multisample compatibility, we do
   // not raster slow paths with msaa.
   CreateHostImplWithMultisampleCompatibility(false);
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->SetContentHasNonAAPaint(true);
   host_impl_->CommitComplete();
@@ -12142,7 +12110,6 @@ TEST_F(MsaaCompatibilityLayerTreeHostImplTest,
   // Ensure that with non-aa paint and with multisample compatibility, we raster
   // slow paths with msaa.
   CreateHostImplWithMultisampleCompatibility(true);
-  host_impl_->SetHasGpuRasterizationTrigger(true);
   host_impl_->SetContentHasSlowPaths(true);
   host_impl_->SetContentHasNonAAPaint(true);
   host_impl_->CommitComplete();
@@ -12484,7 +12451,7 @@ TEST_F(LayerTreeHostImplTest,
 }
 
 TEST_F(LayerTreeHostImplTest, CheckerImagingTileInvalidation) {
-  LayerTreeSettings settings = DefaultSettings();
+  LayerTreeSettings settings = LegacySWSettings();
   settings.commit_to_active_tree = false;
   settings.enable_checker_imaging = true;
   settings.min_image_bytes_to_checker = 512 * 1024;
@@ -12739,11 +12706,6 @@ TEST_F(LayerTreeHostImplTest, DrawAfterDroppingTileResources) {
 }
 
 TEST_F(LayerTreeHostImplTest, NeedUpdateGpuRasterization) {
-  EXPECT_FALSE(host_impl_->NeedUpdateGpuRasterizationStatusForTesting());
-
-  host_impl_->SetHasGpuRasterizationTrigger(true);
-  EXPECT_TRUE(host_impl_->NeedUpdateGpuRasterizationStatusForTesting());
-  host_impl_->CommitComplete();
   EXPECT_FALSE(host_impl_->NeedUpdateGpuRasterizationStatusForTesting());
 
   host_impl_->SetContentHasSlowPaths(true);

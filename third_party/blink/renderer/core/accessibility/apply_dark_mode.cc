@@ -87,31 +87,19 @@ int GetBackgroundBrightnessThreshold(const Settings& frame_settings) {
              : frame_settings.GetDarkModeBackgroundBrightnessThreshold();
 }
 
-// A static wrapper to hold DarkModeSettings after initial creation.
-//
-// These settings are fixed after the browser launches, so they only need to be
-// constructed once for the "enabled" state and once for the "disabled" state.
-// Caching these values instead of re-calculating them should improve page load
-// performance.
-const DarkModeSettings& GetCachedEnabledSettings(
-    const Settings& frame_settings) {
-  static const DarkModeSettings* settings =
-      new DarkModeSettings([](const Settings& frame_settings) {
-        DarkModeSettings settings;
-        settings.mode = GetMode(frame_settings);
-        settings.image_policy = GetImagePolicy(frame_settings);
-        settings.text_brightness_threshold =
-            GetTextBrightnessThreshold(frame_settings);
-        settings.background_brightness_threshold =
-            GetBackgroundBrightnessThreshold(frame_settings);
+DarkModeSettings GetEnabledSettings(const Settings& frame_settings) {
+  DarkModeSettings settings;
+  settings.mode = GetMode(frame_settings);
+  settings.image_policy = GetImagePolicy(frame_settings);
+  settings.text_brightness_threshold =
+      GetTextBrightnessThreshold(frame_settings);
+  settings.background_brightness_threshold =
+      GetBackgroundBrightnessThreshold(frame_settings);
 
-        settings.grayscale = frame_settings.GetDarkModeGrayscale();
-        settings.contrast = frame_settings.GetDarkModeContrast();
-        settings.image_grayscale_percent =
-            frame_settings.GetDarkModeImageGrayscale();
-        return settings;
-      }(frame_settings));
-  return *settings;
+  settings.grayscale = frame_settings.GetDarkModeGrayscale();
+  settings.contrast = frame_settings.GetDarkModeContrast();
+  settings.image_grayscale_percent = frame_settings.GetDarkModeImageGrayscale();
+  return settings;
 }
 
 // In theory it should be sufficient for the disabled settings to set mode to
@@ -122,14 +110,11 @@ const DarkModeSettings& GetCachedEnabledSettings(
 //
 // TODO(gilmanmh): Investigate unexpected image inversion behavior when
 // image_policy not set to kFilterNone.
-const DarkModeSettings& GetCachedDisabledSettings() {
-  static const DarkModeSettings* settings = new DarkModeSettings([]() {
-    DarkModeSettings settings;
-    settings.mode = DarkModeInversionAlgorithm::kOff;
-    settings.image_policy = DarkModeImagePolicy::kFilterNone;
-    return settings;
-  }());
-  return *settings;
+DarkModeSettings GetDisabledSettings() {
+  DarkModeSettings settings;
+  settings.mode = DarkModeInversionAlgorithm::kOff;
+  settings.image_policy = DarkModeImagePolicy::kFilterNone;
+  return settings;
 }
 
 }  // namespace
@@ -139,9 +124,9 @@ DarkModeSettings BuildDarkModeSettings(const Settings& frame_settings,
   if (IsDarkModeEnabled(frame_settings) &&
       ShouldApplyDarkModeFilterToPage(frame_settings.GetDarkModePagePolicy(),
                                       root)) {
-    return GetCachedEnabledSettings(frame_settings);
+    return GetEnabledSettings(frame_settings);
   }
-  return GetCachedDisabledSettings();
+  return GetDisabledSettings();
 }
 
 bool ShouldApplyDarkModeFilterToPage(DarkModePagePolicy policy,

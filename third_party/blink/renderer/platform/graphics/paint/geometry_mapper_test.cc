@@ -799,6 +799,8 @@ TEST_P(GeometryMapperTest, InvertedClip) {
   PropertyTreeState dest(t0(), *clip, e0());
 
   FloatClipRect visual_rect(FloatRect(0, 0, 10, 200));
+  EXPECT_TRUE(visual_rect.IsTight());
+
   GeometryMapper::LocalToAncestorVisualRect(PropertyTreeState::Root(), dest,
                                             visual_rect);
 
@@ -806,7 +808,7 @@ TEST_P(GeometryMapperTest, InvertedClip) {
   // LocalToAncestorVisualRect must fall back to the original rect, mapped
   // into the root space.
   EXPECT_EQ(FloatRect(0, 0, 10, 200), visual_rect.Rect());
-  EXPECT_FALSE(visual_rect.IsTight());
+  EXPECT_TRUE(visual_rect.IsTight());
 }
 
 TEST_P(GeometryMapperTest, Precision) {

@@ -96,7 +96,7 @@ cr.define('chrome.sync', function() {
       entry.textDetails = JSON.stringify(entry.details, null, 2);
       this.entries.push(entry);
       // Fire append event.
-      const e = cr.doc.createEvent('CustomEvent');
+      const e = document.createEvent('CustomEvent');
       e.initCustomEvent('append', false, false, entry);
       this.dispatchEvent(e);
     }

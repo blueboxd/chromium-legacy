@@ -25,6 +25,16 @@
         cursor: pointer;
       }
 
+      .subpage-arrow,
+      .icon-external {
+        display: none;
+      }
+
+      [actionable] :-webkit-any(.subpage-arrow, .icon-external),
+      [actionable]:-webkit-any(.subpage-arrow, .icon-external) {
+        display: block;
+      }
+
       /* Horizontal rule line. */
       .hr {
         border-top: var(--cr-separator-line);

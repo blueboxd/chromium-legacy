@@ -343,8 +343,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   }
 
   void UpdateTransformationMatrix();
-  PaintLayer* RenderingContextRoot();
-  const PaintLayer* RenderingContextRoot() const;
 
   bool IsStackingContextWithNegativeZOrderChildren() const {
     DCHECK(!stacking_node_ || GetLayoutObject().StyleRef().IsStackingContext());

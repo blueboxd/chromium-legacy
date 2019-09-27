@@ -129,6 +129,9 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   data->Append(ChooserResourceLoader::GetCalendarPickerStyleSheet());
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
     data->Append(ChooserResourceLoader::GetCalendarPickerRefreshStyleSheet());
+    if (parameters_->type == input_type_names::kTime) {
+      data->Append(ChooserResourceLoader::GetTimePickerStyleSheet());
+    }
   }
   AddString(
       "</style></head><body><div id=main>Loading...</div><script>\n"
@@ -168,11 +171,15 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   AddProperty("weekStartDay", locale_->FirstDayOfWeek(), data);
   AddProperty("shortMonthLabels", locale_->ShortMonthLabels(), data);
   AddProperty("dayLabels", locale_->WeekDayShortLabels(), data);
+  AddProperty("ampmLabels", locale_->TimeAMPMLabels(), data);
   AddProperty("isLocaleRTL", locale_->IsRTL(), data);
   AddProperty("isRTL", parameters_->is_anchor_element_rtl, data);
   AddProperty("isFormControlsRefreshEnabled",
               RuntimeEnabledFeatures::FormControlsRefreshEnabled(), data);
   AddProperty("mode", parameters_->type.GetString(), data);
+  AddProperty("hasAMPM", parameters_->has_ampm, data);
+  AddProperty("hasSecond", parameters_->has_second, data);
+  AddProperty("hasMillisecond", parameters_->has_millisecond, data);
   if (parameters_->suggestions.size()) {
     Vector<String> suggestion_values;
     Vector<String> localized_suggestion_values;
@@ -218,6 +225,9 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   data->Append(ChooserResourceLoader::GetSuggestionPickerJS());
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
     data->Append(ChooserResourceLoader::GetMonthPickerJS());
+    if (parameters_->type == input_type_names::kTime) {
+      data->Append(ChooserResourceLoader::GetTimePickerJS());
+    }
   }
   data->Append(ChooserResourceLoader::GetCalendarPickerJS());
   AddString("</script></body>\n", data);

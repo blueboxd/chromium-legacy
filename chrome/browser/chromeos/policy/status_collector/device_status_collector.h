@@ -30,6 +30,7 @@
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/dbus/runtime_probe/runtime_probe.pb.h"
 #include "chromeos/dbus/runtime_probe_client.h"
+#include "chromeos/services/cros_healthd/public/mojom/cros_healthd.mojom.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/prefs/pref_member.h"
 #include "components/session_manager/core/session_manager.h"
@@ -158,6 +159,14 @@ class DeviceStatusCollector : public StatusCollector,
       const base::circular_deque<std::unique_ptr<SampledData>>&)>;
   // Gets the ProbeResult/sampled data and passes it to ProbeDataReceiver.
   using ProbeDataFetcher = base::RepeatingCallback<void(ProbeDataReceiver)>;
+
+  // Format of the function that asynchronously receives data from cros_healthd.
+  using CrosHealthdDataReceiver =
+      base::OnceCallback<void(chromeos::cros_healthd::mojom::TelemetryInfoPtr)>;
+  // Gets the data from cros_healthd and passes it to CrosHealthdDataReceiver.
+  using CrosHealthdDataFetcher =
+      base::RepeatingCallback<void(CrosHealthdDataReceiver)>;
+
   // Reads EMMC usage lifetime from /var/log/storage_info.txt
   using EMMCLifetimeFetcher =
       base::RepeatingCallback<enterprise_management::DiskLifetimeEstimation(
@@ -180,6 +189,7 @@ class DeviceStatusCollector : public StatusCollector,
       const TpmStatusFetcher& tpm_status_fetcher,
       const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
       const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
+      const CrosHealthdDataFetcher& cros_healthd_data_fetcher,
       bool is_enterprise_reporting);
   ~DeviceStatusCollector() override;
 
@@ -324,6 +334,10 @@ class DeviceStatusCollector : public StatusCollector,
   void AddDataSample(std::unique_ptr<SampledData> sample,
                      SamplingCallback callback);
 
+  // CrosHealthdDataReceiver interface implementation, fetches data from
+  // cros_healthd and passes it to |callback|.
+  void FetchCrosHealthdData(CrosHealthdDataReceiver callback);
+
   // ProbeDataReceiver interface implementation, fetches data from
   // RuntimeProbe passes it to |callback| via OnProbeDataFetched().
   void FetchProbeData(ProbeDataReceiver callback);
@@ -411,6 +425,8 @@ class DeviceStatusCollector : public StatusCollector,
   EMMCLifetimeFetcher emmc_lifetime_fetcher_;
 
   StatefulPartitionInfoFetcher stateful_partition_info_fetcher_;
+
+  CrosHealthdDataFetcher cros_healthd_data_fetcher_;
 
   PowerStatusCallback power_status_callback_;
 

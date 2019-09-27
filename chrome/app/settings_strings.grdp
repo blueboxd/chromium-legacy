@@ -4785,9 +4785,6 @@
     <message name="IDS_SETTINGS_STORAGE_ITEM_DOWNLOADS" desc="In Device Settings > Storage, label for the size of Downloads directory.">
       Downloads
     </message>
-    <message name="IDS_SETTINGS_STORAGE_ITEM_DRIVE_CACHE" desc="In Device Settings > Storage, label for the size of Google Drive's offline files.">
-      Offline files
-    </message>
     <message name="IDS_SETTINGS_STORAGE_ITEM_BROWSING_DATA" desc="In Device Settings > Storage, label for the size of browsing data.">
       Browsing data
     </message>
@@ -4823,15 +4820,6 @@
     </message>
     <message name="IDS_SETTINGS_STORAGE_SPACE_CRITICALLY_LOW_MESSAGE_LINE_2" desc="The second paragraph of a warning message indicating device's available disk space is critically low.">
       If you don’t free up space, users and data may be automatically removed.
-    </message>
-    <message name="IDS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DIALOG_TITLE" desc="Title for the storage manager confirmation dialog tab to remove Google Drive offline files.">
-      Delete offline files?
-    </message>
-    <message name="IDS_SETTINGS_STORAGE_CLEAR_DRIVE_CACHE_DESCRIPTION" desc="Description in the storage manager confirmation dialog to remove Google Drive offline files.">
-      Temporary Google Drive offline files will be deleted. Files that you’ve set as available offline won’t be deleted from this device.
-    </message>
-    <message name="IDS_SETTINGS_STORAGE_DELETE_ALL_BUTTON_TITLE" desc="In storage manager confirmation dialog, label for the button to delete offline files.">
-      Delete files
     </message>
     <message name="IDS_SETTINGS_STORAGE_EXTERNAL" desc="In Device Settings > Storage, label for the subpage for setting preferences for external storage.">
       External storage preferences

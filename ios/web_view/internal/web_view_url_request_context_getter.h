@@ -20,6 +20,11 @@ class ProxyConfigService;
 class TransportSecurityPersister;
 class URLRequestContext;
 class URLRequestContextStorage;
+class SystemCookieStore;
+}  // namespace net
+
+namespace web {
+class BrowserState;
 }
 
 namespace ios_web_view {
@@ -29,6 +34,7 @@ class WebViewURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   WebViewURLRequestContextGetter(
       const base::FilePath& base_path,
+      web::BrowserState* browser_state,
       net::NetLog* net_log,
       const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner);
 
@@ -55,6 +61,12 @@ class WebViewURLRequestContextGetter : public net::URLRequestContextGetter {
   std::unique_ptr<net::URLRequestContextStorage> storage_;
   std::unique_ptr<net::TransportSecurityPersister>
       transport_security_persister_;
+  // SystemCookieStore must be created on UI thread in
+  // WebViewURLRequestContextGetter's constructor. Later the ownership is passed
+  // to net::URLRequestContextStorage on IO thread. |system_cookie_store_| is
+  // created in constructor and cleared in GetURLRequestContext() where
+  // net::URLRequestContextStorage is lazily created.
+  std::unique_ptr<net::SystemCookieStore> system_cookie_store_;
 
   // Used to ensure GetURLRequestContext() returns nullptr during shut down.
   bool is_shutting_down_;

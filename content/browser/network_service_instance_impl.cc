@@ -112,9 +112,9 @@ void CreateNetworkServiceOnIOForTesting(
     completion_event->Signal();
 }
 
-void BindNetworkChangeManagerRequest(
-    network::mojom::NetworkChangeManagerRequest request) {
-  GetNetworkService()->GetNetworkChangeManager(std::move(request));
+void BindNetworkChangeManagerReceiver(
+    mojo::PendingReceiver<network::mojom::NetworkChangeManager> receiver) {
+  GetNetworkService()->GetNetworkChangeManager(std::move(receiver));
 }
 
 base::CallbackList<void()>& GetCrashHandlersList() {
@@ -325,7 +325,7 @@ network::NetworkConnectionTracker* GetNetworkConnectionTracker() {
          !BrowserThread::IsThreadInitialized(BrowserThread::UI));
   if (!g_network_connection_tracker) {
     g_network_connection_tracker = new network::NetworkConnectionTracker(
-        base::BindRepeating(&BindNetworkChangeManagerRequest));
+        base::BindRepeating(&BindNetworkChangeManagerReceiver));
   }
   return g_network_connection_tracker;
 }

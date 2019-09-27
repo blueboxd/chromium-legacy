@@ -43,6 +43,7 @@ TEST(PresentationTimeCallbackBufferTest, TestNoCallbacks) {
   auto result = buffer.PopPendingCallbacks(kFrameToken1);
 
   EXPECT_TRUE(result.main_thread_callbacks.empty());
+  EXPECT_TRUE(result.compositor_thread_callbacks.empty());
   EXPECT_TRUE(result.frame_time.is_null());
 }
 
@@ -57,12 +58,14 @@ TEST(PresentationTimeCallbackBufferTest, TestOneMainThreadCallback) {
   {
     auto result = buffer.PopPendingCallbacks(kFrameToken1);
     EXPECT_TRUE(result.main_thread_callbacks.empty());
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
     EXPECT_TRUE(result.frame_time.is_null());
   }
 
   {
     auto result = buffer.PopPendingCallbacks(kFrameToken2);
     EXPECT_EQ(result.main_thread_callbacks.size(), 1ull);
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
     EXPECT_TRUE(result.frame_time.is_null());
   }
 
@@ -70,6 +73,38 @@ TEST(PresentationTimeCallbackBufferTest, TestOneMainThreadCallback) {
   {
     auto result = buffer.PopPendingCallbacks(kFrameToken2);
     EXPECT_TRUE(result.main_thread_callbacks.empty());
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
+    EXPECT_TRUE(result.frame_time.is_null());
+  }
+}
+
+TEST(PresentationTimeCallbackBufferTest, TestOneCompositorThreadCallback) {
+  PresentationTimeCallbackBuffer buffer;
+
+  buffer.RegisterCompositorPresentationCallbacks(kFrameToken2,
+                                                 GenerateCallbacks(1));
+
+  // Make sure that popping early frame tokens doesn't return irrelevant
+  // entries.
+  {
+    auto result = buffer.PopPendingCallbacks(kFrameToken1);
+    EXPECT_TRUE(result.main_thread_callbacks.empty());
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
+    EXPECT_TRUE(result.frame_time.is_null());
+  }
+
+  {
+    auto result = buffer.PopPendingCallbacks(kFrameToken2);
+    EXPECT_TRUE(result.main_thread_callbacks.empty());
+    EXPECT_EQ(result.compositor_thread_callbacks.size(), 1ull);
+    EXPECT_TRUE(result.frame_time.is_null());
+  }
+
+  // Make sure that the buffer has removed the registration since the "pop".
+  {
+    auto result = buffer.PopPendingCallbacks(kFrameToken2);
+    EXPECT_TRUE(result.main_thread_callbacks.empty());
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
     EXPECT_TRUE(result.frame_time.is_null());
   }
 }
@@ -85,12 +120,14 @@ TEST(PresentationTimeCallbackBufferTest, TestFrameTimeRegistration) {
   {
     auto result = buffer.PopPendingCallbacks(kFrameToken1);
     EXPECT_TRUE(result.main_thread_callbacks.empty());
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
     EXPECT_TRUE(result.frame_time.is_null());
   }
 
   {
     auto result = buffer.PopPendingCallbacks(kFrameToken2);
     EXPECT_TRUE(result.main_thread_callbacks.empty());
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
     EXPECT_FALSE(result.frame_time.is_null());
     EXPECT_EQ(result.frame_time, frame_time);
   }
@@ -99,6 +136,43 @@ TEST(PresentationTimeCallbackBufferTest, TestFrameTimeRegistration) {
   {
     auto result = buffer.PopPendingCallbacks(kFrameToken2);
     EXPECT_TRUE(result.main_thread_callbacks.empty());
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
+    EXPECT_TRUE(result.frame_time.is_null());
+  }
+}
+
+TEST(PresentationTimeCallbackBufferTest, TestMixedCallbacks) {
+  PresentationTimeCallbackBuffer buffer;
+
+  base::TimeTicks frame_time = MakeTicks(123);
+  buffer.RegisterMainThreadPresentationCallbacks(kFrameToken2,
+                                                 GenerateCallbacks(1));
+  buffer.RegisterCompositorPresentationCallbacks(kFrameToken2,
+                                                 GenerateCallbacks(1));
+  buffer.RegisterFrameTime(kFrameToken2, frame_time);
+
+  // Make sure that popping early frame tokens doesn't return irrelevant
+  // entries.
+  {
+    auto result = buffer.PopPendingCallbacks(kFrameToken1);
+    EXPECT_TRUE(result.main_thread_callbacks.empty());
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
+    EXPECT_TRUE(result.frame_time.is_null());
+  }
+
+  {
+    auto result = buffer.PopPendingCallbacks(kFrameToken2);
+    EXPECT_EQ(result.main_thread_callbacks.size(), 1ull);
+    EXPECT_EQ(result.compositor_thread_callbacks.size(), 1ull);
+    EXPECT_FALSE(result.frame_time.is_null());
+    EXPECT_EQ(result.frame_time, frame_time);
+  }
+
+  // Make sure that the buffer has removed the registrations since the "pop".
+  {
+    auto result = buffer.PopPendingCallbacks(kFrameToken2);
+    EXPECT_TRUE(result.main_thread_callbacks.empty());
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
     EXPECT_TRUE(result.frame_time.is_null());
   }
 }
@@ -127,6 +201,7 @@ TEST(PresentationTimeCallbackBufferTest, TestCallbackBatchingNoFrameTime) {
   {
     auto result = buffer.PopPendingCallbacks(kFrameToken3);
     EXPECT_EQ(result.main_thread_callbacks.size(), 3ull);
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
     EXPECT_TRUE(result.frame_time.is_null());
   }
 }
@@ -151,6 +226,7 @@ TEST(PresentationTimeCallbackBufferTest, TestCallbackBatchingWithFrameTime) {
   {
     auto result = buffer.PopPendingCallbacks(kFrameToken3);
     EXPECT_EQ(result.main_thread_callbacks.size(), 3ull);
+    EXPECT_TRUE(result.compositor_thread_callbacks.empty());
     EXPECT_FALSE(result.frame_time.is_null());
     EXPECT_EQ(result.frame_time, frame_time3);
   }

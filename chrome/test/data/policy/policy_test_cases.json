@@ -4051,6 +4051,15 @@
   "DeviceLoginScreenVirtualKeyboardEnabled" : {
   },
 
+  "DeviceLoginScreenDictationEnabled" : {
+  },
+
+  "DeviceLoginScreenSelectToSpeakEnabled" : {
+  },
+
+  "DeviceLoginScreenCursorHighlightEnabled" : {
+  },
+
   "DeviceLoginScreenLocales" : {
   },
 

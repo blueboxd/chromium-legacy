@@ -86,12 +86,6 @@ class AutofillPopupLayoutModel {
   // resource isn't recognized.
   int GetIconResourceID(const std::string& resource_name) const;
 
-  // Returns the string id for an accessible name which should be used to
-  // describe the given resource. Returns 0 if the resource isn't recognized;
-  // note that this doesn't necessarily mean anything went wrong, as some valid
-  // resources are intentionally omitted for screen readers.
-  int GetIconAccessibleNameResourceId(const std::string& resource_name) const;
-
   bool is_credit_card_popup() const { return is_credit_card_popup_; }
 
   // Allows the provision of another implementation of view_common, for use in

@@ -64,10 +64,6 @@ namespace ash {
 
 namespace {
 
-bool IsHomeScreenAvailable() {
-  return Shell::Get()->home_screen_controller()->IsHomeScreenAvailable();
-}
-
 bool IsTabletMode() {
   return Shell::Get()->tablet_mode_controller()->InTabletMode();
 }
@@ -474,7 +470,7 @@ void AppListControllerImpl::OnAppListItemAdded(app_list::AppListItem* item) {
 
 void AppListControllerImpl::OnActiveUserPrefServiceChanged(
     PrefService* /* pref_service */) {
-  if (!IsHomeScreenAvailable()) {
+  if (!IsTabletMode()) {
     DismissAppList();
     return;
   }
@@ -552,7 +548,7 @@ void AppListControllerImpl::UpdateYPositionAndOpacity(
     int y_position_in_screen,
     float background_opacity) {
   // Avoid changing app list opacity and position when homecher is enabled.
-  if (IsHomeScreenAvailable())
+  if (IsTabletMode())
     return;
   presenter_.UpdateYPositionAndOpacity(y_position_in_screen,
                                        background_opacity);
@@ -561,7 +557,7 @@ void AppListControllerImpl::UpdateYPositionAndOpacity(
 void AppListControllerImpl::EndDragFromShelf(
     ash::AppListViewState app_list_state) {
   // Avoid dragging app list when homecher is enabled.
-  if (IsHomeScreenAvailable())
+  if (IsTabletMode())
     return;
   presenter_.EndDragFromShelf(app_list_state);
 }
@@ -590,7 +586,7 @@ ash::AppListViewState AppListControllerImpl::GetAppListViewState() {
 }
 
 void AppListControllerImpl::OnShelfAlignmentChanged(aura::Window* root_window) {
-  if (!IsHomeScreenAvailable())
+  if (!IsTabletMode())
     DismissAppList();
 }
 
@@ -601,7 +597,7 @@ void AppListControllerImpl::OnShellDestroying() {
 }
 
 void AppListControllerImpl::OnOverviewModeStarting() {
-  if (!IsHomeScreenAvailable())
+  if (!IsTabletMode())
     DismissAppList();
 }
 
@@ -665,7 +661,6 @@ void AppListControllerImpl::OnDisplayConfigurationChanged() {
   // expected if it's enabled and we're still in tablet mode.
   // https://crbug.com/900956.
   const bool should_be_shown = IsTabletMode();
-  DCHECK_EQ(should_be_shown, IsHomeScreenAvailable());
   if (should_be_shown == GetTargetVisibility())
     return;
 
@@ -706,7 +701,7 @@ void AppListControllerImpl::OnUiVisibilityChanged(
       // When Launcher is closing, we do not want to call
       // |ShowEmbeddedAssistantUI(false)|, which will show previous state page
       // in Launcher and make the UI flash.
-      if (IsHomeScreenAvailable()) {
+      if (IsTabletMode()) {
         base::Optional<
             app_list::ContentsView::ScopedSetActiveStateAnimationDisabler>
             set_active_state_animation_disabler;
@@ -811,7 +806,7 @@ ash::ShelfAction AppListControllerImpl::OnHomeButtonPressed(
     int64_t display_id,
     app_list::AppListShowSource show_source,
     base::TimeTicks event_time_stamp) {
-  if (!IsHomeScreenAvailable())
+  if (!IsTabletMode())
     return ToggleAppList(display_id, show_source, event_time_stamp);
 
   bool handled = Shell::Get()->home_screen_controller()->GoHome(display_id);
@@ -830,9 +825,9 @@ bool AppListControllerImpl::IsShowingEmbeddedAssistantUI() const {
 void AppListControllerImpl::UpdateExpandArrowVisibility() {
   bool should_show = false;
 
-  // Hide the expand arrow view when the home screen is available and there is
-  // no activatable window on the current active desk.
-  if (IsHomeScreenAvailable()) {
+  // Hide the expand arrow view when in tablet mode and there is no activatable
+  // window on the current active desk.
+  if (IsTabletMode()) {
     should_show = !ash::Shell::Get()
                        ->mru_window_tracker()
                        ->BuildWindowForCycleList(kActiveDesk)
@@ -884,7 +879,7 @@ void AppListControllerImpl::StartAssistant() {
     return;
   }
 
-  if (!IsHomeScreenAvailable())
+  if (!IsTabletMode())
     DismissAppList();
 
   ash::Shell::Get()->assistant_controller()->ui_controller()->ShowUi(
@@ -1394,8 +1389,7 @@ void AppListControllerImpl::UpdateAssistantVisibility() {
 }
 
 int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
-  if (IsHomeScreenAvailable() &&
-      !Shell::Get()->display_manager()->IsInUnifiedMode()) {
+  if (IsTabletMode() && !Shell::Get()->display_manager()->IsInUnifiedMode()) {
     return display::Display::HasInternalDisplay()
                ? display::Display::InternalDisplayId()
                : display::Screen::GetScreen()->GetPrimaryDisplay().id();
@@ -1407,7 +1401,7 @@ int64_t AppListControllerImpl::GetDisplayIdToShowAppListOn() {
 }
 
 void AppListControllerImpl::ResetHomeLauncherIfShown() {
-  if (!IsHomeScreenAvailable() || !presenter_.IsVisible())
+  if (!IsTabletMode() || !presenter_.IsVisible())
     return;
 
   auto* const keyboard_controller = keyboard::KeyboardUIController::Get();
@@ -1462,7 +1456,7 @@ aura::Window* AppListControllerImpl::GetContainerForDisplayId(
 }
 
 bool AppListControllerImpl::ShouldLauncherShowBehindApps() const {
-  return IsHomeScreenAvailable() &&
+  return IsTabletMode() &&
          model_->state() != ash::AppListState::kStateEmbeddedAssistant;
 }
 

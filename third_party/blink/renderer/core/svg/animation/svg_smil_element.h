@@ -183,8 +183,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime RepeatingDuration() const;
   const SMILInterval& GetActiveInterval(SMILTime elapsed) const;
 
-  void BeginListChanged(SMILTime event_time);
-  void EndListChanged(SMILTime event_time);
+  void InstanceListChanged(BeginOrEnd, SMILTime event_time);
 
   // This represents conditions on elements begin or end list that need to be
   // resolved on runtime, for example

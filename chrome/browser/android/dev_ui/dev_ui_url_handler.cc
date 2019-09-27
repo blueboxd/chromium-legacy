@@ -19,7 +19,8 @@ namespace {
 // Decides whether WebUI |host| (assumed for chrome://) is in the DevUI DFM.
 bool IsWebUiHostInDevUiDfm(const std::string& host) {
   // Each WebUI host in the DevUI DFM must have an entry here.
-  return host == kChromeUIBluetoothInternalsHost;
+  return host == kChromeUIBluetoothInternalsHost ||
+         host == kChromeUIUsbInternalsHost;
 }
 
 }  // namespace

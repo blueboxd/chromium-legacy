@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/android/rules.gni")
+import("//chrome/android/modules/buildflags.gni")
 
 android_library("java") {
   java_files = [ "java/src/org/chromium/chrome/modules/test_dummy/TestDummyProviderImpl.java" ]
@@ -14,15 +15,66 @@ android_library("java") {
   ]
 }
 
-source_set("native") {
+# This group is effectively alias representing the module's native code,
+# allowing it to be named "native" for clarity in module descriptors. The
+# component target must be named according to the feature, so that the component
+# build's .cr.co library is named properly (ie. libtest_dummy.cr.so).
+group("native") {
+  deps = [
+    ":test_dummy",
+  ]
+}
+
+component("test_dummy") {
   sources = [
     "entrypoints.cc",
   ]
-
   deps = [
-    "//chrome/android/features/test_dummy/public:native",
+    "//base",
+    "//chrome/android/features/test_dummy/internal:native",
   ]
 
   # Test dummy native entrypoints belong in the partition.
-  cflags = [ "-fsymbol-partition=libtest_dummy.so" ]
+  if (use_native_modules) {
+    cflags = [ "-fsymbol-partition=libtest_dummy.so" ]
+  }
+
+  if (current_toolchain != default_toolchain) {
+    deps += [ ":jni_registration_secondary($default_toolchain)" ]
+  } else {
+    deps += [ ":jni_registration($default_toolchain)" ]
+  }
+}
+
+# TODO(https://crbug.com/1008109): Adapt JNI registration to point at a Java
+# target, instead of an APK/module target. This JNI registration target
+# points at ChromeModern's module, but it's used by Monochrome as well, since
+# both variants do explicit JNI registration in DFMs (for consistency).
+#
+# Alternatively, move to lazy JNI init for DFMs in Monochrome, by conditionally
+# including a registration stub, as Chrome's base library does. That requires
+# two sets of registration targets, so that the feature module template can
+# selectively pull in the real version or a stub.
+if (current_toolchain == default_toolchain) {
+  generate_jni_registration("jni_registration") {
+    target =
+        "//chrome/android:chrome_modern_public_bundle__test_dummy_bundle_module"
+    header_output = "$target_gen_dir/jni_registration.h"
+    namespace = "test_dummy"
+  }
+
+  # Note also: We cannot currently build JNI registration on secondary ABI
+  # toolchain (dependency issues). Therefore, for Monochrome's 32-bit library,
+  # we need to use the 64-bit side registration header that ChromeModern uses.
+  # However, it's in the 64-bit output directory. We need to also generate a copy
+  # for the 32-bit directory.
+  if (android_64bit_target_cpu) {
+    generate_jni_registration("jni_registration_secondary") {
+      target = "//chrome/android:chrome_modern_public_bundle__test_dummy_bundle_module"
+      header_output =
+          get_label_info(":native($android_secondary_abi_toolchain)",
+                         "target_gen_dir") + "/jni_registration.h"
+      namespace = "test_dummy"
+    }
+  }
 }

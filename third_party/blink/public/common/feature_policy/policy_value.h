@@ -59,8 +59,8 @@ class BLINK_COMMON_EXPORT PolicyValue {
 
  private:
   mojom::PolicyValueType type_;
-  bool bool_value_;
-  double double_value_;
+  bool bool_value_ = false;
+  double double_value_ = 0.0;
 };
 
 bool BLINK_COMMON_EXPORT operator==(const PolicyValue& lhs,

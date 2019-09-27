@@ -642,7 +642,8 @@ bool NigoriSyncBridgeImpl::Init() {
                                      encrypt_everything_);
   }
   for (auto& observer : observers_) {
-    observer.OnCryptographerStateChanged(cryptographer_.get());
+    observer.OnCryptographerStateChanged(cryptographer_.get(),
+                                         pending_keys_.has_value());
   }
   if (passphrase_type_ != NigoriSpecifics::UNKNOWN) {
     // if |passphrase_type_| is unknown, it is not yet initialized and we
@@ -722,7 +723,8 @@ void NigoriSyncBridgeImpl::SetEncryptionPassphrase(
                                      custom_passphrase_time_);
   }
   for (auto& observer : observers_) {
-    observer.OnCryptographerStateChanged(cryptographer_.get());
+    observer.OnCryptographerStateChanged(cryptographer_.get(),
+                                         pending_keys_.has_value());
   }
   for (auto& observer : observers_) {
     observer.OnEncryptedTypesChanged(EncryptableUserTypes(),
@@ -770,7 +772,8 @@ void NigoriSyncBridgeImpl::SetDecryptionPassphrase(
 
   storage_->StoreData(SerializeAsNigoriLocalData());
   for (auto& observer : observers_) {
-    observer.OnCryptographerStateChanged(cryptographer_.get());
+    observer.OnCryptographerStateChanged(cryptographer_.get(),
+                                         pending_keys_.has_value());
   }
   for (auto& observer : observers_) {
     observer.OnPassphraseAccepted();
@@ -978,7 +981,8 @@ base::Optional<ModelError> NigoriSyncBridgeImpl::UpdateLocalState(
     }
   }
   for (auto& observer : observers_) {
-    observer.OnCryptographerStateChanged(cryptographer_.get());
+    observer.OnCryptographerStateChanged(cryptographer_.get(),
+                                         pending_keys_.has_value());
   }
   if (pending_keys_) {
     // Update with keystore Nigori shouldn't reach this point, since it should
@@ -1116,7 +1120,8 @@ void NigoriSyncBridgeImpl::ApplyDisableSyncChanges() {
   keystore_migration_time_ = base::Time();
   custom_passphrase_key_derivation_params_ = base::nullopt;
   for (auto& observer : observers_) {
-    observer.OnCryptographerStateChanged(cryptographer_.get());
+    observer.OnCryptographerStateChanged(cryptographer_.get(),
+                                         /*has_pending_keys=*/false);
   }
   for (auto& observer : observers_) {
     observer.OnEncryptedTypesChanged(SensitiveTypes(), false);

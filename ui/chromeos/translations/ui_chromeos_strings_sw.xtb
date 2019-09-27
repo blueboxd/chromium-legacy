@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Ngwini</translation>
 <translation id="183183971458492120">Inapakia maelezo...</translation>
 <translation id="1838709767668011582">Tovuti ya Google</translation>
-<translation id="1839704667838141620">Badilisha jinsi faili hii inavyoshirikiwa</translation>
 <translation id="1844692022597038441">Faili hii haipatikani nje ya mtandao.</translation>
 <translation id="184633654410729720">Kibodi ya Kithai (Kedmanee)</translation>
 <translation id="1847880352285315359">Imehifadhi</translation>
-<translation id="1864676585353837027">Badilisha jinsi faili hizi zinavyoshirikiwa</translation>
 <translation id="1864756863218646478">Faili haikupatikana.</translation>
 <translation id="1921986354447415460">Kibodi ya Kituruki-F</translation>
 <translation id="1931134289871235022">Kislovakia</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Sakinisha huduma mpya</translation>
 <translation id="1947424002851288782">Kibodi ya Kijerumani</translation>
 <translation id="1972984168337863910">Panua vidirisha vya maoni ya faili</translation>
-<translation id="197560921582345123">Unaweza kubadilisha</translation>
 <translation id="1984603991036629094">Kibodi ya Kifonetiki ya Kiarmenia</translation>
 <translation id="2001796770603320721">Dhibiti katika Hifadhi ya Google</translation>
 <translation id="2009067268969781306">Hatua ya kubadilisha muundo wa hifadhi itafuta data yote iliyomo. Kitendo hiki hakiwezi kutenduliwa.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009">TB <ph name="NUMBER_OF_TB" /></translation>
 <translation id="7839804798877833423">Kupata faili hizi kutatumia takribani  <ph name="FILE_SIZE" /> za data ya simu ya mkononi.</translation>
 <translation id="7846076177841592234">Ghairi uchaguzi</translation>
-<translation id="7850851215703745691">Faili hizi za Hifadhi bado hazijashirikiwa</translation>
 <translation id="7853966320808728790">BÉPO ya Kifaransa</translation>
 <translation id="7864662577698025113">Ongeza huduma mpya</translation>
 <translation id="7873831373602885875">Haiwezi kuhifadhi kwenye <ph name="FOLDER_NAME" />. Mabadiliko yote yatahifadhiwa kwenye<ph name="DOWNLOADS_FOLDER" /> katika folda ya Vipakuliwa.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">Kislovenia</translation>
 <translation id="7982283708762922719">Urefu</translation>
 <translation id="7987485481246785146">Kibodi inayolingana na Kiarabu cha Kurdu ya Sorani</translation>
-<translation id="799923393800005025">Unaweza kuangalia</translation>
 <translation id="8008366997883261463">Mbwa</translation>
 <translation id="8028993641010258682">Ukubwa</translation>
 <translation id="8031722894461705849">Kibodi ya Kislovakia</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">Orodha ya faili imebadilishwa kuwa mwonekano wa kijipicha.</translation>
 <translation id="8601932370724196034">Picha ya faili ya Crostini</translation>
 <translation id="8669949407341943408">Inahamisha...</translation>
-<translation id="8671210955687109937">Anaweza kutoa maoni</translation>
-<translation id="8686213429977032554">Faili hii ya Hifadhi bado haijashirikiwa</translation>
 <translation id="8698464937041809063">Mchoro wa Google</translation>
 <translation id="8714406895390098252">Baiskeli</translation>
 <translation id="8719721339511222681">Umechagua <ph name="ENTRY_NAME" />.</translation>

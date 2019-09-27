@@ -334,7 +334,6 @@
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/blink/public/common/loader/url_loader_throttle.h"
-#include "third_party/blink/public/mojom/installedapp/installed_app_provider.mojom.h"
 #include "third_party/blink/public/mojom/renderer_preferences.mojom.h"
 #include "third_party/blink/public/mojom/user_agent/user_agent_metadata.mojom.h"
 #include "third_party/skia/include/core/SkColor.h"
@@ -608,10 +607,6 @@
 #if BUILDFLAG(HAS_SPELLCHECK_PANEL)
 #include "chrome/browser/spellchecker/spell_check_panel_host_impl.h"
 #endif
-#endif
-
-#if defined(BROWSER_MEDIA_CONTROLS_MENU)
-#include "third_party/blink/public/mojom/media_controls/touchless/media_controls.mojom.h"
 #endif
 
 using base::FileDescriptor;
@@ -1656,23 +1651,6 @@ bool ChromeContentBrowserClient::CanCommitURL(
 #else
   return true;
 #endif
-}
-
-bool ChromeContentBrowserClient::ShouldAllowOpenURL(
-    content::SiteInstance* site_instance,
-    const GURL& url) {
-  // Do not allow chrome://chrome-signin navigate to other chrome:// URLs, since
-  // the signin page may host untrusted web content.
-  GURL from_url = site_instance->GetSiteURL();
-  if (from_url.GetOrigin().spec() == chrome::kChromeUIChromeSigninURL &&
-      url.SchemeIs(content::kChromeUIScheme) &&
-      url.host_piece() != chrome::kChromeUIChromeSigninHost) {
-    VLOG(1) << "Blocked navigation to " << url.spec() << " from "
-            << chrome::kChromeUIChromeSigninURL;
-    return false;
-  }
-
-  return true;
 }
 
 void ChromeContentBrowserClient::OverrideNavigationParams(
@@ -4424,16 +4402,10 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
       base::BindRepeating(&InsecureSensitiveInputDriverFactory::BindDriver));
 
 #if defined(OS_ANDROID)
-  frame_interfaces_parameterized_->AddInterface(base::Bind(
-      &ForwardToJavaFrameRegistry<blink::mojom::InstalledAppProvider>));
   frame_interfaces_parameterized_->AddInterface(
       base::Bind(&ForwardToJavaFrameRegistry<payments::mojom::PaymentRequest>));
   frame_interfaces_parameterized_->AddInterface(
       base::Bind(&ForwardToJavaFrameRegistry<blink::mojom::Authenticator>));
-#if defined(BROWSER_MEDIA_CONTROLS_MENU)
-  frame_interfaces_parameterized_->AddInterface(base::Bind(
-      &ForwardToJavaFrameRegistry<blink::mojom::MediaControlsMenuHost>));
-#endif
 #else
   if (base::FeatureList::IsEnabled(features::kWebPayments)) {
     frame_interfaces_parameterized_->AddInterface(

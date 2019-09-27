@@ -433,10 +433,6 @@ var cr = cr || function(global) {
     webUIListenerCallback: webUIListenerCallback,
     webUIResponse: webUIResponse,
 
-    get doc() {
-      return document;
-    },
-
     /** Whether we are using a Mac or not. */
     get isMac() {
       return /Mac/.test(navigator.platform);

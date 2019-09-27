@@ -141,6 +141,18 @@ int ShelfConfig::shelf_size() const {
     return is_in_app() ? 40 : 56;
 }
 
+int ShelfConfig::hotseat_size() const {
+  if (!chromeos::switches::ShouldShowShelfHotseat() ||
+      !Shell::Get()->tablet_mode_controller()->InTabletMode()) {
+    return shelf_size();
+  }
+  return is_dense_ ? 48 : 56;
+}
+
+int ShelfConfig::hotseat_bottom_padding() const {
+  return 8;
+}
+
 int ShelfConfig::button_size() const {
   return is_dense_ ? shelf_button_size_dense_ : shelf_button_size_;
 }

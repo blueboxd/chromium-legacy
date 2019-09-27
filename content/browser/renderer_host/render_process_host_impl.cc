@@ -68,6 +68,8 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "cc/base/switches.h"
+#include "components/discardable_memory/public/mojom/discardable_shared_memory_manager.mojom.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/metrics/single_sample_metrics.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "components/viz/common/switches.h"
@@ -243,12 +245,16 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/child_process_task_port_provider_mac.h"
+#include "content/browser/sandbox_support_mac_impl.h"
+#include "content/common/sandbox_support_mac.mojom.h"
 #endif
 
 #if defined(OS_WIN)
 #include "base/win/scoped_com_initializer.h"
 #include "base/win/windows_version.h"
 #include "content/browser/renderer_host/dwrite_font_proxy_impl_win.h"
+#include "content/public/common/font_cache_dispatcher_win.h"
+#include "content/public/common/font_cache_win.mojom.h"
 #include "sandbox/win/src/sandbox_policy.h"
 #include "services/service_manager/sandbox/win/sandbox_win.h"
 #include "ui/display/win/dpi.h"
@@ -1249,6 +1255,28 @@ class RenderProcessHostImpl::IOThreadHostImpl
     }
 #endif
 
+#if defined(OS_WIN)
+    if (auto r = receiver.As<mojom::FontCacheWin>()) {
+      FontCacheDispatcher::Create(std::move(r));
+      return;
+    }
+#endif
+
+#if defined(OS_MACOSX)
+    if (auto r = receiver.As<mojom::SandboxSupportMac>()) {
+      static base::NoDestructor<SandboxSupportMacImpl> sandbox_support;
+      sandbox_support->BindReceiver(std::move(r));
+      return;
+    }
+#endif
+
+    if (auto r = receiver.As<
+                 discardable_memory::mojom::DiscardableSharedMemoryManager>()) {
+      discardable_memory::DiscardableSharedMemoryManager::Get()->Bind(
+          std::move(r));
+      return;
+    }
+
     std::string interface_name = *receiver.interface_name();
     mojo::ScopedMessagePipeHandle pipe = receiver.PassPipe();
     if (binders_->TryBindInterface(interface_name, &pipe))
@@ -2066,10 +2094,7 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
 
 #if defined(OS_WIN)
   registry->AddInterface(
-      base::BindRepeating(
-          [](mojo::PendingReceiver<blink::mojom::DWriteFontProxy> receiver) {
-            DWriteFontProxyImpl::Create(std::move(receiver), {});
-          }),
+      base::BindRepeating(&DWriteFontProxyImpl::Create),
       base::CreateSequencedTaskRunner({base::ThreadPool(),
                                        base::TaskPriority::USER_BLOCKING,
                                        base::MayBlock()}));
@@ -4604,9 +4629,9 @@ void RenderProcessHostImpl::CreateMediaStreamTrackMetricsHost(
 
 #if BUILDFLAG(ENABLE_MDNS)
 void RenderProcessHostImpl::CreateMdnsResponder(
-    network::mojom::MdnsResponderRequest request) {
+    mojo::PendingReceiver<network::mojom::MdnsResponder> receiver) {
   GetStoragePartition()->GetNetworkContext()->CreateMdnsResponder(
-      std::move(request));
+      std::move(receiver));
 }
 #endif  // BUILDFLAG(ENABLE_MDNS)
 

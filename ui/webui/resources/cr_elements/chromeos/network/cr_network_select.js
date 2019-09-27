@@ -242,7 +242,7 @@ Polymer({
 
     const cellular =
         OncMojo.getDefaultNetworkState(mojom.NetworkType.kCellular);
-    cellular.cellular.scanning = this.cellularDeviceState_.scanning;
+    cellular.typeState.cellular.scanning = this.cellularDeviceState_.scanning;
 
     // Note: the default connectionState is kNotConnected.
     // TODO(khorimoto): Maybe set an 'initializing' CellularState property if

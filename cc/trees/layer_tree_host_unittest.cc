@@ -6120,13 +6120,6 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
   }
 
   void BeginTest() override {
-    // Verify default value.
-    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
-
-    // Setting gpu rasterization trigger does not enable gpu rasterization.
-    layer_tree_host()->SetHasGpuRasterizationTrigger(true);
-    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
-
     PostSetNeedsCommitToMainThread();
   }
 
@@ -6135,6 +6128,7 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
 
     EXPECT_FALSE(host_impl->pending_tree()->use_gpu_rasterization());
     EXPECT_FALSE(host_impl->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_msaa());
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
@@ -6142,6 +6136,7 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
 
     EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
     EXPECT_FALSE(host_impl->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_msaa());
     EndTest();
   }
 
@@ -6152,57 +6147,12 @@ class LayerTreeHostTestGpuRasterizationDefault : public LayerTreeHostTest {
 
 MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationDefault);
 
-class LayerTreeHostTestEmptyLayerGpuRasterization : public LayerTreeHostTest {
+class LayerTreeHostWithGpuRasterizationSupportedTest
+    : public LayerTreeHostTest {
  protected:
-  void SetupTree() override {
-    LayerTreeHostTest::SetupTree();
-
-    std::unique_ptr<FakeRecordingSource> recording_source(
-        new FakeRecordingSource);
-    recording_source_ = recording_source.get();
-
-    scoped_refptr<FakePictureLayer> layer =
-        FakePictureLayer::CreateWithRecordingSource(
-            &layer_client_, std::move(recording_source));
-    layer_ = layer.get();
-    layer->SetBounds(gfx::Size());
-    layer->SetIsDrawable(true);
-    layer_tree_host()->root_layer()->AddChild(layer);
-    layer_client_.set_bounds(layer->bounds());
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->gpu_rasterization_msaa_sample_count = 4;
   }
-
-  void BeginTest() override {
-    // Setting gpu rasterization trigger does not enable gpu rasterization.
-    layer_tree_host()->SetHasGpuRasterizationTrigger(true);
-    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
-
-    PostSetNeedsCommitToMainThread();
-  }
-
-  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_FALSE(layer_->HasSlowPaths());
-
-    EXPECT_FALSE(host_impl->pending_tree()->use_gpu_rasterization());
-    EXPECT_FALSE(host_impl->use_gpu_rasterization());
-  }
-
-  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
-    EXPECT_FALSE(layer_->HasSlowPaths());
-
-    EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
-    EXPECT_FALSE(host_impl->use_gpu_rasterization());
-    EndTest();
-  }
-
-  FakeContentLayerClient layer_client_;
-  FakePictureLayer* layer_;
-  FakeRecordingSource* recording_source_;
-};
-
-MULTI_THREAD_TEST_F(LayerTreeHostTestEmptyLayerGpuRasterization);
-
-class LayerTreeHostWithGpuRasterizationTest : public LayerTreeHostTest {
- protected:
   std::unique_ptr<TestLayerTreeFrameSink> CreateLayerTreeFrameSink(
       const viz::RendererSettings& renderer_settings,
       double refresh_rate,
@@ -6247,20 +6197,36 @@ class LayerTreeHostWithGpuRasterizationTest : public LayerTreeHostTest {
 };
 
 class LayerTreeHostTestGpuRasterizationEnabled
-    : public LayerTreeHostWithGpuRasterizationTest {
+    : public LayerTreeHostWithGpuRasterizationSupportedTest {
+ protected:
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_FALSE(layer_->HasSlowPaths());
+    EXPECT_TRUE(host_impl->pending_tree()->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_msaa());
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_FALSE(layer_->HasSlowPaths());
+    EXPECT_TRUE(host_impl->active_tree()->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_msaa());
+    EndTest();
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
+
+class LayerTreeHostTestGpuRasterizationEnabledWithMSAA
+    : public LayerTreeHostWithGpuRasterizationSupportedTest {
  protected:
   void BeginTest() override {
-    // Verify default value.
-    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
-
-    // Gpu rasterization trigger is relevant.
-    layer_tree_host()->SetHasGpuRasterizationTrigger(true);
-    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
-
-    // Content-based veto is relevant as well.
+    // Content-based MSAA trigger.
     layer_->set_force_content_has_slow_paths(true);
 
-    // Veto will take effect when layers are updated.
+    // MSAA trigger will take effect when layers are updated.
     // The results will be verified after commit is completed below.
     // Since we are manually marking the source as containing slow paths,
     // make sure that the layer gets a chance to update.
@@ -6274,6 +6240,7 @@ class LayerTreeHostTestGpuRasterizationEnabled
 
     EXPECT_TRUE(host_impl->pending_tree()->use_gpu_rasterization());
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->use_msaa());
   }
 
   void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
@@ -6281,31 +6248,25 @@ class LayerTreeHostTestGpuRasterizationEnabled
 
     EXPECT_TRUE(host_impl->active_tree()->use_gpu_rasterization());
     EXPECT_TRUE(host_impl->use_gpu_rasterization());
+    EXPECT_TRUE(host_impl->use_msaa());
     EndTest();
   }
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabled);
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationEnabledWithMSAA);
 
-class LayerTreeHostTestGpuRasterizationReenabled
-    : public LayerTreeHostWithGpuRasterizationTest {
+class LayerTreeHostTestGpuRasterizationMSAAReenabled
+    : public LayerTreeHostWithGpuRasterizationSupportedTest {
  protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->gpu_rasterization_msaa_sample_count = 4;
   }
 
   void BeginTest() override {
-    // Verify default value.
-    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
-
-    // Gpu rasterization trigger is relevant.
-    layer_tree_host()->SetHasGpuRasterizationTrigger(true);
-    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
-
-    // Content-based veto is relevant as well.
+    // Content-based MSAA trigger is relevant.
     layer_->set_force_content_has_slow_paths(true);
 
-    // Veto will take effect when layers are updated.
+    // MSAA trigger will take effect when layers are updated.
     // The results will be verified after commit is completed below.
     // Since we are manually marking the source as containing slow paths,
     // make sure that the layer gets a chance to update.
@@ -6345,23 +6306,16 @@ class LayerTreeHostTestGpuRasterizationReenabled
   bool expected_use_msaa_ = true;
 };
 
-MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationReenabled);
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationMSAAReenabled);
 
 class LayerTreeHostTestGpuRasterizationNonAASticky
-    : public LayerTreeHostWithGpuRasterizationTest {
+    : public LayerTreeHostWithGpuRasterizationSupportedTest {
  protected:
   void InitializeSettings(LayerTreeSettings* settings) override {
     settings->gpu_rasterization_msaa_sample_count = 4;
   }
 
   void BeginTest() override {
-    // Verify default value.
-    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
-
-    // Gpu rasterization trigger is relevant.
-    layer_tree_host()->SetHasGpuRasterizationTrigger(true);
-    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
-
     // Start without slow paths, but no non-aa paint.
     layer_->set_force_content_has_slow_paths(true);
     layer_->set_force_content_has_non_aa_paint(false);
@@ -6426,14 +6380,7 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
   }
 
   void BeginTest() override {
-    // Verify default value.
-    EXPECT_FALSE(layer_tree_host()->has_gpu_rasterization_trigger());
-
-    // With gpu rasterization forced, gpu rasterization trigger is irrelevant.
-    layer_tree_host()->SetHasGpuRasterizationTrigger(true);
-    EXPECT_TRUE(layer_tree_host()->has_gpu_rasterization_trigger());
-
-    // Content-based veto is irrelevant as well.
+    // Content-based MSAA trigger is irrelevant as well.
     layer_->set_force_content_has_slow_paths(true);
 
     // Veto will take effect when layers are updated.
@@ -6466,6 +6413,29 @@ class LayerTreeHostTestGpuRasterizationForced : public LayerTreeHostTest {
 };
 
 SINGLE_AND_MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationForced);
+
+class LayerTreeHostTestGpuRasterizationSupportedButDisabled
+    : public LayerTreeHostWithGpuRasterizationSupportedTest {
+ protected:
+  void InitializeSettings(LayerTreeSettings* settings) override {
+    settings->gpu_rasterization_disabled = true;
+  }
+
+  void BeginTest() override { PostSetNeedsCommitToMainThread(); }
+
+  void CommitCompleteOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_FALSE(host_impl->sync_tree()->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_gpu_rasterization());
+  }
+
+  void DidActivateTreeOnThread(LayerTreeHostImpl* host_impl) override {
+    EXPECT_FALSE(host_impl->active_tree()->use_gpu_rasterization());
+    EXPECT_FALSE(host_impl->use_gpu_rasterization());
+    EndTest();
+  }
+};
+
+MULTI_THREAD_TEST_F(LayerTreeHostTestGpuRasterizationSupportedButDisabled);
 
 class LayerTreeHostTestWillBeginImplFrameHasDidFinishImplFrame
     : public LayerTreeHostTest {

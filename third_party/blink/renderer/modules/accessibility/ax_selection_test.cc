@@ -420,7 +420,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInDisplayNone) {
   ASSERT_NE(nullptr, ax_hidden1);
   ASSERT_EQ(ax::mojom::Role::kParagraph, ax_hidden1->RoleValue());
   ASSERT_TRUE(ax_hidden1->AccessibilityIsIgnored());
-  ASSERT_FALSE(ax_hidden1->AccessibilityIsIncludedInTree());
+  ASSERT_TRUE(ax_hidden1->AccessibilityIsIncludedInTree());
   const AXObject* ax_between = GetAXObjectByElementId("betweenHidden");
   ASSERT_NE(nullptr, ax_between);
   ASSERT_EQ(ax::mojom::Role::kParagraph, ax_between->RoleValue());
@@ -428,7 +428,7 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInDisplayNone) {
   ASSERT_NE(nullptr, ax_hidden2);
   ASSERT_EQ(ax::mojom::Role::kParagraph, ax_hidden2->RoleValue());
   ASSERT_TRUE(ax_hidden2->AccessibilityIsIgnored());
-  ASSERT_FALSE(ax_hidden2->AccessibilityIsIncludedInTree());
+  ASSERT_TRUE(ax_hidden2->AccessibilityIsIncludedInTree());
   const AXObject* ax_after = GetAXObjectByElementId("afterHidden");
   ASSERT_NE(nullptr, ax_after);
   ASSERT_EQ(ax::mojom::Role::kParagraph, ax_after->RoleValue());
@@ -444,27 +444,27 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInDisplayNone) {
   const auto ax_selection_extend = AXSelection::FromSelection(
       selection, AXSelectionBehavior::kExtendToValidDOMRange);
 
-  // The shrunk selection should encompass only the |AXObject| between the two
-  // aria-hidden elements and nothing else. This means that its anchor should be
-  // before and its focus after the |AXObject| in question.
+  // The "display: none" content is included in the AXTree as an ignored node,
+  // so shrunk selection should include those AXObjects. Note that the browser
+  // process will adjust the position to only encompass the |AXObject| between
+  // the two "display: none" elements, since they are ignored nodes.
   ASSERT_FALSE(ax_selection_shrink.Base().IsTextPosition());
-  EXPECT_EQ(ax_main, ax_selection_shrink.Base().ContainerObject());
-  EXPECT_EQ(ax_between->IndexInParent(),
-            ax_selection_shrink.Base().ChildIndex());
+  EXPECT_EQ(ax_hidden1, ax_selection_shrink.Base().ContainerObject());
+  EXPECT_EQ(0, ax_selection_shrink.Base().ChildIndex());
   ASSERT_FALSE(ax_selection_shrink.Extent().IsTextPosition());
-  EXPECT_EQ(ax_between, ax_selection_shrink.Extent().ContainerObject());
-  EXPECT_EQ(1, ax_selection_shrink.Extent().ChildIndex());
+  EXPECT_EQ(ax_hidden2, ax_selection_shrink.Extent().ContainerObject());
+  EXPECT_EQ(0, ax_selection_shrink.Extent().ChildIndex());
 
-  // The extended selection should start after the children of the paragraph
-  // before the first display:none element and end right before the paragraph
-  // after the last display:none element.
+  // The extended selection should start in the "display: none" content because
+  // they are included in the AXTree. The browser process will adjust ignored
+  // positions so that in this case it would only encompass the paragraph
+  // between the "display: none" nodes.
   ASSERT_FALSE(ax_selection_extend.Base().IsTextPosition());
-  EXPECT_EQ(ax_before, ax_selection_extend.Base().ContainerObject());
-  EXPECT_EQ(1, ax_selection_extend.Base().ChildIndex());
+  EXPECT_EQ(ax_hidden1, ax_selection_extend.Base().ContainerObject());
+  EXPECT_EQ(0, ax_selection_extend.Base().ChildIndex());
   ASSERT_FALSE(ax_selection_extend.Extent().IsTextPosition());
-  EXPECT_EQ(ax_main, ax_selection_extend.Extent().ContainerObject());
-  EXPECT_EQ(ax_after->IndexInParent(),
-            ax_selection_extend.Extent().ChildIndex());
+  EXPECT_EQ(ax_hidden2, ax_selection_extend.Extent().ContainerObject());
+  EXPECT_EQ(0, ax_selection_extend.Extent().ChildIndex());
 
   // Even though the two AX selections have different anchors and foci, the text
   // selected in the accessibility tree should not differ, because any
@@ -476,8 +476,10 @@ TEST_F(AccessibilitySelectionTest, SetSelectionInDisplayNone) {
       "++++<Main>\n"
       "++++++<Paragraph>\n"
       "++++++++<StaticText: Before display:none.>\n"
+      "++++++<Paragraph: Display:none 1.>\n"
       "^++++++<Paragraph>\n"
       "++++++++<StaticText: In between two display:none elements.>\n"
+      "++++++<Paragraph: Display:none 2.>\n"
       "|++++++<Paragraph>\n"
       "++++++++<StaticText: After display:none.>\n");
   EXPECT_EQ(selection_text, GetSelectionText(ax_selection_shrink));

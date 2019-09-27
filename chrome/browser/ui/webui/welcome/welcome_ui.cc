@@ -25,6 +25,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/strings/grit/components_strings.h"
 #include "net/base/url_util.h"
+#include "ui/resources/grit/webui_resources.h"
 
 #if defined(OS_WIN)
 #include "base/win/windows_version.h"
@@ -127,6 +128,8 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
   content::WebUIDataSource* html_source =
       content::WebUIDataSource::Create(url.host());
+  html_source->OverrideContentSecurityPolicyScriptSrc(
+      "script-src chrome://resources chrome://test 'self';");
 
   // Add welcome strings.
   AddStrings(html_source);
@@ -143,6 +146,8 @@ WelcomeUI::WelcomeUI(content::WebUI* web_ui, const GURL& url)
 
     html_source->AddResourcePath(path, kWelcomeResources[i].value);
   }
+  html_source->AddResourcePath("test_loader.js", IDR_WEBUI_JS_TEST_LOADER);
+  html_source->AddResourcePath("test_loader.html", IDR_WEBUI_HTML_TEST_LOADER);
 
 #if BUILDFLAG(GOOGLE_CHROME_BRANDING)
   // Load unscaled images.

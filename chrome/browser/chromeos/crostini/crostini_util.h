@@ -67,10 +67,6 @@ bool IsCrostiniRunning(Profile* profile);
 // Crostini container is enabled.
 bool IsCrostiniAnsibleInfrastructureEnabled();
 
-// Returns whether user is allowed root access to Crostini. Always returns true
-// when advanced access controls feature flag is disabled.
-bool IsCrostiniRootAccessAllowed(Profile* profile);
-
 // Launches the Crostini app with ID of |app_id| on the display with ID of
 // |display_id|. |app_id| should be a valid Crostini app list id.
 void LaunchCrostiniApp(Profile* profile,

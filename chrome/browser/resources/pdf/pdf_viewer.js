@@ -18,6 +18,7 @@ let MessageObject;
  *   type: string,
  *   height: number,
  *   width: number,
+ *   layoutOptions: (!LayoutOptions|undefined),
  *   pageDimensions: Array
  * }}
  */

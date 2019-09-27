@@ -4758,10 +4758,6 @@ NSString* const kBrowserViewControllerSnackbarCategory =
   return [self userAgentType] == web::UserAgentType::DESKTOP;
 }
 
-- (BOOL)preloadHasNativeControllerForURL:(const GURL&)url {
-  return [self hasControllerForURL:url];
-}
-
 #pragma mark - NetExportTabHelperDelegate
 
 - (void)netExportTabHelper:(NetExportTabHelper*)tabHelper

@@ -91,10 +91,6 @@ void DesktopMediaListController::SetThumbnailSize(const gfx::Size& size) {
   media_list_->SetThumbnailSize(size);
 }
 
-views::View* DesktopMediaListController::GetViewForInitialFocus() {
-  return view_;
-}
-
 void DesktopMediaListController::OnSourceAdded(DesktopMediaList* list,
                                                int index) {
   if (view_) {

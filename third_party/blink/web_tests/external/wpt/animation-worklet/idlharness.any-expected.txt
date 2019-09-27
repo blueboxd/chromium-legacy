@@ -1,7 +1,9 @@
 This is a testharness.js-based test.
 PASS idl_test setup
+PASS idl_test validation
 PASS Partial namespace CSS: original namespace defined
 PASS Partial namespace CSS: valid exposure set
+PASS Partial namespace CSS: member names are unique
 PASS AnimationWorkletGlobalScope interface: existence and properties of interface object
 PASS WorkletAnimationEffect interface: existence and properties of interface object
 FAIL WorkletAnimation interface: existence and properties of interface object assert_equals: prototype of WorkletAnimation is not Animation expected function "function Animation() { [native code] }" but got function "function () { [native code] }"

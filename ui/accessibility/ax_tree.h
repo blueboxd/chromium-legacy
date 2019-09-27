@@ -275,6 +275,14 @@ class AX_EXPORT AXTree : public AXNode::OwnerTree {
                             std::vector<AXNode*>* new_children,
                             AXTreeUpdateState* update_state);
 
+  // Internal implementation of RelativeToTreeBounds. It calls itself
+  // recursively but ensures that it can only do so exactly once!
+  gfx::RectF RelativeToTreeBoundsInternal(const AXNode* node,
+                                          gfx::RectF node_bounds,
+                                          bool* offscreen,
+                                          bool clip_bounds,
+                                          bool allow_recursion) const;
+
   base::ObserverList<AXTreeObserver> observers_;
   AXNode* root_ = nullptr;
   std::unordered_map<int32_t, AXNode*> id_map_;

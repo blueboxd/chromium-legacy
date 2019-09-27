@@ -23,6 +23,21 @@
 
 </head>
 
+<style>
+  body,
+  html {
+    height: 100%;
+    margin: 0;
+    overflow: hidden;
+    width: 100%;
+  }
+
+  #content {
+    height: 100%;
+    overflow: auto;
+  }
+</style>
+
 <body>
 
   <dom-module id="internet-config-dialog">
@@ -78,7 +93,9 @@
     <script src="internet_config_dialog.js"></script>
   </dom-module>
 
-  <internet-config-dialog></internet-config-dialog>
+  <div id="content">
+    <internet-config-dialog></internet-config-dialog>
+  </div>
 
 </body>
 

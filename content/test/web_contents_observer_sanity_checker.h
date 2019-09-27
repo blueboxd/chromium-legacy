@@ -53,7 +53,7 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
   void DocumentAvailableInMainFrame() override;
   void DocumentOnLoadCompletedInMainFrame() override;
-  void DocumentLoadedInFrame(RenderFrameHost* render_frame_host) override;
+  void DOMContentLoaded(RenderFrameHost* render_frame_host) override;
   void DidFinishLoad(RenderFrameHost* render_frame_host,
                      const GURL& validated_url) override;
   void DidFailLoad(RenderFrameHost* render_frame_host,

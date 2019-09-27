@@ -225,7 +225,8 @@ IncomingInvitation& IncomingInvitation::operator=(IncomingInvitation&& other) =
 
 // static
 IncomingInvitation IncomingInvitation::Accept(
-    PlatformChannelEndpoint channel_endpoint) {
+    PlatformChannelEndpoint channel_endpoint,
+    MojoAcceptInvitationFlags flags) {
   MojoPlatformHandle endpoint_handle;
   PlatformHandle::ToMojoPlatformHandle(channel_endpoint.TakePlatformHandle(),
                                        &endpoint_handle);
@@ -237,9 +238,13 @@ IncomingInvitation IncomingInvitation::Accept(
   transport_endpoint.num_platform_handles = 1;
   transport_endpoint.platform_handles = &endpoint_handle;
 
+  MojoAcceptInvitationOptions options;
+  options.struct_size = sizeof(options);
+  options.flags = flags;
+
   MojoHandle invitation_handle;
   MojoResult result =
-      MojoAcceptInvitation(&transport_endpoint, nullptr, &invitation_handle);
+      MojoAcceptInvitation(&transport_endpoint, &options, &invitation_handle);
   if (result != MOJO_RESULT_OK)
     return IncomingInvitation();
 

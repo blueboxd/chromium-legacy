@@ -1269,16 +1269,6 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
   }
 #endif
 
-  // TODO(lukasza): https://crbug.com/650694: For now, we skip the rest for POST
-  // submissions.  This is because 1) in M54 there are some remaining issues
-  // with POST in OpenURL path (e.g. https://crbug.com/648648) and 2) OpenURL
-  // path regresses (blocks) navigations that result in downloads
-  // (https://crbug.com/646261).  In the long-term we should avoid forking for
-  // extensions (not hosted apps though) altogether and rely on transfers logic
-  // instead.
-  if (http_method != "GET")
-    return false;
-
   // If |url| matches one of the prerendered URLs, stop this navigation and try
   // to swap in the prerendered page on the browser process. If the prerendered
   // page no longer exists by the time the OpenURL IPC is handled, a normal
@@ -1287,13 +1277,6 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
       prerender_dispatcher_->IsPrerenderURL(url)) {
     return true;
   }
-
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-  bool should_fork = ChromeExtensionsRendererClient::ShouldFork(
-      frame, url, is_initial_navigation, is_server_redirect);
-  if (should_fork)
-    return true;
-#endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
   return false;
 }

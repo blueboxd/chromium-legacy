@@ -107,11 +107,19 @@ TEST_F(StructTraitsTest, GPUDevice) {
   // Using the values from gpu/config/gpu_info_collector_unittest.cc::nvidia_gpu
   const uint32_t vendor_id = 0x10de;
   const uint32_t device_id = 0x0df8;
+#if defined(OS_WIN)
+  const uint32_t sub_sys_id = 0xc0d8144d;
+  const uint32_t revision = 4u;
+#endif  // OS_WIN
   const std::string vendor_string = "vendor_string";
   const std::string device_string = "device_string";
 
   input.vendor_id = vendor_id;
   input.device_id = device_id;
+#if defined(OS_WIN)
+  input.sub_sys_id = sub_sys_id;
+  input.revision = revision;
+#endif  // OS_WIN
   input.vendor_string = vendor_string;
   input.device_string = device_string;
   input.active = false;
@@ -121,6 +129,10 @@ TEST_F(StructTraitsTest, GPUDevice) {
 
   EXPECT_EQ(vendor_id, output.vendor_id);
   EXPECT_EQ(device_id, output.device_id);
+#if defined(OS_WIN)
+  EXPECT_EQ(sub_sys_id, output.sub_sys_id);
+  EXPECT_EQ(revision, output.revision);
+#endif  // OS_WIN
   EXPECT_FALSE(output.active);
   EXPECT_TRUE(vendor_string.compare(output.vendor_string) == 0);
   EXPECT_TRUE(device_string.compare(output.device_string) == 0);
@@ -221,6 +233,10 @@ TEST_F(StructTraitsTest, GpuInfo) {
   EXPECT_EQ(amd_switchable, output.amd_switchable);
   EXPECT_EQ(gpu.vendor_id, output.gpu.vendor_id);
   EXPECT_EQ(gpu.device_id, output.gpu.device_id);
+#if defined(OS_WIN)
+  EXPECT_EQ(gpu.sub_sys_id, output.gpu.sub_sys_id);
+  EXPECT_EQ(gpu.revision, output.gpu.revision);
+#endif  // OS_WIN
   EXPECT_EQ(gpu.active, output.gpu.active);
   EXPECT_EQ(gpu.vendor_string, output.gpu.vendor_string);
   EXPECT_EQ(gpu.device_string, output.gpu.device_string);
@@ -230,6 +246,10 @@ TEST_F(StructTraitsTest, GpuInfo) {
     const gpu::GPUInfo::GPUDevice& actual_gpu = output.secondary_gpus[i];
     EXPECT_EQ(expected_gpu.vendor_id, actual_gpu.vendor_id);
     EXPECT_EQ(expected_gpu.device_id, actual_gpu.device_id);
+#if defined(OS_WIN)
+    EXPECT_EQ(expected_gpu.sub_sys_id, actual_gpu.sub_sys_id);
+    EXPECT_EQ(expected_gpu.revision, actual_gpu.revision);
+#endif  // OS_WIN
     EXPECT_EQ(expected_gpu.active, actual_gpu.active);
     EXPECT_EQ(expected_gpu.vendor_string, actual_gpu.vendor_string);
     EXPECT_EQ(expected_gpu.device_string, actual_gpu.device_string);

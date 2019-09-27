@@ -1,10 +1,12 @@
 This is a testharness.js-based test.
-Found 183 tests; 177 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 185 tests; 179 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Interfaces and attributes in ServiceWorkerGlobalScope
 PASS test setup (cache creation)
 FAIL Event constructors assert_equals: FetchEvent.isReload should not exist expected (undefined) undefined but got (boolean) false
 PASS xhr is not exposed
 PASS URL.createObjectURL is not exposed
+PASS ServiceWorker includes AbstractWorker: member names are unique
+PASS WorkerGlobalScope includes WindowOrWorkerGlobalScope: member names are unique
 PASS ServiceWorker interface: existence and properties of interface object
 PASS ServiceWorker interface object length
 PASS ServiceWorker interface object name

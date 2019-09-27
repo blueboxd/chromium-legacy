@@ -53,8 +53,12 @@ public class WebLayerShellActivity extends FragmentActivity {
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Only call init for main process.
-        WebLayer.getInstance().init(getApplication());
+        WebLayer webLayer = null;
+        try {
+            webLayer = WebLayer.create(getApplication()).get();
+        } catch (Exception e) {
+            throw new RuntimeException("failed loading WebLayer", e);
+        }
 
         LinearLayout mainView = new LinearLayout(this);
         int viewId = View.generateViewId();
@@ -100,7 +104,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         progressLayoutParams.setMargins(0, 0, 0, -10);
         topContentsContainer.addView(mLoadProgressBar, progressLayoutParams);
 
-        mProfile = WebLayer.getInstance().createProfile(null);
+        mProfile = webLayer.createProfile(null);
 
         mBrowserFragmentController = mProfile.createBrowserFragmentController(this);
 
@@ -118,7 +122,7 @@ public class WebLayerShellActivity extends FragmentActivity {
         loadUrl(startupUrl);
         mBrowserController.addObserver(new BrowserObserver() {
             @Override
-            public void displayURLChanged(Uri uri) {
+            public void visibleUrlChanged(Uri uri) {
                 mUrlView.setText(uri.toString());
             }
 

@@ -34,9 +34,9 @@ public final class BrowserObserverProxy {
     }
 
     @CalledByNative
-    private void displayURLChanged(String string) {
+    private void visibleUrlChanged(String string) {
         try {
-            mClient.displayURLChanged(string);
+            mClient.visibleUrlChanged(string);
         } catch (RemoteException e) {
             throw new APICallException(e);
         }

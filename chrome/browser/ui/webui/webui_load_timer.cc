@@ -47,7 +47,7 @@ void WebuiLoadTimer::DidStartNavigation(
   timer_ = std::make_unique<base::ElapsedTimer>();
 }
 
-void WebuiLoadTimer::DocumentLoadedInFrame(
+void WebuiLoadTimer::DOMContentLoaded(
     content::RenderFrameHost* render_frame_host) {
   // See comment in DocumentOnLoadCompletedInMainFrame.
   if (!timer_ || render_frame_host != web_contents()->GetMainFrame())

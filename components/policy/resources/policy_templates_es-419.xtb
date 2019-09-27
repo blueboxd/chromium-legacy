@@ -107,6 +107,17 @@
           <ph name="PROXY_HELP_URL" />.</translation>
 <translation id="1117535567637097036">Los controladores de protocolo establecidos mediante esta política no se usan cuando se controlan intents en Android.</translation>
 <translation id="1118093128235245168">Permite que los sitios soliciten al usuario que otorgue acceso a un dispositivo USB conectado</translation>
+<translation id="1123594119609921068">Establece la función de accesibilidad de comentarios por voz como predeterminada en la pantalla de acceso.
+
+          Si se establece esta política como verdadera, los comentarios por voz estarán habilitados cuando se muestre la pantalla de acceso.
+
+          Si se establece como falsa, esta función estará inhabilitada.
+
+          Si estableces esta política, los usuarios podrán anularla temporalmente al habilitar o inhabilitar los comentarios por voz. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
+
+          Si no estableces esta política, los comentarios por voz estarán inhabilitados cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar los comentarios por voz en cualquier momento y la opción que elijan se mantendrá entre los usuarios.
+
+          Nota: <ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="1128903365609589950">Configura el directorio que <ph name="PRODUCT_NAME" /> usará para almacenar archivos en caché en el disco.
 
       Si estableces esta política, <ph name="PRODUCT_NAME" /> usará el directorio proporcionado más allá de que el usuario haya especificado la marca '--disk-cache-dir' o no. Para evitar la pérdida de datos u otros errores inesperados, no debes configurar un directorio con otro uso o el directorio raíz de un volumen en esta política, porque <ph name="PRODUCT_NAME" /> administra su contenido.
@@ -798,7 +809,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si se habilita la política, cuando el usuario abandona las páginas, estas podrán enviar solicitudes XHR síncronas.
 
-      Si se inhabilita o no se establece, cuando el usuario abandona las páginas, estas no podrán enviar estas solicitudes.
+      Si se inhabilita o no se establece, cuando el usuario abandona las páginas, estas no podrán enviar solicitudes XHR síncronas.
 
       Se quitará esta política en Chrome 82.
 
@@ -1661,6 +1672,15 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Ingresa a https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables para ver una lista de las variables que se pueden usar.</translation>
 <translation id="3911737181201537215">Si Android accede a una cuenta, esta política no tendrá efecto en esta acción.</translation>
+<translation id="3912092044353890761">Habilita la función de accesibilidad del teclado virtual en la pantalla de acceso.
+
+          Si se establece esta política como verdadera, el teclado virtual estará siempre habilitado en la pantalla de acceso.
+
+          Si se establece como falsa, esta función estará siempre inhabilitada.
+
+          Si estableces esta política, los usuarios no podrán cambiar ni anular la configuración.
+
+          Si no la estableces, el teclado virtual estará inicialmente inhabilitado en la pantalla de acceso, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="391531815696899618">Permite inhabilitar la sincronización de Google Drive en la aplicación Archivos de <ph name="PRODUCT_OS_NAME" /> si se establece en true. En ese caso, no se subirán datos a Google Drive.
 
           Si la política no se establece o se establece en false, los usuarios podrán transferir archivos a Google Drive.</translation>
@@ -1829,11 +1849,31 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si estableces esta política, los usuarios no podrán cambiarla ni anularla.
 
           Si no la estableces, inicialmente las teclas especiales estarán inhabilitadas, pero el usuario podrá habilitarlas en cualquier momento.</translation>
+<translation id="4169692397912242417">Habilita la función de accesibilidad de comentarios por voz en la pantalla de acceso.
+
+          Si se establece la política como verdadera, los comentarios por voz estarán siempre habilitados en la pantalla de acceso.
+
+          Si se establece como falsa, esta función estará siempre inhabilitada.
+
+          Si estableces esta política, los usuarios no podrán cambiar ni anular la configuración.
+
+          Si no la estableces, los comentarios por voz estarán inicialmente inhabilitados en la pantalla de acceso, pero el usuario podrá habilitarlos en cualquier momento.</translation>
 <translation id="4171331498167688968">Si la política se establece como falsa, se permitirá que el software de terceros introduzca código ejecutable en los procesos de Chrome. Si la política no se establece o se establece como verdadera, el software de terceros no podrá introducir código ejecutable en los procesos de Chrome.
 
       Más allá del valor de esta política, el navegador por el momento no impedirá que software de terceros introduzca código ejecutable en los procesos en una máquina que se una a un dominio <ph name="MS_AD_NAME" />.</translation>
 <translation id="4183229833636799228">Configuración predeterminada de <ph name="FLASH_PLUGIN_NAME" /></translation>
 <translation id="4192388905594723944">URL para la validación del token de autenticación del cliente de acceso remoto</translation>
+<translation id="420007931282384740">Establece la función de accesibilidad del teclado en pantalla como predeterminada en la pantalla de acceso.
+
+          Si se establece esta política como verdadera, el teclado en pantalla estará habilitado cuando se muestre la pantalla de acceso.
+
+          Si se establece como falsa, esta función estará inhabilitada.
+
+          Si estableces esta política, los usuarios podrán anularla temporalmente al habilitar o inhabilitar el teclado en pantalla. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
+
+          Si no estableces esta política, el teclado en pantalla estará inhabilitado cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar el teclado en pantalla en cualquier momento y la opción que elijan se mantendrá entre los usuarios.
+
+          Nota: <ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="4203389617541558220">Limita el tiempo de actividad del dispositivo mediante la programación de reinicio automático.
 
       Si se establece esta política, se especifica el tiempo de actividad del dispositivo que debe transcurrir para que se programe un reinicio automático.
@@ -2170,11 +2210,9 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4832852360828533362">Informes de usuarios y dispositivos</translation>
 <translation id="4834526953114077364">Elimina los usuarios que más tiempo hace que no se utilizan y que no accedieron en los últimos tres meses hasta que se libere suficiente espacio.</translation>
 <translation id="4835622243021053389">Habilitar la autenticación NTLMv2</translation>
-<translation id="4856471929724652373">Envía informes sobre las actualizaciones del SO, como el estado de la actualización, la versión de la plataforma,
-      la última revisión de actualizaciones y el último reinicio.
+<translation id="4856471929724652373">Envía informes sobre las actualizaciones del SO, como el estado de la actualización, la versión de la plataforma, la última revisión de actualizaciones y el último reinicio.
 
-      Si se establece la política como falsa o no se establece, no se enviará el informe con
-      las actualizaciones del SO. Si se establece como verdadera, se enviará el informe con esos datos.</translation>
+      Si se establece la política como falsa o no se establece, no se enviará el informe con las actualizaciones del SO. Si se establece como verdadera, se enviará el informe con esos datos.</translation>
 <translation id="4858735034935305895">Permitir el modo de pantalla completa</translation>
 <translation id="4861767323695239729">Configurar los métodos de entrada permitidos en una sesión de usuario</translation>
 <translation id="487460824085252184">Migra automáticamente y no solicita el consentimiento del usuario.</translation>
@@ -2408,6 +2446,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5323128137188992869">Permite que se transmita contenido al dispositivo que esté usando <ph name="PRODUCT_NAME" />.
 
           Si se establece esta política como falsa, los usuarios no podrán transmitir contenido al dispositivo. Si se establece como verdadera, los usuarios podrán transmitir contenido. Si no se establece, los usuarios no podrán transmitir contenido a dispositivos con Sistema operativo Chrome, pero sí podrán hacerlo a otros dispositivos.</translation>
+<translation id="5323200200131319468">Habilita los comentarios por voz en la pantalla de acceso</translation>
 <translation id="5325625566921364045">Controla cómo <ph name="PRODUCT_NAME" /> comprueba los datos que se cargan, descargan, pegan del portapapeles o arrastran y sueltan para garantizar el cumplimiento de las normas de la empresa.
 
       Si no se establece esta política o se le asigna el valor "Ninguno", <ph name="PRODUCT_NAME" /> no comprobará ningún dato para garantizar el cumplimiento de las normas.
@@ -2591,6 +2630,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="5530347722229944744">Bloquear las descargas potencialmente peligrosas</translation>
 <translation id="5535973522252703021">Lista blanca de servidores de delegación de Kerberos</translation>
 <translation id="554903022911579950">Kerberos</translation>
+<translation id="555022085242359084">Habilita el contraste alto en la pantalla de acceso</translation>
 <translation id="555077880566103058">Permitir que todos los sitios ejecuten el complemento <ph name="FLASH_PLUGIN_NAME" /> de manera automática</translation>
 <translation id="5559079916187891399">Esta política no tiene efecto en las apps de Android.</translation>
 <translation id="5560039246134246593">Agrega un parámetro a la obtención del valor de inicialización de las variaciones en <ph name="PRODUCT_NAME" />.
@@ -2851,6 +2891,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="6089679180657323464">Supervisa la configuración del controlador de telemetría y diagnósticos wilco.</translation>
 <translation id="6091233616732024397">Forzar a los usuarios a acceder para usar el navegador</translation>
 <translation id="6093156968240188330">Permitir que los usuarios remotos interactúen con las ventanas con permisos elevados en sesiones de asistencia remota</translation>
+<translation id="6095048925836115505">Habilita el teclado virtual en la pantalla de acceso</translation>
 <translation id="6095999036251797924">Especifica el tiempo que debe transcurrir sin que el usuario realice una acción antes de que la pantalla se bloquee cuando se utiliza CA o batería.
 
           Al establecer el tiempo en un valor mayor que cero, dicho valor equivale a la cantidad de tiempo que el usuario debe permanecer inactivo antes de que <ph name="PRODUCT_OS_NAME" /> bloquee la pantalla.
@@ -3846,11 +3887,31 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 
       Si no se establece esta política, <ph name="PRODUCT_NAME" /> utilizará el valor predeterminado de 5.000 milisegundos.</translation>
 <translation id="7841880500990419427">Versión mínima de TLS para resguardo</translation>
+<translation id="7842317008224536842">Establece la función de accesibilidad del modo de contraste alto como predeterminada en la pantalla de acceso.
+
+          Si se establece esta política como verdadera, el modo de contraste alto estará habilitado cuando se muestre la pantalla de acceso.
+
+          Si se establece como falsa, esta función estará inhabilitada.
+
+          Si estableces esta política, los usuarios podrán anularla temporalmente al habilitar o inhabilitar el modo de contraste alto. Sin embargo, no se mantendrá la elección del usuario, y se restablecerá la opción predeterminada siempre que la pantalla de acceso se muestre de nuevo o el usuario permanezca inactivo en esta pantalla por más de un minuto.
+
+          Si no estableces esta política, el modo de contraste alto estará inhabilitado cuando se muestre por primera vez la pantalla de acceso. En este caso, los usuarios podrán habilitar o inhabilitar el modo de contraste alto en cualquier momento y la opción que elijan se mantendrá entre los usuarios.
+
+          Nota: <ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" /> anula esta política si se especifica la política anterior.</translation>
 <translation id="7858404742201086014">Si habilitas esta configuración, los complementos desactualizados se usarán como complementos normales.
 
       Si se inhabilita esta configuración, no se usarán los complementos desactualizados y no se solicitará autorización a los usuarios para ejecutarlos.
 
       Si no se establece esta configuración, se solicitará autorización a los usuarios para ejecutar los complementos desactualizados.</translation>
+<translation id="7863947545897944083">Habilita la función de accesibilidad del contraste alto en la pantalla de acceso.
+
+          Si se establece esta política como verdadera, el contraste alto estará siempre habilitado en la pantalla de acceso.
+
+          Si se establece como falsa, esta función estará siempre inhabilitada.
+
+          Si estableces esta política, los usuarios no podrán cambiar ni anular la configuración.
+
+          Si no la estableces, el contraste alto estará inicialmente inhabilitado en la pantalla de acceso, pero el usuario podrá habilitarlo en cualquier momento.</translation>
 <translation id="787125417158068494">Si se establece en SyncDisabled o no se configura, los certificados de <ph name="PRODUCT_OS_NAME" /> no estarán disponibles para las apps de ARC.
 
       Si se establece en CopyCaCerts, todos los certificados de CA de ONC instalado con <ph name="WEB_TRUSTED_BIT" /> estarán disponibles para las apps de ARC.</translation>

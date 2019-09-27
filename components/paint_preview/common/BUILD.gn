@@ -4,43 +4,50 @@
 
 import("//testing/test.gni")
 
-static_library("common") {
-  sources = [
-    "file_stream.cc",
-    "file_stream.h",
-    "glyph_usage.cc",
-    "glyph_usage.h",
-  ]
+if (!is_ios) {
+  static_library("common") {
+    sources = [
+      "file_stream.cc",
+      "file_stream.h",
+      "glyph_usage.cc",
+      "glyph_usage.h",
+      "subset_font.cc",
+      "subset_font.h",
+    ]
 
-  deps = [
-    "//base",
-    "//skia",
-  ]
-}
+    deps = [
+      "//base",
+      "//skia",
+      "//third_party:freetype_harfbuzz",
+    ]
+  }
 
-source_set("unit_tests") {
-  testonly = true
+  source_set("unit_tests") {
+    testonly = true
 
-  sources = [
-    "file_stream_unittest.cc",
-    "glyph_usage_unittest.cc",
-  ]
+    sources = [
+      "file_stream_unittest.cc",
+      "glyph_usage_unittest.cc",
+      "subset_font_unittest.cc",
+    ]
 
-  deps = [
-    ":common",
-    "//base",
-    "//base/test:test_support",
-    "//skia",
-    "//testing/gmock",
-    "//testing/gtest",
-  ]
-}
+    deps = [
+      ":common",
+      "//base",
+      "//base/test:test_support",
+      "//skia",
+      "//testing/gmock",
+      "//testing/gtest",
+      "//third_party:freetype_harfbuzz",
+    ]
+  }
 
-test("paint_preview_common_unit_tests") {
-  deps = [
-    ":unit_tests",
-    "//base",
-    "//base/test:test_support",
-    "//components/test:run_all_unittests",
-  ]
+  test("paint_preview_common_unit_tests") {
+    deps = [
+      ":unit_tests",
+      "//base",
+      "//base/test:test_support",
+      "//components/test:run_all_unittests",
+    ]
+  }
 }

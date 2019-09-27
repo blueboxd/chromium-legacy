@@ -13,6 +13,8 @@ Run update_annotations_sheet --config-help for help on configuration file.
 TODO(rhalavati): Add tests.
 """
 
+from __future__ import print_function
+
 import argparse
 import csv
 import datetime
@@ -236,7 +238,7 @@ class SheetEditor():
       for id in removed_ids:
         print("Deleted: %s" % id)
       for id in added_ids:
-        print("Added: %s" %id)
+        print("Added: %s" % id)
 
     empty_row = [''] * len(file_contents[0])
     # Skip first row (it's the header row).
@@ -276,7 +278,7 @@ class SheetEditor():
       # should be ignored.
       if not file_row[-1]:
         if self.verbose:
-          print("Ignored from other platforms: %s" %file_contents[row][0])
+          print("Ignored from other platforms: %s" % file_contents[row][0])
         continue
 
       major_update = False
@@ -446,4 +448,4 @@ def main():
 
 
 if __name__ == "__main__":
-    sys.exit(main())
+  sys.exit(main())

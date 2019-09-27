@@ -273,10 +273,6 @@ class WebWidgetClient {
                                             bool down) {}
   virtual void FallbackCursorModeSetCursorVisibility(bool visible) {}
 
-  // Informs the compositor if gpu raster will be allowed, or it is blocked
-  // based on heuristics from the content of the page.
-  virtual void SetAllowGpuRasterization(bool) {}
-
   // Sets the current page scale factor and minimum / maximum limits. Both
   // limits are initially 1 (no page scale allowed).
   virtual void SetPageScaleStateAndLimits(float page_scale_factor,

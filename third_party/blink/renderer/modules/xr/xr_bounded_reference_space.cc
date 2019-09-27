@@ -23,7 +23,8 @@ XRBoundedReferenceSpace::XRBoundedReferenceSpace(
 XRBoundedReferenceSpace::~XRBoundedReferenceSpace() = default;
 
 // No default pose for bounded reference spaces.
-std::unique_ptr<TransformationMatrix> XRBoundedReferenceSpace::DefaultPose() {
+std::unique_ptr<TransformationMatrix>
+XRBoundedReferenceSpace::DefaultViewerPose() {
   return nullptr;
 }
 
@@ -40,12 +41,14 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
 
   if (display_info && display_info->stage_parameters) {
     // Use the transform given by xrDisplayInfo's stage_parameters if available.
-    floor_level_transform_ = std::make_unique<TransformationMatrix>(
+    bounded_space_from_mojo_ = std::make_unique<TransformationMatrix>(
         display_info->stage_parameters->standing_transform.matrix());
 
     // In order to ensure that the bounds continue to line up with the user's
     // physical environment we need to transform by the inverse of the
-    // originOffset.
+    // originOffset. TODO(https://crbug.com/1008466): move originOffset to
+    // separate class? If yes, that class would need to apply a transform
+    // in the boundsGeometry accessor.
     TransformationMatrix bounds_transform = InverseOriginOffsetMatrix();
 
     if (display_info->stage_parameters->bounds) {
@@ -78,31 +81,28 @@ void XRBoundedReferenceSpace::EnsureUpdated() {
   } else {
     // If stage parameters aren't available set the transform to null, which
     // will subsequently cause this reference space to return null poses.
-    floor_level_transform_.reset();
+    bounded_space_from_mojo_.reset();
     bounds_geometry_.clear();
   }
 
   DispatchEvent(*XRReferenceSpaceEvent::Create(event_type_names::kReset, this));
 }
 
-// Transforms a given pose from a "base" reference space used by the XR
-// service to the bounded (floor level) reference space. Ideally in the future
-// this reference space can be used without additional transforms, with
-// the various XR backends returning poses already in the right space.
-std::unique_ptr<TransformationMatrix>
-XRBoundedReferenceSpace::TransformBasePose(
-    const TransformationMatrix& base_pose) {
+// Gets the pose of the mojo origin in this reference space, corresponding to a
+// transform from mojo coordinates to reference space coordinates. Ideally in
+// the future this reference space can be used without additional transforms,
+// with the various XR backends returning poses already in the right space.
+std::unique_ptr<TransformationMatrix> XRBoundedReferenceSpace::SpaceFromMojo(
+    const TransformationMatrix& mojo_from_viewer) {
   EnsureUpdated();
 
   // If the reference space has a transform apply it to the base pose and return
   // that, otherwise return null.
-  if (floor_level_transform_) {
-    std::unique_ptr<TransformationMatrix> pose(
-        std::make_unique<TransformationMatrix>(*floor_level_transform_));
-    pose->Multiply(base_pose);
-    return pose;
+  if (bounded_space_from_mojo_) {
+    std::unique_ptr<TransformationMatrix> space_from_mojo(
+        std::make_unique<TransformationMatrix>(*bounded_space_from_mojo_));
+    return space_from_mojo;
   }
-
   return nullptr;
 }
 

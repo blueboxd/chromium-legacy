@@ -14,7 +14,6 @@ import androidx.annotation.IntDef;
 import androidx.annotation.Nullable;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.chrome.browser.signin.ConfirmImportSyncDataDialog.ImportSyncType;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -68,10 +67,8 @@ public class ConfirmSyncDataStateMachine
     private final ConfirmImportSyncDataDialog.Listener mCallback;
     private final @Nullable String mOldAccountName;
     private final String mNewAccountName;
-    private final boolean mCurrentlyManaged;
     private final FragmentManager mFragmentManager;
     private final Context mContext;
-    private final @ImportSyncType int mImportSyncType;
     private final ConfirmSyncDataStateMachineDelegate mDelegate;
     private final Handler mHandler = new Handler();
 
@@ -81,30 +78,22 @@ public class ConfirmSyncDataStateMachine
 
     /**
      * Create and run state machine, displaying the appropriate dialogs.
-     * @param importSyncType SWITCHING_SYNC_ACCOUNTS if there's already a signed in account,
-     *         PREVIOUS_DATA_FOUND otherwise
-     * @param oldAccountName if importSyncType is SWITCHING_SYNC_ACCOUNTS: the name of the signed in
-     *         account; if importSyncType is PREVIOUS_DATA_FOUND: the name of the last signed in
-     *         account or null
+     * @param oldAccountName the name of the last signed in account or null
      * @param newAccountName the name of the account user is signing in with
      * @param callback the listener to receive the result of this state machine
      */
     public ConfirmSyncDataStateMachine(Context context, FragmentManager fragmentManager,
-            @ImportSyncType int importSyncType, @Nullable String oldAccountName,
-            String newAccountName, ConfirmImportSyncDataDialog.Listener callback) {
+            @Nullable String oldAccountName, String newAccountName,
+            ConfirmImportSyncDataDialog.Listener callback) {
         ThreadUtils.assertOnUiThread();
         // Includes implicit not-null assertion.
         assert !newAccountName.equals("") : "New account name must be provided.";
 
         mOldAccountName = oldAccountName;
         mNewAccountName = newAccountName;
-        mImportSyncType = importSyncType;
         mFragmentManager = fragmentManager;
         mContext = context;
         mCallback = callback;
-
-        mCurrentlyManaged =
-                IdentityServicesProvider.getSigninManager().getManagementDomain() != null;
 
         mDelegate = new ConfirmSyncDataStateMachineDelegate(mFragmentManager);
 
@@ -155,22 +144,10 @@ public class ConfirmSyncDataStateMachine
                     // If there is no old account or the user is just logging back into whatever
                     // they were previously logged in as, progress past the old account checks.
                     progress();
-                } else if (mCurrentlyManaged
-                        && mImportSyncType == ImportSyncType.SWITCHING_SYNC_ACCOUNTS) {
-                    // We only care about the user's previous account being managed if they are
-                    // switching accounts.
-
-                    mWipeData = true;
-
-                    // This will call back into onConfirm() on success.
-                    ConfirmManagedSyncDataDialog.showSwitchFromManagedAccountDialog(this,
-                            mFragmentManager, mContext.getResources(),
-                            SigninManager.extractDomainName(mOldAccountName), mOldAccountName,
-                            mNewAccountName);
                 } else {
                     // This will call back into onConfirm(boolean wipeData) on success.
-                    ConfirmImportSyncDataDialog.showNewInstance(mOldAccountName, mNewAccountName,
-                            mImportSyncType, mFragmentManager, this);
+                    ConfirmImportSyncDataDialog.showNewInstance(
+                            mOldAccountName, mNewAccountName, mFragmentManager, this);
                 }
 
                 break;

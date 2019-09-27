@@ -123,10 +123,6 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // already a pending task that has not yet run.
   void CheckSoon();
 
-  // Starts an update check for the specified extension soon.
-  void CheckExtensionSoon(const std::string& extension_id,
-                          FinishedCallback callback);
-
   // Starts an update check right now, instead of waiting for the next
   // regularly scheduled check or a pending check from CheckSoon().
   void CheckNow(CheckParams params);
@@ -142,6 +138,10 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Overrides the extension downloader with |downloader| for testing.
   void SetExtensionDownloaderForTesting(
       std::unique_ptr<ExtensionDownloader> downloader);
+
+  // After this is called, the next ExtensionUpdater instance to be started will
+  // call CheckNow() instead of CheckSoon() for its initial update.
+  static void UpdateImmediatelyForFirstRun();
 
  private:
   friend class ExtensionUpdaterTest;

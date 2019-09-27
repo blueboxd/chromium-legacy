@@ -1,6 +1,8 @@
 This is a testharness.js-based test.
 PASS idl_test setup
+PASS idl_test validation
 PASS Partial namespace CSS: original namespace defined
+PASS Partial namespace CSS: member names are unique
 PASS CSSPropertyRule interface: existence and properties of interface object
 PASS CSSPropertyRule interface object length
 PASS CSSPropertyRule interface object name

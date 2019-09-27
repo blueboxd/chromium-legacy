@@ -19,6 +19,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "ui/views/test/views_test_base.h"
+#include "ui/views/test/widget_test.h"
 
 namespace app_list {
 namespace test {
@@ -27,16 +28,26 @@ namespace {
 int kDefaultSearchItems = 5;
 }  // namespace
 
-class SearchResultListViewTest : public views::ViewsTestBase {
+class SearchResultListViewTest : public views::test::WidgetTest {
  public:
   SearchResultListViewTest() = default;
   ~SearchResultListViewTest() override = default;
 
   // Overridden from testing::Test:
   void SetUp() override {
-    views::ViewsTestBase::SetUp();
+    views::test::WidgetTest::SetUp();
+    widget_ = CreateTopLevelPlatformWidget();
     view_ = std::make_unique<SearchResultListView>(nullptr, &view_delegate_);
+    widget_->SetBounds(gfx::Rect(0, 0, 300, 200));
+    widget_->GetContentsView()->AddChildView(view_.get());
+    widget_->Show();
     view_->SetResults(view_delegate_.GetSearchModel()->results());
+  }
+
+  void TearDown() override {
+    view_.reset();
+    widget_->CloseNow();
+    views::test::WidgetTest::TearDown();
   }
 
  protected:
@@ -99,6 +110,7 @@ class SearchResultListViewTest : public views::ViewsTestBase {
  private:
   AppListTestViewDelegate view_delegate_;
   std::unique_ptr<SearchResultListView> view_;
+  views::Widget* widget_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchResultListViewTest);
 };

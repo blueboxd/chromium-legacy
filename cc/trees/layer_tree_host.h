@@ -172,14 +172,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // when a main frame is requested.
   SwapPromiseManager* GetSwapPromiseManager();
 
-  // Sets or gets whether the content is suitable to use Gpu Rasterization. This
-  // flag is used to enable gpu rasterization, and can be modified at any time
-  // to change the setting based on content.
-  void SetHasGpuRasterizationTrigger(bool has_trigger);
-  bool has_gpu_rasterization_trigger() const {
-    return has_gpu_rasterization_trigger_;
-  }
-
   // Visibility and LayerTreeFrameSink -------------------------------
 
   // Sets or gets if the LayerTreeHost is visible. When not visible it will:
@@ -765,7 +757,6 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
 
   bool visible_ = false;
 
-  bool has_gpu_rasterization_trigger_ = false;
   bool content_has_slow_paths_ = false;
   bool content_has_non_aa_paint_ = false;
   bool gpu_rasterization_histogram_recorded_ = false;

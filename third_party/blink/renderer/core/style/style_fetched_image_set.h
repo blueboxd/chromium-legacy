@@ -85,6 +85,7 @@ class StyleFetchedImageSet final : public StyleImage,
   bool IsEqual(const StyleImage& other) const override;
   void Dispose();
 
+  // ImageResourceObserver overrides
   String DebugName() const override { return "StyleFetchedImageSet"; }
 
   Member<ImageResourceContent> best_fit_image_;

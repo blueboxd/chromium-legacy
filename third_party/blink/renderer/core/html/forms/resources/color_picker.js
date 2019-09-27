@@ -46,14 +46,13 @@ const Direction = {
  * @enum {number}
  */
 const ColorChannel = {
-  UNDEFINED: 0,
-  HEX: 1,
-  R: 2,
-  G: 3,
-  B: 4,
-  H: 5,
-  S: 6,
-  L: 7,
+  HEX: 0,
+  R: 1,
+  G: 2,
+  B: 3,
+  H: 4,
+  S: 5,
+  L: 6,
 };
 
 /**
@@ -61,10 +60,9 @@ const ColorChannel = {
  * @enum {number}
  */
 const ColorFormat = {
-  UNDEFINED: 0,
-  HEX: 1,
-  RGB: 2,
-  HSL: 3,
+  HEX: 0,
+  RGB: 1,
+  HSL: 2,
 };
 
 /**
@@ -443,6 +441,8 @@ class ColorPicker extends HTMLElement {
         .addEventListener('manual-color-change', this.onManualColorChange_);
 
     this.addEventListener('visual-color-change', this.onVisualColorChange_);
+
+    document.documentElement.addEventListener('keydown', this.onKeyDown_);
   }
 
   get selectedColor() {
@@ -496,11 +496,29 @@ class ColorPicker extends HTMLElement {
     }
   }
 
+  /**
+   * @param {!Event} event
+   */
+  onKeyDown_ = (event) => {
+    switch(event.key) {
+      case 'Enter':
+        this.submissionControls_.submitButton.click();
+        break;
+      case 'Escape':
+        this.submissionControls_.cancelButton.click();
+        break;
+    }
+  }
+
+  static get COMMIT_DELAY_MS() {
+    return 100;
+  }
+
   onSubmitButtonClick_ = () => {
     const selectedValue = this.selectedColor_.asHex();
     window.setTimeout(function() {
       window.pagePopupController.setValueAndClosePopup(0, selectedValue);
-    }, 100);
+    }, ColorPicker.COMMIT_DELAY_MS);
   }
 
   onCancelButtonClick_ = () => {
@@ -1657,12 +1675,37 @@ class FormatToggler extends HTMLElement {
         '3.18359L0.617188 2.61719L3 0.234375L5.38281 2.61719L4.81641 ' +
         '3.18359L3 1.36719L1.18359 3.18359ZM4.81641 4.81641L5.38281 ' +
         '5.38281L3 7.76562L0.617188 5.38281L1.18359 4.81641L3 ' +
-        '6.63281L4.81641 4.81641Z" fill="black"/></svg>';
+        '6.63281L4.81641 4.81641Z" fill="WindowText"/></svg>';
 
     this.append(...this.colorFormatLabels_, this.upDownIcon_);
 
     this.addEventListener('click', this.onClick_);
+    this.addEventListener('keydown', this.onKeyDown_);
     this.addEventListener('mousedown', (event) => event.preventDefault());
+  }
+
+  /**
+   * @param {bool} choosePreviousFormat if true, choose previous format
+   *                                    instead of next
+   */
+  updateColorFormat_(choosePreviousFormat) {
+    const numFormats = Object.keys(ColorFormat).length;
+    const newValue = choosePreviousFormat
+        ? this.currentColorFormat_ - 1
+        : this.currentColorFormat_ + 1;
+    const newColorFormatKey = Object.keys(ColorFormat).filter((key) => {
+      return ColorFormat[key] ===
+          (((newValue % numFormats) + numFormats) % numFormats);
+    });
+    this.currentColorFormat_ = ColorFormat[newColorFormatKey];
+
+    this.adjustFormatLabelVisibility_();
+
+    this.dispatchEvent(new CustomEvent('format-change', {
+      detail: {
+        colorFormat: this.currentColorFormat_
+      }
+    }));
   }
 
   adjustFormatLabelVisibility_() {
@@ -1676,20 +1719,23 @@ class FormatToggler extends HTMLElement {
   }
 
   onClick_ = () => {
-    if (this.currentColorFormat_ == ColorFormat.HEX) {
-      this.currentColorFormat_ = ColorFormat.RGB;
-    } else if (this.currentColorFormat_ == ColorFormat.RGB) {
-      this.currentColorFormat_ = ColorFormat.HSL;
-    } else if (this.currentColorFormat_ == ColorFormat.HSL) {
-      this.currentColorFormat_ = ColorFormat.HEX;
-    }
-    this.adjustFormatLabelVisibility_();
+    this.focus();
+    this.updateColorFormat_(false);
+  }
 
-    this.dispatchEvent(new CustomEvent('format-change', {
-      detail: {
-        colorFormat: this.currentColorFormat_
-      }
-    }));
+  /**
+   * @param {!Event} event
+   */
+  onKeyDown_ = (event) => {
+    switch(event.key) {
+      case 'ArrowUp':
+        this.updateColorFormat_(true);
+        break;
+      case 'ArrowDown':
+      case ' ':
+        this.updateColorFormat_(false);
+        break;
+    }
   }
 }
 window.customElements.define('format-toggler', FormatToggler);
@@ -1787,7 +1833,7 @@ class SubmissionControls extends HTMLElement {
         '<svg width="14" height="10" viewBox="0 0 14 10" fill="none" ' +
         'xmlns="http://www.w3.org/2000/svg"><path d="M13.3516 ' +
         '1.35156L5 9.71094L0.648438 5.35156L1.35156 4.64844L5 ' +
-        '8.28906L12.6484 0.648438L13.3516 1.35156Z" fill="black"/></svg>'
+        '8.28906L12.6484 0.648438L13.3516 1.35156Z" fill="WindowText"/></svg>'
     );
     this.cancelButton_ = new SubmissionButton(cancelCallback,
         '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" ' +
@@ -1795,9 +1841,17 @@ class SubmissionControls extends HTMLElement {
         '12.3984L12.3984 13.1016L7 7.71094L1.60156 13.1016L0.898438 ' +
         '12.3984L6.28906 7L0.898438 1.60156L1.60156 0.898438L7 ' +
         '6.28906L12.3984 0.898438L13.1016 1.60156L7.71094 7Z" ' +
-        'fill="black"/></svg>'
+        'fill="WindowText"/></svg>'
     );
     this.append(this.submitButton_, this.cancelButton_);
+  }
+
+  get submitButton() {
+    return this.submitButton_;
+  }
+
+  get cancelButton() {
+    return this.cancelButton_;
   }
 }
 window.customElements.define('submission-controls', SubmissionControls);

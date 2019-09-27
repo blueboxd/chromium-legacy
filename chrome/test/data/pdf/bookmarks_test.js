@@ -19,12 +19,9 @@ var tests = [
     var firstNestedBookmark = firstBookmark.children[0];
 
     // Check titles.
-    chrome.test.assertEq('First Section',
-                         firstBookmark.title);
-    chrome.test.assertEq('First Subsection',
-                         firstNestedBookmark.title);
-    chrome.test.assertEq('Second Section',
-                         secondBookmark.title);
+    chrome.test.assertEq('First Section', firstBookmark.title);
+    chrome.test.assertEq('First Subsection', firstNestedBookmark.title);
+    chrome.test.assertEq('Second Section', secondBookmark.title);
     chrome.test.assertEq('URI Bookmark', uriBookmark.title);
 
     // Check bookmark fields.
@@ -63,14 +60,14 @@ var tests = [
 
     var rootBookmarks =
         bookmarkContent.shadowRoot.querySelectorAll('viewer-bookmark');
-    chrome.test.assertEq(3, rootBookmarks.length, "three root bookmarks");
+    chrome.test.assertEq(3, rootBookmarks.length, 'three root bookmarks');
     rootBookmarks[0].$.expand.click();
 
     Polymer.dom.flush();
 
     var subBookmarks =
         rootBookmarks[0].shadowRoot.querySelectorAll('viewer-bookmark');
-    chrome.test.assertEq(1, subBookmarks.length, "one sub bookmark");
+    chrome.test.assertEq(1, subBookmarks.length, 'one sub bookmark');
 
     var lastPageChange;
     var lastXChange;
@@ -107,10 +104,10 @@ var tests = [
       chrome.test.assertEq(expectedEvent.uri, lastUriNavigation);
     }
 
-    testTapTarget(rootBookmarks[0].$.item, {page: 0, x: 133, y: 667})
-    testTapTarget(subBookmarks[0].$.item, {page: 1, x: 133, y: 667})
-    testTapTarget(rootBookmarks[1].$.item, {page: 2, x: 133, y: 667})
-    testTapTarget(rootBookmarks[2].$.item, {uri: "http://www.chromium.org"})
+    testTapTarget(rootBookmarks[0].$.item, {page: 0, x: 133, y: 667});
+    testTapTarget(subBookmarks[0].$.item, {page: 1, x: 133, y: 667});
+    testTapTarget(rootBookmarks[1].$.item, {page: 2, x: 133, y: 667});
+    testTapTarget(rootBookmarks[2].$.item, {uri: 'http://www.chromium.org'});
 
     chrome.test.succeed();
   }

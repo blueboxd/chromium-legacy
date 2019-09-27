@@ -140,7 +140,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
                            const std::vector<url::Origin>& origins) override;
   void SetMaxConnectionsPerProxy(int32_t max_connections) override;
   void GetNetworkChangeManager(
-      mojom::NetworkChangeManagerRequest request) override;
+      mojo::PendingReceiver<mojom::NetworkChangeManager> receiver) override;
   void GetNetworkQualityEstimatorManager(
       mojo::PendingReceiver<mojom::NetworkQualityEstimatorManager> receiver)
       override;

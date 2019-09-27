@@ -135,53 +135,6 @@ class HttpServerPropertiesTest : public TestWithTaskEnvironment {
   HttpServerProperties impl_;
 };
 
-TEST_F(HttpServerPropertiesTest, GetNormalizedSchemeHostPort) {
-  url::SchemeHostPort server =
-      HttpServerProperties::GetNormalizedSchemeHostPort(
-          GURL("https://foo.test/"));
-  EXPECT_EQ("https", server.scheme());
-  EXPECT_EQ("foo.test", server.host());
-  EXPECT_EQ(443, server.port());
-
-  server = HttpServerProperties::GetNormalizedSchemeHostPort(
-      GURL("wss://foo.test/"));
-  EXPECT_EQ("https", server.scheme());
-  EXPECT_EQ("foo.test", server.host());
-  EXPECT_EQ(443, server.port());
-
-  server = HttpServerProperties::GetNormalizedSchemeHostPort(
-      GURL("wss://bar.test:7/"));
-  EXPECT_EQ("https", server.scheme());
-  EXPECT_EQ("bar.test", server.host());
-  EXPECT_EQ(7, server.port());
-
-  server = HttpServerProperties::GetNormalizedSchemeHostPort(
-      GURL("http://foo.test/"));
-  EXPECT_EQ("http", server.scheme());
-  EXPECT_EQ("foo.test", server.host());
-  EXPECT_EQ(80, server.port());
-
-  server =
-      HttpServerProperties::GetNormalizedSchemeHostPort(GURL("ws://foo.test/"));
-  EXPECT_EQ("http", server.scheme());
-  EXPECT_EQ("foo.test", server.host());
-  EXPECT_EQ(80, server.port());
-
-  server = HttpServerProperties::GetNormalizedSchemeHostPort(
-      GURL("ws://bar.test:7/"));
-  EXPECT_EQ("http", server.scheme());
-  EXPECT_EQ("bar.test", server.host());
-  EXPECT_EQ(7, server.port());
-
-  // Neither of these should happen, except possibly when loading a bad
-  // properties file, but neither should crash.
-  server = HttpServerProperties::GetNormalizedSchemeHostPort(GURL());
-  EXPECT_EQ("", server.host());
-  server = HttpServerProperties::GetNormalizedSchemeHostPort(
-      GURL("file:///foo/bar"));
-  EXPECT_EQ(server, url::SchemeHostPort(GURL("file:///foo/bar")));
-}
-
 TEST_F(HttpServerPropertiesTest, SetSupportsSpdy) {
   // Check spdy servers are correctly set with SchemeHostPort key.
   url::SchemeHostPort https_www_server("https", "www.google.com", 443);
@@ -228,6 +181,44 @@ TEST_F(HttpServerPropertiesTest, SetSupportsSpdy) {
   EXPECT_TRUE(impl_.GetSupportsSpdy(https_mail_server, NetworkIsolationKey()));
   EXPECT_TRUE(
       impl_.SupportsRequestPriority(https_mail_server, NetworkIsolationKey()));
+}
+
+TEST_F(HttpServerPropertiesTest, SetSupportsSpdyWebSockets) {
+  // The https and wss servers should be treated as the same server, as should
+  // the http and ws servers.
+  url::SchemeHostPort https_server("https", "www.test.com", 443);
+  url::SchemeHostPort wss_server("wss", "www.test.com", 443);
+  url::SchemeHostPort http_server("http", "www.test.com", 443);
+  url::SchemeHostPort ws_server("ws", "www.test.com", 443);
+
+  EXPECT_FALSE(impl_.GetSupportsSpdy(https_server, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(wss_server, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(http_server, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(ws_server, NetworkIsolationKey()));
+
+  impl_.SetSupportsSpdy(wss_server, NetworkIsolationKey(), true);
+  EXPECT_TRUE(impl_.GetSupportsSpdy(https_server, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(wss_server, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(http_server, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(ws_server, NetworkIsolationKey()));
+
+  impl_.SetSupportsSpdy(http_server, NetworkIsolationKey(), true);
+  EXPECT_TRUE(impl_.GetSupportsSpdy(https_server, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(wss_server, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(http_server, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(ws_server, NetworkIsolationKey()));
+
+  impl_.SetSupportsSpdy(https_server, NetworkIsolationKey(), false);
+  EXPECT_FALSE(impl_.GetSupportsSpdy(https_server, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(wss_server, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(http_server, NetworkIsolationKey()));
+  EXPECT_TRUE(impl_.GetSupportsSpdy(ws_server, NetworkIsolationKey()));
+
+  impl_.SetSupportsSpdy(ws_server, NetworkIsolationKey(), false);
+  EXPECT_FALSE(impl_.GetSupportsSpdy(https_server, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(wss_server, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(http_server, NetworkIsolationKey()));
+  EXPECT_FALSE(impl_.GetSupportsSpdy(ws_server, NetworkIsolationKey()));
 }
 
 TEST_F(HttpServerPropertiesTest, SetSupportsSpdyWithNetworkIsolationKey) {
@@ -683,6 +674,88 @@ TEST_F(AlternateProtocolServerPropertiesTest, Set) {
   ASSERT_EQ(1u, service_info->size());
   EXPECT_EQ(alternative_service4, (*service_info)[0].alternative_service());
   EXPECT_EQ(expiration4, (*service_info)[0].expiration());
+}
+
+TEST_F(AlternateProtocolServerPropertiesTest, SetWebSockets) {
+  // The https and wss servers should be treated as the same server, as should
+  // the http and ws servers.
+  url::SchemeHostPort https_server("https", "www.test.com", 443);
+  url::SchemeHostPort wss_server("wss", "www.test.com", 443);
+  url::SchemeHostPort http_server("http", "www.test.com", 443);
+  url::SchemeHostPort ws_server("ws", "www.test.com", 443);
+
+  AlternativeService alternative_service(kProtoHTTP2, "bar", 443);
+
+  EXPECT_EQ(
+      0u, impl_.GetAlternativeServiceInfos(https_server, NetworkIsolationKey())
+              .size());
+  EXPECT_EQ(0u,
+            impl_.GetAlternativeServiceInfos(wss_server, NetworkIsolationKey())
+                .size());
+  EXPECT_EQ(0u,
+            impl_.GetAlternativeServiceInfos(http_server, NetworkIsolationKey())
+                .size());
+  EXPECT_EQ(0u,
+            impl_.GetAlternativeServiceInfos(ws_server, NetworkIsolationKey())
+                .size());
+
+  SetAlternativeService(wss_server, alternative_service);
+  EXPECT_EQ(
+      1u, impl_.GetAlternativeServiceInfos(https_server, NetworkIsolationKey())
+              .size());
+  EXPECT_EQ(1u,
+            impl_.GetAlternativeServiceInfos(wss_server, NetworkIsolationKey())
+                .size());
+  EXPECT_EQ(0u,
+            impl_.GetAlternativeServiceInfos(http_server, NetworkIsolationKey())
+                .size());
+  EXPECT_EQ(0u,
+            impl_.GetAlternativeServiceInfos(ws_server, NetworkIsolationKey())
+                .size());
+
+  SetAlternativeService(http_server, alternative_service);
+  EXPECT_EQ(
+      1u, impl_.GetAlternativeServiceInfos(https_server, NetworkIsolationKey())
+              .size());
+  EXPECT_EQ(1u,
+            impl_.GetAlternativeServiceInfos(wss_server, NetworkIsolationKey())
+                .size());
+  EXPECT_EQ(1u,
+            impl_.GetAlternativeServiceInfos(http_server, NetworkIsolationKey())
+                .size());
+  EXPECT_EQ(1u,
+            impl_.GetAlternativeServiceInfos(ws_server, NetworkIsolationKey())
+                .size());
+
+  impl_.SetAlternativeServices(https_server, NetworkIsolationKey(),
+                               AlternativeServiceInfoVector());
+  EXPECT_EQ(
+      0u, impl_.GetAlternativeServiceInfos(https_server, NetworkIsolationKey())
+              .size());
+  EXPECT_EQ(0u,
+            impl_.GetAlternativeServiceInfos(wss_server, NetworkIsolationKey())
+                .size());
+  EXPECT_EQ(1u,
+            impl_.GetAlternativeServiceInfos(http_server, NetworkIsolationKey())
+                .size());
+  EXPECT_EQ(1u,
+            impl_.GetAlternativeServiceInfos(ws_server, NetworkIsolationKey())
+                .size());
+
+  impl_.SetAlternativeServices(ws_server, NetworkIsolationKey(),
+                               AlternativeServiceInfoVector());
+  EXPECT_EQ(
+      0u, impl_.GetAlternativeServiceInfos(https_server, NetworkIsolationKey())
+              .size());
+  EXPECT_EQ(0u,
+            impl_.GetAlternativeServiceInfos(wss_server, NetworkIsolationKey())
+                .size());
+  EXPECT_EQ(0u,
+            impl_.GetAlternativeServiceInfos(http_server, NetworkIsolationKey())
+                .size());
+  EXPECT_EQ(0u,
+            impl_.GetAlternativeServiceInfos(ws_server, NetworkIsolationKey())
+                .size());
 }
 
 TEST_F(AlternateProtocolServerPropertiesTest, SetWithNetworkIsolationKey) {

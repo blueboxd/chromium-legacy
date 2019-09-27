@@ -44,6 +44,7 @@ int AutocompleteClassifier::DefaultOmniboxProviders() {
       AutocompleteProvider::TYPE_CLIPBOARD |
 #endif
       AutocompleteProvider::TYPE_ZERO_SUGGEST |
+      AutocompleteProvider::TYPE_ZERO_SUGGEST_LOCAL_HISTORY |
       (base::FeatureList::IsEnabled(omnibox::kDocumentProvider)
            ? AutocompleteProvider::TYPE_DOCUMENT
            : 0) |

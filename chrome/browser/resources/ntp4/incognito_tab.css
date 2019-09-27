@@ -96,6 +96,13 @@ em {
   }
 }
 
+/** Third-Party Cookie Blocking Box ----------------------------------------- */
+
+#cookie-controls {
+  background-color: rgb(60, 64, 67); /* --google-grey-800 */
+  box-sizing: border-box;
+}
+
 /** Layout ------------------------------------------------------------------ */
 
 /* Align the content, icon, and title to to the center. */
@@ -153,6 +160,15 @@ h1 {
 .bulletpoints ul {
   margin: 4px 0 0;
   padding-inline-start: 16px;
+}
+
+#cookie-controls {
+  margin-bottom: 1.5rem;
+  padding: 1.5rem;
+}
+
+#cookie-controls-description {
+  margin-top: 0.5rem;
 }
 
 /* Wide screens. */

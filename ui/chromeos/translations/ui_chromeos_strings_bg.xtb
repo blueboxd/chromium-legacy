@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Пингвин</translation>
 <translation id="183183971458492120">Информацията се зарежда...</translation>
 <translation id="1838709767668011582">Сайт в Google</translation>
-<translation id="1839704667838141620">Промяна на начина на споделяне на този файл</translation>
 <translation id="1844692022597038441">Този файл не е налице офлайн.</translation>
 <translation id="184633654410729720">Тайландска клавиатура (кедмани)</translation>
 <translation id="1847880352285315359">Запазено</translation>
-<translation id="1864676585353837027">Промяна на начина на споделяне на тези файлове</translation>
 <translation id="1864756863218646478">Файлът не можа да бъде намерен.</translation>
 <translation id="1921986354447415460">Турска клавиатура от тип „F“</translation>
 <translation id="1931134289871235022">словашки</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Инсталиране на нова услуга</translation>
 <translation id="1947424002851288782">Немска клавиатура</translation>
 <translation id="1972984168337863910">Разгъване на панелите с информация за файловете</translation>
-<translation id="197560921582345123">Може да редактира</translation>
 <translation id="1984603991036629094">Арменска фонетична клавиатура</translation>
 <translation id="2001796770603320721">Управление в Диск</translation>
 <translation id="2009067268969781306">При форматирането на устройство ще бъдат изтрити всички съхранявани на него данни. Това действие не може да бъде отменено.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> ТБ</translation>
 <translation id="7839804798877833423">При извличането на тези файлове ще се използват приблизително <ph name="FILE_SIZE" /> мобилни данни.</translation>
 <translation id="7846076177841592234">Анулиране на избора</translation>
-<translation id="7850851215703745691">Тези файлове в Диск още не са споделени</translation>
 <translation id="7853966320808728790">френски (BÉPO)</translation>
 <translation id="7864662577698025113">Добавяне на нова услуга</translation>
 <translation id="7873831373602885875">Запазването в(ъв) „<ph name="FOLDER_NAME" />“ не е възможно. Всички редакции ще се съхранят в(ъв) „<ph name="DOWNLOADS_FOLDER" />“ в папката „Изтегляния“.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">словенски</translation>
 <translation id="7982283708762922719">Височина</translation>
 <translation id="7987485481246785146">Кюрдски (сорани), базирана на арабски клавиатура</translation>
-<translation id="799923393800005025">Може да преглежда</translation>
 <translation id="8008366997883261463">Джак Ръсел териер</translation>
 <translation id="8028993641010258682">Размер</translation>
 <translation id="8031722894461705849">Словашка клавиатура</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">Списъкът с файлове е превключен към изглед с миниизображения.</translation>
 <translation id="8601932370724196034">Файл с образ на Crostini</translation>
 <translation id="8669949407341943408">Извършва се преместване...</translation>
-<translation id="8671210955687109937">Може да коментира</translation>
-<translation id="8686213429977032554">Този файл в Диск още не е споделен</translation>
 <translation id="8698464937041809063">Рисунка в Google</translation>
 <translation id="8714406895390098252">Велосипед</translation>
 <translation id="8719721339511222681">Избрахте <ph name="ENTRY_NAME" />.</translation>

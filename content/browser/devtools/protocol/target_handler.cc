@@ -472,7 +472,7 @@ void TargetHandler::SetRenderer(int process_host_id,
 }
 
 Response TargetHandler::Disable() {
-  SetAutoAttachInternal(false, false, false, base::DoNothing());
+  SetAutoAttachInternal(false, false, false, false, base::DoNothing());
   SetDiscoverTargets(false);
   auto_attached_sessions_.clear();
   attached_sessions_.clear();
@@ -486,6 +486,11 @@ void TargetHandler::DidFinishNavigation() {
 std::unique_ptr<NavigationThrottle> TargetHandler::CreateThrottleForNavigation(
     NavigationHandle* navigation_handle) {
   if (!auto_attacher_.ShouldThrottleFramesNavigation())
+    return nullptr;
+  FrameTreeNode* frame_tree_node =
+      NavigationRequest::From(navigation_handle)->frame_tree_node();
+  bool is_window_open = frame_tree_node->original_opener();
+  if (is_window_open && !attach_to_window_open_)
     return nullptr;
   return std::make_unique<Throttle>(weak_factory_.GetWeakPtr(),
                                     navigation_handle);
@@ -505,8 +510,10 @@ void TargetHandler::ClearThrottles() {
 void TargetHandler::SetAutoAttachInternal(bool auto_attach,
                                           bool wait_for_debugger_on_start,
                                           bool flatten,
+                                          bool window_open,
                                           base::OnceClosure callback) {
   flatten_auto_attach_ = flatten;
+  attach_to_window_open_ = window_open;
   auto_attacher_.SetAutoAttach(auto_attach, wait_for_debugger_on_start,
                                std::move(callback));
   if (!auto_attacher_.ShouldThrottleFramesNavigation())
@@ -574,9 +581,11 @@ void TargetHandler::SetAutoAttach(
     bool auto_attach,
     bool wait_for_debugger_on_start,
     Maybe<bool> flatten,
+    Maybe<bool> window_open,
     std::unique_ptr<SetAutoAttachCallback> callback) {
   SetAutoAttachInternal(
       auto_attach, wait_for_debugger_on_start, flatten.fromMaybe(false),
+      window_open.fromMaybe(false),
       base::BindOnce(&SetAutoAttachCallback::sendSuccess, std::move(callback)));
 }
 

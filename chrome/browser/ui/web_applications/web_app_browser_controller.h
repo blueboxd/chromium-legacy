@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
@@ -46,10 +47,13 @@ class WebAppBrowserController : public AppBrowserController {
   base::string16 GetFormattedUrlOrigin() const override;
   GURL GetAppLaunchURL() const override;
   bool IsUrlInAppScope(const GURL& url) const override;
+  WebAppBrowserController* AsWebAppBrowserController() override;
   bool CanUninstall() const override;
   void Uninstall() override;
   bool IsInstalled() const override;
   bool IsHostedApp() const override;
+
+  void SetReadIconCallbackForTesting(base::OnceClosure callback);
 
  private:
   const AppRegistrar& registrar() const;
@@ -60,6 +64,7 @@ class WebAppBrowserController : public AppBrowserController {
   const AppId app_id_;
   mutable base::Optional<gfx::ImageSkia> app_icon_;
 
+  base::OnceClosure callback_for_testing_;
   mutable base::WeakPtrFactory<WebAppBrowserController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebAppBrowserController);

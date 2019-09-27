@@ -583,7 +583,8 @@ void SearchTabHelper::QueryAutocomplete(
                     AutocompleteProvider::TYPE_HISTORY_QUICK |
                     AutocompleteProvider::TYPE_HISTORY_URL |
                     AutocompleteProvider::TYPE_SEARCH |
-                    AutocompleteProvider::TYPE_ZERO_SUGGEST;
+                    AutocompleteProvider::TYPE_ZERO_SUGGEST |
+                    AutocompleteProvider::TYPE_ZERO_SUGGEST_LOCAL_HISTORY;
     autocomplete_controller_ = std::make_unique<AutocompleteController>(
         std::make_unique<ChromeAutocompleteProviderClient>(profile()), this,
         providers);

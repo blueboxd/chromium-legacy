@@ -994,8 +994,7 @@ class ListenerWithIndirectProxyAssociatedInterface
       public IPC::mojom::IndirectTestDriver,
       public IPC::mojom::PingReceiver {
  public:
-  ListenerWithIndirectProxyAssociatedInterface()
-      : driver_binding_(this), ping_receiver_binding_(this) {}
+  ListenerWithIndirectProxyAssociatedInterface() : driver_binding_(this) {}
   ~ListenerWithIndirectProxyAssociatedInterface() override = default;
 
   // IPC::Listener:
@@ -1016,9 +1015,9 @@ class ListenerWithIndirectProxyAssociatedInterface
 
  private:
   // IPC::mojom::IndirectTestDriver:
-  void GetPingReceiver(
-      IPC::mojom::PingReceiverAssociatedRequest request) override {
-    ping_receiver_binding_.Bind(std::move(request));
+  void GetPingReceiver(mojo::PendingAssociatedReceiver<IPC::mojom::PingReceiver>
+                           receiver) override {
+    ping_receiver_receiver_.Bind(std::move(receiver));
   }
 
   // IPC::mojom::PingReceiver:
@@ -1028,7 +1027,8 @@ class ListenerWithIndirectProxyAssociatedInterface
   }
 
   mojo::AssociatedBinding<IPC::mojom::IndirectTestDriver> driver_binding_;
-  mojo::AssociatedBinding<IPC::mojom::PingReceiver> ping_receiver_binding_;
+  mojo::AssociatedReceiver<IPC::mojom::PingReceiver> ping_receiver_receiver_{
+      this};
 
   base::RepeatingClosure ping_handler_;
 };
@@ -1066,9 +1066,9 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(
   // endpoint may not have been bound yet by the time the message is initially
   // processed on the IO thread.
   IPC::mojom::IndirectTestDriverAssociatedPtr driver;
-  IPC::mojom::PingReceiverAssociatedPtr ping_receiver;
+  mojo::AssociatedRemote<IPC::mojom::PingReceiver> ping_receiver;
   proxy()->GetRemoteAssociatedInterface(&driver);
-  driver->GetPingReceiver(mojo::MakeRequest(&ping_receiver));
+  driver->GetPingReceiver(ping_receiver.BindNewEndpointAndPassReceiver());
 
   base::RunLoop loop;
   ping_receiver->Ping(loop.QuitClosure());
@@ -1273,11 +1273,12 @@ class SimpleTestClientImpl : public IPC::mojom::SimpleTestClient,
     DCHECK_EQ(interface_name, IPC::mojom::SimpleTestClient::Name_);
 
     receiver_.Bind(
-        IPC::mojom::SimpleTestClientAssociatedRequest(std::move(handle)));
+        mojo::PendingAssociatedReceiver<IPC::mojom::SimpleTestClient>(
+            std::move(handle)));
   }
 
   bool use_sync_sender_ = false;
-  mojo::AssociatedBinding<IPC::mojom::SimpleTestClient> receiver_{this};
+  mojo::AssociatedReceiver<IPC::mojom::SimpleTestClient> receiver_{this};
   IPC::Sender* sync_sender_ = nullptr;
   IPC::mojom::SimpleTestDriver* driver_ = nullptr;
   std::unique_ptr<base::RunLoop> run_loop_;

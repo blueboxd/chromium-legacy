@@ -4,7 +4,6 @@
 
 #include "content/renderer/render_widget_screen_metrics_emulator.h"
 
-#include "content/common/visual_properties.h"
 #include "content/public/common/context_menu_params.h"
 #include "content/renderer/render_widget_screen_metrics_emulator_delegate.h"
 
@@ -12,22 +11,27 @@ namespace content {
 
 RenderWidgetScreenMetricsEmulator::RenderWidgetScreenMetricsEmulator(
     RenderWidgetScreenMetricsEmulatorDelegate* delegate,
-    const blink::WebDeviceEmulationParams& params,
-    const VisualProperties& visual_properties,
+    const ScreenInfo& screen_info,
+    const gfx::Size& widget_size,
+    const gfx::Size& visible_viewport_size,
     const gfx::Rect& view_screen_rect,
     const gfx::Rect& window_screen_rect)
     : delegate_(delegate),
-      emulation_params_(params),
-      scale_(1.f),
-      original_visual_properties_(visual_properties),
+      original_screen_info_(screen_info),
+      original_widget_size_(widget_size),
+      original_visible_viewport_size_(visible_viewport_size),
       original_view_screen_rect_(view_screen_rect),
       original_window_screen_rect_(window_screen_rect) {}
 
-RenderWidgetScreenMetricsEmulator::~RenderWidgetScreenMetricsEmulator() {
-  delegate_->SynchronizeVisualProperties(original_visual_properties_);
+RenderWidgetScreenMetricsEmulator::~RenderWidgetScreenMetricsEmulator() =
+    default;
+
+void RenderWidgetScreenMetricsEmulator::DisableAndApply() {
   delegate_->SetScreenMetricsEmulationParameters(false, emulation_params_);
   delegate_->SetScreenRects(original_view_screen_rect_,
                             original_window_screen_rect_);
+  delegate_->SetScreenInfoAndSize(original_screen_info_, original_widget_size_,
+                                  original_visible_viewport_size_);
 }
 
 void RenderWidgetScreenMetricsEmulator::ChangeEmulationParams(
@@ -37,7 +41,8 @@ void RenderWidgetScreenMetricsEmulator::ChangeEmulationParams(
 }
 
 void RenderWidgetScreenMetricsEmulator::Apply() {
-  VisualProperties modified_visual_properties = original_visual_properties_;
+  ScreenInfo screen_info = original_screen_info_;
+
   applied_widget_rect_.set_size(gfx::Size(emulation_params_.view_size));
 
   if (!applied_widget_rect_.width())
@@ -56,9 +61,8 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
   gfx::Rect window_screen_rect;
   if (emulation_params_.screen_position ==
       blink::WebDeviceEmulationParams::kDesktop) {
-    modified_visual_properties.screen_info.rect = original_screen_info().rect;
-    modified_visual_properties.screen_info.available_rect =
-        original_screen_info().available_rect;
+    screen_info.rect = original_screen_info().rect;
+    screen_info.available_rect = original_screen_info().available_rect;
     window_screen_rect = original_window_screen_rect_;
     if (emulation_params_.view_position) {
       applied_widget_rect_.set_origin(*emulation_params_.view_position);
@@ -69,20 +73,19 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
   } else {
     applied_widget_rect_.set_origin(
         emulation_params_.view_position.value_or(blink::WebPoint()));
-    modified_visual_properties.screen_info.rect = applied_widget_rect_;
-    modified_visual_properties.screen_info.available_rect =
-        applied_widget_rect_;
+    screen_info.rect = applied_widget_rect_;
+    screen_info.available_rect = applied_widget_rect_;
     window_screen_rect = applied_widget_rect_;
   }
 
   if (!emulation_params_.screen_size.IsEmpty()) {
     gfx::Rect screen_rect = gfx::Rect(0, 0, emulation_params_.screen_size.width,
                                       emulation_params_.screen_size.height);
-    modified_visual_properties.screen_info.rect = screen_rect;
-    modified_visual_properties.screen_info.available_rect = screen_rect;
+    screen_info.rect = screen_rect;
+    screen_info.available_rect = screen_rect;
   }
 
-  modified_visual_properties.screen_info.device_scale_factor =
+  screen_info.device_scale_factor =
       emulation_params_.device_scale_factor
           ? emulation_params_.device_scale_factor
           : original_screen_info().device_scale_factor;
@@ -91,28 +94,26 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
       blink::kWebScreenOrientationUndefined) {
     switch (emulation_params_.screen_orientation_type) {
       case blink::kWebScreenOrientationPortraitPrimary:
-        modified_visual_properties.screen_info.orientation_type =
+        screen_info.orientation_type =
             SCREEN_ORIENTATION_VALUES_PORTRAIT_PRIMARY;
         break;
       case blink::kWebScreenOrientationPortraitSecondary:
-        modified_visual_properties.screen_info.orientation_type =
+        screen_info.orientation_type =
             SCREEN_ORIENTATION_VALUES_PORTRAIT_SECONDARY;
         break;
       case blink::kWebScreenOrientationLandscapePrimary:
-        modified_visual_properties.screen_info.orientation_type =
+        screen_info.orientation_type =
             SCREEN_ORIENTATION_VALUES_LANDSCAPE_PRIMARY;
         break;
       case blink::kWebScreenOrientationLandscapeSecondary:
-        modified_visual_properties.screen_info.orientation_type =
+        screen_info.orientation_type =
             SCREEN_ORIENTATION_VALUES_LANDSCAPE_SECONDARY;
         break;
       default:
-        modified_visual_properties.screen_info.orientation_type =
-            SCREEN_ORIENTATION_VALUES_DEFAULT;
+        screen_info.orientation_type = SCREEN_ORIENTATION_VALUES_DEFAULT;
         break;
     }
-    modified_visual_properties.screen_info.orientation_angle =
-        emulation_params_.screen_orientation_angle;
+    screen_info.orientation_angle = emulation_params_.screen_orientation_angle;
   }
 
   // Pass three emulation parameters to the blink side:
@@ -129,15 +130,18 @@ void RenderWidgetScreenMetricsEmulator::Apply() {
 
   delegate_->SetScreenRects(applied_widget_rect_, window_screen_rect);
 
-  modified_visual_properties.new_size = applied_widget_rect_.size();
-  modified_visual_properties.visible_viewport_size =
-      applied_widget_rect_.size();
-  delegate_->SynchronizeVisualProperties(modified_visual_properties);
+  delegate_->SetScreenInfoAndSize(
+      screen_info, /*widget_size=*/applied_widget_rect_.size(),
+      /*visible_viewport_size=*/applied_widget_rect_.size());
 }
 
 void RenderWidgetScreenMetricsEmulator::OnSynchronizeVisualProperties(
-    const VisualProperties& params) {
-  original_visual_properties_ = params;
+    const ScreenInfo& screen_info,
+    const gfx::Size& widget_size,
+    const gfx::Size& visible_viewport_size) {
+  original_screen_info_ = screen_info;
+  original_widget_size_ = widget_size;
+  original_visible_viewport_size_ = visible_viewport_size;
   Apply();
 }
 

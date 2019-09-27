@@ -66,9 +66,6 @@ class PaymentHandlerHost : public payments::PaymentHandlerHost::Delegate {
   // PaymentHandlerHost::Delegate implementation:
   bool ChangePaymentMethod(const std::string& method_name,
                            const std::string& stringified_data) override;
-  bool ChangeShippingOption(const std::string& shipping_option_id) override;
-  bool ChangeShippingAddress(
-      mojom::PaymentAddressPtr shipping_address) override;
 
   base::android::ScopedJavaGlobalRef<jobject> delegate_;
   payments::PaymentHandlerHost payment_handler_host_;

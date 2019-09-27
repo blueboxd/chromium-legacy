@@ -42,8 +42,9 @@ using namespace html_names;
 DateTimeFieldElement::FieldOwner::~FieldOwner() = default;
 
 DateTimeFieldElement::DateTimeFieldElement(Document& document,
-                                           FieldOwner& field_owner)
-    : HTMLSpanElement(document), field_owner_(&field_owner) {}
+                                           FieldOwner& field_owner,
+                                           DateTimeField type)
+    : HTMLSpanElement(document), field_owner_(&field_owner), type_(type) {}
 
 void DateTimeFieldElement::Trace(Visitor* visitor) {
   visitor->Trace(field_owner_);
@@ -230,6 +231,10 @@ void DateTimeFieldElement::UpdateVisibleValue(EventBehavior event_behavior) {
 
 int DateTimeFieldElement::ValueForARIAValueNow() const {
   return ValueAsInteger();
+}
+
+DateTimeField DateTimeFieldElement::Type() const {
+  return type_;
 }
 
 }  // namespace blink

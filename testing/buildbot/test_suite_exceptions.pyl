@@ -287,11 +287,6 @@
           'shards': 12,
         }
       },
-      'android-kitkat-arm-rel': {
-        'swarming': {
-          'shards': 12,
-        },
-      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'shards': 20,
@@ -387,6 +382,11 @@
       'Lollipop Phone Tester': {
         'swarming': {
           'shards': 13,
+        },
+      },
+      'android-kitkat-arm-rel': {
+        'swarming': {
+          'shards': 15,
         },
       },
       # chromium.linux
@@ -1174,11 +1174,6 @@
       },
     },
   },
-  'nonperfetto_content_browsertests': {
-    'remove_from': [
-      'android-asan',
-    ],
-  },
   'not_site_per_process_webkit_layout_tests': {
     'remove_from': [
       # chromium.linux
@@ -1426,6 +1421,8 @@
       'Linux FYI SkiaRenderer Vulkan (Intel HD 630)',
       'Linux FYI SkiaRenderer Vulkan (NVIDIA)',
       'Linux Release (NVIDIA)',
+      # Fails on Mac ASAN due to crbug.com/1008508
+      'Mac FYI GPU ASAN Release',
     ],
   },
   'telemetry_perf_unittests': {

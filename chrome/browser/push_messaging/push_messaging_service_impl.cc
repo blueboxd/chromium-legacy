@@ -169,7 +169,8 @@ void PushMessagingServiceImpl::InitializeForProfile(Profile* profile) {
 
   PushMessagingServiceImpl* push_service =
       PushMessagingServiceFactory::GetForProfile(profile);
-  push_service->IncreasePushSubscriptionCount(count, false /* is_pending */);
+  if (push_service)
+    push_service->IncreasePushSubscriptionCount(count, false /* is_pending */);
 }
 
 PushMessagingServiceImpl::PushMessagingServiceImpl(Profile* profile)

@@ -169,4 +169,8 @@ public class Features {
     // WebSettingsCompat.setForceDarkBehavior
     // WebSettingsCompat.getForceDarkBehavior
     public static final String FORCE_DARK_BEHAVIOR = "FORCE_DARK_BEHAVIOR";
+
+    // WebViewCompat.addWebMessageListener
+    // WebViewCompat.removeWebMessageListener
+    public static final String WEB_MESSAGE_LISTENER = "WEB_MESSAGE_LISTENER";
 }

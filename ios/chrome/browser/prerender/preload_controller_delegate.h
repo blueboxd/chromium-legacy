@@ -15,9 +15,6 @@
 // Should preload controller request a desktop site.
 - (BOOL)preloadShouldUseDesktopUserAgent;
 
-// Returns YES if the given |url| should be backed by a native controller.
-- (BOOL)preloadHasNativeControllerForURL:(const GURL&)url;
-
 @end
 
 #endif  // IOS_CHROME_BROWSER_PRERENDER_PRELOAD_CONTROLLER_DELEGATE_H_

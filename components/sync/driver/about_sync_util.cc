@@ -367,8 +367,8 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
       section_encryption->AddBoolStat("Explicit Passphrase");
   Stat<bool>* is_passphrase_required =
       section_encryption->AddBoolStat("Passphrase Required");
-  Stat<bool>* is_cryptographer_ready =
-      section_encryption->AddBoolStat("Cryptographer Ready");
+  Stat<bool>* cryptographer_can_encrypt =
+      section_encryption->AddBoolStat("Cryptographer Ready To Encrypt");
   Stat<bool>* has_pending_keys =
       section_encryption->AddBoolStat("Cryptographer Has Pending Keys");
   Stat<std::string>* encrypted_types =
@@ -517,7 +517,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
                    "No Passphrase Time"));
   }
   if (is_status_valid) {
-    is_cryptographer_ready->Set(full_status.cryptographer_ready);
+    cryptographer_can_encrypt->Set(full_status.cryptographer_can_encrypt);
     has_pending_keys->Set(full_status.crypto_has_pending_keys);
     encrypted_types->Set(ModelTypeSetToString(full_status.encrypted_types));
     has_keystore_key->Set(full_status.has_keystore_key);

@@ -48,6 +48,7 @@ SimplePathBuilderDelegate::SimplePathBuilderDelegate(
       digest_policy_(digest_policy) {}
 
 void SimplePathBuilderDelegate::CheckPathAfterVerification(
+    const CertPathBuilder& path_builder,
     CertPathBuilderResultPath* path) {
   // Do nothing - consider all candidate paths valid.
 }

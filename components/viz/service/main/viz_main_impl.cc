@@ -25,8 +25,6 @@
 #include "media/gpu/buildflags.h"
 #include "services/metrics/public/cpp/delegating_ukm_recorder.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
-#include "services/metrics/public/mojom/constants.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/skia/include/core/SkFontLCDConfig.h"
 
 #if defined(USE_OZONE)
@@ -95,7 +93,12 @@ VizMainImpl::VizMainImpl(Delegate* delegate,
     }
   }
 
-  CreateUkmRecorderIfNeeded(dependencies.connector);
+  if (!gpu_init_->gpu_info().in_process_gpu && dependencies.ukm_recorder) {
+    // NOTE: If the GPU is running in the browser process, we can use the
+    // browser's UKMRecorder.
+    ukm_recorder_ = std::move(dependencies.ukm_recorder);
+    ukm::DelegatingUkmRecorder::Get()->AddDelegate(ukm_recorder_->GetWeakPtr());
+  }
 
   gpu_service_ = std::make_unique<GpuServiceImpl>(
       gpu_init_->gpu_info(), gpu_init_->TakeWatchdogThread(), io_task_runner(),
@@ -214,18 +217,6 @@ void VizMainImpl::CreateGpuService(
   }
   if (delegate_)
     delegate_->OnGpuServiceConnection(gpu_service_.get());
-}
-
-void VizMainImpl::CreateUkmRecorderIfNeeded(
-    service_manager::Connector* connector) {
-  // If GPU is running in the browser process, we can use browser's UKMRecorder.
-  if (gpu_init_->gpu_info().in_process_gpu)
-    return;
-
-  DCHECK(connector) << "Unable to initialize UKMRecorder in the GPU process - "
-                    << "no valid connector.";
-  ukm_recorder_ = ukm::MojoUkmRecorder::Create(connector);
-  ukm::DelegatingUkmRecorder::Get()->AddDelegate(ukm_recorder_->GetWeakPtr());
 }
 
 void VizMainImpl::CreateFrameSinkManager(

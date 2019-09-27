@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
 PASS idl_test setup
+PASS idl_test validation
 PASS PerformanceLongTaskTiming interface: existence and properties of interface object
 PASS PerformanceLongTaskTiming interface object length
 PASS PerformanceLongTaskTiming interface object name

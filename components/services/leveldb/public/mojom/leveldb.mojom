@@ -4,7 +4,7 @@
 
 module leveldb.mojom;
 
-import "components/services/filesystem/public/mojom/directory.mojom";
+import "mojo/public/mojom/base/file_path.mojom";
 import "mojo/public/mojom/base/memory_allocator_dump_cross_process_uid.mojom";
 import "mojo/public/mojom/base/unguessable_token.mojom";
 
@@ -84,11 +84,14 @@ struct OpenOptions {
   SharedReadCache shared_block_read_cache = SharedReadCache.Default;
 };
 
-// Service which hands out databases.
+// Service which hands out databases. This is both consumed and implemented
+// exclusively within the browser process.
+//
+// DEPRECATED: Do not introduce new uses of this interface.
 interface LevelDBService {
   // Open the database with the specified "name" in the specified "directory".
   // Fails if the database doesn't already exist.
-  Open(filesystem.mojom.Directory directory,
+  Open(mojo_base.mojom.FilePath directory,
        string dbname,
        mojo_base.mojom.MemoryAllocatorDumpCrossProcessUid? memory_dump_id,
        pending_associated_receiver<LevelDBDatabase> database)
@@ -96,7 +99,7 @@ interface LevelDBService {
 
   // Open the database with the specified "name" in the specified "directory".
   OpenWithOptions(OpenOptions options,
-                  filesystem.mojom.Directory directory,
+                  mojo_base.mojom.FilePath directory,
                   string dbname,
                   mojo_base.mojom.MemoryAllocatorDumpCrossProcessUid?
                   memory_dump_id,
@@ -113,7 +116,7 @@ interface LevelDBService {
 
   // Destroys the contents of the specified database. Returns OK if the database
   // already didn't exist.
-  Destroy(filesystem.mojom.Directory directory,
+  Destroy(mojo_base.mojom.FilePath directory,
           string dbname) => (DatabaseError status);
 };
 

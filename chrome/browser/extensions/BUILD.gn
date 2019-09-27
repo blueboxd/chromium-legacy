@@ -608,6 +608,8 @@ jumbo_static_library("extensions") {
     "external_registry_loader_win.h",
     "forced_extensions/installation_reporter.cc",
     "forced_extensions/installation_reporter.h",
+    "forced_extensions/installation_reporter_factory.cc",
+    "forced_extensions/installation_reporter_factory.h",
     "forced_extensions/installation_tracker.cc",
     "forced_extensions/installation_tracker.h",
     "global_shortcut_listener.cc",

@@ -74,40 +74,46 @@
                               browserState:browserState];
   if (self) {
     _webStateList = webStateList;
-
     _injectionHandler = injectionHandler;
-
-    _formInputAccessoryViewController =
-        [[FormInputAccessoryViewController alloc]
-            initWithManualFillAccessoryViewControllerDelegate:self];
-
-    auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
-        browserState, ServiceAccessType::EXPLICIT_ACCESS);
-
-    // There is no personal data manager in OTR (incognito). Get the original
-    // one for manual fallback.
-    autofill::PersonalDataManager* personalDataManager =
-        autofill::PersonalDataManagerFactory::GetForBrowserState(
-            browserState->GetOriginalChromeBrowserState());
-
-    _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
-           initWithConsumer:self.formInputAccessoryViewController
-                   delegate:self
-               webStateList:webStateList
-        personalDataManager:personalDataManager
-              passwordStore:passwordStore];
     _dispatcher = dispatcher;
   }
   return self;
 }
 
+- (void)start {
+  _formInputAccessoryViewController = [[FormInputAccessoryViewController alloc]
+      initWithManualFillAccessoryViewControllerDelegate:self];
+
+  auto passwordStore = IOSChromePasswordStoreFactory::GetForBrowserState(
+      self.browserState, ServiceAccessType::EXPLICIT_ACCESS);
+
+  // There is no personal data manager in OTR (incognito). Get the original
+  // one for manual fallback.
+  autofill::PersonalDataManager* personalDataManager =
+      autofill::PersonalDataManagerFactory::GetForBrowserState(
+          self.browserState->GetOriginalChromeBrowserState());
+
+  _formInputAccessoryMediator = [[FormInputAccessoryMediator alloc]
+         initWithConsumer:self.formInputAccessoryViewController
+                 delegate:self
+             webStateList:self.webStateList
+      personalDataManager:personalDataManager
+            passwordStore:passwordStore];
+}
+
 - (void)stop {
   [self stopChildren];
+
   [self.formInputAccessoryViewController restoreOriginalKeyboardView];
+  self.formInputAccessoryViewController = nil;
+
   [self.formInputAccessoryMediator disconnect];
+  self.formInputAccessoryMediator = nil;
 }
 
 - (void)reset {
+  [self stopChildren];
+  [self.formInputAccessoryMediator enableSuggestions];
   [self.formInputAccessoryViewController reset];
 }
 
@@ -183,23 +189,19 @@
   // On iOS 13, beta 3, the popover is not dismissed when the keyboard hides.
   // This explicitly dismiss any popover.
   if (base::ios::IsRunningOnIOS13OrLater() && IsIPadIdiom()) {
-    [self stopChildren];
-    [self.formInputAccessoryMediator enableSuggestions];
-    [self.formInputAccessoryViewController reset];
+    [self reset];
   }
 }
 
 - (void)mediatorDidDetectMovingToBackground:
     (FormInputAccessoryMediator*)mediator {
-  [self.formInputAccessoryViewController reset];
+  [self reset];
 }
 
 #pragma mark - ManualFillAccessoryViewControllerDelegate
 
 - (void)keyboardButtonPressed {
-  [self stopChildren];
-  [self.formInputAccessoryMediator enableSuggestions];
-  [self.formInputAccessoryViewController reset];
+  [self reset];
 }
 
 - (void)accountButtonPressed:(UIButton*)sender {
@@ -227,33 +229,32 @@
 
 - (void)fallbackCoordinatorDidDismissPopover:
     (FallbackCoordinator*)fallbackCoordinator {
-  [self.formInputAccessoryMediator enableSuggestions];
-  [self.formInputAccessoryViewController reset];
+  [self reset];
 }
 
 #pragma mark - PasswordCoordinatorDelegate
 
 - (void)openPasswordSettings {
-  [self.formInputAccessoryViewController reset];
+  [self reset];
   [self.navigator openPasswordSettings];
 }
 
 - (void)openAllPasswordsPicker {
-  [self.formInputAccessoryViewController reset];
+  [self reset];
   [self.navigator openAllPasswordsPicker];
 }
 
 #pragma mark - CardCoordinatorDelegate
 
 - (void)openCardSettings {
-  [self.formInputAccessoryViewController reset];
+  [self reset];
   [self.navigator openCreditCardSettings];
 }
 
 #pragma mark - AddressCoordinatorDelegate
 
 - (void)openAddressSettings {
-  [self.formInputAccessoryViewController reset];
+  [self reset];
   [self.navigator openAddressSettings];
 }
 

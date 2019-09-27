@@ -876,8 +876,9 @@ void FrameLoader::CommitNavigation(
   // TODO(dgozman): figure out the better place for this check
   // to cancel lazy load both on start and commit. Perhaps
   // CancelProvisionalLoaderForNewNavigation() is a good one.
-  if (HTMLFrameOwnerElement* element = frame_->DeprecatedLocalOwner())
-    element->CancelPendingLazyLoad();
+  HTMLFrameOwnerElement* frame_owner = frame_->DeprecatedLocalOwner();
+  if (frame_owner)
+    frame_owner->CancelPendingLazyLoad();
 
   navigation_params->frame_load_type = DetermineFrameLoadType(
       navigation_params->url, navigation_params->http_method,
@@ -927,6 +928,8 @@ void FrameLoader::CommitNavigation(
   DocumentLoader* provisional_document_loader = Client()->CreateDocumentLoader(
       frame_, navigation_type, std::move(navigation_params),
       std::move(extra_data));
+
+  FrameSwapScope frame_swap_scope(frame_owner);
 
   {
     base::AutoReset<bool> scoped_committing(&committing_navigation_, true);

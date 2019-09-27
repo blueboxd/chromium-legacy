@@ -45,8 +45,4 @@ ServerFieldType FieldCandidates::BestHeuristicType() const {
   return static_cast<ServerFieldType>(index);
 }
 
-const std::vector<FieldCandidate>& FieldCandidates::field_candidates() const {
-  return field_candidates_;
-}
-
 }  // namespace autofill

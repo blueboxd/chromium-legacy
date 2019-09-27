@@ -65,7 +65,8 @@ template("chrome_feature_module") {
       _loadable_modules_64_bit += _module_desc.loadable_modules_64_bit
     }
 
-    if (defined(_module_desc.native_deps) && _module_desc.native_deps != []) {
+    if (use_native_modules && defined(_module_desc.native_deps) &&
+        _module_desc.native_deps != []) {
       _arch = ""
       _toolchain = ""
       _root_out_dir = root_out_dir

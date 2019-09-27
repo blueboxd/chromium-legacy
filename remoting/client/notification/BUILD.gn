@@ -4,6 +4,8 @@
 
 source_set("notification") {
   sources = [
+    "gstatic_json_fetcher.cc",
+    "gstatic_json_fetcher.h",
     "json_fetcher.h",
     "notification_client.cc",
     "notification_client.h",
@@ -15,6 +17,8 @@ source_set("notification") {
 
   deps = [
     "//base",
+    "//net",
+    "//remoting/base",
   ]
 }
 
@@ -22,12 +26,14 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
+    "gstatic_json_fetcher_unittest.cc",
     "notification_client_unittest.cc",
     "version_range_unittest.cc",
   ]
 
   deps = [
     ":notification",
+    "//net",
     "//testing/gmock",
     "//testing/gtest",
   ]

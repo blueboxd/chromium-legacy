@@ -19,6 +19,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "mojo/public/cpp/bindings/connector.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/ip_address.h"
 #include "net/base/net_errors.h"
 #include "net/dns/dns_query.h"
@@ -423,14 +424,12 @@ class MdnsResponderTest : public testing::Test {
   }
 
   void CreateMdnsResponders() {
-    auto request1 = mojo::MakeRequest(&client_[0]);
-    client_[0].set_connection_error_handler(base::BindOnce(
+    host_manager_->CreateMdnsResponder(client_[0].BindNewPipeAndPassReceiver());
+    client_[0].set_disconnect_handler(base::BindOnce(
         &MdnsResponderTest::OnMojoConnectionError, base::Unretained(this), 0));
-    host_manager_->CreateMdnsResponder(std::move(request1));
-    auto request2 = mojo::MakeRequest(&client_[1]);
-    client_[1].set_connection_error_handler(base::BindOnce(
+    host_manager_->CreateMdnsResponder(client_[1].BindNewPipeAndPassReceiver());
+    client_[1].set_disconnect_handler(base::BindOnce(
         &MdnsResponderTest::OnMojoConnectionError, base::Unretained(this), 1));
-    host_manager_->CreateMdnsResponder(std::move(request2));
   }
 
   // The following method is synchronous for testing by waiting on running the
@@ -493,7 +492,7 @@ class MdnsResponderTest : public testing::Test {
   // of time and avoid any actual sleeps.
   NiceMock<net::MockMDnsSocketFactory> socket_factory_;
   NiceMock<MockFailingMdnsSocketFactory> failing_socket_factory_;
-  mojom::MdnsResponderPtr client_[2];
+  mojo::Remote<mojom::MdnsResponder> client_[2];
   std::unique_ptr<MdnsResponderManager> host_manager_;
   std::string last_name_created_;
 };

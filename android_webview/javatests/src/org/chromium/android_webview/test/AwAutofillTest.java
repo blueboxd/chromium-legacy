@@ -47,6 +47,7 @@ import org.chromium.base.Log;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.DisableIf;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.MetricsUtils;
@@ -1815,6 +1816,7 @@ public class AwAutofillTest {
 
     @Test
     @SmallTest
+    @DisabledTest
     @Feature({"AndroidWebView"})
     public void testPageScrollTriggerViewExitAndEnter() throws Throwable {
         TestWebServer webServer = TestWebServer.start();

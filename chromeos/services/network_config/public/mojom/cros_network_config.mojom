@@ -239,16 +239,22 @@ struct WiFiStateProperties {
   string ssid;
 };
 
+union NetworkTypeStateProperties {
+  CellularStateProperties cellular;
+  EthernetStateProperties ethernet;
+  TetherStateProperties tether;
+  VPNStateProperties vpn;
+  WiFiStateProperties wifi;
+};
+
 struct NetworkStateProperties {
   CaptivePortalProvider? captive_portal_provider;
-  CellularStateProperties? cellular;
   // True if the network is configured and may be connectable.
   bool connectable = false;
   // True if an explicit connect was requested. The network state may not be
   // Connecting yet.
   bool connect_requested = false;
   ConnectionStateType connection_state;
-  EthernetStateProperties? ethernet;
   // A string describing the network error state. TODO(stevenjb): Use an enum.
   string? error_state;
   // The unique identifier for the network.
@@ -263,10 +269,8 @@ struct NetworkStateProperties {
   // True for visible networks that are blocked / disallowed by policy.
   bool prohibited_by_policy = false;
   OncSource source;
-  TetherStateProperties? tether;
   NetworkType type;
-  VPNStateProperties? vpn;
-  WiFiStateProperties? wifi;
+  NetworkTypeStateProperties type_state;
 };
 
 struct DeviceStateProperties {

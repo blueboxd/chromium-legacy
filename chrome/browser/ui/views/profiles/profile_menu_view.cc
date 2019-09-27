@@ -48,6 +48,7 @@
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/accounts_mutator.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
+#include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service_utils.h"
 #include "components/vector_icons/vector_icons.h"
 #include "net/base/url_util.h"
@@ -560,9 +561,7 @@ void ProfileMenuView::BuildAccountFeatureButtons() {
 }
 
 void ProfileMenuView::BuildProfileHeading() {
-  // TODO(crbug.com/995720): Update this string after approval from UX.
-  SetProfileHeading(
-      l10n_util::GetStringUTF16(IDS_PROFILES_MANAGE_USERS_BUTTON));
+  SetProfileHeading(l10n_util::GetStringUTF16(IDS_PROFILES_OPTIONS_GROUP_NAME));
 }
 
 void ProfileMenuView::BuildSelectableProfiles() {
@@ -588,23 +587,16 @@ void ProfileMenuView::BuildProfileFeatureButtons() {
       base::BindRepeating(&ProfileMenuView::OnManageProfilesButtonClicked,
                           base::Unretained(this)));
 
-  constexpr float kIconToImageRatio = 0.75;
   AddProfileFeatureButton(
-      ImageForMenu(kUserMenuGuestIcon, kIconToImageRatio),
-      l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_GUEST_PROFILE_BUTTON),
+      ColoredImageForMenu(kUserAccountAvatarIcon, gfx::kGoogleGrey500),
+      l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
       base::BindRepeating(&ProfileMenuView::OnGuestProfileButtonClicked,
                           base::Unretained(this)));
 
   AddProfileFeatureButton(
-      ImageForMenu(kAddIcon, kIconToImageRatio),
-      l10n_util::GetStringUTF16(IDS_ADD_USER_BUTTON),
+      ImageForMenu(kAddIcon, /*icon_to_image_ratio=*/0.75),
+      l10n_util::GetStringUTF16(IDS_ADD),
       base::BindRepeating(&ProfileMenuView::OnAddNewProfileButtonClicked,
-                          base::Unretained(this)));
-
-  AddProfileFeatureButton(
-      ImageForMenu(kCloseAllIcon, kIconToImageRatio),
-      l10n_util::GetStringUTF16(IDS_PROFILES_CLOSE_ALL_WINDOWS_BUTTON),
-      base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
                           base::Unretained(this)));
 }
 

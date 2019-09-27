@@ -14,6 +14,7 @@
 #include "base/test/metrics/user_action_tester.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/drive/drive_integration_service.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/profiles/profile.h"
@@ -146,6 +147,7 @@ class FileManagerBrowserTestBase : public extensions::ExtensionApiTest {
   bool IsSmbEnabled() const;
 
   base::test::ScopedFeatureList feature_list_;
+  crostini::FakeCrostiniFeatures crostini_features_;
 
   std::unique_ptr<DownloadsTestVolume> local_volume_;
   std::unique_ptr<CrostiniTestVolume> crostini_volume_;

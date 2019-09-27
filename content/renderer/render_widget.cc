@@ -598,12 +598,13 @@ void RenderWidget::Init(ShowCallback show_callback, WebWidget* web_widget) {
   RenderThread::Get()->AddRoute(routing_id_, this);
 }
 
-void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget(
-    RenderWidget* origin_widget) {
+void RenderWidget::ApplyEmulatedScreenMetricsForPopupWidget() {
   RenderWidgetScreenMetricsEmulator* emulator =
       page_properties_->ScreenMetricsEmulator();
   if (!emulator)
     return;
+  // TODO(danakj): Have RenderWidget go directly through the emulator when it
+  // uses these popup variables, and remove the variables.
   popup_origin_scale_for_emulation_ = emulator->scale();
   popup_view_origin_for_emulation_ = emulator->applied_widget_rect().origin();
   popup_screen_origin_for_emulation_ =
@@ -762,26 +763,13 @@ void RenderWidget::PrepareForClose() {
   if (input_event_queue_)
     input_event_queue_->ClearClient();
 
-  // If the browser has not sent OnDisableDeviceEmulation, we have an emulator
-  // hanging out still. Destroying it must happen *after* the IPC route is
-  // removed so that another IPC does not arrive and re-create the emulator
-  // during closing.
-  //
-  // This destruction is normally part of an IPC and expects objects to be alive
-  // that would be alive while the IPC route is active such as the
-  // |layer_tree_view_|. So we ensure that it is the first thing to be
-  // destroyed here before deleting things from the RenderWidget or the
-  // delegate().
-  //
-  // TODO(danakj): The emulator could reset to non-emulated values in an
-  // explicit method call (instead of in the destructor) that occurs when
-  // emulation is disabled, but does not need to occur during RenderWidget
-  // closing. Then we would not have to destroy this so carefully.
+  // The emulator expects to use the WebWidget and layer_tree_host_, so disable
+  // it after closing the IPC route and before destroying those objects.
   //
   // Screen metrics emulation can only be set by the local main frame render
   // widget.
-  if (delegate_)
-    page_properties_->SetScreenMetricsEmulator(nullptr);
+  if (delegate() && page_properties_->ScreenMetricsEmulator())
+    page_properties_->ScreenMetricsEmulator()->DisableAndApply();
 
   // TODO(https://crbug.com/995981): This logic is very confusing and should be
   // fixed. When RenderWidget is owned by a RenderViewImpl, its lifetime is tied
@@ -926,6 +914,18 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
   // skipping the emulator.
   if (!ignore_resize_ipc) {
     if (delegate_ && page_properties_->ScreenMetricsEmulator()) {
+      DCHECK(!auto_resize_mode_);
+      // TODO(danakj): Have RenderWidget grab emulated values from the emulator
+      // instead of making it call back into RenderWidget, then we can do this
+      // with a single UpdateSurfaceAndScreenInfo() call. The emulator may
+      // change the ScreenInfo and then will call back to RenderWidget. Before
+      // that we keep the current (possibly emulated) ScreenInfo.
+      UpdateSurfaceAndScreenInfo(
+          visual_properties.local_surface_id_allocation.value_or(
+              viz::LocalSurfaceIdAllocation()),
+          visual_properties.compositor_viewport_pixel_rect,
+          page_properties_->GetScreenInfo());
+
       // This will call our SynchronizeVisualProperties() method with a
       // different set of VisualProperties, holding emulated values. Though not
       // all VisualProperties are modified by the metrics emulator, so it's a
@@ -933,44 +933,87 @@ void RenderWidget::SynchronizeVisualPropertiesFromRenderView(
       // modify can be consumed directly here instead of in
       // SynchronizeVisualProperties().
       page_properties_->ScreenMetricsEmulator()->OnSynchronizeVisualProperties(
-          visual_properties);
+          visual_properties.screen_info, visual_properties.new_size,
+          visual_properties.visible_viewport_size);
     } else {
-      SynchronizeVisualProperties(visual_properties);
+      gfx::Rect new_compositor_viewport_pixel_rect =
+          visual_properties.compositor_viewport_pixel_rect;
+      if (auto_resize_mode_) {
+        new_compositor_viewport_pixel_rect = gfx::Rect(gfx::ScaleToCeiledSize(
+            size_, visual_properties.screen_info.device_scale_factor));
+      }
 
-      if (!delegate()) {
-        // The main frame controls the page scale factor, from blink. For other
-        // frame widgets, the page scale is received from its parent as part of
-        // the visual properties here. While blink doesn't need to know this
-        // page scale factor outside the main frame, the compositor does in
-        // order to produce its output at the correct scale.
-        layer_tree_host_->SetExternalPageScaleFactor(
+      UpdateSurfaceAndScreenInfo(
+          visual_properties.local_surface_id_allocation.value_or(
+              viz::LocalSurfaceIdAllocation()),
+          new_compositor_viewport_pixel_rect, visual_properties.screen_info);
+
+      if (for_frame()) {
+        // TODO(danakj): This should not need to go through RenderFrame to set
+        // Page-level properties.
+        blink::WebFrameWidget* frame_widget = GetFrameWidget();
+        // TODO(danakj): Stop doing SynchronizeVisualProperties() (due to
+        // emulation) while undead, and change this to a DCHECK.
+        if (frame_widget) {
+          RenderFrameImpl* render_frame =
+              RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
+
+          // This causes compositing state to be modified which dirties the
+          // document lifecycle. Android Webview relies on the document
+          // lifecycle being clean after the RenderWidget is initialized, in
+          // order to send IPCs that query and change compositing state. So
+          // ResizeWebWidget() must come after this call, as it runs the entire
+          // document lifecycle.
+          render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
+              ComputePreferCompositingToLCDText(
+                  compositor_deps_, page_properties_->GetDeviceScaleFactor()));
+        }
+      }
+
+      if (!auto_resize_mode_) {
+        display_mode_ = visual_properties.display_mode;
+
+        visible_viewport_size_ = visual_properties.visible_viewport_size;
+        size_ = visual_properties.new_size;
+        ResizeWebWidget();
+      }
+    }
+  }
+
+  if (!delegate()) {
+    // The main frame controls the page scale factor, from blink. For other
+    // frame widgets, the page scale is received from its parent as part of
+    // the visual properties here. While blink doesn't need to know this
+    // page scale factor outside the main frame, the compositor does in
+    // order to produce its output at the correct scale.
+    layer_tree_host_->SetExternalPageScaleFactor(
+        visual_properties.page_scale_factor,
+        visual_properties.is_pinch_gesture_active);
+
+    // Store the value to give to any new RenderFrameProxy that is
+    // registered.
+    page_scale_factor_from_mainframe_ = visual_properties.page_scale_factor;
+    // Similarly, only the main frame knows when a pinch gesture is active,
+    // but this information is needed in subframes so they can throttle
+    // re-rastering in the same manner as the main frame.
+    // |is_pinch_gesture_active| follows the same path to the subframe
+    // compositor(s) as |page_scale_factor|.
+    is_pinch_gesture_active_from_mainframe_ =
+        visual_properties.is_pinch_gesture_active;
+
+    // Push the page scale factor down to any child RenderWidgets via our
+    // child proxy frames.
+    // TODO(danakj): This ends up setting the page scale factor in the
+    // RenderWidgetHost of the child RenderWidget, so that it can bounce
+    // the value down to its RenderWidget. Since this is essentially a
+    // global value per-page, we could instead store it once in the browser
+    // (such as in RenderViewHost) and distribute it to each frame-hosted
+    // RenderWidget from there.
+    for (auto& child_proxy : render_frame_proxies_) {
+      if (!is_undead_) {
+        child_proxy.OnPageScaleFactorChanged(
             visual_properties.page_scale_factor,
             visual_properties.is_pinch_gesture_active);
-        // Store the value to give to any new RenderFrameProxy that is
-        // registered.
-        page_scale_factor_from_mainframe_ = visual_properties.page_scale_factor;
-        // Similarly, only the main frame knows when a pinch gesture is active,
-        // but this information is needed in subframes so they can throttle
-        // re-rastering in the same manner as the main frame.
-        // |is_pinch_gesture_active| follows the same path to the subframe
-        // compositor(s) as |page_scale_factor|.
-        is_pinch_gesture_active_from_mainframe_ =
-            visual_properties.is_pinch_gesture_active;
-        // Push the page scale factor down to any child RenderWidgets via our
-        // child proxy frames.
-        // TODO(danakj): This ends up setting the page scale factor in the
-        // RenderWidgetHost of the child RenderWidget, so that it can bounce
-        // the value down to its RenderWidget. Since this is essentially a
-        // global value per-page, we could instead store it once in the browser
-        // (such as in RenderViewHost) and distribute it to each frame-hosted
-        // RenderWidget from there.
-        for (auto& child_proxy : render_frame_proxies_) {
-          if (!is_undead_) {
-            child_proxy.OnPageScaleFactorChanged(
-                visual_properties.page_scale_factor,
-                visual_properties.is_pinch_gesture_active);
-          }
-        }
       }
     }
   }
@@ -996,23 +1039,23 @@ void RenderWidget::OnEnableDeviceEmulation(
     return;
 
   if (!page_properties_->ScreenMetricsEmulator()) {
-    VisualProperties visual_properties;
-    visual_properties.screen_info = page_properties_->GetScreenInfo();
-    visual_properties.new_size = size_;
-    visual_properties.compositor_viewport_pixel_rect = CompositorViewportRect();
-    visual_properties.local_surface_id_allocation =
-        local_surface_id_allocation_from_parent_;
-    visual_properties.visible_viewport_size = visible_viewport_size_;
-    visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
-    visual_properties.display_mode = display_mode_;
     page_properties_->SetScreenMetricsEmulator(
         std::make_unique<RenderWidgetScreenMetricsEmulator>(
-            this, params, visual_properties, widget_screen_rect_,
-            window_screen_rect_));
-    page_properties_->ScreenMetricsEmulator()->Apply();
-  } else {
-    page_properties_->ScreenMetricsEmulator()->ChangeEmulationParams(params);
+            this, page_properties_->GetScreenInfo(), size_,
+            visible_viewport_size_, widget_screen_rect_, window_screen_rect_));
   }
+  page_properties_->ScreenMetricsEmulator()->ChangeEmulationParams(params);
+}
+
+void RenderWidget::OnDisableDeviceEmulation() {
+  // Device emulation can only be applied to the local main frame render widget.
+  // TODO(https://crbug.com/1006052): We should fix the IPC to send to
+  // RenderView instead.
+  if (!delegate_)
+    return;
+  DCHECK(page_properties_->ScreenMetricsEmulator());
+  page_properties_->ScreenMetricsEmulator()->DisableAndApply();
+  page_properties_->SetScreenMetricsEmulator(nullptr);
 }
 
 void RenderWidget::SetAutoResizeMode(bool auto_resize,
@@ -1061,15 +1104,6 @@ void RenderWidget::SetZoomLevel(double zoom_level) {
     for (auto& plugin : browser_plugins_)
       plugin.OnZoomLevelChanged(zoom_level);
   }
-}
-
-void RenderWidget::OnDisableDeviceEmulation() {
-  // Device emulation can only be applied to the local main frame render widget.
-  // TODO(https://crbug.com/1006052): We should fix the IPC to send to
-  // RenderView instead.
-  if (!delegate_)
-    return;
-  page_properties_->SetScreenMetricsEmulator(nullptr);
 }
 
 void RenderWidget::OnWasHidden() {
@@ -1736,94 +1770,92 @@ bool RenderWidget::WillHandleMouseEvent(const blink::WebMouseEvent& event) {
   return mouse_lock_dispatcher()->WillHandleMouseEvent(event);
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// RenderWidgetScreenMetricsDelegate
-
 void RenderWidget::ResizeWebWidget() {
-  gfx::Size size = GetSizeForWebWidget();
+  // In auto resize mode, blink controls sizes and RenderWidget should not be
+  // passing values back in.
+  DCHECK(!auto_resize_mode_);
+
+  // The widget size given to blink is scaled by the (non-emulated,
+  // see https://crbug.com/819903) device scale factor (if UseZoomForDSF is
+  // enabled).
+  gfx::Size size_for_blink;
+  if (!compositor_deps_->IsUseZoomForDSFEnabled()) {
+    size_for_blink = size_;
+  } else {
+    size_for_blink = gfx::ScaleToCeiledSize(
+        size_, GetOriginalScreenInfo().device_scale_factor);
+  }
+
   if (delegate()) {
-    delegate()->ResizeWebWidgetForWidget(size, top_controls_height_,
+    // The visual viewport size given to blink is scaled by the (non-emulated,
+    // see https://crbug.com/819903) device scale factor (if UseZoomForDSF is
+    // enabled).
+    gfx::Size visible_viewport_size_for_blink;
+    if (!compositor_deps_->IsUseZoomForDSFEnabled()) {
+      visible_viewport_size_for_blink = visible_viewport_size_;
+    } else {
+      visible_viewport_size_for_blink = gfx::ScaleToCeiledSize(
+          visible_viewport_size_, GetOriginalScreenInfo().device_scale_factor);
+    }
+
+    // When associated with a RenderView, the RenderView is in control of the
+    // main frame's size, because it includes other factors for top and bottom
+    // controls.
+    delegate()->ResizeWebWidgetForWidget(size_for_blink, top_controls_height_,
                                          bottom_controls_height_,
                                          browser_controls_shrink_blink_size_);
-    return;
+    delegate()->ResizeVisualViewportForWidget(visible_viewport_size_for_blink);
+  } else {
+    // When not associated with a RenderView, the RenderWidget is in control of
+    // the frame's (or other type of widget's) size.
+    GetWebWidget()->Resize(size_for_blink);
   }
-  // TODO:(https://crbug.com/995981): If there is no WebWidget, then the
-  // RenderWidget should also be destroyed, and this DCHECK should not be
-  // necessary.
-  DCHECK(GetWebWidget());
-  GetWebWidget()->Resize(size);
-}
-
-gfx::Size RenderWidget::GetSizeForWebWidget() const {
-  if (compositor_deps_->IsUseZoomForDSFEnabled()) {
-    return gfx::ScaleToCeiledSize(size_,
-                                  GetOriginalScreenInfo().device_scale_factor);
-  }
-
-  return size_;
 }
 
 gfx::Rect RenderWidget::CompositorViewportRect() const {
   return layer_tree_host_->device_viewport_rect();
 }
 
-void RenderWidget::SynchronizeVisualProperties(
-    const VisualProperties& visual_properties) {
-  // This method needs to handle changes to the screen_info, new_size, and
-  // visible_viewport_size fields in |visual_properties|, as this method is
-  // called from the RenderWidgetScreenMetricsEmulator and it changes those
-  // fields but not others.
+void RenderWidget::SetScreenInfoAndSize(
+    const ScreenInfo& screen_info,
+    const gfx::Size& widget_size,
+    const gfx::Size& visible_viewport_size) {
+  // Emulation only happens on the main frame.
+  DCHECK(delegate());
+  DCHECK(for_frame());
+  // Emulation happens on regular main frames which don't use auto-resize mode.
+  DCHECK(!auto_resize_mode_);
 
-  gfx::Rect new_compositor_viewport_pixel_rect =
-      auto_resize_mode_
-          ? gfx::Rect(gfx::ScaleToCeiledSize(
-                size_, visual_properties.screen_info.device_scale_factor))
-          : visual_properties.compositor_viewport_pixel_rect;
-  UpdateSurfaceAndScreenInfo(
-      visual_properties.local_surface_id_allocation.value_or(
-          viz::LocalSurfaceIdAllocation()),
-      new_compositor_viewport_pixel_rect, visual_properties.screen_info);
+  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
+                             CompositorViewportRect(), screen_info);
 
-  if (for_frame()) {
-    // TODO(danakj): This should not need to go through RenderFrame to set
-    // Page-level properties.
-    blink::WebFrameWidget* frame_widget = GetFrameWidget();
-    // TODO(danakj): Stop doing SynchronizeVisualProperties() (due to emulation)
-    // while undead, and change this to a DCHECK.
-    if (frame_widget) {
-      RenderFrameImpl* render_frame =
-          RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
+  // UpdateSurfaceAndScreenInfo() changes PageProperties including the device
+  // scale factor, which changes PreferCompositingToLCDText decisions.
+  // TODO(danakj): Do this in UpdateSurfaceAndScreenInfo? But requires a Resize
+  // to happen after (see comment on
+  // SetPreferCompositingToLCDTextEnabledOnRenderView).
+  // TODO(danakj): This should not need to go through RenderFrame to set
+  // Page-level properties.
+  blink::WebFrameWidget* frame_widget = GetFrameWidget();
+  // TODO(danakj): Stop handling emulation changes while undead, and change this
+  // to a DCHECK.
+  if (frame_widget) {
+    RenderFrameImpl* render_frame =
+        RenderFrameImpl::FromWebFrame(frame_widget->LocalRoot());
 
-      // This causes compositing state to be modified which dirties the document
-      // lifecycle. Android Webview relies on the document lifecycle being clean
-      // after the RenderWidget is initialized, in order to send IPCs that query
-      // and change compositing state. So ResizeWebWidget() must come after this
-      // call, as it runs the entire document lifecycle.
-      render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
-          ComputePreferCompositingToLCDText(
-              compositor_deps_, page_properties_->GetDeviceScaleFactor()));
-    }
+    // This causes compositing state to be modified which dirties the document
+    // lifecycle. Android Webview relies on the document lifecycle being clean
+    // after the RenderWidget is initialized, in order to send IPCs that query
+    // and change compositing state. So ResizeWebWidget() must come after this
+    // call, as it runs the entire document lifecycle.
+    render_frame->SetPreferCompositingToLCDTextEnabledOnRenderView(
+        ComputePreferCompositingToLCDText(
+            compositor_deps_, page_properties_->GetDeviceScaleFactor()));
   }
 
-  if (!auto_resize_mode_) {
-    visible_viewport_size_ = visual_properties.visible_viewport_size;
-    display_mode_ = visual_properties.display_mode;
-    size_ = visual_properties.new_size;
-
-    ResizeWebWidget();
-
-    gfx::Size visual_viewport_size = visible_viewport_size_;
-    if (compositor_deps_->IsUseZoomForDSFEnabled()) {
-      visual_viewport_size = gfx::ScaleToCeiledSize(
-          visual_viewport_size, GetOriginalScreenInfo().device_scale_factor);
-    }
-    // When this function is invoked for a main frame widget, it is only if
-    // (i) we are initializing the widget, or (ii) the widget supports a local
-    // mainframe. For widgets supporting a remote main frame, the visual
-    // viewport is updated through the RenderView.
-    if (delegate())
-      delegate()->ResizeVisualViewportForWidget(visual_viewport_size);
-  }
+  visible_viewport_size_ = visible_viewport_size;
+  size_ = widget_size;
+  ResizeWebWidget();
 }
 
 void RenderWidget::SetScreenMetricsEmulationParameters(
@@ -2345,21 +2377,27 @@ void RenderWidget::UpdateSurfaceAndScreenInfo(
 
 void RenderWidget::SetWindowRectSynchronously(
     const gfx::Rect& new_window_rect) {
-  VisualProperties visual_properties;
-  visual_properties.screen_info = page_properties_->GetScreenInfo();
-  visual_properties.new_size = new_window_rect.size();
-  visual_properties.compositor_viewport_pixel_rect =
-      gfx::Rect(gfx::ScaleToCeiledSize(
-          new_window_rect.size(), page_properties_->GetDeviceScaleFactor()));
-  visual_properties.visible_viewport_size = new_window_rect.size();
-  visual_properties.is_fullscreen_granted = is_fullscreen_granted_;
-  visual_properties.display_mode = display_mode_;
-  visual_properties.local_surface_id_allocation =
-      local_surface_id_allocation_from_parent_;
+  // This method is only call in tests, and it applies the |new_window_rect| to
+  // all three of:
+  // a) widget size (in |size_|)
+  // b) blink viewport (in |visible_viewport_size_|)
+  // c) compositor viewport (in cc::LayerTreeHost)
+  // Normally the browser controls these three things independently, but this is
+  // used in tests to control the size from the renderer.
+
   // We are resizing the window from the renderer, so allocate a new
   // viz::LocalSurfaceId to avoid surface invariants violations in tests.
   layer_tree_host_->RequestNewLocalSurfaceId();
-  SynchronizeVisualProperties(visual_properties);
+
+  gfx::Rect compositor_viewport_pixel_rect(gfx::ScaleToCeiledSize(
+      new_window_rect.size(), page_properties_->GetDeviceScaleFactor()));
+  UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
+                             compositor_viewport_pixel_rect,
+                             page_properties_->GetScreenInfo());
+
+  visible_viewport_size_ = new_window_rect.size();
+  size_ = new_window_rect.size();
+  ResizeWebWidget();
 
   widget_screen_rect_ = new_window_rect;
   window_screen_rect_ = new_window_rect;
@@ -3394,10 +3432,6 @@ void RenderWidget::FallbackCursorModeSetCursorVisibility(bool visible) {
   widget_input_handler_manager_->FallbackCursorModeSetCursorVisibility(visible);
 }
 
-void RenderWidget::SetAllowGpuRasterization(bool allow_gpu_raster) {
-  layer_tree_host_->SetHasGpuRasterizationTrigger(allow_gpu_raster);
-}
-
 void RenderWidget::SetPageScaleStateAndLimits(float page_scale_factor,
                                               bool is_pinch_gesture_active,
                                               float minimum,
@@ -3797,18 +3831,8 @@ void RenderWidget::SetDeviceScaleFactorForTesting(float factor) {
   gfx::Size viewport_pixel_size = gfx::ScaleToCeiledSize(size_, factor);
   UpdateSurfaceAndScreenInfo(local_surface_id_allocation_from_parent_,
                              gfx::Rect(viewport_pixel_size), info);
-
-  ResizeWebWidget();  // This picks up the new device scale factor in |info|.
-
-  gfx::Size visible_viewport_size = visible_viewport_size_;
-  if (compositor_deps_->IsUseZoomForDSFEnabled()) {
-    visible_viewport_size =
-        gfx::ScaleToCeiledSize(visible_viewport_size, factor);
-  }
-
-  DCHECK(delegate()) << "Resizing the viewport for a cross-process subframe "
-                        "must be done via the RenderView.";
-  delegate()->ResizeVisualViewportForWidget(visible_viewport_size);
+  if (!auto_resize_mode_)
+    ResizeWebWidget();  // This picks up the new device scale factor in |info|.
 
   // TODO(danakj): This should not need to go through RenderFrame to set
   // Page-level properties.

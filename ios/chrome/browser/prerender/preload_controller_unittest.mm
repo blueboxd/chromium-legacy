@@ -20,11 +20,6 @@
 #error "This file requires ARC support."
 #endif
 
-@interface PreloadController (ExposedForTesting)
-- (BOOL)shouldPreloadURL:(const GURL&)url;
-- (BOOL)isPrerenderingEnabled;
-@end
-
 namespace {
 
 // Override NetworkChangeNotifier to simulate connection type changes for tests.
@@ -111,13 +106,33 @@ class PreloadControllerTest : public PlatformTest {
 };
 
 // Tests that the preload controller does not try to preload non-web urls.
-TEST_F(PreloadControllerTest, ShouldPreloadURL) {
-  EXPECT_TRUE([controller_ shouldPreloadURL:GURL("http://www.google.com/")]);
-  EXPECT_TRUE([controller_ shouldPreloadURL:GURL("https://www.google.com/")]);
+TEST_F(PreloadControllerTest, DontPreloadNonWebURLs) {
+  const web::Referrer kReferrer;
+  const ui::PageTransition kTransition = ui::PAGE_TRANSITION_LINK;
 
-  EXPECT_FALSE([controller_ shouldPreloadURL:GURL()]);
-  EXPECT_FALSE([controller_ shouldPreloadURL:GURL("chrome://newtab")]);
-  EXPECT_FALSE([controller_ shouldPreloadURL:GURL("about:flags")]);
+  // Attempt to prerender an empty URL and verify that no WebState was created
+  // to preload.
+  [controller_ prerenderURL:GURL()
+                   referrer:kReferrer
+                 transition:kTransition
+                immediately:YES];
+  EXPECT_FALSE([controller_ releasePrerenderContents]);
+
+  // Attempt to prerender the NTP and verify that no WebState was created
+  // to preload.
+  [controller_ prerenderURL:GURL("chrome://newtab")
+                   referrer:kReferrer
+                 transition:kTransition
+                immediately:YES];
+  EXPECT_FALSE([controller_ releasePrerenderContents]);
+
+  // Attempt to prerender the flags UI and verify that no WebState was created
+  // to preload.
+  [controller_ prerenderURL:GURL("about:flags")
+                   referrer:kReferrer
+                 transition:kTransition
+                immediately:YES];
+  EXPECT_FALSE([controller_ releasePrerenderContents]);
 }
 
 TEST_F(PreloadControllerTest, TestIsPrerenderingEnabled_preloadAlways) {
@@ -126,13 +141,11 @@ TEST_F(PreloadControllerTest, TestIsPrerenderingEnabled_preloadAlways) {
   PreloadWebpagesAlways();
 
   SimulateWiFiConnection();
-  EXPECT_TRUE([controller_ isPrerenderingEnabled] ||
-              ios::device_util::IsSingleCoreDevice() ||
+  EXPECT_TRUE(controller_.enabled || ios::device_util::IsSingleCoreDevice() ||
               !ios::device_util::RamIsAtLeast512Mb());
 
   SimulateCellularConnection();
-  EXPECT_TRUE([controller_ isPrerenderingEnabled] ||
-              ios::device_util::IsSingleCoreDevice() ||
+  EXPECT_TRUE(controller_.enabled || ios::device_util::IsSingleCoreDevice() ||
               !ios::device_util::RamIsAtLeast512Mb());
 }
 
@@ -142,12 +155,11 @@ TEST_F(PreloadControllerTest, TestIsPrerenderingEnabled_preloadWiFiOnly) {
   PreloadWebpagesWiFiOnly();
 
   SimulateWiFiConnection();
-  EXPECT_TRUE([controller_ isPrerenderingEnabled] ||
-              ios::device_util::IsSingleCoreDevice() ||
+  EXPECT_TRUE(controller_.enabled || ios::device_util::IsSingleCoreDevice() ||
               !ios::device_util::RamIsAtLeast512Mb());
 
   SimulateCellularConnection();
-  EXPECT_FALSE([controller_ isPrerenderingEnabled]);
+  EXPECT_FALSE(controller_.enabled);
 }
 
 TEST_F(PreloadControllerTest, TestIsPrerenderingEnabled_preloadNever) {
@@ -156,10 +168,10 @@ TEST_F(PreloadControllerTest, TestIsPrerenderingEnabled_preloadNever) {
   PreloadWebpagesNever();
 
   SimulateWiFiConnection();
-  EXPECT_FALSE([controller_ isPrerenderingEnabled]);
+  EXPECT_FALSE(controller_.enabled);
 
   SimulateCellularConnection();
-  EXPECT_FALSE([controller_ isPrerenderingEnabled]);
+  EXPECT_FALSE(controller_.enabled);
 }
 
 }  // anonymous namespace

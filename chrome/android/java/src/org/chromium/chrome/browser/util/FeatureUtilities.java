@@ -357,6 +357,13 @@ public class FeatureUtilities {
     }
 
     /**
+     * Set whether the bottom toolbar is enabled for tests. Reset to null at the end of tests.
+     */
+    public static void setIsBottomToolbarEnabledForTests(Boolean enabled) {
+        sIsBottomToolbarEnabled = enabled;
+    }
+
+    /**
      * @return Whether or not the adaptive toolbar is enabled.
      */
     public static boolean isAdaptiveToolbarEnabled() {

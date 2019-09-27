@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">펭귄</translation>
 <translation id="183183971458492120">정보 로드 중...</translation>
 <translation id="1838709767668011582">Google 사이트</translation>
-<translation id="1839704667838141620">파일 공유 방법을 변경하세요.</translation>
 <translation id="1844692022597038441">이 파일은 오프라인에서 사용할 수 없습니다.</translation>
 <translation id="184633654410729720">태국어 키보드(Kedmanee)</translation>
 <translation id="1847880352285315359">저장됨</translation>
-<translation id="1864676585353837027">파일 공유 방법을 변경하세요.</translation>
 <translation id="1864756863218646478">파일을 찾지 못했습니다.</translation>
 <translation id="1921986354447415460">터키어-F 키보드</translation>
 <translation id="1931134289871235022">슬로바키아어</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">새 서비스 설치</translation>
 <translation id="1947424002851288782">독일어 키보드</translation>
 <translation id="1972984168337863910">파일 의견 패널 펼치기</translation>
-<translation id="197560921582345123">수정 가능</translation>
 <translation id="1984603991036629094">Armenian Phonetic 키보드</translation>
 <translation id="2001796770603320721">드라이브에서 관리</translation>
 <translation id="2009067268969781306">드라이브를 포맷하면 드라이브에 저장된 데이터가 모두 삭제됩니다. 이 작업은 취소할 수 없습니다.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" />TB</translation>
 <translation id="7839804798877833423">이 파일을 가져오는 데 약 <ph name="FILE_SIZE" />의 모바일 데이터가 사용됩니다.</translation>
 <translation id="7846076177841592234">선택 취소</translation>
-<translation id="7850851215703745691">드라이브 파일이 아직 공유되지 않음</translation>
 <translation id="7853966320808728790">프랑스어 BÉPO</translation>
 <translation id="7864662577698025113">새 서비스 추가</translation>
 <translation id="7873831373602885875"><ph name="FOLDER_NAME" />에 저장할 수 없습니다. 모든 수정사항은 다운로드 폴더의 <ph name="DOWNLOADS_FOLDER" />에 저장됩니다.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">슬로베니아어</translation>
 <translation id="7982283708762922719">높이</translation>
 <translation id="7987485481246785146">소라니 쿠르드어 아랍어 기반 키보드</translation>
-<translation id="799923393800005025">보기 가능</translation>
 <translation id="8008366997883261463">개</translation>
 <translation id="8028993641010258682">크기</translation>
 <translation id="8031722894461705849">슬로바키아어 키보드</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">파일 목록을 미리보기 이미지 뷰로 변경했습니다.</translation>
 <translation id="8601932370724196034">Crostini 이미지 파일</translation>
 <translation id="8669949407341943408">이동 중...</translation>
-<translation id="8671210955687109937">댓글 가능</translation>
-<translation id="8686213429977032554">드라이브 파일이 아직 공유되지 않음</translation>
 <translation id="8698464937041809063">Google 드로잉</translation>
 <translation id="8714406895390098252">자전거</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> 항목이 선택되었습니다.</translation>

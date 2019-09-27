@@ -136,8 +136,12 @@ android_library("java") {
     "java/src/org/chromium/chrome/browser/tasks/tab_management/UndoGroupSnackbarController.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionProvider.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/StaleTabSuggestionProvider.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabContextObserver.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsRanker.java",
     "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionProviderConfiguration.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsFetcher.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsFetcherResults.java",
+    "java/src/org/chromium/chrome/browser/tasks/tab_management/suggestions/TabSuggestionsClientFetcher.java",
   ]
 
   deps = [

@@ -23,6 +23,10 @@
 
 class Profile;
 
+namespace arc {
+class ArcIntentHelperBridge;
+}
+
 namespace apps {
 
 class AppServiceProxy;
@@ -95,6 +99,10 @@ class ArcApps : public KeyedService,
   void Publish(apps::mojom::AppPtr app);
   void ConvertAndPublishPackageApps(
       const arc::mojom::ArcPackageInfo& package_info);
+  void UpdateAppIntentFilters(
+      std::string package_name,
+      arc::ArcIntentHelperBridge* intent_helper_bridge,
+      std::vector<apps::mojom::IntentFilterPtr>* intent_filters);
 
   mojo::Receiver<apps::mojom::Publisher> receiver_{this};
   mojo::RemoteSet<apps::mojom::Subscriber> subscribers_;

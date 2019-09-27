@@ -419,38 +419,38 @@ ScriptPromise XRSession::CreateAnchor(ScriptState* script_state,
   auto* resolver = MakeGarbageCollected<ScriptPromiseResolver>(script_state);
   ScriptPromise promise = resolver->Promise();
 
-  // Transformation from mojo space to passed in |space|.
-  std::unique_ptr<TransformationMatrix> space_from_mojo =
-      space->GetTransformToMojoSpace();
+  // Transformation from passed in |space| to mojo space.
+  std::unique_ptr<TransformationMatrix> mojo_from_space =
+      space->MojoFromSpace();
 
   DVLOG(3) << __func__
-           << ": space_from_mojo = " << space_from_mojo->ToString(true);
+           << ": mojo_from_space = " << mojo_from_space->ToString(true);
 
-  // Matrix will be null if transformation from mojo space to object space is
+  // Matrix will be null if transformation from object space to mojo space is
   // not invertible, log & bail out in that case.
-  if (!space_from_mojo || !space_from_mojo->IsInvertible()) {
+  if (!mojo_from_space || !mojo_from_space->IsInvertible()) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kNonInvertibleMatrix);
     return ScriptPromise();
   }
 
-  auto mojo_from_space = space_from_mojo->Inverse();
+  auto space_from_mojo = mojo_from_space->Inverse();
 
   DVLOG(3) << __func__
-           << ": mojo_from_space = " << mojo_from_space.ToString(true);
+           << ": space_from_mojo = " << space_from_mojo.ToString(true);
 
   // Transformation from passed in pose to |space|.
-  auto space_from_initial_pose = initial_pose->TransformMatrix();
-  auto mojo_from_initial_pose = mojo_from_space * space_from_initial_pose;
-
-  DVLOG(3) << __func__ << ": space_from_initial_pose = "
-           << space_from_initial_pose.ToString(true);
+  auto mojo_from_initial_pose = initial_pose->TransformMatrix();
+  auto space_from_initial_pose = space_from_mojo * mojo_from_initial_pose;
 
   DVLOG(3) << __func__ << ": mojo_from_initial_pose = "
            << mojo_from_initial_pose.ToString(true);
 
+  DVLOG(3) << __func__ << ": space_from_initial_pose = "
+           << space_from_initial_pose.ToString(true);
+
   TransformationMatrix::DecomposedType decomposed;
-  if (!mojo_from_initial_pose.Decompose(decomposed)) {
+  if (!space_from_initial_pose.Decompose(decomposed)) {
     exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
                                       kUnableToDecomposeMatrix);
     return ScriptPromise();
@@ -923,7 +923,7 @@ void XRSession::ApplyPendingRenderState() {
 
 void XRSession::UpdatePresentationFrameState(
     double timestamp,
-    std::unique_ptr<TransformationMatrix> base_pose_matrix,
+    std::unique_ptr<TransformationMatrix> mojo_from_viewer,
     const device::mojom::blink::XRFrameDataPtr& frame_data) {
   TRACE_EVENT0("gpu", __FUNCTION__);
   DVLOG(2) << __FUNCTION__ << " : frame_data valid? "
@@ -932,9 +932,9 @@ void XRSession::UpdatePresentationFrameState(
   if (ended_)
     return;
 
-  base_pose_matrix_ = std::move(base_pose_matrix);
-  DVLOG(2) << __FUNCTION__ << " : base_pose_matrix_ valid? "
-           << (base_pose_matrix_ ? true : false);
+  mojo_from_viewer_ = std::move(mojo_from_viewer);
+  DVLOG(2) << __FUNCTION__ << " : mojo_from_viewer_ valid? "
+           << (mojo_from_viewer_ ? true : false);
 
   // Update objects that might change on per-frame basis.
   if (frame_data) {
@@ -1036,12 +1036,12 @@ XRFrame* XRSession::CreatePresentationFrame() {
   XRFrame* presentation_frame =
       MakeGarbageCollected<XRFrame>(this, world_information_);
 
-  // TODO(1004201): Determine if world_information_ should be treated similarly
-  // to the base pose matrix.
-  if (base_pose_matrix_ && visibility_state_ != XRVisibilityState::HIDDEN) {
-    DVLOG(2) << __func__ << " : base_pose_matrix_ is set and not hidden,"
+  // TODO(https://crbug.com/1004201): Determine if world_information_ should be
+  // treated similarly to mojo_from_viewer_.
+  if (mojo_from_viewer_ && visibility_state_ != XRVisibilityState::HIDDEN) {
+    DVLOG(2) << __func__ << " : mojo_from_viewer_ is set and not hidden,"
              << " updating presentation frame";
-    presentation_frame->SetBasePoseMatrix(*base_pose_matrix_);
+    presentation_frame->SetMojoFromViewer(*mojo_from_viewer_);
   }
   return presentation_frame;
 }

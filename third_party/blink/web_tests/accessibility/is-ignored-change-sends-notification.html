@@ -64,7 +64,7 @@ async_test((t) => {
     });
 
     assert_true(accessibleElementById('hiddenDivContainer') != null);
-    assert_false(accessibleElementById('hiddenDiv') != null);
+    assert_true(accessibleElementById('hiddenDiv').isIgnored);
 
     accessibleElementById('hiddenDivContainer').addNotificationListener(t.step_func((notification) => {
         console.log('Got ' + notification + ' notification on hiddenDivContainer');

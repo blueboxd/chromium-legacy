@@ -6,9 +6,9 @@ import logging
 import os
 import sys
 
+from aemu_target import AemuTarget
 from device_target import DeviceTarget
 from qemu_target import QemuTarget
-
 
 def AddCommonArgs(arg_parser):
   """Adds command line arguments to |arg_parser| for options which are shared
@@ -34,8 +34,13 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--target-staging-path',
                            help='target path under which to stage packages '
                            'during deployment.', default='/data')
-  common_args.add_argument('--device', '-d', action='store_true', default=False,
-                           help='Run on hardware device instead of QEMU.')
+  common_args.add_argument('--device', default=None,
+                           choices=['aemu','qemu','device'],
+                           help='Choose to run on aemu|qemu|device. ' +
+                                'By default, Fuchsia will run in QEMU.')
+  common_args.add_argument('-d', action='store_const', dest='device',
+                           const='device',
+                           help='Run on device instead of emulator.')
   common_args.add_argument('--host', help='The IP of the target device. ' +
                            'Optional.')
   common_args.add_argument('--node-name',
@@ -64,7 +69,11 @@ def AddCommonArgs(arg_parser):
                            help='Enable debug-level logging.')
   common_args.add_argument('--qemu-cpu-cores', type=int, default=4,
                            help='Sets the number of CPU cores to provide if '
-                           'launching in a VM with QEMU.'),
+                           'launching in a VM.'),
+  common_args.add_argument('--memory', type=int, default=2048,
+                           help='Sets the RAM size (MB) if launching in a VM'),
+  common_args.add_argument('--no-kvm', action='store_true', default=False,
+                           help='Disable KVM virtualization'),
   common_args.add_argument(
       '--os_check', choices=['check', 'update', 'ignore'],
       default='update',
@@ -94,7 +103,6 @@ def ConfigureLogging(args):
 def GetDeploymentTargetForArgs(args, require_kvm=False):
   """Constructs a deployment target object using parameters taken from
   command line arguments."""
-
   if args.system_log_file == '-':
     system_log_file = sys.stdout
   elif args.system_log_file:
@@ -102,19 +110,27 @@ def GetDeploymentTargetForArgs(args, require_kvm=False):
   else:
     system_log_file = None
 
+  # Allow fuchsia to run on qemu if device not explicitly chosen.
   if not args.device:
-    return QemuTarget(output_dir=args.output_directory,
-                      target_cpu=args.target_cpu,
-                      cpu_cores=args.qemu_cpu_cores,
-                      system_log_file=system_log_file,
-                      require_kvm=require_kvm)
+    args.device = 'qemu'
+
+  target_args = { 'output_dir':args.output_directory,
+                  'target_cpu':args.target_cpu,
+                  'system_log_file':system_log_file }
+  if args.device == 'device':
+    target_args.update({ 'host':args.host,
+                         'node_name':args.node_name,
+                         'port':args.port,
+                         'ssh_config':args.ssh_config,
+                         'fuchsia_out_dir':args.fuchsia_out_dir,
+                         'os_check':args.os_check })
+    return DeviceTarget(**target_args)
   else:
-    return DeviceTarget(output_dir=args.output_directory,
-                        target_cpu=args.target_cpu,
-                        host=args.host,
-                        node_name=args.node_name,
-                        port=args.port,
-                        ssh_config=args.ssh_config,
-                        fuchsia_out_dir=args.fuchsia_out_dir,
-                        system_log_file=system_log_file,
-                        os_check=args.os_check)
+    target_args.update({ 'cpu_cores':args.qemu_cpu_cores,
+                         'require_kvm':not args.no_kvm,
+                         'emu_type':args.device,
+                         'ram_size_mb':args.memory })
+    if args.device == 'qemu':
+      return QemuTarget(**target_args)
+    else:
+      return AemuTarget(**target_args)

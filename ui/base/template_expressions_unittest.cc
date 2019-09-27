@@ -78,12 +78,12 @@ TEST(TemplateExpressionsTest, ReplaceTemplateExpressionsPolymerMixed) {
   static TemplateReplacements substitutions;
   substitutions["punctuationSample"] = "a\"b'c<d>e&f,g";
   substitutions["htmlSample"] = "<div>hello</div>";
-  EXPECT_EQ("a&quot;b\\'c<d>e&f\\,g",
+  EXPECT_EQ("a&quot;b\\'c<d>e&f\\\\,g",
             ReplaceTemplateExpressions("$i18nPolymer{punctuationSample}",
                                        substitutions));
   EXPECT_EQ("<div>hello</div>", ReplaceTemplateExpressions(
                                     "$i18nPolymer{htmlSample}", substitutions));
-  EXPECT_EQ("multiple: <div>hello</div>, a&quot;b\\'c<d>e&f\\,g.",
+  EXPECT_EQ("multiple: <div>hello</div>, a&quot;b\\'c<d>e&f\\\\,g.",
             ReplaceTemplateExpressions("multiple: $i18nPolymer{htmlSample}, "
                                        "$i18nPolymer{punctuationSample}.",
                                        substitutions));

@@ -213,6 +213,22 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::
     CreateSolidColorLayerWithBorder(
         const gfx::Rect& rect, SkColor color,
         int border_width, SkColor border_color) {
+  std::vector<scoped_refptr<SolidColorLayer>> layers;
+  CreateSolidColorLayerPlusBorders(rect, color, border_width, border_color,
+                                   layers);
+  layers[0]->AddChild(layers[1]);
+  layers[0]->AddChild(layers[2]);
+  layers[0]->AddChild(layers[3]);
+  layers[0]->AddChild(layers[4]);
+  return layers[0];
+}
+
+void LayerTreePixelTest::CreateSolidColorLayerPlusBorders(
+    const gfx::Rect& rect,
+    SkColor color,
+    int border_width,
+    SkColor border_color,
+    std::vector<scoped_refptr<SolidColorLayer>>& layers) {
   scoped_refptr<SolidColorLayer> layer = CreateSolidColorLayer(rect, color);
   scoped_refptr<SolidColorLayer> border_top = CreateSolidColorLayer(
       gfx::Rect(0, 0, rect.width(), border_width), border_color);
@@ -231,11 +247,11 @@ scoped_refptr<SolidColorLayer> LayerTreePixelTest::
   scoped_refptr<SolidColorLayer> border_bottom = CreateSolidColorLayer(
       gfx::Rect(0, rect.height() - border_width, rect.width(), border_width),
       border_color);
-  layer->AddChild(border_top);
-  layer->AddChild(border_left);
-  layer->AddChild(border_right);
-  layer->AddChild(border_bottom);
-  return layer;
+  layers.push_back(layer);
+  layers.push_back(border_top);
+  layers.push_back(border_left);
+  layers.push_back(border_right);
+  layers.push_back(border_bottom);
 }
 
 void LayerTreePixelTest::RunPixelTest(RendererType renderer_type,

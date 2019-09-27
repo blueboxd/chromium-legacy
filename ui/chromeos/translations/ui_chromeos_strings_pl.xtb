@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pingwin</translation>
 <translation id="183183971458492120">Ładuję informacje…</translation>
 <translation id="1838709767668011582">Witryna Google</translation>
-<translation id="1839704667838141620">Zmień sposób udostępniania tego pliku</translation>
 <translation id="1844692022597038441">Ten plik nie jest dostępny offline.</translation>
 <translation id="184633654410729720">Klawiatura tajska (Kedmanee)</translation>
 <translation id="1847880352285315359">Zapisano</translation>
-<translation id="1864676585353837027">Zmień sposób udostępniania tych plików</translation>
 <translation id="1864756863218646478">Nie można znaleźć pliku.</translation>
 <translation id="1921986354447415460">Klawiatura turecka (wersja F)</translation>
 <translation id="1931134289871235022">Słowacki</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Zainstaluj nową usługę</translation>
 <translation id="1947424002851288782">Klawiatura niemiecka</translation>
 <translation id="1972984168337863910">Rozwiń panele informacji zwrotnej o plikach</translation>
-<translation id="197560921582345123">Może edytować</translation>
 <translation id="1984603991036629094">Armeńska klawiatura fonetyczna</translation>
 <translation id="2001796770603320721">Zarządzaj na Dysku</translation>
 <translation id="2009067268969781306">Sformatowanie dysku spowoduje usunięcie wszystkich zapisanych na nim danych. Nie można tego cofnąć.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Pobranie tych plików spowoduje przesłanie <ph name="FILE_SIZE" /> przy użyciu komórkowej transmisji danych.</translation>
 <translation id="7846076177841592234">Anuluj wybór</translation>
-<translation id="7850851215703745691">Te pliki na Dysku nie są jeszcze udostępniane</translation>
 <translation id="7853966320808728790">Francuska BÉPO</translation>
 <translation id="7864662577698025113">Dodaj nową usługę</translation>
 <translation id="7873831373602885875">Nie można zapisać w folderze <ph name="FOLDER_NAME" />. Wszystkie zmiany będą zapisywane w folderze <ph name="DOWNLOADS_FOLDER" /> znajdującym się w folderze Pobrane pliki.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">Słoweński</translation>
 <translation id="7982283708762922719">Wysokość</translation>
 <translation id="7987485481246785146">Klawiatura dla języka sorani oparta na arabskiej</translation>
-<translation id="799923393800005025">Może wyświetlać</translation>
 <translation id="8008366997883261463">Pies</translation>
 <translation id="8028993641010258682">Rozmiar</translation>
 <translation id="8031722894461705849">Klawiatura słowacka</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">Lista plików została przełączona na widok miniatur.</translation>
 <translation id="8601932370724196034">Plik graficzny Crostini</translation>
 <translation id="8669949407341943408">Przenoszę...</translation>
-<translation id="8671210955687109937">Może komentować</translation>
-<translation id="8686213429977032554">Ten plik na Dysku nie jest jeszcze udostępniany</translation>
 <translation id="8698464937041809063">Rysunek Google</translation>
 <translation id="8714406895390098252">Rower</translation>
 <translation id="8719721339511222681">Zaznaczono element <ph name="ENTRY_NAME" />.</translation>

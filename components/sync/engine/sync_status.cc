@@ -23,7 +23,7 @@ SyncStatus::SyncStatus()
       nudge_source_notification(0),
       nudge_source_local(0),
       nudge_source_local_refresh(0),
-      cryptographer_ready(false),
+      cryptographer_can_encrypt(false),
       crypto_has_pending_keys(false),
       has_keystore_key(false),
       passphrase_type(PassphraseType::kImplicitPassphrase),

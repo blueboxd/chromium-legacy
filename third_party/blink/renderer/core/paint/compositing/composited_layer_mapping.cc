@@ -909,7 +909,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
   UpdateContentsOpaque();
   UpdateRasterizationPolicy();
   UpdateAfterPartResize();
-  UpdateRenderingContext();
   UpdateShouldFlattenTransform();
   UpdateChildrenTransform();
   UpdateCompositingReasons();
@@ -1591,37 +1590,6 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping,
        (mode & kApplyToNonScrollingContentLayers)) &&
       mapping->DecorationOutlineLayer())
     f(mapping->DecorationOutlineLayer());
-}
-
-struct UpdateRenderingContextFunctor {
-  void operator()(GraphicsLayer* layer) const {
-    layer->SetRenderingContext(rendering_context);
-  }
-  int rendering_context;
-};
-
-void CompositedLayerMapping::UpdateRenderingContext() {
-  // All layers but the squashing layer (which contains 'alien' content) should
-  // be included in this rendering context.
-  int id = 0;
-
-  // NB, it is illegal at this point to query an ancestor's compositing state.
-  // Some compositing reasons depend on the compositing state of ancestors. So
-  // if we want a rendering context id for the context root, we cannot ask for
-  // the id of its associated cc::Layer now; it may not have one yet. We could
-  // do a second pass after doing the compositing updates to get these ids, but
-  // this would actually be harmful. We do not want to attach any semantic
-  // meaning to the context id other than the fact that they group a number of
-  // layers together for the sake of 3d sorting. So instead we will ask the
-  // compositor to vend us an arbitrary, but consistent id.
-  if (PaintLayer* root = owning_layer_.RenderingContextRoot()) {
-    if (Node* node = root->GetLayoutObject().GetNode())
-      id = static_cast<int>(PtrHash<Node>::GetHash(node));
-  }
-
-  UpdateRenderingContextFunctor functor = {id};
-  ApplyToGraphicsLayers<UpdateRenderingContextFunctor>(
-      this, functor, kApplyToAllGraphicsLayers);
 }
 
 void CompositedLayerMapping::UpdateShouldFlattenTransform() {

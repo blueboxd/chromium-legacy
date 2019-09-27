@@ -96,14 +96,14 @@ bool IsUIShowing() {
          PageInfoBubbleViewBase::GetShownBubbleType();
 }
 
-void CloseWarningIgnore() {
+void CloseWarningIgnore(views::Widget::ClosedReason reason) {
   if (!PageInfoBubbleViewBase::GetPageInfoBubbleForTesting()) {
     return;
   }
   auto* widget =
       PageInfoBubbleViewBase::GetPageInfoBubbleForTesting()->GetWidget();
   views::test::WidgetDestroyedWaiter waiter(widget);
-  widget->CloseWithReason(views::Widget::ClosedReason::kCloseButtonClicked);
+  widget->CloseWithReason(reason);
   waiter.Wait();
 }
 
@@ -224,7 +224,8 @@ class SafetyTipPageInfoBubbleViewBrowserTest
         PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
     ASSERT_TRUE(page_info);
     EXPECT_EQ(page_info->GetWindowTitle(),
-              l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
+              l10n_util::GetStringUTF16(
+                  IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
   }
 
   void CheckPageInfoDoesNotShowSafetyTipInfo(Browser* browser) {
@@ -233,7 +234,8 @@ class SafetyTipPageInfoBubbleViewBrowserTest
         PageInfoBubbleViewBase::GetPageInfoBubbleForTesting();
     ASSERT_TRUE(page_info);
     EXPECT_NE(page_info->GetWindowTitle(),
-              l10n_util::GetStringUTF16(IDS_PAGE_INFO_SAFETY_TIP_SUMMARY));
+              l10n_util::GetStringUTF16(
+                  IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE));
   }
 
  private:
@@ -326,7 +328,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   auto kNavigatedUrl = GetURL("site1.com");
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
-  CloseWarningIgnore();
+  CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
   EXPECT_FALSE(IsUIShowing());
   EXPECT_EQ(kNavigatedUrl,
             browser()->tab_strip_model()->GetActiveWebContents()->GetURL());
@@ -344,7 +346,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   auto kNavigatedUrl = GetURL("site1.com");
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
-  CloseWarningIgnore();
+  CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
 
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
 
@@ -398,14 +400,15 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
 }
 
 // Tests that Safety Tips trigger on lookalike domains that don't qualify for an
-// interstitial.
+// interstitial, but do not impact Page Info.
 IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
                        TriggersOnLookalike) {
-  // This domain is a top domain, but not top 500.
+  // This domain is a lookalike of a top domain not in the top 500.
   const GURL kNavigatedUrl = GetURL("googlé.sk");
   SetEngagementScore(browser(), kNavigatedUrl, kLowEngagement);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   EXPECT_TRUE(IsUIShowingIfEnabled());
+  ASSERT_NO_FATAL_FAILURE(CheckPageInfoDoesNotShowSafetyTipInfo(browser()));
 }
 
 // Tests that Safety Tips trigger (or not) on lookalike domains with edit
@@ -454,7 +457,7 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
   base::HistogramTester histograms;
   auto kNavigatedUrl = GetURL("site1.com");
   TriggerWarning(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
-  CloseWarningIgnore();
+  CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
   NavigateToURL(browser(), kNavigatedUrl, WindowOpenDisposition::CURRENT_TAB);
   histograms.ExpectBucketCount("Security.SafetyTips.SafetyTipIgnoredPageLoad",
                                security_state::SafetyTipStatus::kBadReputation,
@@ -497,10 +500,42 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     // the safety tip.
     histogram_tester.ExpectTotalCount(
         kHistogramPrefix + "SafetyTip_BadReputation", 0);
-    CloseWarningIgnore();
-    histogram_tester.ExpectUniqueSample(
+    CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
+    histogram_tester.ExpectBucketCount(
         kHistogramPrefix + "SafetyTip_BadReputation",
         safety_tips::SafetyTipInteraction::kDismiss, 1);
+    histogram_tester.ExpectBucketCount(
+        kHistogramPrefix + "SafetyTip_BadReputation",
+        safety_tips::SafetyTipInteraction::kDismissWithClose, 1);
+  }
+
+  // Test that the specific dismissal type is recorded correctly.
+  {
+    base::HistogramTester histogram_tester;
+    auto kNavigatedUrl = GetURL("site2.com");
+    TriggerWarning(browser(), kNavigatedUrl,
+                   WindowOpenDisposition::CURRENT_TAB);
+    CloseWarningIgnore(views::Widget::ClosedReason::kEscKeyPressed);
+    histogram_tester.ExpectBucketCount(
+        kHistogramPrefix + "SafetyTip_BadReputation",
+        safety_tips::SafetyTipInteraction::kDismiss, 1);
+    histogram_tester.ExpectBucketCount(
+        kHistogramPrefix + "SafetyTip_BadReputation",
+        safety_tips::SafetyTipInteraction::kDismissWithEsc, 1);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    auto kNavigatedUrl = GetURL("site3.com");
+    TriggerWarning(browser(), kNavigatedUrl,
+                   WindowOpenDisposition::CURRENT_TAB);
+    CloseWarningIgnore(views::Widget::ClosedReason::kCancelButtonClicked);
+    histogram_tester.ExpectBucketCount(
+        kHistogramPrefix + "SafetyTip_BadReputation",
+        safety_tips::SafetyTipInteraction::kDismiss, 1);
+    histogram_tester.ExpectBucketCount(
+        kHistogramPrefix + "SafetyTip_BadReputation",
+        safety_tips::SafetyTipInteraction::kDismissWithIgnore, 1);
   }
 }
 
@@ -557,9 +592,57 @@ IN_PROC_BROWSER_TEST_P(SafetyTipPageInfoBubbleViewBrowserTest,
     base::RunLoop run_loop;
     base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
     run_loop.Run();
-    CloseWarningIgnore();
+    CloseWarningIgnore(views::Widget::ClosedReason::kCloseButtonClicked);
+    auto base_samples = histograms.GetAllSamples(
+        "Security.SafetyTips.OpenTime.Dismiss.SafetyTip_"
+        "BadReputation");
+    ASSERT_EQ(1u, base_samples.size());
+    EXPECT_LE(kMinWarningTime.InMilliseconds(), base_samples.front().min);
     auto samples = histograms.GetAllSamples(
-        "Security.SafetyTips.OpenTime.Dismiss.SafetyTip_BadReputation");
+        "Security.SafetyTips.OpenTime.DismissWithClose.SafetyTip_"
+        "BadReputation");
+    ASSERT_EQ(1u, samples.size());
+    EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);
+  }
+
+  {
+    base::HistogramTester histograms;
+    auto kNavigatedUrl = GetURL("site2.com");
+    TriggerWarning(browser(), kNavigatedUrl,
+                   WindowOpenDisposition::CURRENT_TAB);
+    base::RunLoop run_loop;
+    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    run_loop.Run();
+    CloseWarningIgnore(views::Widget::ClosedReason::kEscKeyPressed);
+    auto base_samples = histograms.GetAllSamples(
+        "Security.SafetyTips.OpenTime.Dismiss.SafetyTip_"
+        "BadReputation");
+    ASSERT_EQ(1u, base_samples.size());
+    EXPECT_LE(kMinWarningTime.InMilliseconds(), base_samples.front().min);
+    auto samples = histograms.GetAllSamples(
+        "Security.SafetyTips.OpenTime.DismissWithEsc.SafetyTip_"
+        "BadReputation");
+    ASSERT_EQ(1u, samples.size());
+    EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);
+  }
+
+  {
+    base::HistogramTester histograms;
+    auto kNavigatedUrl = GetURL("site3.com");
+    TriggerWarning(browser(), kNavigatedUrl,
+                   WindowOpenDisposition::CURRENT_TAB);
+    base::RunLoop run_loop;
+    base::PostDelayedTask(FROM_HERE, run_loop.QuitClosure(), kMinWarningTime);
+    run_loop.Run();
+    CloseWarningIgnore(views::Widget::ClosedReason::kCancelButtonClicked);
+    auto base_samples = histograms.GetAllSamples(
+        "Security.SafetyTips.OpenTime.Dismiss.SafetyTip_"
+        "BadReputation");
+    ASSERT_EQ(1u, base_samples.size());
+    EXPECT_LE(kMinWarningTime.InMilliseconds(), base_samples.front().min);
+    auto samples = histograms.GetAllSamples(
+        "Security.SafetyTips.OpenTime.DismissWithIgnore.SafetyTip_"
+        "BadReputation");
     ASSERT_EQ(1u, samples.size());
     EXPECT_LE(kMinWarningTime.InMilliseconds(), samples.front().min);
   }

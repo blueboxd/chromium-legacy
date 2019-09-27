@@ -15,7 +15,7 @@ XRGripSpace::XRGripSpace(XRSession* session, XRInputSource* source)
     : XRSpace(session), input_source_(source) {}
 
 XRPose* XRGripSpace::getPose(XRSpace* other_space,
-                             const TransformationMatrix* base_pose_matrix) {
+                             const TransformationMatrix* mojo_from_viewer) {
   // Grip is only available when using tracked pointer for input.
   if (input_source_->TargetRayMode() !=
       device::mojom::XRTargetRayMode::POINTING) {
@@ -23,23 +23,27 @@ XRPose* XRGripSpace::getPose(XRSpace* other_space,
   }
 
   // Make sure the required pose matrices are available.
-  if (!base_pose_matrix || !input_source_->BasePose()) {
+  if (!mojo_from_viewer || !input_source_->MojoFromInput()) {
     return nullptr;
   }
 
-  std::unique_ptr<TransformationMatrix> grip_pose =
-      other_space->TransformBaseInputPose(*(input_source_->BasePose()),
-                                          *base_pose_matrix);
-
-  if (!grip_pose) {
+  // Calculate grip pose in other_space, aka other_from_grip
+  std::unique_ptr<TransformationMatrix> other_from_grip =
+      other_space->SpaceFromInputForViewer(*(input_source_->MojoFromInput()),
+                                           *mojo_from_viewer);
+  if (!other_from_grip) {
     return nullptr;
   }
 
   // Account for any changes made to the reference space's origin offset so
   // that things like teleportation works.
-  TransformationMatrix adjusted_pose =
-      other_space->InverseOriginOffsetMatrix().Multiply(*grip_pose);
-  return MakeGarbageCollected<XRPose>(adjusted_pose,
+  //
+  // This is offset_from_grip = offset_from_other * other_from_grip,
+  // where offset_from_other = inverse(other_from_offset).
+  // TODO(https://crbug.com/1008466): move originOffset to separate class?
+  TransformationMatrix offset_from_grip =
+      other_space->InverseOriginOffsetMatrix().Multiply(*other_from_grip);
+  return MakeGarbageCollected<XRPose>(offset_from_grip,
                                       input_source_->emulatedPosition());
 }
 

@@ -92,6 +92,7 @@ Signing in anyway will merge Chrome information like bookmarks, history and othe
 <translation id="3065168410429928842">Chrome Tab</translation>
 <translation id="3080151273017101988">Continue running background apps when Google Chrome is closed</translation>
 <translation id="3089968997497233615">There's a new, safer version of Google Chrome available.</translation>
+<translation id="3138848678222082288">Future versions of Chrome will install automatically. When this download completes, Chrome will restart and you'll be on your way.</translation>
 <translation id="3149510190863420837">Chrome Apps</translation>
 <translation id="3282568296779691940">Sign in to Chrome</translation>
 <translation id="3340978935015468852">settings</translation>
@@ -205,6 +206,7 @@ Google Chrome is unable to recover your settings.</translation>
 <translation id="677276454032249905">Exit Chrome anyway?</translation>
 <translation id="683440813066116847">Inbound rule for Google Chrome Canary to allow mDNS traffic.</translation>
 <translation id="6885412569789873916">Chrome Beta Apps</translation>
+<translation id="6906909733186691861">Future versions of Chrome will install automatically.</translation>
 <translation id="6943584222992551122">This person's browsing data will be deleted from this device. To recover the data, sign in to Chrome as <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Inbound rule for Google Chrome Beta to allow mDNS traffic.</translation>
 <translation id="6970811910055250180">Updating your device...</translation>

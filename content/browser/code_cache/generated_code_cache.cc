@@ -69,9 +69,6 @@ std::string GetCacheKey(const GURL& resource_url, const GURL& origin_lock) {
 
 constexpr int kResponseTimeSizeInBytes = sizeof(int64_t);
 
-static_assert(mojo_base::BigBuffer::kMaxInlineBytes >=
-                  2 * kResponseTimeSizeInBytes,
-              "Buffer may not be large enough for response time");
 static_assert(mojo_base::BigBuffer::kMaxInlineBytes <=
                   std::numeric_limits<int>::max(),
               "Buffer size calculations may overflow int");
@@ -80,6 +77,12 @@ static_assert(mojo_base::BigBuffer::kMaxInlineBytes <=
 // as an IOBuffer allows us to avoid a copy. For large code, this can be slow.
 class BigIOBuffer : public net::IOBufferWithSize {
  public:
+  explicit BigIOBuffer(mojo_base::BigBuffer buffer)
+      : net::IOBufferWithSize(nullptr, buffer.size()),
+        buffer_(std::move(buffer)) {
+    data_ = reinterpret_cast<char*>(buffer_.data());
+    DCHECK(data_);
+  }
   explicit BigIOBuffer(size_t size) : net::IOBufferWithSize(nullptr, size) {
     buffer_ = mojo_base::BigBuffer(size);
     data_ = reinterpret_cast<char*>(buffer_.data());
@@ -127,90 +130,77 @@ void GeneratedCodeCache::CollectStatistics(
 }
 
 // Stores the information about a pending request while disk backend is
-// being initialized.
+// being initialized or another request for the same key is live.
 class GeneratedCodeCache::PendingOperation {
  public:
-  static std::unique_ptr<PendingOperation> CreateWritePendingOp(
-      std::string key,
-      scoped_refptr<net::IOBufferWithSize>);
-  static std::unique_ptr<PendingOperation> CreateFetchPendingOp(
-      std::string key,
-      const ReadDataCallback&);
-  static std::unique_ptr<PendingOperation> CreateDeletePendingOp(
-      std::string key);
-  static std::unique_ptr<PendingOperation> CreateGetBackendPendingOp(
-      GetBackendCallback callback);
+  PendingOperation(Operation op,
+                   const std::string& key,
+                   scoped_refptr<net::IOBufferWithSize> time_buffer,
+                   scoped_refptr<BigIOBuffer> data_buffer)
+      : op_(op),
+        key_(key),
+        time_buffer_(time_buffer),
+        data_buffer_(data_buffer) {
+    DCHECK_EQ(Operation::kWrite, op_);
+  }
+
+  PendingOperation(Operation op,
+                   const std::string& key,
+                   ReadDataCallback read_callback)
+      : op_(op), key_(key), read_callback_(std::move(read_callback)) {
+    DCHECK_EQ(Operation::kFetch, op_);
+  }
+
+  PendingOperation(Operation op, const std::string& key) : op_(op), key_(key) {
+    DCHECK_EQ(Operation::kDelete, op_);
+  }
+
+  PendingOperation(Operation op, GetBackendCallback backend_callback)
+      : op_(op), backend_callback_(std::move(backend_callback)) {
+    DCHECK_EQ(Operation::kGetBackend, op_);
+  }
 
   ~PendingOperation();
 
   Operation operation() const { return op_; }
   const std::string& key() const { return key_; }
-  const scoped_refptr<net::IOBufferWithSize> data() const { return data_; }
-  ReadDataCallback ReleaseReadCallback() { return std::move(read_callback_); }
-  GetBackendCallback ReleaseBackendCallback() {
+  scoped_refptr<net::IOBufferWithSize> time_buffer() { return time_buffer_; }
+  scoped_refptr<BigIOBuffer> data_buffer() { return data_buffer_; }
+  ReadDataCallback TakeReadCallback() { return std::move(read_callback_); }
+  GetBackendCallback TakeBackendCallback() {
     return std::move(backend_callback_);
   }
 
- private:
-  PendingOperation(Operation op,
-                   std::string key,
-                   scoped_refptr<net::IOBufferWithSize>,
-                   const ReadDataCallback&,
-                   GetBackendCallback);
+  // These are used by Fetch operations to hold the buffers we create once the
+  // entry is opened.
+  void set_time_buffer(scoped_refptr<net::IOBufferWithSize> time_buffer) {
+    DCHECK_EQ(Operation::kFetch, op_);
+    time_buffer_ = time_buffer;
+  }
+  // Save fetched data until we can run the callback.
+  void set_data_buffer(scoped_refptr<BigIOBuffer> data_buffer) {
+    DCHECK_EQ(Operation::kFetch, op_);
+    data_buffer_ = data_buffer;
+  }
+  // Verifies that Write/Fetch callbacks are received in the order we expect.
+  void VerifyCompletions(int expected) {
+#if DCHECK_IS_ON()
+    DCHECK_EQ(expected, completions_);
+    completions_++;
+#endif
+  }
 
+ private:
   const Operation op_;
   const std::string key_;
-  const scoped_refptr<net::IOBufferWithSize> data_;
+  scoped_refptr<net::IOBufferWithSize> time_buffer_;
+  scoped_refptr<BigIOBuffer> data_buffer_;
   ReadDataCallback read_callback_;
   GetBackendCallback backend_callback_;
+#if DCHECK_IS_ON()
+  int completions_ = 0;
+#endif
 };
-
-std::unique_ptr<GeneratedCodeCache::PendingOperation>
-GeneratedCodeCache::PendingOperation::CreateWritePendingOp(
-    std::string key,
-    scoped_refptr<net::IOBufferWithSize> buffer) {
-  return base::WrapUnique(
-      new PendingOperation(Operation::kWrite, std::move(key), buffer,
-                           ReadDataCallback(), GetBackendCallback()));
-}
-
-std::unique_ptr<GeneratedCodeCache::PendingOperation>
-GeneratedCodeCache::PendingOperation::CreateFetchPendingOp(
-    std::string key,
-    const ReadDataCallback& read_callback) {
-  return base::WrapUnique(new PendingOperation(
-      Operation::kFetch, std::move(key), scoped_refptr<net::IOBufferWithSize>(),
-      std::move(read_callback), GetBackendCallback()));
-}
-
-std::unique_ptr<GeneratedCodeCache::PendingOperation>
-GeneratedCodeCache::PendingOperation::CreateDeletePendingOp(std::string key) {
-  return base::WrapUnique(
-      new PendingOperation(Operation::kDelete, std::move(key),
-                           scoped_refptr<net::IOBufferWithSize>(),
-                           ReadDataCallback(), GetBackendCallback()));
-}
-
-std::unique_ptr<GeneratedCodeCache::PendingOperation>
-GeneratedCodeCache::PendingOperation::CreateGetBackendPendingOp(
-    GetBackendCallback backend_callback) {
-  return base::WrapUnique(
-      new PendingOperation(Operation::kGetBackend, std::string(),
-                           scoped_refptr<net::IOBufferWithSize>(),
-                           ReadDataCallback(), std::move(backend_callback)));
-}
-
-GeneratedCodeCache::PendingOperation::PendingOperation(
-    Operation op,
-    std::string key,
-    scoped_refptr<net::IOBufferWithSize> buffer,
-    const ReadDataCallback& read_callback,
-    GetBackendCallback backend_callback)
-    : op_(op),
-      key_(std::move(key)),
-      data_(buffer),
-      read_callback_(std::move(read_callback)),
-      backend_callback_(std::move(backend_callback)) {}
 
 GeneratedCodeCache::PendingOperation::~PendingOperation() = default;
 
@@ -235,54 +225,44 @@ void GeneratedCodeCache::GetBackend(GetBackendCallback callback) {
       std::move(callback).Run(backend_.get());
       return;
     case kInitializing:
-      pending_ops_.push_back(
-          GeneratedCodeCache::PendingOperation::CreateGetBackendPendingOp(
-              std::move(callback)));
+      pending_ops_.emplace(std::make_unique<PendingOperation>(
+          Operation::kGetBackend, std::move(callback)));
       return;
   }
 }
 
-void GeneratedCodeCache::WriteData(const GURL& url,
-                                   const GURL& origin_lock,
-                                   const base::Time& response_time,
-                                   base::span<const uint8_t> data) {
-  // Silently ignore the requests.
+void GeneratedCodeCache::WriteEntry(const GURL& url,
+                                    const GURL& origin_lock,
+                                    const base::Time& response_time,
+                                    mojo_base::BigBuffer data) {
   if (backend_state_ == kFailed) {
+    // Silently fail the request.
     CollectStatistics(CacheEntryStatus::kError);
     return;
   }
 
-  // Append the response time to the metadata. Code caches store
-  // response_time + generated code as a single entry.
-  scoped_refptr<net::IOBufferWithSize> buffer =
-      base::MakeRefCounted<net::IOBufferWithSize>(data.size() +
-                                                  kResponseTimeSizeInBytes);
+  // Response time and data are written separately, to avoid a copy. We need
+  // two IOBuffers, one for the time and one for the BigBuffer.
+  scoped_refptr<net::IOBufferWithSize> time_buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(kResponseTimeSizeInBytes);
   int64_t serialized_time =
       response_time.ToDeltaSinceWindowsEpoch().InMicroseconds();
-  memcpy(buffer->data(), &serialized_time, kResponseTimeSizeInBytes);
-  if (!data.empty())
-    memcpy(buffer->data() + kResponseTimeSizeInBytes, data.data(), data.size());
-
+  memcpy(time_buffer->data(), &serialized_time, kResponseTimeSizeInBytes);
+  scoped_refptr<BigIOBuffer> data_buffer =
+      base::MakeRefCounted<BigIOBuffer>(std::move(data));
+  // Create the write operation.
   std::string key = GetCacheKey(url, origin_lock);
-  // If there is an in progress operation corresponding to this key. Enqueue it
-  // so we can issue once the in-progress operation finishes.
-  if (!TryBeginOperation(key)) {
-    EnqueueAsPendingOperation(
-        key, GeneratedCodeCache::PendingOperation::CreateWritePendingOp(
-                 key, buffer));
-    return;
-  }
+  auto op = std::make_unique<PendingOperation>(Operation::kWrite, key,
+                                               time_buffer, data_buffer);
 
   if (backend_state_ != kInitialized) {
     // Insert it into the list of pending operations while the backend is
     // still being opened.
-    pending_ops_.push_back(
-        GeneratedCodeCache::PendingOperation::CreateWritePendingOp(
-            std::move(key), buffer));
+    pending_ops_.emplace(std::move(op));
     return;
   }
 
-  WriteDataImpl(key, buffer);
+  EnqueueOperationAndIssueIfNext(std::move(op));
 }
 
 void GeneratedCodeCache::FetchEntry(const GURL& url,
@@ -290,51 +270,42 @@ void GeneratedCodeCache::FetchEntry(const GURL& url,
                                     ReadDataCallback read_data_callback) {
   if (backend_state_ == kFailed) {
     CollectStatistics(CacheEntryStatus::kError);
-    // Silently ignore the requests.
+    // Fail the request.
     std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
     return;
   }
 
   std::string key = GetCacheKey(url, origin_lock);
-  // If there is an in progress operation corresponding to this key. Enqueue it
-  // so we can issue once the in-progress operation finishes.
-  if (!TryBeginOperation(key)) {
-    EnqueueAsPendingOperation(
-        key, GeneratedCodeCache::PendingOperation::CreateFetchPendingOp(
-                 key, read_data_callback));
-    return;
-  }
-
+  auto op = std::make_unique<PendingOperation>(Operation::kFetch, key,
+                                               std::move(read_data_callback));
   if (backend_state_ != kInitialized) {
     // Insert it into the list of pending operations while the backend is
     // still being opened.
-    pending_ops_.push_back(
-        GeneratedCodeCache::PendingOperation::CreateFetchPendingOp(
-            std::move(key), read_data_callback));
+    pending_ops_.emplace(std::move(op));
     return;
   }
 
-  FetchEntryImpl(key, read_data_callback);
+  EnqueueOperationAndIssueIfNext(std::move(op));
 }
 
 void GeneratedCodeCache::DeleteEntry(const GURL& url, const GURL& origin_lock) {
-  // Silently ignore the requests.
   if (backend_state_ == kFailed) {
+    // Silently fail.
     CollectStatistics(CacheEntryStatus::kError);
     return;
   }
 
   std::string key = GetCacheKey(url, origin_lock);
+  auto op = std::make_unique<PendingOperation>(Operation::kDelete, key);
+
   if (backend_state_ != kInitialized) {
     // Insert it into the list of pending operations while the backend is
     // still being opened.
-    pending_ops_.push_back(
-        GeneratedCodeCache::PendingOperation::CreateDeletePendingOp(
-            std::move(key)));
+    pending_ops_.emplace(std::move(op));
     return;
   }
 
-  DeleteEntryImpl(key);
+  EnqueueOperationAndIssueIfNext(std::move(op));
 }
 
 void GeneratedCodeCache::CreateBackend() {
@@ -365,265 +336,303 @@ void GeneratedCodeCache::DidCreateBackend(
     int rv) {
   if (rv != net::OK) {
     backend_state_ = kFailed;
-    // Process pending operations to process any required callbacks.
-    IssuePendingOperations();
-    return;
+  } else {
+    backend_ = std::move(backend_ptr->data);
+    backend_state_ = kInitialized;
   }
-
-  backend_ = std::move(backend_ptr->data);
-  backend_state_ = kInitialized;
   IssuePendingOperations();
 }
 
 void GeneratedCodeCache::IssuePendingOperations() {
-  // Issue all the pending operations that were received when creating
-  // the backend.
-  for (auto const& op : pending_ops_) {
-    IssueOperation(op.get());
+  // Issue any operations that were received while creating the backend.
+  while (!pending_ops_.empty()) {
+    // Take ownership of the next PendingOperation here. |op| will either be
+    // moved onto a queue in active_entries_map_ or issued and completed in
+    // |DoPendingGetBackend|.
+    std::unique_ptr<PendingOperation> op = std::move(pending_ops_.front());
+    pending_ops_.pop();
+    // Properly enqueue/dequeue ops for Write, Fetch, and Delete.
+    if (op->operation() != Operation::kGetBackend) {
+      EnqueueOperationAndIssueIfNext(std::move(op));
+    } else {
+      // There is no queue for get backend operations. Issue them immediately.
+      IssueOperation(op.get());
+    }
   }
-  pending_ops_.clear();
 }
 
 void GeneratedCodeCache::IssueOperation(PendingOperation* op) {
   switch (op->operation()) {
     case kFetch:
-      FetchEntryImpl(op->key(), op->ReleaseReadCallback());
+      FetchEntryImpl(op);
       break;
     case kWrite:
-      WriteDataImpl(op->key(), op->data());
+      WriteEntryImpl(op);
       break;
     case kDelete:
-      DeleteEntryImpl(op->key());
+      DeleteEntryImpl(op);
       break;
     case kGetBackend:
-      DoPendingGetBackend(op->ReleaseBackendCallback());
+      DoPendingGetBackend(op);
       break;
   }
 }
 
-void GeneratedCodeCache::WriteDataImpl(
-    const std::string& key,
-    scoped_refptr<net::IOBufferWithSize> buffer) {
+void GeneratedCodeCache::WriteEntryImpl(PendingOperation* op) {
+  DCHECK_EQ(Operation::kWrite, op->operation());
   if (backend_state_ != kInitialized) {
-    IssueQueuedOperationForEntry(key);
+    // Silently fail the request.
+    CloseOperationAndIssueNext(op);
     return;
   }
 
-  disk_cache::EntryResultCallback callback =
-      base::BindOnce(&GeneratedCodeCache::CompleteForWriteData,
-                     weak_ptr_factory_.GetWeakPtr(), buffer, key);
+  disk_cache::EntryResult result = backend_->OpenOrCreateEntry(
+      op->key(), net::LOW,
+      base::BindOnce(&GeneratedCodeCache::OpenCompleteForWrite,
+                     weak_ptr_factory_.GetWeakPtr(), op));
 
-  disk_cache::EntryResult result =
-      backend_->OpenOrCreateEntry(key, net::LOW, std::move(callback));
   if (result.net_error() != net::ERR_IO_PENDING) {
-    CompleteForWriteData(buffer, key, std::move(result));
+    OpenCompleteForWrite(op, std::move(result));
   }
 }
 
-void GeneratedCodeCache::CompleteForWriteData(
-    scoped_refptr<net::IOBufferWithSize> buffer,
-    const std::string& key,
+void GeneratedCodeCache::OpenCompleteForWrite(
+    PendingOperation* op,
     disk_cache::EntryResult entry_result) {
+  DCHECK_EQ(Operation::kWrite, op->operation());
   if (entry_result.net_error() != net::OK) {
     CollectStatistics(CacheEntryStatus::kError);
-    IssueQueuedOperationForEntry(key);
+    CloseOperationAndIssueNext(op);
     return;
   }
 
-  int result = net::ERR_FAILED;
-  bool opened = entry_result.opened();
-  {
-    disk_cache::ScopedEntryPtr disk_entry(entry_result.ReleaseEntry());
-
-    if (opened) {
-      CollectStatistics(CacheEntryStatus::kUpdate);
-    } else {
-      CollectStatistics(CacheEntryStatus::kCreate);
-    }
-    // This call will truncate the data. This is safe to do since we read the
-    // entire data at the same time currently. If we want to read in parts we
-    // have to doom the entry first.
-    result = disk_entry->WriteData(
-        kDataIndex, 0, buffer.get(), buffer->size(),
-        base::BindOnce(&GeneratedCodeCache::WriteDataCompleted,
-                       weak_ptr_factory_.GetWeakPtr(), key),
-        true);
+  if (entry_result.opened()) {
+    CollectStatistics(CacheEntryStatus::kUpdate);
+  } else {
+    CollectStatistics(CacheEntryStatus::kCreate);
   }
+
+  disk_cache::ScopedEntryPtr entry(entry_result.ReleaseEntry());
+  // There should be a valid entry if the open was successful.
+  DCHECK(entry);
+
+  // The response time must be written first, truncating the data.
+  auto time_buffer = op->time_buffer();
+  int result = entry->WriteData(
+      kResponseTimeStream, 0, time_buffer.get(), kResponseTimeSizeInBytes,
+      base::BindOnce(&GeneratedCodeCache::WriteResponseTimeComplete,
+                     weak_ptr_factory_.GetWeakPtr(), op),
+      true);
+
   if (result != net::ERR_IO_PENDING) {
-    WriteDataCompleted(key, result);
+    WriteResponseTimeComplete(op, result);
+  }
+
+  // Write the data after the response time, truncating the data.
+  auto data_buffer = op->data_buffer();
+  result =
+      entry->WriteData(kDataStream, 0, data_buffer.get(), data_buffer->size(),
+                       base::BindOnce(&GeneratedCodeCache::WriteDataComplete,
+                                      weak_ptr_factory_.GetWeakPtr(), op),
+                       true);
+
+  if (result != net::ERR_IO_PENDING) {
+    WriteDataComplete(op, result);
   }
 }
 
-void GeneratedCodeCache::WriteDataCompleted(const std::string& key, int rv) {
-  if (rv < 0) {
+void GeneratedCodeCache::WriteResponseTimeComplete(PendingOperation* op,
+                                                   int rv) {
+  DCHECK_EQ(Operation::kWrite, op->operation());
+  op->VerifyCompletions(0);  // WriteDataComplete did not run.
+  if (rv != kResponseTimeSizeInBytes) {
+    // The response time write failed; release the time buffer to signal that
+    // the overall request should also fail.
+    op->set_time_buffer(nullptr);
+  }
+  // |WriteDataComplete| needs to run and call CloseOperationAndIssueNext.
+}
+
+void GeneratedCodeCache::WriteDataComplete(PendingOperation* op, int rv) {
+  DCHECK_EQ(Operation::kWrite, op->operation());
+  op->VerifyCompletions(1);  // WriteResponseTimeComplete ran.
+  if (rv != op->data_buffer()->size() || !op->time_buffer()) {
+    // The write failed; record the failure and doom the entry here.
     CollectStatistics(CacheEntryStatus::kWriteFailed);
-    // The write failed; we should delete the entry.
-    DeleteEntryImpl(key);
+    DoomEntry(op);
   }
-  IssueQueuedOperationForEntry(key);
+  CloseOperationAndIssueNext(op);
 }
 
-void GeneratedCodeCache::FetchEntryImpl(const std::string& key,
-                                        ReadDataCallback read_data_callback) {
+void GeneratedCodeCache::FetchEntryImpl(PendingOperation* op) {
+  DCHECK_EQ(Operation::kFetch, op->operation());
   if (backend_state_ != kInitialized) {
-    std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
-    IssueQueuedOperationForEntry(key);
+    op->TakeReadCallback().Run(base::Time(), mojo_base::BigBuffer());
+    CloseOperationAndIssueNext(op);
     return;
   }
-
-  disk_cache::EntryResultCallback callback =
-      base::BindOnce(&GeneratedCodeCache::OpenCompleteForReadData,
-                     weak_ptr_factory_.GetWeakPtr(), read_data_callback, key);
 
   // This is a part of loading cycle and hence should run with a high priority.
-  disk_cache::EntryResult result =
-      backend_->OpenEntry(key, net::HIGHEST, std::move(callback));
+  disk_cache::EntryResult result = backend_->OpenEntry(
+      op->key(), net::HIGHEST,
+      base::BindOnce(&GeneratedCodeCache::OpenCompleteForRead,
+                     weak_ptr_factory_.GetWeakPtr(), op));
   if (result.net_error() != net::ERR_IO_PENDING) {
-    OpenCompleteForReadData(read_data_callback, key, std::move(result));
+    OpenCompleteForRead(op, std::move(result));
   }
 }
 
-void GeneratedCodeCache::OpenCompleteForReadData(
-    ReadDataCallback read_data_callback,
-    const std::string& key,
+void GeneratedCodeCache::OpenCompleteForRead(
+    PendingOperation* op,
     disk_cache::EntryResult entry_result) {
+  DCHECK_EQ(Operation::kFetch, op->operation());
   if (entry_result.net_error() != net::OK) {
     CollectStatistics(CacheEntryStatus::kMiss);
-    std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
-    IssueQueuedOperationForEntry(key);
+    op->TakeReadCallback().Run(base::Time(), mojo_base::BigBuffer());
+    CloseOperationAndIssueNext(op);
     return;
   }
 
-  disk_cache::ScopedEntryPtr disk_entry(entry_result.ReleaseEntry());
+  disk_cache::ScopedEntryPtr entry(entry_result.ReleaseEntry());
   // There should be a valid entry if the open was successful.
-  DCHECK(disk_entry);
+  DCHECK(entry);
 
-  int entry_size = disk_entry->GetDataSize(kDataIndex);
-  // Use a BigIOBuffer backed to read and transfer the entry without copying.
-  // We have to read the data in two parts, response time and code, if we don't
-  // want to copy. Use the same buffer to read the response time and the code.
-  int code_size =
-      std::max(kResponseTimeSizeInBytes, entry_size - kResponseTimeSizeInBytes);
-  // Release the disk entry to pass it to |ReadResponseTimeComplete|.
-  disk_cache::Entry* entry = disk_entry.release();
-  scoped_refptr<net::IOBufferWithSize> buffer =
-      base::MakeRefCounted<BigIOBuffer>(static_cast<size_t>(code_size));
-  net::CompletionOnceCallback callback = base::BindOnce(
-      &GeneratedCodeCache::ReadResponseTimeComplete,
-      weak_ptr_factory_.GetWeakPtr(), key, read_data_callback, buffer, entry);
-  int result = entry->ReadData(kDataIndex, 0, buffer.get(),
-                               kResponseTimeSizeInBytes, std::move(callback));
+  // To avoid a copying the data, we read it in two parts, response time and
+  // code. Create the buffers and pass them to |op|.
+  scoped_refptr<net::IOBufferWithSize> time_buffer =
+      base::MakeRefCounted<net::IOBufferWithSize>(kResponseTimeSizeInBytes);
+  op->set_time_buffer(time_buffer);
+  int data_size = entry->GetDataSize(kDataStream);
+  scoped_refptr<BigIOBuffer> data_buffer =
+      base::MakeRefCounted<BigIOBuffer>(data_size);
+  op->set_data_buffer(data_buffer);
+
+  // We must read response time first.
+  int result = entry->ReadData(
+      kResponseTimeStream, 0, time_buffer.get(), kResponseTimeSizeInBytes,
+      base::BindOnce(&GeneratedCodeCache::ReadResponseTimeComplete,
+                     weak_ptr_factory_.GetWeakPtr(), op));
+
   if (result != net::ERR_IO_PENDING) {
-    ReadResponseTimeComplete(key, read_data_callback, buffer, entry, result);
+    ReadResponseTimeComplete(op, result);
+  }
+
+  // Read the data after the response time.
+  result =
+      entry->ReadData(kDataStream, 0, data_buffer.get(), data_buffer->size(),
+                      base::BindOnce(&GeneratedCodeCache::ReadDataComplete,
+                                     weak_ptr_factory_.GetWeakPtr(), op));
+  if (result != net::ERR_IO_PENDING) {
+    ReadDataComplete(op, result);
   }
 }
 
-void GeneratedCodeCache::ReadResponseTimeComplete(
-    const std::string& key,
-    ReadDataCallback read_data_callback,
-    scoped_refptr<net::IOBufferWithSize> buffer,
-    disk_cache::Entry* entry,
-    int rv) {
-  DCHECK(entry);
-  disk_cache::ScopedEntryPtr disk_entry(entry);
+void GeneratedCodeCache::ReadResponseTimeComplete(PendingOperation* op,
+                                                  int rv) {
+  DCHECK_EQ(Operation::kFetch, op->operation());
+  op->VerifyCompletions(0);  // ReadDataComplete did not run.
   if (rv != kResponseTimeSizeInBytes) {
     CollectStatistics(CacheEntryStatus::kMiss);
-    std::move(read_data_callback).Run(base::Time(), mojo_base::BigBuffer());
-  } else {
-    // This is considered a cache hit, since response time was read.
-    CollectStatistics(CacheEntryStatus::kHit);
-    int64_t raw_response_time = *(reinterpret_cast<int64_t*>(buffer->data()));
-    net::CompletionOnceCallback callback = base::BindOnce(
-        &GeneratedCodeCache::ReadCodeComplete, weak_ptr_factory_.GetWeakPtr(),
-        key, read_data_callback, buffer, raw_response_time);
-    int result =
-        disk_entry->ReadData(kDataIndex, kResponseTimeSizeInBytes, buffer.get(),
-                             buffer->size(), std::move(callback));
-    if (result != net::ERR_IO_PENDING) {
-      ReadCodeComplete(key, read_data_callback, buffer, raw_response_time,
-                       result);
-    }
+    // The response time read failed; release the time buffer to signal that
+    // the overall request should also fail.
+    op->set_time_buffer(nullptr);
+    return;
   }
+  // This is considered a cache hit, since response time was read.
+  CollectStatistics(CacheEntryStatus::kHit);
+  // |ReadDataComplete| needs to run and call CloseOperationAndIssueNext.
 }
 
-void GeneratedCodeCache::ReadCodeComplete(
-    const std::string& key,
-    ReadDataCallback callback,
-    scoped_refptr<net::IOBufferWithSize> buffer,
-    int64_t raw_response_time,
-    int rv) {
-  base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
-      base::TimeDelta::FromMicroseconds(raw_response_time));
-  if (rv != buffer->size()) {
-    // Trim the buffer in the unlikely case that code size is less than
-    // kResponseTimeSizeInBytes. On error, return an empty buffer with the
-    // response time, so the renderer can clear the metadata.
-    mojo_base::BigBuffer trimmed_buffer =
-        rv > 0 ? mojo_base::BigBuffer(base::make_span(
-                     reinterpret_cast<const uint8_t*>(buffer->data()),
-                     static_cast<size_t>(rv)))
-               : mojo_base::BigBuffer();
-    std::move(callback).Run(response_time, std::move(trimmed_buffer));
+void GeneratedCodeCache::ReadDataComplete(PendingOperation* op, int rv) {
+  DCHECK_EQ(Operation::kFetch, op->operation());
+  op->VerifyCompletions(1);  // ReadResponseTimeComplete ran.
+  // Fail the request if either read failed.
+  if (rv != op->data_buffer()->size() || !op->time_buffer()) {
+    op->TakeReadCallback().Run(base::Time(), mojo_base::BigBuffer());
+    // Doom this entry since it is inaccessible.
+    DoomEntry(op);
   } else {
-    std::move(callback).Run(
-        response_time, static_cast<BigIOBuffer*>(buffer.get())->TakeBuffer());
+    int64_t raw_response_time =
+        *(reinterpret_cast<int64_t*>(op->time_buffer()->data()));
+    base::Time response_time = base::Time::FromDeltaSinceWindowsEpoch(
+        base::TimeDelta::FromMicroseconds(raw_response_time));
+    op->TakeReadCallback().Run(response_time, op->data_buffer()->TakeBuffer());
   }
-  IssueQueuedOperationForEntry(key);
+  CloseOperationAndIssueNext(op);
 }
 
-void GeneratedCodeCache::DeleteEntryImpl(const std::string& key) {
-  if (backend_state_ != kInitialized)
+void GeneratedCodeCache::DeleteEntryImpl(PendingOperation* op) {
+  DCHECK(op->operation() == Operation::kDelete);
+  DoomEntry(op);
+  CloseOperationAndIssueNext(op);
+}
+
+void GeneratedCodeCache::DoomEntry(PendingOperation* op) {
+  // Write, Fetch, and Delete may all doom an entry.
+  DCHECK_NE(Operation::kGetBackend, op->operation());
+  // Entries shouldn't be doomed if the backend hasn't been initialized.
+  DCHECK_EQ(kInitialized, backend_state_);
+  CollectStatistics(CacheEntryStatus::kClear);
+  backend_->DoomEntry(op->key(), net::LOWEST, net::CompletionOnceCallback());
+}
+
+void GeneratedCodeCache::IssueNextOperation(const std::string& key) {
+  auto it = active_entries_map_.find(key);
+  if (it == active_entries_map_.end())
     return;
 
-  CollectStatistics(CacheEntryStatus::kClear);
-  backend_->DoomEntry(key, net::LOWEST, net::CompletionOnceCallback());
+  DCHECK(!it->second.empty());
+  IssueOperation(it->second.front().get());
 }
 
-void GeneratedCodeCache::IssueQueuedOperationForEntry(const std::string& key) {
-  auto it = active_entries_map_.find(key);
-  DCHECK(it != active_entries_map_.end());
+void GeneratedCodeCache::CloseOperationAndIssueNext(PendingOperation* op) {
+  // Dequeue op, keeping it alive long enough to issue another op.
+  std::unique_ptr<PendingOperation> keep_alive = DequeueOperation(op);
+  IssueNextOperation(op->key());
+}
 
-  // If no more queued entries then remove the entry to indicate that there are
-  // no in-progress operations for this key.
+void GeneratedCodeCache::EnqueueOperationAndIssueIfNext(
+    std::unique_ptr<PendingOperation> op) {
+  // GetBackend ops have no key and shouldn't be enqueued here.
+  DCHECK_NE(Operation::kGetBackend, op->operation());
+  auto it = active_entries_map_.find(op->key());
+  bool can_issue = false;
+  if (it == active_entries_map_.end()) {
+    it = active_entries_map_.emplace(op->key(), PendingOperationQueue()).first;
+    can_issue = true;
+  }
+  const std::string& key = op->key();
+  it->second.emplace(std::move(op));
+  if (can_issue)
+    IssueNextOperation(key);
+}
+
+std::unique_ptr<GeneratedCodeCache::PendingOperation>
+GeneratedCodeCache::DequeueOperation(PendingOperation* op) {
+  auto it = active_entries_map_.find(op->key());
+  DCHECK(it != active_entries_map_.end());
+  DCHECK(!it->second.empty());
+  std::unique_ptr<PendingOperation> result = std::move(it->second.front());
+  // |op| should be at the front.
+  DCHECK_EQ(op, result.get());
+  it->second.pop();
+  // Delete the queue if it becomes empty.
   if (it->second.empty()) {
     active_entries_map_.erase(it);
-    return;
   }
-
-  std::unique_ptr<PendingOperation> op = std::move(it->second.front());
-  // Pop it before issuing the operation. Still retain the queue even if it is
-  // empty to indicate that there is a in-progress operation.
-  it->second.pop();
-  IssueOperation(op.get());
+  return result;
 }
 
-bool GeneratedCodeCache::TryBeginOperation(const std::string& key) {
-  auto it = active_entries_map_.find(key);
-  if (it != active_entries_map_.end())
-    return false;
-
-  // Create an entry to indicate there is a in-progress operation for this key.
-  active_entries_map_[key] = base::queue<std::unique_ptr<PendingOperation>>();
-  return true;
-}
-
-void GeneratedCodeCache::EnqueueAsPendingOperation(
-    const std::string& key,
-    std::unique_ptr<PendingOperation> op) {
-  auto it = active_entries_map_.find(key);
-  DCHECK(it != active_entries_map_.end());
-  it->second.emplace(std::move(op));
-}
-
-void GeneratedCodeCache::DoPendingGetBackend(GetBackendCallback user_callback) {
+void GeneratedCodeCache::DoPendingGetBackend(PendingOperation* op) {
+  // |op| is kept alive in |IssuePendingOperations| for the duration of this
+  // call. We shouldn't access |op| after returning from this function.
+  DCHECK_EQ(kGetBackend, op->operation());
   if (backend_state_ == kInitialized) {
-    std::move(user_callback).Run(backend_.get());
-    return;
+    op->TakeBackendCallback().Run(backend_.get());
+  } else {
+    DCHECK_EQ(backend_state_, kFailed);
+    op->TakeBackendCallback().Run(nullptr);
   }
-
-  DCHECK_EQ(backend_state_, kFailed);
-  std::move(user_callback).Run(nullptr);
-  return;
 }
 
 void GeneratedCodeCache::SetLastUsedTimeForTest(

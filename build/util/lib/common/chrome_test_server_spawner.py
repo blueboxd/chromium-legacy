@@ -366,7 +366,7 @@ class SpawningServerRequestHandler(BaseHTTPServer.BaseHTTPRequestHandler):
     """Stops the test server instance."""
     try:
       port = int(params['port'][0])
-    except ValueError, KeyError:
+    except ValueError:
       port = None
     if port == None or port <= 0:
       self._SendResponse(400, 'Invalid request.', {}, 'port must be specified')

@@ -59,7 +59,8 @@ XRViewerPose* XRFrame::getViewerPose(XRReferenceSpace* reference_space,
   session_->LogGetPose();
 
   std::unique_ptr<TransformationMatrix> pose =
-      reference_space->GetViewerPoseMatrix(base_pose_matrix_.get());
+      reference_space->SpaceFromViewerWithDefaultAndOffset(
+          mojo_from_viewer_.get());
   if (!pose) {
     return nullptr;
   }
@@ -102,11 +103,11 @@ XRPose* XRFrame::getPose(XRSpace* space_A,
     return nullptr;
   }
 
-  return space_A->getPose(space_B, base_pose_matrix_.get());
+  return space_A->getPose(space_B, mojo_from_viewer_.get());
 }
 
-void XRFrame::SetBasePoseMatrix(const TransformationMatrix& base_pose_matrix) {
-  base_pose_matrix_ = std::make_unique<TransformationMatrix>(base_pose_matrix);
+void XRFrame::SetMojoFromViewer(const TransformationMatrix& mojo_from_viewer) {
+  mojo_from_viewer_ = std::make_unique<TransformationMatrix>(mojo_from_viewer);
 }
 
 void XRFrame::Deactivate() {

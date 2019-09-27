@@ -17,6 +17,7 @@
 #include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task/post_task.h"
 #include "base/values.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
@@ -225,11 +226,17 @@ void ChangePictureHandler::SendSelectedImage() {
           user->has_image_bytes()) {
         previous_image_bytes_ = user->image_bytes();
         SendOldImage(webui::GetPngDataUrl(previous_image_bytes_->front(),
-                                          previous_image_bytes_->size()),
-                     -1);
+                                          previous_image_bytes_->size()));
       } else {
         previous_image_bytes_ = nullptr;
-        SendOldImage(webui::GetBitmapDataUrl(*previous_image_.bitmap()), -1);
+        DCHECK(previous_image_.IsThreadSafe());
+        // Post a task because GetBitmapDataUrl does PNG encoding, which is
+        // slow for large images.
+        base::PostTaskAndReplyWithResult(
+            FROM_HERE, {base::ThreadPool(), base::TaskPriority::USER_BLOCKING},
+            base::BindOnce(&webui::GetBitmapDataUrl, *previous_image_.bitmap()),
+            base::BindOnce(&ChangePictureHandler::SendOldImage,
+                           weak_ptr_factory_.GetWeakPtr()));
       }
       break;
     }
@@ -250,7 +257,7 @@ void ChangePictureHandler::SendSelectedImage() {
         previous_image_ = user->GetImage();
         previous_image_bytes_ = nullptr;
         previous_image_format_ = user_manager::UserImage::FORMAT_UNKNOWN;
-        SendOldImage(
+        SendOldImageWithIndex(
             default_user_image::GetDefaultImageUrl(previous_image_index_),
             previous_image_index_);
       }
@@ -277,11 +284,15 @@ void ChangePictureHandler::UpdateProfileImage() {
   user_image_manager->DownloadProfileImage(kProfileDownloadReason);
 }
 
-void ChangePictureHandler::SendOldImage(const std::string& image_url,
-                                        int image_index) {
+void ChangePictureHandler::SendOldImage(std::string&& image_url) {
+  SendOldImageWithIndex(std::move(image_url), -1);
+}
+
+void ChangePictureHandler::SendOldImageWithIndex(std::string&& image_url,
+                                                 int image_index) {
   base::DictionaryValue result;
-  result.SetString("url", image_url);
-  result.SetInteger("index", image_index);
+  result.SetStringPath("url", std::move(image_url));
+  result.SetIntPath("index", image_index);
   FireWebUIListener("old-image-changed", result);
 }
 

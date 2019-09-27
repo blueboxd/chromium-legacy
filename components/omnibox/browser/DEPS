@@ -4,6 +4,7 @@ include_rules = [
   "+components/component_updater",
   "+components/favicon/core",
   "+components/favicon_base",
+  "+components/google/core/common/google_util.h",
   "+components/grit",
   "+components/history/core/browser",
   "+components/history/core/test",

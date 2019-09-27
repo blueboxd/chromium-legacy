@@ -14,7 +14,8 @@ WebviewLayoutManager::WebviewLayoutManager(aura::Window* web_contents_window)
 WebviewLayoutManager::~WebviewLayoutManager() {}
 
 void WebviewLayoutManager::OnWindowResized() {
-  web_contents_window_->SetBounds(web_contents_window_->parent()->bounds());
+  web_contents_window_->SetBounds(
+      gfx::Rect(web_contents_window_->parent()->bounds().size()));
 }
 
 void WebviewLayoutManager::OnWindowAddedToLayout(aura::Window* child) {}

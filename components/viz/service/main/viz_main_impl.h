@@ -33,10 +33,6 @@ class SyncPointManager;
 class SharedImageManager;
 }  // namespace gpu
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ukm {
 class MojoUkmRecorder;
 }
@@ -77,7 +73,7 @@ class VizMainImpl : public mojom::VizMain {
     gpu::SharedImageManager* shared_image_manager = nullptr;
     base::WaitableEvent* shutdown_event = nullptr;
     scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner;
-    service_manager::Connector* connector = nullptr;
+    std::unique_ptr<ukm::MojoUkmRecorder> ukm_recorder;
     VizCompositorThreadRunner* viz_compositor_thread_runner = nullptr;
 
    private:
@@ -127,9 +123,6 @@ class VizMainImpl : public mojom::VizMain {
   void ExitProcess();
 
  private:
-  // Initializes GPU's UkmRecorder if GPU is running in it's own process.
-  void CreateUkmRecorderIfNeeded(service_manager::Connector* connector);
-
   void CreateFrameSinkManagerInternal(mojom::FrameSinkManagerParamsPtr params);
 
   scoped_refptr<base::SingleThreadTaskRunner> io_task_runner() const {

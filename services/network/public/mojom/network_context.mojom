@@ -1069,7 +1069,7 @@ interface NetworkContext {
                          P2PSocketManager& socket_manager);
 
   // Creates an MdnsResponder instance.
-  CreateMdnsResponder(MdnsResponder& responder_request);
+  CreateMdnsResponder(pending_receiver<MdnsResponder> responder_receiver);
 
   // Resolves the given hostname (or IP address literal). See documentation at
   // HostResolver::ResolveHost.

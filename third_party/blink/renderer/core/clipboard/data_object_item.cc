@@ -34,8 +34,8 @@
 #include "third_party/blink/renderer/core/clipboard/clipboard_mime_types.h"
 #include "third_party/blink/renderer/core/clipboard/system_clipboard.h"
 #include "third_party/blink/renderer/core/fileapi/blob.h"
+#include "third_party/blink/renderer/platform/image-encoders/image_encoder.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
-#include "ui/gfx/codec/png_codec.h"
 
 namespace blink {
 
@@ -135,18 +135,25 @@ File* DataObjectItem::GetAsFile() const {
 
   DCHECK_EQ(source_, kClipboardSource);
   if (GetType() == kMimeTypeImagePng) {
-    SkBitmap image = SystemClipboard::GetInstance().ReadImage(
+    SkBitmap bitmap = SystemClipboard::GetInstance().ReadImage(
         mojom::ClipboardBuffer::kStandard);
-    std::vector<unsigned char> png_data;
-    if (gfx::PNGCodec::FastEncodeBGRASkBitmap(image, false, &png_data)) {
-      auto data = std::make_unique<BlobData>();
-      data->SetContentType(kMimeTypeImagePng);
-      data->AppendBytes(png_data.data(), png_data.size());
-      const uint64_t length = data->length();
-      auto blob = BlobDataHandle::Create(std::move(data), length);
-      return File::Create("image.png", base::Time::Now().ToDoubleT() * 1000.0,
-                          std::move(blob));
-    }
+
+    SkPixmap pixmap;
+    bitmap.peekPixels(&pixmap);
+
+    Vector<uint8_t> png_data;
+    SkPngEncoder::Options options;
+    options.fZLibLevel = 1;  // Fastest compression.
+    if (!ImageEncoder::Encode(&png_data, pixmap, options))
+      return nullptr;
+
+    auto data = std::make_unique<BlobData>();
+    data->SetContentType(kMimeTypeImagePng);
+    data->AppendBytes(png_data.data(), png_data.size());
+    const uint64_t length = data->length();
+    auto blob = BlobDataHandle::Create(std::move(data), length);
+    return File::Create("image.png", base::Time::Now().ToDoubleT() * 1000.0,
+                        std::move(blob));
   }
 
   return nullptr;

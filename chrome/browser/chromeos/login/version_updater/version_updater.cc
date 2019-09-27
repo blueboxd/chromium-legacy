@@ -59,11 +59,26 @@ constexpr const base::TimeDelta kMaxTimeLeft = base::TimeDelta::FromDays(1);
 VersionUpdater::UpdateInfo::UpdateInfo() {}
 
 VersionUpdater::VersionUpdater(VersionUpdater::Delegate* delegate)
-    : delegate_(delegate), tick_clock_(base::DefaultTickClock::GetInstance()) {}
+    : delegate_(delegate),
+      wait_for_reboot_time_(kWaitForRebootTime),
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
+  Init();
+}
 
 VersionUpdater::~VersionUpdater() {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
   network_portal_detector::GetInstance()->RemoveObserver(this);
+}
+
+void VersionUpdater::Init() {
+  download_start_progress_ = 0;
+  download_last_progress_ = 0;
+  is_download_average_speed_computed_ = false;
+  download_average_speed_ = 0;
+  is_downloading_update_ = false;
+  ignore_idle_status_ = true;
+  is_first_detection_notification_ = true;
+  update_info_ = UpdateInfo();
 }
 
 void VersionUpdater::StartNetworkCheck() {
@@ -107,14 +122,20 @@ void VersionUpdater::RejectUpdateOverCellular() {
 void VersionUpdater::RebootAfterUpdate() {
   VLOG(1) << "Initiate reboot after update";
   DBusThreadManager::Get()->GetUpdateEngineClient()->RebootAfterUpdate();
-  reboot_timer_.Start(FROM_HERE, kWaitForRebootTime, this,
-                      &VersionUpdater::OnWaitForRebootTimeElapsed);
+  if (wait_for_reboot_time_.is_zero())  // Primarily for testing.
+    OnWaitForRebootTimeElapsed();
+  else
+    reboot_timer_.Start(FROM_HERE, wait_for_reboot_time_, this,
+                        &VersionUpdater::OnWaitForRebootTimeElapsed);
 }
 
 void VersionUpdater::StartExitUpdate(Result result) {
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
   network_portal_detector::GetInstance()->RemoveObserver(this);
   delegate_->FinishExitUpdate(result);
+  // Reset internal state, because in case of error user may make another
+  // update attempt.
+  Init();
 }
 
 void VersionUpdater::GetEolStatus(EolStatusCallback callback) {
@@ -172,6 +193,7 @@ void VersionUpdater::UpdateStatusChanged(
     ignore_idle_status_ = false;
   }
 
+  bool exit_update = false;
   switch (status.current_operation()) {
     case update_engine::Operation::CHECKING_FOR_UPDATE:
       break;
@@ -232,7 +254,7 @@ void VersionUpdater::UpdateStatusChanged(
       // Otherwise, it's possible that the update request has not yet been
       // started.
       if (!ignore_idle_status_)
-        StartExitUpdate(Result::UPDATE_NOT_REQUIRED);
+        exit_update = true;
       break;
     case update_engine::Operation::DISABLED:
     case update_engine::Operation::ERROR:
@@ -243,6 +265,8 @@ void VersionUpdater::UpdateStatusChanged(
   }
 
   delegate_->UpdateInfoChanged(update_info_);
+  if (exit_update)
+    StartExitUpdate(Result::UPDATE_NOT_REQUIRED);
 }
 
 void VersionUpdater::UpdateDownloadingStats(

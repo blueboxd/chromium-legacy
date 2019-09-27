@@ -11,7 +11,7 @@ cr.define('identity_internals', function() {
    * @constructor
    */
   function TokenListItem(tokenInfo) {
-    const el = cr.doc.createElement('div');
+    const el = document.createElement('div');
     el.data_ = tokenInfo;
     el.__proto__ = TokenListItem.prototype;
     el.decorate();

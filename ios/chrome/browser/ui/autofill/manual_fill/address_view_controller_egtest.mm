@@ -227,9 +227,9 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Tests that returning from "Manage Addresses..." leaves the icons in the right
-// state.
-- (void)testAddressesButtonStateAfterPresentingManageAddresses {
+// Tests that returning from "Manage Addresses..." leaves the icons and keyboard
+// in the right state.
+- (void)testAddressesStateAfterPresentingManageAddresses {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:chrome_test_util::TapWebElementWithId(kFormElementName)];
@@ -269,6 +269,10 @@ void ClearProfiles(autofill::PersonalDataManager* personalDataManager) {
       assertWithMatcher:grey_userInteractionEnabled()];
   [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Verify the keyboard is not cover by the profiles view.
+  [[EarlGrey selectElementWithMatcher:ProfilesTableViewMatcher()]
+      assertWithMatcher:grey_notVisible()];
 }
 
 // Tests that the Address View Controller is dismissed when tapping the

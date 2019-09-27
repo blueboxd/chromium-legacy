@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">企鵝</translation>
 <translation id="183183971458492120">正在載入資訊...</translation>
 <translation id="1838709767668011582">Google 網站</translation>
-<translation id="1839704667838141620">變更這些檔案的共用方式。</translation>
 <translation id="1844692022597038441">這個檔案無法離線瀏覽。</translation>
 <translation id="184633654410729720">泰文鍵盤 (Kedmanee)</translation>
 <translation id="1847880352285315359">已儲存</translation>
-<translation id="1864676585353837027">變更這些檔案的共用方式</translation>
 <translation id="1864756863218646478">找不到檔案。</translation>
 <translation id="1921986354447415460">土耳其文 F 鍵盤</translation>
 <translation id="1931134289871235022">斯洛伐克文</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">安裝新服務</translation>
 <translation id="1947424002851288782">德文鍵盤</translation>
 <translation id="1972984168337863910">展開檔案意見回饋面板</translation>
-<translation id="197560921582345123">可以編輯</translation>
 <translation id="1984603991036629094">亞美尼亞文 (拼音) 鍵盤</translation>
 <translation id="2001796770603320721">在雲端硬碟中管理</translation>
 <translation id="2009067268969781306">若將硬碟格式化，其中儲存的所有資料都將遭到刪除。這項操作無法復原。</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">擷取這些檔案大約會使用 <ph name="FILE_SIZE" /> 行動數據流量。</translation>
 <translation id="7846076177841592234">全部取消選取</translation>
-<translation id="7850851215703745691">這些雲端硬碟檔案尚未與你共用</translation>
 <translation id="7853966320808728790">法文 BÉPO</translation>
 <translation id="7864662577698025113">新增服務</translation>
 <translation id="7873831373602885875">無法儲存到「<ph name="FOLDER_NAME" />」。系統會將所有編輯內容儲存到「下載」資料夾中的「<ph name="DOWNLOADS_FOLDER" />」。</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">斯洛維尼亞文</translation>
 <translation id="7982283708762922719">高度</translation>
 <translation id="7987485481246785146">索拉尼庫爾德式阿拉伯文鍵盤</translation>
-<translation id="799923393800005025">可以檢視</translation>
 <translation id="8008366997883261463">傑克羅素梗</translation>
 <translation id="8028993641010258682">大小</translation>
 <translation id="8031722894461705849">斯洛伐克文鍵盤</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">檔案清單已變更為縮圖檢視模式。</translation>
 <translation id="8601932370724196034">Crostini 圖片檔</translation>
 <translation id="8669949407341943408">移動中...</translation>
-<translation id="8671210955687109937">可以註解</translation>
-<translation id="8686213429977032554">這個雲端硬碟檔案尚未與你共用</translation>
 <translation id="8698464937041809063">Google 繪圖</translation>
 <translation id="8714406895390098252">單車</translation>
 <translation id="8719721339511222681">已選取「<ph name="ENTRY_NAME" />」。</translation>

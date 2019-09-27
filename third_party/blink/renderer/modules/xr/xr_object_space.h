@@ -21,14 +21,14 @@ class XRObjectSpace : public XRSpace {
   explicit XRObjectSpace(XRSession* session, const T* object)
       : XRSpace(session), object_(object) {}
 
-  std::unique_ptr<TransformationMatrix> GetTransformToMojoSpace() override {
-    auto mojo_to_object = object_->poseMatrix();
+  std::unique_ptr<TransformationMatrix> MojoFromSpace() override {
+    auto object_from_mojo = object_->poseMatrix();
 
-    if (!mojo_to_object.IsInvertible()) {
+    if (!object_from_mojo.IsInvertible()) {
       return nullptr;
     }
 
-    return std::make_unique<TransformationMatrix>(mojo_to_object.Inverse());
+    return std::make_unique<TransformationMatrix>(object_from_mojo.Inverse());
   }
 
   void Trace(blink::Visitor* visitor) override {

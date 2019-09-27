@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pingviin</translation>
 <translation id="183183971458492120">Teabe laadimine …</translation>
 <translation id="1838709767668011582">Google'i sait</translation>
-<translation id="1839704667838141620">Muutke seda, kuidas faili jagatakse</translation>
 <translation id="1844692022597038441">Fail ei ole võrguühenduseta saadaval.</translation>
 <translation id="184633654410729720">Tai klaviatuur (Kedmanee)</translation>
 <translation id="1847880352285315359">Salvestatud</translation>
-<translation id="1864676585353837027">Muutke seda, kuidas faile jagatakse</translation>
 <translation id="1864756863218646478">Faili ei leitud.</translation>
 <translation id="1921986354447415460">Türgi F-klaviatuur</translation>
 <translation id="1931134289871235022">slovaki</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Installi uus teenus</translation>
 <translation id="1947424002851288782">Saksa klaviatuur</translation>
 <translation id="1972984168337863910">Laienda failide tagasisidepaneele</translation>
-<translation id="197560921582345123">Saab muuta</translation>
 <translation id="1984603991036629094">Armeenia foneetiline klaviatuur</translation>
 <translation id="2001796770603320721">Halda Drive'is</translation>
 <translation id="2009067268969781306">Ketta vormindamisel kustutatakse kõik sellel olevad andmed. Seda toimingut ei saa tagasi võtta.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Failide toomine kasutab umbes <ph name="FILE_SIZE" /> mobiilsideandmeid.</translation>
 <translation id="7846076177841592234">Tühista valik</translation>
-<translation id="7850851215703745691">Need Drive'i failid pole veel jagatud</translation>
 <translation id="7853966320808728790">Prantsuse BÉPO</translation>
 <translation id="7864662577698025113">Lisa uus teenus</translation>
 <translation id="7873831373602885875">Kausta <ph name="FOLDER_NAME" /> ei saa salvestada. Kõik muudatused salvestatakse seadmes kausta <ph name="DOWNLOADS_FOLDER" />.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">sloveeni keel</translation>
 <translation id="7982283708762922719">Kõrgus</translation>
 <translation id="7987485481246785146">Sorani kurdi araabia keele põhine klaviatuur</translation>
-<translation id="799923393800005025">Saab vaadata</translation>
 <translation id="8008366997883261463">Jack Russelli terjer</translation>
 <translation id="8028993641010258682">Suurus</translation>
 <translation id="8031722894461705849">Slovaki klaviatuur</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">Faililoendi jaoks aktiveeriti pisipildikuva.</translation>
 <translation id="8601932370724196034">Crostini pildifail</translation>
 <translation id="8669949407341943408">Teisaldamine ...</translation>
-<translation id="8671210955687109937">Saab kommenteerida</translation>
-<translation id="8686213429977032554">Seda Drive'i faili pole veel jagatud</translation>
 <translation id="8698464937041809063">Google joonistus</translation>
 <translation id="8714406895390098252">Jalgratas</translation>
 <translation id="8719721339511222681">Valiti <ph name="ENTRY_NAME" />.</translation>

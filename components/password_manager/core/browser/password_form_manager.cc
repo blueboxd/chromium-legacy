@@ -264,7 +264,6 @@ void PasswordFormManager::Save() {
     newly_blacklisted_ = false;
   }
 
-  // TODO(https://crbug.com/831123): Implement indicator event metrics.
   if (password_overridden_ &&
       pending_credentials_.type == PasswordForm::Type::kGenerated &&
       !HasGeneratedPassword()) {
@@ -484,9 +483,8 @@ bool PasswordFormManager::IsPasswordUpdate() const {
   return password_overridden_;
 }
 
-std::vector<base::WeakPtr<PasswordManagerDriver>>
-PasswordFormManager::GetDrivers() const {
-  return {driver_};
+base::WeakPtr<PasswordManagerDriver> PasswordFormManager::GetDriver() const {
+  return driver_;
 }
 
 const PasswordForm* PasswordFormManager::GetSubmittedForm() const {

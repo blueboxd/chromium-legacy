@@ -8687,6 +8687,35 @@ TEST_F(WebFrameTest, EmbedderTriggeredDetachWithRemoteMainFrame) {
   child_core_frame.Clear();
 }
 
+class WebFrameSwapTestClient : public frame_test_helpers::TestWebFrameClient {
+ public:
+  WebFrameSwapTestClient() {}
+
+  WebLocalFrame* CreateChildFrame(WebLocalFrame* parent,
+                                  WebTreeScopeType scope,
+                                  const WebString& name,
+                                  const WebString& fallback_name,
+                                  const FramePolicy&,
+                                  const WebFrameOwnerProperties&,
+                                  FrameOwnerElementType) override {
+    return CreateLocalChild(*parent, scope,
+                            std::make_unique<WebFrameSwapTestClient>());
+  }
+
+  void DidChangeFrameOwnerProperties(
+      WebFrame* child_frame,
+      const WebFrameOwnerProperties& properties) override {
+    did_propagate_display_none_ |= properties.is_display_none;
+  }
+
+  bool DidPropagateDisplayNoneProperty() const {
+    return did_propagate_display_none_;
+  }
+
+ private:
+  bool did_propagate_display_none_ = false;
+};
+
 class WebFrameSwapTest : public WebFrameTest {
  protected:
   WebFrameSwapTest() {
@@ -8696,7 +8725,8 @@ class WebFrameSwapTest : public WebFrameTest {
     RegisterMockedHttpURLLoad("subframe-c.html");
     RegisterMockedHttpURLLoad("subframe-hello.html");
 
-    web_view_helper_.InitializeAndLoad(base_url_ + "frame-a-b-c.html");
+    web_view_helper_.InitializeAndLoad(base_url_ + "frame-a-b-c.html",
+                                       &main_frame_client_);
   }
 
   void Reset() { web_view_helper_.Reset(); }
@@ -8705,6 +8735,7 @@ class WebFrameSwapTest : public WebFrameTest {
 
  private:
   frame_test_helpers::WebViewHelper web_view_helper_;
+  WebFrameSwapTestClient main_frame_client_;
 };
 
 TEST_F(WebFrameSwapTest, SwapMainFrame) {
@@ -8846,6 +8877,26 @@ TEST_F(WebFrameSwapTest, SwapFirstChild) {
   std::string content =
       WebFrameContentDumper::DumpWebViewAsText(WebView(), 1024).Utf8();
   EXPECT_EQ("  \n\nhello\n\nb \n\na\n\nc", content);
+}
+
+TEST_F(WebFrameSwapTest, DoNotPropagateDisplayNonePropertyOnSwap) {
+  WebFrameSwapTestClient* main_frame_client =
+      static_cast<WebFrameSwapTestClient*>(MainFrame()->Client());
+  EXPECT_FALSE(main_frame_client->DidPropagateDisplayNoneProperty());
+
+  WebLocalFrame* child_frame = MainFrame()->FirstChild()->ToWebLocalFrame();
+  frame_test_helpers::LoadFrame(child_frame, "subframe-hello.html");
+  EXPECT_FALSE(main_frame_client->DidPropagateDisplayNoneProperty());
+
+  WebRemoteFrame* remote_frame = frame_test_helpers::CreateRemote();
+  child_frame->Swap(remote_frame);
+  EXPECT_FALSE(main_frame_client->DidPropagateDisplayNoneProperty());
+
+  WebLocalFrame* local_frame =
+      frame_test_helpers::CreateProvisional(*remote_frame);
+  remote_frame->Swap(local_frame);
+  EXPECT_FALSE(main_frame_client->DidPropagateDisplayNoneProperty());
+  Reset();
 }
 
 void WebFrameTest::SwapAndVerifyMiddleChildConsistency(

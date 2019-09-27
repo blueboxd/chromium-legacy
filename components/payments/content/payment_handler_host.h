@@ -22,9 +22,6 @@ class WebContents;
 
 namespace payments {
 
-using ChangePaymentRequestDetailsCallback =
-    base::OnceCallback<void(mojom::PaymentRequestDetailsUpdatePtr)>;
-
 // Handles the communication from the payment handler renderer process to the
 // merchant renderer process.
 class PaymentHandlerHost : public mojom::PaymentHandlerHost {
@@ -39,17 +36,6 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
     // "false" if the state is invalid.
     virtual bool ChangePaymentMethod(const std::string& method_name,
                                      const std::string& stringified_data) = 0;
-
-    // Notifies the merchant that the shipping option has changed. Returns
-    // "false" if the state is invalid.
-    virtual bool ChangeShippingOption(
-        const std::string& shipping_option_id) = 0;
-
-    // Notifies the merchant that the shipping address has changed after
-    // redacting the address whenever needed. Returns "false" if the state is
-    // invalid.
-    virtual bool ChangeShippingAddress(
-        mojom::PaymentAddressPtr shipping_address) = 0;
   };
 
   // The |delegate| cannot be null and must outlive this object. Typically this
@@ -77,24 +63,21 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
     payment_request_id_for_logs_ = id;
   }
 
-  // Returns "true" when the payment handler has changed any of the payment
-  // method, shipping address or shipping option, but has not received the
-  // response from the merchant yet.
-  bool is_changing() const {
-    return !!change_payment_request_details_callback_;
+  // Returns "true" when the payment handler has changed the payment method, but
+  // has not received the response from the merchant yet.
+  bool is_changing_payment_method() const {
+    return !!change_payment_method_callback_;
   }
 
   // Binds to an IPC endpoint and returns it.
   mojo::PendingRemote<mojom::PaymentHandlerHost> Bind();
 
   // Notifies the payment handler of the updated details, such as updated total,
-  // in response to the change of any of the following: payment method, shipping
-  // address, or shipping option.
-  void UpdateWith(mojom::PaymentRequestDetailsUpdatePtr response);
+  // in response to the change of the payment method.
+  void UpdateWith(mojom::PaymentMethodChangeResponsePtr response);
 
   // Notifies the payment handler that the merchant did not handle the payment
-  // method, shipping option, or shipping address change events, so the payment
-  // details are unchanged.
+  // method change event, so the payment details are unchanged.
   void NoUpdatedPaymentDetails();
 
   // Disconnects from the payment handler.
@@ -106,22 +89,12 @@ class PaymentHandlerHost : public mojom::PaymentHandlerHost {
   // mojom::PaymentHandlerHost
   void ChangePaymentMethod(
       mojom::PaymentHandlerMethodDataPtr method_data,
-      ChangePaymentRequestDetailsCallback callback) override;
+      mojom::PaymentHandlerHost::ChangePaymentMethodCallback callback) override;
 
-  // mojom::PaymentHandlerHost
-  void ChangeShippingOption(
-      const std::string& shipping_option_id,
-      ChangePaymentRequestDetailsCallback callback) override;
-
-  // mojom::PaymentHandlerHost
-  void ChangeShippingAddress(
-      mojom::PaymentAddressPtr shipping_address,
-      ChangePaymentRequestDetailsCallback callback) override;
-
-  // Payment handler's callback to invoke after merchant responds to any of the
-  // "payment method change", "shipping option change", or "shipping address
-  // change" events.
-  ChangePaymentRequestDetailsCallback change_payment_request_details_callback_;
+  // Payment handler's callback to invoke after merchant responds to the
+  // "payment method change" event.
+  mojom::PaymentHandlerHost::ChangePaymentMethodCallback
+      change_payment_method_callback_;
 
   // The end-point for the payment handler renderer process to call into the
   // browser process.

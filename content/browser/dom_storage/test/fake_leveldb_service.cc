@@ -26,7 +26,7 @@ FakeLevelDBService::FakeLevelDBService() = default;
 FakeLevelDBService::~FakeLevelDBService() = default;
 
 void FakeLevelDBService::Open(
-    filesystem::mojom::DirectoryPtr,
+    const base::FilePath& directory,
     const std::string& dbname,
     const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
         memory_dump_id,
@@ -40,7 +40,7 @@ void FakeLevelDBService::Open(
 
 void FakeLevelDBService::OpenWithOptions(
     const leveldb_env::Options& options,
-    filesystem::mojom::DirectoryPtr,
+    const base::FilePath& directory,
     const std::string& dbname,
     const base::Optional<base::trace_event::MemoryAllocatorDumpGuid>&
         memory_dump_id,
@@ -64,7 +64,7 @@ void FakeLevelDBService::OpenInMemory(
     std::move(on_open_callback_).Run();
 }
 
-void FakeLevelDBService::Destroy(filesystem::mojom::DirectoryPtr,
+void FakeLevelDBService::Destroy(const base::FilePath& directory,
                                  const std::string& dbname,
                                  DestroyCallback callback) {
   destroy_requests_.push_back({dbname});

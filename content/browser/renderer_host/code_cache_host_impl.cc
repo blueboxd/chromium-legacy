@@ -142,7 +142,8 @@ void CodeCacheHostImpl::DidGenerateCacheableMetadata(
   if (!origin_lock)
     return;
 
-  code_cache->WriteData(url, *origin_lock, expected_response_time, data);
+  code_cache->WriteEntry(url, *origin_lock, expected_response_time,
+                         std::move(data));
 }
 
 void CodeCacheHostImpl::FetchCachedCode(blink::mojom::CodeCacheType cache_type,

@@ -3159,7 +3159,7 @@ class DOMContentLoadedObserver : public WebContentsObserver {
 
  protected:
   // WebContentsObserver:
-  void DocumentLoadedInFrame(RenderFrameHost* render_Frame_host) override {
+  void DOMContentLoaded(RenderFrameHost* render_Frame_host) override {
     callback_.Run();
   }
 

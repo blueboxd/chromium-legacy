@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pingvin</translation>
 <translation id="183183971458492120">Läser in information …</translation>
 <translation id="1838709767668011582">Google-webbplats</translation>
-<translation id="1839704667838141620">Ändra hur filen delas</translation>
 <translation id="1844692022597038441">Den här filen är inte tillgänglig offline.</translation>
 <translation id="184633654410729720">Tangentbord för thailändska (Kedmanee)</translation>
 <translation id="1847880352285315359">Sparat</translation>
-<translation id="1864676585353837027">Ändra hur dessa filer delas</translation>
 <translation id="1864756863218646478">Filen hittades inte.</translation>
 <translation id="1921986354447415460">Tangentbord för turkiska F</translation>
 <translation id="1931134289871235022">Slovakiska</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Installera ny tjänst</translation>
 <translation id="1947424002851288782">Tyskt tangentbord</translation>
 <translation id="1972984168337863910">Utöka panel med information om filåtgärder</translation>
-<translation id="197560921582345123">Kan redigera</translation>
 <translation id="1984603991036629094">Armeniskt fonetiskt tangentbord</translation>
 <translation id="2001796770603320721">Hantera i Drive</translation>
 <translation id="2009067268969781306">Om du formaterar en enhet raderas all data som lagras på den. Det går inte att ångra åtgärden.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Att hämta dessa filer kräver ungefär <ph name="FILE_SIZE" /> mobildata.</translation>
 <translation id="7846076177841592234">Rensa val</translation>
-<translation id="7850851215703745691">Dessa filer i Drive delas inte ännu</translation>
 <translation id="7853966320808728790">franska (BÉPO)</translation>
 <translation id="7864662577698025113">Lägg till ny tjänst</translation>
 <translation id="7873831373602885875">Det går inte att spara i <ph name="FOLDER_NAME" />. Alla ändringar sparas i <ph name="DOWNLOADS_FOLDER" /> i mappen Nedladdningar.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">slovenska</translation>
 <translation id="7982283708762922719">Höjd</translation>
 <translation id="7987485481246785146">Tangentbord baserat på sorani/kurdiska och arabiska</translation>
-<translation id="799923393800005025">Kan visa</translation>
 <translation id="8008366997883261463">Hund</translation>
 <translation id="8028993641010258682">Storlek</translation>
 <translation id="8031722894461705849">Slovakiskt tangentbord</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">Fillistan har ändrats till miniatyrvy.</translation>
 <translation id="8601932370724196034">Bildfil för Crostini</translation>
 <translation id="8669949407341943408">Flyttar …</translation>
-<translation id="8671210955687109937">Kan kommentera</translation>
-<translation id="8686213429977032554">Den här filen i Drive delas inte ännu</translation>
 <translation id="8698464937041809063">Google-teckning</translation>
 <translation id="8714406895390098252">Cykel</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> har markerats.</translation>

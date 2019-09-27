@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/compiler_specific.h"
+#include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/location.h"
 #include "base/logging.h"
@@ -104,6 +105,11 @@ NOINLINE void MaybeDumpWithoutCrashing(int quota_used) {
   // stack has queued up an unreasonable number of messages, namely
   // |quota_used|.
   base::debug::DumpWithoutCrashing();
+
+  // Defeat tail-call optimization and ensure these two variables are available
+  // on the stack.
+  base::debug::Alias(&crash_threshold);
+  base::debug::Alias(&quota_used);
 }
 
 }  // namespace

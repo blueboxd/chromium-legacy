@@ -455,19 +455,13 @@
   </message>
 
   <!-- Safety Tip summary strings for Android (Desktop is in page_info_strings.grdp) -->
-  <message name="IDS_SAFETY_TIP_ANDROID_NAME" desc="Name of safety tips in general, displayed in bold as part of the title of the safety tip infobar.">
-    Safety tip:
-  </message>
-  <message name="IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_TITLE" desc="Title of Safety Tip infobar.">
-    <ph name="SAFETY_TIP">$1<ex>Safety tip:</ex></ph> suspicious site
-  </message>
-  <message name="IDS_SAFETY_TIP_ANDROID_BAD_REPUTATION_DESCRIPTION" desc="Body of an infobar warning when the user visits a page that triggered a Safety Tip.">
-    This site could be fake or fraudulent. Chrome recommends leaving now.
-  </message>
   <message name="IDS_SAFETY_TIP_ANDROID_IGNORE_BUTTON" desc="Text of button to leave a suspicious page. Shown on the safety tip infobar.">
-    IGNORE
+    Ignore
   </message>
   <message name="IDS_SAFETY_TIP_ANDROID_LEAVE_BUTTON" desc="Text of button to ignore the warning on a suspicious page. Shown on the safety tip infobar.">
-    LEAVE SITE
+    Leave site
+  </message>
+  <message name="IDS_SAFETY_TIP_ANDROID_GO_TO_SITE_BUTTON" desc="Text of button to ignore the warning on a suspicious page. Shown on the safety tip infobar when we suggest an alternate (safe) destination.">
+    Yes. Go there.
   </message>
 </grit-part>

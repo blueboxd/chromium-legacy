@@ -22,6 +22,7 @@
 #include "base/time/default_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/crostini/ansible/ansible_management_service.h"
+#include "chrome/browser/chromeos/crostini/crostini_features.h"
 #include "chrome/browser/chromeos/crostini/crostini_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_remover.h"
@@ -1372,7 +1373,7 @@ void CrostiniManager::InstallLinuxPackage(
     std::string container_name,
     std::string package_path,
     InstallLinuxPackageCallback callback) {
-  if (!IsCrostiniRootAccessAllowed(profile_)) {
+  if (!CrostiniFeatures::Get()->IsRootAccessAllowed(profile_)) {
     LOG(ERROR) << "Attempted to install package when root access to Crostini "
                   "VM not allowed.";
     std::move(callback).Run(CrostiniResult::INSTALL_LINUX_PACKAGE_FAILED);

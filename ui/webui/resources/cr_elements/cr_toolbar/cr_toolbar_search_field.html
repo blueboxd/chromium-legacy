@@ -31,14 +31,15 @@
 
       @media (prefers-color-scheme: light) {
         cr-icon-button {
-          --cr-icon-button-color: var(--cr-toolbar-search-field-input-color,
-              white);
+          --cr-icon-button-color: currentColor;
+          --iron-icon-fill-color:
+              var(--cr-toolbar-search-field-input-color, white);
         }
       }
 
       @media (prefers-color-scheme: dark) {
         cr-icon-button {
-          --cr-icon-button-color: var(--cr-toolbar-search-field-input-color,
+          --iron-icon-fill-color: var(--cr-toolbar-search-field-input-color,
               var(--google-grey-refresh-500));
         }
       }

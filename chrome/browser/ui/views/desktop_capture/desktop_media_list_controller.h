@@ -89,10 +89,6 @@ class DesktopMediaListController : public DesktopMediaListObserver,
   void OnSourceSelectionChanged();
   void AcceptSource();
 
-  // Returns the view that should receive initial focus in the dialog if this
-  // controller's source list is the one being shown.
-  views::View* GetViewForInitialFocus();
-
   // These methods are used by the view (or its subviews) to query and
   // update the underlying DesktopMediaList.
   size_t GetSourceCount() const;

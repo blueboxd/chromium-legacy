@@ -70,6 +70,8 @@
 #include "chromeos/network/network_handler.h"
 #include "chromeos/network/network_state.h"
 #include "chromeos/network/network_state_handler.h"
+#include "chromeos/services/cros_healthd/public/cpp/service_connection.h"
+#include "chromeos/services/cros_healthd/public/mojom/cros_healthd_probe.mojom.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "chromeos/settings/timezone_settings.h"
 #include "chromeos/system/statistics_provider.h"
@@ -563,6 +565,13 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         base::BindOnce(&DeviceStatusCollectorState::OnTpmStatusReceived, this));
   }
 
+  void FetchCrosHealthdData(
+      const policy::DeviceStatusCollector::CrosHealthdDataFetcher&
+          cros_healthd_data_fetcher) {
+    cros_healthd_data_fetcher.Run(base::BindOnce(
+        &DeviceStatusCollectorState::OnCrosHealthdDataReceived, this));
+  }
+
   void FetchProbeData(const policy::DeviceStatusCollector::ProbeDataFetcher&
                           probe_data_fetcher) {
     probe_data_fetcher.Run(
@@ -652,6 +661,37 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         tpm_status_struct.boot_lockbox_finalized);
   }
 
+  // Stores the contents of |probe_result| to |response_params_|.
+  void OnCrosHealthdDataReceived(
+      chromeos::cros_healthd::mojom::TelemetryInfoPtr probe_result) {
+    // Make sure we edit the state on the right thread.
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    if (probe_result.is_null())
+      return;
+
+    const auto& block_device_info = probe_result->block_device_info;
+    if (block_device_info) {
+      em::StorageStatus* const storage_status_out =
+          response_params_.device_status->mutable_storage_status();
+      for (const auto& storage : block_device_info.value()) {
+        em::DiskInfo* const disk_info_out = storage_status_out->add_disks();
+        disk_info_out->set_serial(base::NumberToString(storage->serial));
+        disk_info_out->set_manufacturer(
+            base::NumberToString(storage->manufacturer_id));
+        disk_info_out->set_model(storage->name);
+        disk_info_out->set_type(storage->type);
+        disk_info_out->set_size(storage->size);
+      }
+    }
+    const auto& vpd_info = probe_result->vpd_info;
+    if (!vpd_info.is_null()) {
+      em::SystemStatus* const system_status_out =
+          response_params_.device_status->mutable_system_status();
+      system_status_out->set_vpd_sku_number(vpd_info->sku_number);
+    }
+  }
+
   // Note that we use proto3 syntax for ProbeResult, so missing fields will
   // have default values.
   void OnProbeDataReceived(
@@ -717,35 +757,6 @@ class DeviceStatusCollectorState : public StatusCollectorState {
         }
       }
     }
-    if (probe_result.value().storage_size() > 0) {
-      em::StorageStatus* const storage_status =
-          response_params_.device_status->mutable_storage_status();
-      for (const auto& storage : probe_result.value().storage()) {
-        if (storage.name() != kGenericDeviceName)
-          continue;
-        em::DiskInfo* const disk_info = storage_status->add_disks();
-        disk_info->set_serial(base::NumberToString(storage.values().serial()));
-        disk_info->set_manufacturer(
-            base::NumberToString(storage.values().manfid()));
-        disk_info->set_model(storage.values().name());
-        disk_info->set_type(storage.values().type());
-        disk_info->set_size(storage.values().size());
-      }
-    }
-    if (probe_result.value().vpd_cached_size() > 0) {
-      em::SystemStatus* const system_status =
-          response_params_.device_status->mutable_system_status();
-      // vpd_cached values are a repeated field in ProbeResult protobuf,
-      // while logically it should be optional. Using iteration + value checks
-      // just for future-proofing code.
-      for (const auto& vpd_values : probe_result.value().vpd_cached()) {
-        if (vpd_values.name() != kGenericDeviceName)
-          continue;
-        const std::string& sku_number = vpd_values.values().vpd_sku_number();
-        if (!sku_number.empty())
-          system_status->set_vpd_sku_number(sku_number);
-      }
-    }
   }
 
   void OnEMMCLifetimeReceived(const em::DiskLifetimeEstimation& est) {
@@ -807,6 +818,7 @@ DeviceStatusCollector::DeviceStatusCollector(
     const TpmStatusFetcher& tpm_status_fetcher,
     const EMMCLifetimeFetcher& emmc_lifetime_fetcher,
     const StatefulPartitionInfoFetcher& stateful_partition_info_fetcher,
+    const CrosHealthdDataFetcher& cros_healthd_data_fetcher,
     bool is_enterprise_reporting)
     : StatusCollector(provider,
                       chromeos::CrosSettings::Get(),
@@ -820,6 +832,7 @@ DeviceStatusCollector::DeviceStatusCollector(
       tpm_status_fetcher_(tpm_status_fetcher),
       emmc_lifetime_fetcher_(emmc_lifetime_fetcher),
       stateful_partition_info_fetcher_(stateful_partition_info_fetcher),
+      cros_healthd_data_fetcher_(cros_healthd_data_fetcher),
       runtime_probe_(
           chromeos::DBusThreadManager::Get()->GetRuntimeProbeClient()),
       is_enterprise_reporting_(is_enterprise_reporting) {
@@ -856,6 +869,12 @@ DeviceStatusCollector::DeviceStatusCollector(
 
   if (stateful_partition_info_fetcher_.is_null())
     stateful_partition_info_fetcher_ = base::Bind(&ReadStatefulPartitionInfo);
+
+  if (cros_healthd_data_fetcher_.is_null()) {
+    cros_healthd_data_fetcher_ =
+        base::BindRepeating(&DeviceStatusCollector::FetchCrosHealthdData,
+                            weak_factory_.GetWeakPtr());
+  }
 
   idle_poll_timer_.Start(FROM_HERE,
                          TimeDelta::FromSeconds(kIdlePollIntervalSeconds), this,
@@ -1383,15 +1402,31 @@ void DeviceStatusCollector::AddDataSample(std::unique_ptr<SampledData> sample,
     std::move(callback).Run();
 }
 
+void DeviceStatusCollector::FetchCrosHealthdData(
+    CrosHealthdDataReceiver callback) {
+  using chromeos::cros_healthd::mojom::ProbeCategoryEnum;
+
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  std::vector<ProbeCategoryEnum> categories_to_probe = {
+      ProbeCategoryEnum::kCachedVpdData};
+  if (report_storage_status_)
+    categories_to_probe.push_back(ProbeCategoryEnum::kNonRemovableBlockDevices);
+
+  chromeos::cros_healthd::ServiceConnection::GetInstance()->ProbeTelemetryInfo(
+      categories_to_probe, std::move(callback));
+}
+
 void DeviceStatusCollector::FetchProbeData(ProbeDataReceiver callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   runtime_probe::ProbeRequest request;
   if (report_power_status_)
     request.add_categories(runtime_probe::ProbeRequest::battery);
-  if (report_storage_status_)
-    request.add_categories(runtime_probe::ProbeRequest::storage);
-  request.add_categories(runtime_probe::ProbeRequest::vpd_cached);
 
+  // Note that we could send a probe request without any categories. The reason
+  // for that is that the OnProbeDataFetched callback also samples CPU
+  // temperature independently of querying runtime_probe. Since cros_healthd is
+  // replacing runtime_probe in DeviceStatusCollector, it doesn't make sense to
+  // refactor the runtime_probe code to fix this oddity at the moment.
   auto sample = std::make_unique<SampledData>();
   sample->timestamp = base::Time::Now();
   auto completion_callback =
@@ -1742,6 +1777,7 @@ bool DeviceStatusCollector::GetHardwareStatus(
   if (report_power_status_ || report_storage_status_) {
     state->FetchEMMCLifeTime(emmc_lifetime_fetcher_);
     state->FetchProbeData(probe_data_fetcher_);
+    state->FetchCrosHealthdData(cros_healthd_data_fetcher_);
   } else {
     // Sample CPU temperature in a background thread.
     state->SampleCPUTempInfo(cpu_temp_fetcher_);

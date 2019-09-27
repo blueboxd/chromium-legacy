@@ -182,6 +182,18 @@ mojom::FetchCacheMode DetermineFrameCacheMode(Frame* frame) {
   return mojom::FetchCacheMode::kDefault;
 }
 
+// Simple function to add quotes to make headers strings.
+const AtomicString AddQuotes(std::string str) {
+  if (str.empty())
+    return AtomicString("");
+
+  StringBuilder quoted_string;
+  quoted_string.Append("\"");
+  quoted_string.Append(str.data());
+  quoted_string.Append("\"");
+  return quoted_string.ToAtomicString();
+}
+
 }  // namespace
 
 struct FrameFetchContext::FrozenState final : GarbageCollected<FrozenState> {
@@ -525,7 +537,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUA)],
-        result.ToAtomicString());
+        AddQuotes(result.ToString().Ascii()));
   }
 
   // If the frame is detached, then don't send any hints other than UA.
@@ -699,7 +711,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAArch)],
-        AtomicString(ua.architecture.data()));
+        AddQuotes(ua.architecture));
   }
 
   if ((can_always_send_hints ||
@@ -712,7 +724,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAPlatform)],
-        AtomicString(ua.platform.data()));
+        AddQuotes(ua.platform));
   }
 
   if ((can_always_send_hints ||
@@ -725,7 +737,7 @@ void FrameFetchContext::AddClientHintsIfNecessary(
     request.SetHttpHeaderField(
         blink::kClientHintsHeaderMapping[static_cast<size_t>(
             mojom::WebClientHintsType::kUAModel)],
-        AtomicString(ua.model.data()));
+        AddQuotes(ua.model));
   }
 }
 

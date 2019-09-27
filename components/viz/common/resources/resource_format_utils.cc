@@ -41,6 +41,7 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     case ETC1:
       return kRGB_888x_SkColorType;
     case RED_8:
+      return kGray_8_SkColorType;
     case LUMINANCE_F16:
     case R16_EXT:
     case BGR_565:
@@ -470,8 +471,9 @@ VkFormat ToVkFormat(ResourceFormat format) {
       return VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM;
     case YUV_420_BIPLANAR:
       return VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
-    case LUMINANCE_F16:
     case ETC1:
+      return VK_FORMAT_ETC2_R8G8B8_UNORM_BLOCK;
+    case LUMINANCE_F16:
     case P010:
       break;
   }

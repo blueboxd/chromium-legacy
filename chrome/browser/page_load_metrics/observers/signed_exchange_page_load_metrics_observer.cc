@@ -11,12 +11,16 @@ namespace internal {
 
 #define HISTOGRAM_SXG_PREFIX "PageLoad.Clients.SignedExchange."
 #define HISTOGRAM_CACHED_SXG_PREFIX "PageLoad.Clients.SignedExchange.Cached."
+#define HISTOGRAM_NOTCACHED_SXG_PREFIX \
+  "PageLoad.Clients.SignedExchange.NotCached."
 #define HISTOGRAM_ALT_SUB_SXG_PREFIX \
   "PageLoad.Clients.SignedExchange.AltSubSXG."
 
 constexpr char kHistogramSignedExchangePrefix[] = HISTOGRAM_SXG_PREFIX;
 constexpr char kHistogramCachedSignedExchangePrefix[] =
     HISTOGRAM_CACHED_SXG_PREFIX;
+constexpr char kHistogramNotCachedSignedExchangePrefix[] =
+    HISTOGRAM_NOTCACHED_SXG_PREFIX;
 constexpr char kHistogramAltSubSxgSignedExchangePrefix[] =
     HISTOGRAM_ALT_SUB_SXG_PREFIX;
 
@@ -25,6 +29,8 @@ constexpr char kHistogramAltSubSxgSignedExchangePrefix[] =
       HISTOGRAM_SXG_PREFIX suffix;                           \
   constexpr char kHistogramCachedSignedExchange##name[] =    \
       HISTOGRAM_CACHED_SXG_PREFIX suffix;                    \
+  constexpr char kHistogramNotCachedSignedExchange##name[] = \
+      HISTOGRAM_NOTCACHED_SXG_PREFIX suffix;                 \
   constexpr char kHistogramAltSubSxgSignedExchange##name[] = \
       HISTOGRAM_ALT_SUB_SXG_PREFIX suffix;
 
@@ -53,6 +59,9 @@ SXG_LOAD_METRIC_VARIABLE(Load, "DocumentTiming.NavigationToLoadEventFired")
     if (was_cached_) {                                                       \
       PAGE_LOAD_HISTOGRAM(internal::kHistogramCachedSignedExchange##name,    \
                           value);                                            \
+    } else {                                                                 \
+      PAGE_LOAD_HISTOGRAM(internal::kHistogramNotCachedSignedExchange##name, \
+                          value);                                            \
     }                                                                        \
     if (had_prefetched_alt_sxg_) {                                           \
       PAGE_LOAD_HISTOGRAM(internal::kHistogramAltSubSxgSignedExchange##name, \
@@ -63,6 +72,7 @@ SXG_LOAD_METRIC_VARIABLE(Load, "DocumentTiming.NavigationToLoadEventFired")
 #undef SXG_LOAD_METRIC_VARIABLE
 #undef HISTOGRAM_ALT_SUB_SXG_PREFIX
 #undef HISTOGRAM_CACHED_SXG_PREFIX
+#undef HISTOGRAM_NOTCACHED_SXG_PREFIX
 #undef HISTOGRAM_SXG_PREFIX
 
 }  // namespace internal
@@ -163,6 +173,12 @@ void SignedExchangePageLoadMetricsObserver::OnFirstInputInPage(
   if (was_cached_) {
     UMA_HISTOGRAM_CUSTOM_TIMES(
         internal::kHistogramCachedSignedExchangeFirstInputDelay,
+        timing.interactive_timing->first_input_delay.value(),
+        base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
+        50);
+  } else {
+    UMA_HISTOGRAM_CUSTOM_TIMES(
+        internal::kHistogramNotCachedSignedExchangeFirstInputDelay,
         timing.interactive_timing->first_input_delay.value(),
         base::TimeDelta::FromMilliseconds(1), base::TimeDelta::FromSeconds(60),
         50);

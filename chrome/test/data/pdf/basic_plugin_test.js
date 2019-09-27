@@ -16,8 +16,8 @@ var tests = [
     viewer.viewport.setZoom(1);
     var sizer = document.getElementById('sizer');
     chrome.test.assertEq(826, sizer.offsetWidth);
-    chrome.test.assertEq(1066 + viewer.viewport.topToolbarHeight_,
-                         sizer.offsetHeight);
+    chrome.test.assertEq(
+        1066 + viewer.viewport.topToolbarHeight_, sizer.offsetHeight);
     chrome.test.succeed();
   },
 

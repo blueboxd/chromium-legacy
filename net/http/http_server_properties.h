@@ -164,15 +164,21 @@ class NET_EXPORT HttpServerProperties
 
   struct NET_EXPORT ServerInfoMapKey {
     // If |use_network_isolation_key| is false, an empty NetworkIsolationKey is
-    // used instead of |network_isolation_key|.
-    ServerInfoMapKey(const url::SchemeHostPort& server,
+    // used instead of |network_isolation_key|. Note that |server| can be passed
+    // in via std::move(), since most callsites can pass a recently created
+    // SchemeHostPort.
+    ServerInfoMapKey(url::SchemeHostPort server,
                      const NetworkIsolationKey& network_isolation_key,
                      bool use_network_isolation_key);
     ~ServerInfoMapKey();
 
     bool operator<(const ServerInfoMapKey& other) const;
 
+    // IMPORTANT: The constructor normalizes the scheme so that "ws" is replaced
+    // by "http" and "wss" by "https", so this should never be compared directly
+    // with values passed into to HttpServerProperties methods.
     url::SchemeHostPort server;
+
     NetworkIsolationKey network_isolation_key;
   };
 
@@ -235,10 +241,6 @@ class NET_EXPORT HttpServerProperties
                        base::Clock* clock = nullptr);
 
   ~HttpServerProperties() override;
-
-  // Returns the SchemeHostPort for |url|, with the exception that it replaces
-  // "wss" with "https" and "ws" with "http", so they're grouped together.
-  static url::SchemeHostPort GetNormalizedSchemeHostPort(const GURL& url);
 
   // Deletes all data. If |callback| is non-null, flushes data to disk
   // and invokes the callback asynchronously once changes have been written to
@@ -467,6 +469,48 @@ class NET_EXPORT HttpServerProperties
   typedef base::flat_map<QuicServerInfoMapKey, quic::QuicServerId>
       QuicCanonicalMap;
   typedef std::vector<std::string> CanonicalSuffixList;
+
+  // Internal implementations of public methods. SchemeHostPort argument must be
+  // normalized before calling (ws/wss replaced with http/https). Use wrapped
+  // functions instead of putting the normalization in the public functions to
+  // reduce chance of regression - normalization in ServerInfoMapKey's
+  // constructor would leave |server.scheme| as wrong if not access through the
+  // key, and explicit normalization to create |normalized_server| means the one
+  // with the incorrect scheme would still be available.
+  bool GetSupportsSpdyInternal(
+      url::SchemeHostPort server,
+      const net::NetworkIsolationKey& network_isolation_key);
+  void SetSupportsSpdyInternal(
+      url::SchemeHostPort server,
+      const net::NetworkIsolationKey& network_isolation_key,
+      bool supports_spdy);
+  bool RequiresHTTP11Internal(
+      url::SchemeHostPort server,
+      const net::NetworkIsolationKey& network_isolation_key);
+  void SetHTTP11RequiredInternal(
+      url::SchemeHostPort server,
+      const net::NetworkIsolationKey& network_isolation_key);
+  void MaybeForceHTTP11Internal(
+      url::SchemeHostPort server,
+      const net::NetworkIsolationKey& network_isolation_key,
+      SSLConfig* ssl_config);
+  AlternativeServiceInfoVector GetAlternativeServiceInfosInternal(
+      const url::SchemeHostPort& origin,
+      const net::NetworkIsolationKey& network_isolation_key);
+  void SetAlternativeServicesInternal(
+      const url::SchemeHostPort& origin,
+      const net::NetworkIsolationKey& network_isolation_key,
+      const AlternativeServiceInfoVector& alternative_service_info_vector);
+  void SetServerNetworkStatsInternal(
+      url::SchemeHostPort server,
+      const NetworkIsolationKey& network_isolation_key,
+      ServerNetworkStats stats);
+  void ClearServerNetworkStatsInternal(
+      url::SchemeHostPort server,
+      const NetworkIsolationKey& network_isolation_key);
+  const ServerNetworkStats* GetServerNetworkStatsInternal(
+      url::SchemeHostPort server,
+      const NetworkIsolationKey& network_isolation_key);
 
   // Helper functions to use the passed in parameters and
   // |use_network_isolation_key_| to create a [Quic]ServerInfoMapKey.

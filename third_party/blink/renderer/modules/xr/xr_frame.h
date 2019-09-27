@@ -41,7 +41,7 @@ class XRFrame final : public ScriptWrappable {
   XRWorldInformation* worldInformation() const { return world_information_; }
   XRAnchorSet* trackedAnchors() const;
 
-  void SetBasePoseMatrix(const TransformationMatrix&);
+  void SetMojoFromViewer(const TransformationMatrix&);
 
   void Trace(blink::Visitor*) override;
 
@@ -64,8 +64,9 @@ class XRFrame final : public ScriptWrappable {
 
   const Member<XRSession> session_;
 
-  // Maps from mojo space to headset space.
-  std::unique_ptr<TransformationMatrix> base_pose_matrix_;
+  // Viewer pose in mojo space, the matrix maps from viewer (headset) space to
+  // mojo space.
+  std::unique_ptr<TransformationMatrix> mojo_from_viewer_;
 
   // Frames are only active during callbacks. getPose and getViewerPose should
   // only be called from JS on active frames.

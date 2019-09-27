@@ -143,6 +143,12 @@ View::~View() {
 
   for (ui::Layer* layer_beneath : layers_beneath_)
     layer_beneath->RemoveObserver(this);
+
+  // Clearing properties explicitly here lets us guarantee that properties
+  // outlive |this| (at least the View part of |this|). This is intentionally
+  // called at the end so observers can examine properties inside
+  // OnViewIsDeleting(), for instance.
+  ClearProperties();
 }
 
 // Tree operations -------------------------------------------------------------

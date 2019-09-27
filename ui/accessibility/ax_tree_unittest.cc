@@ -1372,6 +1372,38 @@ TEST(AXTreeTest, GetBoundsWithScrolling) {
   EXPECT_EQ("(115, 70) size (50 x 5)", GetBoundsAsString(tree, 3));
 }
 
+// When a node has zero size, we try to get the bounds from an ancestor.
+TEST(AXTreeTest, GetBoundsOfNodeWithZeroSize) {
+  AXTreeUpdate tree_update;
+  tree_update.root_id = 1;
+  tree_update.nodes.resize(5);
+  tree_update.nodes[0].id = 1;
+  tree_update.nodes[0].relative_bounds.bounds = gfx::RectF(0, 0, 800, 600);
+  tree_update.nodes[0].child_ids = {2};
+  tree_update.nodes[1].id = 2;
+  tree_update.nodes[1].relative_bounds.bounds = gfx::RectF(100, 100, 300, 200);
+  tree_update.nodes[1].child_ids = {3, 4, 5};
+
+  // This child has relative coordinates and no offset and no size.
+  tree_update.nodes[2].id = 3;
+  tree_update.nodes[2].relative_bounds.offset_container_id = 2;
+  tree_update.nodes[2].relative_bounds.bounds = gfx::RectF(0, 0, 0, 0);
+
+  // This child has relative coordinates and an offset, but no size.
+  tree_update.nodes[3].id = 4;
+  tree_update.nodes[3].relative_bounds.offset_container_id = 2;
+  tree_update.nodes[3].relative_bounds.bounds = gfx::RectF(20, 20, 0, 0);
+
+  // This child has absolute coordinates, an offset, and no size.
+  tree_update.nodes[4].id = 5;
+  tree_update.nodes[4].relative_bounds.bounds = gfx::RectF(120, 120, 0, 0);
+
+  AXTree tree(tree_update);
+  EXPECT_EQ("(100, 100) size (300 x 200)", GetBoundsAsString(tree, 3));
+  EXPECT_EQ("(120, 120) size (280 x 180)", GetBoundsAsString(tree, 4));
+  EXPECT_EQ("(120, 120) size (280 x 180)", GetBoundsAsString(tree, 5));
+}
+
 TEST(AXTreeTest, GetBoundsEmptyBoundsInheritsFromParent) {
   AXTreeUpdate tree_update;
   tree_update.root_id = 1;

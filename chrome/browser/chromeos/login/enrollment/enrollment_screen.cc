@@ -194,6 +194,8 @@ void EnrollmentScreen::SetConfig() {
 
 bool EnrollmentScreen::AdvanceToNextAuth() {
   if (current_auth_ != last_auth_ && current_auth_ == AUTH_ATTESTATION) {
+    LOG(WARNING) << "User stopped using auth: " << current_auth_
+                 << ", current auth: " << last_auth_ << ".";
     current_auth_ = last_auth_;
     SetConfig();
     return true;
@@ -315,7 +317,7 @@ void EnrollmentScreen::AutomaticRetry() {
 void EnrollmentScreen::ProcessRetry() {
   ++num_retries_;
   LOG(WARNING) << "Enrollment retries: " << num_retries_
-               << ", current_auth_: " << current_auth_;
+               << ", current auth: " << current_auth_ << ".";
   Show();
 }
 

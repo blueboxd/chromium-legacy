@@ -8,7 +8,6 @@
 <link rel="import" href="chrome://resources/html/cr/ui/focus_without_ink.html">
 <link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/iron-icon/iron-icon.html">
-<link rel="import" href="drive_cache_dialog.html">
 <link rel="import" href="storage_external.html">
 <link rel="import" href="../prefs/prefs.html">
 <link rel="import" href="../route.html">
@@ -201,20 +200,6 @@
     <cr-link-row id="downloadsSize" class="hr" on-click="onDownloadsTap_"
         label="$i18n{storageItemDownloads}"
         sub-label="$i18n{storageSizeComputing}" external></cr-link-row>
-    <template is="dom-if" if="[[driveEnabled_]]">
-      <div class="settings-box two-line" on-click="onDriveCacheTap_"
-          actionable$="[[hasDriveCache_]]" >
-        <div class="start">
-          $i18n{storageItemDriveCache}
-          <div id="driveCacheSize" class="secondary">
-            $i18n{storageSizeComputing}
-          </div>
-        </div>
-        <cr-icon-button class="icon-delete-gray" id="deleteButton"
-            aria-label="$i18n{storageItemDriveCache}"
-            aria-describedby="driveSizeCache"></cr-icon-button>
-      </div>
-    </template>
     <cr-link-row id="browsingDataSize" class="hr" on-click="onBrowsingDataTap_"
         label="$i18n{storageItemBrowsingData}"
         sub-label="$i18n{storageSizeComputing}" external></cr-link-row>
@@ -238,10 +223,6 @@
           on-click="onExternalStoragePreferencesTap_"
           label="$i18n{storageExternal}"></cr-link-row>
     </template>
-
-    <settings-drive-cache-dialog id="storageDriveCache"
-        on-close="onCloseDriveCacheDialog_">
-    </settings-drive-cache-dialog>
   </template>
   <script src="storage.js"></script>
 </dom-module>

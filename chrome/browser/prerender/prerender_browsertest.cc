@@ -2063,19 +2063,6 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderWebAudioDevice) {
                    FINAL_STATUS_CREATING_AUDIO_STREAM, 0);
 }
 
-// Checks that prerenders are aborted on cross-process navigation from
-// a client redirect.
-IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderCrossProcessClientRedirect) {
-  // Cross-process navigation logic for renderer-initiated navigations
-  // is partially controlled by the renderer, namely
-  // ChromeContentRendererClient. This test instead relies on the Web
-  // Store triggering such navigations.
-  PrerenderTestURL(
-      CreateClientRedirect(extension_urls::GetWebstoreLaunchURL().spec()),
-      FINAL_STATUS_OPEN_URL, 1);
-}
-
 // Checks that deferred redirects in a synchronous XHR abort the prerender.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderDeferredSynchronousXHR) {
   // Disable load event checks because they race with cancellation.

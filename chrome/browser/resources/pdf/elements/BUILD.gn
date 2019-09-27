@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//third_party/closure_compiler/compile_js.gni")
+import("//tools/polymer/polymer.gni")
 
 js_type_check("closure_compile") {
   deps = [
@@ -102,4 +103,16 @@ js_library("viewer-zoom-toolbar") {
 
 js_library("viewer-zoom-button") {
   deps = []
+}
+
+polymer_modulizer("shared-vars") {
+  js_file = "shared-vars.m.js"
+  html_file = "shared-vars.html"
+  html_type = "custom-style"
+}
+
+group("polymer3_elements") {
+  deps = [
+    ":shared-vars_module",
+  ]
 }

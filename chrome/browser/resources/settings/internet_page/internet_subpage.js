@@ -309,7 +309,7 @@ Polymer({
       const thirdPartyVpns = {};
       networkStates.forEach(state => {
         assert(state.type == mojom.NetworkType.kVPN);
-        switch (state.vpn.type) {
+        switch (state.typeState.vpn.type) {
           case mojom.VpnType.kL2TPIPsec:
           case mojom.VpnType.kOpenVPN:
             builtinNetworkStates.push(state);
@@ -321,7 +321,7 @@ Polymer({
             }
             // Otherwise Arc VPNs are treated the same as Extension VPNs.
           case mojom.VpnType.kExtension:
-            const providerId = state.vpn.providerId;
+            const providerId = state.typeState.vpn.providerId;
             thirdPartyVpns[providerId] = thirdPartyVpns[providerId] || [];
             thirdPartyVpns[providerId].push(state);
             break;
@@ -349,7 +349,7 @@ Polymer({
     for (const vpnList of Object.values(thirdPartyVpns)) {
       assert(vpnList.length > 0);
       // All vpns in the list will have the same type and provider id.
-      const vpn = vpnList[0].vpn;
+      const vpn = vpnList[0].typeState.vpn;
       const provider = {
         type: vpn.type,
         providerId: vpn.providerId,
@@ -579,7 +579,8 @@ Polymer({
         (!!this.globalPolicy.allowOnlyPolicyNetworksToConnectIfAvailable &&
          !!this.deviceState && !!this.deviceState.managedNetworkAvailable) ||
         (!!this.globalPolicy.blockedHexSsids &&
-         this.globalPolicy.blockedHexSsids.includes(state.wifi.hexSsid));
+         this.globalPolicy.blockedHexSsids.includes(
+             state.typeState.wifi.hexSsid));
   },
 
   /**

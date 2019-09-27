@@ -65,8 +65,7 @@ class DomDistillerViewerSource::RequestViewerHandle
       content::NavigationHandle* navigation_handle) override;
   void RenderProcessGone(base::TerminationStatus status) override;
   void WebContentsDestroyed() override;
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override;
+  void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;
   void OnInterfaceRequestFromFrame(
       content::RenderFrameHost* render_frame_host,
       const std::string& interface_name,
@@ -179,15 +178,15 @@ void DomDistillerViewerSource::RequestViewerHandle::Cancel() {
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 
-void DomDistillerViewerSource::RequestViewerHandle::DocumentLoadedInFrame(
+void DomDistillerViewerSource::RequestViewerHandle::DOMContentLoaded(
     content::RenderFrameHost* render_frame_host) {
-  // DocumentLoadedInFrame() is late enough to execute JavaScript, and is early
+  // DOMContentLoaded() is late enough to execute JavaScript, and is early
   // enough so that it's more likely that the title and content can be picked up
   // by TalkBack instead of the placeholder. If distillation is finished by
-  // DocumentLoadedInFrame(), onload() event would also be delayed, so that the
+  // DOMContentLoaded(), onload() event would also be delayed, so that the
   // accessibility focus is more likely to be on the web content. Otherwise, the
   // focus is usually on the close button of the CustomTab (CCT), or nowhere. If
-  // distillation finishes later than DocumentLoadedInFrame(), or if for some
+  // distillation finishes later than DOMContentLoaded(), or if for some
   // reason the accessibility focus is on the close button of the CCT, the title
   // could go unannounced.
   // See http://crbug.com/811417.

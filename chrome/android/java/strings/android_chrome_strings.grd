@@ -1624,20 +1624,11 @@ Your Google account may have other forms of browsing history like searches and a
       </message>
 
       <!-- Sync strings -->
-      <message name="IDS_SIGN_OUT_MANAGED_ACCOUNT" desc="Title for prompts to sign out of managed accounts">
-        Sign out of managed account
-      </message>
       <message name="IDS_SIGN_IN_MANAGED_ACCOUNT" desc="Title for prompts to sign in to managed accounts">
         Sign in to managed account
       </message>
       <message name="IDS_SIGN_IN_MANAGED_ACCOUNT_DESCRIPTION" desc="Description for signing in to managed accounts">
         You are signing in with an account managed by <ph name="MANAGED_DOMAIN">%1$s<ex>Google</ex></ph> and giving its administrator control over your Chrome data. Your data will become permanently tied to this account. Signing out of Chrome will delete your data from this device, but it will remain stored in your Google Account.
-      </message>
-      <message name="IDS_SWITCH_FROM_MANAGED_ACCOUNT_DESCRIPTION" desc="Description for switching from a managed account">
-        You are switching sync accounts from <ph name="ACCOUNT_EMAIL_OLD">%1$s<ex>user@example.com</ex></ph> to <ph name="ACCOUNT_EMAIL_NEW">%2$s<ex>user@example.com</ex></ph>. Your existing Chrome data is managed by <ph name="MANAGED_DOMAIN">%3$s<ex>Google</ex></ph>. This will delete your data from this device, but your data will remain in <ph name="ACCOUNT_EMAIL_OLD">%1$s<ex>user@example.com</ex></ph>.
-      </message>
-      <message name="IDS_ACCEPT_AND_SWITCH_ACCOUNTS" desc="Button displayed for user to confirm and switch from a managed account">
-        Accept and switch accounts
       </message>
       <message name="IDS_SYNC_YOUR_BOOKMARKS" desc="Title for the prompt to signin and enable sync to sync their bookmarks">
         Sync your bookmarks
@@ -1758,9 +1749,6 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
       </message>
       <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE_SUBTEXT_EXISTING_DATA" desc="Subtext describing what happens if the user elects to keep the existing data separate signing into a new account after have previously being signed into a different account then signed out.">
         Delete existing data.
-      </message>
-      <message name="IDS_SYNC_KEEP_EXISTING_DATA_SEPARATE_SUBTEXT_SWITCHING_ACCOUNTS" desc="Subtext describing what happens if the user elects to keep the existing data separate when switching sync accounts.">
-        Delete existing data. You can retrieve it by switching back to <ph name="FROM_ACCOUNT">%1$s<ex>johndoe@old.com</ex></ph>.
       </message>
 
       <!-- Bluetooth Picker UI strings -->

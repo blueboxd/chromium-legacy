@@ -217,7 +217,6 @@ class TestWebWidgetClient : public WebWidgetClient {
   void RegisterViewportLayers(const cc::ViewportLayers& layOAers) override;
   void RegisterSelection(const cc::LayerSelection& selection) override;
   void SetBackgroundColor(SkColor color) override;
-  void SetAllowGpuRasterization(bool allow) override;
   void SetPageScaleStateAndLimits(float page_scale_factor,
                                   bool is_pinch_gesture_active,
                                   float minimum,

@@ -523,12 +523,6 @@
       <structure name="IDR_OS_SETTINGS_DEVICE_DISPLAY_OVERSCAN_DIALOG_JS"
                  file="device_page/display_overscan_dialog.js"
                  type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_DEVICE_DRIVE_CACHE_DIALOG_HTML"
-                 file="device_page/drive_cache_dialog.html"
-                 type="chrome_html" />
-      <structure name="IDR_OS_SETTINGS_DEVICE_DRIVE_CACHE_DIALOG_JS"
-                 file="device_page/drive_cache_dialog.js"
-                 type="chrome_html" />
       <structure name="IDR_OS_SETTINGS_DEVICE_KEYBOARD_HTML"
                  file="device_page/keyboard.html"
                  type="chrome_html" />

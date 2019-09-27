@@ -395,11 +395,11 @@ void DeleteUrlFromHistory(int index, const GURL& url) {
 }
 
 void DeleteUrlsFromHistory(int index, const std::vector<GURL>& urls) {
-  GetHistoryServiceFromClient(index)->DeleteURLsForTest(urls);
+  GetHistoryServiceFromClient(index)->DeleteURLs(urls);
   if (test()->use_verifier())
     HistoryServiceFactory::GetForProfile(test()->verifier(),
                                          ServiceAccessType::IMPLICIT_ACCESS)
-        ->DeleteURLsForTest(urls);
+        ->DeleteURLs(urls);
   WaitForHistoryDBThread(index);
 }
 

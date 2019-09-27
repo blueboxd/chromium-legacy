@@ -51,8 +51,7 @@ chrome.test.runTests([
       // Enter annotation mode.
       $('toolbar').toggleAnnotation();
       await viewer.loaded;
-      chrome.test.assertEq(
-          'VIEWER-INK-HOST', contentElement().tagName);
+      chrome.test.assertEq('VIEWER-INK-HOST', contentElement().tagName);
     });
   },
   function testViewportToCameraConversion() {

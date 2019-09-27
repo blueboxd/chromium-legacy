@@ -1,3 +1,4 @@
 include_rules = [
+  "+third_party/harfbuzz-ng/src/src",
   "+third_party/skia/include/core",
 ]

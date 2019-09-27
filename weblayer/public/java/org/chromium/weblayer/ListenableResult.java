@@ -10,7 +10,7 @@ import java.util.ArrayList;
  * Represents result of async computation which can be retrieved from a callback.
  * @param <V> The type of the computation's result.
  */
-public final class ListenableResult<V> {
+public class ListenableResult<V> {
     private boolean mHasResult;
     private V mResult;
     private final ArrayList<Callback<V>> mCallbacks = new ArrayList<>();
@@ -38,5 +38,9 @@ public final class ListenableResult<V> {
             callback.onResult(mResult);
         }
         mCallbacks.clear();
+    }
+
+    /* package */ V getResult() {
+        return mResult;
     }
 }

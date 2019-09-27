@@ -156,7 +156,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
@@ -3315,13 +3314,9 @@ void RenderFrameImpl::AddAutoplayFlags(const url::Origin& origin,
 
 void RenderFrameImpl::GetInterfaceProvider(
     service_manager::mojom::InterfaceProviderRequest request) {
-  service_manager::Connector* connector = ChildThread::Get()->GetConnector();
-  service_manager::mojom::InterfaceProviderPtr provider;
-  interface_provider_bindings_.AddBinding(this, mojo::MakeRequest(&provider));
-  connector->FilterInterfaces(mojom::kNavigation_FrameSpec,
-                              browser_info_.identity, std::move(request),
-                              std::move(provider));
+  interface_provider_bindings_.AddBinding(this, std::move(request));
 }
+
 void RenderFrameImpl::GetCanonicalUrlForSharing(
     GetCanonicalUrlForSharingCallback callback) {
   WebURL canonical_url = GetWebFrame()->GetDocument().CanonicalUrlForSharing();

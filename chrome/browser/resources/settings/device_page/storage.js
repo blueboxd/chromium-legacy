@@ -37,12 +37,6 @@ Polymer({
   behaviors: [settings.RouteObserverBehavior, WebUIListenerBehavior],
 
   properties: {
-    /** @private */
-    driveEnabled_: {
-      type: Boolean,
-      value: false,
-    },
-
     androidEnabled: Boolean,
 
     /** @private */
@@ -68,12 +62,6 @@ Polymer({
       }
     },
 
-    /** @private */
-    hasDriveCache_: {
-      type: Boolean,
-      value: false,
-    },
-
     /** @private {settings.StorageSizeStat} */
     sizeStat_: Object,
   },
@@ -94,9 +82,6 @@ Polymer({
         'storage-downloads-size-changed',
         this.handleDownloadsSizeChanged_.bind(this));
     this.addWebUIListener(
-        'storage-drive-cache-size-changed',
-        this.handleDriveCacheSizeChanged_.bind(this));
-    this.addWebUIListener(
         'storage-browsing-data-size-changed',
         this.handleBrowsingDataSizeChanged_.bind(this));
     this.addWebUIListener(
@@ -110,9 +95,6 @@ Polymer({
           'storage-other-users-size-changed',
           this.handleOtherUsersSizeChanged_.bind(this));
     }
-    this.addWebUIListener(
-        'storage-drive-enabled-changed',
-        this.handleDriveEnabledChanged_.bind(this));
     this.addWebUIListener(
         'storage-android-running-changed',
         this.handleAndroidRunningChanged_.bind(this));
@@ -143,18 +125,6 @@ Polymer({
    */
   onDownloadsTap_: function() {
     chrome.send('openDownloads');
-  },
-
-  /**
-   * Handler for tapping the "Offline files" item.
-   * @param {!Event} e
-   * @private
-   */
-  onDriveCacheTap_: function(e) {
-    e.preventDefault();
-    if (this.hasDriveCache_) {
-      this.$.storageDriveCache.open();
-    }
   },
 
   /**
@@ -221,19 +191,6 @@ Polymer({
   },
 
   /**
-   * @param {string} size Formatted string representing the size of Offline
-   *     files.
-   * @param {boolean} hasCache True if the device has at least one offline file.
-   * @private
-   */
-  handleDriveCacheSizeChanged_: function(size, hasCache) {
-    if (this.driveEnabled_) {
-      this.$$('#driveCacheSize').textContent = size;
-      this.hasDriveCache_ = hasCache;
-    }
-  },
-
-  /**
    * @param {string} size Formatted string representing the size of Browsing
    *     data.
    * @private
@@ -272,14 +229,6 @@ Polymer({
     if (!this.isGuest_) {
       this.$$('#otherUsersSize').subLabel = size;
     }
-  },
-
-  /**
-   * @param {boolean} enabled True if Google Drive is enabled.
-   * @private
-   */
-  handleDriveEnabledChanged_: function(enabled) {
-    this.driveEnabled_ = enabled;
   },
 
   /**
@@ -361,10 +310,5 @@ Polymer({
       default:
         return '';
     }
-  },
-
-  /** @private */
-  onCloseDriveCacheDialog_: function() {
-    cr.ui.focusWithoutInk(assert(this.$$('#deleteButton')));
   },
 });

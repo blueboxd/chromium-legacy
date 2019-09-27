@@ -47,10 +47,7 @@ base::Callback<void(const base::UnguessableToken&)> CaptureToken(
 class RemoteIteratorTest : public testing::Test {
  public:
   RemoteIteratorTest()
-      : leveldb_service_(base::CreateSequencedTaskRunner(
-            {base::ThreadPool(), base::MayBlock(),
-             base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
-        leveldb_receiver_(&leveldb_service_,
+      : leveldb_receiver_(&leveldb_service_,
                           leveldb_remote_.BindNewPipeAndPassReceiver()) {}
   ~RemoteIteratorTest() override = default;
 

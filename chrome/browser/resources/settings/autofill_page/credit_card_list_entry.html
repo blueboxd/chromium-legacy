@@ -47,8 +47,9 @@
           </cr-icon-button>
         </template>
         <template is="dom-if" if="[[!showDots_(creditCard.metadata)]]">
-          <cr-icon-button class="icon-external" id="remoteCreditCardLink"
-              on-click="onRemoteEditClick_"></cr-icon-button>
+          <cr-icon-button actionable class="icon-external"
+              id="remoteCreditCardLink" on-click="onRemoteEditClick_">
+          </cr-icon-button>
         </template>
       </div>
     </div>

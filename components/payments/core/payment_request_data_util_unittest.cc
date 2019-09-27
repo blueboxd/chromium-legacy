@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_test_utils.h"
 #include "components/autofill/core/browser/data_model/autofill_profile.h"
 #include "components/autofill/core/browser/data_model/credit_card.h"
@@ -128,7 +129,13 @@ INSTANTIATE_TEST_SUITE_P(
 // A test fixture to check ParseSupportedMethods() correctly returns the card
 // networks for the "basic-card" payment method.
 typedef ::testing::TestWithParam<const char*> SupportedNetworksTest;
-TEST_P(SupportedNetworksTest, Test) {
+#if defined(OS_IOS) && !TARGET_OS_SIMULATOR
+// TODO(crbug.com/1008023): Enable this test on iOS devices.
+#define MAYBE_SupportedNetworks DISABLED_SupportedNetworks
+#else
+#define MAYBE_SupportedNetworks SupportedNetworks
+#endif  // defined(OS_IOS) && !TARGET_OS_SIMULATOR
+TEST_P(SupportedNetworksTest, MAYBE_SupportedNetworks) {
   PaymentMethodData method_data;
   method_data.supported_method = kBasicCardMethodName;
   // GetParam() is expected to be a basic-card network.

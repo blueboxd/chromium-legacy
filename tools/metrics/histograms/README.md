@@ -240,9 +240,9 @@ for larger numbers.  The macros default to 50 buckets (or 100 buckets for
 histograms with wide ranges) which is appropriate for most purposes.  Because
 histograms pre-allocate all the buckets, the number of buckets selected
 directly dictate how much memory is used.  Do not exceed 100 buckets without
-good reason (and consider whether [sparse histograms](#When-To-Use-Sparse-
-Histograms) might work better for you in that case--they do not pre- allocate
-their buckets).
+good reason (and consider whether [sparse
+histograms](#When-To-Use-Sparse-Histograms) might work better for you in that
+case--they do not pre-allocate their buckets).
 
 ### Timing Histograms
 

@@ -15,14 +15,14 @@ public abstract class BrowserObserver {
      *
      * @param url The new user-visible url.
      */
-    public void displayURLChanged(Uri url) {}
+    public void visibleUrlChanged(Uri url) {}
 
     /**
      * The load state of the document has changed.
      *
      * @param isLoading Whether any resource is loading.
      * @param toDifferentDocument True if the main frame is loading a different document. Only valid
-     *         when |isLoading| is true.
+     *        when |isLoading| is true.
      */
     public void loadingStateChanged(boolean isLoading, boolean toDifferentDocument) {}
 

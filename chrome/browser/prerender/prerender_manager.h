@@ -101,6 +101,22 @@ class PrerenderManager : public content::NotificationObserver,
     CLEAR_MAX = 0x1 << 2
   };
 
+  // If |url| matches a valid prerendered page in one of the contents,
+  // try to swap it and merge browsing histories.
+  //
+  // Returns true if a prerendered page is swapped in. When this happens, the
+  // PrerenderManager has already swapped out |contents_being_navigated| with
+  // |replaced_contents| in the WebContents container [e.g. TabStripModel on
+  // desktop]. |loaded| is set to true if the page finished loading.
+  //
+  // Returns false if nothing is swapped.
+  //
+  // |loaded| cannot be null.
+  static bool MaybeUsePrerenderedPage(Profile* profile,
+                                      content::WebContents* web_contents,
+                                      const GURL& url,
+                                      bool* loaded);
+
   // Owned by a Profile object for the lifetime of the profile.
   explicit PrerenderManager(Profile* profile);
   ~PrerenderManager() override;

@@ -18128,6 +18128,9 @@ Called by update_net_error_codes.py.-->
   <int value="608" label="CloudExtensionRequestEnabled"/>
   <int value="609" label="DeviceLoginScreenSystemInfoEnforced"/>
   <int value="610" label="SharedClipboardEnabled"/>
+  <int value="611" label="DeviceLoginScreenDictationEnabled"/>
+  <int value="612" label="DeviceLoginScreenSelectToSpeakEnabled"/>
+  <int value="613" label="DeviceLoginScreenCursorHighlightEnabled"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -35907,6 +35910,7 @@ from previous Chrome versions.
   <int value="-722474177" label="browser-side-navigation:disabled"/>
   <int value="-721245076" label="DesktopPWAsStayInWindow:disabled"/>
   <int value="-719819631" label="TranslateUI:disabled"/>
+  <int value="-719698123" label="LegacyTLSWarnings:enabled"/>
   <int value="-719147284" label="ExperimentalProductivityFeatures:disabled"/>
   <int value="-718884399" label="NewTabPageUIMd:enabled"/>
   <int value="-718626298" label="SysInternals:enabled"/>
@@ -36752,6 +36756,7 @@ from previous Chrome versions.
   <int value="431691805" label="MediaDocumentDownloadButton:enabled"/>
   <int value="434033638" label="PwaPersistentNotification:disabled"/>
   <int value="436682243" label="TabGroupsAndroid:disabled"/>
+  <int value="444754854" label="LegacyTLSWarnings:disabled"/>
   <int value="446316019" label="enable-threaded-compositing"/>
   <int value="451196246" label="disable-impl-side-painting"/>
   <int value="452139294" label="VrShellExperimentalRendering:enabled"/>
@@ -52939,6 +52944,10 @@ Called by update_net_trust_anchors.py.-->
 <enum name="SafetyTipInteraction">
   <int value="0" label="User dismissed the Safety Tip"/>
   <int value="1" label="User left the site with the Safety Tip"/>
+  <int value="2" label="No action on the Safety Tip"/>
+  <int value="3" label="User dismissed the Safety Tip with the esc key"/>
+  <int value="4" label="User dismissed the Safety Tip with the close button"/>
+  <int value="5" label="User dismissed the Safety Tip with the ignore button"/>
 </enum>
 
 <enum name="SafetyTipStatus">

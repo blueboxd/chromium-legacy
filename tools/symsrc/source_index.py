@@ -25,6 +25,8 @@ NOTE: Expected to run under a native win32 python, NOT cygwin.  All paths are
 dealt with as win32 paths, since we have to interact with the Microsoft tools.
 """
 
+from __future__ import print_function
+
 import os
 import optparse
 import sys
@@ -174,7 +176,7 @@ def RunCommand(*cmd, **kwargs):
   ret, err = proc.communicate()
   if proc.returncode != 0:
     if raise_on_failure:
-      print 'Error: %s' % err
+      print('Error: %s' % err)
       raise subprocess.CalledProcessError(proc.returncode, cmd)
     return
 
@@ -401,8 +403,8 @@ def IndexFilesFromRepo(local_filename, file_list, output_lines):
 
   # The input file should have been removed from the list of files to index.
   if indexed_files and local_filename in file_list:
-    print '%s shouldn\'t be in the list of files to index anymore.' % \
-        local_filename
+    print('%s shouldn\'t be in the list of files to index anymore.' % \
+        local_filename)
     # TODO(sebmarchand): Turn this into an exception once I've confirmed that
     #     this doesn't happen on the official builder.
     file_list.remove(local_filename)
@@ -484,14 +486,14 @@ def UpdatePDB(pdb_filename, verbose=True, build_dir=None, toolchain_dir=None):
     filename = next(iter(filelist))
     filedir = os.path.dirname(filename)
     if verbose:
-      print "[%d / %d] Processing: %s" % (number_of_files - len(filelist),
-          number_of_files, filename)
+      print("[%d / %d] Processing: %s" % (number_of_files - len(filelist),
+                                          number_of_files, filename))
 
     # This directory is blacklisted, either because it's not part of a
     # repository, or from one we're not interested in indexing.
     if dir_blacklist.get(filedir, False):
       if verbose:
-        print "  skipping, directory is blacklisted."
+        print("  skipping, directory is blacklisted.")
       filelist.remove(filename)
       continue
 
@@ -507,22 +509,22 @@ def UpdatePDB(pdb_filename, verbose=True, build_dir=None, toolchain_dir=None):
       if not DirectoryIsUnderPublicVersionControl(filedir):
         dir_blacklist[filedir] = True
         if verbose:
-          print "Adding %s to the blacklist." % filedir
+          print("Adding %s to the blacklist." % filedir)
       filelist.remove(filename)
       continue
 
     indexed_files_total += indexed_files
 
     if verbose:
-      print "  %d files have been indexed." % indexed_files
+      print("  %d files have been indexed." % indexed_files)
 
   lines.append('SRCSRV: end ------------------------------------------------')
 
   WriteSourceStream(pdb_filename, '\r\n'.join(lines))
 
   if verbose:
-    print "%d / %d files have been indexed." % (indexed_files_total,
-                                                number_of_files)
+    print("%d / %d files have been indexed." % (indexed_files_total,
+                                                number_of_files))
 
 
 def main():

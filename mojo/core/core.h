@@ -83,11 +83,6 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
       const std::vector<std::pair<std::string, ports::PortRef>>& attached_ports,
       const ProcessErrorCallback& process_error_callback);
 
-  // Accepts an invitation via |connection_params|. The other end of the
-  // connection medium in |connection_params| must have been used by some other
-  // process to send an invitation.
-  void AcceptBrokerClientInvitation(ConnectionParams connection_params);
-
   // Extracts a named message pipe endpoint from the broker client invitation
   // accepted by this process. Must only be called after
   // AcceptBrokerClientInvitation.

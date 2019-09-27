@@ -24,6 +24,7 @@
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_store.h"
 #include "components/policy/core/common/policy_map.h"
 #include "components/policy/core/common/policy_types.h"
@@ -165,6 +166,7 @@ class DeviceLocalAccountExternalPolicyLoaderTest : public testing::Test {
   void SetForceInstallListPolicy();
 
   content::BrowserTaskEnvironment task_environment_;
+  std::unique_ptr<TestingProfile> profile_;
   base::ScopedTempDir temp_dir_;
   base::FilePath cache_dir_;
   policy::MockCloudPolicyStore store_;
@@ -196,6 +198,7 @@ DeviceLocalAccountExternalPolicyLoaderTest::
 }
 
 void DeviceLocalAccountExternalPolicyLoaderTest::SetUp() {
+  profile_ = std::make_unique<TestingProfile>();
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
   cache_dir_ = temp_dir_.GetPath().Append(kCacheDir);
   ASSERT_TRUE(base::CreateDirectoryAndGetError(cache_dir_, NULL));
@@ -205,10 +208,7 @@ void DeviceLocalAccountExternalPolicyLoaderTest::SetUp() {
 
   loader_ = new DeviceLocalAccountExternalPolicyLoader(&store_, cache_dir_);
   provider_.reset(new extensions::ExternalProviderImpl(
-      &visitor_,
-      loader_,
-      NULL,
-      extensions::Manifest::EXTERNAL_POLICY,
+      &visitor_, loader_, profile_.get(), extensions::Manifest::EXTERNAL_POLICY,
       extensions::Manifest::EXTERNAL_POLICY_DOWNLOAD,
       extensions::Extension::NO_FLAGS));
 

@@ -27,6 +27,11 @@ template("generate_linker_version_script") {
       args += [ "--export-java-symbols" ]
     }
 
+    if (defined(invoker.export_feature_registrations) &&
+        invoker.export_feature_registrations) {
+      args += [ "--export-feature-registrations" ]
+    }
+
     if (defined(invoker.export_symbol_whitelist_files)) {
       foreach(file_, invoker.export_symbol_whitelist_files) {
         inputs += [ file_ ]

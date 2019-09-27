@@ -125,9 +125,4 @@ bool CryptographerImpl::DecryptToString(const sync_pb::EncryptedData& encrypted,
   return key_bag_.Decrypt(encrypted, decrypted);
 }
 
-bool CryptographerImpl::has_pending_keys() const {
-  // TODO(crbug.com/967417): Move this hack away.
-  return !CanEncrypt() && key_bag_.size() != 0;
-}
-
 }  // namespace syncer

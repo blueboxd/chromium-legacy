@@ -32,6 +32,21 @@ html[full-screen-dialog] body {
   background-color: white;
 }
 
+/* Padding defaults */
+html {
+  --oobe-dialog-footer-height: 96px;
+  --oobe-dialog-footer-padding: 32px;
+  --oobe-dialog-content-padding: 64px;
+}
+
+@media screen and (max-width: 864px) {
+  html[screen=oobe] {
+    --oobe-dialog-footer-height: 80px;
+    --oobe-dialog-footer-padding: 24px;
+    --oobe-dialog-content-padding: 32px;
+  }
+}
+
 body.solid {
   background-color: white;
 }

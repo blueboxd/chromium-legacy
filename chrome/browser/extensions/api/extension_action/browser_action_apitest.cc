@@ -999,7 +999,6 @@ class NavigatingExtensionPopupBrowserTest : public BrowserActionApiTest {
   enum ExpectedNavigationStatus {
     EXPECTING_NAVIGATION_SUCCESS,
     EXPECTING_NAVIGATION_FAILURE,
-    EXPECTING_NO_NAVIGATION,
   };
 
   void TestPopupNavigationViaGet(
@@ -1061,11 +1060,8 @@ class NavigatingExtensionPopupBrowserTest : public BrowserActionApiTest {
     } else {
       // If the extension popup is still opened, then wait until there is no
       // load in progress, and verify whether the navigation succeeded or not.
-      if (expected_navigation_status != EXPECTING_NO_NAVIGATION) {
-        popup_navigation_observer.Wait();
-      } else {
-        EXPECT_FALSE(popup->IsLoading());
-      }
+      popup_navigation_observer.Wait();
+
       // The popup should still be alive.
       ASSERT_TRUE(popup_destruction_watcher.web_contents());
 
@@ -1109,12 +1105,7 @@ class NavigatingExtensionPopupBrowserTest : public BrowserActionApiTest {
 // Tests that an extension pop-up cannot be navigated to a web page.
 IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, Webpage) {
   GURL web_url(embedded_test_server()->GetURL("foo.com", "/title1.html"));
-
-  // The GET request will be blocked in ExtensionViewHost::OpenURLFromTab
-  // (which silently drops navigations with CURRENT_TAB disposition).
-  TestPopupNavigationViaGet(web_url, EXPECTING_NO_NAVIGATION);
-
-  // POST requests don't go through ExtensionViewHost::OpenURLFromTab.
+  TestPopupNavigationViaGet(web_url, EXPECTING_NAVIGATION_FAILURE);
   TestPopupNavigationViaPost(web_url, EXPECTING_NAVIGATION_FAILURE);
 }
 
@@ -1136,22 +1127,13 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest,
 IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest,
                        PageInOtherExtension) {
   GURL other_extension_url = other_extension().GetResourceURL("other.html");
-  TestPopupNavigationViaGet(other_extension_url, EXPECTING_NO_NAVIGATION);
+  TestPopupNavigationViaGet(other_extension_url, EXPECTING_NAVIGATION_FAILURE);
   TestPopupNavigationViaPost(other_extension_url, EXPECTING_NAVIGATION_FAILURE);
 }
 
 // Tests that navigating an extension pop-up to a http URI that returns
 // Content-Disposition: attachment; filename=...
 // works: No navigation, but download shelf visible + download goes through.
-//
-// Note - there is no "...ViaGet" flavour of this test, because we don't care
-// (yet) if GET succeeds with the download or not (it probably should succeed
-// for consistency with POST, but it always failed in M54 and before).  After
-// abandoing ShouldFork/OpenURL for all methods (not just for POST) [see comment
-// about https://crbug.com/646261 in ChromeContentRendererClient::ShouldFork]
-// GET should automagically start working for downloads.
-// TODO(lukasza): https://crbug.com/650694: Add a "Get" flavour of the test once
-// the download works both for GET and POST requests.
 IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, DownloadViaPost) {
   // Setup monitoring of the downloads.
   content::DownloadTestObserverTerminal downloads_observer(
@@ -1165,6 +1147,40 @@ IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, DownloadViaPost) {
   GURL download_url(
       embedded_test_server()->GetURL("foo.com", "/download-test3.gif"));
   TestPopupNavigationViaPost(download_url, EXPECTING_NAVIGATION_FAILURE);
+
+  // Verify that "download-test3.gif got downloaded.
+  downloads_observer.WaitForFinished();
+  EXPECT_EQ(0u, downloads_observer.NumDangerousDownloadsSeen());
+  EXPECT_EQ(1u, downloads_observer.NumDownloadsSeenInState(
+                    download::DownloadItem::COMPLETE));
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+  base::FilePath downloads_directory =
+      DownloadPrefs(browser()->profile()).DownloadPath();
+  EXPECT_TRUE(base::PathExists(
+      downloads_directory.AppendASCII("download-test3-attachment.gif")));
+
+  // The test verification below is applicable only to scenarios where the
+  // download shelf is supported - on ChromeOS, instead of the download shelf,
+  // there is a download notification in the right-bottom corner of the screen.
+#if !defined(OS_CHROMEOS)
+  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+#endif
+}
+
+IN_PROC_BROWSER_TEST_F(NavigatingExtensionPopupBrowserTest, DownloadViaGet) {
+  // Setup monitoring of the downloads.
+  content::DownloadTestObserverTerminal downloads_observer(
+      content::BrowserContext::GetDownloadManager(browser()->profile()),
+      1,  // == wait_count (only waiting for "download-test3.gif").
+      content::DownloadTestObserver::ON_DANGEROUS_DOWNLOAD_FAIL);
+
+  // Navigate to a URL that replies with
+  // Content-Disposition: attachment; filename=...
+  // header.
+  GURL download_url(
+      embedded_test_server()->GetURL("foo.com", "/download-test3.gif"));
+  TestPopupNavigationViaGet(download_url, EXPECTING_NAVIGATION_FAILURE);
 
   // Verify that "download-test3.gif got downloaded.
   downloads_observer.WaitForFinished();

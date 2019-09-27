@@ -58,12 +58,8 @@ HomeScreenController::~HomeScreenController() {
   Shell::Get()->overview_controller()->RemoveObserver(this);
 }
 
-bool HomeScreenController::IsHomeScreenAvailable() {
-  return Shell::Get()->tablet_mode_controller()->InTabletMode();
-}
-
 void HomeScreenController::Show() {
-  DCHECK(IsHomeScreenAvailable());
+  DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
   if (!Shell::Get()->session_controller()->IsActiveUserSessionStarted())
     return;
@@ -77,7 +73,7 @@ void HomeScreenController::Show() {
 }
 
 bool HomeScreenController::GoHome(int64_t display_id) {
-  DCHECK(IsHomeScreenAvailable());
+  DCHECK(Shell::Get()->tablet_mode_controller()->InTabletMode());
 
   if (home_launcher_gesture_handler_->ShowHomeLauncher(
           Shell::Get()->display_manager()->GetDisplayForId(display_id))) {
@@ -160,7 +156,7 @@ void HomeScreenController::OnWallpaperPreviewEnded() {
 }
 
 void HomeScreenController::UpdateVisibility() {
-  if (!IsHomeScreenAvailable())
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
     return;
 
   aura::Window* window = delegate_->GetHomeScreenWindow();

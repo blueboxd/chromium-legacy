@@ -160,5 +160,8 @@
           <ph name="LIST_ITEM">&lt;li&gt;</ph>Your internet service provider
         <ph name="END_LIST">&lt;/ul&gt;</ph>
       </message>
+      <message name="IDS_NEW_TAB_OTR_COOKIE_CONTROLS_DESCRIPTION" desc="Description of the cookie controls box shown in the incognito ntp.">
+        When turned on, sites can’t use cookies that track you across the web
+      </message>
 
 </grit-part>

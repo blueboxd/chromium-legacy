@@ -640,8 +640,9 @@ class ExtensionRequestInterceptor {
 class MockedInstallationReporterObserver
     : public extensions::InstallationReporter::TestObserver {
  public:
-  explicit MockedInstallationReporterObserver(const Profile* profile)
-      : profile_(profile) {}
+  explicit MockedInstallationReporterObserver(
+      const content::BrowserContext* context)
+      : context_(context) {}
   ~MockedInstallationReporterObserver() override = default;
 
   MOCK_METHOD1(ExtensionStageChanged,
@@ -649,11 +650,11 @@ class MockedInstallationReporterObserver
 
   void OnExtensionDataChanged(
       const extensions::ExtensionId& id,
-      const Profile* profile,
+      const content::BrowserContext* context,
       const extensions::InstallationReporter::InstallationData& data) override {
     // For simplicity policies are pushed into all profiles, so we need to track
     // only one here.
-    if (profile != profile_) {
+    if (context != context_) {
       return;
     }
     if (data.install_stage && stage_ != data.install_stage.value()) {
@@ -665,7 +666,7 @@ class MockedInstallationReporterObserver
  private:
   extensions::InstallationReporter::Stage stage_ =
       extensions::InstallationReporter::Stage::CREATED;
-  const Profile* profile_;
+  const content::BrowserContext* context_;
 };
 
 }  // namespace

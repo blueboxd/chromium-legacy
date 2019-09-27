@@ -49,6 +49,20 @@ class SupervisedUserNavigationObserver
       const base::Callback<
           void(SupervisedUserNavigationThrottle::CallbackActions)>& callback);
 
+  void UpdateMainFrameFilteringStatus(
+      SupervisedUserURLFilter::FilteringBehavior behavior,
+      supervised_user_error_page::FilteringBehaviorReason reason);
+
+  SupervisedUserURLFilter::FilteringBehavior main_frame_filtering_behavior()
+      const {
+    return main_frame_filtering_behavior_;
+  }
+
+  supervised_user_error_page::FilteringBehaviorReason
+  main_frame_filtering_behavior_reason() const {
+    return main_frame_filtering_behavior_reason_;
+  }
+
   // WebContentsObserver implementation.
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -100,7 +114,13 @@ class SupervisedUserNavigationObserver
   SupervisedUserService* supervised_user_service_;
 
   // Navigation ID of the navigation that triggered the last interstitial.
-  int64_t interstitial_navigation_id_;
+  int64_t interstitial_navigation_id_ = -1;
+
+  SupervisedUserURLFilter::FilteringBehavior main_frame_filtering_behavior_ =
+      SupervisedUserURLFilter::FilteringBehavior::ALLOW;
+  supervised_user_error_page::FilteringBehaviorReason
+      main_frame_filtering_behavior_reason_ =
+          supervised_user_error_page::FilteringBehaviorReason::DEFAULT;
 
   std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>
       blocked_navigations_;

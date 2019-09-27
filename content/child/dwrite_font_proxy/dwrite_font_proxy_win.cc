@@ -20,7 +20,6 @@
 #include "content/child/dwrite_font_proxy/dwrite_localized_strings_win.h"
 #include "content/public/child/child_thread.h"
 #include "content/public/common/service_names.mojom.h"
-#include "services/service_manager/public/cpp/connector.h"
 
 namespace mswr = Microsoft::WRL;
 
@@ -369,18 +368,17 @@ blink::mojom::DWriteFontProxy& DWriteFontCollectionProxy::GetFontProxy() {
   if (!font_proxy_) {
     mojo::PendingRemote<blink::mojom::DWriteFontProxy> dwrite_font_proxy;
     if (main_task_runner_->RunsTasksInCurrentSequence()) {
-      ChildThread::Get()->GetConnector()->Connect(
-          mojom::kSystemServiceName,
+      ChildThread::Get()->BindHostReceiver(
           dwrite_font_proxy.InitWithNewPipeAndPassReceiver());
     } else {
       main_task_runner_->PostTask(
-          FROM_HERE, base::BindOnce(
-                         [](mojo::PendingReceiver<blink::mojom::DWriteFontProxy>
-                                receiver) {
-                           ChildThread::Get()->GetConnector()->Connect(
-                               mojom::kSystemServiceName, std::move(receiver));
-                         },
-                         dwrite_font_proxy.InitWithNewPipeAndPassReceiver()));
+          FROM_HERE,
+          base::BindOnce(
+              [](mojo::PendingReceiver<blink::mojom::DWriteFontProxy>
+                     receiver) {
+                ChildThread::Get()->BindHostReceiver(std::move(receiver));
+              },
+              dwrite_font_proxy.InitWithNewPipeAndPassReceiver()));
     }
     SetProxy(std::move(dwrite_font_proxy));
   }

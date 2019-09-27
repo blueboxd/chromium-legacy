@@ -311,7 +311,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
           network_state_handler->GetDeviceState(network->device_path());
       cellular->sim_locked = !cellular_device->IsSimAbsent() &&
                              cellular_device->sim_lock_enabled();
-      result->cellular = std::move(cellular);
+      result->type_state =
+          mojom::NetworkTypeStateProperties::NewCellular(std::move(cellular));
       break;
     }
     case mojom::NetworkType::kEthernet: {
@@ -319,7 +320,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
       ethernet->authentication = network->type() == shill::kTypeEthernetEap
                                      ? mojom::AuthenticationType::k8021x
                                      : mojom::AuthenticationType::kNone;
-      result->ethernet = std::move(ethernet);
+      result->type_state =
+          mojom::NetworkTypeStateProperties::NewEthernet(std::move(ethernet));
       break;
     }
     case mojom::NetworkType::kTether: {
@@ -328,7 +330,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
       tether->carrier = network->tether_carrier();
       tether->has_connected_to_host = network->tether_has_connected_to_host();
       tether->signal_strength = network->signal_strength();
-      result->tether = std::move(tether);
+      result->type_state =
+          mojom::NetworkTypeStateProperties::NewTether(std::move(tether));
       break;
     }
     case mojom::NetworkType::kVPN: {
@@ -342,7 +345,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
         vpn->provider_name =
             GetVpnProviderName(vpn_providers, vpn_provider->id);
       }
-      result->vpn = std::move(vpn);
+      result->type_state =
+          mojom::NetworkTypeStateProperties::NewVpn(std::move(vpn));
       break;
     }
     case mojom::NetworkType::kWiFi: {
@@ -353,7 +357,8 @@ mojom::NetworkStatePropertiesPtr NetworkStateToMojo(
       wifi->security = network->GetMojoSecurity();
       wifi->signal_strength = network->signal_strength();
       wifi->ssid = network->name();
-      result->wifi = std::move(wifi);
+      result->type_state =
+          mojom::NetworkTypeStateProperties::NewWifi(std::move(wifi));
       break;
     }
     case mojom::NetworkType::kAll:

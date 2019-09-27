@@ -24,10 +24,6 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "third_party/blink/public/mojom/dwrite_font_proxy/dwrite_font_proxy.mojom.h"
 
-namespace service_manager {
-struct BindSourceInfo;
-}
-
 namespace content {
 
 // Implements a message filter that handles the dwrite font proxy messages.
@@ -40,8 +36,7 @@ class CONTENT_EXPORT DWriteFontProxyImpl
   ~DWriteFontProxyImpl() override;
 
   static void Create(
-      mojo::PendingReceiver<blink::mojom::DWriteFontProxy> receiver,
-      const service_manager::BindSourceInfo& source_info);
+      mojo::PendingReceiver<blink::mojom::DWriteFontProxy> receiver);
 
   void SetWindowsFontsPathForTesting(base::string16 path);
 

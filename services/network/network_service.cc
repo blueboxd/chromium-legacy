@@ -557,8 +557,8 @@ net::NetLog* NetworkService::net_log() const {
 }
 
 void NetworkService::GetNetworkChangeManager(
-    mojom::NetworkChangeManagerRequest request) {
-  network_change_manager_->AddRequest(std::move(request));
+    mojo::PendingReceiver<mojom::NetworkChangeManager> receiver) {
+  network_change_manager_->AddReceiver(std::move(receiver));
 }
 
 void NetworkService::GetNetworkQualityEstimatorManager(

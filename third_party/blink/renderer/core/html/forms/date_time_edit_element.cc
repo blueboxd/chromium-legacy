@@ -832,6 +832,15 @@ void DateTimeEditElement::SetEmptyValue(
     field->SetEmptyValue(DateTimeFieldElement::kDispatchNoEvent);
 }
 
+bool DateTimeEditElement::HasField(DateTimeField type) const {
+  for (const auto& field : fields_) {
+    if (field->Type() == type)
+      return true;
+  }
+
+  return false;
+}
+
 bool DateTimeEditElement::HasFocusedField() {
   return FocusedFieldIndex() != kInvalidFieldIndex;
 }

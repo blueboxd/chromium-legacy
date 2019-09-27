@@ -39,8 +39,12 @@ class MOJO_SYSTEM_IMPL_EXPORT ConnectionParams {
   void set_is_async(bool is_async) { is_async_ = is_async; }
   bool is_async() const { return is_async_; }
 
+  void set_leak_endpoint(bool leak_endpoint) { leak_endpoint_ = leak_endpoint; }
+  bool leak_endpoint() const { return leak_endpoint_; }
+
  private:
   bool is_async_ = false;
+  bool leak_endpoint_ = false;
   PlatformChannelEndpoint endpoint_;
   PlatformChannelServerEndpoint server_endpoint_;
 

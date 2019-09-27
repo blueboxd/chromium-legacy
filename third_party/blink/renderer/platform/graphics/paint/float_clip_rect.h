@@ -44,6 +44,9 @@ class PLATFORM_EXPORT FloatClipRect {
   }
 
   void Intersect(const FloatClipRect& other) {
+    if (other.is_infinite_)
+      return;
+
     if (is_infinite_) {
       is_infinite_ = other.is_infinite_;
       rect_ = other.rect_;
@@ -56,7 +59,12 @@ class PLATFORM_EXPORT FloatClipRect {
       ClearIsTight();
   }
 
+  // See FloatRect::InclusiveIntersect for description of the return value.
+  // TL;DR, this returns true if rects actually intersect.
   bool InclusiveIntersect(const FloatClipRect& other) {
+    if (other.is_infinite_)
+      return true;
+
     bool retval = true;
     if (is_infinite_) {
       is_infinite_ = other.is_infinite_;

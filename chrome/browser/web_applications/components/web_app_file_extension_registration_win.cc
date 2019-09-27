@@ -8,6 +8,10 @@
 
 namespace web_app {
 
+bool OsSupportsWebAppFileHandling() {
+  return true;
+}
+
 void RegisterFileHandlersForWebApp(
     const AppId& app_id,
     const std::string& app_name,

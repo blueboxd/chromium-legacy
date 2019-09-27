@@ -132,7 +132,6 @@
 #include "ppapi/buildflags/buildflags.h"
 #include "services/metrics/public/cpp/mojo_ukm_recorder.h"
 #include "services/network/public/cpp/network_switches.h"
-#include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "services/viz/public/cpp/gpu/context_provider_command_buffer.h"
 #include "services/viz/public/cpp/gpu/gpu.h"
@@ -150,6 +149,7 @@
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_document.h"
 #include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_render_theme.h"
 #include "third_party/blink/public/web/web_script_controller.h"
 #include "third_party/blink/public/web/web_security_policy.h"
 #include "third_party/blink/public/web/web_view.h"
@@ -931,8 +931,7 @@ void RenderThreadImpl::Init() {
 
   mojo::PendingRemote<discardable_memory::mojom::DiscardableSharedMemoryManager>
       manager_remote;
-  ChildThread::Get()->GetConnector()->Connect(
-      mojom::kBrowserServiceName,
+  ChildThread::Get()->BindHostReceiver(
       manager_remote.InitWithNewPipeAndPassReceiver());
 
   discardable_shared_memory_manager_ = std::make_unique<
@@ -2160,6 +2159,7 @@ void RenderThreadImpl::UpdateSystemColorInfo(
   ui::NativeTheme::GetInstanceForWeb()->UpdateSystemColorInfo(
       params->is_dark_mode, params->is_high_contrast,
       params->preferred_color_scheme, params->colors);
+  blink::SystemColorsChanged();
 }
 
 void RenderThreadImpl::PurgePluginListCache(bool reload_pages) {

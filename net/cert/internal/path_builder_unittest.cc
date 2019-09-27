@@ -550,23 +550,24 @@ TEST_F(PathBuilderMultiRootTest, TestTrivialDeadline) {
         initial_policy_mapping_inhibit_, initial_any_policy_inhibit_);
     path_builder.AddCertIssuerSource(&sync_certs);
 
+    base::TimeTicks deadline;
     if (insufficient_limit) {
       // Set a deadline one millisecond in the past. Path building should fail
       // since the deadline is already past.
-      path_builder.SetDeadline(base::TimeTicks::Now() -
-                               base::TimeDelta::FromMilliseconds(1));
+      deadline = base::TimeTicks::Now() - base::TimeDelta::FromMilliseconds(1);
     } else {
       // The other tests in this file exercise the case that |SetDeadline|
       // isn't called. Therefore set a sufficient limit for the path to be
       // found.
-      path_builder.SetDeadline(base::TimeTicks::Now() +
-                               base::TimeDelta::FromDays(1));
+      deadline = base::TimeTicks::Now() + base::TimeDelta::FromDays(1);
     }
+    path_builder.SetDeadline(deadline);
 
     auto result = path_builder.Run();
 
     EXPECT_EQ(!insufficient_limit, result.HasValidPath());
     EXPECT_EQ(insufficient_limit, result.exceeded_deadline);
+    EXPECT_EQ(deadline, path_builder.deadline());
   }
 }
 
@@ -1408,21 +1409,23 @@ class CertPathBuilderDelegateBase : public SimplePathBuilderDelegate {
       : SimplePathBuilderDelegate(
             1024,
             SimplePathBuilderDelegate::DigestPolicy::kWeakAllowSha1) {}
-  void CheckPathAfterVerification(CertPathBuilderResultPath* path) override {
+  void CheckPathAfterVerification(const CertPathBuilder& path_builder,
+                                  CertPathBuilderResultPath* path) override {
     ADD_FAILURE() << "Tests must override this";
   }
 };
 
 class MockPathBuilderDelegate : public CertPathBuilderDelegateBase {
  public:
-  MOCK_METHOD1(CheckPathAfterVerification,
-               void(CertPathBuilderResultPath* path));
+  MOCK_METHOD2(CheckPathAfterVerification,
+               void(const CertPathBuilder& path_builder,
+                    CertPathBuilderResultPath* path));
 };
 
 TEST_F(PathBuilderCheckPathAfterVerificationTest, NoOpToValidPath) {
   StrictMock<MockPathBuilderDelegate> delegate;
   // Just verify that the hook is called.
-  EXPECT_CALL(delegate, CheckPathAfterVerification(_));
+  EXPECT_CALL(delegate, CheckPathAfterVerification(_, _));
 
   CertPathBuilder::Result result = RunPathBuilder(nullptr, &delegate);
   EXPECT_TRUE(result.HasValidPath());
@@ -1432,7 +1435,8 @@ DEFINE_CERT_ERROR_ID(kWarningFromDelegate, "Warning from delegate");
 
 class AddWarningPathBuilderDelegate : public CertPathBuilderDelegateBase {
  public:
-  void CheckPathAfterVerification(CertPathBuilderResultPath* path) override {
+  void CheckPathAfterVerification(const CertPathBuilder& path_builder,
+                                  CertPathBuilderResultPath* path) override {
     path->errors.GetErrorsForCert(1)->AddWarning(kWarningFromDelegate, nullptr);
   }
 };
@@ -1453,7 +1457,8 @@ DEFINE_CERT_ERROR_ID(kErrorFromDelegate, "Error from delegate");
 
 class AddErrorPathBuilderDelegate : public CertPathBuilderDelegateBase {
  public:
-  void CheckPathAfterVerification(CertPathBuilderResultPath* path) override {
+  void CheckPathAfterVerification(const CertPathBuilder& path_builder,
+                                  CertPathBuilderResultPath* path) override {
     path->errors.GetErrorsForCert(2)->AddError(kErrorFromDelegate, nullptr);
   }
 };
@@ -1479,7 +1484,7 @@ TEST_F(PathBuilderCheckPathAfterVerificationTest, AddsErrorToValidPath) {
 TEST_F(PathBuilderCheckPathAfterVerificationTest, NoopToAlreadyInvalidPath) {
   StrictMock<MockPathBuilderDelegate> delegate;
   // Just verify that the hook is called (on an invalid path).
-  EXPECT_CALL(delegate, CheckPathAfterVerification(_));
+  EXPECT_CALL(delegate, CheckPathAfterVerification(_, _));
 
   // Run the pathbuilder with certificate at index 1 actively distrusted.
   CertPathBuilder::Result result = RunPathBuilder(test_.chain[1], &delegate);
@@ -1492,7 +1497,8 @@ struct DelegateData : public CertPathBuilderDelegateData {
 
 class SetsDelegateDataPathBuilderDelegate : public CertPathBuilderDelegateBase {
  public:
-  void CheckPathAfterVerification(CertPathBuilderResultPath* path) override {
+  void CheckPathAfterVerification(const CertPathBuilder& path_builder,
+                                  CertPathBuilderResultPath* path) override {
     path->delegate_data = std::make_unique<DelegateData>();
   }
 };

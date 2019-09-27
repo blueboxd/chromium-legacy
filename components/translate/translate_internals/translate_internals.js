@@ -625,7 +625,8 @@ cr.define('cr.translateInternals', function() {
  * The entry point of the UI.
  */
 function main() {
-  cr.doc.addEventListener('DOMContentLoaded', cr.translateInternals.initialize);
+  document.addEventListener(
+      'DOMContentLoaded', cr.translateInternals.initialize);
 }
 
 main();

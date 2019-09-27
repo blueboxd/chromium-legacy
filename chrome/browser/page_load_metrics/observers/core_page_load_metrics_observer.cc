@@ -16,6 +16,8 @@
 #include "components/page_load_metrics/browser/page_load_metrics_util.h"
 #include "content/public/common/process_type.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/blink/public/platform/web_gesture_event.h"
+#include "third_party/blink/public/platform/web_mouse_event.h"
 #include "ui/base/page_transition_types.h"
 #include "ui/events/blink/blink_features.h"
 
@@ -730,6 +732,9 @@ void CorePageLoadMetricsObserver::OnUserInput(
   if (first_paint_.is_null())
     return;
 
+  // Track clicks after first paint for possible click burst.
+  click_tracker_.OnUserInput(event);
+
   if (!received_non_scroll_input_after_first_paint_) {
     if (event.GetType() == blink::WebInputEvent::kGestureTap ||
         event.GetType() == blink::WebInputEvent::kMouseUp) {
@@ -959,6 +964,8 @@ void CorePageLoadMetricsObserver::RecordByteAndResourceHistograms(
                                 num_cache_resources_);
   PAGE_RESOURCE_COUNT_HISTOGRAM(internal::kHistogramTotalCompletedResources,
                                 num_cache_resources_ + num_network_resources_);
+
+  click_tracker_.RecordClickBurst();
 }
 
 void CorePageLoadMetricsObserver::OnTimingUpdate(

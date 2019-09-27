@@ -5,7 +5,6 @@
 #include "chrome/browser/web_applications/components/file_handler_manager.h"
 
 #include "base/feature_list.h"
-#include "build/build_config.h"
 #include "chrome/browser/web_applications/components/web_app_file_extension_registration.h"
 #include "third_party/blink/public/common/features.h"
 
@@ -22,8 +21,8 @@ void FileHandlerManager::SetSubsystems(AppRegistrar* registrar) {
 }
 
 void FileHandlerManager::OnWebAppInstalled(const AppId& installed_app_id) {
-#if defined(OS_WIN)
-  if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI))
+  if (!base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) ||
+      !OsSupportsWebAppFileHandling())
     return;
   std::string app_name = registrar_->GetAppShortName(installed_app_id);
   const std::vector<apps::FileHandlerInfo>* file_handlers =
@@ -34,13 +33,13 @@ void FileHandlerManager::OnWebAppInstalled(const AppId& installed_app_id) {
       GetFileExtensionsFromFileHandlers(*file_handlers);
   RegisterFileHandlersForWebApp(installed_app_id, app_name, *profile_,
                                 file_extensions);
-#endif  // OS_WIN
 }
 
 void FileHandlerManager::OnWebAppUninstalled(const AppId& installed_app_id) {
-#if defined(OS_WIN)
-  UnregisterFileHandlersForWebApp(installed_app_id, *profile_);
-#endif  // OS_WIN
+  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) &&
+      OsSupportsWebAppFileHandling()) {
+    UnregisterFileHandlersForWebApp(installed_app_id, *profile_);
+  }
 }
 
 void FileHandlerManager::OnAppRegistrarDestroyed() {

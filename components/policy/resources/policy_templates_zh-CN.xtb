@@ -95,6 +95,17 @@
           <ph name="PROXY_HELP_URL" />。</translation>
 <translation id="1117535567637097036">通过此政策设置的协议处理程序不会被用于处理 Android intent。</translation>
 <translation id="1118093128235245168">允许网站请求用户授权其访问所连接的 USB 设备</translation>
+<translation id="1123594119609921068">设置语音反馈无障碍功能在登录屏幕上的默认状态。
+
+          如果此政策设为 true，系统会在显示登录屏幕时启用语音反馈。
+
+          如果此政策设为 false，系统会在显示登录屏幕时停用语音反馈。
+
+          如果您设置了此政策，用户可通过启用或停用语音反馈暂时覆盖它。但用户的选择并不是永久有效的，只要系统再次显示登录屏幕或用户在登录屏幕上空闲了一会儿，此政策即会恢复为默认设置。
+
+          如果您未设置此政策，系统会在首次显示登录屏幕时停用语音反馈。用户可随时启用或停用语音反馈，语音反馈在登录屏幕上的状态对各用户均有效。
+
+          注意：<ph name="DEVICE_LOGIN_SCREEN_SPOKEN_FEEDBACK_ENABLED_POLICY_NAME" />（若已指定）会覆盖此政策。</translation>
 <translation id="1128903365609589950">配置 <ph name="PRODUCT_NAME" /> 在磁盘中存储缓存文件时所使用的目录。
 
       如果您设置了此政策，那么无论用户是否已指定“--disk-cache-dir”标记，<ph name="PRODUCT_NAME" /> 都将使用本政策提供的目录。请勿将此政策设置为某个卷的根目录或用于其他用途的目录（因为 <ph name="PRODUCT_NAME" /> 会管理相关内容），以免丢失数据或发生其他意外错误。
@@ -1617,6 +1628,15 @@
 
       有关可用变量的列表，请访问 https://www.chromium.org/administrators/policy-list-3/user-data-directory-variables。</translation>
 <translation id="3911737181201537215">此政策对 Android 完成的记录没有任何影响。</translation>
+<translation id="3912092044353890761">在登录屏幕上启用虚拟键盘无障碍功能。
+
+          如果此政策设为 true，虚拟键盘在登录屏幕上将始终处于启用状态。
+
+          如果此政策设为 false，虚拟键盘在登录屏幕上将始终处于停用状态。
+
+          如果您设置了此政策，用户将无法更改或覆盖它。
+
+          如果您未设置此政策，虚拟键盘在登录屏幕上最初会处于停用状态，但用户可随时启用它。</translation>
 <translation id="391531815696899618">当此政策设为 True 时，在 <ph name="PRODUCT_OS_NAME" />的“文件”应用中停用 Google 云端硬盘同步功能。在这种情况下，系统不会将任何数据上传到 Google 云端硬盘。
 
           如果此政策未设置或设为 False，用户可以将文件传输到 Google 云端硬盘。</translation>
@@ -1775,11 +1795,31 @@
           如果设置了此政策，则用户将无法更改或替换它。
 
           如果未设置此政策，则粘滞键最初会处于停用状态，但用户可以随时启用该功能。</translation>
+<translation id="4169692397912242417">在登录屏幕上启用语音反馈无障碍功能。
+
+          如果此政策设为 true，语音反馈在登录屏幕上将始终处于启用状态。
+
+          如果此政策设为 false，语音反馈在登录屏幕上将始终处于停用状态。
+
+          如果您设置了此政策，用户将无法更改或覆盖它。
+
+          如果您未设置此政策，语音反馈在登录屏幕上最初会处于停用状态，但用户可随时启用它。</translation>
 <translation id="4171331498167688968">如果此政策设为 false，系统便会允许第三方软件将可执行代码插入到 Chrome 进程中。如果此政策未设置或设为 true，则系统会阻止第三方软件将可执行代码插入到 Chrome 进程中。
 
       无论此政策的值如何，浏览器当前都不会在已加入 <ph name="MS_AD_NAME" /> 网域的计算机上阻止第三方软件将可执行代码插入到其进程中。</translation>
 <translation id="4183229833636799228">默认 <ph name="FLASH_PLUGIN_NAME" /> 设置</translation>
 <translation id="4192388905594723944">验证远程访问客户端身份验证令牌时使用的网址</translation>
+<translation id="420007931282384740">设置屏幕键盘无障碍功能在登录屏幕上的默认状态。
+
+          如果此政策设为 true，系统会在显示登录屏幕时启用屏幕键盘。
+
+          如果此政策设为 false，系统会在显示登录屏幕时停用屏幕键盘。
+
+          如果您设置了此政策，用户可通过启用或停用屏幕键盘暂时覆盖它。但用户的选择并不是永久有效的，只要系统再次显示登录屏幕或用户在登录屏幕上空闲了一会儿，此政策即会恢复为默认设置。
+
+          如果您未设置此政策，系统会在首次显示登录屏幕时停用屏幕键盘。用户可随时启用或停用屏幕键盘，屏幕键盘在登录屏幕上的状态对各用户均有效。
+
+          注意：<ph name="DEVICE_LOGIN_SCREEN_VIRTUAL_KEYBOARD_ENABLED_POLICY_NAME" />（若已指定）会覆盖此政策。</translation>
 <translation id="4203389617541558220">安排自动重启以限制设备的正常运行时间。
 
       如果设置此政策，则会指定设备正常运行的时间，并安排之后自动重启。
@@ -2352,6 +2392,7 @@
 <translation id="5323128137188992869">允许使用 <ph name="PRODUCT_NAME" /> 向设备投射内容。
 
           如果此政策设为 False，用户将无法向其设备投射内容。如果此政策设为 True，用户将能够投射内容。如果此政策未设置，用户将被禁止向已注册的 Chrome 操作系统设备投射内容，但可将内容投射到未注册的设备。</translation>
+<translation id="5323200200131319468">在登录屏幕上启用语音反馈</translation>
 <translation id="5325625566921364045">控制 <ph name="PRODUCT_NAME" /> 如何检查上传、下载、拖放或从剪贴板复制并粘贴的数据是否符合企业规则。
 
       如果此政策未设置或设为“无”，<ph name="PRODUCT_NAME" /> 将不会检查任何数据的合规性。
@@ -2539,6 +2580,7 @@
 <translation id="5530347722229944744">拦截可能有危险的下载内容</translation>
 <translation id="5535973522252703021">Kerberos 授权服务器白名单</translation>
 <translation id="554903022911579950">Kerberos</translation>
+<translation id="555022085242359084">在登录屏幕上启用高对比度模式</translation>
 <translation id="555077880566103058">允许所有网站自动运行 <ph name="FLASH_PLUGIN_NAME" /> 插件</translation>
 <translation id="5559079916187891399">此政策对 Android 应用没有任何影响。</translation>
 <translation id="5560039246134246593">在提取 <ph name="PRODUCT_NAME" /> 中的变体种子的方法中添加参数。
@@ -2789,6 +2831,7 @@
 <translation id="6089679180657323464">控制 Wilco 诊断和遥测控制器设置。</translation>
 <translation id="6091233616732024397">强制要求用户登录才能使用浏览器</translation>
 <translation id="6093156968240188330">允许远程用户在远程协助会话中操控提权后的窗口</translation>
+<translation id="6095048925836115505">在登录屏幕上启用虚拟键盘</translation>
 <translation id="6095999036251797924">指定在设备闲置多长时间后屏幕将锁定（使用交流电源或电池供电时）。
 
           如果该时间长度设为大于0的值，那么只要设备闲置时间达到指定时长，<ph name="PRODUCT_OS_NAME" />就会锁定屏幕。
@@ -3763,11 +3806,31 @@
 
       如果未设置此政策，<ph name="PRODUCT_NAME" /> 将使用默认值（即5000毫秒）。</translation>
 <translation id="7841880500990419427">要回退到的最低 TLS 版本</translation>
+<translation id="7842317008224536842">设置高对比度模式无障碍功能在登录屏幕上的默认状态。
+
+          如果此政策设为 true，系统会在显示登录屏幕时启用高对比度模式。
+
+          如果此政策设为 false，系统会在显示登录屏幕时停用高对比度模式。
+
+          如果您设置了此政策，用户可通过启用或停用高对比度模式暂时覆盖它。但用户的选择并不是永久有效的，只要系统再次显示登录屏幕或用户在登录屏幕上空闲了一会儿，此政策即会恢复为默认设置。
+
+          如果您未设置此政策，系统会在首次显示登录屏幕时停用高对比度模式。用户可随时启用或停用高对比度模式，高对比度模式在登录屏幕上的状态对各用户均有效。
+
+          注意：<ph name="DEVICE_LOGIN_SCREEN_HIGH_CONTRAST_ENABLED_POLICY_NAME" />（若已指定）会覆盖此政策。</translation>
 <translation id="7858404742201086014">如果您启用了此设置，则过期插件可作为正常插件使用。
 
       如果您停用了此设置，则过期插件将无法使用，并且系统不会要求用户提供运行过期插件的权限。
 
       如果此设置未配置，则系统会要求用户提供运行过期插件的权限。</translation>
+<translation id="7863947545897944083">在登录屏幕上启用高对比度模式无障碍功能。
+
+          如果此政策设为 true，高对比度模式在登录屏幕上将始终处于启用状态。
+
+          如果此政策设为 false，高对比度模式在登录屏幕上将始终处于停用状态。
+
+          如果您设置了此政策，用户将无法更改或覆盖它。
+
+          如果您未设置此政策，高对比度模式在登录屏幕上最初会处于停用状态，但用户可随时启用它。</translation>
 <translation id="787125417158068494">如果设置为 SyncDisabled 或未配置，ARC 应用便无法使用 <ph name="PRODUCT_OS_NAME" /> 证书。
 
       如果设置为 CopyCaCerts，ARC 应用便可使用所有已安装 ONC 且带有 <ph name="WEB_TRUSTED_BIT" /> 的 CA 证书。</translation>

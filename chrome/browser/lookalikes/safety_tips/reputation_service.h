@@ -24,8 +24,11 @@ namespace safety_tips {
 // Callback type used for retrieving reputation status. |ignored| indicates
 // whether the user has dismissed the warning and thus should not be warned
 // again. |url| is the URL applicable for this result,
-using ReputationCheckCallback = base::OnceCallback<
-    void(security_state::SafetyTipStatus, bool ignored, const GURL& url)>;
+using ReputationCheckCallback =
+    base::OnceCallback<void(security_state::SafetyTipStatus,
+                            bool ignored,
+                            const GURL& url,
+                            const GURL& suggested_url)>;
 
 // Provides reputation information on URLs for Safety Tips.
 class ReputationService : public KeyedService {
@@ -46,7 +49,9 @@ class ReputationService : public KeyedService {
   // Tells the service that the user has explicitly ignored the warning, and
   // records a histogram.
   // Exposed in subsequent results from GetReputationStatus.
-  void SetUserIgnore(content::WebContents* web_contents, const GURL& url);
+  void SetUserIgnore(content::WebContents* web_contents,
+                     const GURL& url,
+                     SafetyTipInteraction interaction);
 
  private:
   // Returns whether the warning should be shown on the given URL. This is

@@ -734,11 +734,12 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
   const AXObject* ax_body = ax_root->FirstChild();
   ASSERT_NE(nullptr, ax_body);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_body->RoleValue());
-  ASSERT_EQ(1, ax_body->ChildCount());
+  ASSERT_EQ(2, ax_body->ChildCount());
 
   const AXObject* ax_hidden = GetAXObjectByElementId("hidden");
   ASSERT_NE(nullptr, ax_hidden);
   ASSERT_EQ(ax::mojom::Role::kGenericContainer, ax_hidden->RoleValue());
+  ASSERT_TRUE(ax_hidden->AccessibilityIsIgnoredButIncludedInTree());
 
   const AXObject* ax_visible = GetAXObjectByElementId("visible");
   ASSERT_NE(nullptr, ax_visible);
@@ -762,10 +763,7 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
             ax_position_before_visible_from_dom.ChildAfterTreePosition());
 
   // A position at the beginning of the body will appear to be before the hidden
-  // element in the DOM, but it should be before the visible object in the
-  // accessibility tree since the hidden element is not in the tree. Hence, when
-  // converting to the corresponding DOM position, it should be before the
-  // visible element in the DOM as well.
+  // element in the DOM.
   const auto ax_position_first =
       AXPosition::CreateFirstPositionInObject(*ax_root);
   const auto position_first = ax_position_first.ToPositionWithAffinity();
@@ -781,13 +779,13 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
   EXPECT_EQ(ax_body, ax_position_first_from_dom.ChildAfterTreePosition());
 
   // A DOM position before |hidden| should convert to an accessibility position
-  // before |visible|.
+  // before |hidden| because the node is ignored but included in the tree.
   const auto position_before = Position::BeforeNode(*hidden);
   const auto ax_position_before_from_dom =
       AXPosition::FromPosition(position_before);
   EXPECT_EQ(ax_body, ax_position_before_from_dom.ContainerObject());
   EXPECT_EQ(0, ax_position_before_from_dom.ChildIndex());
-  EXPECT_EQ(ax_visible, ax_position_before_from_dom.ChildAfterTreePosition());
+  EXPECT_EQ(ax_hidden, ax_position_before_from_dom.ChildAfterTreePosition());
 
   // A DOM position after |hidden| should convert to an accessibility position
   // before |visible|.
@@ -795,7 +793,7 @@ TEST_F(AccessibilityTest, PositionInIgnoredObject) {
   const auto ax_position_after_from_dom =
       AXPosition::FromPosition(position_after);
   EXPECT_EQ(ax_body, ax_position_after_from_dom.ContainerObject());
-  EXPECT_EQ(0, ax_position_after_from_dom.ChildIndex());
+  EXPECT_EQ(1, ax_position_after_from_dom.ChildIndex());
   EXPECT_EQ(ax_visible, ax_position_after_from_dom.ChildAfterTreePosition());
 }
 

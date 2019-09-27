@@ -631,7 +631,6 @@
                 {
                     "name": "AudioProcess_APM",
                     "enable_features": [
-                        "AudioServiceSandbox",
                         "WebRtcApmInAudioService"
                     ]
                 }

@@ -105,7 +105,7 @@ cr.define('ntp', function() {
      */
     appendMenuItem_: function(opt_textId) {
       const button =
-          /** @type {!HTMLButtonElement} */ (cr.doc.createElement('button'));
+          /** @type {!HTMLButtonElement} */ (document.createElement('button'));
       this.menu.appendChild(button);
       cr.ui.decorate(button, cr.ui.MenuItem);
       if (opt_textId) {
@@ -248,7 +248,7 @@ cr.define('ntp', function() {
    * @extends {HTMLDivElement}
    */
   function App(appData) {
-    const el = cr.doc.createElement('div');
+    const el = /** @type {!App} */ (document.createElement('div'));
     el.__proto__ = App.prototype;
     el.initialize(appData);
 

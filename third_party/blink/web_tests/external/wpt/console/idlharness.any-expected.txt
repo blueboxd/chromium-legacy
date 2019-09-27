@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
 PASS idl_test setup
+PASS idl_test validation
 PASS console namespace: operation assert(boolean, any...)
 PASS console namespace: operation clear()
 PASS console namespace: operation debug(any...)

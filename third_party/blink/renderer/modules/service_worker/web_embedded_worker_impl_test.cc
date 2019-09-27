@@ -268,25 +268,6 @@ TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileWaitingForDebugger) {
   worker_->WaitForShutdownForTesting();
 }
 
-// TODO(nhiroki): Remove this. This test is the same with
-// TerminateSoonAfterStart() because off-the-main-thread worker script loading
-// got enabled by default.
-TEST_F(WebEmbeddedWorkerImplTest, TerminateWhileLoadingScript) {
-  worker_->StartWorkerContext(
-      CreateStartData(),
-      /*installed_scripts_manager_params=*/nullptr,
-      /*content_settings_proxy=*/mojo::ScopedMessagePipeHandle(),
-      /*cache_storage_remote=*/mojo::ScopedMessagePipeHandle(),
-      /*interface_provider_info=*/mojo::ScopedMessagePipeHandle(),
-      /*browser_interface_broker=*/mojo::ScopedMessagePipeHandle(),
-      Thread::Current()->GetTaskRunner());
-  testing::Mock::VerifyAndClearExpectations(mock_client_.get());
-
-  // Terminate before finishing the script load.
-  worker_->TerminateWorkerContext();
-  worker_->WaitForShutdownForTesting();
-}
-
 TEST_F(WebEmbeddedWorkerImplTest, ScriptNotFound) {
   WebURL script_url = url_test_helpers::ToKURL(kNotFoundScriptURL);
   WebURLResponse response;

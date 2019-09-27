@@ -304,7 +304,7 @@
 <translation id="1444628761356461360">يتولى إدارة هذا الإعداد مالك الجهاز، <ph name="OWNER_EMAIL" />.</translation>
 <translation id="144518587530125858">تعذر تحميل '<ph name="IMAGE_PATH" />' للمظهر.</translation>
 <translation id="1445693676523799095">قد يستغرق هذا بعض الوقت.</translation>
-<translation id="1450011005989029586">‏كشفت عملية اختراق البيانات على موقع إلكتروني أو تطبيق تستخدمه عن كلمة مرورك. يقترح متصفِّح Chrome <ph name="BOLD" /> عبر <ph name="ORIGIN" /> الآن.</translation>
+<translation id="1450011005989029586">‏تم كشف كلمة مرورك نتيجة عملية اختراق للبيانات على موقع إلكتروني أو تطبيق تستخدمه. يقترح متصفِّح Chrome <ph name="BOLD" /> عبر <ph name="ORIGIN" /> الآن.</translation>
 <translation id="1451375123200651445">صفحة ويب، ملف واحد</translation>
 <translation id="1451917004835509682">إضافة شخص خاضع للإشراف</translation>
 <translation id="1454223536435069390">الت&amp;قاط لقطة شاشة</translation>
@@ -2235,7 +2235,7 @@
 <translation id="4267953847983678297">الاتصال بشبكة الجوّال تلقائيًا</translation>
 <translation id="4268025649754414643">تشفير المفتاح</translation>
 <translation id="4270393598798225102">الإصدار <ph name="NUMBER" /></translation>
-<translation id="4270615291506829403">جارٍ تغيير كلمة مرورك</translation>
+<translation id="4270615291506829403">تغيير كلمة مرورك</translation>
 <translation id="4275663329226226506">الوسائط</translation>
 <translation id="4275830172053184480">إعادة تشغيل جهازك</translation>
 <translation id="4278101229438943600">المساعد جاهز</translation>
@@ -3001,7 +3001,7 @@
 <translation id="5457599981699367932">تصفَّح كزائر</translation>
 <translation id="5457991019809708398">مفعَّل، بلا تجوال</translation>
 <translation id="5458998536542739734">ملاحظات شاشة التأمين</translation>
-<translation id="546322474339998983">‏يتم استخدام محرك البحث من قِبَل متصفح Chromre ومشغّل التطبيقات للجهاز <ph name="DEVICE_TYPE" />.</translation>
+<translation id="546322474339998983">‏يتم استخدام محرك البحث من قِبَل متصفح Chrome ومشغّل التطبيقات للجهاز <ph name="DEVICE_TYPE" />.</translation>
 <translation id="5463231940765244860">Enter</translation>
 <translation id="5463275305984126951">فهرس المجلد <ph name="LOCATION" /></translation>
 <translation id="5463856536939868464">قائمة تحتوي على إشارات مخفية</translation>

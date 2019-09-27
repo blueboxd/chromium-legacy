@@ -106,6 +106,18 @@ grit("webapks_ui_resources") {
 if (!is_android) {
   grit("component_extension_resources") {
     source = "component_extension_resources.grd"
+
+    # The .grd contains references to generated files.
+    source_is_generated = true
+    grit_flags = [
+      "-E",
+      "root_gen_dir=" + rebase_path(root_gen_dir, root_build_dir),
+    ]
+
+    deps = [
+      "//chrome/browser/resources/pdf/elements:polymer3_elements",
+    ]
+
     defines = chrome_grit_defines
     if (enable_hangout_services_extension) {
       defines += [ "enable_hangout_services_extension" ]
@@ -347,8 +359,10 @@ repack("dev_ui_paks") {
 
   sources = [
     "$root_gen_dir/chrome/bluetooth_internals_resources.pak",
+    "$root_gen_dir/chrome/usb_internals_resources.pak",
   ]
   deps = [
     "//chrome/browser/resources/bluetooth_internals:resources",
+    "//chrome/browser/resources/usb_internals:resources",
   ]
 }

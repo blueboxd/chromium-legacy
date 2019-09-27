@@ -19,10 +19,6 @@ namespace sync_preferences {
 class PrefServiceSyncable;
 }
 
-namespace leveldb {
-class LevelDBMojoProxy;
-}
-
 namespace prefs {
 class PersistentPrefStoreClient;
 }
@@ -75,8 +71,6 @@ class COMPONENT_EXPORT(MOJO_CPP_BINDINGS) SyncCallRestrictions {
   // BEGIN ALLOWED USAGE.
   // SynchronousCompositorHost is used for Android webview.
   friend class content::SynchronousCompositorHost;
-  // LevelDBMojoProxy makes same-process sync calls from the DB thread.
-  friend class leveldb::LevelDBMojoProxy;
   // Pref service connection is sync at startup.
   friend class prefs::PersistentPrefStoreClient;
   // Incognito pref service instances are created synchronously.

@@ -196,8 +196,7 @@ void ShelfWidget::DelegateView::UpdateBackgroundBlur() {
 }
 
 void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
-  const gfx::Rect local_bounds = GetLocalBounds();
-  gfx::Rect opaque_background_bounds = local_bounds;
+  gfx::Rect opaque_background_bounds = GetLocalBounds();
 
   const Shelf* shelf = shelf_widget_->shelf();
   const ShelfBackgroundType background_type =
@@ -417,7 +416,7 @@ void ShelfWidget::OnShelfAlignmentChanged() {
 }
 
 void ShelfWidget::OnTabletModeChanged() {
-  hotseat_widget()->GetShelfView()->OnTabletModeChanged();
+  hotseat_widget()->OnTabletModeChanged();
   shelf_layout_manager()->UpdateVisibilityState();
 }
 

@@ -74,7 +74,6 @@ class ImageView;
 //    in response to dragged tabs.
 class TabStrip : public views::AccessiblePaneView,
                  public views::ButtonListener,
-                 public views::ContextMenuController,
                  public views::MouseWatcherListener,
                  public views::ViewObserver,
                  public views::ViewTargeterDelegate,
@@ -316,6 +315,18 @@ class TabStrip : public views::AccessiblePaneView,
   friend class TabHoverCardBubbleViewInteractiveUiTest;
   friend class TabStripTest;
 
+  class TabContextMenuController : public views::ContextMenuController {
+   public:
+    explicit TabContextMenuController(TabStrip* parent);
+    // views::ContextMenuController:
+    void ShowContextMenuForViewImpl(views::View* source,
+                                    const gfx::Point& point,
+                                    ui::MenuSourceType source_type) override;
+
+   private:
+    TabStrip* const parent_;
+  };
+
   // Used during a drop session of a url. Tracks the position of the drop as
   // well as a window used to highlight where the drop occurs.
   struct DropArrow {
@@ -545,11 +556,6 @@ class TabStrip : public views::AccessiblePaneView,
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  // views::ContextMenuController:
-  void ShowContextMenuForViewImpl(views::View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
-
   // views::View:
   const views::View* GetViewByID(int id) const override;
   bool OnMousePressed(const ui::MouseEvent& event) override;
@@ -694,6 +700,8 @@ class TabStrip : public views::AccessiblePaneView,
       md_observer_{this};
 
   std::unique_ptr<TabDragContextImpl> drag_context_;
+
+  TabContextMenuController context_menu_controller_{this};
 
   DISALLOW_COPY_AND_ASSIGN(TabStrip);
 };

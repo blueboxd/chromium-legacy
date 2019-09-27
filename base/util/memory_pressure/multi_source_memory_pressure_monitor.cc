@@ -25,7 +25,14 @@ MultiSourceMemoryPressureMonitor::MultiSourceMemoryPressureMonitor()
   StartMetricsTimer();
 }
 
-MultiSourceMemoryPressureMonitor::~MultiSourceMemoryPressureMonitor() = default;
+MultiSourceMemoryPressureMonitor::~MultiSourceMemoryPressureMonitor() {
+  // Destroy system evaluator early while the remaining members of this class
+  // still exist. MultiSourceMemoryPressureMonitor implements
+  // MemoryPressureVoteAggregator::Delegate, and
+  // delegate_->OnMemoryPressureLevelChanged() gets indirectly called during
+  // ~SystemMemoryPressureEvaluator().
+  system_evaluator_.reset();
+}
 
 void MultiSourceMemoryPressureMonitor::StartMetricsTimer() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);

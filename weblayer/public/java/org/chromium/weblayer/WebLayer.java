@@ -16,37 +16,36 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.RemoteException;
 import android.util.AndroidRuntimeException;
+import android.webkit.ValueCallback;
 import android.webkit.WebViewDelegate;
 import android.webkit.WebViewFactory;
 
 import org.chromium.weblayer_private.aidl.APICallException;
 import org.chromium.weblayer_private.aidl.IWebLayer;
+import org.chromium.weblayer_private.aidl.ObjectWrapper;
 
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.util.concurrent.TimeUnit;
 
 /**
- * WebLayer is responsible for initializing state necessary to use* any of the classes in web layer.
+ * WebLayer is responsible for initializing state necessary to use any of the classes in web layer.
  */
 public final class WebLayer {
     // TODO: Using a metadata key for the WebLayerImpl package is just being used for testing,
     // production will use a different mechanism.
     private static final String PACKAGE_MANIFEST_KEY = "org.chromium.weblayer.WebLayerPackage";
 
-    private static WebLayer sInstance;
+    private static ListenableFuture<WebLayer> sFuture;
+
     private IWebLayer mImpl;
 
-    public static WebLayer getInstance() {
-        if (sInstance == null) {
-            sInstance = new WebLayer();
-        }
-        return sInstance;
-    }
-
-    WebLayer() {}
-
-    public void init(Application application) {
+    /**
+     * Loads the WebLayer implementation and returns the IWebLayer. This does *not* trigger the
+     * implementation to start.
+     */
+    private static IWebLayer connectToWebLayerImplementation(Application application) {
         try {
             // TODO: Make asset loading work on L, where WebViewDelegate doesn't exist.
             // WebViewDelegate.addWebViewAssetPath() accesses the currently loaded package info from
@@ -65,13 +64,80 @@ public final class WebLayer {
             delegate.addWebViewAssetPath(application);
 
             Context remoteContext = createRemoteContext(application);
-            mImpl = IWebLayer.Stub.asInterface(
+            return IWebLayer.Stub.asInterface(
                     (IBinder) remoteContext.getClassLoader()
                             .loadClass("org.chromium.weblayer_private.WebLayerImpl")
-                            .getMethod("create", Context.class)
-                            .invoke(null, remoteContext));
+                            .getMethod("create")
+                            .invoke(null));
         } catch (Exception e) {
             throw new APICallException(e);
+        }
+    }
+
+    /**
+     * Asynchronously creates and initializes WebLayer. Calling this more than once returns the same
+     * object.
+     *
+     * @param application The hosting Application
+     * @return a ListenableFuture whose value will contain the WebLayer once initialization
+     * completes
+     */
+    public static ListenableFuture<WebLayer> create(Application application) {
+        if (sFuture == null) {
+            IWebLayer iWebLayer = connectToWebLayerImplementation(application);
+            sFuture = new WebLayerLoadFuture(iWebLayer, application);
+        }
+        return sFuture;
+    }
+
+    /**
+     * Future that creates WebLayer once the implementation has completed startup.
+     */
+    private static final class WebLayerLoadFuture extends ListenableFuture<WebLayer> {
+        private final IWebLayer mIWebLayer;
+
+        WebLayerLoadFuture(IWebLayer iWebLayer, Application application) {
+            mIWebLayer = iWebLayer;
+            ValueCallback<Boolean> loadCallback = new ValueCallback<Boolean>() {
+                @Override
+                public void onReceiveValue(Boolean result) {
+                    // TODO: figure out when |result| is false and what to do in such a scenario.
+                    assert result;
+                    supplyResult(new WebLayer(mIWebLayer));
+                }
+            };
+            try {
+                iWebLayer.initAndLoadAsync(ObjectWrapper.wrap(createRemoteContext(application)),
+                        ObjectWrapper.wrap(loadCallback));
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
+        }
+
+        @Override
+        public boolean cancel(boolean mayInterruptIfRunning) {
+            // Loading can not be canceled.
+            return false;
+        }
+
+        @Override
+        public WebLayer get(long timeout, TimeUnit unit) {
+            // Arbitrary timeouts are not supported.
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void onLoad() {
+            try {
+                mIWebLayer.loadSync();
+            } catch (RemoteException e) {
+                throw new APICallException(e);
+            }
+        }
+
+        @Override
+        public boolean isCancelled() {
+            return false;
         }
     }
 
@@ -82,7 +148,10 @@ public final class WebLayer {
 
     public void destroy() {
         // TODO: implement me.
-        sInstance = null;
+    }
+
+    private WebLayer(IWebLayer iWebLayer) {
+        mImpl = iWebLayer;
     }
 
     /**

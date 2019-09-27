@@ -20,8 +20,10 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/system/sys_info.h"
+#include "base/task/post_task.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "build/build_config.h"
+#include "components/services/leveldb/leveldb_service_impl.h"
 #include "components/services/leveldb/public/cpp/util.h"
 #include "components/services/leveldb/public/mojom/leveldb.mojom.h"
 #include "content/browser/dom_storage/dom_storage_types.h"
@@ -29,6 +31,7 @@
 #include "content/browser/dom_storage/session_storage_namespace_impl_mojo.h"
 #include "content/browser/dom_storage/storage_area_impl.h"
 #include "content/public/browser/session_storage_usage_info.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "third_party/blink/public/common/features.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
@@ -103,8 +106,10 @@ SessionStorageContextMojo::SessionStorageContextMojo(
     std::string leveldb_name)
     : backing_mode_(backing_mode),
       leveldb_name_(std::move(leveldb_name)),
-      force_in_memory_only_(partition_directory.empty()),
-      file_service_(partition_directory),
+      partition_directory_(partition_directory),
+      leveldb_task_runner_(base::CreateSequencedTaskRunner(
+          {base::ThreadPool(), base::MayBlock(),
+           base::TaskShutdownBehavior::BLOCK_SHUTDOWN})),
       memory_dump_id_(base::StringPrintf("SessionStorage/0x%" PRIXPTR,
                                          reinterpret_cast<uintptr_t>(this))),
       is_low_end_device_(base::SysInfo::IsLowEndDevice()) {
@@ -703,74 +708,54 @@ void SessionStorageContextMojo::RunWhenConnected(base::OnceClosure callback) {
 void SessionStorageContextMojo::InitiateConnection(bool in_memory_only) {
   DCHECK_EQ(connection_state_, CONNECTION_IN_PROGRESS);
 
-  if (backing_mode_ != BackingMode::kNoDisk && !in_memory_only &&
-      !force_in_memory_only_) {
-    // We were given a subdirectory to write to. Get it and use a disk backed
-    // database.
-    if (!file_system_)
-      file_service_.BindFileSystem(file_system_.BindNewPipeAndPassReceiver());
-    file_system_->GetSubDirectory(
-        {}, MakeRequest(&partition_directory_),
-        base::BindOnce(&SessionStorageContextMojo::OnDirectoryOpened,
-                       weak_ptr_factory_.GetWeakPtr()));
+  leveldb_service_.reset();
+  database_.reset();
+  if (leveldb_binder_override_) {
+    leveldb_binder_override_.Run(leveldb_service_.BindNewPipeAndPassReceiver());
   } else {
-    // We were not given a subdirectory. Use a memory backed database.
-    leveldb_service_.reset();
-    file_service_.BindLevelDBService(
-        leveldb_service_.BindNewPipeAndPassReceiver());
+    // Spawn and connect to a new LevelDBServiceImpl running on the background
+    // thread pool.
+    leveldb_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](mojo::PendingReceiver<leveldb::mojom::LevelDBService> receiver) {
+              mojo::MakeSelfOwnedReceiver(
+                  std::make_unique<leveldb::LevelDBServiceImpl>(),
+                  std::move(receiver));
+            },
+            leveldb_service_.BindNewPipeAndPassReceiver()));
+  }
+
+  if (backing_mode_ != BackingMode::kNoDisk && !in_memory_only &&
+      !partition_directory_.empty()) {
+    // We were given a subdirectory to write to, so use a disk backed database.
+    if (backing_mode_ == BackingMode::kClearDiskStateOnOpen) {
+      leveldb_service_->Destroy(partition_directory_, leveldb_name_,
+                                base::DoNothing());
+    }
+
+    leveldb_env::Options options;
+    options.create_if_missing = true;
+    options.max_open_files = 0;  // use minimum
+    // Default write_buffer_size is 4 MB but that might leave a 3.999
+    // memory allocation in RAM from a log file recovery.
+    options.write_buffer_size = 64 * 1024;
+    options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
 
     database_.reset();
+    leveldb_service_->OpenWithOptions(
+        std::move(options), partition_directory_, leveldb_name_,
+        memory_dump_id_, database_.BindNewEndpointAndPassReceiver(),
+        base::BindOnce(&SessionStorageContextMojo::OnDatabaseOpened,
+                       weak_ptr_factory_.GetWeakPtr(), false));
+  } else {
+    // We were not given a subdirectory. Use a memory backed database.
     leveldb_service_->OpenInMemory(
         memory_dump_id_, "SessionStorageDatabase",
         database_.BindNewEndpointAndPassReceiver(),
         base::BindOnce(&SessionStorageContextMojo::OnDatabaseOpened,
                        weak_ptr_factory_.GetWeakPtr(), true));
   }
-}
-
-void SessionStorageContextMojo::OnDirectoryOpened(base::File::Error err) {
-  if (err != base::File::FILE_OK) {
-    // We failed to open the directory; continue with startup so that we create
-    // the data maps.
-    UMA_HISTOGRAM_ENUMERATION("SessionStorageContext.DirectoryOpenError", -err,
-                              -base::File::FILE_ERROR_MAX);
-    LogDatabaseOpenResult(OpenResult::kDirectoryOpenFailed);
-    OnDatabaseOpened(false, leveldb::mojom::DatabaseError::OK);
-    return;
-  }
-
-  // Now that we have a directory, connect to the LevelDB service and get our
-  // database.
-  leveldb_service_.reset();
-  file_service_.BindLevelDBService(
-      leveldb_service_.BindNewPipeAndPassReceiver());
-
-  // We might still need to use the directory, so create a clone.
-  filesystem::mojom::DirectoryPtr partition_directory_clone;
-  partition_directory_->Clone(MakeRequest(&partition_directory_clone));
-
-  if (backing_mode_ == BackingMode::kClearDiskStateOnOpen) {
-    filesystem::mojom::DirectoryPtr partition_directory_clone_for_deletion;
-    partition_directory_->Clone(
-        MakeRequest(&partition_directory_clone_for_deletion));
-    leveldb_service_->Destroy(std::move(partition_directory_clone_for_deletion),
-                              leveldb_name_, base::DoNothing());
-  }
-
-  leveldb_env::Options options;
-  options.create_if_missing = true;
-  options.max_open_files = 0;  // use minimum
-  // Default write_buffer_size is 4 MB but that might leave a 3.999
-  // memory allocation in RAM from a log file recovery.
-  options.write_buffer_size = 64 * 1024;
-  options.block_cache = leveldb_chrome::GetSharedWebBlockCache();
-
-  database_.reset();
-  leveldb_service_->OpenWithOptions(
-      std::move(options), std::move(partition_directory_clone), leveldb_name_,
-      memory_dump_id_, database_.BindNewEndpointAndPassReceiver(),
-      base::BindOnce(&SessionStorageContextMojo::OnDatabaseOpened,
-                     weak_ptr_factory_.GetWeakPtr(), false));
 }
 
 void SessionStorageContextMojo::OnMojoConnectionDestroyed() {
@@ -973,11 +958,8 @@ SessionStorageContextMojo::ParseNextMapId(
 
 void SessionStorageContextMojo::OnConnectionFinished() {
   DCHECK(!database_ || connection_state_ == CONNECTION_IN_PROGRESS);
-  if (!database_) {
-    partition_directory_.reset();
-    file_system_.reset();
+  if (!database_)
     leveldb_service_.reset();
-  }
 
   // If connection was opened successfully, reset tried_to_recreate_during_open_
   // to enable recreating the database on future errors.
@@ -1029,19 +1011,12 @@ void SessionStorageContextMojo::DeleteAndRecreateDatabase(
 
   tried_to_recreate_during_open_ = true;
 
-  // Unit tests might not have a bound file_service_, in which case there is
-  // nothing to retry.
-  if (!file_system_.is_bound()) {
-    OnConnectionFinished();
-    return;
-  }
-
   protected_namespaces_from_scavenge_.clear();
 
   // Destroy database, and try again.
-  if (partition_directory_.is_bound()) {
+  if (!partition_directory_.empty()) {
     leveldb_service_->Destroy(
-        std::move(partition_directory_), leveldb_name_,
+        partition_directory_, leveldb_name_,
         base::BindOnce(&SessionStorageContextMojo::OnDBDestroyed,
                        weak_ptr_factory_.GetWeakPtr(), recreate_in_memory));
   } else {

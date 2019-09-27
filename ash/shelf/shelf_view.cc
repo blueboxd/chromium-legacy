@@ -538,8 +538,8 @@ gfx::Size ShelfView::CalculatePreferredSize() const {
   if (model_->item_count() == 0) {
     // There are no apps.
     return shelf_->IsHorizontalAlignment()
-               ? gfx::Size(0, ShelfConfig::Get()->shelf_size())
-               : gfx::Size(ShelfConfig::Get()->shelf_size(), 0);
+               ? gfx::Size(0, ShelfConfig::Get()->hotseat_size())
+               : gfx::Size(ShelfConfig::Get()->hotseat_size(), 0);
   }
 
   int last_button_index = last_visible_index_;
@@ -558,14 +558,14 @@ gfx::Size ShelfView::CalculatePreferredSize() const {
   const gfx::Rect last_button_bounds =
       last_button_index >= first_visible_index_
           ? view_model_->ideal_bounds(last_button_index)
-          : gfx::Rect(gfx::Size(ShelfConfig::Get()->shelf_size(),
-                                ShelfConfig::Get()->shelf_size()));
+          : gfx::Rect(gfx::Size(ShelfConfig::Get()->hotseat_size(),
+                                ShelfConfig::Get()->hotseat_size()));
 
   if (shelf_->IsHorizontalAlignment())
     return gfx::Size(last_button_bounds.right(),
-                     ShelfConfig::Get()->shelf_size());
+                     ShelfConfig::Get()->hotseat_size());
 
-  return gfx::Size(ShelfConfig::Get()->shelf_size(),
+  return gfx::Size(ShelfConfig::Get()->hotseat_size(),
                    last_button_bounds.bottom());
 }
 
@@ -879,15 +879,6 @@ void ShelfView::OnShelfConfigUpdated() {
     if (!button->IsIconSizeCurrent())
       ShelfItemChanged(i, model_->items()[i]);
   }
-
-  if (chromeos::switches::ShouldShowShelfHotseat() && IsTabletModeEnabled() &&
-      !ShelfConfig::Get()->is_in_app()) {
-    SetBackground(views::CreateRoundedRectBackground(
-        ShelfConfig::Get()->shelf_control_permanent_highlight_background(),
-        ShelfConfig::Get()->button_size() / 2));
-  } else {
-    SetBackground(views::CreateSolidBackground(SK_ColorTRANSPARENT));
-  }
 }
 
 bool ShelfView::ShouldEventActivateButton(View* view, const ui::Event& event) {
@@ -1101,7 +1092,7 @@ void ShelfView::CalculateIdealBounds() {
       // vertically centered.
       int half_space = button_spacing / 2;
       int secondary_offset =
-          (ShelfConfig::Get()->shelf_size() - kSeparatorSize) / 2;
+          (ShelfConfig::Get()->hotseat_size() - kSeparatorSize) / 2;
       x -= shelf()->PrimaryAxisValue(half_space, 0);
       y -= shelf()->PrimaryAxisValue(0, half_space);
       separator_->SetBounds(
@@ -2058,9 +2049,9 @@ gfx::Rect ShelfView::GetBoundsForDragInsertInScreen() {
 
     if (shelf_->IsHorizontalAlignment()) {
       preferred_size = gfx::Size(last_button_bounds.right(),
-                                 ShelfConfig::Get()->shelf_size());
+                                 ShelfConfig::Get()->hotseat_size());
     } else {
-      preferred_size = gfx::Size(ShelfConfig::Get()->shelf_size(),
+      preferred_size = gfx::Size(ShelfConfig::Get()->hotseat_size(),
                                  last_button_bounds.bottom());
     }
   }

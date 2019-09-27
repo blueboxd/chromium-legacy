@@ -4,6 +4,8 @@
 
 #include "chrome/browser/lookalikes/safety_tips/reputation_web_contents_observer.h"
 
+#include <string>
+
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "build/build_config.h"
@@ -17,6 +19,7 @@ void OnSafetyTipClosed(security_state::SafetyTipStatus safety_tip_status,
                        base::Time start_time,
                        safety_tips::SafetyTipInteraction action) {
   std::string action_suffix;
+  bool warning_dismissed = false;
   switch (action) {
     case safety_tips::SafetyTipInteraction::kNoAction:
       action_suffix = "NoAction";
@@ -25,8 +28,30 @@ void OnSafetyTipClosed(security_state::SafetyTipStatus safety_tip_status,
       action_suffix = "LeaveSite";
       break;
     case safety_tips::SafetyTipInteraction::kDismiss:
-      action_suffix = "Dismiss";
+      NOTREACHED();
+      // Do nothing because the dismissal action passed to this method should
+      // be the more specific version (esc, close, or ignore).
       break;
+    case safety_tips::SafetyTipInteraction::kDismissWithEsc:
+      action_suffix = "DismissWithEsc";
+      warning_dismissed = true;
+      break;
+    case safety_tips::SafetyTipInteraction::kDismissWithClose:
+      action_suffix = "DismissWithClose";
+      warning_dismissed = true;
+      break;
+    case safety_tips::SafetyTipInteraction::kDismissWithIgnore:
+      action_suffix = "DismissWithIgnore";
+      warning_dismissed = true;
+      break;
+  }
+  if (warning_dismissed) {
+    base::UmaHistogramCustomTimes(
+        security_state::GetSafetyTipHistogramName(
+            std::string("Security.SafetyTips.OpenTime.Dismiss"),
+            safety_tip_status),
+        base::Time::Now() - start_time, base::TimeDelta::FromMilliseconds(1),
+        base::TimeDelta::FromHours(1), 100);
   }
   base::UmaHistogramCustomTimes(
       security_state::GetSafetyTipHistogramName(
@@ -104,7 +129,8 @@ void ReputationWebContentsObserver::MaybeShowSafetyTip() {
 void ReputationWebContentsObserver::HandleReputationCheckResult(
     security_state::SafetyTipStatus safety_tip_status,
     bool user_ignored,
-    const GURL& url) {
+    const GURL& url,
+    const GURL& suggested_url) {
   UMA_HISTOGRAM_ENUMERATION("Security.SafetyTips.SafetyTipShown",
                             safety_tip_status);
 
@@ -137,7 +163,7 @@ void ReputationWebContentsObserver::HandleReputationCheckResult(
     return;
   }
   ShowSafetyTipDialog(
-      web_contents(), safety_tip_status, url,
+      web_contents(), safety_tip_status, url, suggested_url,
       base::BindOnce(OnSafetyTipClosed, safety_tip_status, base::Time::Now()));
 }
 

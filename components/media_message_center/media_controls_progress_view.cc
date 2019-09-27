@@ -130,6 +130,14 @@ void MediaControlsProgressView::UpdateProgress(
   }
 }
 
+void MediaControlsProgressView::SetForegroundColor(SkColor color) {
+  progress_bar_->SetForegroundColor(color);
+}
+
+void MediaControlsProgressView::SetBackgroundColor(SkColor color) {
+  progress_bar_->SetBackgroundColor(color);
+}
+
 bool MediaControlsProgressView::OnMousePressed(const ui::MouseEvent& event) {
   if (!event.IsOnlyLeftMouseButton() || event.y() < kMinClickHeight ||
       event.y() > kMaxClickHeight) {

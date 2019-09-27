@@ -8,18 +8,9 @@
 
 #include "base/logging.h"
 #include "base/no_destructor.h"
+#include "chrome/browser/extensions/forced_extensions/installation_reporter_factory.h"
 
 namespace {
-
-using InstallationDataMap =
-    std::map<extensions::ExtensionId,
-             extensions::InstallationReporter::InstallationData>;
-
-InstallationDataMap& GetInstallationDataMap(const Profile* profile) {
-  static base::NoDestructor<std::map<const Profile*, InstallationDataMap>>
-      failure_maps;
-  return (*failure_maps)[profile];
-}
 
 extensions::InstallationReporter::TestObserver* g_test_observer = nullptr;
 
@@ -54,44 +45,48 @@ std::string InstallationReporter::GetFormattedInstallationData(
 
 InstallationReporter::TestObserver::~TestObserver() = default;
 
+InstallationReporter::InstallationReporter(
+    const content::BrowserContext* context)
+    : browser_context_(context) {}
+
+InstallationReporter::~InstallationReporter() = default;
+
 // static
-void InstallationReporter::ReportInstallationStage(const Profile* profile,
-                                                   const ExtensionId& id,
+InstallationReporter* InstallationReporter::Get(
+    content::BrowserContext* context) {
+  return InstallationReporterFactory::GetForBrowserContext(context);
+}
+
+void InstallationReporter::ReportInstallationStage(const ExtensionId& id,
                                                    Stage stage) {
-  InstallationData& data = GetInstallationDataMap(profile)[id];
+  InstallationData& data = installation_data_map_[id];
   data.install_stage = stage;
   if (g_test_observer) {
-    g_test_observer->OnExtensionDataChanged(id, profile, data);
+    g_test_observer->OnExtensionDataChanged(id, browser_context_, data);
   }
 }
 
-// static
 void InstallationReporter::ReportDownloadingStage(
-    const Profile* profile,
     const ExtensionId& id,
     ExtensionDownloaderDelegate::Stage stage) {
-  InstallationData& data = GetInstallationDataMap(profile)[id];
+  InstallationData& data = installation_data_map_[id];
   data.downloading_stage = stage;
   if (g_test_observer) {
-    g_test_observer->OnExtensionDataChanged(id, profile, data);
+    g_test_observer->OnExtensionDataChanged(id, browser_context_, data);
   }
 }
 
-// static
-void InstallationReporter::ReportFailure(const Profile* profile,
-                                         const ExtensionId& id,
+void InstallationReporter::ReportFailure(const ExtensionId& id,
                                          FailureReason reason) {
   DCHECK_NE(reason, FailureReason::UNKNOWN);
-  InstallationData& data = GetInstallationDataMap(profile)[id];
+  InstallationData& data = installation_data_map_[id];
   data.failure_reason = reason;
   if (g_test_observer) {
-    g_test_observer->OnExtensionDataChanged(id, profile, data);
+    g_test_observer->OnExtensionDataChanged(id, browser_context_, data);
   }
 }
 
-// static
 void InstallationReporter::ReportCrxInstallError(
-    const Profile* profile,
     const ExtensionId& id,
     FailureReason reason,
     CrxInstallErrorDetail crx_install_error) {
@@ -99,26 +94,22 @@ void InstallationReporter::ReportCrxInstallError(
          reason ==
              FailureReason::CRX_INSTALL_ERROR_SANDBOXED_UNPACKER_FAILURE ||
          reason == FailureReason::CRX_INSTALL_ERROR_OTHER);
-  InstallationData& data = GetInstallationDataMap(profile)[id];
+  InstallationData& data = installation_data_map_[id];
   data.failure_reason = reason;
   data.install_error_detail = crx_install_error;
   if (g_test_observer) {
-    g_test_observer->OnExtensionDataChanged(id, profile, data);
+    g_test_observer->OnExtensionDataChanged(id, browser_context_, data);
   }
 }
 
-// static
 InstallationReporter::InstallationData InstallationReporter::Get(
-    const Profile* profile,
     const ExtensionId& id) {
-  InstallationDataMap& map = GetInstallationDataMap(profile);
-  auto it = map.find(id);
-  return it == map.end() ? InstallationData() : it->second;
+  auto it = installation_data_map_.find(id);
+  return it == installation_data_map_.end() ? InstallationData() : it->second;
 }
 
-// static
-void InstallationReporter::Clear(const Profile* profile) {
-  GetInstallationDataMap(profile).clear();
+void InstallationReporter::Clear() {
+  installation_data_map_.clear();
 }
 
 // static

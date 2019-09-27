@@ -10,6 +10,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/unguessable_token.h"
+#include "chromeos/services/device_sync/cryptauth_device_activity_getter.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager.h"
 #include "chromeos/services/device_sync/cryptauth_gcm_manager.h"
 #include "chromeos/services/device_sync/device_sync_base.h"
@@ -103,6 +104,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
       SetSoftwareFeatureStateCallback callback) override;
   void FindEligibleDevices(multidevice::SoftwareFeature software_feature,
                            FindEligibleDevicesCallback callback) override;
+  void GetDevicesActivityStatus(
+      GetDevicesActivityStatusCallback callback) override;
   void GetDebugInfo(GetDebugInfoCallback callback) override;
 
   // CryptAuthEnrollmentManager::Observer:
@@ -205,6 +208,14 @@ class DeviceSyncImpl : public DeviceSyncBase,
                mojom::FindEligibleDevicesResponsePtr)>& callback,
       NetworkRequestError error);
 
+  void OnGetDevicesActivityStatusFinished(
+      const base::UnguessableToken& request_id,
+      CryptAuthDeviceActivityGetter::DeviceActivityStatusResult
+          device_activity_status_result);
+  void OnGetDevicesActivityStatusError(
+      const base::UnguessableToken& request_id,
+      NetworkRequestError network_request_error);
+
   // Note: If the timer is already running, StartSetSoftwareFeatureTimer()
   // restarts it.
   void StartSetSoftwareFeatureTimer();
@@ -229,6 +240,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
   base::flat_map<base::UnguessableToken,
                  std::unique_ptr<PendingSetSoftwareFeatureRequest>>
       id_to_pending_set_software_feature_request_map_;
+  base::flat_map<base::UnguessableToken, GetDevicesActivityStatusCallback>
+      get_devices_activity_status_callbacks_;
 
   std::unique_ptr<CryptAuthGCMManager> cryptauth_gcm_manager_;
   std::unique_ptr<CryptAuthClientFactory> cryptauth_client_factory_;
@@ -241,6 +254,8 @@ class DeviceSyncImpl : public DeviceSyncBase,
   std::unique_ptr<CryptAuthDeviceManager> cryptauth_device_manager_;
   std::unique_ptr<RemoteDeviceProvider> remote_device_provider_;
   std::unique_ptr<SoftwareFeatureManager> software_feature_manager_;
+  std::unique_ptr<CryptAuthDeviceActivityGetter>
+      cryptauth_device_activity_getter_;
 
   base::WeakPtrFactory<DeviceSyncImpl> weak_ptr_factory_{this};
 

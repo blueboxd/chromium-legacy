@@ -90,7 +90,7 @@ cr.define('wallpapers', function() {
         return;
       }
 
-      var imageEl = cr.doc.createElement('img');
+      var imageEl = document.createElement('img');
       // Do not show the image until |cropImageToFitGrid_| is done.
       imageEl.style.visibility = 'hidden';
       imageEl.setAttribute('aria-hidden', 'true');
@@ -524,7 +524,7 @@ cr.define('wallpapers', function() {
       // checkmark_ needs to be initialized before set data model. Otherwise, we
       // may try to access checkmark before initialization in
       // updateActiveThumb_().
-      this.checkmark_ = cr.doc.createElement('div');
+      this.checkmark_ = document.createElement('div');
       this.checkmark_.classList.add('check');
       this.checkmark_.setAttribute(
           'aria-label', loadTimeData.getString('setSuccessfullyMessage'));

@@ -80,7 +80,7 @@ chrome.test.runTests(function() {
       this.resolve_();
       this.started = false;
     }
-  };
+  }
 
   return [
     function testZoomChange() {

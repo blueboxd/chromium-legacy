@@ -24,6 +24,7 @@ class LayerTreeHostSynchronousPixelTest
     LayerTreePixelTest::InitializeSettings(settings);
     settings->single_thread_proxy_scheduler = false;
     settings->gpu_rasterization_forced = gpu_rasterization_forced_;
+    settings->gpu_rasterization_disabled = !settings->gpu_rasterization_forced;
     settings->use_zero_copy = use_zero_copy_;
   }
 

@@ -22,8 +22,6 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/chrome_notification_types.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/updater/extension_updater.h"
 #include "chrome/browser/first_run/first_run_internal.h"
 #include "chrome/browser/google/google_brand.h"
@@ -51,12 +49,7 @@
 #include "chrome/installer/util/master_preferences_constants.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/browser/notification_observer.h"
-#include "content/public/browser/notification_registrar.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/browser/web_contents.h"
-#include "extensions/browser/extension_system.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "url/gurl.h"
 
@@ -120,47 +113,6 @@ class ImportEndedObserver : public importer::ImporterProgressObserver {
   base::Closure callback_for_import_end_;
 
   DISALLOW_COPY_AND_ASSIGN(ImportEndedObserver);
-};
-
-// Helper class that makes sure extensions get updated as soon as the
-// ExtensionService is ready.
-class FirstRunDelayedExtensionUpdater : public content::NotificationObserver {
- public:
-  static void Create() { new FirstRunDelayedExtensionUpdater(); }
-
-  // content::NotificationObserver:
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override {
-    DCHECK_EQ(chrome::NOTIFICATION_PROFILE_CREATED, type);
-    content::BrowserContext* context = content::Source<Profile>(source).ptr();
-    extensions::ExtensionSystem::Get(context)->ready().Post(
-        FROM_HERE,
-        base::BindOnce(&FirstRunDelayedExtensionUpdater::OnExtensionSystemReady,
-                       base::Unretained(this), context));
-  }
-
- private:
-  FirstRunDelayedExtensionUpdater() {
-    registrar_.Add(this, chrome::NOTIFICATION_PROFILE_CREATED,
-                   content::NotificationService::AllSources());
-  }
-  ~FirstRunDelayedExtensionUpdater() override = default;
-
-  void OnExtensionSystemReady(content::BrowserContext* context) {
-    // Process the notification and delete this.
-    extensions::ExtensionService* service =
-        extensions::ExtensionSystem::Get(context)->extension_service();
-    if (service) {
-      // Trigger an extension update check. If the extension specified in the
-      // master pref is older than the live extension it will get updated which
-      // is the same as get it installed.
-      service->updater()->CheckNow(extensions::ExtensionUpdater::CheckParams());
-    }
-    delete this;
-  }
-
-  content::NotificationRegistrar registrar_;
 };
 
 // Launches the import, via |importer_host|, from |source_profile| into
@@ -468,7 +420,7 @@ ProcessMasterPreferencesResult ProcessMasterPreferences(
     base::DictionaryValue* extensions = 0;
     if (install_prefs->GetExtensionsBlock(&extensions)) {
       DVLOG(1) << "Extensions block found in master preferences";
-      FirstRunDelayedExtensionUpdater::Create();
+      extensions::ExtensionUpdater::UpdateImmediatelyForFirstRun();
     }
 
     internal::SetupMasterPrefsFromInstallPrefs(*install_prefs, out_prefs);

@@ -534,7 +534,6 @@ LayerTreeHost::CreateLayerTreeHostImpl(
     ukm_recorder_factory_.reset();
   }
 
-  host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
   host_impl->SetContentHasSlowPaths(content_has_slow_paths_);
   host_impl->SetContentHasNonAAPaint(content_has_non_aa_paint_);
   task_graph_runner_ = nullptr;
@@ -655,16 +654,6 @@ void LayerTreeHost::SetDebugState(
   SetNeedsCommit();
 }
 
-void LayerTreeHost::SetHasGpuRasterizationTrigger(bool has_trigger) {
-  if (has_trigger == has_gpu_rasterization_trigger_)
-    return;
-
-  has_gpu_rasterization_trigger_ = has_trigger;
-  TRACE_EVENT_INSTANT1("cc", "LayerTreeHost::SetHasGpuRasterizationTrigger",
-                       TRACE_EVENT_SCOPE_THREAD, "has_trigger",
-                       has_gpu_rasterization_trigger_);
-}
-
 void LayerTreeHost::ApplyPageScaleDeltaFromImplSide(
     float page_scale_delta) {
   DCHECK(CommitRequested());
@@ -763,8 +752,6 @@ void LayerTreeHost::RecordGpuRasterizationHistogram(
   UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationEnabled",
                         gpu_rasterization_enabled);
   if (gpu_rasterization_enabled) {
-    UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationTriggered",
-                          has_gpu_rasterization_trigger_);
     UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationSuitableContent",
                           !content_has_slow_paths_);
     UMA_HISTOGRAM_BOOLEAN("Renderer4.GpuRasterizationSlowPathsWithNonAAPaint",
@@ -1631,7 +1618,6 @@ void LayerTreeHost::PushSurfaceRangesTo(LayerTreeImpl* tree_impl) {
 
 void LayerTreeHost::PushLayerTreeHostPropertiesTo(
     LayerTreeHostImpl* host_impl) {
-  host_impl->SetHasGpuRasterizationTrigger(has_gpu_rasterization_trigger_);
   host_impl->SetContentHasSlowPaths(content_has_slow_paths_);
   host_impl->SetContentHasNonAAPaint(content_has_non_aa_paint_);
   host_impl->set_external_pinch_gesture_active(

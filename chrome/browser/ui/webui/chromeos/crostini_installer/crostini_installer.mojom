@@ -14,8 +14,21 @@ interface PageHandlerFactory {
 
 // Lives in the browser process. A renderer use this to control Crostini
 // installation.
-interface PageHandler {};
+interface PageHandler {
+  // Start installation
+  Install();
+  // Cancel an on-going installation
+  Cancel();
+  // If a user cancels the installation without starting it at all, this should
+  // be called so that metrics can be recorded.
+  CancelBeforeStart();
+  // The page normally is displayed in a dialog. Call this to close the dialog.
+  // chrome.send('dialogClose') should not be used, which could kill the page
+  // handler before previous mojom calls have been run.
+  Close();
+};
 
 // Lives in the renderer process. The browser uses this to sends installation
 // updates to the web page in the render.
-interface Page {};
+interface Page {
+};

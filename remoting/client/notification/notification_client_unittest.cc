@@ -33,8 +33,8 @@ class MockJsonFetcher : public JsonFetcher {
   MOCK_CONST_METHOD1(FetchJsonFile,
                      base::Optional<base::Value>(const std::string&));
   void FetchJsonFile(const std::string& relative_path,
-                     base::OnceCallback<void(base::Optional<base::Value>)> done)
-      const override {
+                     FetchJsonFileCallback done,
+                     const net::NetworkTrafficAnnotationTag&) override {
     auto value_opt = FetchJsonFile(relative_path);
     std::move(done).Run(std::move(value_opt));
   }

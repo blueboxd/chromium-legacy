@@ -65,7 +65,7 @@ class TemplateUrlServiceAndroid : public TemplateURLServiceObserver {
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jstring>& jkeyword);
 
-  // Adds a search engine, set by Play API.
+  // Adds a search engine, set by Play API. Sets it as DSE if possible.
   // Returns true if search engine was successfully added, false if search
   // engine from Play API with such keyword already existed (e.g. from previous
   // attempt to set search engine).

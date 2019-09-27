@@ -91,6 +91,7 @@
 <translation id="3065168410429928842">Картица Chrome</translation>
 <translation id="3080151273017101988">Настави са покретањем апликација у позадини када се Google Chrome затвори</translation>
 <translation id="3089968997497233615">Доступна је нова, безбеднија верзија Google Chrome прегледача.</translation>
+<translation id="3138848678222082288">Будуће верзије Chrome-а ће се инсталирати аутоматски. Када се ово преузимање доврши, Chrome ће се рестартовати и бићете спремни.</translation>
 <translation id="3149510190863420837">Chrome апликације</translation>
 <translation id="3282568296779691940">Пријављивање у Chrome</translation>
 <translation id="3340978935015468852">подешавања</translation>
@@ -204,6 +205,7 @@ Google Chrome не може да врати подешавања.</translation>
 <translation id="677276454032249905">Желите ли ипак да затворите Chrome?</translation>
 <translation id="683440813066116847">Правило за долазни саобраћај за Google Chrome Canary да бисте омогућили mDNS саобраћај.</translation>
 <translation id="6885412569789873916">Chrome апликације за бета канал</translation>
+<translation id="6906909733186691861">Будуће верзије Chrome-а ће се инсталирати аутоматски.</translation>
 <translation id="6943584222992551122">Подаци прегледања ове особе ће бити избрисани са овог уређаја. Да бисте вратили податке, пријавите се у Chrome као <ph name="USER_EMAIL" />.</translation>
 <translation id="6967962315388095737">Правило за долазни саобраћај за Google Chrome бета да бисте омогућили mDNS саобраћај.</translation>
 <translation id="6970811910055250180">Ажурирање уређаја...</translation>

@@ -3,33 +3,21 @@
 <head>
   <script src="../../../resources/testharness.js"></script>
   <script src="../../../resources/testharnessreport.js"></script>
+  <script src="../resources/multiple-fields-ax-value-changed-notification-helper.js"></script>
 </head>
 <body>
 <input id=test type="time" value="12:34:56.789">
 <script>
 async_test((t) => {
     var testInput = document.getElementById('test');
-    var expected = [
-        [ "Focus", "Hours", "12", "\t" ],
-        [ "Focus", "Minutes", "34", "4" ],
-        [ "ValueChanged", "Minutes", "04" ],
-        [ "ValueChanged", "Minutes", "04", "ArrowUp" ],
-        [ "ValueChanged", "Minutes", "05" ],
-        [ "ValueChanged", "Minutes", "05" ] ];
 
-    accessibilityController.addNotificationListener(
-        t.step_func((element, notification) => {
-            if (notification == 'Focus' || notification == 'ValueChanged') {
-                var next_expectation = expected.shift();
-                assert_equals(notification, next_expectation[0]);
-                assert_equals(element.name.trim(), next_expectation[1]);
-                assert_equals(element.valueDescription.substr(20), next_expectation[2]);
-                if (next_expectation.length > 3)
-                    eventSender.keyDown(next_expectation[3]);
-            }
-            if (expected.length === 0)
-                t.done();
-        }));
+    var listener = new TestAccessibilityControllerNotificationListener(t);
+    listener.queueExpectedNotification("Focus", "Hours", "12", "\t");
+    listener.queueExpectedNotification("Focus", "Minutes", "34", "4");
+    listener.queueExpectedNotification("ValueChanged", "Minutes", "04");
+    listener.queueExpectedNotification("ValueChanged", "Minutes", "04", "ArrowUp");
+    listener.queueExpectedNotification("ValueChanged", "Minutes", "05");
+    listener.queueExpectedNotification("ValueChanged", "Minutes", "05");
 
     testInput.focus();
 

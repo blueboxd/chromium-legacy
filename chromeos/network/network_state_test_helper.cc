@@ -159,37 +159,42 @@ NetworkStateTestHelper::CreateStandaloneNetworkProperties(
     network_config::mojom::NetworkType type,
     network_config::mojom::ConnectionStateType connection_state,
     int signal_strength) {
+  using network_config::mojom::NetworkType;
+  using network_config::mojom::NetworkTypeStateProperties;
   auto network = network_config::mojom::NetworkStateProperties::New();
   network->guid = id;
   network->name = id;
   network->type = type;
   network->connection_state = connection_state;
   switch (type) {
-    case network_config::mojom::NetworkType::kAll:
-    case network_config::mojom::NetworkType::kMobile:
-    case network_config::mojom::NetworkType::kWireless:
+    case NetworkType::kAll:
+    case NetworkType::kMobile:
+    case NetworkType::kWireless:
       NOTREACHED();
       break;
-    case network_config::mojom::NetworkType::kCellular: {
+    case NetworkType::kCellular: {
       auto cellular = network_config::mojom::CellularStateProperties::New();
       cellular->signal_strength = signal_strength;
-      network->cellular = std::move(cellular);
+      network->type_state =
+          NetworkTypeStateProperties::NewCellular(std::move(cellular));
       break;
     }
-    case network_config::mojom::NetworkType::kEthernet:
+    case NetworkType::kEthernet:
       break;
-    case network_config::mojom::NetworkType::kTether: {
+    case NetworkType::kTether: {
       auto tether = network_config::mojom::TetherStateProperties::New();
       tether->signal_strength = signal_strength;
-      network->tether = std::move(tether);
+      network->type_state =
+          NetworkTypeStateProperties::NewTether(std::move(tether));
       break;
     }
-    case network_config::mojom::NetworkType::kVPN:
+    case NetworkType::kVPN:
       break;
-    case network_config::mojom::NetworkType::kWiFi: {
+    case NetworkType::kWiFi: {
       auto wifi = network_config::mojom::WiFiStateProperties::New();
       wifi->signal_strength = signal_strength;
-      network->wifi = std::move(wifi);
+      network->type_state =
+          NetworkTypeStateProperties::NewWifi(std::move(wifi));
       break;
     }
   }

@@ -6,6 +6,8 @@ package org.chromium.components.module_installer;
 
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -17,9 +19,12 @@ import java.util.Set;
  *
  * @param <T> The interface of the module/
  */
+@JNINamespace("module_installer")
 public class Module<T> {
     private static final Set<String> sInstantiatedModuleNames = new HashSet<>();
     private static final Set<String> sModulesUninstalledForTesting = new HashSet<>();
+    private static final Set<String> sPendingNativeRegistrations = new HashSet<>();
+    private static boolean sNativeInitialized;
     private final String mName;
     private final Class<T> mInterfaceClass;
     private final String mImplClassName;
@@ -34,13 +39,31 @@ public class Module<T> {
         sModulesUninstalledForTesting.add(moduleName);
     }
 
+    @NativeMethods
+    interface Natives {
+        void loadNativeLibrary(String name);
+    }
+
+    /**
+     * To be called after the main native library has been loaded. Any module instances
+     * created before the native library is loaded have their native component queued
+     * for loading and registration. Calling this methed completes that process.
+     **/
+    public static void doDeferredNativeRegistrations() {
+        for (String name : sPendingNativeRegistrations) {
+            loadNativeLibrary(name);
+        }
+        sPendingNativeRegistrations.clear();
+        sNativeInitialized = true;
+    }
+
     /**
      * Instantiates a module.
      *
      * @param name The module's name as used with {@link ModuleInstaller}.
      * @param interfaceClass {@link Class} object of the module interface.
      * @param implClassName fully qualified class name of the implementation of the module's
-     *interface.
+     *        interface.
      **/
     public Module(String name, Class<T> interfaceClass, String implClassName) {
         mName = name;
@@ -97,8 +120,24 @@ public class Module<T> {
                         | IllegalArgumentException e) {
                     throw new RuntimeException(e);
                 }
+
+                // Load the module's native library if there's one present, and the Chrome native
+                // library itself has been loaded.
+                if (sNativeInitialized) {
+                    loadNativeLibrary(mName);
+                } else {
+                    sPendingNativeRegistrations.add(mName);
+                }
             }
             return mImpl;
         }
+    }
+
+    private static void loadNativeLibrary(String name) {
+        // TODO(https://crbug.com/870055): Whitelist modules, until each module explicitly indicates
+        // its need for library loading through this system.
+        if (!"test_dummy".equals(name)) return;
+
+        ModuleJni.get().loadNativeLibrary(name);
     }
 }

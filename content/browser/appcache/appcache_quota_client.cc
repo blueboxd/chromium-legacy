@@ -68,7 +68,12 @@ void AppCacheQuotaClient::OnQuotaManagerDestroyed() {
     GetServiceDeleteCallback()->Cancel();
   }
 
-  delete this;
+  // Wait to delete until NotifyAppCacheDestroyed is done running, otherwise
+  // just delete now.
+  if (keep_alive_)
+    keep_alive_ = false;
+  else
+    delete this;
 }
 
 void AppCacheQuotaClient::GetOriginUsage(const url::Origin& origin,
@@ -259,6 +264,9 @@ void AppCacheQuotaClient::NotifyAppCacheReady() {
 
 void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  // Keep this object alive for the duration of this method.
+  keep_alive_ = true;
+
   service_ = nullptr;
   service_is_destroyed_ = true;
   while (!pending_batch_requests_.empty())
@@ -272,6 +280,16 @@ void AppCacheQuotaClient::NotifyAppCacheDestroyed() {
         .Run(blink::mojom::QuotaStatusCode::kErrorAbort);
     GetServiceDeleteCallback()->Cancel();
   }
+
+  // It's possible one of the pending callbacks was holding the last reference
+  // to QuotaManager, which means QuotaManager gets destroyed when those
+  // callbacks are run. If this happened, OnQuotaManagerDestroyed() will have
+  // set |keep_alive_| to false and we can delete now. Otherwise, let
+  // OnQuotaManagerDestroyed() delete this object when it's run.
+  if (keep_alive_)
+    keep_alive_ = false;
+  else
+    delete this;
 }
 
 }  // namespace content

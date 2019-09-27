@@ -275,6 +275,10 @@ const FontRenderParams& PlatformFontSkia::GetFontRenderParams() {
   return font_render_params_;
 }
 
+sk_sp<SkTypeface> PlatformFontSkia::GetNativeSkTypefaceIfAvailable() const {
+  return sk_sp<SkTypeface>(typeface_);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // PlatformFontSkia, private:
 

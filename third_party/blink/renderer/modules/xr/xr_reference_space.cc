@@ -48,54 +48,51 @@ XRReferenceSpace::~XRReferenceSpace() = default;
 
 XRPose* XRReferenceSpace::getPose(
     XRSpace* other_space,
-    const TransformationMatrix* base_pose_matrix) {
+    const TransformationMatrix* mojo_from_viewer) {
   if (type_ == Type::kTypeViewer) {
-    std::unique_ptr<TransformationMatrix> viewer_pose_matrix =
-        other_space->GetViewerPoseMatrix(base_pose_matrix);
-    if (!viewer_pose_matrix) {
+    std::unique_ptr<TransformationMatrix> offsetspace_from_viewer =
+        other_space->SpaceFromViewerWithDefaultAndOffset(mojo_from_viewer);
+    if (!offsetspace_from_viewer) {
       return nullptr;
     }
-    return MakeGarbageCollected<XRPose>(*viewer_pose_matrix,
+    return MakeGarbageCollected<XRPose>(*offsetspace_from_viewer,
                                         session()->EmulatedPosition());
   } else {
-    return XRSpace::getPose(other_space, base_pose_matrix);
+    return XRSpace::getPose(other_space, mojo_from_viewer);
   }
 }
 
-void XRReferenceSpace::UpdateFloorLevelTransform() {
+void XRReferenceSpace::SetFloorFromMojo() {
   const device::mojom::blink::VRDisplayInfoPtr& display_info =
       session()->GetVRDisplayInfo();
 
   if (display_info && display_info->stage_parameters) {
     // Use the transform given by xrDisplayInfo's stage_parameters if available.
-    floor_level_transform_ = std::make_unique<TransformationMatrix>(
+    floor_from_mojo_ = std::make_unique<TransformationMatrix>(
         display_info->stage_parameters->standing_transform.matrix());
   } else {
     // Otherwise, create a transform based on the default emulated height.
-    floor_level_transform_ = std::make_unique<TransformationMatrix>();
-    floor_level_transform_->Translate3d(0, kDefaultEmulationHeightMeters, 0);
+    floor_from_mojo_ = std::make_unique<TransformationMatrix>();
+    floor_from_mojo_->Translate3d(0, kDefaultEmulationHeightMeters, 0);
   }
 
   display_info_id_ = session()->DisplayInfoPtrId();
 }
 
-// Returns a default pose if no base pose is available. Only applicable to
-// viewer reference spaces.
-std::unique_ptr<TransformationMatrix> XRReferenceSpace::DefaultPose() {
+// Returns a default viewer pose if no actual viewer pose is available. Only
+// applicable to viewer reference spaces.
+std::unique_ptr<TransformationMatrix> XRReferenceSpace::DefaultViewerPose() {
   // A viewer reference space always returns an identity matrix.
   return type_ == Type::kTypeViewer ? std::make_unique<TransformationMatrix>()
                                     : nullptr;
 }
 
-// Transforms a given pose from a "base" reference space used by the XR
-// service to the space represenced by this reference space.
-std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBasePose(
-    const TransformationMatrix& base_pose) {
+std::unique_ptr<TransformationMatrix> XRReferenceSpace::SpaceFromMojo(
+    const TransformationMatrix& mojo_from_viewer) {
   switch (type_) {
     case Type::kTypeLocal:
-      // Currently all base poses are 'local' poses, so return directly.
-      return std::make_unique<TransformationMatrix>(base_pose);
-      break;
+      // Currently 'local' space is equivalent to mojo space.
+      return std::make_unique<TransformationMatrix>();
     case Type::kTypeLocalFloor:
       // Currently all base poses are 'local' space, so use of 'local-floor'
       // reference spaces requires adjustment. Ideally the service will
@@ -105,57 +102,77 @@ std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBasePose(
       // Check first to see if the xrDisplayInfo has updated since the last
       // call. If so, update the floor-level transform.
       if (display_info_id_ != session()->DisplayInfoPtrId())
-        UpdateFloorLevelTransform();
-
-      // Apply the floor-level transform to the base pose.
-      if (floor_level_transform_) {
-        auto pose =
-            std::make_unique<TransformationMatrix>(*floor_level_transform_);
-        pose->Multiply(base_pose);
-        return pose;
-      }
-      break;
+        SetFloorFromMojo();
+      return std::make_unique<TransformationMatrix>(*floor_from_mojo_);
     case Type::kTypeViewer:
-      // Always return the default pose because we will only get here for an
-      // "viewer" reference space.
-      return DefaultPose();
+      // Return viewer_from_mojo which is the inverse of mojo_from_viewer.
+      return std::make_unique<TransformationMatrix>(mojo_from_viewer.Inverse());
     case Type::kTypeUnbounded:
       // For now we assume that poses returned by systems that support unbounded
-      // reference spaces are already in the correct space.
-      return std::make_unique<TransformationMatrix>(base_pose);
+      // reference spaces are already in the correct space. Return an identity.
+      return std::make_unique<TransformationMatrix>();
     case Type::kTypeBoundedFloor:
+      NOTREACHED() << "kTypeBoundedFloor should be handled by subclass";
       break;
   }
 
   return nullptr;
 }
 
-// Serves the same purpose as TransformBasePose, but for input poses. Needs to
-// know the head pose so that cases like the viewer frame of reference can
-// properly adjust the input's relative position.
-std::unique_ptr<TransformationMatrix> XRReferenceSpace::TransformBaseInputPose(
-    const TransformationMatrix& base_input_pose,
-    const TransformationMatrix& base_pose) {
-  return TransformBasePose(base_input_pose);
+// Returns the refspace-from-viewerspace transform, corresponding to the pose of
+// the viewer in this space. This takes the mojo_from_viewer transform (viewer
+// pose in mojo space) as input, and left-multiplies space_from_mojo onto that.
+std::unique_ptr<TransformationMatrix> XRReferenceSpace::SpaceFromViewer(
+    const TransformationMatrix& mojo_from_viewer) {
+  if (type_ == Type::kTypeViewer) {
+    // Special case for viewer space, always return an identity matrix
+    // explicitly. In theory the default behavior of multiplying SpaceFromMojo *
+    // MojoFromViewer would be equivalent, but that would likely return an
+    // almost-identity due to rounding errors.
+    return std::make_unique<TransformationMatrix>();
+  }
+
+  // Return space_from_viewer = space_from_mojo * mojo_from_viewer
+  auto space_from_viewer = SpaceFromMojo(mojo_from_viewer);
+  if (!space_from_viewer)
+    return nullptr;
+  space_from_viewer->Multiply(mojo_from_viewer);
+  return space_from_viewer;
 }
 
-std::unique_ptr<TransformationMatrix>
-XRReferenceSpace::GetTransformToMojoSpace() {
+std::unique_ptr<TransformationMatrix> XRReferenceSpace::SpaceFromInputForViewer(
+    const TransformationMatrix& mojo_from_input,
+    const TransformationMatrix& mojo_from_viewer) {
+  // Return space_from_input = space_from_mojo * mojo_from_input
+  auto space_from_input = SpaceFromMojo(mojo_from_viewer);
+  if (!space_from_input)
+    return nullptr;
+  space_from_input->Multiply(mojo_from_input);
+  return space_from_input;
+}
+
+std::unique_ptr<TransformationMatrix> XRReferenceSpace::MojoFromSpace() {
   // XRReferenceSpace doesn't do anything special with the base pose, but
   // derived reference spaces (bounded, unbounded, stationary, etc.) have their
   // own custom behavior.
-  TransformationMatrix identity;
-  std::unique_ptr<TransformationMatrix> transform_matrix =
-      TransformBasePose(identity);
 
-  if (!transform_matrix) {
+  // Calculate the offset space's pose (including originOffset) in mojo
+  // space.
+  TransformationMatrix identity;
+  std::unique_ptr<TransformationMatrix> mojo_from_offsetspace =
+      SpaceFromViewer(identity);
+
+  if (!mojo_from_offsetspace) {
     // Transform wasn't possible.
     return nullptr;
   }
 
   // Must account for position and orientation defined by origin offset.
-  transform_matrix->Multiply(origin_offset_->TransformMatrix());
-  return transform_matrix;
+  // Result is mojo_from_offset = mojo_from_ref * ref_from_offset,
+  // where ref_from_offset is originOffset's transform matrix.
+  // TODO(https://crbug.com/1008466): move originOffset to separate class?
+  mojo_from_offsetspace->Multiply(origin_offset_->TransformMatrix());
+  return mojo_from_offsetspace;
 }
 
 TransformationMatrix XRReferenceSpace::OriginOffsetMatrix() {

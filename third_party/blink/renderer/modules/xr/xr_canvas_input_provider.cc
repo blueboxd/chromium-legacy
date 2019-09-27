@@ -111,11 +111,12 @@ void XRCanvasInputProvider::UpdateInputSource(PointerEvent* event) {
   // projection matrix to get a 3D point in space, which is then returned in
   // matrix form so we can use it as an XRInputSource's pointerMatrix.
   XRViewData& view = session_->views()[0];
-  TransformationMatrix pointer_transform_matrix = view.UnprojectPointer(
+  TransformationMatrix viewer_from_pointer = view.UnprojectPointer(
       element_x, element_y, canvas_->OffsetWidth(), canvas_->OffsetHeight());
 
-  // Update the input source's pointer matrix.
-  input_source_->SetPointerTransformMatrix(&pointer_transform_matrix);
+  // Update the pointer pose in input space. For screen tapping, input
+  // space is equivalent to viewer space.
+  input_source_->SetInputFromPointer(&viewer_from_pointer);
 }
 
 void XRCanvasInputProvider::ClearInputSource() {

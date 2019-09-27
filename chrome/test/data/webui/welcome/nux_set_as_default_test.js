@@ -24,9 +24,6 @@ suite('SetAsDefaultTest', function() {
     NuxSetAsDefaultProxyImpl.instance_ = testSetAsDefaultProxy;
 
     PolymerTest.clearBody();
-    const base = document.createElement('base');
-    base.href = 'chrome://welcome/set_as_default/';
-    document.head.appendChild(base);
     testElement = document.createElement('nux-set-as-default');
     document.body.appendChild(testElement);
     let navigateToNextStep;
@@ -35,7 +32,6 @@ suite('SetAsDefaultTest', function() {
       navigateToNextStep = () => resolve();
     });
     testElement.navigateToNextStep_ = navigateToNextStep;
-    document.head.removeChild(base);
   });
 
   teardown(function() {

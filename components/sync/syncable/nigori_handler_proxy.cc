@@ -54,7 +54,8 @@ void NigoriHandlerProxy::OnEncryptionComplete() {
 }
 
 void NigoriHandlerProxy::OnCryptographerStateChanged(
-    Cryptographer* cryptographer) {
+    Cryptographer* cryptographer,
+    bool has_pending_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   syncer::WriteTransaction trans(FROM_HERE, user_share_);
   cryptographer_ = cryptographer->Clone();
@@ -87,8 +88,7 @@ const Cryptographer* NigoriHandlerProxy::GetCryptographer(
   return cryptographer_.get();
 }
 
-const DirectoryCryptographer*
-NigoriHandlerProxy::GetDirectoryCryptographerForNigori(
+const DirectoryCryptographer* NigoriHandlerProxy::GetDirectoryCryptographer(
     const syncable::BaseTransaction* const trans) const {
   return nullptr;
 }

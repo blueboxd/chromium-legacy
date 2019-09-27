@@ -55,6 +55,8 @@ class VarDictionary;
 
 namespace chrome_pdf {
 
+class DocumentLayout;
+
 // Do one time initialization of the SDK.
 // If |enable_v8| is false, then the PDFEngine will not be able to run
 // JavaScript.
@@ -136,8 +138,10 @@ class PDFEngine {
    public:
     virtual ~Client() {}
 
-    // Informs the client about the document's size in pixels.
-    virtual void DocumentSizeUpdated(const pp::Size& size) {}
+    // Proposes a document layout to the client.
+    // TODO(crbug.com/885110): Layout still occurs immediately for now. In the
+    // future, the client will need to accept the layout before it takes effect.
+    virtual void ProposeDocumentLayout(const DocumentLayout& layout) = 0;
 
     // Informs the client that the given rect needs to be repainted.
     virtual void Invalidate(const pp::Rect& rect) {}
@@ -340,8 +344,6 @@ class PDFEngine {
       const std::string& destination) = 0;
   // Gets the index of the most visible page, or -1 if none are visible.
   virtual int GetMostVisiblePage() = 0;
-  // Gets the rectangle of the page including shadow.
-  virtual pp::Rect GetPageRect(int index) = 0;
   // Gets the rectangle of the page not including the shadow.
   virtual pp::Rect GetPageBoundsRect(int index) = 0;
   // Gets the rectangle of the page excluding any additional areas.

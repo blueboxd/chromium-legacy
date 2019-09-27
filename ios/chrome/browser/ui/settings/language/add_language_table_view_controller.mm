@@ -245,6 +245,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 // Shows the scrim overlay.
 - (void)showScrim {
+  self.tableView.accessibilityElementsHidden = YES;
   self.tableView.scrollEnabled = NO;
   [self.tableView addSubview:self.scrimView];
   // Attach constraints to the superview because tableView is a scrollView and
@@ -265,6 +266,7 @@ typedef NS_ENUM(NSInteger, ItemType) {
       }
       completion:^(BOOL finished) {
         [self.scrimView removeFromSuperview];
+        self.tableView.accessibilityElementsHidden = NO;
         self.tableView.scrollEnabled = YES;
       }];
 }

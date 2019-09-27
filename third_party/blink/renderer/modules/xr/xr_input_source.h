@@ -59,7 +59,7 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
 
   uint32_t source_id() const { return state_.source_id; }
 
-  void SetPointerTransformMatrix(const TransformationMatrix*);
+  void SetInputFromPointer(const TransformationMatrix*);
   void SetGamepadConnected(bool state);
 
   // Gamepad::Client
@@ -74,11 +74,11 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   device::mojom::XRTargetRayMode TargetRayMode() const {
     return state_.target_ray_mode;
   }
-  const TransformationMatrix* BasePose() const {
-    return base_pose_matrix_.get();
+  const TransformationMatrix* MojoFromInput() const {
+    return mojo_from_input_.get();
   }
-  const TransformationMatrix* PointerTransform() const {
-    return pointer_transform_matrix_.get();
+  const TransformationMatrix* InputFromPointer() const {
+    return input_from_pointer_.get();
   }
 
   void OnSelectStart();
@@ -132,11 +132,14 @@ class XRInputSource : public ScriptWrappable, public Gamepad::Client {
   Member<XRGripSpace> grip_space_;
   Member<Gamepad> gamepad_;
 
-  std::unique_ptr<TransformationMatrix> base_pose_matrix_;
+  // Input device pose in mojo space. This is the grip pose for
+  // tracked controllers, and the viewer pose for screen input.
+  std::unique_ptr<TransformationMatrix> mojo_from_input_;
 
-  // This is the transform to apply to the base_pose_matrix_ to get the pointer
-  // matrix. In most cases it should be static.
-  std::unique_ptr<TransformationMatrix> pointer_transform_matrix_;
+  // Pointer pose in input device space, this is the transform to apply to
+  // mojo_from_input_ to get the pointer matrix. In most cases it should be
+  // static.
+  std::unique_ptr<TransformationMatrix> input_from_pointer_;
 };
 
 }  // namespace blink

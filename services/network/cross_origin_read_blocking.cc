@@ -680,18 +680,6 @@ CrossOriginReadBlocking::ResponseAnalyzer::ShouldBlockBasedOnHeaders(
   // that are inexpensive should be near the top.
   url::Origin target_origin = url::Origin::Create(request_url);
 
-  // Check if |target_origin| seems to match the factory lock in
-  // |request_initiator_site_lock|.  If so, then treat this request as
-  // same-origin (even if |request_initiator| might be cross-origin).  See
-  // also https://crbug.com/918660.
-  // TODO(lukasza): https://crbug.com/940068: Remove this code section
-  // once request_initiator is always set to the webpage (and never to the
-  // isolated world).
-  if (VerifyRequestInitiatorLock(request_initiator_site_lock, target_origin) ==
-      InitiatorLockCompatibility::kCompatibleLock) {
-    return kAllow;
-  }
-
   // Compute the |initiator| of the request, falling back to a unique origin if
   // there was no initiator or if it was incompatible with the lock. Using a
   // unique origin makes CORB treat the response as cross-origin and thus

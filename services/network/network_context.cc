@@ -1411,12 +1411,12 @@ void NetworkContext::CreateP2PSocketManager(
 }
 
 void NetworkContext::CreateMdnsResponder(
-    mojom::MdnsResponderRequest responder_request) {
+    mojo::PendingReceiver<mojom::MdnsResponder> responder_receiver) {
 #if BUILDFLAG(ENABLE_MDNS)
   if (!mdns_responder_manager_)
     mdns_responder_manager_ = std::make_unique<MdnsResponderManager>();
 
-  mdns_responder_manager_->CreateMdnsResponder(std::move(responder_request));
+  mdns_responder_manager_->CreateMdnsResponder(std::move(responder_receiver));
 #else
   NOTREACHED();
 #endif  // BUILDFLAG(ENABLE_MDNS)

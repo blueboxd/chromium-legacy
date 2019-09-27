@@ -274,11 +274,15 @@ bool ArcIntentHelperBridge::ShouldChromeHandleUrl(const GURL& url) {
     return true;
   }
 
-  for (const IntentFilter& filter : intent_filters_) {
+  for (auto& package_filters : intent_filters_) {
     // The intent helper package is used by ARC to send URLs to Chrome, so it
     // does not count as a candidate.
-    if (filter.Match(url) && !IsIntentHelperPackage(filter.package_name()))
-      return false;
+    if (IsIntentHelperPackage(package_filters.first))
+      continue;
+    for (auto& filter : package_filters.second) {
+      if (filter.Match(url))
+        return false;
+    }
   }
 
   // Didn't find any matches for Android so let Chrome handle it.
@@ -320,10 +324,18 @@ ArcIntentHelperBridge::FilterOutIntentHelper(
 void ArcIntentHelperBridge::OnIntentFiltersUpdated(
     std::vector<IntentFilter> filters) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  intent_filters_ = std::move(filters);
+
+  intent_filters_.clear();
+  for (auto& filter : filters)
+    intent_filters_[filter.package_name()].push_back(std::move(filter));
 
   for (auto& observer : observer_list_)
     observer.OnIntentFiltersUpdated();
 }
 
+const std::vector<IntentFilter>&
+ArcIntentHelperBridge::GetIntentFilterForPackage(
+    const std::string& package_name) {
+  return intent_filters_[package_name];
+}
 }  // namespace arc

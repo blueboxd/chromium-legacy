@@ -90,6 +90,12 @@ struct NET_EXPORT_PRIVATE RevocationPolicy {
 // any failures to |errors|. On failure errors are added to |errors|. On success
 // no errors are added.
 //
+// |deadline|, if not null, will limit the overall amount of time spent doing
+// online revocation checks. If |base::TimeTicks::Now()| exceeds |deadline|, no
+// more revocation checks will be attempted. Note that this is not a hard
+// limit, the deadline may be exceeded by the individual request timetout of a
+// single CertNetFetcher.
+//
 // |certs| must be a successfully validated chain according to RFC 5280 section
 // 6.1, in order from leaf to trust anchor.
 //
@@ -101,6 +107,7 @@ struct NET_EXPORT_PRIVATE RevocationPolicy {
 NET_EXPORT_PRIVATE void CheckValidatedChainRevocation(
     const ParsedCertificateList& certs,
     const RevocationPolicy& policy,
+    base::TimeTicks deadline,
     base::StringPiece stapled_leaf_ocsp_response,
     CertNetFetcher* net_fetcher,
     CertPathErrors* errors,

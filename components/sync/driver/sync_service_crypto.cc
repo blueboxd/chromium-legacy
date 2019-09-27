@@ -73,12 +73,13 @@ class SyncEncryptionObserverProxy : public SyncEncryptionHandler::Observer {
                        observer_));
   }
 
-  void OnCryptographerStateChanged(Cryptographer* cryptographer) override {
+  void OnCryptographerStateChanged(Cryptographer* cryptographer,
+                                   bool has_pending_keys) override {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             &SyncEncryptionHandler::Observer::OnCryptographerStateChanged,
-            observer_, cryptographer));
+            observer_, /*cryptographer=*/nullptr, has_pending_keys));
   }
 
   void OnPassphraseTypeChanged(PassphraseType type,
@@ -330,7 +331,8 @@ void SyncServiceCrypto::OnEncryptionComplete() {
 }
 
 void SyncServiceCrypto::OnCryptographerStateChanged(
-    Cryptographer* cryptographer) {
+    Cryptographer* cryptographer,
+    bool has_pending_keys) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   // Do nothing.
 }

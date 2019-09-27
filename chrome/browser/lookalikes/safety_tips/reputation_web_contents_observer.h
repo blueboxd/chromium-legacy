@@ -59,7 +59,8 @@ class ReputationWebContentsObserver
   void HandleReputationCheckResult(
       security_state::SafetyTipStatus safety_tip_status,
       bool user_ignored,
-      const GURL& url);
+      const GURL& url,
+      const GURL& suggested_url);
 
   // A helper method that calls and resets
   // |reputation_check_callback_for_testing_| if it is set.

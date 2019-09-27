@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">पेंग्विन</translation>
 <translation id="183183971458492120">माहिती लोड करत आहे...</translation>
 <translation id="1838709767668011582">Google साइट</translation>
-<translation id="1839704667838141620">ही फाईल शेअर कशी केली जाते ते बदला</translation>
 <translation id="1844692022597038441">ही फाइल ऑफलाइन उपलब्ध नाही.</translation>
 <translation id="184633654410729720">थाई कीबोर्ड (Kedmanee)</translation>
 <translation id="1847880352285315359">सेव्ह केले</translation>
-<translation id="1864676585353837027">या फायली कशा शेअर केल्या जातात ते बदला</translation>
 <translation id="1864756863218646478">फाइल आढळू शकली नाही.</translation>
 <translation id="1921986354447415460">तुर्की-F कीबोर्ड</translation>
 <translation id="1931134289871235022">स्लोव्हाक</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">नवीन सेवा इंस्टॉल करा</translation>
 <translation id="1947424002851288782">जर्मन कीबोर्ड</translation>
 <translation id="1972984168337863910">फाइल फीडबॅक पॅनलचा विस्तार करा</translation>
-<translation id="197560921582345123">संपादित होऊ शकते</translation>
 <translation id="1984603991036629094">अर्मेनियन Phonetic कीबोर्ड</translation>
 <translation id="2001796770603320721">ड्राइव्ह मध्ये व्यवस्थापित करा</translation>
 <translation id="2009067268969781306">ड्राइव्ह फॉरमॅट त्यावर स्टोअर केलेला डेटा हटवेल. ही क्रिया पहिल्यासारखी केली जाऊ शकत नाही.</translation>
@@ -591,7 +588,6 @@ Google ड्राइव्ह मधील फायली अपडेट क
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">या फायली प्राप्त करताना अंदाजे <ph name="FILE_SIZE" /> मोबाइल डेटा वापरला जाईल.</translation>
 <translation id="7846076177841592234">निवड रद्द करा</translation>
-<translation id="7850851215703745691">या ड्राइव्ह फायली अद्याप शेअर केल्या नाहीत</translation>
 <translation id="7853966320808728790">फ्रेंच बेपो</translation>
 <translation id="7864662577698025113">नवीन सेवा जोडा</translation>
 <translation id="7873831373602885875"><ph name="FOLDER_NAME" /> वर सेव्ह करू शकत नाही. सर्व संपादने डाउनलोड फोल्‍डरमधील <ph name="DOWNLOADS_FOLDER" /> मध्ये सेव्ह केली जातील.</translation>
@@ -607,7 +603,6 @@ Google ड्राइव्ह मधील फायली अपडेट क
 <translation id="7969525169268594403">स्लोव्हेनियन</translation>
 <translation id="7982283708762922719">उंची</translation>
 <translation id="7987485481246785146">सोरानी कुर्दिश अरेबिक-आधारित कीबोर्ड</translation>
-<translation id="799923393800005025">पाहू शकते</translation>
 <translation id="8008366997883261463">कुत्रा</translation>
 <translation id="8028993641010258682">आकार</translation>
 <translation id="8031722894461705849">स्लोव्हाक कीबोर्ड</translation>
@@ -669,8 +664,6 @@ Google ड्राइव्ह मधील फायली अपडेट क
 <translation id="8600173386174225982">फाइल सूची थंबनेल व्ह्यूमध्ये बदलली गेली आहे.</translation>
 <translation id="8601932370724196034">Crostini इमेज फाइल</translation>
 <translation id="8669949407341943408">हलवत आहे...</translation>
-<translation id="8671210955687109937">टिप्पणी देऊ शकत नाही</translation>
-<translation id="8686213429977032554">ही ड्राइव्ह फाईल अद्याप शेअर केलेली नाही</translation>
 <translation id="8698464937041809063">Google रेखांकन</translation>
 <translation id="8714406895390098252">सायकल</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> निवडले.</translation>

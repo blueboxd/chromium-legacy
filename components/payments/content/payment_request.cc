@@ -70,22 +70,6 @@ std::string GetNotSupportedErrorMessage(PaymentRequestSpec* spec) {
   return output;
 }
 
-// Redact shipping address before exposing it in ShippingAddressChangeEvent.
-// https://w3c.github.io/payment-request/#shipping-address-changed-algorithm
-mojom::PaymentAddressPtr RedactShippingAddress(
-    mojom::PaymentAddressPtr address) {
-  DCHECK(address);
-  if (!PaymentsExperimentalFeatures::IsEnabled(
-          features::kWebPaymentsRedactShippingAddress)) {
-    return address;
-  }
-  address->organization.clear();
-  address->phone.clear();
-  address->recipient.clear();
-  address->address_line.clear();
-  return address;
-}
-
 }  // namespace
 
 PaymentRequest::PaymentRequest(
@@ -342,9 +326,9 @@ void PaymentRequest::UpdateWith(mojom::PaymentDetailsPtr details) {
   }
 
   if (state()->selected_instrument() && state()->IsPaymentAppInvoked() &&
-      payment_handler_host_.is_changing()) {
+      payment_handler_host_.is_changing_payment_method()) {
     payment_handler_host_.UpdateWith(
-        PaymentDetailsConverter::ConvertToPaymentRequestDetailsChangeResponse(
+        PaymentDetailsConverter::ConvertToPaymentMethodChangeResponse(
             details, base::BindRepeating(
                          &PaymentInstrument::IsValidForPaymentMethodIdentifier,
                          state()->selected_instrument()->AsWeakPtr())));
@@ -385,7 +369,8 @@ void PaymentRequest::NoUpdatedPaymentDetails() {
 
   spec_->RecomputeSpecForDetails();
 
-  if (state()->IsPaymentAppInvoked() && payment_handler_host_.is_changing()) {
+  if (state()->IsPaymentAppInvoked() &&
+      payment_handler_host_.is_changing_payment_method()) {
     payment_handler_host_.NoUpdatedPaymentDetails();
   }
 }
@@ -513,45 +498,6 @@ bool PaymentRequest::ChangePaymentMethod(const std::string& method_name,
   return true;
 }
 
-bool PaymentRequest::ChangeShippingOption(
-    const std::string& shipping_option_id) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(!shipping_option_id.empty());
-
-  bool is_valid_id = false;
-  if (spec_->details().shipping_options) {
-    for (const auto& option : spec_->GetShippingOptions()) {
-      if (option->id == shipping_option_id) {
-        is_valid_id = true;
-        break;
-      }
-    }
-  }
-
-  if (!state_ || !state_->IsPaymentAppInvoked() || !client_ || !spec_ ||
-      !spec_->request_shipping() || !is_valid_id) {
-    return false;
-  }
-
-  client_->OnShippingOptionChange(shipping_option_id);
-  return true;
-}
-
-bool PaymentRequest::ChangeShippingAddress(
-    mojom::PaymentAddressPtr shipping_address) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  DCHECK(shipping_address);
-
-  if (!state_ || !state_->IsPaymentAppInvoked() || !client_ || !spec_ ||
-      !spec_->request_shipping()) {
-    return false;
-  }
-
-  client_->OnShippingAddressChange(
-      RedactShippingAddress(std::move(shipping_address)));
-  return true;
-}
-
 void PaymentRequest::AreRequestedMethodsSupportedCallback(
     bool methods_supported,
     const std::string& error_message) {
@@ -667,7 +613,16 @@ void PaymentRequest::OnShippingOptionIdSelected(
 
 void PaymentRequest::OnShippingAddressSelected(
     mojom::PaymentAddressPtr address) {
-  client_->OnShippingAddressChange(RedactShippingAddress(std::move(address)));
+  // Redact shipping address before exposing it in ShippingAddressChangeEvent.
+  // https://w3c.github.io/payment-request/#shipping-address-changed-algorithm
+  if (PaymentsExperimentalFeatures::IsEnabled(
+          features::kWebPaymentsRedactShippingAddress)) {
+    address->organization.clear();
+    address->phone.clear();
+    address->recipient.clear();
+    address->address_line.clear();
+  }
+  client_->OnShippingAddressChange(std::move(address));
 }
 
 void PaymentRequest::OnPayerInfoSelected(mojom::PayerDetailPtr payer_info) {

@@ -19,6 +19,9 @@ centralized to this directory. Parts of the code are consumed in;
 * `//content`
 * `//third_party/blink`
 
+NOTE: This feature depends on working with `//content` and `//third_party/blink`
+so it is incompatible with iOS.
+
 ## Directory Structure (WIP)
 
 * `common/` - Shared code; mojo, protos, and C++ code.

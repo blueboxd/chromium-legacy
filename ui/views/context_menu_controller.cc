@@ -19,6 +19,7 @@ void ContextMenuController::ShowContextMenuForView(
   // Use a boolean flag to early-exit out of re-entrant behavior.
   if (is_opening_)
     return;
+  is_opening_ = true;
 
   // We might get deleted while showing the context menu (including as a result
   // of showing it). If so, we need to make sure we're not accessing

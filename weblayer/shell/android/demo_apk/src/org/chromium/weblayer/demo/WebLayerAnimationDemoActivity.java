@@ -155,7 +155,7 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
 
         controller.addObserver(new BrowserObserver() {
             @Override
-            public void displayURLChanged(Uri uri) {
+            public void visibleUrlChanged(Uri uri) {
                 urlView.setText(uri.toString());
             }
         });
@@ -189,7 +189,12 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
             }
         } else {
             // Only call init for main process.
-            WebLayer.getInstance().init(getApplication());
+            WebLayer webLayer = null;
+            try {
+                webLayer = WebLayer.create(getApplication()).get();
+            } catch (Exception e) {
+                throw new RuntimeException("failed loading WebLayer", e);
+            }
 
             super.onCreate(savedInstanceState);
 
@@ -197,7 +202,7 @@ public class WebLayerAnimationDemoActivity extends FragmentActivity {
             mMainView = mainView;
             setContentView(mainView);
 
-            mProfile = WebLayer.getInstance().createProfile(null);
+            mProfile = webLayer.createProfile(null);
 
             createNewFragment(0);
             createNewFragment(1);

@@ -30,7 +30,7 @@ class Video(IntegrationTest):
       t.LoadURL(
         'http://check.googlezip.net/cacheable/video/buck_bunny_tiny.html')
       responses = t.GetHTTPResponses()
-      self.assertEquals(2, len(responses))
+      self.assertEqual(2, len(responses))
       for response in responses:
         self.assertHasProxyHeaders(response)
 
@@ -129,7 +129,7 @@ class Video(IntegrationTest):
           compressed_full_content_length = int(content_range.split('/')[1])
           ofcl = int(self.getChromeProxyOFCL(response))
           # ofcl should be greater than the compressed full content length.
-          self.assertTrue(ofcl > compressed_full_content_length)
+          self.assertGreater(ofcl, compressed_full_content_length)
       self.assertTrue(saw_range_response, 'No range request was seen in test!')
 
   # Check the compressed video has the same frame count, width, height, and
@@ -214,7 +214,7 @@ class Video(IntegrationTest):
         self.assertHasProxyHeaders(response)
         rh = response.response_headers
         if ('content-type' in rh and 'video' in rh['content-type']):
-          self.assertTrue('etag' in rh),
+          self.assertIn('etag', rh),
           self.assertEqual('video/webm', rh['content-type'])
           if video_etag == None:
             video_etag = rh['etag']
@@ -238,7 +238,7 @@ class Video(IntegrationTest):
   # processed in JavaScript on different platforms. Despite getting the same
   # video bytes from the proxy across all platforms, different data is generated
   # out of the window.AudioContext object. As of May 2017, there were only two
-  # known datasets, the second occuring on all tested Android devices. If this
+  # known datasets, the second occurring on all tested Android devices. If this
   # test fails on a new or different platform, examine whether the expected data
   # is drastically different. See crbug.com/723031 for more information.
   @Slow

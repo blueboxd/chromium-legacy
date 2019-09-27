@@ -1932,65 +1932,6 @@
       },
       {
         "args": [
-          "--disable-perfetto",
-          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--avd-name=20190903T160000Z_android_23_google_apis_x86",
-          "--emulator-home=../../.android"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "nonperfetto_content_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "name": "nonperfetto_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-23/google_apis/x86",
-              "location": ".android",
-              "revision": "cfoclSzHrFOS_AcwBL09RQ5PvJByQHu3MX6EbC5aWZIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "f4WdgkPvDdVCE8zBWPzcSIj4N9WFhKp3CSKDWylXuLEC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-23/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "npuCAATVbhmywZwGhI3tMoECTrBBzzyJLpjAPXqtmYYC"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ]
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
           "--gs-results-bucket=chromium-result-details",
           "--recover-devices",
           "--avd-name=20190903T160000Z_android_23_google_apis_x86",
@@ -5937,65 +5878,6 @@
             }
           ],
           "shards": 10
-        },
-        "test": "content_browsertests"
-      },
-      {
-        "args": [
-          "--disable-perfetto",
-          "--gtest_filter=TracingControllerTest.*:BackgroundTracingManagerBrowserTest.*",
-          "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--avd-name=20190716T160000Z_android_28_google_apis_x86",
-          "--emulator-home=../../.android"
-        ],
-        "merge": {
-          "args": [
-            "--bucket",
-            "chromium-result-details",
-            "--test-name",
-            "nonperfetto_content_browsertests"
-          ],
-          "script": "//build/android/pylib/results/presentation/test_results_presentation.py"
-        },
-        "name": "nonperfetto_content_browsertests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "cipd_packages": [
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/avds/android-28/google_apis/x86",
-              "location": ".android",
-              "revision": "J5MFTg7OhekLKsOX7bmkVTSCDzohydCvXrn4sJzy0xsC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/emulator",
-              "location": "third_party/android_sdk/public",
-              "revision": "xhyuoquVvBTcJelgRjMKZeoBVSQRjB7pLVJPt5C9saIC"
-            },
-            {
-              "cipd_package": "chromium/third_party/android_sdk/public/system-images/android-28/google_apis/x86",
-              "location": "third_party/android_sdk/public",
-              "revision": "LDa0XkTjgGYx7Amzg5qjIRgCfc4F_pq7rKMJVdACYx8C"
-            }
-          ],
-          "dimension_sets": [
-            {
-              "cpu": "x86-64",
-              "device_os": null,
-              "device_type": null,
-              "os": "Ubuntu-16.04"
-            }
-          ],
-          "output_links": [
-            {
-              "link": [
-                "https://luci-logdog.appspot.com/v/?s",
-                "=android%2Fswarming%2Flogcats%2F",
-                "${TASK_ID}%2F%2B%2Funified_logcats"
-              ],
-              "name": "shard #${SHARD_INDEX} logcats"
-            }
-          ]
         },
         "test": "content_browsertests"
       },

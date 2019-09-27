@@ -1490,7 +1490,7 @@ blink::WebPagePopup* RenderViewImpl::CreatePopupAndGetWidget(
   // Devtools emulation, which may be currently applied to the
   // |view_render_widget|, should also apply to the new popup. This doesn't
   // happen automatically.
-  popup_widget->ApplyEmulatedScreenMetricsForPopupWidget(render_widget);
+  popup_widget->ApplyEmulatedScreenMetricsForPopupWidget();
 
   if (output_widget)
     *output_widget = popup_widget;

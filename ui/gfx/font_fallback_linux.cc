@@ -17,6 +17,7 @@
 #include "base/no_destructor.h"
 #include "base/trace_event/trace_event.h"
 #include "ui/gfx/font.h"
+#include "ui/gfx/linux/fontconfig_util.h"
 
 namespace gfx {
 
@@ -85,11 +86,6 @@ bool GetFallbackFont(const Font& font,
                      const std::string& locale,
                      base::StringPiece16 text,
                      Font* result) {
-  struct FcPatternDeleter {
-    void operator()(FcPattern* ptr) const { FcPatternDestroy(ptr); }
-  };
-  using ScopedFcPattern = std::unique_ptr<FcPattern, FcPatternDeleter>;
-
   TRACE_EVENT0("fonts", "gfx::GetFallbackFont");
 
   // The text passed must be at least length 1.

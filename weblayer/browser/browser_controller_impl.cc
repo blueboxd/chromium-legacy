@@ -107,7 +107,7 @@ void BrowserControllerImpl::LoadProgressChanged(content::WebContents* source,
 void BrowserControllerImpl::DidNavigateMainFramePostCommit(
     content::WebContents* web_contents) {
   for (auto& observer : observers_)
-    observer.DisplayedURLChanged(web_contents->GetVisibleURL());
+    observer.DisplayedUrlChanged(web_contents->GetVisibleURL());
 }
 
 int BrowserControllerImpl::GetTopControlsHeight() {

@@ -130,6 +130,11 @@ class ModelTypeWorker : public UpdateHandler,
   // clear the update data that has been added so far.
   void AbortMigration();
 
+  // Public for testing.
+  // Returns true if this type should stop communicating because of outstanding
+  // encryption issues and must wait for keys to be updated.
+  bool BlockForEncryption() const;
+
   // Returns the estimate of dynamically allocated memory in bytes.
   size_t EstimateMemoryUsage() const;
 
@@ -176,10 +181,6 @@ class ModelTypeWorker : public UpdateHandler,
   // depends on having downloaded the initial data and having the encryption
   // settings in a good state.
   bool CanCommitItems() const;
-
-  // Returns true if this type should stop communicating because of outstanding
-  // encryption issues and must wait for keys to be updated.
-  bool BlockForEncryption() const;
 
   // Updates the encryption key name stored in |model_type_state_| if it differs
   // from the default encryption key name in |cryptographer_|. Returns whether

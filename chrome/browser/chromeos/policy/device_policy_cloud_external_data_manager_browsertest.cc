@@ -186,8 +186,9 @@ IN_PROC_BROWSER_TEST_F(DevicePolicyCloudExternalDataManagerTest,
   EXPECT_EQ(0, ComputeExternalDataCacheDirectorySize());
 }
 
+// Disabled. See https://crbug.com/1008275.
 IN_PROC_BROWSER_TEST_F(DevicePolicyCloudExternalDataManagerTest,
-                       CleanUpResourceCache) {
+                       DISABLED_CleanUpResourceCache) {
   EXPECT_EQ(0, ComputeExternalDataCacheDirectorySize());
 
   std::string external_data = ReadExternalDataFile(kExternalDataPath);

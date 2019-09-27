@@ -139,6 +139,9 @@ CompositingReasons CompositingReasonFinder::DirectReasonsForPaintProperties(
   if (RequiresCompositingForScrollDependentPosition(*layer))
     reasons |= CompositingReason::kScrollDependentPosition;
 
+  if (style.HasBackdropFilter())
+    reasons |= CompositingReason::kBackdropFilter;
+
   return reasons;
 }
 

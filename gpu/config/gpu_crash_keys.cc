@@ -10,7 +10,11 @@ namespace crash_keys {
 #if !defined(OS_ANDROID)
 crash_reporter::CrashKeyString<16> gpu_vendor_id("gpu-venid");
 crash_reporter::CrashKeyString<16> gpu_device_id("gpu-devid");
-#endif
+#endif  // !OS_ANDROID
+#if defined(OS_WIN)
+crash_reporter::CrashKeyString<16> gpu_sub_sys_id("gpu-subid");
+crash_reporter::CrashKeyString<16> gpu_revision("gpu-rev");
+#endif  // OS_WIN
 crash_reporter::CrashKeyString<64> gpu_driver_version("gpu-driver");
 crash_reporter::CrashKeyString<16> gpu_pixel_shader_version("gpu-psver");
 crash_reporter::CrashKeyString<16> gpu_vertex_shader_version("gpu-vsver");

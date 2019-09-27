@@ -1847,6 +1847,42 @@ TEST_F(ModelTypeWorkerPasswordsTest, ReceiveUndecryptablePasswordEntries) {
                            .password_value());
 }
 
+// Similar to ReceiveDecryptableEntities but for PASSWORDS, which have a custom
+// encryption mechanism.
+TEST_F(ModelTypeWorkerPasswordsTest, ReceiveCorruptedPasswordEntities) {
+  NormalInitialize();
+
+  sync_pb::PasswordSpecificsData unencrypted_password;
+  unencrypted_password.set_password_value(kPassword);
+  sync_pb::EntitySpecifics encrypted_specifics =
+      EncryptPasswordSpecifics(GetNthKeyParams(1), unencrypted_password);
+  // Manipulate the blob to be corrupted.
+  encrypted_specifics.mutable_password()->mutable_encrypted()->set_blob(
+      "corrupted blob");
+
+  // Receive an encrypted password, encrypted with a key that is already known.
+  SyncEntity entity = server()->UpdateFromServer(
+      /*version_offset=*/10, kHash1, encrypted_specifics);
+  worker()->ProcessGetUpdatesResponse(server()->GetProgress(),
+                                      server()->GetContext(), {&entity},
+                                      status_controller());
+  worker()->ApplyUpdates(status_controller());
+
+  // No updates should have reached the processor and worker is blocked for
+  // encryption because the cryptographer isn't ready yet.
+  EXPECT_FALSE(processor()->HasUpdateResponse(kHash1));
+  EXPECT_TRUE(worker()->BlockForEncryption());
+
+  // Allow the cryptographer to decrypt using the first key.
+  AddPendingKey();
+  DecryptPendingKey();
+
+  // Still, no updates should have reached the processor and worker is NOT
+  // blocked for encryption anymore.
+  EXPECT_FALSE(processor()->HasUpdateResponse(kHash1));
+  EXPECT_FALSE(worker()->BlockForEncryption());
+}
+
 // Analogous test fixture but uses BOOKMARKS instead of PREFERENCES, in order
 // to test some special encryption requirements for BOOKMARKS.
 class ModelTypeWorkerBookmarksTest : public ModelTypeWorkerTest {

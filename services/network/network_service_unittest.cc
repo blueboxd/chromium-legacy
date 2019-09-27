@@ -1324,15 +1324,15 @@ class TestNetworkChangeManagerClient
       mojom::NetworkService* network_service)
       : connection_type_(mojom::ConnectionType::CONNECTION_UNKNOWN),
         binding_(this) {
-    mojom::NetworkChangeManagerPtr manager_ptr;
-    mojom::NetworkChangeManagerRequest request(mojo::MakeRequest(&manager_ptr));
-    network_service->GetNetworkChangeManager(std::move(request));
+    mojo::Remote<mojom::NetworkChangeManager> manager_remote;
+    network_service->GetNetworkChangeManager(
+        manager_remote.BindNewPipeAndPassReceiver());
 
     mojom::NetworkChangeManagerClientPtr client_ptr;
     mojom::NetworkChangeManagerClientRequest client_request(
         mojo::MakeRequest(&client_ptr));
     binding_.Bind(std::move(client_request));
-    manager_ptr->RequestNotifications(std::move(client_ptr));
+    manager_remote->RequestNotifications(std::move(client_ptr));
   }
 
   ~TestNetworkChangeManagerClient() override {}

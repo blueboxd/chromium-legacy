@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Пингвин</translation>
 <translation id="183183971458492120">Информације се учитавају...</translation>
 <translation id="1838709767668011582">Google сајт</translation>
-<translation id="1839704667838141620">Промените начин дељења ове датотеке</translation>
 <translation id="1844692022597038441">Ова датотека није доступна ван мреже.</translation>
 <translation id="184633654410729720">Тајска тастатура (Kedmanee)</translation>
 <translation id="1847880352285315359">Сачувано је</translation>
-<translation id="1864676585353837027">Промените начин дељења ових датотека</translation>
 <translation id="1864756863218646478">Није могуће пронаћи датотеку.</translation>
 <translation id="1921986354447415460">турска F тастатура</translation>
 <translation id="1931134289871235022">словачки</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Инсталирајте нову услугу</translation>
 <translation id="1947424002851288782">Језик тастатуре: немачки</translation>
 <translation id="1972984168337863910">Прошири окна за повратне информације о датотекама</translation>
-<translation id="197560921582345123">Може да мења</translation>
 <translation id="1984603991036629094">Јерменска фонетска тастатура</translation>
 <translation id="2001796770603320721">Управљајте на Диску</translation>
 <translation id="2009067268969781306">Форматирањем диска избрисаће се сви подаци сачувани на њему. Ова радња не може да се опозове.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">Откачи директоријум</translation>
 <translation id="3678559383040232393">Малтешка тастатура</translation>
 <translation id="3685122418104378273">Синхронизација са Google диском је подразумевано онемогућена када се користи мобилна веза за пренос података.</translation>
+<translation id="3689865792480713551">Откажите <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Овај уређај не може да се отвори јер његов систем датотека није подржан.</translation>
 <translation id="3741243925913727067">Направите резервне копије слика и видео снимака са медијског уређаја на Google диску.</translation>
 <translation id="3749289110408117711">Назив датотеке</translation>
@@ -466,6 +464,7 @@
 <translation id="6339145975392024142">Америчка интернационална тастатура (PC)</translation>
 <translation id="6346310558342052870">Приступ је ограничен</translation>
 <translation id="6353618411602605519">Језик тастатуре: хрватски</translation>
+<translation id="6356685157277930264">Прозор за повратне информације датотека</translation>
 <translation id="6358884629796491903">Змај</translation>
 <translation id="637062427944097960">Ова датотека је отворена на другом профилу. Пређите на <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />) да бисте је погледали.</translation>
 <translation id="6395575651121294044">Ставки: <ph name="NUMBER_OF_FILES" /></translation>
@@ -591,7 +590,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Преузимање ових датотека ће искористити око <ph name="FILE_SIZE" /> података за мобилне уређаје.</translation>
 <translation id="7846076177841592234">Откажи избор</translation>
-<translation id="7850851215703745691">Ове датотеке на Диску се још увек не деле</translation>
 <translation id="7853966320808728790">Француска BÉPO</translation>
 <translation id="7864662577698025113">Додајте нову услугу</translation>
 <translation id="7873831373602885875">Чување у директоријуму <ph name="FOLDER_NAME" /> није успело. Све измене биће сачуване у директоријуму <ph name="DOWNLOADS_FOLDER" /> у директоријуму Подешавања.</translation>
@@ -607,7 +605,6 @@
 <translation id="7969525169268594403">словеначки</translation>
 <translation id="7982283708762922719">Висина</translation>
 <translation id="7987485481246785146">Сорани курдска тастатура заснована на арапском</translation>
-<translation id="799923393800005025">Може да прегледа</translation>
 <translation id="8008366997883261463">Пас</translation>
 <translation id="8028993641010258682">Величина</translation>
 <translation id="8031722894461705849">Словачка тастатура</translation>
@@ -669,8 +666,6 @@
 <translation id="8600173386174225982">Листа датотека се променила у приказ сличица.</translation>
 <translation id="8601932370724196034">Crostini датотека слике</translation>
 <translation id="8669949407341943408">Премештање...</translation>
-<translation id="8671210955687109937">Може да коментарише</translation>
-<translation id="8686213429977032554">Ова датотека са Диска се још увек не дели</translation>
 <translation id="8698464937041809063">Google цртеж</translation>
 <translation id="8714406895390098252">Бицикл</translation>
 <translation id="8719721339511222681">Изабрали сте ставку <ph name="ENTRY_NAME" />.</translation>

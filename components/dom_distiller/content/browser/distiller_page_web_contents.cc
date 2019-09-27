@@ -100,7 +100,7 @@ void DistillerPageWebContents::DistillPageImpl(const GURL& url,
         ExecuteJavaScript();
       } else {
         // Main frame document has not loaded yet, so wait until it has before
-        // executing JavaScript. It will trigger after DocumentLoadedInFrame is
+        // executing JavaScript. It will trigger after DOMContentLoaded is
         // called for the main frame.
         content::WebContentsObserver::Observe(
             source_page_handle_->web_contents());
@@ -149,7 +149,7 @@ gfx::Size DistillerPageWebContents::GetSizeForNewRenderView(
   return size;
 }
 
-void DistillerPageWebContents::DocumentLoadedInFrame(
+void DistillerPageWebContents::DOMContentLoaded(
     content::RenderFrameHost* render_frame_host) {
   if (render_frame_host ==
       source_page_handle_->web_contents()->GetMainFrame()) {

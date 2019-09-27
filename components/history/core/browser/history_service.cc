@@ -1015,11 +1015,11 @@ void HistoryService::DeleteURL(const GURL& url) {
                                                history_backend_, url));
 }
 
-void HistoryService::DeleteURLsForTest(const std::vector<GURL>& urls) {
+void HistoryService::DeleteURLs(const std::vector<GURL>& urls) {
+  TRACE_EVENT0("browser", "HistoryService::DeleteURLs");
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
-  // We will update the visited links when we observe the delete
-  // notifications.
+  // We will update the visited links when we observe the delete notifications.
   ScheduleTask(PRIORITY_NORMAL, base::BindOnce(&HistoryBackend::DeleteURLs,
                                                history_backend_, urls));
 }

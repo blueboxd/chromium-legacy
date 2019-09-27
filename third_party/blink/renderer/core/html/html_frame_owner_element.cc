@@ -172,8 +172,8 @@ HTMLFrameOwnerElement::HTMLFrameOwnerElement(const QualifiedName& tag_name,
     : HTMLElement(tag_name, document),
       content_frame_(nullptr),
       embedded_content_view_(nullptr),
-      should_lazy_load_children_(DoesParentAllowLazyLoadingChildren(document)) {
-}
+      should_lazy_load_children_(DoesParentAllowLazyLoadingChildren(document)),
+      is_swapping_frames_(false) {}
 
 LayoutEmbeddedContent* HTMLFrameOwnerElement::GetLayoutEmbeddedContent() const {
   // HTMLObjectElement and HTMLEmbedElement may return arbitrary layoutObjects
@@ -316,6 +316,7 @@ void HTMLFrameOwnerElement::FrameOwnerPropertiesChanged() {
   // Don't notify about updates if ContentFrame() is null, for example when
   // the subframe hasn't been created yet.
   if (ContentFrame()) {
+    DCHECK(!is_swapping_frames_);
     GetDocument().GetFrame()->Client()->DidChangeFrameOwnerProperties(this);
   }
 }
@@ -368,7 +369,8 @@ void HTMLFrameOwnerElement::SetEmbeddedContentView(
     }
   }
 
-  FrameOwnerPropertiesChanged();
+  if (!is_swapping_frames_)
+    FrameOwnerPropertiesChanged();
 
   GetDocument().GetRootScrollerController().DidUpdateIFrameFrameView(*this);
 

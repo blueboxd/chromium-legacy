@@ -608,7 +608,10 @@ void ModelTypeWorker::DecryptStoredEntities() {
       }
       if (!DecryptPasswordSpecifics(*cryptographer_, data.specifics,
                                     &specifics)) {
-        ++it;
+        // Decryption error should be permanent (e.g. corrupt data), since
+        // CanDecrypt() above claims decryption keys are up-to-date. Let's
+        // ignore this update to avoid blocking other updates.
+        it = entries_pending_decryption_.erase(it);
         continue;
       }
     } else {

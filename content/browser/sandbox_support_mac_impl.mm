@@ -17,9 +17,8 @@ SandboxSupportMacImpl::SandboxSupportMacImpl() = default;
 
 SandboxSupportMacImpl::~SandboxSupportMacImpl() = default;
 
-void SandboxSupportMacImpl::BindRequest(
-    mojo::PendingReceiver<mojom::SandboxSupportMac> receiver,
-    const service_manager::BindSourceInfo& source_info) {
+void SandboxSupportMacImpl::BindReceiver(
+    mojo::PendingReceiver<mojom::SandboxSupportMac> receiver) {
   receivers_.Add(this, std::move(receiver));
 }
 

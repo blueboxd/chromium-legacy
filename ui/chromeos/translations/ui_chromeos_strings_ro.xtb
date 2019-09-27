@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pinguin</translation>
 <translation id="183183971458492120">Se încarcă informațiile…</translation>
 <translation id="1838709767668011582">Site Google</translation>
-<translation id="1839704667838141620">Modifică modul în care se permite accesul la acest fișier</translation>
 <translation id="1844692022597038441">Acest fișier nu este disponibil offline.</translation>
 <translation id="184633654410729720">Tastatură thailandeză (Kedmanee)</translation>
 <translation id="1847880352285315359">S-a salvat</translation>
-<translation id="1864676585353837027">Modifică modul în care se permite accesul la aceste fișiere</translation>
 <translation id="1864756863218646478">Fișierul nu a putut fi găsit.</translation>
 <translation id="1921986354447415460">Tastatură turcă-F</translation>
 <translation id="1931134289871235022">Slovacă</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Instalează un serviciu nou</translation>
 <translation id="1947424002851288782">Tastatură germană</translation>
 <translation id="1972984168337863910">Extinde panourile cu feedback privind fișierele</translation>
-<translation id="197560921582345123">Poate edita</translation>
 <translation id="1984603991036629094">Tastatură fonetică armeană</translation>
 <translation id="2001796770603320721">Gestionează în Drive</translation>
 <translation id="2009067268969781306">Formatarea unității va șterge toate datele stocate pe unitate. Această acțiune nu poate fi anulată.</translation>
@@ -226,6 +223,7 @@
 <translation id="3645531960514756307">Anulează fixarea dosarului</translation>
 <translation id="3678559383040232393">Tastatură malteză</translation>
 <translation id="3685122418104378273">Sincronizarea cu Google Drive este dezactivată în mod prestabilit la folosirea datelor mobile.</translation>
+<translation id="3689865792480713551">Anulează <ph name="ACTIVITY_DESCRIPTION" />.</translation>
 <translation id="3726463242007121105">Acest dispozitiv nu poate fi deschis, deoarece sistemul său de fișiere nu este acceptat.</translation>
 <translation id="3741243925913727067">Fă backup pentru fotografiile și videoclipurile de pe dispozitivul media pe Google Drive.</translation>
 <translation id="3749289110408117711">Nume de fișier</translation>
@@ -466,6 +464,7 @@
 <translation id="6339145975392024142">S.U.A. internațională (PC)</translation>
 <translation id="6346310558342052870">Acces restricționat</translation>
 <translation id="6353618411602605519">Tastatură croată</translation>
+<translation id="6356685157277930264">Fereastra cu feedback pentru fișiere</translation>
 <translation id="6358884629796491903">Dragon</translation>
 <translation id="637062427944097960">Acest fișier a fost deschis pe alt desktop. Pentru a-l vedea, treceți la <ph name="USER_NAME" /> (<ph name="MAIL_ADDRESS" />).</translation>
 <translation id="6395575651121294044"><ph name="NUMBER_OF_FILES" /> elemente</translation>
@@ -591,7 +590,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Preluarea acestor fișiere va utiliza aproximativ <ph name="FILE_SIZE" /> din datele mobile.</translation>
 <translation id="7846076177841592234">Anulează selecția</translation>
-<translation id="7850851215703745691">La aceste fișiere din Drive nu s-a permis încă accesul</translation>
 <translation id="7853966320808728790">Franceză BÉPO</translation>
 <translation id="7864662577698025113">Adaugă un serviciu nou</translation>
 <translation id="7873831373602885875">Nu se poate salva în <ph name="FOLDER_NAME" />. Toate editările vor fi salvate în <ph name="DOWNLOADS_FOLDER" /> în dosarul Descărcări.</translation>
@@ -607,7 +605,6 @@
 <translation id="7969525169268594403">Slovenă</translation>
 <translation id="7982283708762922719">Înălțime</translation>
 <translation id="7987485481246785146">Tastatură kurdă sorani bazată pe arabă</translation>
-<translation id="799923393800005025">Poate vedea</translation>
 <translation id="8008366997883261463">Terier</translation>
 <translation id="8028993641010258682">Dimensiune</translation>
 <translation id="8031722894461705849">Tastatură slovacă</translation>
@@ -669,8 +666,6 @@
 <translation id="8600173386174225982">Lista de fișiere s-a modificat la vizualizare cu miniaturi.</translation>
 <translation id="8601932370724196034">Fișier imagine Crostini</translation>
 <translation id="8669949407341943408">Se mută...</translation>
-<translation id="8671210955687109937">Poate face comentarii</translation>
-<translation id="8686213429977032554">La acest fișier din Drive nu s-a permis încă accesul</translation>
 <translation id="8698464937041809063">Desen Google</translation>
 <translation id="8714406895390098252">Bicicletă</translation>
 <translation id="8719721339511222681">S-a selectat <ph name="ENTRY_NAME" />.</translation>

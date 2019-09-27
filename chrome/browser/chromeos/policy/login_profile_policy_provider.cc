@@ -44,6 +44,10 @@ const DevicePolicyToUserPolicyMapEntry kDevicePoliciesWithPolicyOptionsMap[] = {
     {key::kDeviceLoginScreenHighContrastEnabled, key::kHighContrastEnabled},
     {key::kDeviceLoginScreenVirtualKeyboardEnabled,
      key::kVirtualKeyboardEnabled},
+    {key::kDeviceLoginScreenDictationEnabled, key::kDictationEnabled},
+    {key::kDeviceLoginScreenSelectToSpeakEnabled, key::kSelectToSpeakEnabled},
+    {key::kDeviceLoginScreenCursorHighlightEnabled,
+     key::kCursorHighlightEnabled},
 };
 
 const DevicePolicyToUserPolicyMapEntry kRecommendedDevicePoliciesMap[] = {

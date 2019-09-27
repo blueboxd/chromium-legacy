@@ -96,6 +96,9 @@ const base::Feature kEnableBackgroundBlur{"EnableBackgroundBlur",
 const base::Feature kSwipingFromLeftEdgeToGoBack{
     "SwipingFromLeftEdgeToGoBack", base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kDragFromShelfToHomeOrOverview{
+    "DragFromShelfToHomeOrOverview", base::FEATURE_DISABLED_BY_DEFAULT};
+
 bool IsHideArcMediaNotificationsEnabled() {
   return base::FeatureList::IsEnabled(kMediaSessionNotification) &&
          base::FeatureList::IsEnabled(kHideArcMediaNotifications);
@@ -179,6 +182,10 @@ bool IsBackgroundBlurEnabled() {
 
 bool IsSwipingFromLeftEdgeToGoBackEnabled() {
   return base::FeatureList::IsEnabled(kSwipingFromLeftEdgeToGoBack);
+}
+
+bool IsDragFromShelfToHomeOrOverviewEnabled() {
+  return base::FeatureList::IsEnabled(kDragFromShelfToHomeOrOverview);
 }
 
 }  // namespace features

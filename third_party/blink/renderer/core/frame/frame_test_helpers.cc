@@ -647,10 +647,6 @@ void TestWebWidgetClient::SetBackgroundColor(SkColor color) {
   layer_tree_host()->set_background_color(color);
 }
 
-void TestWebWidgetClient::SetAllowGpuRasterization(bool allow) {
-  layer_tree_host()->SetHasGpuRasterizationTrigger(allow);
-}
-
 void TestWebWidgetClient::SetPageScaleStateAndLimits(
     float page_scale_factor,
     bool is_pinch_gesture_active,

@@ -44,10 +44,14 @@ var global = {
     locale: 'en-US',
     weekStartDay: WeekDay.Sunday,
     dayLabels: ['S', 'M', 'T', 'W', 'T', 'F', 'S'],
+    ampmLabels: ['AM', 'PM'],
     shortMonthLabels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'],
     isLocaleRTL: false,
     isFormControlsRefreshEnabled: false,
     mode: 'date',
+    hasAMPM: false,
+    hasSecond: false,
+    hasMillisecond: false,
     weekLabel: 'Week',
     anchorRectInScreen: new Rectangle(0, 0, 0, 0),
     currentValue: null
@@ -836,6 +840,8 @@ function openCalendarPicker() {
   if (global.params.isFormControlsRefreshEnabled) {
     if (global.params.mode == 'month') {
       return initializeMonthPicker(global.params);
+    } else if (global.params.mode == 'time') {
+      return initializeTimePicker(global.params);
     }
   }
 

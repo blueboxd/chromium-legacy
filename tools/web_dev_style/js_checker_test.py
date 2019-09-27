@@ -38,7 +38,7 @@ class JsCheckerTest(unittest.TestCase):
   def testBindThisFails(self):
     lines = [
         'let bound = this.method_.bind(this);',
-        "cr.doc.addEventListener('click', this.onClick_.bind(this));",
+        "document.addEventListener('click', this.onClick_.bind(this));",
         'this.api_.onEvent = this.onClick_.bind(this);',
         'this.api_.getThinger(this.gotThinger_.bind(this));',
         'this.api_.getThinger(this.gotThinger_.bind(this, param1, param2));',

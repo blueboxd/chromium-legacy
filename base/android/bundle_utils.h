@@ -18,9 +18,6 @@ class BASE_EXPORT BundleUtils {
   // Returns true if the current build is a bundle.
   static bool IsBundle();
 
-  // dlopen wrapper that works for native libraries in dynamic feature modules.
-  static void* DlOpenModuleLibrary(const std::string& libary_name);
-
   // dlopen wrapper that works for partitioned native libraries in dynamic
   // feature modules. This routine looks up the partition's address space in a
   // table of main library symbols, and uses it when loading the feature

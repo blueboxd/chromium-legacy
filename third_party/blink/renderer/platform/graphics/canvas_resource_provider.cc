@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/stl_util.h"
+#include "build/build_config.h"
 #include "cc/paint/decode_stashing_image_provider.h"
 #include "cc/tiles/software_image_decode_cache.h"
 #include "components/viz/common/resources/resource_format_utils.h"
@@ -684,6 +685,11 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
   const Vector<CanvasResourceType>& fallback_list =
       GetResourceTypeFallbackList(usage);
 
+#if defined(OS_ANDROID)
+  // TODO(khushalsagar): Re-enable these if we're using SurfaceControl and
+  // GMBs allow us to overlay these resources.
+  const bool is_gpu_memory_buffer_image_allowed = false;
+#else
   const bool is_gpu_memory_buffer_image_allowed =
       SharedGpuContext::IsGpuCompositingEnabled() && context_provider_wrapper &&
       (presentation_mode & kAllowImageChromiumPresentationMode) &&
@@ -692,6 +698,7 @@ std::unique_ptr<CanvasResourceProvider> CanvasResourceProvider::Create(
       gpu::IsImageFromGpuMemoryBufferFormatSupported(
           color_params.GetBufferFormat(),
           context_provider_wrapper->ContextProvider()->GetCapabilities());
+#endif
 
   const bool is_swap_chain_allowed =
       SharedGpuContext::IsGpuCompositingEnabled() && context_provider_wrapper &&

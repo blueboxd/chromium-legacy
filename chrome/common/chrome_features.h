@@ -295,6 +295,9 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kKidsManagementUrlClassification;
 
 COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kLegacyTLSWarnings;
+
+COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kLookalikeUrlNavigationSuggestionsUI;
 
 #if defined(OS_MACOSX)
@@ -525,6 +528,8 @@ COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWebRtcRemoteEventLog;
 COMPONENT_EXPORT(CHROME_FEATURES)
 extern const base::Feature kWebRtcRemoteEventLogGzipped;
+COMPONENT_EXPORT(CHROME_FEATURES)
+extern const base::Feature kWebUIA11yEnhancements;
 #endif
 
 COMPONENT_EXPORT(CHROME_FEATURES) extern const base::Feature kWebUIDarkMode;

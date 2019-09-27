@@ -879,15 +879,15 @@ void MdnsResponderManager::Start() {
 }
 
 void MdnsResponderManager::CreateMdnsResponder(
-    mojom::MdnsResponderRequest request) {
+    mojo::PendingReceiver<mojom::MdnsResponder> receiver) {
   if (start_result_ == SocketHandlerStartResult::UNSPECIFIED ||
       start_result_ == SocketHandlerStartResult::ALL_FAILURE) {
     LOG(ERROR) << "The mDNS responder manager is not started yet.";
     ReportServiceError(MdnsResponderServiceError::kFailToCreateResponder);
-    request = nullptr;
+    receiver = mojo::NullReceiver();
     return;
   }
-  auto responder = std::make_unique<MdnsResponder>(std::move(request), this);
+  auto responder = std::make_unique<MdnsResponder>(std::move(receiver), this);
   responders_.insert(std::move(responder));
 }
 
@@ -1138,12 +1138,13 @@ int MdnsResponderManager::SocketHandler::HandlePacket(int result) {
   return result;
 }
 
-MdnsResponder::MdnsResponder(mojom::MdnsResponderRequest request,
-                             MdnsResponderManager* manager)
-    : binding_(this, std::move(request)),
+MdnsResponder::MdnsResponder(
+    mojo::PendingReceiver<mojom::MdnsResponder> receiver,
+    MdnsResponderManager* manager)
+    : receiver_(this, std::move(receiver)),
       manager_(manager),
       name_generator_(manager_->name_generator()) {
-  binding_.set_connection_error_handler(
+  receiver_.set_disconnect_handler(
       base::BindOnce(&MdnsResponderManager::OnMojoConnectionError,
                      base::Unretained(manager_), this));
 }
@@ -1163,7 +1164,7 @@ void MdnsResponder::CreateNameForAddress(
   if (!address.IsValid()) {
     LOG(ERROR) << "Invalid IP address to create a name for";
     ReportServiceError(MdnsResponderServiceError::kInvalidIpToRegisterName);
-    binding_.Close();
+    receiver_.reset();
     manager_->OnMojoConnectionError(this);
     return;
   }

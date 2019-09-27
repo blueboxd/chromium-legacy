@@ -52,8 +52,8 @@ class WrappedSkImage : public SharedImageBacking {
   }
 
   void Destroy() override {
-    DCHECK(backend_texture_.isValid());
-    DeleteGrBackendTexture(context_state_, &backend_texture_);
+    promise_texture_.reset();
+    image_.reset();
   }
 
   bool IsCleared() const override { return cleared_; }
@@ -89,7 +89,7 @@ class WrappedSkImage : public SharedImageBacking {
     DCHECK(context_state_->IsCurrent(nullptr));
 
     return SkSurface::MakeFromBackendTexture(
-        context_state_->gr_context(), backend_texture_,
+        context_state_->gr_context(), image_->getBackendTexture(false),
         kTopLeft_GrSurfaceOrigin, final_msaa_count, GetSkColorType(),
         color_space().ToSkColorSpace(), &surface_props);
   }
@@ -130,9 +130,6 @@ class WrappedSkImage : public SharedImageBacking {
 
     context_state_->set_need_context_state_reset(true);
 
-    // Initializing to bright green makes it obvious if the pixels are not
-    // properly set before they are displayed (e.g. https://crbug.com/956555).
-    // We don't do this on release builds because there is a slight overhead.
 #if BUILDFLAG(ENABLE_VULKAN)
     auto is_protected = context_state_->GrContextIsVulkan() &&
                                 context_state_->vk_context_provider()
@@ -144,45 +141,63 @@ class WrappedSkImage : public SharedImageBacking {
     auto is_protected = GrProtected::kNo;
 #endif
 
-#if DCHECK_IS_ON()
-    backend_texture_ = context_state_->gr_context()->createBackendTexture(
-        size().width(), size().height(), GetSkColorType(), SkColors::kGreen,
-        GrMipMapped::kNo, GrRenderable::kYes, is_protected);
-#else
-    backend_texture_ = context_state_->gr_context()->createBackendTexture(
-        size().width(), size().height(), GetSkColorType(), GrMipMapped::kNo,
-        GrRenderable::kYes, is_protected);
-#endif
-
-    if (!backend_texture_.isValid())
-      return false;
-
     if (!data.empty()) {
-      SkBitmap bitmap;
-      if (!bitmap.installPixels(info, const_cast<uint8_t*>(data.data()),
-                                info.minRowBytes())) {
-        return false;
+      if (format() == viz::ResourceFormat::ETC1) {
+        auto sk_data = SkData::MakeWithCopy(data.data(), data.size());
+        image_ = SkImage::MakeFromCompressed(
+            context_state_->gr_context(), sk_data, size().width(),
+            size().height(), SkImage::kETC1_CompressionType);
+      } else {
+        SkBitmap bitmap;
+        if (!bitmap.installPixels(info, const_cast<uint8_t*>(data.data()),
+                                  info.minRowBytes())) {
+          return false;
+        }
+        image_ = SkImage::MakeFromBitmap(bitmap);
+        // Move image to GPU
+        if (image_)
+          image_ = image_->makeTextureImage(context_state_->gr_context());
       }
-      sk_sp<SkSurface> surface = SkSurface::MakeFromBackendTexture(
-          context_state_->gr_context(), backend_texture_,
-          kTopLeft_GrSurfaceOrigin, /*sampleCnt=*/0, GetSkColorType(),
-          color_space().ToSkColorSpace(), /*surfaceProps=*/nullptr);
-      surface->writePixels(bitmap, /*dstX=*/0, /*dstY=*/0);
+
+      if (!image_)
+        return false;
+
       OnWriteSucceeded();
+    } else {
+      // Initializing to bright green makes it obvious if the pixels are not
+      // properly set before they are displayed (e.g. https://crbug.com/956555).
+      // We don't do this on release builds because there is a slight overhead.
+
+#if DCHECK_IS_ON()
+      auto backend_texture = context_state_->gr_context()->createBackendTexture(
+          size().width(), size().height(), GetSkColorType(), SkColors::kBlue,
+          GrMipMapped::kNo, GrRenderable::kYes, is_protected);
+#else
+      auto backend_texture = context_state_->gr_context()->createBackendTexture(
+          size().width(), size().height(), GetSkColorType(), GrMipMapped::kNo,
+          GrRenderable::kYes, is_protected);
+#endif
+      image_ = SkImage::MakeFromAdoptedTexture(
+          context_state_->gr_context(), backend_texture,
+          GrSurfaceOrigin::kTopLeft_GrSurfaceOrigin, info.colorType(),
+          info.alphaType(), color_space().ToSkColorSpace());
     }
 
-    promise_texture_ = SkPromiseImageTexture::Make(backend_texture_);
+    auto backend_texture = image_->getBackendTexture(true);
+    DCHECK(backend_texture.isValid());
 
-    switch (backend_texture_.backend()) {
+    promise_texture_ = SkPromiseImageTexture::Make(backend_texture);
+
+    switch (backend_texture.backend()) {
       case GrBackendApi::kOpenGL: {
         GrGLTextureInfo tex_info;
-        if (backend_texture_.getGLTextureInfo(&tex_info))
+        if (backend_texture.getGLTextureInfo(&tex_info))
           tracing_id_ = tex_info.fID;
         break;
       }
       case GrBackendApi::kVulkan: {
         GrVkImageInfo image_info;
-        if (backend_texture_.getVkImageInfo(&image_info))
+        if (backend_texture.getVkImageInfo(&image_info))
           tracing_id_ = reinterpret_cast<uint64_t>(image_info.fImage);
         break;
       }
@@ -190,13 +205,14 @@ class WrappedSkImage : public SharedImageBacking {
         NOTREACHED();
         return false;
     }
+
     return true;
   }
 
   SharedContextState* const context_state_;
 
-  GrBackendTexture backend_texture_;
   sk_sp<SkPromiseImageTexture> promise_texture_;
+  sk_sp<SkImage> image_;
 
   bool cleared_ = false;
 

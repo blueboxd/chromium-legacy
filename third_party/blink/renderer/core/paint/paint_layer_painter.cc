@@ -538,12 +538,17 @@ PaintResult PaintLayerPainter::PaintLayerContents(
                                    local_painting_info, paint_flags);
     }
 
-    if (!is_painting_overlay_scrollbars && paint_layer_.PaintsWithFilters() &&
-        display_item_list_size_before_painting ==
-            context.GetPaintController().NewDisplayItemList().size()) {
-      // If a layer with filters painted nothing, we need to issue a no-op
-      // display item to ensure the filters won't be ignored.
-      PaintEmptyContentForFilters(context);
+    if (!is_painting_overlay_scrollbars) {
+      // For filters, if the layer painted nothing, we need to issue a no-op
+      // display item to ensure the filters won't be ignored. For backdrop
+      // filters, we issue the display item regardless of other paintings to
+      // ensure correct bounds of the composited layer for the backdrop filter.
+      if ((paint_layer_.PaintsWithFilters() &&
+           display_item_list_size_before_painting ==
+               context.GetPaintController().NewDisplayItemList().size()) ||
+          paint_layer_.GetLayoutObject().HasBackdropFilter()) {
+        PaintEmptyContentForFilters(context);
+      }
     }
   }  // FilterPainter block
 
@@ -879,7 +884,8 @@ void PaintLayerPainter::FillMaskingFragment(GraphicsContext& context,
 // Generate a no-op DrawingDisplayItem to ensure a non-empty chunk for the
 // filter without content.
 void PaintLayerPainter::PaintEmptyContentForFilters(GraphicsContext& context) {
-  DCHECK(paint_layer_.PaintsWithFilters());
+  DCHECK(paint_layer_.PaintsWithFilters() ||
+         paint_layer_.GetLayoutObject().HasBackdropFilter());
 
   ScopedPaintChunkProperties paint_chunk_properties(
       context.GetPaintController(),

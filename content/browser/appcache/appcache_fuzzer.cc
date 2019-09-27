@@ -14,6 +14,7 @@
 #include "content/browser/appcache/chrome_appcache_service.h"
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_task_environment.h"
+#include "content/public/test/test_browser_context.h"
 #include "content/test/test_content_browser_client.h"
 #include "content/test/test_content_client.h"
 #include "mojo/core/embedder/embedder.h"
@@ -47,11 +48,11 @@ struct Env {
     appcache_service = base::MakeRefCounted<ChromeAppCacheService>(
         /*proxy=*/nullptr, /*partition=*/nullptr);
 
-    base::PostTask(FROM_HERE, {BrowserThread::UI},
-                   base::BindOnce(&ChromeAppCacheService::Initialize,
-                                  appcache_service, base::FilePath(),
-                                  /*browser_context=*/nullptr,
-                                  /*special_storage_policy=*/nullptr));
+    base::PostTask(
+        FROM_HERE, {BrowserThread::UI},
+        base::BindOnce(&ChromeAppCacheService::Initialize, appcache_service,
+                       base::FilePath(), &test_browser_context,
+                       /*special_storage_policy=*/nullptr));
     task_environment.RunUntilIdle();
   }
 
@@ -59,6 +60,7 @@ struct Env {
   scoped_refptr<ChromeAppCacheService> appcache_service;
   std::unique_ptr<TestContentClient> test_content_client;
   std::unique_ptr<TestContentBrowserClient> test_content_browser_client;
+  TestBrowserContext test_browser_context;
 
   // used by ICU integration.
   base::AtExitManager at_exit_manager;

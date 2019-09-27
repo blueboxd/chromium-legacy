@@ -5,6 +5,7 @@
 #include "chrome/browser/ui/screen_capture_notification_ui.h"
 
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/chrome_views_export.h"
 #include "chrome/grit/generated_resources.h"
@@ -69,11 +70,11 @@ class NotificationBarClientView : public views::ClientView {
 };
 
 // ScreenCaptureNotificationUI implementation using Views.
-class ScreenCaptureNotificationUIViews
-    : public ScreenCaptureNotificationUI,
-      public views::WidgetDelegateView,
-      public views::ButtonListener,
-      public views::LinkListener {
+class ScreenCaptureNotificationUIViews : public ScreenCaptureNotificationUI,
+                                         public views::WidgetDelegateView,
+                                         public views::ButtonListener,
+                                         public views::LinkListener,
+                                         public views::ViewObserver {
  public:
   explicit ScreenCaptureNotificationUIViews(const base::string16& text);
   ~ScreenCaptureNotificationUIViews() override;
@@ -82,9 +83,6 @@ class ScreenCaptureNotificationUIViews
   gfx::NativeViewId OnStarted(
       base::OnceClosure stop_callback,
       content::MediaStreamUI::SourceCallback source_callback) override;
-
-  // views::View:
-  void Layout() override;
 
   // views::WidgetDelegateView:
   void DeleteDelegate() override;
@@ -102,6 +100,9 @@ class ScreenCaptureNotificationUIViews
   // views::LinkListener:
   void LinkClicked(views::Link* source, int event_flags) override;
 
+  // views::ViewObserver:
+  void OnViewBoundsChanged(View* observed_view) override;
+
  private:
   // Helper to call |stop_callback_|.
   void NotifyStopped();
@@ -110,6 +111,7 @@ class ScreenCaptureNotificationUIViews
 
   base::OnceClosure stop_callback_;
   content::MediaStreamUI::SourceCallback source_callback_;
+  ScopedObserver<views::View, views::ViewObserver> bounds_observer_{this};
   NotificationBarClientView* client_view_ = nullptr;
   views::ImageView* gripper_ = nullptr;
   views::Label* label_ = nullptr;
@@ -156,6 +158,12 @@ ScreenCaptureNotificationUIViews::ScreenCaptureNotificationUIViews(
   hide_link->set_listener(this);
   hide_link->SetUnderline(false);
   hide_link_ = AddChildView(std::move(hide_link));
+
+  // The client rect for NotificationBarClientView uses the bounds for the
+  // following views.
+  bounds_observer_.Add(source_button_);
+  bounds_observer_.Add(stop_button_);
+  bounds_observer_.Add(hide_link_);
 }
 
 ScreenCaptureNotificationUIViews::~ScreenCaptureNotificationUIViews() {
@@ -224,15 +232,6 @@ gfx::NativeViewId ScreenCaptureNotificationUIViews::OnStarted(
 #endif
 }
 
-void ScreenCaptureNotificationUIViews::Layout() {
-  View::Layout();
-
-  gfx::Rect client_rect = source_button_->bounds();
-  client_rect.Union(stop_button_->bounds());
-  client_rect.Union(hide_link_->bounds());
-  client_view_->set_client_rect(client_rect);
-}
-
 void ScreenCaptureNotificationUIViews::DeleteDelegate() {
   NotifyStopped();
 }
@@ -290,6 +289,14 @@ void ScreenCaptureNotificationUIViews::ButtonPressed(views::Button* sender,
 void ScreenCaptureNotificationUIViews::LinkClicked(views::Link* source,
                                                    int event_flags) {
   GetWidget()->Minimize();
+}
+
+void ScreenCaptureNotificationUIViews::OnViewBoundsChanged(
+    View* observed_view) {
+  gfx::Rect client_rect = source_button_->bounds();
+  client_rect.Union(stop_button_->bounds());
+  client_rect.Union(hide_link_->bounds());
+  client_view_->set_client_rect(client_rect);
 }
 
 void ScreenCaptureNotificationUIViews::NotifySourceChange() {

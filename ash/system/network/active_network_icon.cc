@@ -78,7 +78,8 @@ void ActiveNetworkIcon::GetConnectionStatusStrings(Type type,
   }
   // Check for Activating first since activating networks may be connected.
   if (network && network->type == NetworkType::kCellular &&
-      network->cellular->activation_state == ActivationStateType::kActivating) {
+      network->type_state->get_cellular()->activation_state ==
+          ActivationStateType::kActivating) {
     base::string16 activating_string = l10n_util::GetStringFUTF16(
         IDS_ASH_STATUS_TRAY_NETWORK_ACTIVATING, network_name);
     if (a11y_name)

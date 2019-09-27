@@ -291,6 +291,9 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_HTML_PARSE_HTML_SUBSET"
                  file="html/parse_html_subset.html" type="chrome_html"
                  compress="gzip" />
+      <structure name="IDR_WEBUI_HTML_TEST_LOADER"
+                 file="html/test_loader.html" type="chrome_html"
+                 compress="gzip"/>
       <structure name="IDR_WEBUI_HTML_UTIL"
                  file="html/util.html" type="chrome_html" compress="gzip" />
 
@@ -428,6 +431,9 @@ without changes to the corresponding grd file. -->
       <structure name="IDR_WEBUI_JS_PARSE_HTML_SUBSET"
                  file="js/parse_html_subset.js" type="chrome_html"
                  compress="gzip" />
+      <structure name="IDR_WEBUI_JS_TEST_LOADER"
+                 file="js/test_loader.js" type="chrome_html"
+                 compress="gzip"/>
       <structure name="IDR_WEBUI_JS_UTIL"
                  file="js/util.js" type="chrome_html" compress="gzip"
                  flattenhtml="true" />

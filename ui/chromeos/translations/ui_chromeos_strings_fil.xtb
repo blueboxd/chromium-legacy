@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Penguin</translation>
 <translation id="183183971458492120">Nilo-load ang impormasyon...</translation>
 <translation id="1838709767668011582">Site ng Google</translation>
-<translation id="1839704667838141620">Baguhin kung paano ibinabahagi ang file na ito</translation>
 <translation id="1844692022597038441">Hindi available offline ang file na ito.</translation>
 <translation id="184633654410729720">Thai keyboard (Kedmanee)</translation>
 <translation id="1847880352285315359">Na-save</translation>
-<translation id="1864676585353837027">Baguhin kung paano ibinabahagi ang mga file na ito</translation>
 <translation id="1864756863218646478">Hindi mahanap ang file.</translation>
 <translation id="1921986354447415460">Turkish-F na keyboard</translation>
 <translation id="1931134289871235022">Slovak</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Mag-install ng bagong serbisyo</translation>
 <translation id="1947424002851288782">German na keyboard</translation>
 <translation id="1972984168337863910">I-expand ang mga panel ng feedback ng mga file</translation>
-<translation id="197560921582345123">Makakapag-edit</translation>
 <translation id="1984603991036629094">Armenian na Phonetic keyboard</translation>
 <translation id="2001796770603320721">Pamahalaan sa Drive</translation>
 <translation id="2009067268969781306">Kapag nag-format ng drive, made-delete ang lahat ng data na naka-store doon. Hindi puwedeng i-undo ang pagkilos na ito.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Ang pagkuha sa mga file na ito ay gagamit ng humigit-kumulang <ph name="FILE_SIZE" /> (na) mobile data.</translation>
 <translation id="7846076177841592234">Kanselahin ang pinili</translation>
-<translation id="7850851215703745691">Hindi pa ibinabahagi ang mga file sa Drive na ito</translation>
 <translation id="7853966320808728790">French na BÉPO</translation>
 <translation id="7864662577698025113">Magdagdag ng bagong serbisyo</translation>
 <translation id="7873831373602885875">Hindi maaaring mag-save sa <ph name="FOLDER_NAME" />. Mase-save ang lahat ng pag-edit sa <ph name="DOWNLOADS_FOLDER" /> sa folder na Mga Download.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">Slovenian</translation>
 <translation id="7982283708762922719">Taas</translation>
 <translation id="7987485481246785146">Keyboard na batay sa Sorani Kurdish Arabic</translation>
-<translation id="799923393800005025">Makakatingin</translation>
 <translation id="8008366997883261463">Aso</translation>
 <translation id="8028993641010258682">Laki</translation>
 <translation id="8031722894461705849">Slovak na keyboard</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">Naging thumbnail view ang listahan ng file.</translation>
 <translation id="8601932370724196034">Crostini image file</translation>
 <translation id="8669949407341943408">Inililipat...</translation>
-<translation id="8671210955687109937">Makakapagkomento</translation>
-<translation id="8686213429977032554">Hindi pa ibinabahagi ang file sa Drive na ito</translation>
 <translation id="8698464937041809063">Drawing ng Google</translation>
 <translation id="8714406895390098252">Bisikleta</translation>
 <translation id="8719721339511222681">Pinili ang <ph name="ENTRY_NAME" />.</translation>

@@ -7,6 +7,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/prefs/pref_service.h"
@@ -58,6 +59,36 @@ TEST(CrostiniFeaturesTest, TestExportImportUIAllowed) {
   profile.GetPrefs()->SetBoolean(
       crostini::prefs::kUserCrostiniExportImportUIAllowedByPolicy, false);
   EXPECT_FALSE(crostini_features.IsExportImportUIAllowed(&profile));
+}
+
+TEST(CrostiniFeaturesTest, TestRootAccessAllowed) {
+  content::BrowserTaskEnvironment task_environment;
+  TestingProfile profile;
+  FakeCrostiniFeatures crostini_features;
+  base::test::ScopedFeatureList scoped_feature_list;
+
+  // Set up for success.
+  crostini_features.set_ui_allowed(true);
+  scoped_feature_list.InitWithFeatures(
+      {features::kCrostiniAdvancedAccessControls}, {});
+  profile.GetPrefs()->SetBoolean(
+      crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, true);
+
+  // Success.
+  EXPECT_TRUE(crostini_features.IsRootAccessAllowed(&profile));
+
+  // Pref off.
+  profile.GetPrefs()->SetBoolean(
+      crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, false);
+  EXPECT_FALSE(crostini_features.IsRootAccessAllowed(&profile));
+
+  // Feature disabled.
+  {
+    base::test::ScopedFeatureList feature_list_disabled;
+    feature_list_disabled.InitWithFeatures(
+        {}, {features::kCrostiniAdvancedAccessControls});
+    EXPECT_TRUE(crostini_features.IsRootAccessAllowed(&profile));
+  }
 }
 
 }  // namespace crostini

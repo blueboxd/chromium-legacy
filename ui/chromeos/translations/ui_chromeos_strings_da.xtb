@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pingvin</translation>
 <translation id="183183971458492120">Indlæser oplysninger...</translation>
 <translation id="1838709767668011582">Google-website</translation>
-<translation id="1839704667838141620">Rediger, hvordan denne fil deles</translation>
 <translation id="1844692022597038441">Denne fil er ikke tilgængelig offline.</translation>
 <translation id="184633654410729720">Thailandsk tastatur (Kedmanee)</translation>
 <translation id="1847880352285315359">Gemt</translation>
-<translation id="1864676585353837027">Rediger, hvordan disse filer deles</translation>
 <translation id="1864756863218646478">Filen blev ikke fundet.</translation>
 <translation id="1921986354447415460">Tyrkisk F-tastatur</translation>
 <translation id="1931134289871235022">Slovakisk</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Installer ny tjeneste</translation>
 <translation id="1947424002851288782">Tysk tastatur</translation>
 <translation id="1972984168337863910">Udvid paneler med feedback til filer</translation>
-<translation id="197560921582345123">Kan redigere</translation>
 <translation id="1984603991036629094">Armensk fonetisk tastatur</translation>
 <translation id="2001796770603320721">Administrer i Drev</translation>
 <translation id="2009067268969781306">Formatering af et drev sletter alle de data, der er gemt på det. Denne handling kan ikke fortrydes.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Hvis du henter disse filer, bruge du ca. <ph name="FILE_SIZE" /> mobildata.</translation>
 <translation id="7846076177841592234">Annuller valg</translation>
-<translation id="7850851215703745691">Disse Drev-filer deles ikke endnu</translation>
 <translation id="7853966320808728790">Fransk BÉPO</translation>
 <translation id="7864662577698025113">Tilføj ny tjeneste</translation>
 <translation id="7873831373602885875">Der er ikke muligt at gemme i <ph name="FOLDER_NAME" />. Alle redigeringer gemmes i <ph name="DOWNLOADS_FOLDER" /> i mappen Downloads.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">Slovensk</translation>
 <translation id="7982283708762922719">Højde</translation>
 <translation id="7987485481246785146">Sorani-kurdisk tastatur (arabiskbaseret)</translation>
-<translation id="799923393800005025">Kan se</translation>
 <translation id="8008366997883261463">Jack Russell-terrier</translation>
 <translation id="8028993641010258682">Størrelse</translation>
 <translation id="8031722894461705849">Slovakisk tastatur</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">Der blev skiftet til miniaturevisning for listen med filer.</translation>
 <translation id="8601932370724196034">Crostini-billedfil</translation>
 <translation id="8669949407341943408">Flytter…</translation>
-<translation id="8671210955687109937">Kan kommentere</translation>
-<translation id="8686213429977032554">Denne Drev-fil deles ikke endnu</translation>
 <translation id="8698464937041809063">Google-tegning</translation>
 <translation id="8714406895390098252">Cykel</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> er valgt.</translation>

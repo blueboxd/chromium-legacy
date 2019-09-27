@@ -65,6 +65,7 @@ class DateTimeNumericFieldElement : public DateTimeFieldElement {
  protected:
   DateTimeNumericFieldElement(Document&,
                               FieldOwner&,
+                              DateTimeField,
                               const Range&,
                               const Range& hard_limits,
                               const String& placeholder,

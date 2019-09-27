@@ -285,8 +285,7 @@ DiscardableSharedMemoryManager* DiscardableSharedMemoryManager::Get() {
 }
 
 void DiscardableSharedMemoryManager::Bind(
-    mojo::PendingReceiver<mojom::DiscardableSharedMemoryManager> receiver,
-    const service_manager::BindSourceInfo& source_info) {
+    mojo::PendingReceiver<mojom::DiscardableSharedMemoryManager> receiver) {
   DCHECK(!mojo_thread_message_loop_ ||
          mojo_thread_message_loop_ == base::MessageLoopCurrent::Get());
   if (!mojo_thread_task_runner_) {

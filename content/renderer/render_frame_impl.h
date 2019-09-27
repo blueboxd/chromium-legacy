@@ -74,7 +74,6 @@
 #include "services/service_manager/public/cpp/bind_source_info.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "services/service_manager/public/mojom/connector.mojom.h"
 #include "services/service_manager/public/mojom/interface_provider.mojom.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
@@ -1615,9 +1614,6 @@ class CONTENT_EXPORT RenderFrameImpl
 
   service_manager::BindSourceInfo local_info_;
   service_manager::BindSourceInfo remote_info_;
-
-  // The Connector proxy used to connect to services.
-  service_manager::mojom::ConnectorPtr connector_;
 
   // The current accessibility mode.
   ui::AXMode accessibility_mode_;

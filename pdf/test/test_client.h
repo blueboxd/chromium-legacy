@@ -25,6 +25,7 @@ class TestClient : public PDFEngine::Client {
   void set_engine(PDFEngine* engine) { engine_ = engine; }
 
   // PDFEngine::Client:
+  void ProposeDocumentLayout(const DocumentLayout& layout) override;
   bool Confirm(const std::string& message) override;
   std::string Prompt(const std::string& question,
                      const std::string& default_answer) override;

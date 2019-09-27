@@ -193,6 +193,7 @@
       <cr-link-row
           class="hr two-line"
           data-route="SITE_SETTINGS_SERIAL_PORTS"
+          icon-class="subpage-arrow"
           id="serial-ports"
           label="$i18n{siteSettingsSerialPorts}"
           on-click="onTapNavigate_"
@@ -207,7 +208,7 @@
     <template is="dom-if" if="[[enableNativeFileSystemWriteContentSetting_]]">
       <cr-link-row class="hr two-line"
           data-route="SITE_SETTINGS_NATIVE_FILE_SYSTEM_WRITE"
-          id="native-file-system-write"
+          icon-class="subpage-arrow" id="native-file-system-write"
           label="$i18n{siteSettingsNativeFileSystemWrite}"
           on-click="onTapNavigate_" start-icon="settings:save-original"
           sub-label="[[defaultSettingLabel_(

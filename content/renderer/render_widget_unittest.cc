@@ -420,7 +420,7 @@ TEST_F(RenderWidgetUnittest, AutoResizeAllocatedLocalSurfaceId) {
   allocator.GenerateId();
   visual_properties.local_surface_id_allocation =
       allocator.GetCurrentLocalSurfaceIdAllocation();
-  widget()->SynchronizeVisualProperties(visual_properties);
+  widget()->SynchronizeVisualPropertiesFromRenderView(visual_properties);
   EXPECT_EQ(allocator.GetCurrentLocalSurfaceIdAllocation(),
             widget()->local_surface_id_allocation_from_parent());
   EXPECT_FALSE(widget()

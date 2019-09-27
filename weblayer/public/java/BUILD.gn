@@ -26,6 +26,7 @@ android_library("java") {
     "org/chromium/weblayer/BrowserFragmentController.java",
     "org/chromium/weblayer/BrowserObserver.java",
     "org/chromium/weblayer/Callback.java",
+    "org/chromium/weblayer/ListenableFuture.java",
     "org/chromium/weblayer/ListenableResult.java",
     "org/chromium/weblayer/Navigation.java",
     "org/chromium/weblayer/NavigationController.java",
@@ -38,8 +39,8 @@ android_library("java") {
 
   deps = [
     ":client_resources",
-    "//weblayer/browser/java:client_java",
     "//third_party/android_deps:com_android_support_support_fragment_java",
+    "//weblayer/browser/java:client_java",
   ]
 
   # Needed for android.webkit.WebViewDelegate.
@@ -53,11 +54,11 @@ dist_aar("client_aar") {
     ":weblayer_client_manifest",
   ]
 
-  jar_excluded_patterns = [
-   "*android/support/*",
-   "*android/arch/*",
-   "*androidx/*",
-   "*_support*",
+  # The aar should only include weblayer files. The client will provide the
+  # support library.
+  jar_included_patterns = [
+    "org/chromium/weblayer/*",
+    "org/chromium/weblayer_private/*",
   ]
 
   # dist_aar does not take the manifest from libraries in deps, so we have to

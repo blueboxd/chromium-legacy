@@ -15,7 +15,6 @@
 #include "base/strings/string16.h"
 #include "base/thread_annotations.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/bind_source_info.h"
 
 namespace content {
 namespace {
@@ -138,9 +137,7 @@ FontCacheDispatcher::~FontCacheDispatcher() {
 }
 
 // static
-void FontCacheDispatcher::Create(
-    mojom::FontCacheWinRequest request,
-    const service_manager::BindSourceInfo& source_info) {
+void FontCacheDispatcher::Create(mojom::FontCacheWinRequest request) {
   mojo::MakeStrongBinding(std::make_unique<FontCacheDispatcher>(),
                           std::move(request));
 }

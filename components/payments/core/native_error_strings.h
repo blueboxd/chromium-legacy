@@ -187,9 +187,6 @@ extern const char kReachedMaximumNumberOfRedirects[];
 // where "$" is the character to replace.
 extern const char kSinglePaymentMethodNotSupportedFormat[];
 
-// Used when non-empty "shippingOptionId": "" is required, but not provided.
-extern const char kShippingOptionIdRequired[];
-
 // The payment handler responded with an invalid shipping address.
 extern const char kShippingAddressInvalid[];
 

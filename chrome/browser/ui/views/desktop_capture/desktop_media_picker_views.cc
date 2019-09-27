@@ -338,7 +338,7 @@ bool DesktopMediaPickerDialogView::IsDialogButtonEnabled(
 }
 
 views::View* DesktopMediaPickerDialogView::GetInitiallyFocusedView() {
-  return list_controllers_.front()->GetViewForInitialFocus();
+  return GetDialogClientView()->cancel_button();
 }
 
 int DesktopMediaPickerDialogView::GetDefaultDialogButton() const {

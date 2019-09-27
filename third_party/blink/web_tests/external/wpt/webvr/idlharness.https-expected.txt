@@ -1,8 +1,11 @@
 This is a testharness.js-based test.
-Found 94 tests; 84 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 97 tests; 87 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Partial interface Navigator: original interface defined
+PASS Partial interface Navigator: member names are unique
 PASS Partial interface Window: original interface defined
+PASS Partial interface Window: member names are unique
 PASS Partial interface Gamepad: original interface defined
+PASS Partial interface Gamepad: member names are unique
 FAIL Window interface: attribute onvrdisplayconnect assert_own_property: The global object must have a property "onvrdisplayconnect" expected property "onvrdisplayconnect" missing
 FAIL Window interface: attribute onvrdisplaydisconnect assert_own_property: The global object must have a property "onvrdisplaydisconnect" expected property "onvrdisplaydisconnect" missing
 FAIL Window interface: attribute onvrdisplayactivate assert_own_property: The global object must have a property "onvrdisplayactivate" expected property "onvrdisplayactivate" missing

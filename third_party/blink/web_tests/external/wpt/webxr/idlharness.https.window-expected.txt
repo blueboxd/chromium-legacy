@@ -1,9 +1,23 @@
 This is a testharness.js-based test.
-Found 191 tests; 188 PASS, 3 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 204 tests; 199 PASS, 5 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
+PASS idl_test validation
 PASS Partial interface Navigator: original interface defined
+PASS Partial interface Navigator: member names are unique
 PASS Partial dictionary WebGLContextAttributes: original dictionary defined
+PASS Partial dictionary WebGLContextAttributes: member names are unique
 PASS Partial interface mixin WebGLRenderingContextBase: original interface mixin defined
+PASS Partial interface mixin WebGLRenderingContextBase: member names are unique
+PASS Partial interface mixin NavigatorID: member names are unique
+FAIL WebGLRenderingContext includes WebGLRenderingContextBase: member names are unique assert_true: member canvas is unique expected true got false
+FAIL WebGLRenderingContext includes WebGLRenderingContextOverloads: member names are unique assert_true: member bufferData is unique expected true got false
+PASS Navigator includes NavigatorID: member names are unique
+PASS Navigator includes NavigatorLanguage: member names are unique
+PASS Navigator includes NavigatorOnLine: member names are unique
+PASS Navigator includes NavigatorContentUtils: member names are unique
+PASS Navigator includes NavigatorCookies: member names are unique
+PASS Navigator includes NavigatorPlugins: member names are unique
+PASS Navigator includes NavigatorConcurrentHardware: member names are unique
 PASS XR interface: existence and properties of interface object
 PASS XR interface object length
 PASS XR interface object name
@@ -188,7 +202,6 @@ PASS XRReferenceSpaceEvent interface: existence and properties of interface prot
 PASS XRReferenceSpaceEvent interface: existence and properties of interface prototype object's @@unscopables property
 PASS XRReferenceSpaceEvent interface: attribute referenceSpace
 PASS XRReferenceSpaceEvent interface: attribute transform
-PASS WebGLRenderingContext interface: operation makeXRCompatible()
 PASS Navigator interface: attribute xr
 PASS Navigator interface: navigator must inherit property "xr" with the proper type
 Harness: the test ran to completion.

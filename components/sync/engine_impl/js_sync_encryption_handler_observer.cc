@@ -81,13 +81,14 @@ void JsSyncEncryptionHandlerObserver::OnEncryptionComplete() {
 }
 
 void JsSyncEncryptionHandlerObserver::OnCryptographerStateChanged(
-    Cryptographer* cryptographer) {
+    Cryptographer* cryptographer,
+    bool has_pending_keys) {
   if (!event_handler_.IsInitialized()) {
     return;
   }
   base::DictionaryValue details;
   details.SetBoolean("canEncrypt", cryptographer->CanEncrypt());
-  details.SetBoolean("hasPendingKeys", cryptographer->has_pending_keys());
+  details.SetBoolean("hasPendingKeys", has_pending_keys);
   HandleJsEvent(FROM_HERE, "onCryptographerStateChanged",
                 JsEventDetails(&details));
 }

@@ -102,6 +102,9 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   explicit VersionUpdater(VersionUpdater::Delegate* delegate);
   ~VersionUpdater() override;
 
+  // Resets |VersionUpdater| to initial state.
+  void Init();
+
   // Starts network check. If success, starts update check.
   void StartNetworkCheck();
   void StartUpdateCheck();
@@ -118,6 +121,11 @@ class VersionUpdater : public UpdateEngineClient::Observer,
 
   void set_tick_clock_for_testing(const base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;
+  }
+
+  void set_wait_for_reboot_time_for_testing(
+      base::TimeDelta wait_for_reboot_time) {
+    wait_for_reboot_time_ = wait_for_reboot_time;
   }
 
   base::OneShotTimer* GetRebootTimerForTesting();
@@ -180,6 +188,10 @@ class VersionUpdater : public UpdateEngineClient::Observer,
   // Timer for the interval to wait for the reboot.
   // If reboot didn't happen - ask user to reboot manually.
   base::OneShotTimer reboot_timer_;
+  // Time in seconds after which we decide that the device has not rebooted
+  // automatically. If reboot didn't happen during this interval, ask user to
+  // reboot device manually.
+  base::TimeDelta wait_for_reboot_time_;
 
   // True if there was no notification from NetworkPortalDetector
   // about state for the default network.

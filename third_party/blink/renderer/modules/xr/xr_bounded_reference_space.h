@@ -19,9 +19,9 @@ class XRBoundedReferenceSpace final : public XRReferenceSpace {
   XRBoundedReferenceSpace(XRSession*, XRRigidTransform*);
   ~XRBoundedReferenceSpace() override;
 
-  std::unique_ptr<TransformationMatrix> DefaultPose() override;
-  std::unique_ptr<TransformationMatrix> TransformBasePose(
-      const TransformationMatrix& base_pose) override;
+  std::unique_ptr<TransformationMatrix> DefaultViewerPose() override;
+  std::unique_ptr<TransformationMatrix> SpaceFromMojo(
+      const TransformationMatrix& mojo_from_viewer) override;
 
   HeapVector<Member<DOMPointReadOnly>> boundsGeometry();
 
@@ -36,7 +36,7 @@ class XRBoundedReferenceSpace final : public XRReferenceSpace {
   void EnsureUpdated();
 
   HeapVector<Member<DOMPointReadOnly>> bounds_geometry_;
-  std::unique_ptr<TransformationMatrix> floor_level_transform_;
+  std::unique_ptr<TransformationMatrix> bounded_space_from_mojo_;
   unsigned int stage_parameters_id_ = 0;
 };
 

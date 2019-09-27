@@ -13,11 +13,18 @@ namespace base {
 class Value;
 }  // namespace base
 
+namespace net {
+struct NetworkTrafficAnnotationTag;
+}  // namespace net
+
 namespace remoting {
 
 // Interface for fetching a JSON file under https://www.gstatic.com/chromoting.
 class JsonFetcher {
  public:
+  using FetchJsonFileCallback =
+      base::OnceCallback<void(base::Optional<base::Value>)>;
+
   JsonFetcher() = default;
   virtual ~JsonFetcher() = default;
 
@@ -29,7 +36,8 @@ class JsonFetcher {
   // MUST NOT keep |done| after its destructor is called.
   virtual void FetchJsonFile(
       const std::string& relative_path,
-      base::OnceCallback<void(base::Optional<base::Value>)> done) const = 0;
+      FetchJsonFileCallback done,
+      const net::NetworkTrafficAnnotationTag& traffic_annotation) = 0;
 };
 
 }  // namespace remoting

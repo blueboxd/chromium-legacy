@@ -5,6 +5,7 @@
 import logging
 import re
 
+from telemetry.core import android_platform
 from telemetry.testing import serially_executed_browser_test_case
 from telemetry.util import screenshot
 from typ import json_results
@@ -198,7 +199,14 @@ class GpuIntegrationTest(
         # stacks could slow down the tests' running time unacceptably.
         # We also don't do this if the browser failed to startup.
         if self.browser is not None:
-          self.browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
+          # TODO(https://crbug.com/1008075): Remove this split once stack
+          # symbolization is standardized across all platforms.
+          if isinstance(self.browser.platform,
+              android_platform.AndroidPlatform):
+            _, output = self.browser.GetStackTrace()
+            logging.error(output)
+          else:
+            self.browser.LogSymbolizedUnsymbolizedMinidumps(logging.ERROR)
         # This failure might have been caused by a browser or renderer
         # crash, so restart the browser to make sure any state doesn't
         # propagate to the next test iteration.

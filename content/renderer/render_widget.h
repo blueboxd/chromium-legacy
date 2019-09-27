@@ -390,11 +390,12 @@ class CONTENT_EXPORT RenderWidget
   bool WillHandleMouseEvent(const blink::WebMouseEvent& event) override;
 
   // RenderWidgetScreenMetricsEmulatorDelegate
-  void SynchronizeVisualProperties(
-      const VisualProperties& visual_properties) override;
   void SetScreenMetricsEmulationParameters(
       bool enabled,
       const blink::WebDeviceEmulationParams& params) override;
+  void SetScreenInfoAndSize(const ScreenInfo& screen_info,
+                            const gfx::Size& widget_size,
+                            const gfx::Size& visible_viewport_size) override;
   void SetScreenRects(const gfx::Rect& widget_screen_rect,
                       const gfx::Rect& window_screen_rect) override;
 
@@ -470,7 +471,6 @@ class CONTENT_EXPORT RenderWidget
                                     bool up,
                                     bool down) override;
   void FallbackCursorModeSetCursorVisibility(bool visible) override;
-  void SetAllowGpuRasterization(bool allow_gpu_raster) override;
   void SetPageScaleStateAndLimits(float page_scale_factor,
                                   bool is_pinch_gesture_active,
                                   float minimum,
@@ -553,7 +553,7 @@ class CONTENT_EXPORT RenderWidget
   void OnImeEventGuardStart(ImeEventGuard* guard);
   void OnImeEventGuardFinish(ImeEventGuard* guard);
 
-  void ApplyEmulatedScreenMetricsForPopupWidget(RenderWidget* origin_widget);
+  void ApplyEmulatedScreenMetricsForPopupWidget();
 
   // Checks if the selection bounds have been changed. If they are changed,
   // the new value will be sent to the browser process.
@@ -749,7 +749,8 @@ class CONTENT_EXPORT RenderWidget
   // browser.
   static void DoDeferredClose(int widget_routing_id);
 
-  gfx::Size GetSizeForWebWidget() const;
+  // Must be called to pass updated values to blink when the widget size, the
+  // visual viewport size, or the device scale factor change.
   void ResizeWebWidget();
 
   // Enable or disable auto-resize. This is part of
@@ -1077,7 +1078,9 @@ class CONTENT_EXPORT RenderWidget
   int pending_window_rect_count_ = 0;
   gfx::Rect pending_window_rect_;
 
-  // The screen rects of the view and the window that contains it.
+  // The screen rects of the view and the window that contains it. These do not
+  // include any scaling by device scale factor, so are logical pixels not
+  // physical device pixels.
   gfx::Rect widget_screen_rect_;
   gfx::Rect window_screen_rect_;
 

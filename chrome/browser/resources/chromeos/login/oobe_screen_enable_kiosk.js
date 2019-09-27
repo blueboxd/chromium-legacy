@@ -79,7 +79,7 @@ login.createScreen('KioskEnableScreen', 'kiosk-enable', function() {
     enableKioskForTesting: function(confirm) {
       var button =
           confirm ? $('kiosk-enable-button') : $('kiosk-cancel-button');
-      var clickEvent = cr.doc.createEvent('Event');
+      var clickEvent = document.createEvent('Event');
       clickEvent.initEvent('click', true, true);
       button.dispatchEvent(clickEvent);
     },

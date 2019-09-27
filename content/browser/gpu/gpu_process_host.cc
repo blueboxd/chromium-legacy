@@ -56,7 +56,6 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/browser/gpu_utils.h"
 #include "content/public/common/bind_interface_helpers.h"
-#include "content/public/common/connection_filter.h"
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/result_codes.h"
@@ -431,10 +430,10 @@ class GpuSandboxedProcessLauncherDelegate
 };
 
 #if defined(OS_ANDROID)
-template <typename Interface>
-void BindJavaInterface(mojo::InterfaceRequest<Interface> request) {
+void BindAndroidOverlayProvider(
+    mojo::PendingReceiver<media::mojom::AndroidOverlayProvider> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::GetGlobalJavaInterfaces()->GetInterface(std::move(request));
+  content::GetGlobalJavaInterfaces()->GetInterface(std::move(receiver));
 }
 #endif  // defined(OS_ANDROID)
 
@@ -454,8 +453,7 @@ void BindDiscardableMemoryReceiverOnIO(
         discardable_memory::mojom::DiscardableSharedMemoryManager> receiver,
     discardable_memory::DiscardableSharedMemoryManager* manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  service_manager::BindSourceInfo source_info;
-  manager->Bind(std::move(receiver), source_info);
+  manager->Bind(std::move(receiver));
 }
 
 void BindDiscardableMemoryReceiverOnUI(
@@ -470,32 +468,6 @@ void BindDiscardableMemoryReceiverOnUI(
 }
 
 }  // anonymous namespace
-
-class GpuProcessHost::ConnectionFilterImpl : public ConnectionFilter {
- public:
-  explicit ConnectionFilterImpl(int gpu_process_id) {
-    auto task_runner = base::CreateSingleThreadTaskRunner({BrowserThread::UI});
-#if defined(OS_ANDROID)
-    registry_.AddInterface(
-        base::BindRepeating(
-            &BindJavaInterface<media::mojom::AndroidOverlayProvider>),
-        task_runner);
-#endif
-  }
-
- private:
-  // ConnectionFilter:
-  void OnBindInterface(const service_manager::BindSourceInfo& source_info,
-                       const std::string& interface_name,
-                       mojo::ScopedMessagePipeHandle* interface_pipe,
-                       service_manager::Connector* connector) override {
-    registry_.TryBindInterface(interface_name, interface_pipe);
-  }
-
-  service_manager::BinderRegistry registry_;
-
-  DISALLOW_COPY_AND_ASSIGN(ConnectionFilterImpl);
-};
 
 // static
 bool GpuProcessHost::ValidateHost(GpuProcessHost* host) {
@@ -622,6 +594,14 @@ void GpuProcessHost::BindHostReceiver(
     return;
   }
 
+#if defined(OS_ANDROID)
+  if (auto r = generic_receiver.As<media::mojom::AndroidOverlayProvider>()) {
+    base::PostTask(FROM_HERE, {BrowserThread::UI},
+                   base::BindOnce(&BindAndroidOverlayProvider, std::move(r)));
+    return;
+  }
+#endif
+
   GetContentClient()->browser()->BindGpuHostReceiver(
       std::move(generic_receiver));
 }
@@ -691,9 +671,7 @@ GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
       valid_(true),
       in_process_(false),
       kind_(kind),
-      process_launched_(false),
-      connection_filter_id_(
-          ServiceManagerConnection::kInvalidConnectionFilterId) {
+      process_launched_(false) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSingleProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
@@ -822,24 +800,12 @@ GpuProcessHost::~GpuProcessHost() {
   // client 3D APIs without prompting.
   if (block_offscreen_contexts && gpu_host_)
     gpu_host_->BlockLiveOffscreenContexts();
-
-  if (ServiceManagerConnection::GetForProcess()) {
-    ServiceManagerConnection::GetForProcess()->RemoveConnectionFilter(
-        connection_filter_id_);
-  }
 }
 
 bool GpuProcessHost::Init() {
   init_start_time_ = base::TimeTicks::Now();
 
   TRACE_EVENT_INSTANT0("gpu", "LaunchGpuProcess", TRACE_EVENT_SCOPE_THREAD);
-
-  // May be null during test execution.
-  if (ServiceManagerConnection::GetForProcess()) {
-    connection_filter_id_ =
-        ServiceManagerConnection::GetForProcess()->AddConnectionFilter(
-            std::make_unique<ConnectionFilterImpl>(process_->GetData().id));
-  }
 
   process_->GetHost()->CreateChannelMojo();
 

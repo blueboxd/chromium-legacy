@@ -154,38 +154,4 @@ void GetAddressComponents(const std::string& country_code,
   }
 }
 
-// Sets data related to the country <select>.
-void SetCountryData(const PersonalDataManager& manager,
-                    base::DictionaryValue* localized_strings,
-                    const std::string& ui_language_code) {
-  autofill::CountryComboboxModel model;
-  model.SetCountries(manager, base::Callback<bool(const std::string&)>(),
-                     ui_language_code);
-  const std::vector<std::unique_ptr<autofill::AutofillCountry>>& countries =
-      model.countries();
-  localized_strings->SetString("defaultCountryCode",
-                               countries.front()->country_code());
-
-  // An ordered list of options to show in the <select>.
-  auto country_list = std::make_unique<base::ListValue>();
-  for (size_t i = 0; i < countries.size(); ++i) {
-    auto option_details = std::make_unique<base::DictionaryValue>();
-    option_details->SetString("name", model.GetItemAt(i));
-    option_details->SetString(
-        "value", countries[i] ? countries[i]->country_code() : "separator");
-    country_list->Append(std::move(option_details));
-  }
-  localized_strings->Set("autofillCountrySelectList", std::move(country_list));
-
-  auto default_country_components = std::make_unique<base::ListValue>();
-  std::string default_country_language_code;
-  GetAddressComponents(countries.front()->country_code(), ui_language_code,
-                       default_country_components.get(),
-                       &default_country_language_code);
-  localized_strings->Set("autofillDefaultCountryComponents",
-                         std::move(default_country_components));
-  localized_strings->SetString("autofillDefaultCountryLanguageCode",
-                               default_country_language_code);
-}
-
 }  // namespace autofill

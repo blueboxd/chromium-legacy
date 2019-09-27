@@ -5,6 +5,7 @@
 #include "components/optimization_guide/optimization_guide_service.h"
 
 #include "base/bind.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/post_task.h"
 
 namespace optimization_guide {
@@ -54,6 +55,10 @@ void OptimizationGuideService::MaybeUpdateHintsComponentOnUIThread(
       hints_component_info_->version.CompareTo(info.version) >= 0) {
     return;
   }
+
+  base::UmaHistogramSparse(
+      "OptimizationGuide.OptimizationHintsComponent.MajorVersion",
+      info.version.components()[0]);
 
   hints_component_info_.emplace(info.version, info.path);
   for (auto& observer : observers_) {

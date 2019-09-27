@@ -13,6 +13,7 @@
 #include "base/test/scoped_feature_list.h"
 #include "chrome/browser/chromeos/crostini/crostini_pref_names.h"
 #include "chrome/browser/chromeos/crostini/crostini_util.h"
+#include "chrome/browser/chromeos/crostini/fake_crostini_features.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/testing_profile.h"
@@ -170,8 +171,7 @@ class CrostiniManagerTest : public testing::Test {
   ~CrostiniManagerTest() override { chromeos::DBusThreadManager::Shutdown(); }
 
   void SetUp() override {
-    scoped_feature_list_.InitWithFeatures(
-        {features::kCrostini, features::kCrostiniAdvancedAccessControls}, {});
+    scoped_feature_list_.InitWithFeatures({features::kCrostini}, {});
     run_loop_ = std::make_unique<base::RunLoop>();
     profile_ = std::make_unique<TestingProfile>();
     crostini_manager_ = CrostiniManager::GetForProfile(profile_.get());
@@ -348,8 +348,8 @@ TEST_F(CrostiniManagerTest, StopVmSuccess) {
 }
 
 TEST_F(CrostiniManagerTest, InstallLinuxPackageRootAccessError) {
-  profile()->GetPrefs()->SetBoolean(
-      crostini::prefs::kUserCrostiniRootAccessAllowedByPolicy, false);
+  FakeCrostiniFeatures crostini_features;
+  crostini_features.set_root_access_allowed(false);
   crostini_manager()->InstallLinuxPackage(
       kVmName, kContainerName, "/tmp/package.deb",
       base::BindOnce(&ExpectCrostiniResult, run_loop()->QuitClosure(),

@@ -490,4 +490,161 @@ IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
             GetPrefValue(ash::prefs::kAccessibilityVirtualKeyboardEnabled));
 }
 
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenDictationEnabled) {
+  // Verifies that the state of the dictation accessibility feature on the
+  // login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
+
+  // Manually enable the dictation.
+  PrefService* prefs = login_profile_->GetPrefs();
+  ASSERT_TRUE(prefs);
+  prefs->SetBoolean(ash::prefs::kAccessibilityDictationEnabled, true);
+  EXPECT_TRUE(accessibility_manager->IsDictationEnabled());
+
+  // Disable the dictation through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()->set_login_screen_dictation_enabled(
+      false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityDictationEnabled);
+
+  // Verify that the pref which controls the dictation in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityDictationEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityDictationEnabled));
+
+  // Verify that the dictation cannot be enabled manually anymore.
+  prefs->SetBoolean(ash::prefs::kAccessibilityDictationEnabled, true);
+  EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
+
+  // Enable the dictation through device policy as a recommended value and wait
+  // for the change to take effect.
+  proto.mutable_accessibility_settings()->set_login_screen_dictation_enabled(
+      true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_dictation_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityDictationEnabled);
+
+  // Verify that the pref which controls the dictation in the login
+  // profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityDictationEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityDictationEnabled));
+
+  // Verify that the dictation can be enabled manually again.
+  prefs->SetBoolean(ash::prefs::kAccessibilityDictationEnabled, false);
+  EXPECT_FALSE(accessibility_manager->IsDictationEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenSelectToSpeakEnabled) {
+  // Verifies that the state of the select to speak accessibility feature on the
+  // login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
+
+  // Manually enable the select to speak.
+  accessibility_manager->SetSelectToSpeakEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsSelectToSpeakEnabled());
+
+  // Disable the select to speak through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_select_to_speak_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilitySelectToSpeakEnabled);
+
+  // Verify that the pref which controls the select to speak in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilitySelectToSpeakEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilitySelectToSpeakEnabled));
+
+  // Verify that the select to speak cannot be enabled manually anymore.
+  accessibility_manager->SetSelectToSpeakEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
+
+  // Enable the select to speak through device policy as a recommended value and
+  // wait for the change to take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_select_to_speak_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_select_to_speak_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilitySelectToSpeakEnabled);
+
+  // Verify that the pref which controls the select to speak in the login
+  // profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilitySelectToSpeakEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilitySelectToSpeakEnabled));
+
+  // Verify that the select to speak can be enabled manually again.
+  accessibility_manager->SetSelectToSpeakEnabled(false);
+  EXPECT_FALSE(accessibility_manager->IsSelectToSpeakEnabled());
+}
+
+IN_PROC_BROWSER_TEST_F(LoginScreenAccessibilityPolicyBrowsertest,
+                       DeviceLoginScreenCursorHighlightEnabled) {
+  // Verifies that the state of the cursor highlight accessibility feature on
+  // the login screen can be controlled through device policy.
+  chromeos::AccessibilityManager* accessibility_manager =
+      chromeos::AccessibilityManager::Get();
+  ASSERT_TRUE(accessibility_manager);
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Manually enable the cursor highlight.
+  accessibility_manager->SetCursorHighlightEnabled(true);
+  EXPECT_TRUE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Disable the cursor highlight through device policy and wait for the change
+  // to take effect.
+  em::ChromeDeviceSettingsProto& proto(device_policy()->payload());
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_cursor_highlight_enabled(false);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityCursorHighlightEnabled);
+
+  // Verify that the pref which controls the cursor highlight in the login
+  // profile is managed by the policy.
+  EXPECT_TRUE(IsPrefManaged(ash::prefs::kAccessibilityCursorHighlightEnabled));
+  EXPECT_EQ(base::Value(false),
+            GetPrefValue(ash::prefs::kAccessibilityCursorHighlightEnabled));
+
+  // Verify that the cursor highlight cannot be enabled manually anymore.
+  accessibility_manager->SetCursorHighlightEnabled(true);
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+
+  // Enable the cursor highlight through device policy as a recommended value
+  // and wait for the change to take effect.
+  proto.mutable_accessibility_settings()
+      ->set_login_screen_cursor_highlight_enabled(true);
+  proto.mutable_accessibility_settings()
+      ->mutable_login_screen_cursor_highlight_enabled_options()
+      ->set_mode(em::PolicyOptions::RECOMMENDED);
+  RefreshDevicePolicyAndWaitForPrefChange(
+      ash::prefs::kAccessibilityCursorHighlightEnabled);
+
+  // Verify that the pref which controls the cursor highlight in the login
+  // profile is being applied as recommended by the policy.
+  EXPECT_FALSE(IsPrefManaged(ash::prefs::kAccessibilityCursorHighlightEnabled));
+  EXPECT_EQ(base::Value(true),
+            GetPrefValue(ash::prefs::kAccessibilityCursorHighlightEnabled));
+
+  // Verify that the cursor highlight can be enabled manually again.
+  accessibility_manager->SetCursorHighlightEnabled(false);
+  EXPECT_FALSE(accessibility_manager->IsCursorHighlightEnabled());
+}
 }  // namespace policy

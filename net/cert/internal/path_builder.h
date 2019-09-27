@@ -24,6 +24,7 @@ namespace der {
 struct GeneralizedTime;
 }
 
+class CertPathBuilder;
 class CertPathIter;
 class CertIssuerSource;
 
@@ -92,7 +93,8 @@ class NET_EXPORT CertPathBuilderDelegate
   // been run through RFC 5280 verification. |path| may already have errors
   // and warnings set on it. Delegates can "reject" a candidate path from path
   // building by adding high severity errors.
-  virtual void CheckPathAfterVerification(CertPathBuilderResultPath* path) = 0;
+  virtual void CheckPathAfterVerification(const CertPathBuilder& path_builder,
+                                          CertPathBuilderResultPath* path) = 0;
 };
 
 // Checks whether a certificate is trusted by building candidate paths to trust
@@ -183,6 +185,10 @@ class NET_EXPORT CertPathBuilder {
   // is not a hard limit, there is no guarantee how far past |deadline| time
   // will be when path building is aborted.
   void SetDeadline(base::TimeTicks deadline);
+
+  // Returns the deadline for path building, if any. If no deadline is set,
+  // |deadline().is_null()| will be true.
+  base::TimeTicks deadline() const { return deadline_; }
 
   // Executes verification of the target certificate.
   //

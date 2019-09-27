@@ -9,8 +9,12 @@
 #include "base/callback.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
+#include "chrome/browser/ui/recently_audible_helper.h"
 #include "chrome/browser/ui/tab_ui_helper.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/grit/generated_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/base/l10n/l10n_util_mac.h"
 
 using MenuItemCallback = base::RepeatingCallback<void(NSMenuItem*)>;
 
@@ -20,7 +24,26 @@ void UpdateItemForWebContents(NSMenuItem* item,
                               content::WebContents* web_contents) {
   TabUIHelper* tab_ui_helper = TabUIHelper::FromWebContents(web_contents);
 
-  item.title = base::SysUTF16ToNSString(tab_ui_helper->GetTitle());
+  auto* audio_helper = RecentlyAudibleHelper::FromWebContents(web_contents);
+  if (audio_helper && audio_helper->WasRecentlyAudible()) {
+    // If this webcontents is or was recently playing audio, append either a
+    // speaker-playing-sound icon or a muted-speaker icon to its title to make
+    // it easy to find the tabs playing sound in the Tab menu.
+    int title_id;
+    base::string16 emoji;
+    if (web_contents->IsAudioMuted()) {
+      title_id = IDS_WINDOW_AUDIO_MUTING_MAC;
+      emoji = base::WideToUTF16(L"\U0001F507");
+    } else {
+      title_id = IDS_WINDOW_AUDIO_PLAYING_MAC;
+      emoji = base::WideToUTF16(L"\U0001F50A");
+    }
+
+    item.title =
+        l10n_util::GetNSStringF(title_id, tab_ui_helper->GetTitle(), emoji);
+  } else {
+    item.title = base::SysUTF16ToNSString(tab_ui_helper->GetTitle());
+  }
   item.image = tab_ui_helper->GetFavicon().AsNSImage();
 }
 

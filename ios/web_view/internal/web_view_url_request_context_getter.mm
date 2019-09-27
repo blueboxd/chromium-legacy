@@ -12,7 +12,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/path_service.h"
 #include "base/task/post_task.h"
-#import "ios/net/cookies/cookie_store_ios_persistent.h"
+#import "ios/net/cookies/cookie_store_ios.h"
+#include "ios/web/public/browsing_data/system_cookie_store_util.h"
 #import "ios/web/public/web_client.h"
 #include "net/base/cache_type.h"
 #include "net/base/network_delegate_impl.h"
@@ -20,7 +21,6 @@
 #include "net/cert/ct_policy_enforcer.h"
 #include "net/cert/multi_log_ct_verifier.h"
 #include "net/dns/host_resolver.h"
-#include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
@@ -46,6 +46,7 @@ namespace ios_web_view {
 
 WebViewURLRequestContextGetter::WebViewURLRequestContextGetter(
     const base::FilePath& base_path,
+    web::BrowserState* browser_state,
     net::NetLog* net_log,
     const scoped_refptr<base::SingleThreadTaskRunner>& network_task_runner)
     : base_path_(base_path),
@@ -53,6 +54,7 @@ WebViewURLRequestContextGetter::WebViewURLRequestContextGetter(
       network_task_runner_(network_task_runner),
       proxy_config_service_(
           new net::ProxyConfigServiceIOS(NO_TRAFFIC_ANNOTATION_YET)),
+      system_cookie_store_(web::CreateSystemCookieStore(browser_state)),
       is_shutting_down_(false) {}
 
 WebViewURLRequestContextGetter::~WebViewURLRequestContextGetter() = default;
@@ -73,23 +75,10 @@ net::URLRequestContext* WebViewURLRequestContextGetter::GetURLRequestContext() {
 
     storage_.reset(
         new net::URLRequestContextStorage(url_request_context_.get()));
-
-    // Setup the cookie store.
-    base::FilePath cookie_path;
-    bool cookie_path_found =
-        base::PathService::Get(base::DIR_APP_DATA, &cookie_path);
-    DCHECK(cookie_path_found);
-    cookie_path = cookie_path.Append("ChromeWebViewCookies");
-    scoped_refptr<net::CookieMonster::PersistentCookieStore> persistent_store =
-        new net::SQLitePersistentCookieStore(
-            cookie_path, network_task_runner_,
-            base::CreateSequencedTaskRunner({base::ThreadPool(),
-                                             base::MayBlock(),
-                                             base::TaskPriority::BEST_EFFORT}),
-            true, nullptr);
-    std::unique_ptr<net::CookieStoreIOS> cookie_store(
-        new net::CookieStoreIOSPersistent(persistent_store.get(), net_log_));
-    storage_->set_cookie_store(std::move(cookie_store));
+    // Using std::move on a |system_cookie_store_| resets it to null as it's a
+    // unique_ptr, so |system_cookie_store_| will not be a dangling pointer.
+    storage_->set_cookie_store(std::make_unique<net::CookieStoreIOS>(
+        std::move(system_cookie_store_), net_log_));
 
     web::WebClient* web_client = web::GetWebClient();
     DCHECK(web_client);

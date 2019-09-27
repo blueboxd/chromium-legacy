@@ -348,10 +348,8 @@ void PasswordManager::UpdateFormManagers() {
   std::vector<PasswordManagerDriver*> drivers;
   for (PasswordFormManager* form_manager : form_managers) {
     fetchers.push_back(form_manager->GetFormFetcher());
-    for (const auto& driver : form_manager->GetDrivers()) {
-      if (driver)
-        drivers.push_back(driver.get());
-    }
+    if (form_manager->GetDriver())
+      drivers.push_back(form_manager->GetDriver().get());
   }
 
   // Remove the duplicates.
@@ -570,10 +568,8 @@ void PasswordManager::CreateFormManagers(
   }
 
   // Create form manager for new forms.
-  for (const PasswordForm* new_form : new_forms) {
-    auto* manager = CreateFormManager(driver, new_form->form_data);
-    manager->set_old_parsing_result(*new_form);
-  }
+  for (const PasswordForm* new_form : new_forms)
+    CreateFormManager(driver, new_form->form_data);
 }
 
 PasswordFormManager* PasswordManager::CreateFormManager(

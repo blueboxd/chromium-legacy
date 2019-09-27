@@ -2268,6 +2268,8 @@ static_library("test_support") {
     "wm/cursor_manager_test_api.h",
     "wm/lock_state_controller_test_api.cc",
     "wm/lock_state_controller_test_api.h",
+    "wm/splitview/multi_display_overview_and_split_view_test.cc",
+    "wm/splitview/multi_display_overview_and_split_view_test.h",
     "wm/splitview/split_view_highlight_view_test_api.cc",
     "wm/splitview/split_view_highlight_view_test_api.h",
     "wm/tablet_mode/tablet_mode_controller_test_api.cc",

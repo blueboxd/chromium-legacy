@@ -301,9 +301,9 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Tests that the manual fallback view icon is not highlighted after presenting
-// the manage credit cards view.
-- (void)testCreditCardsButtonStateAfterPresentingCreditCardSettings {
+// Tests that the manual fallback view and icon is not highlighted after
+// presenting the manage credit cards view.
+- (void)testCreditCardsStateAfterPresentingCreditCardSettings {
   [self saveLocalCreditCard];
 
   // Bring up the keyboard.
@@ -341,6 +341,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_userInteractionEnabled()];
   [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Verify the keyboard is not cover by the cards view.
+  [[EarlGrey selectElementWithMatcher:CreditCardTableViewMatcher()]
+      assertWithMatcher:grey_notVisible()];
 }
 
 // Tests that the "Add Credit Cards..." action works.
@@ -445,6 +449,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_userInteractionEnabled()];
   [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Verify the keyboard is not cover by the cards view.
+  [[EarlGrey selectElementWithMatcher:CreditCardTableViewMatcher()]
+      assertWithMatcher:grey_notVisible()];
 }
 
 // Tests that the credit card View Controller is dismissed when tapping the

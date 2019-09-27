@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "chromeos/dbus/power/power_manager_client.h"
 #include "chromeos/network/network_state_handler_observer.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 
@@ -87,7 +88,7 @@ class NetworkChangeManagerClient
   std::string service_path_;
 
   net::NetworkChangeNotifierPosix* network_change_notifier_;
-  network::mojom::NetworkChangeManagerPtr network_change_manager_;
+  mojo::Remote<network::mojom::NetworkChangeManager> network_change_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkChangeManagerClient);
 };

@@ -151,16 +151,20 @@
   },
   "chrome/browser/resources/tab_strip/tab_strip_resources.grd": {
     "structures": [13880],
+    "includes": [13900],
   },
-  "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
+  "chrome/browser/resources/usb_internals/resources.grd": {
     "includes": [13910],
   },
-  "chrome/browser/resources/welcome/welcome_resources.grd": {
+  "chrome/browser/resources/webapks/webapks_ui_resources.grd": {
     "includes": [13920],
-    "structures": [13970],
+  },
+  "chrome/browser/resources/welcome/welcome_resources.grd": {
+    "includes": [13930],
+    "structures": [13980],
   },
   "chrome/browser/vr/testapp/vr_testapp_resources.grd": {
-    "includes": [14010],
+    "includes": [14020],
   },
   # END chrome/browser section.
 

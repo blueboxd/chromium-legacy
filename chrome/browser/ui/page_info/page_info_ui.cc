@@ -281,12 +281,13 @@ PageInfoUI::GetSecurityDescription(const IdentityInfo& identity_info) const {
 
   switch (identity_info.safety_tip_status) {
     case security_state::SafetyTipStatus::kBadReputation:
-    case security_state::SafetyTipStatus::kLookalike:
-      // TODO(jdeblasio): The BAD_REPUTATION string is generic enough to use for
-      // lookalikes too, but it probably deserves its own string.
       return CreateSecurityDescription(
-          SecuritySummaryColor::RED, IDS_PAGE_INFO_SAFETY_TIP_SUMMARY,
+          SecuritySummaryColor::RED,
+          IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_TITLE,
           IDS_PAGE_INFO_SAFETY_TIP_BAD_REPUTATION_DESCRIPTION);
+    case security_state::SafetyTipStatus::kLookalike:
+      // Lookalikes have their own strings, but they're suggestions, not
+      // warnings, so we leave Page Info alone.
     case security_state::SafetyTipStatus::kNone:
     case security_state::SafetyTipStatus::kUnknown:
       break;

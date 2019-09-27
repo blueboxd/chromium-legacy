@@ -48,14 +48,39 @@ class BaseSearchProvider : public AutocompleteProvider {
   // Returns a simpler AutocompleteMatch suitable for persistence like in
   // ShortcutsDatabase.  This wrapper function uses a number of default values
   // that may or may not be appropriate for your needs.
-  // NOTE: Use with care. Most likely you want the other CreateSearchSuggestion
-  // with protected access.
+  // NOTE: Use with care. Most likely you want the other CreateSearchSuggestion.
   static AutocompleteMatch CreateSearchSuggestion(
       const base::string16& suggestion,
       AutocompleteMatchType::Type type,
       bool from_keyword_provider,
       const TemplateURL* template_url,
       const SearchTermsData& search_terms_data);
+
+  // Returns an AutocompleteMatch with the given |autocomplete_provider|
+  // for the search |suggestion|, which represents a search via |template_url|.
+  // If |template_url| is NULL, returns a match with an invalid destination URL.
+  //
+  // |input| is the original user input. Text in the input is used to highlight
+  // portions of the match contents to distinguish locally-typed text from
+  // suggested text.
+  //
+  // |input| is also necessary for various other details, like whether we should
+  // allow inline autocompletion and what the transition type should be.
+  // |in_keyword_mode| helps guarantee a non-keyword suggestion does not
+  // appear as the default match when the user is in keyword mode.
+  // |accepted_suggestion| is used to generate Assisted Query Stats.
+  // |append_extra_query_params_from_command_line| should be set if
+  // |template_url| is the default search engine, so the destination URL will
+  // contain any command-line-specified query params.
+  static AutocompleteMatch CreateSearchSuggestion(
+      AutocompleteProvider* autocomplete_provider,
+      const AutocompleteInput& input,
+      const bool in_keyword_mode,
+      const SearchSuggestionParser::SuggestResult& suggestion,
+      const TemplateURL* template_url,
+      const SearchTermsData& search_terms_data,
+      int accepted_suggestion,
+      bool append_extra_query_params_from_command_line);
 
   // A helper function to convert result from on device providers to
   // AutocompleteMatch instance.
@@ -116,32 +141,6 @@ class BaseSearchProvider : public AutocompleteProvider {
   typedef std::map<MatchKey, AutocompleteMatch> MatchMap;
   typedef std::vector<std::unique_ptr<SuggestionDeletionHandler>>
       SuggestionDeletionHandlers;
-
-  // Returns an AutocompleteMatch with the given |autocomplete_provider|
-  // for the search |suggestion|, which represents a search via |template_url|.
-  // If |template_url| is NULL, returns a match with an invalid destination URL.
-  //
-  // |input| is the original user input. Text in the input is used to highlight
-  // portions of the match contents to distinguish locally-typed text from
-  // suggested text.
-  //
-  // |input| is also necessary for various other details, like whether we should
-  // allow inline autocompletion and what the transition type should be.
-  // |in_keyword_mode| helps guarantee a non-keyword suggestion does not
-  // appear as the default match when the user is in keyword mode.
-  // |accepted_suggestion| is used to generate Assisted Query Stats.
-  // |append_extra_query_params_from_command_line| should be set if
-  // |template_url| is the default search engine, so the destination URL will
-  // contain any command-line-specified query params.
-  static AutocompleteMatch CreateSearchSuggestion(
-      AutocompleteProvider* autocomplete_provider,
-      const AutocompleteInput& input,
-      const bool in_keyword_mode,
-      const SearchSuggestionParser::SuggestResult& suggestion,
-      const TemplateURL* template_url,
-      const SearchTermsData& search_terms_data,
-      int accepted_suggestion,
-      bool append_extra_query_params_from_command_line);
 
   // Returns the appropriate value for the fill_into_edit field of an
   // AutcompleteMatch. The result consists of the suggestion text from

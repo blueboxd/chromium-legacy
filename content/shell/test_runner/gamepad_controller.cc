@@ -16,7 +16,7 @@
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "mojo/public/cpp/system/platform_handle.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/web_gamepad_listener.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
@@ -264,9 +264,7 @@ void GamepadController::Install(blink::WebLocalFrame* frame) {
   if (!render_frame)
     return;
 
-  service_manager::InterfaceProvider::TestApi connector_test_api(
-      render_frame->GetRemoteInterfaces());
-  connector_test_api.SetBinderForName(
+  render_frame->GetBrowserInterfaceBroker()->SetBinderForTesting(
       device::mojom::GamepadMonitor::Name_,
       base::BindRepeating(&GamepadController::OnInterfaceRequest,
                           base::Unretained(this)));
@@ -276,7 +274,8 @@ void GamepadController::Install(blink::WebLocalFrame* frame) {
 void GamepadController::OnInterfaceRequest(
     mojo::ScopedMessagePipeHandle handle) {
   monitors_.insert(std::make_unique<MonitorImpl>(
-      this, device::mojom::GamepadMonitorRequest(std::move(handle))));
+      this,
+      mojo::PendingReceiver<device::mojom::GamepadMonitor>(std::move(handle))));
 }
 
 base::ReadOnlySharedMemoryRegion GamepadController::GetSharedMemoryRegion()

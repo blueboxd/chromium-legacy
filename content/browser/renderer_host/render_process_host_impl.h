@@ -681,7 +681,8 @@ class CONTENT_EXPORT RenderProcessHostImpl
           receiver);
 
 #if BUILDFLAG(ENABLE_MDNS)
-  void CreateMdnsResponder(network::mojom::MdnsResponderRequest request);
+  void CreateMdnsResponder(
+      mojo::PendingReceiver<network::mojom::MdnsResponder> receiver);
 #endif  // BUILDFLAG(ENABLE_MDNS)
 
   void NotifyRendererIfLockedToSite();

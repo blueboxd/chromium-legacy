@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/values.h"
+#include "net/traffic_annotation/network_traffic_annotation.h"
 #include "remoting/client/notification/json_fetcher.h"
 #include "remoting/client/notification/notification_message.h"
 #include "remoting/client/notification/version_range.h"
@@ -22,6 +23,30 @@ namespace {
 constexpr char kDefaultLocale[] = "en-US";
 constexpr char kNotificationRootPath[] = "notification/";
 constexpr char kNotificationRulesPath[] = "notification/rules.json";
+
+constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
+    net::DefineNetworkTrafficAnnotation("notification_client",
+                                        R"(
+        semantics {
+          sender: "Chromoting notification client"
+          description:
+            "Fetches new notification messages to be shown on Chrome Remote "
+            "Desktop app."
+          trigger:
+            "Opening the Chrome Remote Desktop app."
+          data: "No user data."
+          destination: OTHER
+          destination_other:
+            "The Chrome Remote Desktop app."
+        }
+        policy {
+          cookies_allowed: NO
+          setting:
+            "This request cannot be stopped in settings, but will not be sent "
+            "if user does not use Chrome Remote Desktop."
+          policy_exception_justification:
+            "Not implemented."
+        })");
 
 template <typename T, typename IsTChecker, typename TGetter>
 bool FindKeyAndGet(const base::Value& dict,
@@ -151,7 +176,8 @@ void NotificationClient::GetNotification(const std::string& user_email,
   fetcher_->FetchJsonFile(
       kNotificationRulesPath,
       base::BindOnce(&NotificationClient::OnRulesFetched,
-                     base::Unretained(this), user_email, std::move(callback)));
+                     base::Unretained(this), user_email, std::move(callback)),
+      kTrafficAnnotation);
 }
 
 void NotificationClient::OnRulesFetched(const std::string& user_email,
@@ -269,11 +295,13 @@ void NotificationClient::FetchTranslatedTexts(
   fetcher_->FetchJsonFile(
       kNotificationRootPath + message_text_filename,
       base::BindOnce(&MessageAndLinkTextResults::OnMessageTranslationsFetched,
-                     results));
+                     results),
+      kTrafficAnnotation);
   fetcher_->FetchJsonFile(
       kNotificationRootPath + link_text_filename,
       base::BindOnce(&MessageAndLinkTextResults::OnLinkTranslationsFetched,
-                     results));
+                     results),
+      kTrafficAnnotation);
 }
 
 }  // namespace remoting

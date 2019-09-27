@@ -20,12 +20,12 @@ class XRTargetRaySpace : public XRSpace {
   void Trace(blink::Visitor*) override;
 
  private:
-  std::unique_ptr<TransformationMatrix> GetPointerPoseForScreen(
+  std::unique_ptr<TransformationMatrix> OtherSpaceFromScreenTap(
       XRSpace* other_space,
-      const TransformationMatrix& base_pose_matrix);
-  std::unique_ptr<TransformationMatrix> GetTrackedPointerPose(
+      const TransformationMatrix& mojo_from_viewer);
+  std::unique_ptr<TransformationMatrix> OtherSpaceFromTrackedPointer(
       XRSpace* other_space,
-      const TransformationMatrix& base_pose_matrix);
+      const TransformationMatrix& mojo_from_viewer);
 
   Member<XRInputSource> input_source_;
 };

@@ -68,7 +68,6 @@ void InstallationTracker::OnForcedExtensionsPrefChanged() {
 }
 
 void InstallationTracker::OnShutdown(ExtensionRegistry*) {
-  InstallationReporter::Clear(profile_);
   observer_.RemoveAll();
   pref_change_registrar_.RemoveAll();
   timer_->Stop();
@@ -96,6 +95,8 @@ void InstallationTracker::ReportResults(bool succeeded) {
       // crbug/904600.
       VLOG(2) << "All forced extensions seems to be installed";
     } else {
+      InstallationReporter* installation_reporter =
+          InstallationReporter::Get(profile_);
       size_t enabled_missing_count = pending_forced_extensions_.size();
       auto installed_extensions = registry_->GenerateInstalledExtensionsSet();
       for (const auto& entry : *installed_extensions)
@@ -111,7 +112,7 @@ void InstallationTracker::ReportResults(bool succeeded) {
               << " forced extensions.";
       for (const auto& extension_id : pending_forced_extensions_) {
         InstallationReporter::InstallationData installation =
-            InstallationReporter::Get(profile_, extension_id);
+            installation_reporter->Get(extension_id);
         if (!installation.failure_reason && installation.install_stage) {
           installation.failure_reason =
               InstallationReporter::FailureReason::IN_PROGRESS;
@@ -146,7 +147,7 @@ void InstallationTracker::ReportResults(bool succeeded) {
     }
   }
   reported_ = true;
-  InstallationReporter::Clear(profile_);
+  InstallationReporter::Get(profile_)->Clear();
   observer_.RemoveAll();
   pref_change_registrar_.RemoveAll();
   timer_->Stop();

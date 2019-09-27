@@ -13,7 +13,7 @@ class FloatClipRectTest : public testing::Test {
  public:
 };
 
-TEST_F(FloatClipRectTest, InfinitRect) {
+TEST_F(FloatClipRectTest, InfiniteRect) {
   FloatClipRect rect;
   EXPECT_TRUE(rect.IsInfinite());
   EXPECT_FALSE(rect.HasRadius());
@@ -58,6 +58,28 @@ TEST_F(FloatClipRectTest, Intersect) {
   EXPECT_EQ(FloatRect(3, 4, 1, 2), rect.Rect());
   EXPECT_TRUE(rect.HasRadius());
   EXPECT_FALSE(rect.IsTight());
+}
+
+TEST_F(FloatClipRectTest, IntersectWithInfinite) {
+  FloatClipRect infinite;
+  FloatRect large(0, 0, std::numeric_limits<int>::max(),
+                  std::numeric_limits<int>::max());
+  FloatClipRect unclipped(large);
+
+  unclipped.Intersect(infinite);
+  EXPECT_FALSE(unclipped.IsInfinite());
+  EXPECT_EQ(large, unclipped.Rect());
+}
+
+TEST_F(FloatClipRectTest, InclusiveIntersectWithInfinite) {
+  FloatClipRect infinite;
+  FloatRect large(0, 0, std::numeric_limits<int>::max(),
+                  std::numeric_limits<int>::max());
+  FloatClipRect unclipped(large);
+
+  ASSERT_TRUE(unclipped.InclusiveIntersect(infinite));
+  EXPECT_FALSE(unclipped.IsInfinite());
+  EXPECT_EQ(large, unclipped.Rect());
 }
 
 TEST_F(FloatClipRectTest, SetHasRadius) {

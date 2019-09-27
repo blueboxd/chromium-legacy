@@ -199,9 +199,12 @@ std::vector<std::unique_ptr<NavigationThrottle>> CreateNavigationThrottles(
                    ->GetFrameTree()
                    ->root();
     } else {
-      return result;
+      parent = frame_tree_node->original_opener();
     }
   }
+  if (!parent)
+    return result;
+
   agent_host = RenderFrameDevToolsAgentHost::GetFor(parent);
   if (agent_host) {
     for (auto* target_handler :

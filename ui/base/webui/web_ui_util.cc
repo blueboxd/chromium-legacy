@@ -7,7 +7,6 @@
 #include <vector>
 
 #include "base/base64.h"
-#include "base/feature_list.h"
 #include "base/i18n/rtl.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted_memory.h"
@@ -17,10 +16,10 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "net/base/escape.h"
+#include "third_party/modp_b64/modp_b64.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/template_expressions.h"
-#include "ui/base/ui_base_features.h"
 #include "ui/base/window_open_disposition.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/font.h"
@@ -36,18 +35,28 @@
 namespace webui {
 
 std::string GetBitmapDataUrl(const SkBitmap& bitmap) {
-  TRACE_EVENT2("oobe", "GetImageDataUrl",
-               "width", bitmap.width(), "height", bitmap.height());
+  TRACE_EVENT2("ui", "GetBitmapDataUrl", "width", bitmap.width(), "height",
+               bitmap.height());
   std::vector<unsigned char> output;
   gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &output);
   return GetPngDataUrl(output.data(), output.size());
 }
 
 std::string GetPngDataUrl(const unsigned char* data, size_t size) {
-  std::string str_url(reinterpret_cast<const char*>(data), size);
-  base::Base64Encode(str_url, &str_url);
-  str_url.insert(0, "data:image/png;base64,");
-  return str_url;
+  constexpr char kPrefix[] = "data:image/png;base64,";
+  constexpr size_t kPrefixLen = base::size(kPrefix) - 1;
+  // Includes room for trailing null byte.
+  size_t max_encode_len = modp_b64_encode_len(size);
+  std::string output;
+  // This initializes the characters in the string, but there's no good way to
+  // avoid that and maintain a std::string API.
+  output.resize(kPrefixLen + max_encode_len);
+  memcpy(&output[0], kPrefix, kPrefixLen);
+  // |max_encode_len| is >= 1, so &output[kPrefixLen] is valid.
+  size_t actual_encode_len = modp_b64_encode(
+      &output[kPrefixLen], reinterpret_cast<const char*>(data), size);
+  output.resize(kPrefixLen + actual_encode_len);
+  return output;
 }
 
 WindowOpenDisposition GetDispositionFromClick(const base::ListValue* args,
@@ -170,8 +179,6 @@ void ParsePathAndFrame(const GURL& url, std::string* path, int* frame_index) {
 
 void SetLoadTimeDataDefaults(const std::string& app_locale,
                              base::DictionaryValue* localized_strings) {
-  // Needs to be all lowercase due to
-  localized_strings->SetString("a11yenhanced", GetA11yEnhanced());
   localized_strings->SetString("fontfamily", GetFontFamily());
   localized_strings->SetString("fontsize", GetFontSize());
   localized_strings->SetString("language", l10n_util::GetLanguage(app_locale));
@@ -180,7 +187,6 @@ void SetLoadTimeDataDefaults(const std::string& app_locale,
 
 void SetLoadTimeDataDefaults(const std::string& app_locale,
                              ui::TemplateReplacements* replacements) {
-  (*replacements)["a11yenhanced"] = GetA11yEnhanced();
   (*replacements)["fontfamily"] = GetFontFamily();
   (*replacements)["fontsize"] = GetFontSize();
   (*replacements)["language"] = l10n_util::GetLanguage(app_locale);
@@ -213,12 +219,6 @@ void AppendWebUiCssTextDefaults(std::string* html) {
   html->append("<style>");
   html->append(GetWebUiCssTextDefaults());
   html->append("</style>");
-}
-
-std::string GetA11yEnhanced() {
-  return base::FeatureList::IsEnabled(features::kWebUIA11yEnhancements)
-             ? "a11y-enhanced"
-             : "";
 }
 
 std::string GetFontFamily() {

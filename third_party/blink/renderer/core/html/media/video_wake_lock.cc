@@ -4,7 +4,7 @@
 
 #include "third_party/blink/renderer/core/html/media/video_wake_lock.h"
 
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/wake_lock/wake_lock.mojom-blink.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/events/event.h"
@@ -115,7 +115,7 @@ void VideoWakeLock::EnsureWakeLockService() {
       frame->GetTaskRunner(TaskType::kMediaElementEvent);
 
   mojo::Remote<blink::mojom::blink::WakeLockService> service;
-  frame->GetInterfaceProvider().GetInterface(
+  frame->GetBrowserInterfaceBroker().GetInterface(
       service.BindNewPipeAndPassReceiver(task_runner));
   service->GetWakeLock(device::mojom::WakeLockType::kPreventDisplaySleep,
                        device::mojom::blink::WakeLockReason::kVideoPlayback,

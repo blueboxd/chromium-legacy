@@ -32,7 +32,6 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
-#include "services/file/file_service.h"
 #include "storage/browser/test/mock_special_storage_policy.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/leveldatabase/env_chromium.h"
@@ -1026,7 +1025,7 @@ TEST_F(LocalStorageContextMojoTest, RecreateOnCommitFailure) {
       base::FilePath(), test_path, nullptr);
 
   FakeLevelDBService mock_leveldb_service;
-  context->GetFileServiceForTesting()->OverrideLevelDBBinderForTesting(
+  context->OverrideLevelDBBinderForTesting(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&mock_leveldb_service)));
 
@@ -1175,7 +1174,7 @@ TEST_F(LocalStorageContextMojoTest, DontRecreateOnRepeatedCommitFailure) {
       base::FilePath(), test_path, nullptr);
 
   FakeLevelDBService mock_leveldb_service;
-  context->GetFileServiceForTesting()->OverrideLevelDBBinderForTesting(
+  context->OverrideLevelDBBinderForTesting(
       base::BindRepeating(&test::FakeLevelDBService::Bind,
                           base::Unretained(&mock_leveldb_service)));
 

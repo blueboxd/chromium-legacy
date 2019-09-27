@@ -1,11 +1,28 @@
 This is a testharness.js-based test.
+Found 50 tests; 42 PASS, 8 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idlharness
 PASS idl_test setup
+PASS idl_test validation
 PASS Partial interface Navigator: original interface defined
 PASS Partial interface Navigator: valid exposure set
+PASS Partial interface Navigator: member names are unique
 PASS Partial interface WorkerNavigator: original interface defined
 PASS Partial interface WorkerNavigator: valid exposure set
+PASS Partial interface WorkerNavigator: member names are unique
 PASS Partial interface Screen: original interface defined
+PASS Partial interface Screen: member names are unique
+PASS Partial interface mixin NavigatorID: member names are unique
+PASS Navigator includes NavigatorID: member names are unique
+PASS Navigator includes NavigatorLanguage: member names are unique
+PASS Navigator includes NavigatorOnLine: member names are unique
+PASS Navigator includes NavigatorContentUtils: member names are unique
+PASS Navigator includes NavigatorCookies: member names are unique
+PASS Navigator includes NavigatorPlugins: member names are unique
+PASS Navigator includes NavigatorConcurrentHardware: member names are unique
+PASS WorkerNavigator includes NavigatorID: member names are unique
+PASS WorkerNavigator includes NavigatorLanguage: member names are unique
+PASS WorkerNavigator includes NavigatorOnLine: member names are unique
+PASS WorkerNavigator includes NavigatorConcurrentHardware: member names are unique
 PASS MediaCapabilities interface: existence and properties of interface object
 PASS MediaCapabilities interface object length
 PASS MediaCapabilities interface object name

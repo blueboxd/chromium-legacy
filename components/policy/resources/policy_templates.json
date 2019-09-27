@@ -645,6 +645,9 @@
         'DeviceLoginScreenSpokenFeedbackEnabled',
         'DeviceLoginScreenHighContrastEnabled',
         'DeviceLoginScreenVirtualKeyboardEnabled',
+        'DeviceLoginScreenDictationEnabled',
+        'DeviceLoginScreenSelectToSpeakEnabled',
+        'DeviceLoginScreenCursorHighlightEnabled',
       ],
     },
     {
@@ -2976,7 +2979,7 @@
       'type': 'int-enum',
       'schema': {
         'type': 'integer',
-        'enum': [ 0, 1, 2, 3 ],
+        'enum': [ 0, 1, 2, 3, 4 ],
       },
       'items': [
         {
@@ -2999,6 +3002,11 @@
           'value': 3,
           'caption': '''Block all downloads''',
         },
+        {
+          'name': 'BlockMaliciousDownloads',
+          'value': 4,
+          'caption': '''Block malicious downloads''',
+        },
       ],
       'supported_on': ['chrome.*:61-', 'chrome_os:61-'],
       'features': {
@@ -3019,6 +3027,8 @@
       When the 'Block potentially dangerous downloads' option is chosen, all downloads allowed, except for those that carry Safe Browsing warnings of potentially dangerous downloads.
 
       When the 'Block all downloads' option is chosen, all downloads are blocked.
+
+      When the 'Block malicious downloads' option is chosen, all downloads are allowed, except for those that Safe Browsing assesses to be malware with high confidence. Unlike with dangerous downloads, this does not take into account file type, but does take into account the host.
 
       When this policy is not set, (or the 'No special restrictions' option is chosen), the downloads will go through the usual security restrictions based on Safe Browsing analysis results.
 
@@ -10367,6 +10377,81 @@
           If you set this policy, users can temporarily override it by enabling or disabling the screen magnifier. However, the user's choice is not persistent and the default is restored whenever the login screen is shown anew or the user remains idle on the login screen for a minute.
 
           If this policy is left unset, the screen magnifier is disabled when the login screen is first shown. Users can enable or disable the screen magnifier anytime and its status on the login screen is persisted between users.''',
+    },
+    {
+      'name': 'DeviceLoginScreenDictationEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 611,
+      'caption': '''Enable the dictation on the login screen''',
+      'tags': [],
+      'desc': '''Enable the dictation accessibility feature on the login screen.
+
+          If this policy is set to true, the dictation will always be enabled on the login screen.
+
+          If this policy is set to false, the dictation will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the dictation is disabled on the login screen initially but can be enabled by the user anytime.''',
+    },
+    {
+      'name': 'DeviceLoginScreenSelectToSpeakEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 612,
+      'caption': '''Enable the select to speak on the login screen''',
+      'tags': [],
+      'desc': '''Enable the select to speak accessibility feature on the login screen.
+
+          If this policy is set to true, the select to speak will always be enabled on the login screen.
+
+          If this policy is set to false, the select to speak will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the select to speak is disabled on the login screen initially but can be enabled by the user anytime.''',
+    },
+    {
+      'name': 'DeviceLoginScreenCursorHighlightEnabled',
+      'owners': ['amraboelkher@chromium.org', 'emaxx@chromium.org'],
+      'type': 'main',
+      'schema': { 'type': 'boolean' },
+      'supported_on': ['chrome_os:79-'],
+      'device_only': True,
+      'features': {
+        'can_be_recommended': True,
+        'dynamic_refresh': True,
+      },
+      'example_value': True,
+      'id': 613,
+      'caption': '''Enable the cursor highlight on the login screen''',
+      'tags': [],
+      'desc': '''Enable the cursor highlight accessibility feature on the login screen.
+
+          If this policy is set to true, the cursor highlight will always be enabled on the login screen.
+
+          If this policy is set to false, the cursor highlight will always be disabled on the login screen.
+
+          If you set this policy, users cannot change or override it.
+
+          If this policy is left unset, the cursor highlight is disabled on the login screen initially but can be enabled by the user anytime.''',
     },
     {
       'name': 'HideWebStoreIcon',
@@ -18157,6 +18242,9 @@ The recommended way to configure policy on Windows is via GPO, although provisio
     'DeviceLoginScreenDefaultScreenMagnifierType': 'accessibility_settings.login_screen_default_screen_magnifier_type',
     'DeviceLoginScreenDefaultVirtualKeyboardEnabled': 'accessibility_settings.login_screen_default_virtual_keyboard_enabled',
     'DeviceLoginScreenVirtualKeyboardEnabled': 'accessibility_settings.login_screen_virtual_keyboard_enabled',
+    'DeviceLoginScreenDictationEnabled': 'accessibility_settings.login_screen_dictation_enabled',
+    'DeviceLoginScreenSelectToSpeakEnabled': 'accessibility_settings.login_screen_select_to_speak_enabled',
+    'DeviceLoginScreenCursorHighlightEnabled': 'accessibility_settings.login_screen_cursor_highlight_enabled',
     'AttestationEnabledForDevice': 'attestation_settings.attestation_enabled',
     'AttestationForContentProtectionEnabled': 'attestation_settings.content_protection_enabled',
     'SystemTimezone': 'system_timezone.timezone',
@@ -18657,6 +18745,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 610,
+  'highest_id_currently_used': 613,
   'highest_atomic_group_id_currently_used': 37
 }

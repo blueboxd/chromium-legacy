@@ -21,10 +21,6 @@ const base::Feature kInstantTetheringBackgroundAdvertisementSupport{
 const base::Feature kAccountManager{"ChromeOSAccountManager",
                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Enables or disables adaptive OOBE UX.
-const base::Feature kAdaptiveOobe{"AdaptiveOobe",
-                                  base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Controls whether to enable Ambient mode feature.
 const base::Feature kAmbientModeFeature{"ChromeOSAmbientMode",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
@@ -224,10 +220,6 @@ const base::Feature kVideoPlayerNativeControls{
 
 bool IsAccountManagerEnabled() {
   return base::FeatureList::IsEnabled(kAccountManager);
-}
-
-bool IsAdaptiveOobeEnabled() {
-  return base::FeatureList::IsEnabled(kAdaptiveOobe);
 }
 
 bool IsAmbientModeEnabled() {

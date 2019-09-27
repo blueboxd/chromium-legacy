@@ -279,7 +279,7 @@ var tests = [
       chrome.test.assertEq(`${expectedMockWidth}px`, mockSizer.style.width);
       chrome.test.assertEq(`${expectedMockHeight}px`, mockSizer.style.height);
       chrome.test.assertEq(expectedZoom, viewport.getZoom());
-    };
+    }
 
     function testForSize(
         pageWidth, pageHeight, expectedMockWidth, expectedMockHeight,
@@ -291,7 +291,7 @@ var tests = [
       mockCallback.reset();
       viewport.fitToWidth();
       assertZoomed(expectedMockWidth, expectedMockHeight, expectedZoom);
-    };
+    }
 
     // Document width which matches the window width.
     testForSize(100, 100, 100, 100, 1);
@@ -354,7 +354,7 @@ var tests = [
       chrome.test.assertEq(`${expectedMockWidth}px`, mockSizer.style.width);
       chrome.test.assertEq(`${expectedMockHeight}px`, mockSizer.style.height);
       chrome.test.assertEq(expectedZoom, viewport.getZoom());
-    };
+    }
 
     function testForSize(
         pageWidth, pageHeight, expectedMockWidth, expectedMockHeight,
@@ -366,7 +366,7 @@ var tests = [
       mockCallback.reset();
       viewport.fitToPage();
       assertZoomed(expectedMockWidth, expectedMockHeight, expectedZoom);
-    };
+    }
 
     // Page size which matches the window size.
     testForSize(100, 100, 100, 100, 1);
@@ -456,7 +456,7 @@ var tests = [
       chrome.test.assertEq(`${expectedMockWidth}px`, mockSizer.style.width);
       chrome.test.assertEq(`${expectedMockHeight}px`, mockSizer.style.height);
       chrome.test.assertEq(expectedZoom, viewport.getZoom());
-    };
+    }
 
     function testForSize(
         pageWidth, pageHeight, expectedMockWidth, expectedMockHeight,
@@ -468,7 +468,7 @@ var tests = [
       mockCallback.reset();
       viewport.fitToHeight();
       assertZoomed(expectedMockWidth, expectedMockHeight, expectedZoom);
-    };
+    }
 
     // Page size which matches the window size.
     testForSize(100, 100, 100, 100, 1);
@@ -968,10 +968,12 @@ var tests = [
     var rect1 = viewport.getPageScreenRect(0);
     chrome.test.assertEq(Viewport.PAGE_SHADOW.left + 100 / 2, rect1.x);
     chrome.test.assertEq(Viewport.PAGE_SHADOW.top, rect1.y);
-    chrome.test.assertEq(100 - Viewport.PAGE_SHADOW.right -
-        Viewport.PAGE_SHADOW.left, rect1.width);
-    chrome.test.assertEq(100 - Viewport.PAGE_SHADOW.bottom -
-        Viewport.PAGE_SHADOW.top, rect1.height);
+    chrome.test.assertEq(
+        100 - Viewport.PAGE_SHADOW.right - Viewport.PAGE_SHADOW.left,
+        rect1.width);
+    chrome.test.assertEq(
+        100 - Viewport.PAGE_SHADOW.bottom - Viewport.PAGE_SHADOW.top,
+        rect1.height);
 
     // Check that when we scroll, the rect of the first page is updated
     // correctly.
@@ -987,10 +989,12 @@ var tests = [
     rect1 = viewport.getPageScreenRect(1);
     chrome.test.assertEq(Viewport.PAGE_SHADOW.left, rect1.x);
     chrome.test.assertEq(Viewport.PAGE_SHADOW.top, rect1.y);
-    chrome.test.assertEq(200 - Viewport.PAGE_SHADOW.right -
-        Viewport.PAGE_SHADOW.left, rect1.width);
-    chrome.test.assertEq(200 - Viewport.PAGE_SHADOW.bottom -
-        Viewport.PAGE_SHADOW.top, rect1.height);
+    chrome.test.assertEq(
+        200 - Viewport.PAGE_SHADOW.right - Viewport.PAGE_SHADOW.left,
+        rect1.width);
+    chrome.test.assertEq(
+        200 - Viewport.PAGE_SHADOW.bottom - Viewport.PAGE_SHADOW.top,
+        rect1.height);
     chrome.test.succeed();
   },
 
@@ -1001,14 +1005,14 @@ var tests = [
     var afterZoomCalled = false;
     var beforeZoomCalled = false;
     var afterZoom = function() {
-        afterZoomCalled = true;
-        chrome.test.assertTrue(beforeZoomCalled);
-        chrome.test.assertEq(0.5, viewport.getZoom());
+      afterZoomCalled = true;
+      chrome.test.assertTrue(beforeZoomCalled);
+      chrome.test.assertEq(0.5, viewport.getZoom());
     };
     var beforeZoom = function() {
-        beforeZoomCalled = true;
-        chrome.test.assertFalse(afterZoomCalled);
-        chrome.test.assertEq(1, viewport.getZoom());
+      beforeZoomCalled = true;
+      chrome.test.assertFalse(afterZoomCalled);
+      chrome.test.assertEq(1, viewport.getZoom());
     };
     viewport = new Viewport(mockWindow, mockSizer, 0, 1, 0);
     viewport.setBeforeZoomCallback(beforeZoom);
@@ -1030,6 +1034,23 @@ var tests = [
         new Viewport(new MockWindow(100, 100), new MockSizer(), 0, 3, 0);
     viewport.setDocumentDimensions(new MockDocumentDimensions(50, 50));
     chrome.test.assertEq(2, viewport.getZoom());
+    chrome.test.succeed();
+  },
+
+  function testLayoutOptions() {
+    var viewport =
+        new Viewport(new MockWindow(100, 100), new MockSizer(), 0, 1, 0);
+
+    chrome.test.assertEq(undefined, viewport.getLayoutOptions());
+
+    viewport.setDocumentDimensions(
+        new MockDocumentDimensions(50, 50, {defaultPageOrientation: 1}));
+    chrome.test.assertEq(
+        {defaultPageOrientation: 1}, viewport.getLayoutOptions());
+
+    viewport.setDocumentDimensions(new MockDocumentDimensions(50, 50));
+    chrome.test.assertEq(undefined, viewport.getLayoutOptions());
+
     chrome.test.succeed();
   },
 

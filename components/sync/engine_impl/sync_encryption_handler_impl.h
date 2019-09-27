@@ -82,7 +82,7 @@ class SyncEncryptionHandlerImpl : public KeystoreKeysHandler,
   // Can be called from any thread.
   const Cryptographer* GetCryptographer(
       const syncable::BaseTransaction* const trans) const override;
-  const DirectoryCryptographer* GetDirectoryCryptographerForNigori(
+  const DirectoryCryptographer* GetDirectoryCryptographer(
       const syncable::BaseTransaction* const trans) const override;
   ModelTypeSet GetEncryptedTypes(
       const syncable::BaseTransaction* const trans) const override;

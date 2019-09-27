@@ -63,12 +63,6 @@ bool BundleUtils::IsBundle() {
 }
 
 // static
-void* BundleUtils::DlOpenModuleLibrary(const std::string& library_name) {
-  std::string library_path = ResolveLibraryPath(library_name);
-  return dlopen(library_path.c_str(), RTLD_LOCAL);
-}
-
-// static
 void* BundleUtils::DlOpenModuleLibraryPartition(
     const std::string& library_name) {
   std::string library_path = ResolveLibraryPath(library_name);

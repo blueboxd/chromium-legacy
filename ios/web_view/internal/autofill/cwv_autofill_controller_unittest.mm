@@ -24,6 +24,7 @@
 #import "ios/web/public/test/fakes/fake_web_frame.h"
 #import "ios/web/public/test/fakes/fake_web_frames_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/web_task_environment.h"
 #include "ios/web/public/web_client.h"
 #import "ios/web_view/internal/autofill/cwv_autofill_suggestion_internal.h"
@@ -56,10 +57,9 @@ NSString* const kTestFieldValue = @"FieldValue";
 class CWVAutofillControllerTest : public TestWithLocaleAndResources {
  protected:
   CWVAutofillControllerTest()
-      : task_environment_(web::WebTaskEnvironment::IO_MAINLOOP),
+      : web_client_(std::make_unique<web::WebClient>()),
+        task_environment_(web::WebTaskEnvironment::IO_MAINLOOP),
         browser_state_(/*off_the_record=*/false) {
-    web::SetWebClient(&web_client_);
-
     test_web_state_.SetBrowserState(&browser_state_);
     CRWTestJSInjectionReceiver* injectionReceiver =
         [[CRWTestJSInjectionReceiver alloc] init];
@@ -92,7 +92,7 @@ class CWVAutofillControllerTest : public TestWithLocaleAndResources {
     test_web_state_.OnWebFrameDidBecomeAvailable(frame_ptr);
   }
 
-  web::WebClient web_client_;
+  web::ScopedTestingWebClient web_client_;
   web::WebTaskEnvironment task_environment_;
   ios_web_view::WebViewBrowserState browser_state_;
   web::TestWebState test_web_state_;

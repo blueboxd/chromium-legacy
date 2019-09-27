@@ -329,9 +329,9 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Tests that returning from "Manage Passwords..." leaves the icons in the right
-// state.
-- (void)testPasswordsButtonStateAfterPresentingManagePasswords {
+// Tests that returning from "Manage Passwords..." leaves the keyboard and the
+// icons in the right state.
+- (void)testPasswordsStateAfterPresentingManagePasswords {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:TapWebElementWithId(kFormElementUsername)];
@@ -363,6 +363,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_userInteractionEnabled()];
   [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Verify the keyboard is not cover by the password view.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_notVisible()];
 }
 
 // Tests that the "Use Other Password..." action works.
@@ -384,9 +388,9 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_sufficientlyVisible()];
 }
 
-// Tests that returning from "Use Other Password..." leaves the icons in the
-// right state.
-- (void)testPasswordsButtonStateAfterPresentingUseOtherPassword {
+// Tests that returning from "Use Other Password..." leaves the view and icons
+// in the right state.
+- (void)testPasswordsStateAfterPresentingUseOtherPassword {
   // Bring up the keyboard.
   [[EarlGrey selectElementWithMatcher:chrome_test_util::WebViewMatcher()]
       performAction:TapWebElementWithId(kFormElementUsername)];
@@ -418,6 +422,10 @@ BOOL WaitForJavaScriptCondition(NSString* java_script_condition) {
       assertWithMatcher:grey_userInteractionEnabled()];
   [[EarlGrey selectElementWithMatcher:KeyboardIconMatcher()]
       assertWithMatcher:grey_not(grey_sufficientlyVisible())];
+
+  // Verify the keyboard is not cover by the password view.
+  [[EarlGrey selectElementWithMatcher:PasswordTableViewMatcher()]
+      assertWithMatcher:grey_notVisible()];
 }
 
 // Tests that the Password View Controller is not present when presenting UI.

@@ -18,6 +18,7 @@
 <translation id="1176932207622159128">Није могуће сачувати слику</translation>
 <translation id="1180526666083833456">Синхронизујте и персонализујте садржај на свим уређајима.</translation>
 <translation id="1181037720776840403">Уклони</translation>
+<translation id="1207113853726624428">Нова претрага</translation>
 <translation id="1209206284964581585">Сакриј за сада</translation>
 <translation id="1219674500290482172">Повезивање са интернетом није могуће.</translation>
 <translation id="122699739164161391">Затвори све картице</translation>
@@ -131,6 +132,7 @@
 <translation id="2712127207578915686">Није могуће отворити датотеку</translation>
 <translation id="2718352093833049315">Само на Wi-Fi-ју</translation>
 <translation id="2747003861858887689">Претходно поље</translation>
+<translation id="2773292004659987824">Претрага без архивирања</translation>
 <translation id="2780046210906776326">Нема налога е-поште</translation>
 <translation id="2781692009645368755">Google Pay</translation>
 <translation id="2800683595868705743">Изађи из пребацивача картица</translation>
@@ -501,6 +503,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="8261506727792406068">Избриши</translation>
 <translation id="8281781826761538115">Подразумевано – <ph name="DEFAULT_LOCALE" /></translation>
 <translation id="8319076807703933069">Нова претрага</translation>
+<translation id="8323906514956095947">Додирните и задржите ако желите више опција за картице</translation>
 <translation id="8328777765163860529">Затвори све</translation>
 <translation id="8407669440184693619">Није пронађена ниједна лозинка за овај сајт</translation>
 <translation id="842017693807136194">Пријављени сте помоћу:</translation>

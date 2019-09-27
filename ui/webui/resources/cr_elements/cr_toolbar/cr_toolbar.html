@@ -12,7 +12,6 @@
   <template>
     <style include="cr-icons cr-hidden-style">
       :host {
-        --cr-icon-button-focus-color: var(--google-blue-700);
         align-items: center;
         background-color: var(--google-blue-700);
         color: #fff;
@@ -22,9 +21,6 @@
 
       @media (prefers-color-scheme: dark) {
         :host {
-          /* Toolbar background color rgba(255, 255, 255, .04) added to body
-             background color --google-grey-900. */
-          --cr-icon-button-focus-color: #28292c;
           background-color: rgba(255, 255, 255, .04);
           border-bottom: var(--cr-separator-line);
           box-sizing: border-box;

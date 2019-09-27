@@ -39,7 +39,7 @@ class COMPONENT_EXPORT(NETWORK_CPP) NetworkConnectionTracker
     : public network::mojom::NetworkChangeManagerClient {
  public:
   using BindingCallback = base::RepeatingCallback<void(
-      network::mojom::NetworkChangeManagerRequest)>;
+      mojo::PendingReceiver<network::mojom::NetworkChangeManager>)>;
   using ConnectionTypeCallback =
       base::OnceCallback<void(network::mojom::ConnectionType)>;
 

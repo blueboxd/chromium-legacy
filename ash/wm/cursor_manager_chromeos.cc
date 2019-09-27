@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/keyboard/ui/keyboard_ui_controller.h"
 #include "ash/keyboard/ui/keyboard_util.h"
 #include "ash/shell.h"
 #include "base/logging.h"
@@ -40,6 +41,13 @@ bool CursorManager::ShouldHideCursorOnKeyEvent(
   // not hide the cursor.
   if (keyboard::GetAccessibilityKeyboardEnabled())
     return false;
+
+  // Clicking on a key in the virtual keyboard should not hide the cursor.
+  if (keyboard::KeyboardUIController::HasInstance() &&
+      keyboard::KeyboardUIController::Get()->IsKeyboardVisible()) {
+    return false;
+  }
+
   // All alt and control key commands are ignored.
   if (event.IsAltDown() || event.IsControlDown())
     return false;

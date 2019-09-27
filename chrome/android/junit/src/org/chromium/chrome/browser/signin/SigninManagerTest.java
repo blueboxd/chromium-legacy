@@ -30,7 +30,6 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.robolectric.annotation.Config;
 
-import org.chromium.base.ContextUtils;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -82,9 +81,8 @@ public class SigninManagerTest {
 
         AndroidSyncSettings androidSyncSettings = mock(AndroidSyncSettings.class);
 
-        mSigninManager = new SigninManager(ContextUtils.getApplicationContext(),
-                0 /* nativeSigninManagerAndroid */, mAccountTrackerService, mIdentityManager,
-                mIdentityMutator, androidSyncSettings);
+        mSigninManager = new SigninManager(0 /* nativeSigninManagerAndroid */,
+                mAccountTrackerService, mIdentityManager, mIdentityMutator, androidSyncSettings);
 
         mAccount = new CoreAccountInfo(new CoreAccountId("gaia-id-user"),
                 AccountManagerFacade.createAccountFromName("user@domain.com"), "gaia-id-user");
@@ -245,7 +243,7 @@ public class SigninManagerTest {
         mSigninManager.runAfterOperationInProgress(callCount::incrementAndGet);
         assertEquals(0, callCount.get());
 
-        mSigninManager.onPolicyFetchedBeforeSignIn();
+        mSigninManager.finishSignInAfterPolicyEnforced();
         assertFalse(mSigninManager.isOperationInProgress());
         assertEquals(1, callCount.get());
     }

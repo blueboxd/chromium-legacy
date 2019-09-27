@@ -12,7 +12,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
+#include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/mojom/network_change_manager.mojom.h"
 
@@ -33,9 +33,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkChangeManager
 
   ~NetworkChangeManager() override;
 
-  // Binds a NetworkChangeManager request to this object. Mojo messages
+  // Binds a NetworkChangeManager receiver to this object. Mojo messages
   // coming through the associated pipe will be served by this object.
-  void AddRequest(mojom::NetworkChangeManagerRequest request);
+  void AddReceiver(mojo::PendingReceiver<mojom::NetworkChangeManager> receiver);
 
   // mojom::NetworkChangeManager implementation:
   void RequestNotifications(
@@ -62,7 +62,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkChangeManager
       net::NetworkChangeNotifier::ConnectionType type) override;
 
   std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
-  mojo::BindingSet<mojom::NetworkChangeManager> bindings_;
+  mojo::ReceiverSet<mojom::NetworkChangeManager> receivers_;
   std::vector<mojom::NetworkChangeManagerClientPtr> clients_;
   mojom::ConnectionType connection_type_;
 

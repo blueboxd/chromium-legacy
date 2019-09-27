@@ -20,8 +20,10 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/grit/component_extension_resources.h"
+#include "chrome/services/app_service/public/cpp/intent_filter_util.h"
 #include "components/arc/app_permissions/arc_app_permissions_bridge.h"
 #include "components/arc/arc_service_manager.h"
+#include "components/arc/intent_helper/arc_intent_helper_bridge.h"
 #include "components/arc/mojom/app_permissions.mojom.h"
 #include "components/arc/session/arc_bridge_service.h"
 #include "content/public/browser/system_connector.h"
@@ -471,6 +473,13 @@ apps::mojom::AppPtr ArcApps::Convert(ArcAppListPrefs* prefs,
     UpdateAppPermissions(package->permissions, &app->permissions);
   }
 
+  auto* intent_helper_bridge =
+      arc::ArcIntentHelperBridge::GetForBrowserContext(profile_);
+  if (intent_helper_bridge) {
+    UpdateAppIntentFilters(app_info.package_name, intent_helper_bridge,
+                           &app->intent_filters);
+  }
+
   return app;
 }
 
@@ -497,6 +506,71 @@ void ArcApps::ConvertAndPublishPackageApps(
         Publish(Convert(prefs, app_id, *app_info));
       }
     }
+  }
+}
+
+void ArcApps::UpdateAppIntentFilters(
+    std::string package_name,
+    arc::ArcIntentHelperBridge* intent_helper_bridge,
+    std::vector<apps::mojom::IntentFilterPtr>* intent_filters) {
+  // TODO(crbug.com/853604): Add per-package observer to update the intent
+  // filter when package changes. Currently there is only observer for
+  // everything changes, want to try to split up it for each package.
+  const std::vector<arc::IntentFilter>& arc_intent_filters =
+      intent_helper_bridge->GetIntentFilterForPackage(package_name);
+  for (auto& arc_intent_filter : arc_intent_filters) {
+    auto intent_filter = apps::mojom::IntentFilter::New();
+
+    std::vector<apps::mojom::ConditionValuePtr> scheme_condition_values;
+    for (auto& scheme : arc_intent_filter.schemes()) {
+      scheme_condition_values.push_back(apps_util::MakeConditionValue(
+          scheme, apps::mojom::PatternMatchType::kNone));
+    }
+    if (!scheme_condition_values.empty()) {
+      auto scheme_condition =
+          apps_util::MakeCondition(apps::mojom::ConditionType::kScheme,
+                                   std::move(scheme_condition_values));
+      intent_filter->conditions.push_back(std::move(scheme_condition));
+    }
+
+    std::vector<apps::mojom::ConditionValuePtr> host_condition_values;
+    for (auto& authority : arc_intent_filter.authorities()) {
+      host_condition_values.push_back(apps_util::MakeConditionValue(
+          authority.host(), apps::mojom::PatternMatchType::kNone));
+    }
+    if (!host_condition_values.empty()) {
+      auto host_condition = apps_util::MakeCondition(
+          apps::mojom::ConditionType::kHost, std::move(host_condition_values));
+      intent_filter->conditions.push_back(std::move(host_condition));
+    }
+
+    std::vector<apps::mojom::ConditionValuePtr> path_condition_values;
+    for (auto& path : arc_intent_filter.paths()) {
+      apps::mojom::PatternMatchType match_type;
+      switch (path.match_type()) {
+        case arc::mojom::PatternType::PATTERN_LITERAL:
+          match_type = apps::mojom::PatternMatchType::kLiteral;
+          break;
+        case arc::mojom::PatternType::PATTERN_PREFIX:
+          match_type = apps::mojom::PatternMatchType::kPrefix;
+          break;
+        case arc::mojom::PatternType::PATTERN_SIMPLE_GLOB:
+          match_type = apps::mojom::PatternMatchType::kGlob;
+          break;
+        default:
+          NOTREACHED();
+      }
+      path_condition_values.push_back(
+          apps_util::MakeConditionValue(path.pattern(), match_type));
+    }
+    if (!path_condition_values.empty()) {
+      auto path_condition =
+          apps_util::MakeCondition(apps::mojom::ConditionType::kPattern,
+                                   std::move(path_condition_values));
+      intent_filter->conditions.push_back(std::move(path_condition));
+    }
+
+    intent_filters->push_back(std::move(intent_filter));
   }
 }
 

@@ -673,7 +673,7 @@ class ProfileMenuClickTest_MultipleProfiles : public ProfileMenuClickTest {
  public:
   // List of actionable items in the correct order as they appear in the menu.
   // If a new button is added to the menu, it should also be added to this list.
-  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[11] =
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[10] =
       {ProfileMenuView::ActionableItem::kPasswordsButton,
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
@@ -683,7 +683,6 @@ class ProfileMenuClickTest_MultipleProfiles : public ProfileMenuClickTest {
        ProfileMenuView::ActionableItem::kOtherProfileButton,
        ProfileMenuView::ActionableItem::kGuestProfileButton,
        ProfileMenuView::ActionableItem::kAddNewProfileButton,
-       ProfileMenuView::ActionableItem::kExitProfileButton,
        // The first button is added again to finish the cycle and test that
        // there are no other buttons at the end.
        ProfileMenuView::ActionableItem::kPasswordsButton};
@@ -721,7 +720,7 @@ class ProfileMenuClickTest_WithPrimaryAccount : public ProfileMenuClickTest {
  public:
   // List of actionable items in the correct order as they appear in the menu.
   // If a new button is added to the menu, it should also be added to this list.
-  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[9] =
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[8] =
       {ProfileMenuView::ActionableItem::kPasswordsButton,
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
@@ -729,7 +728,6 @@ class ProfileMenuClickTest_WithPrimaryAccount : public ProfileMenuClickTest {
        ProfileMenuView::ActionableItem::kManageProfilesButton,
        ProfileMenuView::ActionableItem::kGuestProfileButton,
        ProfileMenuView::ActionableItem::kAddNewProfileButton,
-       ProfileMenuView::ActionableItem::kExitProfileButton,
        // The first button is added again to finish the cycle and test that
        // there are no other buttons at the end.
        ProfileMenuView::ActionableItem::kPasswordsButton};
@@ -771,7 +769,7 @@ class ProfileMenuClickTest_WithUnconsentedPrimaryAccount
  public:
   // List of actionable items in the correct order as they appear in the menu.
   // If a new button is added to the menu, it should also be added to this list.
-  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[11] =
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[10] =
       {ProfileMenuView::ActionableItem::kPasswordsButton,
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
@@ -781,7 +779,6 @@ class ProfileMenuClickTest_WithUnconsentedPrimaryAccount
        ProfileMenuView::ActionableItem::kManageProfilesButton,
        ProfileMenuView::ActionableItem::kGuestProfileButton,
        ProfileMenuView::ActionableItem::kAddNewProfileButton,
-       ProfileMenuView::ActionableItem::kExitProfileButton,
        // The first button is added again to finish the cycle and test that
        // there are no other buttons at the end.
        ProfileMenuView::ActionableItem::kPasswordsButton};

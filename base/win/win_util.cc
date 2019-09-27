@@ -234,7 +234,7 @@ bool IsWindows10TabletMode(HWND hwnd) {
 // if the keyboard count is 1 or more.. While this will work in most cases
 // it won't work if there are devices which expose keyboard interfaces which
 // are attached to the machine.
-bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
+bool IsKeyboardPresentOnSlate(HWND hwnd, std::string* reason) {
   bool result = false;
 
   if (GetVersion() < Version::WIN8) {
@@ -267,14 +267,13 @@ bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
     if (reason)
       *reason += "Tablet device.\n";
     return false;
-  } else {
-    if (reason) {
-      *reason += "Not a tablet device";
-      result = true;
-    } else {
-      return true;
-    }
   }
+
+  if (!reason)
+    return true;
+
+  *reason += "Not a tablet device";
+  result = true;
 
   // To determine whether a keyboard is present on the device, we do the
   // following:-
@@ -302,13 +301,12 @@ bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
       // If there is no auto rotation sensor or rotation is not supported in
       // the current configuration, then we can assume that this is a desktop
       // or a traditional laptop.
-      if (reason) {
-        *reason += (auto_rotation_state & AR_NOSENSOR) ? "AR_NOSENSOR\n"
-                                                       : "AR_NOT_SUPPORTED\n";
-        result = true;
-      } else {
+      if (!reason)
         return true;
-      }
+
+      *reason += (auto_rotation_state & AR_NOSENSOR) ? "AR_NOSENSOR\n"
+                                                     : "AR_NOT_SUPPORTED\n";
+      result = true;
     }
   }
 
@@ -341,10 +339,9 @@ bool IsKeyboardPresentOnSlate(std::string* reason, HWND hwnd) {
     if (status == CR_SUCCESS) {
       // To reduce the scope of the hack we only look for ACPI and HID\\VID
       // prefixes in the keyboard device ids.
-      if (StartsWith(base::AsStringPiece16(device_id), STRING16_LITERAL("ACPI"),
+      if (StartsWith(AsStringPiece16(device_id), STRING16_LITERAL("ACPI"),
                      CompareCase::INSENSITIVE_ASCII) ||
-          StartsWith(base::AsStringPiece16(device_id),
-                     STRING16_LITERAL("HID\\VID"),
+          StartsWith(AsStringPiece16(device_id), STRING16_LITERAL("HID\\VID"),
                      CompareCase::INSENSITIVE_ASCII)) {
         if (reason) {
           *reason += "device: ";

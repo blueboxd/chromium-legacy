@@ -76,7 +76,6 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   void OnDragCanceled() override;
 
   // views::View:
-  void Layout() override;
   bool OnMouseDragged(const ui::MouseEvent& event) override;
   void OnGestureEvent(ui::GestureEvent* event) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
@@ -88,9 +87,6 @@ class OmniboxPopupContentsView : public views::View, public OmniboxPopupView {
   // Returns the target popup bounds in screen coordinates based on the bounds
   // of |location_bar_view_|.
   gfx::Rect GetTargetBounds();
-
-  // Size our children to the available content area.
-  void LayoutChildren();
 
   // Returns true if the model has a match at the specified index.
   bool HasMatchAt(size_t index) const;

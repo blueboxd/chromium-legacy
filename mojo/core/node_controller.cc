@@ -213,7 +213,10 @@ void NodeController::AcceptBrokerClientInvitation(
       CancelPendingPortMerges();
       return;
     }
+
+    const bool leak_endpoint = connection_params.leak_endpoint();
     connection_params = ConnectionParams(std::move(endpoint));
+    connection_params.set_leak_endpoint(leak_endpoint);
   } else {
     // For async connections, we instead create a new channel for the broker and
     // send a request for the inviting process to bind to it. This avoids doing
@@ -226,6 +229,10 @@ void NodeController::AcceptBrokerClientInvitation(
     broker_host_handle = channel.TakeRemoteEndpoint().TakePlatformHandle();
   }
 #endif
+  // Re-enable port merge operations, which may have been disabled if this isn't
+  // the first invitation accepted by this process.
+  base::AutoLock lock(pending_port_merges_lock_);
+  reject_pending_merges_ = false;
 
   io_task_runner_->PostTask(
       FROM_HERE,
@@ -322,6 +329,15 @@ void NodeController::NotifyBadMessageFrom(const ports::NodeName& source_node,
     peer->NotifyBadMessage(error);
 }
 
+void NodeController::ForceDisconnectProcessForTesting(
+    base::ProcessId process_id) {
+  io_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &NodeController::ForceDisconnectProcessForTestingOnIOThread,
+          base::Unretained(this), process_id));
+}
+
 // static
 void NodeController::DeserializeRawBytesAsEventForFuzzer(
     base::span<const unsigned char> data) {
@@ -412,7 +428,17 @@ void NodeController::AcceptBrokerClientInvitationOnIOThread(
 
   {
     base::AutoLock lock(inviter_lock_);
-    DCHECK(inviter_name_ == ports::kInvalidNodeName);
+    if (inviter_name_ != ports::kInvalidNodeName) {
+      // We've already accepted an invitation before and are already part of
+      // a different Mojo process network. In order to accept this new one and
+      // remain in a consistent state, we have to purge all peer connections and
+      // start from scratch.
+      {
+        base::AutoUnlock unlock(inviter_lock_);
+        DropAllPeers();
+      }
+      inviter_name_ = ports::kInvalidNodeName;
+    }
 
     // At this point we don't know the inviter's name, so we can't yet insert it
     // into our |peers_| map. That will happen as soon as we receive an
@@ -421,10 +447,18 @@ void NodeController::AcceptBrokerClientInvitationOnIOThread(
         NodeChannel::Create(this, std::move(connection_params),
                             Channel::HandlePolicy::kAcceptHandles,
                             io_task_runner_, ProcessErrorCallback());
-    // Prevent the inviter pipe handle from being closed on shutdown. Pipe
-    // closure may be used by the inviter to detect the invitee process has
-    // exited.
-    bootstrap_inviter_channel_->LeakHandleOnShutdown();
+
+    if (connection_params.leak_endpoint()) {
+      // Prevent the inviter pipe handle from being closed on shutdown. Pipe
+      // closure may be used by the inviter to detect that the invited process
+      // has terminated. In such cases, the invited process must not be invited
+      // more than once in its lifetime; otherwise this leak matters.
+      //
+      // Note that this behavior is supported primarily to help adapt legacy
+      // Chrome IPC to Mojo, since channel disconnection is used there as a
+      // signal for normal child process termination.
+      bootstrap_inviter_channel_->LeakHandleOnShutdown();
+    }
   }
   bootstrap_inviter_channel_->Start();
   if (broker_host_handle)
@@ -1257,6 +1291,31 @@ void NodeController::AttemptShutdownIfRequested() {
   DCHECK(!callback.is_null());
 
   callback.Run();
+}
+
+void NodeController::ForceDisconnectProcessForTestingOnIOThread(
+    base::ProcessId process_id) {
+#if defined(OS_NACL) || defined(OS_IOS)
+  NOTREACHED();
+#else
+  DCHECK(io_task_runner_->RunsTasksInCurrentSequence());
+  RequestContext request_context;
+
+  // A channel may have multiple aliases since we generate one for any we
+  // invite and then only later refer to it by its own chosen name.
+  NodeMap peers_to_drop;
+  for (auto& peer : peers_) {
+    NodeChannel* channel = peer.second.get();
+    if (channel->HasRemoteProcessHandle()) {
+      base::Process process(channel->CloneRemoteProcessHandle().release());
+      if (process.Pid() == process_id)
+        peers_to_drop.emplace(peer.first, peer.second);
+    }
+  }
+
+  for (auto& peer : peers_to_drop)
+    DropPeer(peer.first, peer.second.get());
+#endif
 }
 
 NodeController::IsolatedConnection::IsolatedConnection() = default;

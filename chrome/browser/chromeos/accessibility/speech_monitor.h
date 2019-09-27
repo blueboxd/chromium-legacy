@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SPEECH_MONITOR_H_
 #define CHROME_BROWSER_CHROMEOS_ACCESSIBILITY_SPEECH_MONITOR_H_
 
+#include <chrono>
+
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -46,6 +48,9 @@ class SpeechMonitor : public content::TtsPlatform {
   // Blocks until StopSpeaking() is called on TtsController.
   void BlockUntilStop();
 
+  // Delayed utterances.
+  double GetDelayForLastUtteranceMS();
+
  private:
   // TtsPlatform implementation.
   bool PlatformImplAvailable() override;
@@ -73,6 +78,14 @@ class SpeechMonitor : public content::TtsPlatform {
   base::circular_deque<SpeechMonitorUtterance> utterance_queue_;
   bool did_stop_ = false;
   std::string error_;
+
+  // Delayed utterances.
+  // Calculates the milliseconds elapsed since the last call to Speak().
+  double CalculateUtteranceDelayMS();
+  // Stores the milliseconds elapsed since the last call to Speak().
+  double delay_for_last_utterance_MS_;
+  // Stores the last time Speak() was called.
+  std::chrono::steady_clock::time_point time_of_last_utterance_;
 
   DISALLOW_COPY_AND_ASSIGN(SpeechMonitor);
 };

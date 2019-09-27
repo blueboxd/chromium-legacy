@@ -9,6 +9,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/external_provider_impl.h"
 #include "chrome/browser/extensions/forced_extensions/installation_reporter.h"
+#include "chrome/browser/profiles/profile.h"
 
 namespace extensions {
 
@@ -39,14 +40,16 @@ void ExternalPolicyLoader::AddExtension(base::DictionaryValue* dict,
 void ExternalPolicyLoader::StartLoading() {
   std::unique_ptr<base::DictionaryValue> prefs;
   switch (type_) {
-    case FORCED:
+    case FORCED: {
+      InstallationReporter* installation_reporter =
+          InstallationReporter::Get(profile_);
       prefs = settings_->GetForceInstallList();
       for (const auto& it : prefs->DictItems()) {
-        InstallationReporter::ReportInstallationStage(
-            profile_, it.first,
-            InstallationReporter::Stage::SEEN_BY_POLICY_LOADER);
+        installation_reporter->ReportInstallationStage(
+            it.first, InstallationReporter::Stage::SEEN_BY_POLICY_LOADER);
       }
       break;
+    }
     case RECOMMENDED:
       prefs = settings_->GetRecommendedInstallList();
       break;

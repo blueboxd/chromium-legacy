@@ -7,7 +7,6 @@
 
 #include <memory>
 
-#include "ash/public/cpp/split_view.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
@@ -43,7 +42,6 @@ class BrowserNonClientFrameViewAsh
       public ash::TabletModeObserver,
       public TabIconViewModel,
       public CommandObserver,
-      public ash::SplitViewObserver,
       public aura::WindowObserver,
       public ImmersiveModeController::Observer {
  public:
@@ -102,10 +100,6 @@ class BrowserNonClientFrameViewAsh
 
   // CommandObserver:
   void EnabledStateChangedForCommand(int id, bool enabled) override;
-
-  // ash::SplitViewObserver:
-  void OnSplitViewStateChanged(ash::SplitViewState previous_state,
-                               ash::SplitViewState new_state) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
@@ -170,9 +164,9 @@ class BrowserNonClientFrameViewAsh
   // not need their frames painted.
   bool ShouldPaint() const;
 
-  // Helps to hide or show the header as needed when overview mode starts or
-  // ends or when split view state changes.
-  void OnOverviewOrSplitviewModeChanged();
+  // Helps to hide or show the header as needed when the window is added to or
+  // removed from overview.
+  void OnAddedToOrRemovedFromOverview();
 
   // Creates the frame header for the browser window.
   std::unique_ptr<ash::FrameHeader> CreateFrameHeader();

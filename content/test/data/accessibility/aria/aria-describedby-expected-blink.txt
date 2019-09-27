@@ -5,5 +5,6 @@ rootWebArea
 ++++tooltip name='Your username should be your email id'
 ++++++staticText name='Your username should be your email id'
 ++++++++inlineTextBox name='Your username should be your email id'
-++++textField description='mmddyy' descriptionFrom=relatedElement describedbyIds=null
+++++genericContainer ignored invisible name='mmddyy'
+++++textField description='mmddyy' descriptionFrom=relatedElement describedbyIds=genericContainer
 ++++++genericContainer

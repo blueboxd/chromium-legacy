@@ -537,7 +537,7 @@ void PrerenderContents::DidStopLoading() {
   NotifyPrerenderStopLoading();
 }
 
-void PrerenderContents::DocumentLoadedInFrame(
+void PrerenderContents::DOMContentLoaded(
     content::RenderFrameHost* render_frame_host) {
   if (!render_frame_host->GetParent())
     NotifyPrerenderDomContentLoaded();

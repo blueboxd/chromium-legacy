@@ -16,24 +16,29 @@ XRSpace::XRSpace(XRSession* session) : session_(session) {}
 
 XRSpace::~XRSpace() = default;
 
-std::unique_ptr<TransformationMatrix> XRSpace::GetTransformToMojoSpace() {
+std::unique_ptr<TransformationMatrix> XRSpace::MojoFromSpace() {
   // The base XRSpace does not have any relevant information, so can't determine
   // a transform here.
   return nullptr;
 }
 
-std::unique_ptr<TransformationMatrix> XRSpace::DefaultPose() {
+std::unique_ptr<TransformationMatrix> XRSpace::DefaultViewerPose() {
   return nullptr;
 }
 
-std::unique_ptr<TransformationMatrix> XRSpace::TransformBasePose(
-    const TransformationMatrix& base_pose) {
+std::unique_ptr<TransformationMatrix> XRSpace::SpaceFromMojo(
+    const TransformationMatrix& mojo_from_viewer) {
   return nullptr;
 }
 
-std::unique_ptr<TransformationMatrix> XRSpace::TransformBaseInputPose(
-    const TransformationMatrix& base_input_pose,
-    const TransformationMatrix& base_pose) {
+std::unique_ptr<TransformationMatrix> XRSpace::SpaceFromViewer(
+    const TransformationMatrix& mojo_from_viewer) {
+  return nullptr;
+}
+
+std::unique_ptr<TransformationMatrix> XRSpace::SpaceFromInputForViewer(
+    const TransformationMatrix& mojo_from_input,
+    const TransformationMatrix& mojo_from_viewer) {
   return nullptr;
 }
 
@@ -49,18 +54,17 @@ TransformationMatrix XRSpace::InverseOriginOffsetMatrix() {
 
 XRPose* XRSpace::getPose(XRSpace* other_space,
                          const TransformationMatrix* base_pose_matrix) {
-  std::unique_ptr<TransformationMatrix> mojo_from_this =
-      GetTransformToMojoSpace();
-  if (!mojo_from_this) {
+  std::unique_ptr<TransformationMatrix> mojo_from_space = MojoFromSpace();
+  if (!mojo_from_space) {
     return nullptr;
   }
 
   // Rigid transforms should always be invertible.
-  DCHECK(mojo_from_this->IsInvertible());
-  TransformationMatrix this_from_mojo = mojo_from_this->Inverse();
+  DCHECK(mojo_from_space->IsInvertible());
+  TransformationMatrix space_from_mojo = mojo_from_space->Inverse();
 
   std::unique_ptr<TransformationMatrix> mojo_from_other =
-      other_space->GetTransformToMojoSpace();
+      other_space->MojoFromSpace();
   if (!mojo_from_other) {
     return nullptr;
   }
@@ -68,33 +72,38 @@ XRPose* XRSpace::getPose(XRSpace* other_space,
   // TODO(crbug.com/969133): Update how EmulatedPosition is determined here once
   // spec issue https://github.com/immersive-web/webxr/issues/534 has been
   // resolved.
-  TransformationMatrix this_from_other =
-      this_from_mojo.Multiply(*mojo_from_other);
-  return MakeGarbageCollected<XRPose>(this_from_other,
+  TransformationMatrix space_from_other =
+      space_from_mojo.Multiply(*mojo_from_other);
+  return MakeGarbageCollected<XRPose>(space_from_other,
                                       session()->EmulatedPosition());
 }
 
-std::unique_ptr<TransformationMatrix> XRSpace::GetViewerPoseMatrix(
-    const TransformationMatrix* base_pose_matrix) {
-  std::unique_ptr<TransformationMatrix> pose;
+std::unique_ptr<TransformationMatrix>
+XRSpace::SpaceFromViewerWithDefaultAndOffset(
+    const TransformationMatrix* mojo_from_viewer) {
+  std::unique_ptr<TransformationMatrix> space_from_viewer;
 
   // If we don't have a valid base pose, request the reference space's default
-  // pose. Most common when tracking is lost.
-  if (base_pose_matrix) {
-    pose = TransformBasePose(*base_pose_matrix);
+  // viewer pose. Most common when tracking is lost.
+  if (mojo_from_viewer) {
+    space_from_viewer = SpaceFromViewer(*mojo_from_viewer);
   } else {
-    pose = DefaultPose();
+    space_from_viewer = DefaultViewerPose();
   }
 
   // Can only update an XRViewerPose's views with an invertible matrix.
-  if (!pose || !pose->IsInvertible()) {
+  if (!space_from_viewer || !space_from_viewer->IsInvertible()) {
     return nullptr;
   }
 
   // Account for any changes made to the reference space's origin offset so that
   // things like teleportation works.
+  //
+  // This is offset_from_viewer = offset_from_space * space_from_viewer,
+  // where offset_from_viewer = inverse(viewer_from_offset).
+  // TODO(https://crbug.com/1008466): move originOffset to separate class?
   return std::make_unique<TransformationMatrix>(
-      InverseOriginOffsetMatrix().Multiply(*pose));
+      InverseOriginOffsetMatrix().Multiply(*space_from_viewer));
 }
 
 ExecutionContext* XRSpace::GetExecutionContext() const {

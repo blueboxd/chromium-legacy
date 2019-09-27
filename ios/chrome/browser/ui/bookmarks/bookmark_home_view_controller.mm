@@ -1287,6 +1287,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
   // We attach our constraints to the superview because the tableView is
   // a scrollView and it seems that we get an empty frame when attaching to it.
   AddSameConstraints(self.scrimView, self.view.superview);
+  self.tableView.accessibilityElementsHidden = YES;
   self.tableView.scrollEnabled = NO;
   [UIView animateWithDuration:kTableViewNavigationScrimFadeDuration
                    animations:^{
@@ -1303,6 +1304,7 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
       }
       completion:^(BOOL finished) {
         [self.scrimView removeFromSuperview];
+        self.tableView.accessibilityElementsHidden = NO;
         self.tableView.scrollEnabled = YES;
       }];
   [self setupContextBar];

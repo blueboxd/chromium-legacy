@@ -1,6 +1,34 @@
 This is a testharness.js-based test.
-Found 458 tests; 448 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 486 tests; 476 PASS, 10 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS idl_test setup
+PASS idl_test validation
+PASS SVGFilterElement includes SVGURIReference: member names are unique
+PASS SVGFEBlendElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEColorMatrixElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEComponentTransferElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFECompositeElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEConvolveMatrixElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEDiffuseLightingElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEDisplacementMapElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEDropShadowElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEFloodElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEGaussianBlurElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEImageElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEImageElement includes SVGURIReference: member names are unique
+PASS SVGFEMergeElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEMorphologyElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFEOffsetElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFESpecularLightingElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFETileElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGFETurbulenceElement includes SVGFilterPrimitiveStandardAttributes: member names are unique
+PASS SVGElement includes GlobalEventHandlers: member names are unique
+PASS SVGElement includes DocumentAndElementEventHandlers: member names are unique
+PASS SVGElement includes SVGElementInstance: member names are unique
+PASS SVGElement includes HTMLOrSVGElement: member names are unique
+PASS Element includes ParentNode: member names are unique
+PASS Element includes NonDocumentTypeChildNode: member names are unique
+PASS Element includes ChildNode: member names are unique
+PASS Element includes Slotable: member names are unique
 PASS SVGFilterElement interface: existence and properties of interface object
 PASS SVGFilterElement interface object length
 PASS SVGFilterElement interface object name

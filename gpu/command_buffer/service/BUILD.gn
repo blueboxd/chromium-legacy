@@ -252,6 +252,7 @@ target(link_target_type, "gles2_sources") {
     "transform_feedback_manager.h",
     "validating_abstract_texture_impl.cc",
     "validating_abstract_texture_impl.h",
+    "value_validator.h",
     "vertex_array_manager.cc",
     "vertex_array_manager.h",
     "vertex_attrib_manager.cc",

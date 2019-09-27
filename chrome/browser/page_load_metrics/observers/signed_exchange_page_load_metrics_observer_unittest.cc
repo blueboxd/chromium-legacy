@@ -37,26 +37,19 @@ class SignedExchangePageLoadMetricsObserverTest
     navigation->Commit();
   }
 
-  void AssertNoSignedExchangeHistogramsLogged() {
-    base::HistogramTester::CountsMap counts_map =
-        histogram_tester().GetTotalCountsForPrefix(
-            internal::kHistogramSignedExchangePrefix);
-    for (const auto& it : counts_map) {
+  void AssertNoSignedExchangeHistogramsLoggedFor(const std::string& prefix) {
+    base::HistogramTester::CountsMap empty_counts_map =
+        histogram_tester().GetTotalCountsForPrefix(prefix);
+    for (const auto& it : empty_counts_map) {
       base::HistogramBase::Count count = it.second;
       EXPECT_EQ(0, count) << "Histogram \"" << it.first
                           << "\" should be empty.";
     }
   }
 
-  void AssertNoCachedSignedExchangeHistogramsLogged() {
-    base::HistogramTester::CountsMap counts_map =
-        histogram_tester().GetTotalCountsForPrefix(
-            internal::kHistogramCachedSignedExchangePrefix);
-    for (const auto& it : counts_map) {
-      base::HistogramBase::Count count = it.second;
-      EXPECT_EQ(0, count) << "Histogram \"" << it.first
-                          << "\" should be empty.";
-    }
+  void AssertNoSignedExchangeHistogramsLogged() {
+    AssertNoSignedExchangeHistogramsLoggedFor(
+        internal::kHistogramSignedExchangePrefix);
   }
 
   void InitializeTestPageLoadTiming(
@@ -83,7 +76,10 @@ class SignedExchangePageLoadMetricsObserverTest
 
 TEST_F(SignedExchangePageLoadMetricsObserverTest, NoMetrics) {
   AssertNoSignedExchangeHistogramsLogged();
-  AssertNoCachedSignedExchangeHistogramsLogged();
+  AssertNoSignedExchangeHistogramsLoggedFor(
+      internal::kHistogramCachedSignedExchangePrefix);
+  AssertNoSignedExchangeHistogramsLoggedFor(
+      internal::kHistogramNotCachedSignedExchangePrefix);
 }
 
 TEST_F(SignedExchangePageLoadMetricsObserverTest, NoSignedExchange) {
@@ -94,7 +90,10 @@ TEST_F(SignedExchangePageLoadMetricsObserverTest, NoSignedExchange) {
   SimulateTimingUpdate(timing);
 
   AssertNoSignedExchangeHistogramsLogged();
-  AssertNoCachedSignedExchangeHistogramsLogged();
+  AssertNoSignedExchangeHistogramsLoggedFor(
+      internal::kHistogramCachedSignedExchangePrefix);
+  AssertNoSignedExchangeHistogramsLoggedFor(
+      internal::kHistogramNotCachedSignedExchangePrefix);
 }
 
 TEST_F(SignedExchangePageLoadMetricsObserverTest, WithSignedExchange) {
@@ -151,7 +150,64 @@ TEST_F(SignedExchangePageLoadMetricsObserverTest, WithSignedExchange) {
       internal::kHistogramSignedExchangeParseStart,
       timing.parse_timing->parse_start.value().InMilliseconds(), 1);
 
-  AssertNoCachedSignedExchangeHistogramsLogged();
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramNotCachedSignedExchangeParseStart, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramNotCachedSignedExchangeParseStart,
+      timing.parse_timing->parse_start.value().InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramNotCachedSignedExchangeFirstInputDelay, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramNotCachedSignedExchangeFirstInputDelay,
+      timing.interactive_timing->first_input_delay.value().InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramNotCachedSignedExchangeFirstPaint, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramNotCachedSignedExchangeFirstPaint,
+      timing.paint_timing->first_paint.value().InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramNotCachedSignedExchangeFirstContentfulPaint, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramNotCachedSignedExchangeFirstContentfulPaint,
+      timing.paint_timing->first_contentful_paint.value().InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::
+          kHistogramNotCachedSignedExchangeParseStartToFirstContentfulPaint,
+      1);
+  histogram_tester().ExpectBucketCount(
+      internal::
+          kHistogramNotCachedSignedExchangeParseStartToFirstContentfulPaint,
+      (timing.paint_timing->first_contentful_paint.value() -
+       timing.parse_timing->parse_start.value())
+          .InMilliseconds(),
+      1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramNotCachedSignedExchangeDomContentLoaded, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramNotCachedSignedExchangeDomContentLoaded,
+      timing.document_timing->dom_content_loaded_event_start.value()
+          .InMilliseconds(),
+      1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramNotCachedSignedExchangeLoad, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramNotCachedSignedExchangeLoad,
+      timing.document_timing->load_event_start.value().InMilliseconds(), 1);
+
+  histogram_tester().ExpectTotalCount(
+      internal::kHistogramNotCachedSignedExchangeParseStart, 1);
+  histogram_tester().ExpectBucketCount(
+      internal::kHistogramNotCachedSignedExchangeParseStart,
+      timing.parse_timing->parse_start.value().InMilliseconds(), 1);
+
+  AssertNoSignedExchangeHistogramsLoggedFor(
+      internal::kHistogramCachedSignedExchangePrefix);
 }
 
 TEST_F(SignedExchangePageLoadMetricsObserverTest, WithCachedSignedExchange) {
@@ -255,6 +311,9 @@ TEST_F(SignedExchangePageLoadMetricsObserverTest, WithCachedSignedExchange) {
   histogram_tester().ExpectBucketCount(
       internal::kHistogramCachedSignedExchangeParseStart,
       timing.parse_timing->parse_start.value().InMilliseconds(), 1);
+
+  AssertNoSignedExchangeHistogramsLoggedFor(
+      internal::kHistogramNotCachedSignedExchangePrefix);
 }
 
 TEST_F(SignedExchangePageLoadMetricsObserverTest,
@@ -274,5 +333,8 @@ TEST_F(SignedExchangePageLoadMetricsObserverTest,
   SimulateTimingUpdate(timing);
 
   AssertNoSignedExchangeHistogramsLogged();
-  AssertNoCachedSignedExchangeHistogramsLogged();
+  AssertNoSignedExchangeHistogramsLoggedFor(
+      internal::kHistogramCachedSignedExchangePrefix);
+  AssertNoSignedExchangeHistogramsLoggedFor(
+      internal::kHistogramNotCachedSignedExchangePrefix);
 }

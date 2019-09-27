@@ -30,7 +30,7 @@
 namespace {
 
 // Helper class to know how far in the loading process the current WebContents
-// has come. It will call the callback after DocumentLoadedInFrame is called for
+// has come. It will call the callback after DOMContentLoaded is called for
 // the main frame.
 class WebContentsMainFrameHelper : public content::WebContentsObserver {
  public:
@@ -38,8 +38,7 @@ class WebContentsMainFrameHelper : public content::WebContentsObserver {
                              const base::Closure& callback)
       : WebContentsObserver(web_contents), callback_(callback) {}
 
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override {
+  void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override {
     if (!render_frame_host->GetParent())
       callback_.Run();
   }

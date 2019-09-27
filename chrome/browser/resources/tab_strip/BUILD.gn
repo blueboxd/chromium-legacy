@@ -7,11 +7,15 @@ import("//tools/polymer/polymer.gni")
 
 js_type_check("closure_compile") {
   deps = [
+    ":alert_indicator",
     ":custom_element",
     ":tab",
     ":tab_list",
     ":tabs_api_proxy",
   ]
+}
+
+js_library("alert_indicator") {
 }
 
 js_library("custom_element") {
@@ -43,9 +47,16 @@ js_library("types") {
 
 group("tab_strip_modules") {
   deps = [
+    ":alert_indicator_module",
     ":tab_list_module",
     ":tab_module",
   ]
+}
+
+polymer_modulizer("alert_indicator") {
+  js_file = "alert_indicator.js"
+  html_file = "alert_indicator.html"
+  html_type = "v3-ready"
 }
 
 polymer_modulizer("tab") {

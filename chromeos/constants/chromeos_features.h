@@ -17,8 +17,6 @@ namespace features {
 
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) extern const base::Feature kAccountManager;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
-extern const base::Feature kAdaptiveOOBE;
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAmbientModeFeature;
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS)
 extern const base::Feature kAutoScreenBrightness;
@@ -105,7 +103,6 @@ extern const base::Feature kVideoPlayerNativeControls;
 // Keep alphabetized.
 
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAccountManagerEnabled();
-COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAdaptiveOobeEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAmbientModeEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsAssistantEnabled();
 COMPONENT_EXPORT(CHROMEOS_CONSTANTS) bool IsImeDecoderWithSandboxEnabled();

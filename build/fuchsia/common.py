@@ -40,9 +40,9 @@ def GetHostArchFromPlatform():
     return 'arm64'
   raise Exception('Unsupported host architecture: %s' % host_arch)
 
-def GetQemuRootForPlatform():
+def GetEmuRootForPlatform(emulator):
   return os.path.join(DIR_SOURCE_ROOT, 'third_party',
-                      'qemu-' + GetHostOsFromPlatform() + '-' +
+                      emulator + '-' + GetHostOsFromPlatform() + '-' +
                        GetHostArchFromPlatform())
 
 def ConnectPortForwardingTask(target, local_port, remote_port = 0):

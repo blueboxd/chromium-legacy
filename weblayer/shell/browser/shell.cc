@@ -109,7 +109,7 @@ void Shell::LoadProgressChanged(double progress) {
   PlatformSetLoadProgress(progress);
 }
 
-void Shell::DisplayedURLChanged(const GURL& url) {
+void Shell::DisplayedUrlChanged(const GURL& url) {
   PlatformSetAddressBarURL(url);
 }
 

@@ -51,7 +51,7 @@ def GetExperimentArgs():
 def GenerateTestSuites():
   """A generator function that yields non-blacklisted tests to run.
 
-  This function yeilds test suites each with a single test case whose id is not
+  This function yields test suites each with a single test case whose id is not
   blacklisted in the array at the top of this file.
 
   Yields:

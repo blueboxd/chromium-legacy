@@ -6,10 +6,14 @@
  * @typedef {{
  *   width: number,
  *   height: number,
+ *   layoutOptions: (!LayoutOptions|undefined),
  *   pageDimensions: Array<ViewportRect>,
  * }}
  */
 let DocumentDimensions;
+
+/** @typedef {{defaultPageOrientation: number}} */
+let LayoutOptions;
 
 /** @typedef {{x: number, y: number}} */
 let Point;
@@ -279,6 +283,15 @@ class Viewport {
       width: this.documentDimensions_.width,
       height: this.documentDimensions_.height
     };
+  }
+
+  /**
+   * @return {!LayoutOptions|undefined} A dictionary carrying layout options
+   *     from the plugin.
+   */
+  getLayoutOptions() {
+    return this.documentDimensions_ ? this.documentDimensions_.layoutOptions :
+                                      undefined;
   }
 
   /**

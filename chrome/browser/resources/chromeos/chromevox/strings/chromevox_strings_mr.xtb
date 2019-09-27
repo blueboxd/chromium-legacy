@@ -168,6 +168,7 @@
 <translation id="2220529011494928058">समस्येची तक्रार करा</translation>
 <translation id="2223693656926968778">सद्य आयटमवर कार्यवाही करा</translation>
 <translation id="225732394367814946">बोलण्‍याचा दर वाढवा</translation>
+<translation id="2267538686624070261">शब्दलेखनाची चूक सुधारली नाही</translation>
 <translation id="2267945578749931355">पुढील वर्ण</translation>
 <translation id="2278490101488436824">तीन बोटांनी डावीकडे स्वाइप करा</translation>
 <translation id="2281234842553884450">मागील स्लायडर</translation>
@@ -206,6 +207,7 @@
 <translation id="257674075312929031">गट</translation>
 <translation id="2582407057977008361">बाजूचा</translation>
 <translation id="2592212930811759050">संपादन सुरू करण्यासाठी दोनदा टॅप करा</translation>
+<translation id="2598495320872286378">व्याकरण एरर</translation>
 <translation id="2614981083756825552">Math ML लेआउट</translation>
 <translation id="2624431853467395961">जाणून घ्या मोड उघडा</translation>
 <translation id="2626530649491650971">क्लिक करण्‍यायोग्य</translation>
@@ -819,6 +821,7 @@
 <translation id="6833103209700200188">तळटीप</translation>
 <translation id="6858047746862060282">उपोद्घात</translation>
 <translation id="6859876496651143278">एका बोटाने डावीकडे स्वाइप करा</translation>
+<translation id="6865519907510167493">शब्दलेखनाची चूक आहे</translation>
 <translation id="6871161210040114857">केसकडे दुर्लक्ष करीत आहे.</translation>
 <translation id="6877435256196695200">पुढील ग्राफिक नाही.</translation>
 <translation id="6897341342232909480">डावीकडे हलवा</translation>
@@ -1109,6 +1112,7 @@ Chrome ब्राउझर मेनू उघडण्यासाठी, Alt
 <translation id="8446884382197647889">अधिक जाणून घ्या</translation>
 <translation id="8455868257606149352">कमाल <ph name="X" /></translation>
 <translation id="84575901236241018">अॅक्सेस की आहे, <ph name="KEY" /></translation>
+<translation id="8463645336674919227">व्याकरणाची चूक सुधारलेली नाही</translation>
 <translation id="847154984256717791">व्यस्त</translation>
 <translation id="8476408756881832830">ChromeVox बोलत असताना प्लेबॅकला विराम द्या</translation>
 <translation id="8476508772960940536">विंडो विहंगावलोकन</translation>

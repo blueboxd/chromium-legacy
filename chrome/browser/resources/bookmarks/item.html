@@ -29,10 +29,6 @@
         background-color: var(--highlight-color);
       }
 
-      :host([is-selected-item_]) cr-icon-button {
-        --cr-icon-button-focus-color: var(--highlight-color);
-      }
-
       @media (prefers-color-scheme: dark) {
         :host([is-selected-item_]),
         :host([is-selected-item_]) .folder-icon {
@@ -107,7 +103,7 @@
     <div id="website-url" class="elided-text" title="[[item_.url]]">
       [[item_.url]]
     </div>
-    <cr-icon-button class="icon-more-vert"
+    <cr-icon-button class$="[[crIcon_]]"
         id="menuButton"
         tabindex="[[ironListTabIndex]]"
         title="$i18n{moreActionsButtonTitle}"

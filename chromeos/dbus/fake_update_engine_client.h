@@ -84,19 +84,32 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeUpdateEngineClient
   // Returns how many times Rollback() is called.
   int rollback_call_count() const { return rollback_call_count_; }
 
-  // Returns how many times Rollback() is called.
+  // Returns how many times CanRollback() is called.
   int can_rollback_call_count() const { return can_rollback_call_count_; }
+
+  // Returns how many times |SetUpdateOverCellularPermission()| is called.
+  int update_over_cellular_permission_count() const {
+    return update_over_cellular_permission_count_;
+  }
+
+  // Returns how many times |SetUpdateOverCellularOneTimePermission()| is
+  // called.
+  int update_over_cellular_one_time_permission_count() const {
+    return update_over_cellular_one_time_permission_count_;
+  }
 
  private:
   base::ObserverList<Observer>::Unchecked observers_;
   base::queue<update_engine::StatusResult> status_queue_;
   update_engine::StatusResult default_status_;
-  UpdateEngineClient::UpdateCheckResult update_check_result_;
-  bool can_rollback_stub_result_;
-  int reboot_after_update_call_count_;
-  int request_update_check_call_count_;
-  int rollback_call_count_;
-  int can_rollback_call_count_;
+  UpdateCheckResult update_check_result_ = UPDATE_RESULT_SUCCESS;
+  bool can_rollback_stub_result_ = false;
+  int reboot_after_update_call_count_ = 0;
+  int request_update_check_call_count_ = 0;
+  int rollback_call_count_ = 0;
+  int can_rollback_call_count_ = 0;
+  int update_over_cellular_permission_count_ = 0;
+  int update_over_cellular_one_time_permission_count_ = 0;
 };
 
 }  // namespace chromeos

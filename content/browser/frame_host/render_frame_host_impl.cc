@@ -65,7 +65,6 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
-#include "content/browser/installedapp/installed_app_provider_impl_default.h"
 #include "content/browser/interface_provider_filtering.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
@@ -105,7 +104,6 @@
 #include "content/browser/speech/speech_recognition_dispatcher_host.h"
 #include "content/browser/speech/speech_synthesis_impl.h"
 #include "content/browser/storage_partition_impl.h"
-#include "content/browser/wake_lock/wake_lock_service_impl.h"
 #include "content/browser/web_package/bundled_exchanges_handle.h"
 #include "content/browser/web_package/prefetched_signed_exchange_cache.h"
 #include "content/browser/webauth/authenticator_environment_impl.h"
@@ -4307,13 +4305,6 @@ void RenderFrameHostImpl::ResourceLoadComplete(
 void RenderFrameHostImpl::RegisterMojoInterfaces() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
 
-#if !defined(OS_ANDROID)
-  // The default (no-op) implementation of InstalledAppProvider. On Android, the
-  // real implementation is provided in Java.
-  registry_->AddInterface(
-      base::BindRepeating(&InstalledAppProviderImplDefault::Create));
-#endif  // !defined(OS_ANDROID)
-
   PermissionControllerImpl* permission_controller =
       PermissionControllerImpl::FromBrowserContext(
           GetProcess()->GetBrowserContext());
@@ -4351,8 +4342,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
 
   registry_->AddInterface(base::BindRepeating(
       &SharedWorkerConnectorImpl::Create, process_->GetID(), routing_id_));
-
-  registry_->AddInterface(base::BindRepeating(&device::GamepadMonitor::Create));
 
   registry_->AddInterface<device::mojom::VRService>(base::Bind(
       &WebvrServiceProvider::BindWebvrService, base::Unretained(this)));
@@ -4462,9 +4451,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       GetProcess()->GetID(),
       GetProcess()->GetStoragePartition()->GetFileSystemContext(),
       ChromeBlobStorageContext::GetFor(GetProcess()->GetBrowserContext())));
-
-  registry_->AddInterface(base::BindRepeating(&WakeLockServiceImpl::Create,
-                                              base::Unretained(this)));
 
   if (base::FeatureList::IsEnabled(blink::features::kNativeFileSystemAPI)) {
     registry_->AddInterface(base::BindRepeating(

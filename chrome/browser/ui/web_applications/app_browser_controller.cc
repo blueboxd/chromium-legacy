@@ -139,6 +139,11 @@ bool AppBrowserController::IsHostedApp() const {
   return false;
 }
 
+web_app::WebAppBrowserController*
+AppBrowserController::AsWebAppBrowserController() {
+  return nullptr;
+}
+
 bool AppBrowserController::CanUninstall() const {
   return false;
 }

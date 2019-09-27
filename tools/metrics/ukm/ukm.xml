@@ -1018,8 +1018,6 @@ be describing additional metrics about the same event.
     </summary>
     <aggregation>
       <history>
-        <index fields="metrics.PredictedType"/>
-        <index fields="metrics.PredictedType,metrics.PredictionSource"/>
         <statistics>
           <enumeration/>
         </statistics>

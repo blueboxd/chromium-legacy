@@ -14,6 +14,10 @@ void EnumerateGPUDevice(const gpu::GPUInfo::GPUDevice& device,
   enumerator->BeginGPUDevice();
   enumerator->AddInt("vendorId", device.vendor_id);
   enumerator->AddInt("deviceId", device.device_id);
+#if defined(OS_WIN)
+  enumerator->AddInt("subSysId", device.sub_sys_id);
+  enumerator->AddInt("revision", device.revision);
+#endif  // OS_WIN
   enumerator->AddBool("active", device.active);
   enumerator->AddString("vendorString", device.vendor_string);
   enumerator->AddString("deviceString", device.device_string);
@@ -155,11 +159,7 @@ operator=(const ImageDecodeAcceleratorSupportedProfile& other) = default;
 ImageDecodeAcceleratorSupportedProfile& ImageDecodeAcceleratorSupportedProfile::
 operator=(ImageDecodeAcceleratorSupportedProfile&& other) = default;
 
-GPUInfo::GPUDevice::GPUDevice()
-    : vendor_id(0),
-      device_id(0),
-      active(false),
-      cuda_compute_capability_major(0) {}
+GPUInfo::GPUDevice::GPUDevice() = default;
 
 GPUInfo::GPUDevice::GPUDevice(const GPUInfo::GPUDevice& other) = default;
 

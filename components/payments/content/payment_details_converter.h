@@ -27,10 +27,9 @@ class PaymentDetailsConverter {
   //
   // The |method_checker| is not saved. It is used only for the duration of this
   // call.
-  static mojom::PaymentRequestDetailsUpdatePtr
-  ConvertToPaymentRequestDetailsChangeResponse(
-      const mojom::PaymentDetailsPtr& details,
-      const MethodChecker& method_checker);
+  static mojom::PaymentMethodChangeResponsePtr
+  ConvertToPaymentMethodChangeResponse(const mojom::PaymentDetailsPtr& details,
+                                       const MethodChecker& method_checker);
 
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(PaymentDetailsConverter);

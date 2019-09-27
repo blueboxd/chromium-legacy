@@ -439,7 +439,7 @@ void ChromeInternalLogSource::PopulateUsbKeyboardDetected(
     SystemLogsResponse* response) {
   std::string reason;
   bool result =
-      base::win::IsKeyboardPresentOnSlate(&reason, ui::GetHiddenWindow());
+      base::win::IsKeyboardPresentOnSlate(ui::GetHiddenWindow(), &reason);
   reason.insert(0, result ? "Keyboard Detected:\n" : "No Keyboard:\n");
   response->emplace(kUsbKeyboardDetected, reason);
 }

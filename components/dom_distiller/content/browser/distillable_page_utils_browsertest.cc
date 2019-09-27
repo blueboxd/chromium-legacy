@@ -76,8 +76,7 @@ class DomDistillerDistillablePageUtilsTest : public content::ContentBrowserTest,
     ASSERT_TRUE(embedded_test_server()->Start());
   }
 
-  void DocumentLoadedInFrame(
-      content::RenderFrameHost* render_frame_host) override {
+  void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override {
     if (!render_frame_host->GetParent())
       main_frame_loaded_callback_.Run();
   }

@@ -207,7 +207,8 @@ class TestNetworkContext : public mojom::NetworkContext {
       mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
       mojom::P2PSocketManagerRequest socket_manager_request) override {}
   void CreateMdnsResponder(
-      mojom::MdnsResponderRequest responder_request) override {}
+      mojo::PendingReceiver<mojom::MdnsResponder> responder_receiver) override {
+  }
   void ResetURLLoaderFactories() override {}
   void ForceReloadProxyConfig(
       ForceReloadProxyConfigCallback callback) override {}

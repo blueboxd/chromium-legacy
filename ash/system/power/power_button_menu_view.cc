@@ -183,38 +183,31 @@ void PowerButtonMenuView::CreateItems() {
 }
 
 void PowerButtonMenuView::Layout() {
-  gfx::Rect rect(GetContentsBounds());
-  const gfx::Size item_size(power_off_item_->GetPreferredSize());
-  rect.set_size(item_size);
-  gfx::Rect power_off_rect(rect);
+  gfx::Rect rect(GetContentsBounds().origin(),
+                 power_off_item_->GetPreferredSize());
   const int y_offset =
       kMenuItemVerticalPadding - PowerButtonMenuItemView::kItemBorderThickness;
   int x_offset = kMenuItemHorizontalPadding -
                  PowerButtonMenuItemView::kItemBorderThickness;
-  power_off_rect.Offset(x_offset, y_offset);
-  power_off_item_->SetBoundsRect(power_off_rect);
+  rect.Offset(x_offset, y_offset);
+  power_off_item_->SetBoundsRect(rect);
 
   if (sign_out_item_) {
-    gfx::Rect sign_out_rect(rect);
     const int padding_between_items_with_border =
         kPaddingBetweenMenuItems -
         2 * PowerButtonMenuItemView::kItemBorderThickness;
-    x_offset += item_size.width() + padding_between_items_with_border;
-    sign_out_rect.Offset(x_offset, y_offset);
-    sign_out_item_->SetBoundsRect(sign_out_rect);
+    x_offset = rect.width() + padding_between_items_with_border;
+    rect.Offset(x_offset, 0);
+    sign_out_item_->SetBoundsRect(rect);
 
     if (lock_screen_item_) {
-      gfx::Rect lock_screen_rect(rect);
-      x_offset += item_size.width() + padding_between_items_with_border;
-      lock_screen_rect.Offset(x_offset, y_offset);
-      lock_screen_item_->SetBoundsRect(lock_screen_rect);
+      rect.Offset(x_offset, 0);
+      lock_screen_item_->SetBoundsRect(rect);
     }
 
     if (feedback_item_) {
-      gfx::Rect feedback_rect(rect);
-      x_offset += item_size.width() + padding_between_items_with_border;
-      feedback_rect.Offset(x_offset, y_offset);
-      feedback_item_->SetBoundsRect(feedback_rect);
+      rect.Offset(x_offset, 0);
+      feedback_item_->SetBoundsRect(rect);
     }
   }
 }

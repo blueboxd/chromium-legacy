@@ -78,12 +78,12 @@ async_test(async (t) => {
   await setVisible(locked);
   locked.getBoundingClientRect();
   axLocked = axElementById("locked");
-  // Expect 3 children: the text node "locked" and 2 div children (#child and #hidden).
-  t.step(() => { assert_equals(axLocked.childrenCount, 3, "Child count after commit"); });
+  // Expect 4 children: the text node "locked" and 3 div children (#child, #displayNone, and #hidden).
+  t.step(() => { assert_equals(axLocked.childrenCount, 4, "Child count after commit"); });
 
   for (let i = 0; i < axLocked.childrenCount; ++i) {
     const axChild = axLocked.childAtIndex(i);
-    if (axChild == axElementById("hidden")) {
+    if (axChild == axElementById("hidden") || axChild == axElementById("displayNone")) {
       t.step(() => { assert_true(axChild.isIgnored, "After commit, isIgnored is true on child #" + i); });
       t.step(() => { assert_false(axChild.isVisible, "After commit, isVisible is false on child #" + i); });
     } else {

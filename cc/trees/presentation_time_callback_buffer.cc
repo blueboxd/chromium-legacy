@@ -49,6 +49,18 @@ void PresentationTimeCallbackBuffer::RegisterMainThreadPresentationCallbacks(
   DCHECK_LE(frame_token_infos_.size(), 25u);
 }
 
+void PresentationTimeCallbackBuffer::RegisterCompositorPresentationCallbacks(
+    uint32_t frame_token,
+    std::vector<CallbackType> callbacks) {
+  // Splice the given |callbacks| onto the vector of existing callbacks.
+  std::vector<LayerTreeHost::PresentationTimeCallback>& sink =
+      GetOrMakeRegistration(frame_token).compositor_thread_callbacks;
+  sink.reserve(sink.size() + callbacks.size());
+  std::move(callbacks.begin(), callbacks.end(), std::back_inserter(sink));
+
+  DCHECK_LE(frame_token_infos_.size(), 25u);
+}
+
 void PresentationTimeCallbackBuffer::RegisterFrameTime(
     uint32_t frame_token,
     base::TimeTicks frame_time) {
@@ -92,6 +104,12 @@ PresentationTimeCallbackBuffer::PopPendingCallbacks(uint32_t frame_token) {
     std::move(info->main_thread_callbacks.begin(),
               info->main_thread_callbacks.end(),
               std::back_inserter(result.main_thread_callbacks));
+
+    // Collect the compositor-thread callbacks. It's the caller's job to run
+    // them on the compositor thread.
+    std::move(info->compositor_thread_callbacks.begin(),
+              info->compositor_thread_callbacks.end(),
+              std::back_inserter(result.compositor_thread_callbacks));
 
     frame_token_infos_.erase(info);
   }

@@ -1273,7 +1273,7 @@ static CSSValue* ConsumeDeprecatedGradient(CSSParserTokenRange& args,
   // For radial gradients only, we now expect a numeric radius.
   const CSSPrimitiveValue* first_radius = nullptr;
   if (id == CSSValueID::kRadial) {
-    first_radius = ConsumeNumber(args, kValueRangeAll);
+    first_radius = ConsumeNumber(args, kValueRangeNonNegative);
     if (!first_radius || !ConsumeCommaIncludingWhitespace(args))
       return nullptr;
   }
@@ -1292,7 +1292,7 @@ static CSSValue* ConsumeDeprecatedGradient(CSSParserTokenRange& args,
   if (id == CSSValueID::kRadial) {
     if (!ConsumeCommaIncludingWhitespace(args))
       return nullptr;
-    second_radius = ConsumeNumber(args, kValueRangeAll);
+    second_radius = ConsumeNumber(args, kValueRangeNonNegative);
     if (!second_radius)
       return nullptr;
   }
@@ -1408,10 +1408,10 @@ static CSSValue* ConsumeDeprecatedRadialGradient(
   const CSSPrimitiveValue* vertical_size = nullptr;
   if (!shape && !size_keyword) {
     horizontal_size =
-        ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
+        ConsumeLengthOrPercent(args, context.Mode(), kValueRangeNonNegative);
     if (horizontal_size) {
       vertical_size =
-          ConsumeLengthOrPercent(args, context.Mode(), kValueRangeAll);
+          ConsumeLengthOrPercent(args, context.Mode(), kValueRangeNonNegative);
       if (!vertical_size)
         return nullptr;
       ConsumeCommaIncludingWhitespace(args);

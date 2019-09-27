@@ -12,6 +12,7 @@
 #include "content/public/browser/system_connector.h"
 #include "content/public/common/network_service_util.h"
 #include "content/public/common/service_names.mojom.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/network_change_notifier.h"
 #include "services/network/public/mojom/network_service_test.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
@@ -48,11 +49,10 @@ void NetworkConnectionChangeSimulator::InitializeChromeosConnectionType() {
   // If the network service is enabled, set the connection type for its
   // NetworkChangeNotifier instance as well.
   if (IsOutOfProcessNetworkService()) {
-    network::mojom::NetworkChangeManagerPtr manager_ptr;
-    network::mojom::NetworkChangeManagerRequest request(
-        mojo::MakeRequest(&manager_ptr));
-    GetNetworkService()->GetNetworkChangeManager(std::move(request));
-    manager_ptr->OnNetworkChanged(
+    mojo::Remote<network::mojom::NetworkChangeManager> manager;
+    GetNetworkService()->GetNetworkChangeManager(
+        manager.BindNewPipeAndPassReceiver());
+    manager->OnNetworkChanged(
         /*dns_changed=*/false, /*ip_address_changed=*/false,
         /*connection_type_changed=*/true,
         network::mojom::ConnectionType::CONNECTION_ETHERNET,

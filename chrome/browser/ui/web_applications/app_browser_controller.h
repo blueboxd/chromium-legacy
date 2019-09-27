@@ -20,6 +20,8 @@ class Browser;
 
 namespace web_app {
 
+class WebAppBrowserController;
+
 // Returns true if |app_url| and |page_url| are the same origin. To avoid
 // breaking Hosted Apps and Bookmark Apps that might redirect to sites in the
 // same domain but with "www.", this returns true if |page_url| is secure and in
@@ -96,6 +98,9 @@ class AppBrowserController : public TabStripModelObserver,
 
   // Determines whether the specified url is 'inside' the app |this| controls.
   virtual bool IsUrlInAppScope(const GURL& url) const = 0;
+
+  // Safe downcast:
+  virtual WebAppBrowserController* AsWebAppBrowserController();
 
   virtual bool CanUninstall() const;
 

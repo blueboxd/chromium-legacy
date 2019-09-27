@@ -84,6 +84,8 @@ void SpeechMonitor::Speak(int utterance_id,
       utterance_id, content::TTS_EVENT_END, static_cast<int>(utterance.size()),
       0, std::string());
   std::move(on_speak_finished).Run(true);
+  delay_for_last_utterance_MS_ = CalculateUtteranceDelayMS();
+  time_of_last_utterance_ = std::chrono::steady_clock::now();
 }
 
 bool SpeechMonitor::StopSpeaking() {
@@ -136,6 +138,18 @@ void SpeechMonitor::ClearError() {
 
 void SpeechMonitor::SetError(const std::string& error) {
   error_ = error;
+}
+
+double SpeechMonitor::CalculateUtteranceDelayMS() {
+  std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+  std::chrono::duration<double> time_span =
+      std::chrono::duration_cast<std::chrono::duration<double>>(
+          now - time_of_last_utterance_);
+  return time_span.count() * 1000;
+}
+
+double SpeechMonitor::GetDelayForLastUtteranceMS() {
+  return delay_for_last_utterance_MS_;
 }
 
 }  // namespace chromeos

@@ -2594,33 +2594,7 @@ void WebViewImpl::UpdatePageDefinedViewportConstraints(
   if (!GetPage()->MainFrame()->IsLocalFrame())
     return;
 
-  // When viewport is disabled (non-mobile), we always use gpu rasterization.
-  // Otherwise, on platforms that do support viewport tags, we only enable it
-  // when they are present. But Why? Historically this was used to gate usage of
-  // gpu rasterization to a smaller set of less complex cases to avoid driver
-  // bugs dealing with websites designed for desktop. The concern is that on
-  // older android devices (<L according to https://crbug.com/419521#c9),
-  // drivers are more likely to encounter bugs with gpu raster when encountering
-  // the full possibility of desktop web content. Further, Adreno devices <=L
-  // have encountered problems that look like driver bugs when enabling
-  // OOP-Raster which is gpu-based. Thus likely a blacklist would be required
-  // for non-viewport-specified pages in order to avoid crashes or other
-  // problems on mobile devices with gpu rasterization.
-  bool viewport_enabled = GetSettings()->ViewportEnabled();
-
-  if (does_composite_) {
-    bool gpu_rasterization_allowed = true;
-    if (viewport_enabled) {
-      static bool viewport_disables_gpu_raster = base::FeatureList::IsEnabled(
-          features::kEnableGpuRasterizationViewportRestriction);
-      if (viewport_disables_gpu_raster && !description.IsSpecifiedByAuthor())
-        gpu_rasterization_allowed = false;
-    }
-    MainFrameImpl()->FrameWidgetImpl()->Client()->SetAllowGpuRasterization(
-        gpu_rasterization_allowed);
-  }
-
-  if (!viewport_enabled) {
+  if (!GetSettings()->ViewportEnabled()) {
     GetPageScaleConstraintsSet().ClearPageDefinedConstraints();
     UpdateMainFrameLayoutSize();
     return;

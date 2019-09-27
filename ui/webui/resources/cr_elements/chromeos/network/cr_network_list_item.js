@@ -140,10 +140,10 @@ Polymer({
     }
     const connectionState = this.networkState.connectionState;
     if (this.networkState.type == mojom.NetworkType.kCellular) {
-      if (this.networkState.cellular.scanning) {
+      if (this.networkState.typeState.cellular.scanning) {
         return CrOncStrings.networkListItemScanning;
       }
-      if (this.networkState.cellular.simLocked) {
+      if (this.networkState.typeState.cellular.simLocked) {
         return CrOncStrings.networkListItemSimCardLocked;
       }
     }

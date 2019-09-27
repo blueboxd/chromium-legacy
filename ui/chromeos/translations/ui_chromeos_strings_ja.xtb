@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">ペンギン</translation>
 <translation id="183183971458492120">情報を読み込んでいます...</translation>
 <translation id="1838709767668011582">Google サイト</translation>
-<translation id="1839704667838141620">このファイルの共有方法を変更してください</translation>
 <translation id="1844692022597038441">このファイルはオフラインでは表示できません。</translation>
 <translation id="184633654410729720">タイ語キーボード（Kedmanee）</translation>
 <translation id="1847880352285315359">保存されました</translation>
-<translation id="1864676585353837027">これらのファイルの共有方法を変更してください</translation>
 <translation id="1864756863218646478">ファイルが見つかりませんでした。</translation>
 <translation id="1921986354447415460">トルコ語-F キーボード</translation>
 <translation id="1931134289871235022">スロバキア語</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">新しいサービスをインストール</translation>
 <translation id="1947424002851288782">ドイツ語のキーボード</translation>
 <translation id="1972984168337863910">ファイルのフィードバック パネルを展開します</translation>
-<translation id="197560921582345123">共同編集者</translation>
 <translation id="1984603991036629094">アルメニア語表音キーボード</translation>
 <translation id="2001796770603320721">ドライブで管理</translation>
 <translation id="2009067268969781306">ドライブをフォーマットすると、そのドライブに保存されているすべてのデータが削除されます。この操作は元に戻せません。</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">このファイルを取得すると、約 <ph name="FILE_SIZE" /> のモバイル データを使用します。</translation>
 <translation id="7846076177841592234">選択解除</translation>
-<translation id="7850851215703745691">未共有のドライブ ファイル</translation>
 <translation id="7853966320808728790">フランス語 BÉPO</translation>
 <translation id="7864662577698025113">新しいサービスを追加</translation>
 <translation id="7873831373602885875"><ph name="FOLDER_NAME" /> に保存できません。編集内容はすべてダウンロード フォルダ内の <ph name="DOWNLOADS_FOLDER" /> に保存されます。</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">スロベニア語</translation>
 <translation id="7982283708762922719">高さ</translation>
 <translation id="7987485481246785146">ソラニークルド語キーボード（アラビア語ベース）</translation>
-<translation id="799923393800005025">閲覧者</translation>
 <translation id="8008366997883261463">犬</translation>
 <translation id="8028993641010258682">サイズ</translation>
 <translation id="8031722894461705849">スロバキア語キーボード</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">ファイルの一覧がサムネイル表示に切り替わりました。</translation>
 <translation id="8601932370724196034">Crostini 画像ファイル</translation>
 <translation id="8669949407341943408">移動しています...</translation>
-<translation id="8671210955687109937">閲覧者（コメント可）</translation>
-<translation id="8686213429977032554">未共有のドライブ ファイル</translation>
 <translation id="8698464937041809063">Google 図形描画</translation>
 <translation id="8714406895390098252">自転車</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> を選択しました。</translation>

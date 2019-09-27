@@ -143,6 +143,11 @@ def parse_args(args):
                 action='store_false',
                 default=True,
                 help=('Do not log Zircon debug messages.')),
+            optparse.make_option(
+                '--device',
+                choices=['aemu','qemu'],
+                default='qemu',
+                help=('Choose device to launch Fuchsia with.')),
         ]))
 
     option_group_definitions.append(

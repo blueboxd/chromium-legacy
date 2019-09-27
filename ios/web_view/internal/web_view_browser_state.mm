@@ -89,7 +89,7 @@ WebViewBrowserState::WebViewBrowserState(
   CHECK(base::PathService::Get(base::DIR_APP_DATA, &path_));
 
   request_context_getter_ = new WebViewURLRequestContextGetter(
-      GetStatePath(), ApplicationContext::GetInstance()->GetNetLog(),
+      GetStatePath(), this, ApplicationContext::GetInstance()->GetNetLog(),
       base::CreateSingleThreadTaskRunner({web::WebThread::IO}));
 
   // Initialize prefs.

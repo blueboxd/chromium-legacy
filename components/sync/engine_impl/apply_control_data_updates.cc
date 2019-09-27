@@ -36,7 +36,7 @@ void ApplyNigoriUpdate(syncable::Directory* dir) {
   syncable::WriteTransaction trans(FROM_HERE, syncable::SYNCER, dir);
   syncable::MutableEntry entry(&trans, syncable::GET_TYPE_ROOT, NIGORI);
   const DirectoryCryptographer* cryptographer =
-      dir->GetNigoriHandler()->GetDirectoryCryptographerForNigori(&trans);
+      dir->GetNigoriHandler()->GetDirectoryCryptographer(&trans);
 
   if (!cryptographer) {
     // This indicates that the USS implementation of NIGORI is active, hence

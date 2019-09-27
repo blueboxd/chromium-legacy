@@ -81,14 +81,25 @@ struct GFX_EXPORT TextRunHarfBuzz {
     FontParams& operator=(const FontParams& other);
     bool operator==(const FontParams& other) const;
 
-    // Populate |render_params|, |font_size| and |baseline_offset| based on
+    // Populates |render_params|, |font_size| and |baseline_offset| based on
     // |font|.
     void ComputeRenderParamsFontSizeAndBaselineOffset();
 
-    // Populate |font|, |skia_face|, and |render_params|. Return false if
-    // |skia_face| is nullptr.
-    bool SetFontAndRenderParams(const Font& font,
-                                const FontRenderParams& render_params);
+    // Populates |font|, |skia_face|, and |render_params|. Returns false if
+    // |skia_face| is nullptr. Takes |font|'s family name and rematches this
+    // family and the run's weight and style properties to find a new font.
+    bool SetRenderParamsRematchFont(const Font& font,
+                                    const FontRenderParams& render_params);
+
+    // Populates |font|, |skia_face|, and |render_params|. Returns false if
+    // |skia_face| is nullptr. Does not perform rematching but extracts an
+    // SkTypeface from the underlying PlatformFont of font. Use this method when
+    // configuring the |TextRunHarfBuzz| for shaping with fallback fonts, where
+    // it is important to keep the underlying font handle of platform font and
+    // not perform rematching as in |SetRenderParamsRematchFont|.
+    bool SetRenderParamsOverrideSkiaFaceFromFont(
+        const Font& font,
+        const FontRenderParams& render_params);
 
     struct Hash {
       size_t operator()(const FontParams& key) const;

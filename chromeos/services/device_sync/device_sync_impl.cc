@@ -16,6 +16,7 @@
 #include "chromeos/components/multidevice/secure_message_delegate_impl.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "chromeos/services/device_sync/cryptauth_client_impl.h"
+#include "chromeos/services/device_sync/cryptauth_device_activity_getter_impl.h"
 #include "chromeos/services/device_sync/cryptauth_device_manager_impl.h"
 #include "chromeos/services/device_sync/cryptauth_enroller_factory_impl.h"
 #include "chromeos/services/device_sync/cryptauth_enrollment_manager_impl.h"
@@ -444,6 +445,56 @@ void DeviceSyncImpl::FindEligibleDevices(
                  weak_ptr_factory_.GetWeakPtr(), callback_holder),
       base::Bind(&DeviceSyncImpl::OnFindEligibleDevicesError,
                  weak_ptr_factory_.GetWeakPtr(), callback_holder));
+}
+
+void DeviceSyncImpl::GetDevicesActivityStatus(
+    GetDevicesActivityStatusCallback callback) {
+  if (status_ != Status::READY) {
+    PA_LOG(WARNING)
+        << "DeviceSyncImpl::GetDevicesActivityStatus() invoked before "
+        << "initialization was complete. Cannot get activity statuses.";
+    std::move(callback).Run(
+        mojom::NetworkRequestResult::kServiceNotYetInitialized,
+        base::nullopt /* device_activity_statuses */);
+    return;
+  }
+
+  auto request_id = base::UnguessableToken::Create();
+  get_devices_activity_status_callbacks_.emplace(request_id,
+                                                 std::move(callback));
+
+  cryptauth_device_activity_getter_ =
+      CryptAuthDeviceActivityGetterImpl::Factory::Create(
+          cryptauth_client_factory_.get(), client_app_metadata_provider_,
+          cryptauth_gcm_manager_.get());
+
+  cryptauth_device_activity_getter_->GetDevicesActivityStatus(
+      base::Bind(&DeviceSyncImpl::OnGetDevicesActivityStatusFinished,
+                 weak_ptr_factory_.GetWeakPtr(), request_id),
+      base::Bind(&DeviceSyncImpl::OnGetDevicesActivityStatusError,
+                 weak_ptr_factory_.GetWeakPtr(), request_id));
+}
+
+void DeviceSyncImpl::OnGetDevicesActivityStatusFinished(
+    const base::UnguessableToken& request_id,
+    CryptAuthDeviceActivityGetter::DeviceActivityStatusResult
+        device_activity_status_result) {
+  auto iter = get_devices_activity_status_callbacks_.find(request_id);
+  DCHECK(iter != get_devices_activity_status_callbacks_.end());
+  std::move(iter->second)
+      .Run(mojom::NetworkRequestResult::kSuccess,
+           base::make_optional(std::move(device_activity_status_result)));
+  get_devices_activity_status_callbacks_.erase(iter);
+}
+
+void DeviceSyncImpl::OnGetDevicesActivityStatusError(
+    const base::UnguessableToken& request_id,
+    NetworkRequestError error) {
+  auto iter = get_devices_activity_status_callbacks_.find(request_id);
+  DCHECK(iter != get_devices_activity_status_callbacks_.end());
+  std::move(iter->second)
+      .Run(mojo::ConvertTo<mojom::NetworkRequestResult>(error), base::nullopt);
+  get_devices_activity_status_callbacks_.erase(iter);
 }
 
 void DeviceSyncImpl::GetDebugInfo(GetDebugInfoCallback callback) {

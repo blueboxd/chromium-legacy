@@ -125,6 +125,12 @@ ASH_PUBLIC_EXPORT extern const base::Feature kUnifiedMessageCenterRefactor;
 // display. Only for tablet mode.
 ASH_PUBLIC_EXPORT extern const base::Feature kSwipingFromLeftEdgeToGoBack;
 
+// Enables dragging from shelf to enter home screen or overview feature.
+// Only for tablet mode.
+// TODO(https://crbug.com/992642): Remove this after this feature is fully
+// launched.
+ASH_PUBLIC_EXPORT extern const base::Feature kDragFromShelfToHomeOrOverview;
+
 ASH_PUBLIC_EXPORT bool IsHideArcMediaNotificationsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsKeyboardShortcutViewerAppEnabled();
@@ -164,6 +170,8 @@ ASH_PUBLIC_EXPORT bool IsUnifiedMessageCenterRefactorEnabled();
 ASH_PUBLIC_EXPORT bool IsBackgroundBlurEnabled();
 
 ASH_PUBLIC_EXPORT bool IsSwipingFromLeftEdgeToGoBackEnabled();
+
+ASH_PUBLIC_EXPORT bool IsDragFromShelfToHomeOrOverviewEnabled();
 
 }  // namespace features
 }  // namespace ash

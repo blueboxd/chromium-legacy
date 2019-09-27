@@ -1,7 +1,10 @@
 This is a testharness.js-based test.
 PASS idl_test setup
+PASS idl_test validation
 PASS Partial interface CSSRule: original interface defined
+PASS Partial interface CSSRule: member names are unique
 PASS Partial namespace CSS: original namespace defined
+PASS Partial namespace CSS: member names are unique
 PASS CSSConditionRule interface: existence and properties of interface object
 PASS CSSConditionRule interface object length
 PASS CSSConditionRule interface object name

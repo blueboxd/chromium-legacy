@@ -36,6 +36,11 @@ bool WebAppBrowserController::IsHostedApp() const {
   return true;
 }
 
+void WebAppBrowserController::SetReadIconCallbackForTesting(
+    base::OnceClosure callback) {
+  callback_for_testing_ = std::move(callback);
+}
+
 bool WebAppBrowserController::ShouldShowCustomTabBar() const {
   // TODO(https://crbug.com/966290): Complete implementation.
   return false;
@@ -87,6 +92,10 @@ bool WebAppBrowserController::IsUrlInAppScope(const GURL& url) const {
   return base::StartsWith(url_path, scope_path, base::CompareCase::SENSITIVE);
 }
 
+WebAppBrowserController* WebAppBrowserController::AsWebAppBrowserController() {
+  return this;
+}
+
 std::string WebAppBrowserController::GetAppShortName() const {
   return registrar().GetAppShortName(app_id_);
 }
@@ -124,6 +133,8 @@ void WebAppBrowserController::OnReadIcon(SkBitmap bitmap) {
 
   app_icon_ = gfx::ImageSkia::CreateFrom1xBitmap(bitmap);
   web_contents()->NotifyNavigationStateChanged(content::INVALIDATE_TYPE_TAB);
+  if (callback_for_testing_)
+    std::move(callback_for_testing_).Run();
 }
 
 }  // namespace web_app

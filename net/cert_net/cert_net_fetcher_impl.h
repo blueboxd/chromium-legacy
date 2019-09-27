@@ -36,6 +36,9 @@ class NET_EXPORT CertNetFetcherImpl : public CertNetFetcher {
   // |context_| must stay valid until Shutdown() is called.
   void SetURLRequestContext(URLRequestContext* context);
 
+  // Returns the default timeout value. Intended for test use only.
+  static base::TimeDelta GetDefaultTimeoutForTesting();
+
   // CertNetFetcher impl:
   void Shutdown() override;
   std::unique_ptr<Request> FetchCaIssuers(const GURL& url,

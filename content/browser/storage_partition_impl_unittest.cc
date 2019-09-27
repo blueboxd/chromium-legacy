@@ -313,8 +313,8 @@ class RemoveCodeCacheTester {
                 GURL origin_lock,
                 const std::string& data) {
     std::vector<uint8_t> data_vector(data.begin(), data.end());
-    GetCache(cache)->WriteData(url, origin_lock, base::Time::Now(),
-                               data_vector);
+    GetCache(cache)->WriteEntry(url, origin_lock, base::Time::Now(),
+                                data_vector);
     base::RunLoop().RunUntilIdle();
   }
 

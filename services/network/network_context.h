@@ -330,7 +330,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::P2PTrustedSocketManagerRequest trusted_socket_manager,
       mojom::P2PSocketManagerRequest socket_manager_request) override;
   void CreateMdnsResponder(
-      mojom::MdnsResponderRequest responder_request) override;
+      mojo::PendingReceiver<mojom::MdnsResponder> responder_receiver) override;
   void QueueReport(const std::string& type,
                    const std::string& group,
                    const GURL& url,

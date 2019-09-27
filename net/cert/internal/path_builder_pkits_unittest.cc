@@ -35,8 +35,9 @@ class CrlCheckingPathBuilderDelegate : public SimplePathBuilderDelegate {
         verify_time_(verify_time),
         max_age_(max_age) {}
 
-  void CheckPathAfterVerification(CertPathBuilderResultPath* path) override {
-    SimplePathBuilderDelegate::CheckPathAfterVerification(path);
+  void CheckPathAfterVerification(const CertPathBuilder& path_builder,
+                                  CertPathBuilderResultPath* path) override {
+    SimplePathBuilderDelegate::CheckPathAfterVerification(path_builder, path);
 
     if (!path->IsValid())
       return;

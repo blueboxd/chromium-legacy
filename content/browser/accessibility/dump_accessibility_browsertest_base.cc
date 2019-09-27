@@ -40,6 +40,7 @@
 #include "content/test/content_browser_test_utils_internal.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "ui/accessibility/accessibility_features.h"
 
 namespace content {
 
@@ -102,14 +103,21 @@ void DumpAccessibilityTestBase::SetUpOnMainThread() {
 }
 
 void DumpAccessibilityTestBase::SetUp() {
+  std::vector<base::Feature> enabled_features;
+  std::vector<base::Feature> disabled_features;
+
+  // Enable exposing "display: none" nodes to the browser process for testing.
+  enabled_features.emplace_back(
+      features::kEnableAccessibilityExposeDisplayNone);
+
   // TODO(dmazzoni): DumpAccessibilityTree expectations are based on the
   // assumption that the accessibility labels feature is off. (There are
   // also several tests that explicitly enable the feature.) It'd be better
   // if DumpAccessibilityTree tests assumed that the feature is on by
   // default instead.  http://crbug.com/940330
-  scoped_feature_list_.InitAndDisableFeature(
-      features::kExperimentalAccessibilityLabels);
+  disabled_features.emplace_back(features::kExperimentalAccessibilityLabels);
 
+  scoped_feature_list_.InitWithFeatures(enabled_features, disabled_features);
   ContentBrowserTest::SetUp();
 }
 

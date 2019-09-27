@@ -18,25 +18,25 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow DIV id='grandparent' class='composited'",
+      "name": "LayoutNGBlockFlow DIV id='grandparent' class='composited'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 2
+      "transform": 1
     },
     {
-      "name": "LayoutBlockFlow DIV id='parent' class='composited'",
+      "name": "LayoutNGBlockFlow DIV id='parent' class='composited'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 3
+      "transform": 1
     },
     {
-      "name": "LayoutBlockFlow DIV id='child' class='composited'",
+      "name": "LayoutNGBlockFlow DIV id='child' class='composited'",
       "bounds": [100, 100],
       "contentsOpaque": true,
       "backgroundColor": "#008000",
-      "transform": 4
+      "transform": 1
     }
   ],
   "transforms": [
@@ -48,22 +48,6 @@
         [0, 0, 1, 0],
         [8, 8, 0, 1]
       ]
-    },
-    {
-      "id": 2,
-      "parent": 1,
-      "renderingContext": 1
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "flattenInheritedTransform": false,
-      "renderingContext": 1
-    },
-    {
-      "id": 4,
-      "parent": 3,
-      "renderingContext": 2
     }
   ]
 }

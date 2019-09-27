@@ -398,15 +398,25 @@ class PixelIntegrationTest(
               build_id_args + extra_imgtest_args)
       subprocess.check_output(cmd, stderr=subprocess.STDOUT)
     except CalledProcessError as e:
-      try:
-        # The triage link for the image is output to the failure file, so report
-        # that if it's available so it shows up in Milo. If for whatever reason
-        # the file is not present or malformed, the triage link will still be
-        # present in the stdout of the goldctl command.
-        with open(failure_file, 'r') as ff:
-          self.artifacts.CreateLink('gold_triage_link', ff.read())
-      except Exception:
-        logging.error('Failed to read contents of goldctl failure file')
+      # The triage link for the image is output to the failure file, so report
+      # that if it's available so it shows up in Milo. If for whatever reason
+      # the file is not present or malformed, the triage link will still be
+      # present in the stdout of the goldctl command.
+      # If we're running on a trybot, instead generate a link to all results
+      # for the CL so that the user can visit a single page instead of
+      # clicking on multiple links on potentially multiple bots.
+      if parsed_options.review_patch_issue:
+        cl_images = ('https://%s-gold.skia.org/search?'
+                     'issue=%s&new_clstore=true' % (
+                       SKIA_GOLD_INSTANCE, parsed_options.review_patch_issue))
+        self.artifacts.CreateLink('triage_link_for_entire_cl', cl_images)
+      else:
+        try:
+          with open(failure_file, 'r') as ff:
+            self.artifacts.CreateLink('gold_triage_link', ff.read())
+        except Exception:
+          logging.error('Failed to read contents of goldctl failure file')
+
       logging.error('goldctl failed with output: %s', e.output)
       if parsed_options.local_run:
         logging.error(

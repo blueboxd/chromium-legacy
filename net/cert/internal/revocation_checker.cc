@@ -35,6 +35,7 @@ void MarkCertificateRevoked(CertErrors* errors) {
 bool CheckCertRevocation(const ParsedCertificateList& certs,
                          size_t target_cert_index,
                          const RevocationPolicy& policy,
+                         base::TimeTicks deadline,
                          base::StringPiece stapled_ocsp_response,
                          base::TimeDelta max_age,
                          CertNetFetcher* net_fetcher,
@@ -92,6 +93,11 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
 
       found_revocation_info = true;
 
+      // Check the deadline after setting found_revocation_info, to not give a
+      // misleading kNoRevocationMechanism failure.
+      if (!deadline.is_null() && base::TimeTicks::Now() > deadline)
+        break;
+
       if (!policy.networking_allowed)
         continue;
 
@@ -114,9 +120,6 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
       // TODO(eroman): Issue POST instead of GET if request is larger than 255
       //               bytes?
       // TODO(eroman): Improve interplay with HTTP cache.
-      //
-      // TODO(eroman): Bound the maximum time allowed spent doing network
-      // requests.
       std::unique_ptr<CertNetFetcher::Request> net_ocsp_request =
           net_fetcher->FetchOcsp(get_url, CertNetFetcher::DEFAULT,
                                  CertNetFetcher::DEFAULT);
@@ -172,6 +175,11 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
 
           found_revocation_info = true;
 
+          // Check the deadline after setting found_revocation_info, to not give
+          // a misleading kNoRevocationMechanism failure.
+          if (!deadline.is_null() && base::TimeTicks::Now() > deadline)
+            break;
+
           if (!policy.networking_allowed)
             continue;
 
@@ -185,9 +193,6 @@ bool CheckCertRevocation(const ParsedCertificateList& certs,
           // Note that no attempt is made to refetch without cache if a cached
           // CRL is too old, nor is there a separate CRL cache. It is assumed
           // the CRL server will send reasonable HTTP caching headers.
-          //
-          // TODO(eroman): Bound the maximum time allowed spent doing network
-          // requests.
           std::unique_ptr<CertNetFetcher::Request> net_crl_request =
               net_fetcher->FetchCrl(parsed_crl_url, CertNetFetcher::DEFAULT,
                                     CertNetFetcher::DEFAULT);
@@ -259,6 +264,7 @@ RevocationPolicy::RevocationPolicy()
 void CheckValidatedChainRevocation(
     const ParsedCertificateList& certs,
     const RevocationPolicy& policy,
+    base::TimeTicks deadline,
     base::StringPiece stapled_leaf_ocsp_response,
     CertNetFetcher* net_fetcher,
     CertPathErrors* errors,
@@ -292,7 +298,7 @@ void CheckValidatedChainRevocation(
     // Check whether this certificate's revocation status complies with the
     // policy.
     bool cert_ok =
-        CheckCertRevocation(certs, i, policy, stapled_ocsp, max_age,
+        CheckCertRevocation(certs, i, policy, deadline, stapled_ocsp, max_age,
                             net_fetcher, errors->GetErrorsForCert(i),
                             (i == 0) ? stapled_ocsp_verify_result : nullptr);
 

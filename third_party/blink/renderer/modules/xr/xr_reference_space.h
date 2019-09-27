@@ -36,14 +36,16 @@ class XRReferenceSpace : public XRSpace {
 
   XRPose* getPose(XRSpace* other_space,
                   const TransformationMatrix* base_pose_matrix) override;
-  std::unique_ptr<TransformationMatrix> DefaultPose() override;
-  std::unique_ptr<TransformationMatrix> TransformBasePose(
-      const TransformationMatrix& base_pose) override;
-  std::unique_ptr<TransformationMatrix> TransformBaseInputPose(
-      const TransformationMatrix& base_input_pose,
-      const TransformationMatrix& base_pose) override;
+  std::unique_ptr<TransformationMatrix> DefaultViewerPose() override;
+  std::unique_ptr<TransformationMatrix> SpaceFromMojo(
+      const TransformationMatrix& mojo_from_viewer) override;
+  std::unique_ptr<TransformationMatrix> SpaceFromViewer(
+      const TransformationMatrix& mojo_from_viewer) override;
+  std::unique_ptr<TransformationMatrix> SpaceFromInputForViewer(
+      const TransformationMatrix& mojo_from_input,
+      const TransformationMatrix& mojo_from_viewer) override;
 
-  std::unique_ptr<TransformationMatrix> GetTransformToMojoSpace() override;
+  std::unique_ptr<TransformationMatrix> MojoFromSpace() override;
 
   TransformationMatrix OriginOffsetMatrix() override;
   TransformationMatrix InverseOriginOffsetMatrix() override;
@@ -60,11 +62,11 @@ class XRReferenceSpace : public XRSpace {
   virtual XRReferenceSpace* cloneWithOriginOffset(
       XRRigidTransform* origin_offset);
 
-  void UpdateFloorLevelTransform();
+  void SetFloorFromMojo();
 
   unsigned int display_info_id_ = 0;
 
-  std::unique_ptr<TransformationMatrix> floor_level_transform_;
+  std::unique_ptr<TransformationMatrix> floor_from_mojo_;
   Member<XRRigidTransform> origin_offset_;
   Type type_;
 };

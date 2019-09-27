@@ -16,6 +16,5 @@ rootWebArea
 ++++++++++++staticText name='role=presentation item'
 ++++++++++++++inlineTextBox name='role=presentation item'
 ++++++++genericContainer ignored invisible name='visibility:hidden text'
-++++++++++staticText ignored invisible name='visibility:hidden text'
 ++++++++genericContainer ignored invisible
 ++++++++++staticText ignored invisible name='aria-hidden text'

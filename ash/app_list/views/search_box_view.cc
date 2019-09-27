@@ -740,8 +740,9 @@ void SearchBoxView::ButtonPressed(views::Button* sender,
 void SearchBoxView::UpdateSearchBoxTextForSelectedResult(
     SearchResult* selected_result) {
   if (selected_result->result_type() == ash::SearchResultType::kOmnibox &&
-      !selected_result->is_omnibox_search()) {
-    // Use details to ensure url results fill url.
+      !selected_result->is_omnibox_search() &&
+      !selected_result->details().empty()) {
+    // If set, use details to ensure url results fill url.
     search_box()->SetText(selected_result->details());
   } else {
     search_box()->SetText(selected_result->title());

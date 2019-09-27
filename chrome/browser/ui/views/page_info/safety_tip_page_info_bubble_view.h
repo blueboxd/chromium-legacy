@@ -42,6 +42,7 @@ class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
       content::WebContents* web_contents,
       security_state::SafetyTipStatus safety_tip_status,
       const GURL& url,
+      const GURL& suggested_url,
       base::OnceCallback<void(safety_tips::SafetyTipInteraction)>
           close_callback);
   ~SafetyTipPageInfoBubbleView() override;
@@ -57,7 +58,15 @@ class SafetyTipPageInfoBubbleView : public PageInfoBubbleViewBase,
 
   views::Button* GetLeaveButtonForTesting() { return leave_button_; }
 
+  const security_state::SafetyTipStatus safety_tip_status_;
+
+  // The URL of the page on which the Safety Tip was triggered.
   const GURL url_;
+
+  // The URL of the page the Safety Tip suggests you intended to go to, when
+  // applicable (for SafetyTipStatus::kLookalike).
+  const GURL suggested_url_;
+
   views::Button* leave_button_;
   base::OnceCallback<void(safety_tips::SafetyTipInteraction)> close_callback_;
   safety_tips::SafetyTipInteraction action_taken_ =
@@ -72,6 +81,7 @@ PageInfoBubbleViewBase* CreateSafetyTipBubbleForTesting(
     content::WebContents* web_contents,
     security_state::SafetyTipStatus safety_tip_status,
     const GURL& virtual_url,
+    const GURL& suggested_url,
     base::OnceCallback<void(safety_tips::SafetyTipInteraction)> close_callback);
 
 #endif  // CHROME_BROWSER_UI_VIEWS_PAGE_INFO_SAFETY_TIP_PAGE_INFO_BUBBLE_VIEW_H_

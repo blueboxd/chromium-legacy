@@ -7,6 +7,8 @@
 Extracts network traffic annotation definitions from C++ source code.
 """
 
+from __future__ import print_function
+
 import argparse
 import os
 import re
@@ -243,7 +245,7 @@ def main():
   # any, print something so that the traffic_annotation_auditor knows there was
   # no error so that the files get checked for deleted annotations.
   if not annotation_definitions:
-      print('No annotations in these files.')
+    print('No annotations in these files.')
   return 0
 
 

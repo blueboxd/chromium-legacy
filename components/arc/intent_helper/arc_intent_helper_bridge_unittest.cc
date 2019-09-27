@@ -297,7 +297,11 @@ TEST_F(ArcIntentHelperTest, TestIntentHelperAppIsNotAValidCandidate) {
       "www.google.com", ArcIntentHelperBridge::kArcIntentHelperPackageName));
   array.emplace_back(GetIntentFilter(
       "www.android.com", ArcIntentHelperBridge::kArcIntentHelperPackageName));
-  array.emplace_back(GetIntentFilter("dev.chromium.org", kPackageName));
+  // Let the package name start with "z" to ensure the intent helper package
+  // is not always the last package checked in the ShouldChromeHandleUrl
+  // filter matching logic. This is to ensure this unit test tests the package
+  // name checking logic properly.
+  array.emplace_back(GetIntentFilter("dev.chromium.org", "z.package.name"));
   instance_->OnIntentFiltersUpdated(std::move(array));
 
   EXPECT_TRUE(instance_->ShouldChromeHandleUrl(GURL("http://www.google.com")));

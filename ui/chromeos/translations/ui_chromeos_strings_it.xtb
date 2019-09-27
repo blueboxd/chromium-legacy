@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pinguino</translation>
 <translation id="183183971458492120">Caricamento delle informazioni…</translation>
 <translation id="1838709767668011582">Sito Google</translation>
-<translation id="1839704667838141620">Cambia la modalità di condivisione di questo file</translation>
 <translation id="1844692022597038441">Questo file non è disponibile offline.</translation>
 <translation id="184633654410729720">Tastiera Thailandese (Kedmanee)</translation>
 <translation id="1847880352285315359">Modifiche salvate</translation>
-<translation id="1864676585353837027">Cambia la modalità di condivisione di questi file</translation>
 <translation id="1864756863218646478">Impossibile trovare il file.</translation>
 <translation id="1921986354447415460">Tastiera Turco F</translation>
 <translation id="1931134289871235022">Slovacco</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Installa nuovo servizio</translation>
 <translation id="1947424002851288782">Tastiera tedesca</translation>
 <translation id="1972984168337863910">Espandi i riquadri di feedback dei file</translation>
-<translation id="197560921582345123">Può modificare</translation>
 <translation id="1984603991036629094">Tastiera fonetica Armeno</translation>
 <translation id="2001796770603320721">Gestisci in Drive</translation>
 <translation id="2009067268969781306">Se formatti un'unità vengono eliminati tutti i dati in essa memorizzati. L'azione non può essere annullata.</translation>
@@ -590,7 +587,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Per il recupero di questi file verranno utilizzati circa <ph name="FILE_SIZE" /> di dati mobili.</translation>
 <translation id="7846076177841592234">Annulla selezione</translation>
-<translation id="7850851215703745691">Questi file di Drive non sono stati ancora condivisi</translation>
 <translation id="7853966320808728790">BÉPO francese</translation>
 <translation id="7864662577698025113">Aggiungi nuovo servizio</translation>
 <translation id="7873831373602885875">Impossibile salvare in <ph name="FOLDER_NAME" />. Tutte le modifiche verranno salvate in <ph name="DOWNLOADS_FOLDER" /> nella cartella Download.</translation>
@@ -606,7 +602,6 @@
 <translation id="7969525169268594403">Sloveno</translation>
 <translation id="7982283708762922719">Altezza</translation>
 <translation id="7987485481246785146">Tastiera basata su arabo curdo sorani</translation>
-<translation id="799923393800005025">Può visualizzare</translation>
 <translation id="8008366997883261463">Cane</translation>
 <translation id="8028993641010258682">Dimensioni</translation>
 <translation id="8031722894461705849">Tastiera Slovacco</translation>
@@ -668,8 +663,6 @@
 <translation id="8600173386174225982">L'elenco dei file è stato modificato in visualizzazione miniatura.</translation>
 <translation id="8601932370724196034">File immagine Crostini</translation>
 <translation id="8669949407341943408">Spostamento...</translation>
-<translation id="8671210955687109937">Può commentare</translation>
-<translation id="8686213429977032554">Questo file di Drive non è stato ancora condiviso</translation>
 <translation id="8698464937041809063">Disegno Google</translation>
 <translation id="8714406895390098252">Bicicletta</translation>
 <translation id="8719721339511222681">È stato selezionato l'elemento <ph name="ENTRY_NAME" />.</translation>

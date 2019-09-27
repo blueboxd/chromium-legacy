@@ -75,11 +75,9 @@
 <translation id="1829129547161959350">Pinguin</translation>
 <translation id="183183971458492120">Informationen werden geladen…</translation>
 <translation id="1838709767668011582">Google Sites-Website</translation>
-<translation id="1839704667838141620">Angeben, wie die Datei geteilt werden soll</translation>
 <translation id="1844692022597038441">Diese Datei ist offline nicht verfügbar.</translation>
 <translation id="184633654410729720">Thailändische Tastatur (Kedmanee)</translation>
 <translation id="1847880352285315359">Gespeichert</translation>
-<translation id="1864676585353837027">Angeben, wie die Dateien geteilt werden sollen</translation>
 <translation id="1864756863218646478">Die Datei wurde nicht gefunden.</translation>
 <translation id="1921986354447415460">Tastatur "Türkisch-F"</translation>
 <translation id="1931134289871235022">Slowakisch</translation>
@@ -89,7 +87,6 @@
 <translation id="1943097386230153518">Neuen Dienst installieren</translation>
 <translation id="1947424002851288782">Deutsche Tastatur</translation>
 <translation id="1972984168337863910">Erweiterte Dateiinformationen maximieren</translation>
-<translation id="197560921582345123">Darf bearbeiten</translation>
 <translation id="1984603991036629094">Armenische phonetische Tastatur</translation>
 <translation id="2001796770603320721">In Drive verwalten</translation>
 <translation id="2009067268969781306">Durch die Formatierung eines Laufwerks werden alle darauf gespeicherten Daten gelöscht. Diese Aktion kann nicht rückgängig gemacht werden.</translation>
@@ -591,7 +588,6 @@
 <translation id="7827012282502221009"><ph name="NUMBER_OF_TB" /> TB</translation>
 <translation id="7839804798877833423">Zum Abrufen dieser Dateien werden etwa <ph name="FILE_SIZE" /> mobile Daten benötigt.</translation>
 <translation id="7846076177841592234">Auswahl aufheben</translation>
-<translation id="7850851215703745691">Die Drive-Dateien wurden noch nicht geteilt.</translation>
 <translation id="7853966320808728790">Französisch – Bépo</translation>
 <translation id="7864662577698025113">Neuen Dienst hinzufügen</translation>
 <translation id="7873831373602885875">Speichern in "<ph name="FOLDER_NAME" />" nicht möglich. Alle Änderungen werden im Ordner "Downloads" in <ph name="DOWNLOADS_FOLDER" /> gespeichert.</translation>
@@ -607,7 +603,6 @@
 <translation id="7969525169268594403">Slowenisch</translation>
 <translation id="7982283708762922719">Größe</translation>
 <translation id="7987485481246785146">Sorani-Tastatur nach arabischem Layout</translation>
-<translation id="799923393800005025">Darf ansehen</translation>
 <translation id="8008366997883261463">Jack Russell</translation>
 <translation id="8028993641010258682">Größe</translation>
 <translation id="8031722894461705849">Slowakische Tastatur</translation>
@@ -669,8 +664,6 @@
 <translation id="8600173386174225982">Die Dateiliste wird jetzt in der Miniaturansicht angezeigt.</translation>
 <translation id="8601932370724196034">Crostini-Bilddatei</translation>
 <translation id="8669949407341943408">Verschieben...</translation>
-<translation id="8671210955687109937">Darf kommentieren</translation>
-<translation id="8686213429977032554">Die Drive-Datei wurde noch nicht geteilt.</translation>
 <translation id="8698464937041809063">Google-Zeichnung</translation>
 <translation id="8714406895390098252">Fahrrad</translation>
 <translation id="8719721339511222681"><ph name="ENTRY_NAME" /> wurde ausgewählt.</translation>

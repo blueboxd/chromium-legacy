@@ -114,6 +114,9 @@
         <include name="IDR_PDF_METRICS_JS" file="pdf/metrics.js" type="BINDATA" />
 
         <include name="IDR_PDF_SHARED_VARS_HTML" file="pdf/elements/shared-vars.html" type="BINDATA" />
+        <!-- TODO(crbug.com/1005029): Dummy generated file used for ChromeComponentExtensionResourceManager tests.
+            Replace with a file actually used by the PDF Viewer once migration to Polymer3 is completed. -->
+        <include name="IDR_PDF_SHARED_VARS_M_JS" file="${root_gen_dir}/chrome/browser/resources/pdf/elements/shared-vars.m.js" use_base_dir="false" type="BINDATA" />
         <include name="IDR_PDF_ICONS_HTML" file="pdf/elements/icons.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_HTML" file="pdf/elements/viewer-bookmark.html" type="BINDATA" />
         <include name="IDR_PDF_VIEWER_BOOKMARK_JS" file="pdf/elements/viewer-bookmark.js" type="BINDATA" />

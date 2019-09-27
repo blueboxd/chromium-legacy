@@ -14,7 +14,9 @@
 #import "ios/web/public/deprecated/crw_test_js_injection_receiver.h"
 #import "ios/web/public/test/fakes/test_navigation_manager.h"
 #import "ios/web/public/test/fakes/test_web_state.h"
+#include "ios/web/public/test/scoped_testing_web_client.h"
 #include "ios/web/public/test/web_task_environment.h"
+#include "ios/web/public/web_client.h"
 #import "ios/web_view/internal/translate/cwv_translation_language_internal.h"
 #import "ios/web_view/internal/translate/fake_web_view_translate_client.h"
 #include "ios/web_view/internal/web_view_browser_state.h"
@@ -40,7 +42,9 @@ NSString* const kTestPageHost = @"www.chromium.org";
 
 class CWVTranslationControllerTest : public TestWithLocaleAndResources {
  protected:
-  CWVTranslationControllerTest() : browser_state_(/*off_the_record=*/false) {
+  CWVTranslationControllerTest()
+      : web_client_(std::make_unique<web::WebClient>()),
+        browser_state_(/*off_the_record=*/false) {
     web_state_.SetBrowserState(&browser_state_);
     auto test_navigation_manager =
         std::make_unique<web::TestNavigationManager>();
@@ -71,6 +75,7 @@ class CWVTranslationControllerTest : public TestWithLocaleAndResources {
   }
 
   web::WebTaskEnvironment task_environment_;
+  web::ScopedTestingWebClient web_client_;
   WebViewBrowserState browser_state_;
   std::unique_ptr<FakeWebViewTranslateClient> translate_client_;
   web::TestWebState web_state_;

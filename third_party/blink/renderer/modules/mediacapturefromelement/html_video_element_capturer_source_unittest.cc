@@ -58,8 +58,8 @@ class MockWebMediaPlayer : public WebMediaPlayer {
                  WebSetSinkIdCompleteCallback) override {}
   bool HasVideo() const override { return true; }
   bool HasAudio() const override { return false; }
-  WebSize NaturalSize() const override { return WebSize(16, 10); }
-  WebSize VisibleRect() const override { return WebSize(16, 10); }
+  WebSize NaturalSize() const override { return size_; }
+  WebSize VisibleRect() const override { return size_; }
   bool Paused() const override { return false; }
   bool Seeking() const override { return false; }
   double Duration() const override { return 0.0; }
@@ -98,6 +98,7 @@ class MockWebMediaPlayer : public WebMediaPlayer {
   }
 
   bool is_video_opaque_ = true;
+  WebSize size_ = WebSize(16, 10);
 
   base::WeakPtrFactory<MockWebMediaPlayer> weak_factory_{this};
 };
@@ -127,6 +128,8 @@ class HTMLVideoElementCapturerSourceTest : public testing::TestWithParam<bool> {
   void SetVideoPlayerOpacity(bool opacity) {
     web_media_player_->is_video_opaque_ = opacity;
   }
+
+  void SetVideoPlayerSize(WebSize size) { web_media_player_->size_ = size; }
 
  protected:
   std::unique_ptr<MockWebMediaPlayer> web_media_player_;
@@ -278,6 +281,50 @@ TEST_F(HTMLVideoElementCapturerSourceTest, AlphaAndNot) {
     run_loop.Run();
 
     EXPECT_EQ(media::PIXEL_FORMAT_I420A, frame->format());
+  }
+
+  html_video_capturer_->StopCapture();
+  Mock::VerifyAndClearExpectations(this);
+}
+
+// Verify that changes in the natural size of the source WebMediaPlayer do not
+// crash.
+// TODO(crbug.com/1817203): Verify that size changes are fully supported.
+TEST_F(HTMLVideoElementCapturerSourceTest, SizeChange) {
+  InSequence s;
+  media::VideoCaptureFormats formats =
+      html_video_capturer_->GetPreferredFormats();
+  media::VideoCaptureParams params;
+  params.requested_format = formats[0];
+
+  {
+    SetVideoPlayerSize(WebSize(16, 10));
+
+    base::RunLoop run_loop;
+    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
+    scoped_refptr<media::VideoFrame> frame;
+    EXPECT_CALL(*this, DoOnRunning(true)).Times(1);
+    EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
+        .WillOnce(
+            DoAll(SaveArg<0>(&frame), RunClosure2(std::move(quit_closure))));
+    html_video_capturer_->StartCapture(
+        params,
+        WTF::BindRepeating(&HTMLVideoElementCapturerSourceTest::OnDeliverFrame,
+                           base::Unretained(this)),
+        WTF::BindRepeating(&HTMLVideoElementCapturerSourceTest::OnRunning,
+                           base::Unretained(this)));
+    run_loop.Run();
+  }
+  {
+    SetVideoPlayerSize(WebSize(32, 20));
+
+    base::RunLoop run_loop;
+    base::RepeatingClosure quit_closure = run_loop.QuitClosure();
+    scoped_refptr<media::VideoFrame> frame;
+    EXPECT_CALL(*this, DoOnDeliverFrame(_, _))
+        .WillOnce(
+            DoAll(SaveArg<0>(&frame), RunClosure2(std::move(quit_closure))));
+    run_loop.Run();
   }
 
   html_video_capturer_->StopCapture();

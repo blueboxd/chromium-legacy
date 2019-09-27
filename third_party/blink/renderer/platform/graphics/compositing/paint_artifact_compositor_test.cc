@@ -619,7 +619,6 @@ TEST_P(PaintArtifactCompositorTest, SortingContextID) {
       Pointee(DrawsRectangle(FloatRect(0, 0, 300, 200), Color::kWhite)));
   int white_sorting_context_id =
       GetTransformNode(white_layer).sorting_context_id;
-  EXPECT_EQ(white_layer->sorting_context_id(), white_sorting_context_id);
   EXPECT_EQ(0, white_sorting_context_id);
 
   // The light gray layer is 3D sorted.

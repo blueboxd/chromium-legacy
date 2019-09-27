@@ -4,6 +4,7 @@
 
 #include "pdf/pdfium/pdfium_engine.h"
 
+#include "pdf/document_layout.h"
 #include "pdf/pdfium/pdfium_page.h"
 #include "pdf/pdfium/pdfium_test_base.h"
 #include "pdf/test/test_client.h"
@@ -18,10 +19,21 @@ namespace {
 using ::testing::InSequence;
 using ::testing::NiceMock;
 
+MATCHER_P2(LayoutWithSize, width, height, "") {
+  return arg.size() == pp::Size(width, height);
+}
+
 class MockTestClient : public TestClient {
  public:
+  MockTestClient() {
+    ON_CALL(*this, ProposeDocumentLayout)
+        .WillByDefault([this](const DocumentLayout& layout) {
+          TestClient::ProposeDocumentLayout(layout);
+        });
+  }
+
   // TODO(crbug.com/989095): MOCK_METHOD() triggers static_assert on Windows.
-  MOCK_METHOD1(DocumentSizeUpdated, void(const pp::Size& size));
+  MOCK_METHOD1(ProposeDocumentLayout, void(const DocumentLayout& layout));
 };
 
 class PDFiumEngineTest : public PDFiumTestBase {
@@ -37,7 +49,7 @@ class PDFiumEngineTest : public PDFiumTestBase {
 
 TEST_F(PDFiumEngineTest, InitializeWithRectanglesMultiPagesPdf) {
   NiceMock<MockTestClient> client;
-  EXPECT_CALL(client, DocumentSizeUpdated(pp::Size(343, 1664)));
+  EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(343, 1664)));
 
   std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
       &client, FILE_PATH_LITERAL("rectangles_multi_pages.pdf"));
@@ -55,8 +67,8 @@ TEST_F(PDFiumEngineTest, AppendBlankPagesWithFewerPages) {
   NiceMock<MockTestClient> client;
   {
     InSequence normal_then_append;
-    EXPECT_CALL(client, DocumentSizeUpdated(pp::Size(343, 1664)));
-    EXPECT_CALL(client, DocumentSizeUpdated(pp::Size(276, 1037)));
+    EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(343, 1664)));
+    EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(276, 1037)));
   }
 
   std::unique_ptr<PDFiumEngine> engine = InitializeEngine(
@@ -75,8 +87,8 @@ TEST_F(PDFiumEngineTest, AppendBlankPagesWithMorePages) {
   NiceMock<MockTestClient> client;
   {
     InSequence normal_then_append;
-    EXPECT_CALL(client, DocumentSizeUpdated(pp::Size(343, 1664)));
-    EXPECT_CALL(client, DocumentSizeUpdated(pp::Size(276, 2425)));
+    EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(343, 1664)));
+    EXPECT_CALL(client, ProposeDocumentLayout(LayoutWithSize(276, 2425)));
   }
 
   std::unique_ptr<PDFiumEngine> engine = InitializeEngine(

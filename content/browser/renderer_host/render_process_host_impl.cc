@@ -3008,7 +3008,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kEnableDeJelly,
     switches::kDisableOriginTrialControlledBlinkFeatures,
     switches::kDisablePepper3DImageChromium,
-    switches::kDisablePerfetto,
     switches::kDisablePermissionsAPI,
     switches::kDisablePresentationAPI,
     switches::kDisableRGBA4444Textures,

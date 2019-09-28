@@ -22,6 +22,8 @@
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/ax_virtual_view.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -140,6 +142,11 @@ IconLabelBubbleView::IconLabelBubbleView(const gfx::FontList& font_list)
 
   // Flip the canvas in RTL so the separator is drawn on the correct side.
   separator_view_->EnableCanvasFlippingForRTLUI(true);
+
+  auto alert_view = std::make_unique<views::AXVirtualView>();
+  alert_view->GetCustomData().role = ax::mojom::Role::kAlert;
+  alert_virtual_view_ = alert_view.get();
+  GetViewAccessibility().AddVirtualChildView(std::move(alert_view));
 
   md_observer_.Add(MD::GetInstance());
 }
@@ -430,8 +437,18 @@ void IconLabelBubbleView::AnimateIn(base::Optional<int> string_id) {
     // Start animation from the current width, otherwise the icon will also be
     // included if visible.
     grow_animation_starting_width_ = width();
-    if (string_id)
-      SetLabel(l10n_util::GetStringUTF16(string_id.value()));
+    if (string_id) {
+      base::string16 label = l10n_util::GetStringUTF16(string_id.value());
+      SetLabel(label);
+
+      // Send an accessibility alert whose text is the label's text. Doing this
+      // causes a screenreader to immediately announce the text of the button,
+      // which serves to announce it. This is done unconditionally here if there
+      // is text because the animation is intended to draw attention to the
+      // instance anyway.
+      alert_virtual_view_->GetCustomData().SetName(label);
+      alert_virtual_view_->NotifyAccessibilityEvent(ax::mojom::Event::kAlert);
+    }
     label()->SetVisible(true);
     ShowAnimation();
   }

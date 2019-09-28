@@ -208,6 +208,7 @@ class PLATFORM_EXPORT BlobDataHandle
   ~BlobDataHandle();
 
   mojo::PendingRemote<mojom::blink::Blob> CloneBlobRemote();
+  void CloneBlobRemote(mojo::PendingReceiver<mojom::blink::Blob>);
   mojo::PendingRemote<network::mojom::blink::DataPipeGetter> AsDataPipeGetter();
 
   void ReadAll(mojo::ScopedDataPipeProducerHandle,

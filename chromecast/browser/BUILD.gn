@@ -84,6 +84,8 @@ cast_source_set("browser") {
     "cast_renderer_block_data.h",
     "cast_session_id_map.cc",
     "cast_session_id_map.h",
+    "cast_system_memory_pressure_evaluator_adjuster.cc",
+    "cast_system_memory_pressure_evaluator_adjuster.h",
     "cast_web_contents_impl.cc",
     "cast_web_contents_impl.h",
     "cast_web_contents_manager.cc",

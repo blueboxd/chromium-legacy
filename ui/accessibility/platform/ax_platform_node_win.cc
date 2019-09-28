@@ -6470,6 +6470,34 @@ base::Optional<LONG> AXPlatformNodeWin::ComputeUIALandmarkType() const {
   }
 }
 
+bool AXPlatformNodeWin::IsInaccessibleDueToAncestor() const {
+  AXPlatformNodeWin* parent = static_cast<AXPlatformNodeWin*>(
+      AXPlatformNode::FromNativeViewAccessible(GetParent()));
+  while (parent) {
+    if (parent->ShouldHideChildren())
+      return true;
+    parent = static_cast<AXPlatformNodeWin*>(
+        FromNativeViewAccessible(parent->GetParent()));
+  }
+  return false;
+}
+
+bool AXPlatformNodeWin::ShouldHideChildren() const {
+  switch (GetData().role) {
+    case ax::mojom::Role::kButton:
+    case ax::mojom::Role::kImage:
+    case ax::mojom::Role::kGraphicsSymbol:
+    case ax::mojom::Role::kLink:
+    case ax::mojom::Role::kMath:
+    case ax::mojom::Role::kProgressIndicator:
+    case ax::mojom::Role::kScrollBar:
+    case ax::mojom::Role::kSlider:
+      return true;
+    default:
+      return false;
+  }
+}
+
 base::string16 AXPlatformNodeWin::GetValue() const {
   base::string16 value = AXPlatformNodeBase::GetValue();
 
@@ -7197,6 +7225,23 @@ void AXPlatformNodeWin::FireLiveRegionChangeRecursive() {
     if (child->GetDelegate()->IsWebContent())
       child->FireLiveRegionChangeRecursive();
   }
+}
+
+AXPlatformNodeWin* AXPlatformNodeWin::GetLowestAccessibleElement() {
+  if (!IsInaccessibleDueToAncestor())
+    return this;
+
+  AXPlatformNodeWin* parent = static_cast<AXPlatformNodeWin*>(
+      AXPlatformNode::FromNativeViewAccessible(GetParent()));
+  while (parent) {
+    if (parent->ShouldHideChildren())
+      return parent;
+    parent = static_cast<AXPlatformNodeWin*>(
+        AXPlatformNode::FromNativeViewAccessible(parent->GetParent()));
+  }
+
+  NOTREACHED();
+  return nullptr;
 }
 
 void AXPlatformNodeWin::SanitizeTextAttributeValue(const std::string& input,

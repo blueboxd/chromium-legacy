@@ -12,6 +12,7 @@
 #include "components/sync_device_info/device_info.h"
 #include "components/sync_device_info/device_info_prefs.h"
 #include "components/sync_device_info/device_info_sync_bridge.h"
+#include "components/sync_device_info/device_info_sync_client.h"
 #include "components/sync_device_info/device_info_tracker.h"
 #include "components/sync_device_info/local_device_info_provider.h"
 
@@ -20,9 +21,12 @@ namespace syncer {
 DeviceInfoSyncServiceImpl::DeviceInfoSyncServiceImpl(
     OnceModelTypeStoreFactory model_type_store_factory,
     std::unique_ptr<MutableLocalDeviceInfoProvider> local_device_info_provider,
-    std::unique_ptr<DeviceInfoPrefs> device_info_prefs) {
+    std::unique_ptr<DeviceInfoPrefs> device_info_prefs,
+    std::unique_ptr<DeviceInfoSyncClient> device_info_sync_client)
+    : device_info_sync_client_(std::move(device_info_sync_client)) {
   DCHECK(local_device_info_provider);
   DCHECK(device_info_prefs);
+  DCHECK(device_info_sync_client_);
 
   // Make a copy of the channel to avoid relying on argument evaluation order.
   const version_info::Channel channel =

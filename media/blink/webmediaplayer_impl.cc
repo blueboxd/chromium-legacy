@@ -55,7 +55,6 @@
 #include "media/media_buildflags.h"
 #include "net/base/data_url.h"
 #include "third_party/blink/public/platform/web_encrypted_media_types.h"
-#include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/public/platform/web_media_player_client.h"
 #include "third_party/blink/public/platform/web_media_player_encrypted_media_client.h"
 #include "third_party/blink/public/platform/web_media_player_source.h"

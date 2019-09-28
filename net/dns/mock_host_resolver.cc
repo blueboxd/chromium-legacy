@@ -272,6 +272,11 @@ MockHostResolverBase::~MockHostResolverBase() {
   DCHECK(requests_.empty());
 }
 
+void MockHostResolverBase::OnShutdown() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  // TODO(crbug.com/1006902): Implement.
+}
+
 std::unique_ptr<HostResolver::ResolveHostRequest>
 MockHostResolverBase::CreateRequest(
     const HostPortPair& host,
@@ -931,6 +936,10 @@ class HangingHostResolver::RequestImpl
 HangingHostResolver::HangingHostResolver() = default;
 
 HangingHostResolver::~HangingHostResolver() = default;
+
+void HangingHostResolver::OnShutdown() {
+  // TODO(crbug.com/1006902): Implement.
+}
 
 std::unique_ptr<HostResolver::ResolveHostRequest>
 HangingHostResolver::CreateRequest(

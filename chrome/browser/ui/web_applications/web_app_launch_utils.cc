@@ -49,7 +49,7 @@ base::Optional<AppId> GetPwaForSecureActiveTab(Browser* browser) {
       NOTREACHED();
       FALLTHROUGH;
     case security_state::NONE:
-    case security_state::HTTP_SHOW_WARNING:
+    case security_state::WARNING:
     case security_state::DANGEROUS:
       return base::nullopt;
     case security_state::EV_SECURE:

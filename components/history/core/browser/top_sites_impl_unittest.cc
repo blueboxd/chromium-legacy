@@ -160,34 +160,17 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   }
 
   // Adds a page to history.
-  void AddPageToHistory(const GURL& url) {
-    RedirectList redirects;
-    redirects.push_back(url);
-    history_service()->AddPage(
-        url, base::Time::Now(), reinterpret_cast<ContextID>(1), 0, GURL(),
-        redirects, ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
-  }
-
-  // Adds a page to history.
-  void AddPageToHistory(const GURL& url, const base::string16& title) {
-    RedirectList redirects;
-    redirects.push_back(url);
-    history_service()->AddPage(
-        url, base::Time::Now(), reinterpret_cast<ContextID>(1), 0, GURL(),
-        redirects, ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED, false);
-    history_service()->SetPageTitle(url, title);
-  }
-
-  // Adds a page to history.
   void AddPageToHistory(const GURL& url,
-                        const base::string16& title,
-                        const history::RedirectList& redirects,
-                        base::Time time) {
-    history_service()->AddPage(
-        url, time, reinterpret_cast<ContextID>(1), 0, GURL(),
-        redirects, ui::PAGE_TRANSITION_TYPED, history::SOURCE_BROWSED,
-        false);
-    history_service()->SetPageTitle(url, title);
+                        const base::string16& title = base::string16(),
+                        base::Time time = base::Time::Now(),
+                        RedirectList redirects = RedirectList()) {
+    if (redirects.empty())
+      redirects.emplace_back(url);
+    history_service()->AddPage(url, time, reinterpret_cast<ContextID>(1), 0,
+                               GURL(), redirects, ui::PAGE_TRANSITION_TYPED,
+                               history::SOURCE_BROWSED, false);
+    if (!title.empty())
+      history_service()->SetPageTitle(url, title);
   }
 
   // Delets a url.
@@ -269,39 +252,6 @@ class TopSitesImplTest : public HistoryUnitTestBase {
   DISALLOW_COPY_AND_ASSIGN(TopSitesImplTest);
 };  // Class TopSitesImplTest
 
-// Helper function for appending a URL to a vector of "most visited" URLs,
-// using the default values for everything but the URL.
-void AppendMostVisitedURL(const GURL& url, std::vector<MostVisitedURL>* list) {
-  MostVisitedURL mv;
-  mv.url = url;
-  mv.redirects.push_back(url);
-  list->push_back(mv);
-}
-
-// Same as AppendMostVisitedURL except that it adds a redirect from the first
-// URL to the second.
-void AppendMostVisitedURLWithRedirect(const GURL& redirect_source,
-                                      const GURL& redirect_dest,
-                                      std::vector<MostVisitedURL>* list) {
-  MostVisitedURL mv;
-  mv.url = redirect_dest;
-  mv.redirects.push_back(redirect_source);
-  mv.redirects.push_back(redirect_dest);
-  list->push_back(mv);
-}
-
-// Helper function for appending a URL to a vector of "most visited" URLs,
-// using the default values for everything but the URL and the title.
-void AppendMostVisitedURLwithTitle(const GURL& url,
-                                   const base::string16& title,
-                                   std::vector<MostVisitedURL>* list) {
-  MostVisitedURL mv;
-  mv.url = url;
-  mv.title = title;
-  mv.redirects.push_back(url);
-  list->push_back(mv);
-}
-
 class MockTopSitesObserver : public TopSitesObserver {
  public:
   MockTopSitesObserver() {}
@@ -334,7 +284,7 @@ TEST_F(TopSitesImplTest, DoTitlesDiffer) {
 
   // TopSites has a new list of sites and should notify its observers.
   std::vector<MostVisitedURL> list_1;
-  AppendMostVisitedURLwithTitle(url_1, title_1, &list_1);
+  list_1.emplace_back(url_1, title_1);
   SetTopSites(list_1);
   EXPECT_TRUE(observer.is_notified());
   observer.ResetIsNotifiedState();
@@ -343,8 +293,8 @@ TEST_F(TopSitesImplTest, DoTitlesDiffer) {
   // list_1 and list_2 have different sizes. TopSites should notify its
   // observers.
   std::vector<MostVisitedURL> list_2;
-  AppendMostVisitedURLwithTitle(url_1, title_1, &list_2);
-  AppendMostVisitedURLwithTitle(url_2, title_2, &list_2);
+  list_2.emplace_back(url_1, title_1);
+  list_2.emplace_back(url_2, title_2);
   SetTopSites(list_2);
   EXPECT_TRUE(observer.is_notified());
   observer.ResetIsNotifiedState();
@@ -352,14 +302,14 @@ TEST_F(TopSitesImplTest, DoTitlesDiffer) {
 
   // list_1 and list_2 are exactly the same now. TopSites should not notify its
   // observers.
-  AppendMostVisitedURLwithTitle(url_2, title_2, &list_1);
+  list_1.emplace_back(url_2, title_2);
   SetTopSites(list_1);
   EXPECT_FALSE(observer.is_notified());
 
   // Change |url_2|'s title to |title_1| in list_2. The two lists are different
   // in titles now. TopSites should notify its observers.
   list_2.pop_back();
-  AppendMostVisitedURLwithTitle(url_2, title_1, &list_2);
+  list_2.emplace_back(url_2, title_1);
   SetTopSites(list_2);
   EXPECT_TRUE(observer.is_notified());
 
@@ -375,15 +325,15 @@ TEST_F(TopSitesImplTest, DiffMostVisited) {
   GURL gets_moved_1("http://getsmoved1/");
 
   std::vector<MostVisitedURL> old_list;
-  AppendMostVisitedURL(stays_the_same, &old_list);  // 0  (unchanged)
-  AppendMostVisitedURL(gets_deleted_1, &old_list);  // 1  (deleted)
-  AppendMostVisitedURL(gets_moved_1, &old_list);    // 2  (moved to 3)
+  old_list.emplace_back(stays_the_same, base::string16());  // 0  (unchanged)
+  old_list.emplace_back(gets_deleted_1, base::string16());  // 1  (deleted)
+  old_list.emplace_back(gets_moved_1, base::string16());    // 2  (moved to 3)
 
   std::vector<MostVisitedURL> new_list;
-  AppendMostVisitedURL(stays_the_same, &new_list);  // 0  (unchanged)
-  AppendMostVisitedURL(gets_added_1, &new_list);    // 1  (added)
-  AppendMostVisitedURL(gets_added_2, &new_list);    // 2  (added)
-  AppendMostVisitedURL(gets_moved_1, &new_list);    // 3  (moved from 2)
+  new_list.emplace_back(stays_the_same, base::string16());  // 0  (unchanged)
+  new_list.emplace_back(gets_added_1, base::string16());    // 1  (added)
+  new_list.emplace_back(gets_added_2, base::string16());    // 2  (added)
+  new_list.emplace_back(gets_moved_1, base::string16());    // 3  (moved from 2)
 
   history::TopSitesDelta delta;
   TopSitesImpl::DiffMostVisited(old_list, new_list, &delta);
@@ -431,9 +381,8 @@ TEST_F(TopSitesImplTest, GetMostVisitedWithRedirect) {
   GURL www("https://www.cnn.com/");
   GURL edition("https://edition.cnn.com/");
 
-  AddPageToHistory(edition, base::ASCIIToUTF16("CNN"),
-                   history::RedirectList{bare, www, edition},
-                   base::Time::Now());
+  AddPageToHistory(edition, base::ASCIIToUTF16("CNN"), base::Time::Now(),
+                   history::RedirectList{bare, www, edition});
   AddPageToHistory(edition);
 
   StartQueryForMostVisited();
@@ -492,7 +441,6 @@ TEST_F(TopSitesImplTest, SaveToDB) {
   MostVisitedURL url2;
   url2.url = google_url;
   url2.title = google_title;
-  url2.redirects.push_back(url2.url);
 
   AddPageToHistory(url2.url, url2.title);
 
@@ -525,10 +473,9 @@ TEST_F(TopSitesImplTest, RealDatabase) {
 
   url.url = asdf_url;
   url.title = asdf_title;
-  url.redirects.push_back(url.url);
 
   base::Time add_time(base::Time::Now());
-  AddPageToHistory(url.url, url.title, url.redirects, add_time);
+  AddPageToHistory(url.url, url.title, add_time);
 
   RefreshTopSitesAndRecreate();
 
@@ -545,15 +492,16 @@ TEST_F(TopSitesImplTest, RealDatabase) {
   MostVisitedURL url2;
   url2.url = google3_url;
   url2.title = google_title;
-  url2.redirects.push_back(google1_url);
-  url2.redirects.push_back(google2_url);
-  url2.redirects.push_back(google3_url);
+  history::RedirectList url2_redirects;
+  url2_redirects.push_back(google1_url);
+  url2_redirects.push_back(google2_url);
+  url2_redirects.push_back(google3_url);
 
-  AddPageToHistory(google3_url, url2.title, url2.redirects,
-                   add_time - base::TimeDelta::FromMinutes(1));
+  AddPageToHistory(google3_url, url2.title,
+                   add_time - base::TimeDelta::FromMinutes(1), url2_redirects);
   // Add google twice so that it becomes the first visited site.
-  AddPageToHistory(google3_url, url2.title, url2.redirects,
-                   add_time - base::TimeDelta::FromMinutes(2));
+  AddPageToHistory(google3_url, url2.title,
+                   add_time - base::TimeDelta::FromMinutes(2), url2_redirects);
 
   RefreshTopSitesAndRecreate();
 
@@ -565,7 +513,6 @@ TEST_F(TopSitesImplTest, RealDatabase) {
     ASSERT_EQ(2u + GetPrepopulatedPages().size(), querier.urls().size());
     EXPECT_EQ(google1_url, querier.urls()[0].url);
     EXPECT_EQ(google_title, querier.urls()[0].title);
-    ASSERT_EQ(3u, querier.urls()[0].redirects.size());
 
     EXPECT_EQ(asdf_url, querier.urls()[1].url);
     EXPECT_EQ(asdf_title, querier.urls()[1].title);
@@ -687,10 +634,8 @@ TEST_F(TopSitesImplTest, NotifyCallbacksWhenLoaded) {
   MostVisitedURLList pages;
   MostVisitedURL url;
   url.url = GURL("http://1.com/");
-  url.redirects.push_back(url.url);
   pages.push_back(url);
   url.url = GURL("http://2.com/");
-  url.redirects.push_back(url.url);
   pages.push_back(url);
   SetTopSites(pages);
 
@@ -720,7 +665,6 @@ TEST_F(TopSitesImplTest, NotifyCallbacksWhenLoaded) {
 
   // Reset the top sites again, this time don't reload.
   url.url = GURL("http://3.com/");
-  url.redirects.push_back(url.url);
   pages.push_back(url);
   SetTopSites(pages);
 
@@ -774,10 +718,8 @@ TEST_F(TopSitesImplTest, BlacklistingWithoutPrepopulated) {
   MostVisitedURLList pages;
   MostVisitedURL url, url1;
   url.url = GURL("http://bbc.com/");
-  url.redirects.push_back(url.url);
   pages.push_back(url);
   url1.url = GURL("http://google.com/");
-  url1.redirects.push_back(url1.url);
   pages.push_back(url1);
 
   SetTopSites(pages);
@@ -838,10 +780,8 @@ TEST_F(TopSitesImplTest, BlacklistingWithPrepopulated) {
   MostVisitedURLList pages;
   MostVisitedURL url, url1;
   url.url = GURL("http://bbc.com/");
-  url.redirects.push_back(url.url);
   pages.push_back(url);
   url1.url = GURL("http://google.com/");
-  url1.redirects.push_back(url1.url);
   pages.push_back(url1);
 
   SetTopSites(pages);

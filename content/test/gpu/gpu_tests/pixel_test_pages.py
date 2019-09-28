@@ -37,7 +37,7 @@ class PixelTestPage(object):
   def __init__(self, url, name, test_rect, revision,
                tolerance=2, browser_args=None, expected_colors=None,
                gpu_process_disabled=False, optional_action=None,
-               other_args=None):
+               other_args=None, grace_period_end=None):
     super(PixelTestPage, self).__init__()
     self.url = url
     self.name = name
@@ -66,6 +66,12 @@ class PixelTestPage(object):
     # VideoPathTraceTest and OverlayModeTest support the following boolean
     # arguments: expect_yuy2, zero_copy, video_is_rotated, and no_overlay.
     self.other_args = other_args
+    # This allows a newly added test to be exempted from failures for a
+    # (hopefully) short period after being added. This is so that any slightly
+    # different but valid images that get produced by the waterfall bots can
+    # be triaged without turning the bots red.
+    # This should be a datetime.date object.
+    self.grace_period_end = grace_period_end
 
   def CopyWithNewBrowserArgsAndSuffix(self, browser_args, suffix):
     return PixelTestPage(
@@ -1768,6 +1774,7 @@ class PixelTestPages(object):
         test_rect=[0, 0, 240, 135],
         revision=0,
         browser_args=browser_args,
+        other_args={'no_overlay': True},
         tolerance=tolerance_dc),
 
       PixelTestPage(

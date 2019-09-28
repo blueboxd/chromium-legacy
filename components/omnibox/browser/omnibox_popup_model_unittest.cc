@@ -96,9 +96,6 @@ TEST_F(OmniboxPopupModelTest, SetSelectedLine) {
 }
 
 TEST_F(OmniboxPopupModelTest, PopupPositionChanging) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(omnibox::kOmniboxWrapPopupPosition);
-
   ACMatches matches;
   for (size_t i = 0; i < 3; ++i) {
     AutocompleteMatch match(nullptr, 1000, false,
@@ -115,28 +112,16 @@ TEST_F(OmniboxPopupModelTest, PopupPositionChanging) {
   result->SortAndCull(input, nullptr);
   popup_model()->OnResultChanged();
   EXPECT_EQ(0u, model()->popup_model()->selected_line());
-  model()->OnUpOrDownKeyPressed(1);
-  EXPECT_EQ(1u, model()->popup_model()->selected_line());
-  model()->OnUpOrDownKeyPressed(-1);
-  EXPECT_EQ(0u, model()->popup_model()->selected_line());
-  model()->OnUpOrDownKeyPressed(2);
-  EXPECT_EQ(2u, model()->popup_model()->selected_line());
-  // Cap at number of results.
-  model()->OnUpOrDownKeyPressed(2);
-  EXPECT_EQ(2u, model()->popup_model()->selected_line());
-  // Cap at 0 too.
-  model()->OnUpOrDownKeyPressed(-3);
-  EXPECT_EQ(0u, model()->popup_model()->selected_line());
-
-  feature_list.Reset();
-  feature_list.InitAndEnableFeature(omnibox::kOmniboxWrapPopupPosition);
-  // Test wrapping.
-  model()->OnUpOrDownKeyPressed(-1);
-  EXPECT_EQ(2u, model()->popup_model()->selected_line());
-  model()->OnUpOrDownKeyPressed(1);
-  EXPECT_EQ(0u, model()->popup_model()->selected_line());
-  model()->OnUpOrDownKeyPressed(1);
-  EXPECT_EQ(1u, model()->popup_model()->selected_line());
+  // Test moving and wrapping down.
+  for (size_t n : {1, 2, 0}) {
+    model()->OnUpOrDownKeyPressed(1);
+    EXPECT_EQ(n, model()->popup_model()->selected_line());
+  }
+  // And down.
+  for (size_t n : {2, 1, 0}) {
+    model()->OnUpOrDownKeyPressed(-1);
+    EXPECT_EQ(n, model()->popup_model()->selected_line());
+  }
 }
 
 TEST_F(OmniboxPopupModelTest, ComputeMatchMaxWidths) {

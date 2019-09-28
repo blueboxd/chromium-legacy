@@ -10899,6 +10899,7 @@ interface XR : EventTarget
     attribute @@toStringTag
     getter ondevicechange
     method constructor
+    method isSessionSupported
     method requestSession
     method supportsSession
     setter ondevicechange

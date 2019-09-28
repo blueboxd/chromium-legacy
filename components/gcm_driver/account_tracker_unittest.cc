@@ -345,7 +345,7 @@ void AccountTrackerTest::ReturnOAuthUrlFetchResults(
     const std::string& response_string) {
   EXPECT_TRUE(test_url_loader_factory()->SimulateResponseForPendingRequest(
       GURL(kOAuthURL), network::URLLoaderCompletionStatus(net::OK),
-      network::CreateResourceResponseHead(response_code), response_string));
+      network::CreateURLResponseHead(response_code), response_string));
 }
 
 void AccountTrackerTest::ReturnOAuthUrlFetchSuccess(

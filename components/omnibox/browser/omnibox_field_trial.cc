@@ -685,10 +685,6 @@ bool OmniboxFieldTrial::IsMaxURLMatchesFeatureEnabled() {
   return base::FeatureList::IsEnabled(omnibox::kOmniboxMaxURLMatches);
 }
 
-bool OmniboxFieldTrial::IsOmniboxWrapPopupPositionEnabled() {
-  return base::FeatureList::IsEnabled(omnibox::kOmniboxWrapPopupPosition);
-}
-
 bool OmniboxFieldTrial::IsOnDeviceHeadProviderEnabledForIncognito() {
   return base::GetFieldTrialParamByFeatureAsBool(omnibox::kOnDeviceHeadProvider,
                                                  "EnableForIncongnito", false);

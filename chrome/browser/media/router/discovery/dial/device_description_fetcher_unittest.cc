@@ -86,12 +86,12 @@ TEST_F(DeviceDescriptionFetcherTest, FetchSuccessful) {
   std::string body("<xml>description</xml>");
   EXPECT_CALL(*this, OnSuccess(DialDeviceDescriptionData(
                          body, GURL("http://127.0.0.1/apps"))));
-  network::ResourceResponseHead head;
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  head.headers->AddHeader("Application-URL: http://127.0.0.1/apps");
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  head->headers->AddHeader("Application-URL: http://127.0.0.1/apps");
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = body.size();
-  loader_factory_.AddResponse(url_, head, body, status);
+  loader_factory_.AddResponse(url_, std::move(head), body, status);
   StartRequest();
 }
 
@@ -99,19 +99,19 @@ TEST_F(DeviceDescriptionFetcherTest, FetchSuccessfulAppUrlWithTrailingSlash) {
   std::string body("<xml>description</xml>");
   EXPECT_CALL(*this, OnSuccess(DialDeviceDescriptionData(
                          body, GURL("http://127.0.0.1/apps"))));
-  network::ResourceResponseHead head;
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  head.headers->AddHeader("Application-URL: http://127.0.0.1/apps/");
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  head->headers->AddHeader("Application-URL: http://127.0.0.1/apps/");
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = body.size();
-  loader_factory_.AddResponse(url_, head, body, status);
+  loader_factory_.AddResponse(url_, std::move(head), body, status);
   StartRequest();
 }
 
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnMissingDescription) {
   EXPECT_CALL(*this, OnError(HasSubstr("404")));
   loader_factory_.AddResponse(
-      url_, network::ResourceResponseHead(), "",
+      url_, network::mojom::URLResponseHead::New(), "",
       network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
   StartRequest();
 }
@@ -121,42 +121,42 @@ TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnMissingAppUrl) {
   EXPECT_CALL(*this, OnError(HasSubstr("Missing or empty Application-URL:")));
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = body.size();
-  loader_factory_.AddResponse(url_, network::ResourceResponseHead(), body,
-                              status);
+  loader_factory_.AddResponse(url_, network::mojom::URLResponseHead::New(),
+                              body, status);
   StartRequest();
 }
 
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnEmptyAppUrl) {
   EXPECT_CALL(*this, OnError(HasSubstr("Missing or empty Application-URL:")));
   std::string body("<xml>description</xml>");
-  network::ResourceResponseHead head;
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  head.headers->AddHeader("Application-URL:");
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  head->headers->AddHeader("Application-URL:");
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = body.size();
-  loader_factory_.AddResponse(url_, head, body, status);
+  loader_factory_.AddResponse(url_, std::move(head), body, status);
   StartRequest();
 }
 
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnInvalidAppUrl) {
   EXPECT_CALL(*this, OnError(HasSubstr("Invalid Application-URL:")));
   std::string body("<xml>description</xml>");
-  network::ResourceResponseHead head;
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  head.headers->AddHeader("Application-URL: http://www.example.com");
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  head->headers->AddHeader("Application-URL: http://www.example.com");
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = body.size();
-  loader_factory_.AddResponse(url_, head, body, status);
+  loader_factory_.AddResponse(url_, std::move(head), body, status);
   StartRequest();
 }
 
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnEmptyDescription) {
   EXPECT_CALL(*this, OnError(HasSubstr("Missing or empty response")));
-  network::ResourceResponseHead head;
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  head.headers->AddHeader("Application-URL: http://127.0.0.1/apps");
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  head->headers->AddHeader("Application-URL: http://127.0.0.1/apps");
 
-  loader_factory_.AddResponse(url_, head, "",
+  loader_factory_.AddResponse(url_, std::move(head), "",
                               network::URLLoaderCompletionStatus());
   StartRequest();
 }
@@ -164,12 +164,12 @@ TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnEmptyDescription) {
 TEST_F(DeviceDescriptionFetcherTest, FetchFailsOnBadDescription) {
   EXPECT_CALL(*this, OnError(HasSubstr("Invalid response encoding")));
   std::string body("\xfc\x9c\xbf\x80\xbf\x80");
-  network::ResourceResponseHead head;
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  head.headers->AddHeader("Application-URL: http://127.0.0.1/apps");
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  head->headers->AddHeader("Application-URL: http://127.0.0.1/apps");
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = body.size();
-  loader_factory_.AddResponse(url_, head, body, status);
+  loader_factory_.AddResponse(url_, std::move(head), body, status);
   StartRequest();
 }
 

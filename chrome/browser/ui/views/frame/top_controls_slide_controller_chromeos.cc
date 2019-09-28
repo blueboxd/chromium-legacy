@@ -77,7 +77,7 @@ content::BrowserControlsState GetBrowserControlsStateConstraints(
 
   auto* helper = SecurityStateTabHelper::FromWebContents(contents);
   switch (helper->GetSecurityLevel()) {
-    case security_state::HTTP_SHOW_WARNING:
+    case security_state::WARNING:
     case security_state::DANGEROUS:
       return content::BROWSER_CONTROLS_STATE_SHOWN;
 

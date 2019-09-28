@@ -138,7 +138,10 @@ VizProcessContextProvider::~VizProcessContextProvider() {
     base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
         this);
   }
-  cache_controller_->SetGrContext(nullptr);
+
+  // cache_controller_ might ne nullptr if we failed to initialize
+  if (cache_controller_)
+    cache_controller_->SetGrContext(nullptr);
 }
 
 void VizProcessContextProvider::AddRef() const {

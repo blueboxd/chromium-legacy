@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequence_checker.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/util/memory_pressure/memory_pressure_voter.h"
 #include "chrome/browser/performance_manager/public/graph/graph.h"
@@ -32,12 +33,14 @@ class EnterpriseMemoryLimitEvaluator {
   void Start();
   void Stop();
 
-  std::unique_ptr<EnterpriseMemoryLimitEvaluator::GraphObserver>
-  StartForTesting();
+  std::unique_ptr<GraphObserver> StartForTesting();
   void StopForTesting();
 
   // Sets the limit against which the total resident set will be compared.
   void SetResidentSetLimitMb(uint64_t resident_set_limit_mb);
+
+  // Indicates if this evaluator is currently running.
+  bool IsRunning() const;
 
  private:
   // Called on the sequence that owns this object every time a new total RSS

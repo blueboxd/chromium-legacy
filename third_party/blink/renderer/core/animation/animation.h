@@ -257,8 +257,8 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   AnimationPlayState PlayStateInternal() const;
 
   double CurrentTimeInternal() const;
-  void SetCurrentTimeInternal(double new_current_time,
-                              TimingUpdateReason = kTimingUpdateOnDemand);
+  void SetCurrentTimeInternal(double new_current_time);
+  void SetCurrentTimeInternal(double new_current_time, TimingUpdateReason);
 
   void ClearOutdated();
   void ForceServiceOnNextFrame();
@@ -270,6 +270,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   // If there are no pending tasks, then the effective playback rate equals the
   // active playback rate.
   double EffectivePlaybackRate() const;
+  void ApplyPendingPlaybackRate();
   void ResolvePendingPlaybackRate();
 
   // https://drafts.csswg.org/web-animations/#play-states
@@ -316,11 +317,22 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   void RejectAndResetPromise(AnimationPromise*);
   void RejectAndResetPromiseMaybeAsync(AnimationPromise*);
 
+  // Updates the finished state of the animation. If the update is the result of
+  // a discontinuous time change then the value for current time is not bound by
+  // the limits of the animation. The finished notification may be synchronous
+  // or asynchronous. A synchronous notification is used in the case of
+  // explicitly calling finish on an animation.
+  enum class UpdateType { kContinuous, kDiscontinuous };
+  enum class NotificationType { kAsync, kSync };
+  void UpdateFinishedState(UpdateType update_context,
+                           NotificationType notification_type);
   void QueueFinishedEvent();
 
   void ResetPendingTasks();
   double TimelineTime() const;
   DocumentTimeline& TickingTimeline();
+
+  void CommitFinishNotification();
 
   // Tracking the state of animations in dev tools.
   void NotifyProbe();
@@ -349,6 +361,7 @@ class CORE_EXPORT Animation : public EventTargetWithInlineData,
   base::Optional<double> active_playback_rate_;
   base::Optional<double> start_time_;
   base::Optional<double> hold_time_;
+  base::Optional<double> previous_current_time_;
 
   unsigned sequence_number_;
 

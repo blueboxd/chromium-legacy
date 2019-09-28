@@ -174,10 +174,8 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   float device_dpi() const { return device_dpi_; }
   void set_device_dpi(float dpi) { device_dpi_ = dpi; }
 
-  display::PanelOrientation panel_orientation() const {
-    return panel_orientation_;
-  }
-  void set_panel_orientation(display::PanelOrientation panel_orientation) {
+  PanelOrientation panel_orientation() const { return panel_orientation_; }
+  void set_panel_orientation(PanelOrientation panel_orientation) {
     panel_orientation_ = panel_orientation;
   }
 
@@ -185,8 +183,13 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   // different from the |size_in_pixel| when overscan insets are set.
   const gfx::Rect& bounds_in_native() const { return bounds_in_native_; }
 
-  // The size for the display in pixels.
+  // The size for the display in pixels with the rotation taking into
+  // account.
   const gfx::Size& size_in_pixel() const { return size_in_pixel_; }
+
+  // The original size for the display in pixel, without rotation, but
+  // |panel_orientation_| taking into account.
+  gfx::Size GetSizeInPixelWithPanelOrientation() const;
 
   // The overscan insets for the display in DIP.
   const gfx::Insets& overscan_insets_in_dip() const {
@@ -199,6 +202,14 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
 
   // Returns the currently active rotation for this display.
   Display::Rotation GetActiveRotation() const;
+
+  // Returns the currently active rotation for this display with the panel
+  // orientation adjustment applied.
+  Display::Rotation GetLogicalActiveRotation() const;
+
+  // Returns the natural orientation rotation with the panel orientation
+  // adjustment applied.
+  Display::Rotation GetNaturalOrientationRotation() const;
 
   // Returns the source which set the active rotation for this display.
   Display::RotationSource active_rotation_source() const {
@@ -300,6 +311,10 @@ class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
   std::string ToFullString() const;
 
  private:
+  // Return the rotation with the panel orientation applied.
+  Display::Rotation GetRotationWithPanelOrientation(
+      Display::Rotation rotation) const;
+
   int64_t id_;
   std::string name_;
   std::string manufacturer_id_;

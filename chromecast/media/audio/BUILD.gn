@@ -23,6 +23,8 @@ cast_source_set("audio") {
     "cast_audio_mixer.h",
     "cast_audio_output_stream.cc",
     "cast_audio_output_stream.h",
+    "cma_audio_output_stream.cc",
+    "cma_audio_output_stream.h",
   ]
 
   deps = [

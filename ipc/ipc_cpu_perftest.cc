@@ -20,7 +20,8 @@
 #include "ipc/ipc_test_base.h"
 #include "mojo/core/test/mojo_test_base.h"
 #include "mojo/core/test/multiprocess_test_helper.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 
 namespace IPC {
@@ -276,7 +277,8 @@ class MojoSteadyPingPongTest : public mojo::core::test::MojoTestBase {
 
     mojo::MessagePipeHandle mp_handle(mp);
     mojo::ScopedMessagePipeHandle scoped_mp(mp_handle);
-    ping_receiver_.Bind(IPC::mojom::ReflectorPtrInfo(std::move(scoped_mp), 0u));
+    ping_receiver_.Bind(
+        mojo::PendingRemote<IPC::mojom::Reflector>(std::move(scoped_mp), 0u));
 
     LockThreadAffinity thread_locker(kSharedCore);
     std::vector<TestParams> params_list = GetDefaultTestParams();
@@ -293,7 +295,7 @@ class MojoSteadyPingPongTest : public mojo::core::test::MojoTestBase {
 
     ping_receiver_->Quit();
 
-    ignore_result(ping_receiver_.PassInterface().PassHandle().release());
+    ignore_result(ping_receiver_.Unbind().PassPipe().release());
   }
 
   void OnHello(const std::string& value) {
@@ -380,7 +382,7 @@ class MojoSteadyPingPongTest : public mojo::core::test::MojoTestBase {
   std::string label_;
   bool sync_ = false;
 
-  IPC::mojom::ReflectorPtr ping_receiver_;
+  mojo::Remote<IPC::mojom::Reflector> ping_receiver_;
 
   int count_down_ = 0;
   int frame_count_down_ = 0;

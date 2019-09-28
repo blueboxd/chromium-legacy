@@ -138,22 +138,22 @@ network::ResourceRequest CreateResourceRequest(const std::string& method,
 // depending on the on test type.
 class GetResult {
  public:
-  GetResult(const network::ResourceResponseHead& response, int result)
-      : resource_response_(response), result_(result) {}
+  GetResult(network::mojom::URLResponseHeadPtr response, int result)
+      : response_(std::move(response)), result_(result) {}
   GetResult(GetResult&& other) : result_(other.result_) {}
   ~GetResult() = default;
 
   std::string GetResponseHeaderByName(const std::string& name) const {
     std::string value;
-    if (resource_response_.headers)
-      resource_response_.headers->GetNormalizedHeader(name, &value);
+    if (response_ && response_->headers)
+      response_->headers->GetNormalizedHeader(name, &value);
     return value;
   }
 
   int result() const { return result_; }
 
  private:
-  const network::ResourceResponseHead resource_response_;
+  network::mojom::URLResponseHeadPtr response_;
   int result_;
 
   DISALLOW_COPY_AND_ASSIGN(GetResult);
@@ -277,7 +277,7 @@ class ExtensionProtocolsTestBase : public testing::Test {
     }
 
     client.RunUntilComplete();
-    return GetResult(client.response_head(),
+    return GetResult(client.response_head().Clone(),
                      client.completion_status().error_code);
   }
 

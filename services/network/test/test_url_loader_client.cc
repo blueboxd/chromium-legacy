@@ -7,6 +7,7 @@
 #include "base/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace network {
@@ -20,7 +21,7 @@ void TestURLLoaderClient::OnReceiveResponse(
   EXPECT_FALSE(has_received_cached_metadata_);
   EXPECT_FALSE(has_received_completion_);
   has_received_response_ = true;
-  response_head_ = response_head;
+  response_head_ = std::move(response_head);
   if (quit_closure_for_on_receive_response_)
     std::move(quit_closure_for_on_receive_response_).Run();
 }
@@ -36,7 +37,7 @@ void TestURLLoaderClient::OnReceiveRedirect(
   EXPECT_FALSE(has_received_completion_);
   has_received_redirect_ = true;
   redirect_info_ = redirect_info;
-  response_head_ = response_head;
+  response_head_ = std::move(response_head);
   if (quit_closure_for_on_receive_redirect_)
     std::move(quit_closure_for_on_receive_redirect_).Run();
 }

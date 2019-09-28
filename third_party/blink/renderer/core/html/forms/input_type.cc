@@ -76,7 +76,6 @@
 
 namespace blink {
 
-using blink::WebLocalizedString;
 using namespace html_names;
 
 using InputTypeFactoryFunction = InputType* (*)(HTMLInputElement&);
@@ -465,7 +464,7 @@ std::pair<String, String> InputType::ValidationMessage(
         candidate2 > step_range.Maximum()) {
       return std::make_pair(
           GetLocale().QueryString(
-              WebLocalizedString::kValidationStepMismatchCloseToLimit,
+              IDS_FORM_VALIDATION_STEP_MISMATCH_CLOSE_TO_LIMIT,
               localized_candidate1),
           g_empty_string);
     }

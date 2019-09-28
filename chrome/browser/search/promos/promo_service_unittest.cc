@@ -56,7 +56,7 @@ class PromoServiceTest : public testing::Test {
 
   void SetUpResponseWithNetworkError(const GURL& load_url) {
     test_url_loader_factory_.AddResponse(
-        load_url, network::ResourceResponseHead(), std::string(),
+        load_url, network::mojom::URLResponseHead::New(), std::string(),
         network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
   }
 

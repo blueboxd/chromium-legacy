@@ -231,11 +231,13 @@ class MockExternalUseClient : public ExternalUseClient {
   MockExternalUseClient() = default;
   MOCK_METHOD1(ReleaseImageContexts,
                void(std::vector<std::unique_ptr<ImageContext>> image_contexts));
-  MOCK_METHOD4(CreateImageContext,
-               std::unique_ptr<ImageContext>(const gpu::MailboxHolder&,
-                                             const gfx::Size&,
-                                             ResourceFormat,
-                                             sk_sp<SkColorSpace>));
+  MOCK_METHOD5(CreateImageContext,
+               std::unique_ptr<ImageContext>(
+                   const gpu::MailboxHolder&,
+                   const gfx::Size&,
+                   ResourceFormat,
+                   const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
+                   sk_sp<SkColorSpace>));
 };
 
 TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
@@ -275,14 +277,14 @@ TEST_P(DisplayResourceProviderTest, LockForExternalUse) {
 
   auto owned_image_context = std::make_unique<ExternalUseClient::ImageContext>(
       gpu::MailboxHolder(mailbox, sync_token1, GL_TEXTURE_2D), size, RGBA_8888,
-      /*color_space=*/nullptr);
+      /*ycbcr_info=*/base::nullopt, /*color_space=*/nullptr);
   auto* image_context = owned_image_context.get();
 
   testing::StrictMock<MockExternalUseClient> client;
   DisplayResourceProvider::LockSetForExternalUse lock_set(
       resource_provider_.get(), &client);
   gpu::MailboxHolder holder;
-  EXPECT_CALL(client, CreateImageContext(_, _, _, _))
+  EXPECT_CALL(client, CreateImageContext(_, _, _, _, _))
       .WillOnce(DoAll(SaveArg<0>(&holder),
                       Return(ByMove(std::move(owned_image_context)))));
 

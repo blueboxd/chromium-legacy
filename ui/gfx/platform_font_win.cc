@@ -649,4 +649,22 @@ PlatformFont* PlatformFont::CreateFromNameAndSize(const std::string& font_name,
   return new PlatformFontWin(font_name, font_size);
 }
 
+// static
+PlatformFont* PlatformFont::CreateFromSkTypeface(sk_sp<SkTypeface> typeface,
+                                                 int size) {
+  TRACE_EVENT0("fonts", "PlatformFont::CreateFromSkTypeface");
+  if (base::FeatureList::IsEnabled(kPlatformFontSkiaOnWindows))
+    return new PlatformFontSkia(typeface, size);
+
+  // This is a transitional code path until we complete migrating to
+  // PlatformFontSkia on Windows. Being unable to wrap the SkTypeface into a
+  // PlatformFontSkia and performing a rematching by font family name instead
+  // loses platform font handles encapsulated in SkTypeface, and in turn leads
+  // to instantiating a different font than what was returned by font fallback,
+  // compare https://crbug.com/1003829.
+  SkString family_name;
+  typeface->getFamilyName(&family_name);
+  return new PlatformFontWin(family_name.c_str(), size);
+}
+
 }  // namespace gfx

@@ -28,6 +28,7 @@
 #include "android_webview/browser/gfx/java_browser_view_renderer_helper.h"
 #include "android_webview/browser/gfx/render_thread_manager.h"
 #include "android_webview/browser/gfx/scoped_app_gl_state_restore.h"
+#include "android_webview/browser/page_load_metrics/page_load_metrics_initialize.h"
 #include "android_webview/browser/permission/aw_permission_request.h"
 #include "android_webview/browser/permission/permission_request_handler.h"
 #include "android_webview/browser/permission/simple_permission_request.h"
@@ -244,6 +245,8 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
   browser_view_renderer_.SetActiveFrameSinkId(frame_sink_id);
   render_view_host_ext_.reset(
       new AwRenderViewHostExt(this, web_contents_.get()));
+
+  InitializePageLoadMetricsForWebContents(web_contents_.get());
 
   permission_request_handler_.reset(
       new PermissionRequestHandler(this, web_contents_.get()));

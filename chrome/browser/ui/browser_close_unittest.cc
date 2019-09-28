@@ -269,7 +269,7 @@ TEST_F(BrowserCloseTest, LastRegular) {
   EXPECT_EQ(Browser::DownloadCloseType::kBrowserShutdown,
             browser->OkToCloseWithInProgressDownloads(&num_downloads_blocking));
   EXPECT_EQ(num_downloads_blocking, 1);
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   EXPECT_EQ(true, browser->CanCloseWithInProgressDownloads());
 #else
   EXPECT_EQ(false, browser->CanCloseWithInProgressDownloads());

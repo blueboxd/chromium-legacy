@@ -332,9 +332,16 @@ void CanvasResourceDispatcher::OnBeginFrame(
     return;
   }
 
-  if (Client())
-    Client()->BeginFrame();
-  // TODO(eseckler): Tell |sink_| if we did not draw during the BeginFrame.
+  // TODO(fserb): should EnqueueMicrotask BeginFrame().
+  // We usually never get to BeginFrame if we are on RAF mode. But it could
+  // still happen that begin frame gets requested and we don't have a frame
+  // anymore, so we shouldn't let the compositor wait.
+  bool submitted_frame = Client() && Client()->BeginFrame();
+  if (!submitted_frame) {
+    sink_->DidNotProduceFrame(current_begin_frame_ack_);
+  }
+
+  // TODO(fserb): Update this with the correct value if we are on RAF submit.
   current_begin_frame_ack_.sequence_number =
       viz::BeginFrameArgs::kInvalidFrameNumber;
 }

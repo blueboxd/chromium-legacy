@@ -558,7 +558,7 @@ void GCMClientImplTest::CompleteCheckinImpl(
   EXPECT_TRUE(url_loader_factory()->SimulateResponseForPendingRequest(
       gservices_settings().GetCheckinURL(),
       network::URLLoaderCompletionStatus(net::OK),
-      network::CreateResourceResponseHead(response_code), response_string));
+      network::CreateURLResponseHead(response_code), response_string));
   // Give a chance for GCMStoreImpl::Backend to finish persisting data.
   PumpLoopUntilIdle();
 }
@@ -570,7 +570,7 @@ void GCMClientImplTest::CompleteRegistration(
 
   EXPECT_TRUE(url_loader_factory()->SimulateResponseForPendingRequest(
       GURL(kRegisterUrl), network::URLLoaderCompletionStatus(net::OK),
-      network::CreateResourceResponseHead(net::HTTP_OK), response));
+      network::CreateURLResponseHead(net::HTTP_OK), response));
 
   // Give a chance for GCMStoreImpl::Backend to finish persisting data.
   PumpLoopUntilIdle();
@@ -583,7 +583,7 @@ void GCMClientImplTest::CompleteUnregistration(
 
   EXPECT_TRUE(url_loader_factory()->SimulateResponseForPendingRequest(
       GURL(kRegisterUrl), network::URLLoaderCompletionStatus(net::OK),
-      network::CreateResourceResponseHead(net::HTTP_OK), response));
+      network::CreateURLResponseHead(net::HTTP_OK), response));
 
   // Give a chance for GCMStoreImpl::Backend to finish persisting data.
   PumpLoopUntilIdle();
@@ -1692,7 +1692,7 @@ void GCMClientInstanceIDTest::CompleteDeleteToken() {
 
   EXPECT_TRUE(url_loader_factory()->SimulateResponseForPendingRequest(
       GURL(kRegisterUrl), network::URLLoaderCompletionStatus(net::OK),
-      network::CreateResourceResponseHead(net::HTTP_OK), response));
+      network::CreateURLResponseHead(net::HTTP_OK), response));
 
   // Give a chance for GCMStoreImpl::Backend to finish persisting data.
   PumpLoopUntilIdle();

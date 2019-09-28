@@ -10,6 +10,7 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/blink/public/mojom/frame_sinks/embedded_frame_sink.mojom-blink.h"
+#include "third_party/blink/renderer/bindings/core/v8/v8_binding_for_testing.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/core/frame/frame_test_helpers.h"
@@ -67,7 +68,7 @@ class HTMLCanvasElementModuleTest : public ::testing::Test,
   HTMLCanvasElement& canvas_element() const { return *canvas_element_; }
   OffscreenCanvas* TransferControlToOffscreen(ExceptionState& exception_state) {
     return HTMLCanvasElementModule::TransferControlToOffscreenInternal(
-        canvas_element(), exception_state);
+        &GetDocument(), canvas_element(), exception_state);
   }
 
   frame_test_helpers::WebViewHelper web_view_helper_;

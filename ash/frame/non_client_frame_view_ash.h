@@ -9,7 +9,6 @@
 
 #include "ash/ash_export.h"
 #include "ash/frame/header_view.h"
-#include "ash/public/cpp/split_view.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "base/macros.h"
 #include "base/optional.h"

@@ -4,6 +4,8 @@
 
 #include "ash/wm/overview/overview_highlight_controller.h"
 
+#include "ash/magnifier/docked_magnifier_controller_impl.h"
+#include "ash/magnifier/magnification_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
@@ -177,6 +179,11 @@ bool OverviewHighlightController::OverviewHighlightableView::
       Shell::Get()->overview_controller()->overview_session();
   DCHECK(overview_session);
   return overview_session->highlight_controller()->highlighted_view_ == this;
+}
+
+gfx::Point OverviewHighlightController::OverviewHighlightableView::
+    GetMagnifierFocusPointInScreen() {
+  return GetHighlightBoundsInScreen().CenterPoint();
 }
 
 // -----------------------------------------------------------------------------
@@ -376,8 +383,24 @@ void OverviewHighlightController::UpdateFocusWidget(
 
   OverviewHighlightableView* previous_view = highlighted_view_;
   highlighted_view_ = view_to_be_highlighted;
+
+  // Perform accessiblity related tasks.
   highlighted_view_->GetView()->NotifyAccessibilityEvent(
       ax::mojom::Event::kSelection, true);
+  // Note that both magnifiers are mutually exclusive. The overview "focus"
+  // works differently from regular focusing so we need to update the magnifier
+  // manually here.
+  DockedMagnifierControllerImpl* docked_magnifier =
+      Shell::Get()->docked_magnifier_controller();
+  MagnificationController* fullscreen_magnifier =
+      Shell::Get()->magnification_controller();
+  const gfx::Point point_of_interest =
+      highlighted_view_->GetMagnifierFocusPointInScreen();
+  if (docked_magnifier->GetEnabled())
+    docked_magnifier->CenterOnPoint(point_of_interest);
+  else if (fullscreen_magnifier->IsEnabled())
+    fullscreen_magnifier->CenterOnPoint(point_of_interest);
+
   if (previous_view)
     previous_view->OnViewUnhighlighted();
 

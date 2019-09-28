@@ -6,69 +6,54 @@
 #define CHROME_BROWSER_PASSWORD_MANAGER_TOUCH_TO_FILL_CONTROLLER_H_
 
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/containers/span.h"
 #include "base/memory/weak_ptr.h"
-#include "base/util/type_safety/pass_key.h"
-#include "chrome/browser/autofill/accessory_controller.h"
+#include "chrome/browser/touch_to_fill/touch_to_fill_view.h"
+#include "chrome/browser/touch_to_fill/touch_to_fill_view_factory.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
 class WebContents;
-}
+}  // namespace content
 
 namespace password_manager {
 class PasswordManagerDriver;
 struct CredentialPair;
 }  // namespace password_manager
 
-class ManualFillingController;
-class TouchToFillControllerTest;
-
-class TouchToFillController
-    : public base::SupportsWeakPtr<TouchToFillController>,
-      public AccessoryController {
+class TouchToFillController {
  public:
   explicit TouchToFillController(content::WebContents* web_contents);
-  // Explicitly set the ManualFillingController in unit tests.
-  explicit TouchToFillController(
-      base::WeakPtr<ManualFillingController> mf_controller,
-      util::PassKey<TouchToFillControllerTest>);
-  ~TouchToFillController() override;
+  TouchToFillController(const TouchToFillController&) = delete;
+  TouchToFillController& operator=(const TouchToFillController&) = delete;
+  ~TouchToFillController();
 
   // Instructs the controller to show the provided |credentials| to the user.
   // Invokes FillSuggestion() on |driver| once the user made a selection.
   void Show(base::span<const password_manager::CredentialPair> credentials,
             base::WeakPtr<password_manager::PasswordManagerDriver> driver);
 
-  // AccessoryController:
-  void OnFillingTriggered(const autofill::UserInfo::Field& selection) override;
-  void OnOptionSelected(autofill::AccessoryAction selected_action) override;
-
   // The web page view containing the focused field.
   gfx::NativeView GetNativeView();
 
- private:
-  // Lazy-initializes and returns the ManualFillingController for the current
-  // |web_contents_|. The lazy initialization is required to break a circular
-  // dependency between the constructors of the TouchToFillController and
-  // ManualFillingController.
-  ManualFillingController* GetManualFillingController();
+#if defined(UNIT_TEST)
+  void set_view(std::unique_ptr<TouchToFillView> view) {
+    view_ = std::move(view);
+  }
+#endif
 
-  // The tab for which this class is scoped.
+ private:
+  // Weak pointer to the current WebContents. This is safe because the lifetime
+  // of this class is tied to ChromePasswordManagerClient, which implements
+  // WebContentsUserData.
   content::WebContents* web_contents_ = nullptr;
 
-  // The manual filling controller object to forward client requests to.
-  // TODO(crbug.com/957532): Make TouchToFillController independent of the
-  // ManualFillingController.
-  base::WeakPtr<ManualFillingController> mf_controller_;
-
-  // Credentials passed from the latest invocation of Show().
-  std::vector<password_manager::CredentialPair> credentials_;
-
-  // Driver passed from the latest invocation of Show().
-  base::WeakPtr<password_manager::PasswordManagerDriver> driver_;
+  // View used to communicate with the Android frontend. Lazily instantiated so
+  // that it can be injected by tests.
+  std::unique_ptr<TouchToFillView> view_;
 };
 
 #endif  // CHROME_BROWSER_PASSWORD_MANAGER_TOUCH_TO_FILL_CONTROLLER_H_

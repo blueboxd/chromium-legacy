@@ -9,7 +9,7 @@ gn_args=var1=true var2="foo"
 linker_name=gold
 map_file_name=../../../test.map
 tool_prefix=tools/binary_size/libsupersize/testdata/mock_toolchain/
-Section .text: has 0.2% of 83792 bytes accounted for from 21 symbols. 35816920 bytes are unaccounted for.
+Section .text: has 0.2% of 83792 bytes accounted for from 21 symbols. 35898456 bytes are unaccounted for.
 * Padding accounts for 13808 bytes (16.5%)
 * 16 have source paths. Accounts for 73986 bytes (88.3%).
 * 16 have a component assigned. Accounts for 73986 bytes (88.3%).
@@ -71,8 +71,8 @@ Section .pak.nontranslated: has 100.0% of 737 bytes accounted for from 3 symbols
 * 0 have source paths. Accounts for 0 bytes (0.0%).
 * 0 have a component assigned. Accounts for 0 bytes (0.0%).
 * 0 symbols have shared ownership.
-Section .other: has 100.0% of 39228839 bytes accounted for from 5 symbols. 0 bytes are unaccounted for.
-* Padding accounts for 33984935 bytes (86.6%)
+Section .other: has 100.0% of 39147303 bytes accounted for from 5 symbols. 0 bytes are unaccounted for.
+* Padding accounts for 33903399 bytes (86.6%)
 * 3 have source paths. Accounts for 5243904 bytes (13.4%).
 * 1 have a component assigned. Accounts for 1048576 bytes (2.7%).
 * 0 symbols have shared ownership.
@@ -287,7 +287,7 @@ Section .other: has 100.0% of 39228839 bytes accounted for from 5 symbols. 0 byt
 .other@0(size_without_padding=1048576,padding=0,full_name=assets/icudtl.dat,object_path=,source_path=third_party/icu/android/icudtl.dat,flags={},num_aliases=1,component=Internal>Android)
 .other@0(size_without_padding=1024,padding=0,full_name=res/drawable-v13/test.xml,object_path=,source_path=chrome/android/res/drawable/test.xml,flags={},num_aliases=1,component=)
 .other@0(size_without_padding=0,padding=764,full_name=Overhead: APK file,object_path=,source_path=,flags={},num_aliases=1,component=)
-.other@0(size_without_padding=0,padding=33984171,full_name=Overhead: ELF file,object_path=,source_path=,flags={},num_aliases=1,component=)
+.other@0(size_without_padding=0,padding=33902635,full_name=Overhead: ELF file,object_path=,source_path=,flags={},num_aliases=1,component=)
 .rodata@266e600(size_without_padding=5,padding=0,full_name="Str1",object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={},num_aliases=2,component=Blink>Internal)
 .rodata@266e600(size_without_padding=5,padding=0,full_name="Str1",object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=2,component=Internal>Android)
 .rodata@266e605(size_without_padding=16,padding=0,full_name="String literal2",object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=1,component=Internal>Android)

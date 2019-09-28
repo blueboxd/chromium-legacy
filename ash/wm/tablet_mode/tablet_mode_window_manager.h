@@ -12,11 +12,11 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/split_view.h"
 #include "ash/session/session_observer.h"
 #include "ash/wm/mru_window_tracker.h"
 #include "ash/wm/overview/overview_observer.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_observer.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "ui/aura/window_observer.h"
@@ -83,8 +83,8 @@ class ASH_EXPORT TabletModeWindowManager : public aura::WindowObserver,
   void OnOverviewModeEndingAnimationComplete(bool canceled) override;
 
   // SplitViewObserver:
-  void OnSplitViewStateChanged(SplitViewState previous_state,
-                               SplitViewState state) override;
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;

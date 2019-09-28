@@ -20,6 +20,7 @@
 #include "third_party/blink/renderer/core/html/canvas/image_data.h"
 #include "third_party/blink/renderer/core/imagebitmap/image_bitmap.h"
 #include "third_party/blink/renderer/core/workers/dedicated_worker_global_scope.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_dispatcher.h"
 #include "third_party/blink/renderer/platform/graphics/canvas_resource_provider.h"
 #include "third_party/blink/renderer/platform/graphics/gpu/shared_gpu_context.h"
@@ -34,17 +35,20 @@
 
 namespace blink {
 
-OffscreenCanvas::OffscreenCanvas(const IntSize& size)
+OffscreenCanvas::OffscreenCanvas(ExecutionContext* context, const IntSize& size)
     : CanvasRenderingContextHost(
           CanvasRenderingContextHost::HostType::kOffscreenCanvasHost),
+      execution_context_(context),
       size_(size) {
   UpdateMemoryUsage();
 }
 
-OffscreenCanvas* OffscreenCanvas::Create(unsigned width, unsigned height) {
+OffscreenCanvas* OffscreenCanvas::Create(ExecutionContext* context,
+                                         unsigned width,
+                                         unsigned height) {
   UMA_HISTOGRAM_BOOLEAN("Blink.OffscreenCanvas.NewOffscreenCanvas", true);
   return MakeGarbageCollected<OffscreenCanvas>(
-      IntSize(clampTo<int>(width), clampTo<int>(height)));
+      context, IntSize(clampTo<int>(width), clampTo<int>(height)));
 }
 
 OffscreenCanvas::~OffscreenCanvas() {
@@ -76,6 +80,10 @@ void OffscreenCanvas::Dispose() {
     context_ = nullptr;
   }
 
+  DeregisterFromAnimationFrameProvider();
+}
+
+void OffscreenCanvas::DeregisterFromAnimationFrameProvider() {
   if (HasPlaceholderCanvas() && GetTopExecutionContext() &&
       GetTopExecutionContext()->IsDedicatedWorkerGlobalScope()) {
     WorkerAnimationFrameProvider* animation_frame_provider =
@@ -93,6 +101,7 @@ void OffscreenCanvas::SetPlaceholderCanvasId(DOMNodeId canvas_id) {
     WorkerAnimationFrameProvider* animation_frame_provider =
         To<DedicatedWorkerGlobalScope>(GetTopExecutionContext())
             ->GetAnimationFrameProvider();
+    DCHECK(animation_frame_provider);
     if (animation_frame_provider)
       animation_frame_provider->RegisterOffscreenCanvas(this);
   }
@@ -111,25 +120,30 @@ void OffscreenCanvas::setHeight(unsigned height) {
 }
 
 void OffscreenCanvas::SetSize(const IntSize& size) {
+  // Setting size of a canvas also resets it.
+  if (size == size_) {
+    if (context_ && context_->Is2d()) {
+      context_->Reset();
+      origin_clean_ = true;
+    }
+    return;
+  }
+
+  size_ = size;
+  UpdateMemoryUsage();
+  current_frame_damage_rect_ = SkIRect::MakeWH(size_.Width(), size_.Height());
+
+  if (frame_dispatcher_)
+    frame_dispatcher_->Reshape(size_);
   if (context_) {
     if (context_->Is3d()) {
-      if (size != size_)
-        context_->Reshape(size.Width(), size.Height());
+      context_->Reshape(size_.Width(), size_.Height());
     } else if (context_->Is2d()) {
       context_->Reset();
       origin_clean_ = true;
     }
-  }
-  if (size != size_) {
-    UpdateMemoryUsage();
-  }
-  size_ = size;
-  if (frame_dispatcher_)
-    frame_dispatcher_->Reshape(size_);
-
-  current_frame_damage_rect_ = SkIRect::MakeWH(size_.Width(), size_.Height());
-  if (context_)
     context_->DidDraw();
+  }
 }
 
 void OffscreenCanvas::RecordTransfer() {
@@ -141,6 +155,7 @@ void OffscreenCanvas::SetNeutered() {
   is_neutered_ = true;
   size_.SetWidth(0);
   size_.SetHeight(0);
+  DeregisterFromAnimationFrameProvider();
 }
 
 ImageBitmap* OffscreenCanvas::transferToImageBitmap(
@@ -213,8 +228,7 @@ CanvasRenderingContext* OffscreenCanvas::GetCanvasRenderingContext(
     ExecutionContext* execution_context,
     const String& id,
     const CanvasContextCreationAttributesCore& attributes) {
-  execution_context_ = execution_context;
-
+  DCHECK_EQ(execution_context, GetTopExecutionContext());
   CanvasRenderingContext::ContextType context_type =
       CanvasRenderingContext::ContextTypeFromId(id);
 
@@ -396,16 +410,17 @@ void OffscreenCanvas::DidDraw(const FloatRect& rect) {
   }
 }
 
-void OffscreenCanvas::BeginFrame() {
+bool OffscreenCanvas::BeginFrame() {
   DCHECK(HasPlaceholderCanvas());
-  PushFrameIfNeeded();
   GetOrCreateResourceDispatcher()->SetNeedsBeginFrame(false);
+  return PushFrameIfNeeded();
 }
 
-void OffscreenCanvas::PushFrameIfNeeded() {
+bool OffscreenCanvas::PushFrameIfNeeded() {
   if (needs_push_frame_ && context_) {
-    context_->PushFrame();
+    return context_->PushFrame();
   }
+  return false;
 }
 
 bool OffscreenCanvas::ShouldAccelerate2dContext() const {
@@ -415,19 +430,21 @@ bool OffscreenCanvas::ShouldAccelerate2dContext() const {
          context_provider_wrapper->Utils()->Accelerated2DCanvasFeatureEnabled();
 }
 
-void OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
+bool OffscreenCanvas::PushFrame(scoped_refptr<CanvasResource> canvas_resource,
                                 const SkIRect& damage_rect) {
+  TRACE_EVENT0("blink", "OffscreenCanvas::PushFrame");
   DCHECK(needs_push_frame_);
   needs_push_frame_ = false;
   current_frame_damage_rect_.join(damage_rect);
   if (current_frame_damage_rect_.isEmpty() || !canvas_resource)
-    return;
+    return false;
   const base::TimeTicks commit_start_time = base::TimeTicks::Now();
   GetOrCreateResourceDispatcher()->DispatchFrame(
       std::move(canvas_resource), commit_start_time, current_frame_damage_rect_,
       !RenderingContext()->IsOriginTopLeft() /* needs_vertical_flip */,
       IsOpaque());
   current_frame_damage_rect_ = SkIRect::MakeEmpty();
+  return true;
 }
 
 FontSelector* OffscreenCanvas::GetFontSelector() {

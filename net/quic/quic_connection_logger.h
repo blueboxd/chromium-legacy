@@ -71,6 +71,9 @@ class NET_EXPORT_PRIVATE QuicConnectionLogger
   void OnPacketHeader(const quic::QuicPacketHeader& header) override;
   void OnCryptoFrame(const quic::QuicCryptoFrame& frame) override;
   void OnStopSendingFrame(const quic::QuicStopSendingFrame& frame) override;
+  void OnStreamsBlockedFrame(
+      const quic::QuicStreamsBlockedFrame& frame) override;
+  void OnMaxStreamsFrame(const quic::QuicMaxStreamsFrame& frame) override;
   void OnStreamFrame(const quic::QuicStreamFrame& frame) override;
   void OnStopWaitingFrame(const quic::QuicStopWaitingFrame& frame) override;
   void OnRstStreamFrame(const quic::QuicRstStreamFrame& frame) override;

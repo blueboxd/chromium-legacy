@@ -24,8 +24,8 @@ cr.define('debug_log_page', function() {
        */
       this.debugLogsChangeHandler_ = null;
 
-      /** @private {?CrToggleElement} */
-      this.toggleElement_ = null;
+      /** @private {?HTMLInputElement} */
+      this.inputElement_ = null;
 
       /** @private {!HTMLDivElement} */
       this.debugContainer_ =
@@ -33,7 +33,7 @@ cr.define('debug_log_page', function() {
 
       bluetoothInternalsHandler.getDebugLogsChangeHandler().then((params) => {
         if (params.handler) {
-          this.setUpToggle(params.handler, params.initialToggleValue);
+          this.setUpInput(params.handler, params.initialToggleValue);
         } else {
           this.debugContainer_.textContent = LOGS_NOT_SUPPORTED_STRING;
         }
@@ -42,22 +42,23 @@ cr.define('debug_log_page', function() {
 
     /**
      * @param {!mojom.DebugLogsChangeHandlerRemote} handler
-     * @param {boolean} initialToggleValue
+     * @param {boolean} initialInputValue
      */
-    setUpToggle(handler, initialToggleValue) {
+    setUpInput(handler, initialInputValue) {
       this.debugLogsChangeHandler_ = handler;
 
-      this.toggleElement_ =
-          /** @type {!CrToggleElement} */ (document.createElement('cr-toggle'));
-      this.toggleElement_.checked = initialToggleValue;
-      this.toggleElement_.addEventListener(
+      this.inputElement_ =
+          /** @type {!HTMLInputElement} */ (document.createElement('input'));
+      this.inputElement_.setAttribute('type', 'checkbox');
+      this.inputElement_.checked = initialInputValue;
+      this.inputElement_.addEventListener(
           'change', this.onToggleChange.bind(this));
-      this.debugContainer_.appendChild(this.toggleElement_);
+      this.debugContainer_.appendChild(this.inputElement_);
     }
 
     onToggleChange() {
       this.debugLogsChangeHandler_.changeDebugLogsState(
-          this.toggleElement_.checked);
+          this.inputElement_.checked);
     }
   }
 

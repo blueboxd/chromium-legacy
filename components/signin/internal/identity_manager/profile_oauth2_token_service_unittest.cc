@@ -423,11 +423,10 @@ TEST_F(ProfileOAuth2TokenServiceTest,
   base::RunLoop().RunUntilIdle();
 
   network::URLLoaderCompletionStatus ok_status(net::OK);
-  network::ResourceResponseHead response_head =
-      network::CreateResourceResponseHead(net::HTTP_OK);
+  auto response_head = network::CreateURLResponseHead(net::HTTP_OK);
   EXPECT_TRUE(test_url_loader_factory_->SimulateResponseForPendingRequest(
-      GaiaUrls::GetInstance()->oauth2_token_url(), ok_status, response_head,
-      GetValidTokenResponse("second token", 3600),
+      GaiaUrls::GetInstance()->oauth2_token_url(), ok_status,
+      std::move(response_head), GetValidTokenResponse("second token", 3600),
       network::TestURLLoaderFactory::kMostRecentMatch));
   EXPECT_EQ(1, consumer2.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer2.number_of_errors_);
@@ -498,11 +497,10 @@ TEST_F(ProfileOAuth2TokenServiceTest, StartRequestForMultiloginMobile) {
 
   base::RunLoop().RunUntilIdle();
   network::URLLoaderCompletionStatus ok_status(net::OK);
-  network::ResourceResponseHead response_head =
-      network::CreateResourceResponseHead(net::HTTP_OK);
+  auto response_head = network::CreateURLResponseHead(net::HTTP_OK);
   EXPECT_TRUE(test_url_loader_factory_->SimulateResponseForPendingRequest(
-      GaiaUrls::GetInstance()->oauth2_token_url(), ok_status, response_head,
-      GetValidTokenResponse("second token", 3600),
+      GaiaUrls::GetInstance()->oauth2_token_url(), ok_status,
+      std::move(response_head), GetValidTokenResponse("second token", 3600),
       network::TestURLLoaderFactory::kMostRecentMatch));
   EXPECT_EQ(1, consumer_.number_of_successful_tokens_);
   EXPECT_EQ(0, consumer_.number_of_errors_);

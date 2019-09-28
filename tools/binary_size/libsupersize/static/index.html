@@ -191,13 +191,17 @@ function setSubmitListener(form, fetchDataUrl) {
     return channel == 'stable/beta';
   }
 
+  function fmtCpuApk(cpu, apk) {
+    return cpu + '/' + apk;
+  }
+
   function cpuApkPairs(cpus, apks) {
     let out = [];
     for (let cpu of cpus) {
       for (let apk of apks) {
         // Chrome.apk not available for arm_64
         if(!(cpu == 'arm_64' && apk == 'Chrome.apk')) {
-          out.push(cpu + '/' + apk);
+          out.push(fmtCpuApk(cpu, apk));
         }
       }
     }
@@ -215,7 +219,7 @@ function setSubmitListener(form, fetchDataUrl) {
         // Can safely discard minimal apks - as of 16-Sep-2019 there was only
         // one entry with an attached Monochrome.minimal apk, assumed bug
         if (apk === 'Monochrome.minimal.apks') apk = 'Monochrome.apk';
-        return a.cpu + '/' + apk;
+        return fmtCpuApk(a.cpu, a.apk);
       }
       ))];
     }
@@ -231,20 +235,22 @@ function setSubmitListener(form, fetchDataUrl) {
     }
   }
 
-/*
- * @param {bool} swapping: True if this is driven by a canary <-> stable change
- */
   function updateVersions() {
+    const prev = selVersion1.value;
     let versions = [];
     if (channelIsMilestone()) {
       // For the selected APK
       versions = milestonesPushed.version;
     } else {
-      versions = officialBuildsPushed.map(a => a.version);
+      versions = (officialBuildsPushed
+        .filter(a => fmtCpuApk(a.cpu, a.apk) == selApk.value)
+        .map(a => a.version));
     }
     selVersion1.innerHTML = '';
     selVersion1.appendChild(buildOptions(versions));
-    selectOption(selVersion1.querySelectorAll('option'), -1);
+    // Selects latest version (index -1) if previous option not still in list.
+    selectOption(selVersion1.querySelectorAll('option'),
+                 versions.indexOf(prev));
   }
 
   function updateDiffVersions() {
@@ -267,12 +273,17 @@ function setSubmitListener(form, fetchDataUrl) {
   updateVersions();
   updateDiffVersions();
 
+  selApk.addEventListener('change', () => {
+    updateVersions();
+  });
+
   const selChannels = document.getElementsByName('mode');
   for(let i=0; i < selChannels.length; i++) {
     selChannels[i].addEventListener('click', () => {
       updateSubmitButton();
       updateApk();
       updateVersions();
+      selectOption(selVersion1.querySelectorAll('option'), -1);
       updateDiffVersions();
     });
   }

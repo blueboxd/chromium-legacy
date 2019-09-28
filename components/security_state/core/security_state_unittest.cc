@@ -224,27 +224,27 @@ TEST(SecurityStateTest, MalwareWithoutConnectionState) {
   EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
-// Tests that pseudo URLs always cause an HTTP_SHOW_WARNING to be shown.
+// Tests that pseudo URLs always cause an WARNING to be shown.
 TEST(SecurityStateTest, AlwaysWarnOnDataUrls) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kDataUrl));
-  EXPECT_EQ(HTTP_SHOW_WARNING, helper.GetSecurityLevel());
+  EXPECT_EQ(WARNING, helper.GetSecurityLevel());
 }
 
-// Tests that FTP URLs always cause an HTTP_SHOW_WARNING to be shown.
+// Tests that FTP URLs always cause an WARNING to be shown.
 TEST(SecurityStateTest, AlwaysWarnOnFtpUrls) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL(kFtpUrl));
-  EXPECT_EQ(HTTP_SHOW_WARNING, helper.GetSecurityLevel());
+  EXPECT_EQ(WARNING, helper.GetSecurityLevel());
 }
 
-// Tests that the security level is downgraded to HTTP_SHOW_WARNING on pseudo
-// URLs.
+// Tests that the security level is downgraded to WARNING on
+// pseudo URLs.
 TEST(SecurityStateTest, WarningOnPseudoUrls) {
   for (const char* const url : kPseudoUrls) {
     TestSecurityStateHelper helper;
     helper.SetUrl(GURL(url));
-    EXPECT_EQ(HTTP_SHOW_WARNING, helper.GetSecurityLevel());
+    EXPECT_EQ(WARNING, helper.GetSecurityLevel());
   }
 }
 
@@ -308,7 +308,7 @@ TEST(SecurityStateTest, MixedContentWithPolicyCertificate) {
   EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
-// Tests that HTTP_SHOW_WARNING is set on normal http pages but DANGEROUS on
+// Tests that WARNING is set on normal http pages but DANGEROUS on
 // form edits with default feature enabled.
 TEST(SecurityStateTest, WarningAndDangerousOnFormEditsWhenFeatureEnabled) {
   TestSecurityStateHelper helper;
@@ -317,13 +317,13 @@ TEST(SecurityStateTest, WarningAndDangerousOnFormEditsWhenFeatureEnabled) {
   scoped_feature_list.InitAndEnableFeature(
       security_state::features::kMarkHttpAsFeature);
 
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper.GetSecurityLevel());
+  EXPECT_EQ(security_state::WARNING, helper.GetSecurityLevel());
 
   helper.set_insecure_field_edit(true);
   EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
 }
 
-// Tests that HTTP_SHOW_WARNING is set on normal http pages but DANGEROUS on
+// Tests that WARNING is set on normal http pages but DANGEROUS on
 // form edits with default feature disabled.
 TEST(SecurityStateTest, WarningAndDangerousOnFormEditsWhenFeatureDisabled) {
   TestSecurityStateHelper helper;
@@ -332,7 +332,7 @@ TEST(SecurityStateTest, WarningAndDangerousOnFormEditsWhenFeatureDisabled) {
   scoped_feature_list.InitAndDisableFeature(
       security_state::features::kMarkHttpAsFeature);
 
-  EXPECT_EQ(HTTP_SHOW_WARNING, helper.GetSecurityLevel());
+  EXPECT_EQ(WARNING, helper.GetSecurityLevel());
 
   helper.set_insecure_field_edit(true);
   EXPECT_EQ(DANGEROUS, helper.GetSecurityLevel());
@@ -383,10 +383,10 @@ TEST(SecurityStateTest, SslCertificateValid) {
 
   EXPECT_FALSE(IsSslCertificateValid(SecurityLevel::NONE));
   EXPECT_FALSE(IsSslCertificateValid(SecurityLevel::DANGEROUS));
-  EXPECT_FALSE(IsSslCertificateValid(SecurityLevel::HTTP_SHOW_WARNING));
+  EXPECT_FALSE(IsSslCertificateValid(SecurityLevel::WARNING));
 }
 
-// Tests that HTTP_SHOW_WARNING is not set for error pages.
+// Tests that WARNING is not set for error pages.
 TEST(SecurityStateTest, ErrorPage) {
   TestSecurityStateHelper helper;
   helper.SetUrl(GURL("http://nonexistent.test"));
@@ -396,7 +396,7 @@ TEST(SecurityStateTest, ErrorPage) {
   // Sanity-check that if it's not an error page, the security level is
   // downgraded.
   helper.set_is_error_page(false);
-  EXPECT_EQ(SecurityLevel::HTTP_SHOW_WARNING, helper.GetSecurityLevel());
+  EXPECT_EQ(SecurityLevel::WARNING, helper.GetSecurityLevel());
 }
 
 // Tests that the billing status is set, and it overrides valid HTTPS.
@@ -420,7 +420,7 @@ TEST(SecurityStateTest, BillingOverridesHTTPWarning) {
   helper.SetUrl(GURL(kHttpUrl));
 
   // Expect to see a warning for HTTP first.
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper.GetSecurityLevel());
+  EXPECT_EQ(security_state::WARNING, helper.GetSecurityLevel());
 
   // Now mark the URL as matching the billing list.
   helper.set_malicious_content_status(MALICIOUS_CONTENT_STATUS_BILLING);

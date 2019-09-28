@@ -187,7 +187,7 @@ const gfx::VectorIcon& LocationBarModelImpl::GetVectorIcon() const {
 
   switch (GetSecurityLevel()) {
     case security_state::NONE:
-    case security_state::HTTP_SHOW_WARNING:
+    case security_state::WARNING:
       return omnibox::kHttpIcon;
     case security_state::EV_SECURE:
     case security_state::SECURE:
@@ -218,7 +218,7 @@ LocationBarModelImpl::SecureChipText LocationBarModelImpl::GetSecureChipText()
     return SecureChipText(l10n_util::GetStringUTF16(IDS_OFFLINE_VERBOSE_STATE));
 
   switch (GetSecurityLevel()) {
-    case security_state::HTTP_SHOW_WARNING:
+    case security_state::WARNING:
       return SecureChipText(
           l10n_util::GetStringUTF16(IDS_NOT_SECURE_VERBOSE_STATE));
     case security_state::EV_SECURE: {

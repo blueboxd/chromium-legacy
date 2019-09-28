@@ -133,10 +133,12 @@ void ProfilePolicyConnector::Init(
   DCHECK_EQ(nullptr, user);
 #endif
 
-  if (connector->GetPlatformProvider()) {
-    wrapped_platform_policy_provider_.reset(
-        new SchemaRegistryTrackingPolicyProvider(
-            connector->GetPlatformProvider()));
+  ConfigurationPolicyProvider* platform_provider =
+      GetPlatformProvider(connector);
+  if (platform_provider) {
+    wrapped_platform_policy_provider_ =
+        std::make_unique<SchemaRegistryTrackingPolicyProvider>(
+            platform_provider);
     wrapped_platform_policy_provider_->Init(schema_registry);
     policy_providers_.push_back(wrapped_platform_policy_provider_.get());
   }
@@ -155,7 +157,7 @@ void ProfilePolicyConnector::Init(
     // Skip the platform provider since it was already handled above.  The
     // platform provider should be first in the list so that it always takes
     // precedence.
-    if (provider == connector->GetPlatformProvider()) {
+    if (provider == platform_provider) {
       continue;
     } else {
       // TODO(zmin): In the future, we may want to have special handling for
@@ -233,6 +235,11 @@ void ProfilePolicyConnector::OverrideIsManagedForTesting(bool is_managed) {
   is_managed_override_.reset(new bool(is_managed));
 }
 
+void ProfilePolicyConnector::SetPlatformPolicyProviderForTesting(
+    ConfigurationPolicyProvider* platform_policy_provider_for_testing) {
+  platform_policy_provider_for_testing_ = platform_policy_provider_for_testing;
+}
+
 void ProfilePolicyConnector::Shutdown() {
 #if defined(OS_CHROMEOS)
   if (is_primary_user_)
@@ -289,6 +296,13 @@ ProfilePolicyConnector::DeterminePolicyProviderForPolicy(
       return provider;
   }
   return nullptr;
+}
+
+ConfigurationPolicyProvider* ProfilePolicyConnector::GetPlatformProvider(
+    policy::ChromeBrowserPolicyConnector* browser_policy_connector) {
+  if (platform_policy_provider_for_testing_)
+    return platform_policy_provider_for_testing_;
+  return browser_policy_connector->GetPlatformProvider();
 }
 
 #if defined(OS_CHROMEOS)

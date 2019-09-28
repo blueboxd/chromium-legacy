@@ -105,6 +105,7 @@ class FakeSkiaOutputSurface : public SkiaOutputSurface {
       const gpu::MailboxHolder& holder,
       const gfx::Size& size,
       ResourceFormat format,
+      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
       sk_sp<SkColorSpace> color_space) override;
 
   // If set true, callbacks triggering will be in a reverse order as SignalQuery

@@ -59,34 +59,30 @@ class LockManager : public base::RefCountedThreadSafe<LockManager>,
   // State for a particular origin.
   class OriginState;
 
+  // Describes a frame or a worker.
+  struct ExecutionContext {
+    // The identifier of the process hosting this frame or worker.
+    int render_process_id;
+
+    // The frame identifier, or MSG_ROUTING_NONE if this describes a worker
+    // (this means that dedicated/shared/service workers are not distinguished).
+    int render_frame_id;
+  };
+
   // State for each client held in |receivers_|.
   struct ReceiverState {
     std::string client_id;
 
-    // Process owning this receiver.
-    int render_process_id;
-
-    // Frame owning this receiver. MSG_ROUTING_NONE if the receiver is owned by
-    // a worker.
-    int render_frame_id;
+    // ExecutionContext owning this receiver.
+    ExecutionContext execution_context;
 
     // Origin of the frame or worker owning this receiver.
     url::Origin origin;
   };
 
-  bool IsGrantable(const url::Origin& origin,
-                   const std::string& name,
-                   blink::mojom::LockMode mode) const;
-
   // Mints a monotonically increasing identifier. Used both for lock requests
   // and granted locks as keys in ordered maps.
   int64_t NextLockId();
-
-  void Break(const url::Origin& origin, const std::string& name);
-
-  // Called when a lock is requested and optionally when a lock is released,
-  // to process outstanding requests within the origin.
-  void ProcessRequests(const url::Origin& origin);
 
   mojo::ReceiverSet<blink::mojom::LockManager, ReceiverState> receivers_;
 

@@ -21,6 +21,7 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.chrome.R;
@@ -241,6 +242,7 @@ public class LocationBarLayoutTest {
 
     @Test
     @SmallTest
+    @DisabledTest
     @EnableFeatures(ChromeFeatureList.OMNIBOX_SEARCH_ENGINE_LOGO)
     @Feature({"OmniboxSearchEngineLogo"})
     public void testOmniboxSearchEngineLogo_goneWhenIncognito() throws Exception {

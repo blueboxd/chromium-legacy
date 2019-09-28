@@ -174,7 +174,7 @@
 
         dir.addFile('bar.js', '');
         InspectorFrontendHost.events.dispatchEventToListeners(
-            InspectorFrontendHostAPI.Events.FileSystemFilesChangedAddedRemoved,
+            Host.InspectorFrontendHostAPI.Events.FileSystemFilesChangedAddedRemoved,
             {changed: [], added: ['/var/www4/html/bar.js'], removed: []});
 
         TestRunner.addResult('-- File added externally --');

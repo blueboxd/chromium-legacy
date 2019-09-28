@@ -1427,11 +1427,8 @@ MostVisitedURLList HistoryBackend::QueryMostVisitedURLs(int result_count,
       url_filter);
 
   MostVisitedURLList result;
-  for (const std::unique_ptr<PageUsageData>& current_data : data) {
-    RedirectList redirects = QueryRedirectsFrom(current_data->GetURL());
-    result.emplace_back(current_data->GetURL(), current_data->GetTitle(),
-                        redirects);
-  }
+  for (const std::unique_ptr<PageUsageData>& current_data : data)
+    result.emplace_back(current_data->GetURL(), current_data->GetTitle());
 
   UMA_HISTOGRAM_TIMES("History.QueryMostVisitedURLsTime",
                       base::TimeTicks::Now() - begin_time);

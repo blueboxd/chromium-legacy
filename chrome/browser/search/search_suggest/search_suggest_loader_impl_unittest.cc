@@ -83,7 +83,7 @@ class SearchSuggestLoaderImplTest : public testing::Test {
   void SetUpResponseWithNetworkError() {
     test_url_loader_factory_.AddResponse(
         search_suggest_loader_->GetLoadURLForTesting(),
-        network::ResourceResponseHead(), std::string(),
+        network::mojom::URLResponseHead::New(), std::string(),
         network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
   }
 

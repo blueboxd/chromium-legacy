@@ -430,11 +430,10 @@ class FakeServiceWorkerContainerHost
   DISALLOW_COPY_AND_ASSIGN(FakeServiceWorkerContainerHost);
 };
 
-// Returns an expected ResourceResponseHead which is used by stream response
-// related tests.
-std::unique_ptr<network::ResourceResponseHead>
-CreateResponseInfoFromServiceWorker() {
-  auto head = std::make_unique<network::ResourceResponseHead>();
+// Returns an expected network::mojom::URLResponseHeadPtr which is used by
+// stream response related tests.
+network::mojom::URLResponseHeadPtr CreateResponseInfoFromServiceWorker() {
+  auto head = network::mojom::URLResponseHead::New();
   std::string headers = "HTTP/1.1 200 OK\n\n";
   head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
@@ -501,8 +500,9 @@ class ServiceWorkerSubresourceLoaderTest : public ::testing::Test {
         net::MutableNetworkTrafficAnnotationTag(TRAFFIC_ANNOTATION_FOR_TESTS));
   }
 
-  void ExpectResponseInfo(const network::ResourceResponseHead& info,
-                          const network::ResourceResponseHead& expected_info) {
+  void ExpectResponseInfo(
+      const network::mojom::URLResponseHead& info,
+      const network::mojom::URLResponseHead& expected_info) {
     EXPECT_EQ(expected_info.headers->response_code(),
               info.headers->response_code());
     EXPECT_EQ(expected_info.was_fetched_via_service_worker,
@@ -620,7 +620,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, Basic) {
 
   client->RunUntilComplete();
 
-  net::LoadTimingInfo load_timing_info = client->response_head().load_timing;
+  net::LoadTimingInfo load_timing_info = client->response_head()->load_timing;
   EXPECT_FALSE(load_timing_info.receive_headers_start.is_null());
   EXPECT_FALSE(load_timing_info.receive_headers_end.is_null());
   EXPECT_LE(load_timing_info.receive_headers_start,
@@ -753,7 +753,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, NoController) {
     client->RunUntilComplete();
 
     EXPECT_TRUE(client->has_received_completion());
-    EXPECT_FALSE(client->response_head().was_fetched_via_service_worker);
+    EXPECT_FALSE(client->response_head()->was_fetched_via_service_worker);
 
     EXPECT_EQ(1, fake_controller_.fetch_event_count());
     EXPECT_EQ(1, fake_container_host_.get_controller_service_worker_count());
@@ -889,8 +889,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse) {
   StartRequest(factory, request, &loader, &client);
   client->RunUntilResponseReceived();
 
-  const network::ResourceResponseHead& info = client->response_head();
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  auto& info = client->response_head();
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   // Write the body stream.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
@@ -948,8 +948,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, StreamResponse_Abort) {
   StartRequest(factory, request, &loader, &client);
   client->RunUntilResponseReceived();
 
-  const network::ResourceResponseHead& info = client->response_head();
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  auto& info = client->response_head();
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   // Start writing the body stream, then abort before finishing.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
@@ -1005,14 +1005,13 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponse) {
   StartRequest(factory, request, &loader, &client);
   client->RunUntilResponseReceived();
 
-  std::unique_ptr<network::ResourceResponseHead> expected_info =
-      CreateResponseInfoFromServiceWorker();
+  auto expected_info = CreateResponseInfoFromServiceWorker();
   // |is_in_cache_storage| should be true because |fake_controller_| sets the
   // response source as CacheStorage.
   expected_info->is_in_cache_storage = true;
-  const network::ResourceResponseHead& info = client->response_head();
-  ExpectResponseInfo(info, *expected_info);
-  EXPECT_EQ(39, info.content_length);
+  auto& info = client->response_head();
+  ExpectResponseInfo(*info, *expected_info);
+  EXPECT_EQ(39, info->content_length);
 
   // Test the cached metadata.
   client->RunUntilCachedMetadataReceived();
@@ -1063,8 +1062,8 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseWithoutMetadata) {
   StartRequest(factory, request, &loader, &client);
   client->RunUntilResponseReceived();
 
-  const network::ResourceResponseHead& info = client->response_head();
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
+  auto& info = client->response_head();
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
 
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
@@ -1110,14 +1109,13 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, BlobResponseNonScript) {
   StartRequest(factory, request, &loader, &client);
   client->RunUntilResponseReceived();
 
-  std::unique_ptr<network::ResourceResponseHead> expected_info =
-      CreateResponseInfoFromServiceWorker();
+  auto expected_info = CreateResponseInfoFromServiceWorker();
   // |is_in_cache_storage| should be true because |fake_controller_| sets the
   // response source as CacheStorage.
   expected_info->is_in_cache_storage = true;
-  const network::ResourceResponseHead& info = client->response_head();
-  ExpectResponseInfo(info, *expected_info);
-  EXPECT_EQ(33, info.content_length);
+  auto& info = client->response_head();
+  ExpectResponseInfo(*info, *expected_info);
+  EXPECT_EQ(33, info->content_length);
 
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
@@ -1153,7 +1151,7 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, FallbackResponse) {
 
   // OnFallback() should complete the network request using network loader.
   EXPECT_TRUE(client->has_received_completion());
-  EXPECT_FALSE(client->response_head().was_fetched_via_service_worker);
+  EXPECT_FALSE(client->response_head()->was_fetched_via_service_worker);
 
   histogram_tester.ExpectUniqueSample(kHistogramSubresourceFetchEvent,
                                       blink::ServiceWorkerStatusCode::kOk, 1);
@@ -1244,9 +1242,9 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RedirectResponse) {
   loader->FollowRedirect({}, {}, base::nullopt);
   client->RunUntilResponseReceived();
 
-  const network::ResourceResponseHead& info = client->response_head();
-  EXPECT_EQ(200, info.headers->response_code());
-  EXPECT_EQ(network::mojom::FetchResponseType::kDefault, info.response_type);
+  auto& info = client->response_head();
+  EXPECT_EQ(200, info->headers->response_code());
+  EXPECT_EQ(network::mojom::FetchResponseType::kDefault, info->response_type);
 
   // Write the body stream.
   uint32_t written_bytes = sizeof(kResponseBody) - 1;
@@ -1391,14 +1389,14 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, CorsFallbackResponseWithoutOORCors) {
     StartRequest(factory, request, &loader, &client);
     client->RunUntilComplete();
 
-    const network::ResourceResponseHead& info = client->response_head();
+    auto& info = client->response_head();
     EXPECT_EQ(test.expected_was_fallback_required_by_service_worker,
-              info.was_fetched_via_service_worker);
+              info->was_fetched_via_service_worker);
     EXPECT_EQ(test.expected_was_fallback_required_by_service_worker,
-              info.was_fallback_required_by_service_worker);
-    if (info.was_fallback_required_by_service_worker) {
+              info->was_fallback_required_by_service_worker);
+    if (info->was_fallback_required_by_service_worker) {
       EXPECT_EQ("HTTP/1.1 400 Service Worker Fallback Required",
-                info.headers->GetStatusLine());
+                info->headers->GetStatusLine());
     }
     histogram_tester.ExpectTotalCount(
         "ServiceWorker.LoadTiming.Subresource."
@@ -1440,10 +1438,10 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RangeRequest_200Response) {
   EXPECT_EQ(net::OK, client->completion_status().error_code);
 
   // Test the response.
-  const network::ResourceResponseHead& info = client->response_head();
-  ExpectResponseInfo(info, *CreateResponseInfoFromServiceWorker());
-  EXPECT_EQ(33, info.content_length);
-  EXPECT_FALSE(info.headers->HasHeader("Content-Range"));
+  auto& info = client->response_head();
+  ExpectResponseInfo(*info, *CreateResponseInfoFromServiceWorker());
+  EXPECT_EQ(33, info->content_length);
+  EXPECT_FALSE(info->headers->HasHeader("Content-Range"));
   EXPECT_EQ(kResponseBody, TakeResponseBody(client.get()));
 }
 
@@ -1461,12 +1459,12 @@ TEST_F(ServiceWorkerSubresourceLoaderTest, RangeRequest_206Response) {
   EXPECT_EQ(net::OK, client->completion_status().error_code);
 
   // Test the response.
-  const network::ResourceResponseHead& info = client->response_head();
-  EXPECT_EQ(206, info.headers->response_code());
+  auto& info = client->response_head();
+  EXPECT_EQ(206, info->headers->response_code());
   std::string range;
-  ASSERT_TRUE(info.headers->GetNormalizedHeader("Content-Range", &range));
+  ASSERT_TRUE(info->headers->GetNormalizedHeader("Content-Range", &range));
   EXPECT_EQ("bytes 5-13/33", range);
-  EXPECT_EQ(9, info.content_length);
+  EXPECT_EQ(9, info->content_length);
   EXPECT_EQ("is sample", TakeResponseBody(client.get()));
 }
 
@@ -1485,12 +1483,12 @@ TEST_F(ServiceWorkerSubresourceLoaderTest,
   EXPECT_EQ(net::OK, client->completion_status().error_code);
 
   // Test the response.
-  const network::ResourceResponseHead& info = client->response_head();
-  EXPECT_EQ(206, info.headers->response_code());
+  auto& info = client->response_head();
+  EXPECT_EQ(206, info->headers->response_code());
   std::string range;
-  ASSERT_TRUE(info.headers->GetNormalizedHeader("Content-Range", &range));
+  ASSERT_TRUE(info->headers->GetNormalizedHeader("Content-Range", &range));
   EXPECT_EQ("bytes 5-32/33", range);
-  EXPECT_EQ(28, info.content_length);
+  EXPECT_EQ(28, info->content_length);
   EXPECT_EQ("is sample text for the Blob.", TakeResponseBody(client.get()));
 }
 

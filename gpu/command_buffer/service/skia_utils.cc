@@ -19,6 +19,7 @@
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/vulkan_device_queue.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
+#include "gpu/vulkan/vulkan_function_pointers.h"
 #endif
 
 namespace gpu {
@@ -130,5 +131,46 @@ void DeleteGrBackendTexture(SharedContextState* context_state,
       sk_ref_sp(context_state->gr_context()), std::move(*backend_texture)));
 #endif
 }
+
+#if BUILDFLAG(ENABLE_VULKAN)
+
+GrVkYcbcrConversionInfo CreateGrVkYcbcrConversionInfo(
+    VkPhysicalDevice physical_device,
+    VkImageTiling tiling,
+    const base::Optional<VulkanYCbCrInfo>& ycbcr_info) {
+  if (!ycbcr_info)
+    return GrVkYcbcrConversionInfo();
+
+  VkFormat vk_format = static_cast<VkFormat>(ycbcr_info->image_format);
+  VkFormatFeatureFlags format_features =
+      static_cast<VkFormatFeatureFlags>(ycbcr_info->format_features);
+
+  // |format_features| is expected to be set for external images. For regular
+  // (non-external) images it may be set to 0. In that case we need to get the
+  // value from Vulkan.
+  if (format_features == 0) {
+    DCHECK_NE(vk_format, 0);
+    VkFormatProperties format_props = {};
+
+    // vkGetPhysicalDeviceFormatProperties() is safe to call on any thread.
+    vkGetPhysicalDeviceFormatProperties(physical_device, vk_format,
+                                        &format_props);
+    format_features = (tiling == VK_IMAGE_TILING_LINEAR)
+                          ? format_props.linearTilingFeatures
+                          : format_props.optimalTilingFeatures;
+  }
+
+  return GrVkYcbcrConversionInfo(
+      vk_format, ycbcr_info->external_format,
+      static_cast<VkSamplerYcbcrModelConversion>(
+          ycbcr_info->suggested_ycbcr_model),
+      static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range),
+      static_cast<VkChromaLocation>(ycbcr_info->suggested_xchroma_offset),
+      static_cast<VkChromaLocation>(ycbcr_info->suggested_ychroma_offset),
+      static_cast<VkFilter>(VK_FILTER_LINEAR),
+      /*forceExplicitReconstruction=*/false, format_features);
+}
+
+#endif  // BUILDFLAG(ENABLE_VULKAN)
 
 }  // namespace gpu

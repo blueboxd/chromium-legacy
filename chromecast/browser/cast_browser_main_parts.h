@@ -35,6 +35,7 @@ class ViewsDelegate;
 #endif  // defined(USE_AURA)
 
 namespace chromecast {
+class CastSystemMemoryPressureEvaluatorAdjuster;
 class WaylandServerController;
 
 #if defined(USE_AURA)
@@ -110,11 +111,12 @@ class CastBrowserMainParts : public content::BrowserMainParts {
   // Tracks all media pipeline backends.
   std::unique_ptr<media::MediaPipelineBackendManager>
       media_pipeline_backend_manager_;
-
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   std::unique_ptr<util::MultiSourceMemoryPressureMonitor>
       memory_pressure_monitor_;
 #endif  // !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+  CastSystemMemoryPressureEvaluatorAdjuster*
+      cast_system_memory_pressure_evaluator_adjuster_;
 
 #if BUILDFLAG(ENABLE_CHROMECAST_EXTENSIONS)
   std::unique_ptr<extensions::ExtensionsClient> extensions_client_;

@@ -24,6 +24,6 @@ typedef (CanvasRenderingContext2D or
     // Related spec issue: https://github.com/whatwg/html/issues/595
     [RaisesException] RenderingContext? getContext(DOMString contextId, [PermissiveDictionaryConversion] optional CanvasContextCreationAttributesModule attributes);
 
-    [RuntimeEnabled=SurfaceEmbeddingFeatures,
+    [CallWith=ExecutionContext, RuntimeEnabled=SurfaceEmbeddingFeatures,
      RaisesException, MeasureAs=OffscreenCanvas] OffscreenCanvas transferControlToOffscreen();
 };

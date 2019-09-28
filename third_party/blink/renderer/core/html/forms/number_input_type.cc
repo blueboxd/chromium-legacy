@@ -49,7 +49,6 @@
 
 namespace blink {
 
-using blink::WebLocalizedString;
 using namespace html_names;
 
 static const int kNumberDefaultStep = 1;

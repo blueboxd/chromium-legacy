@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "base/scoped_observer.h"
 #include "base/strings/string16.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
 #include "chrome/browser/installable/installable_logging.h"
@@ -53,15 +52,8 @@ class AppBannerManager : public content::WebContentsObserver,
  public:
   class Observer : public base::CheckedObserver {
    public:
-    Observer();
-    ~Observer() override;
-
-    void ObserveAppBannerManager(AppBannerManager* manager);
-
+    virtual void OnAppBannerManagerChanged(AppBannerManager* new_manager) = 0;
     virtual void OnInstallableWebAppStatusUpdated() = 0;
-
-   private:
-    ScopedObserver<AppBannerManager, Observer> scoped_observer_{this};
   };
 
   // A StatusReporter handles the reporting of |InstallableStatusCode|s.

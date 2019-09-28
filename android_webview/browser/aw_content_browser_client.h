@@ -53,6 +53,7 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   // moment during startup. AwContentBrowserClient owns the result.
   AwBrowserContext* InitBrowserContext();
 
+  // content::ContentBrowserClient:
   void OnNetworkServiceCreated(
       network::mojom::NetworkService* network_service) override;
   mojo::Remote<network::mojom::NetworkContext> CreateNetworkContext(
@@ -221,6 +222,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
   std::string GetUserAgent() override;
   ContentBrowserClient::WideColorGamutHeuristic GetWideColorGamutHeuristic()
       override;
+  void LogWebFeatureForCurrentPage(content::RenderFrameHost* render_frame_host,
+                                   blink::mojom::WebFeature feature) override;
 
   AwFeatureListCreator* aw_feature_list_creator() {
     return aw_feature_list_creator_;

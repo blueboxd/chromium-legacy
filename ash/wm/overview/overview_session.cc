@@ -946,26 +946,29 @@ void OverviewSession::OnShelfAlignmentChanged(aura::Window* root_window) {
   EndOverview();
 }
 
-void OverviewSession::OnSplitViewStateChanged(SplitViewState previous_state,
-                                              SplitViewState state) {
+void OverviewSession::OnSplitViewStateChanged(
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
   // Do nothing if overview is being shutdown.
   if (!Shell::Get()->overview_controller()->InOverviewSession())
     return;
 
   const bool unsnappable_window_activated =
-      state == SplitViewState::kNoSnap &&
+      state == SplitViewController::State::kNoSnap &&
       Shell::Get()->split_view_controller()->end_reason() ==
           SplitViewController::EndReason::kUnsnappableWindowActivated;
 
   // Restore focus unless either a window was just snapped (and activated) or
   // split view mode was ended by activating an unsnappable window.
-  if (state != SplitViewState::kNoSnap || unsnappable_window_activated)
+  if (state != SplitViewController::State::kNoSnap ||
+      unsnappable_window_activated)
     ResetFocusRestoreWindow(false);
 
   // If two windows were snapped to both sides of the screen or an unsnappable
   // window was just activated, or we're in single split mode in clamshell mode
   // and there is no window in overview, end overview mode and bail out.
-  if (state == SplitViewState::kBothSnapped || unsnappable_window_activated ||
+  if (state == SplitViewController::State::kBothSnapped ||
+      unsnappable_window_activated ||
       (Shell::Get()->split_view_controller()->InClamshellSplitViewMode() &&
        IsEmpty())) {
     EndOverview();

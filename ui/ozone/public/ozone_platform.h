@@ -14,6 +14,7 @@
 #include "base/message_loop/message_pump_type.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "ui/gfx/buffer_types.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_delegate.h"
 
 namespace display {
@@ -31,7 +32,6 @@ class InputController;
 class GpuPlatformSupportHost;
 class OverlayManagerOzone;
 class PlatformScreen;
-class PlatformWindow;
 class SurfaceFactoryOzone;
 class SystemInputInjector;
 class PlatformClipboard;

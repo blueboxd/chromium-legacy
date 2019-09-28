@@ -567,6 +567,20 @@ class DebugDaemonClientImpl : public DebugDaemonClient {
                        weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
   }
 
+  void SetSchedulerConfigurationV2(const std::string& config_name,
+                                   bool lock_policy,
+                                   VoidDBusMethodCallback callback) override {
+    dbus::MethodCall method_call(debugd::kDebugdInterface,
+                                 debugd::kSetSchedulerConfigurationV2);
+    dbus::MessageWriter writer(&method_call);
+    writer.AppendString(config_name);
+    writer.AppendBool(lock_policy);
+    debugdaemon_proxy_->CallMethod(
+        &method_call, dbus::ObjectProxy::TIMEOUT_USE_DEFAULT,
+        base::BindOnce(&DebugDaemonClientImpl::OnVoidMethod,
+                       weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+  }
+
   void SetU2fFlags(const std::set<std::string>& flags,
                    VoidDBusMethodCallback callback) override {
     dbus::MethodCall method_call(debugd::kDebugdInterface,

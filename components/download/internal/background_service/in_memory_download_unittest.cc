@@ -210,27 +210,28 @@ TEST_F(InMemoryDownloadTest, RedirectResponseHeaders) {
   // Add a redirect.
   net::RedirectInfo redirect_info;
   redirect_info.new_url = GURL("https://example.com/redirect12345");
-  network::TestURLLoaderFactory::Redirects redirects = {
-      {redirect_info, network::ResourceResponseHead()}};
+  network::TestURLLoaderFactory::Redirects redirects;
+  redirects.push_back({redirect_info, network::mojom::URLResponseHead::New()});
 
   // Add some random header.
-  network::ResourceResponseHead response_head;
-  response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-  response_head.headers->AddHeader("X-Random-Test-Header: 123");
+  auto response_head = network::mojom::URLResponseHead::New();
+  response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+  response_head->headers->AddHeader("X-Random-Test-Header: 123");
 
   // The size must match for download as stream from SimpleUrlLoader.
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = base::size(kTestDownloadData) - 1;
 
-  url_loader_factory()->AddResponse(request_params.url, response_head,
-                                    kTestDownloadData, status, redirects);
+  url_loader_factory()->AddResponse(request_params.url, response_head.Clone(),
+                                    kTestDownloadData, status,
+                                    std::move(redirects));
 
   std::vector<GURL> expected_url_chain = {request_params.url,
                                           redirect_info.new_url};
 
   EXPECT_CALL(*delegate(),
               OnDownloadStarted(InMemoryDownloadMatcher(
-                  response_head.headers->raw_headers(), expected_url_chain)));
+                  response_head->headers->raw_headers(), expected_url_chain)));
 
   download()->Start();
   delegate()->WaitForCompletion();
@@ -240,7 +241,7 @@ TEST_F(InMemoryDownloadTest, RedirectResponseHeaders) {
   // the original URL and redirect URL, and should not contain the final URL.
   EXPECT_EQ(download()->url_chain(), expected_url_chain);
   EXPECT_EQ(download()->response_headers()->raw_headers(),
-            response_head.headers->raw_headers());
+            response_head->headers->raw_headers());
 
   // Verfiy the data persisted to disk after redirect chain.
   auto blob = download()->ResultAsBlob();

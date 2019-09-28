@@ -44,7 +44,6 @@ const char kURL[] = "URL: ";
 const char kModificationTime[] = "Modification Time: ";
 const char kOffset[] = "Offset: ";
 const char kLength[] = "Length: ";
-const char kUUID[] = "Uuid: ";
 const char kRefcount[] = "Refcount: ";
 const char kStatus[] = "Status: ";
 
@@ -156,14 +155,13 @@ std::string ViewBlobInternalsJob::GenerateHTML(
                               entry->content_disposition(), entry->refcount(),
                               &out);
     }
-    if (!blob_storage_context->registry().url_to_uuid_.empty()) {
+    if (!blob_storage_context->registry().url_to_blob_.empty()) {
       AddHorizontalRule(&out);
       for (const auto& url_uuid_pair :
-           blob_storage_context->registry().url_to_uuid_) {
+           blob_storage_context->registry().url_to_blob_) {
         AddHTMLBoldText(url_uuid_pair.first.spec(), &out);
-        StartHTMLList(&out);
-        AddHTMLListItem(kUUID, url_uuid_pair.second, &out);
-        EndHTMLList(&out);
+        // TODO(mek): Somehow include information on the blob the URL is mapped
+        // to.
       }
     }
   }

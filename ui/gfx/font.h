@@ -140,6 +140,9 @@ GFX_EXPORT std::ostream& operator<<(std::ostream& stream,
                                     const Font::Weight weight);
 #endif
 
+// Returns the Font::Weight that matches |weight| or the next bigger one.
+GFX_EXPORT Font::Weight FontWeightFromInt(int weight);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_FONT_H_

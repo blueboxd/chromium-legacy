@@ -52,7 +52,7 @@ class FileDownloaderTest : public testing::Test {
 
   void SetFailedResponse() {
     test_url_loader_factory_.AddResponse(
-        GURL(kURL), network::ResourceResponseHead(), std::string(),
+        GURL(kURL), network::mojom::URLResponseHead::New(), std::string(),
         network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
   }
 

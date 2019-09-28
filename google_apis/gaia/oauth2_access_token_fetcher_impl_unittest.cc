@@ -91,7 +91,7 @@ class OAuth2AccessTokenFetcherImplTest : public testing::Test {
       url_loader_factory_.AddResponse(url.spec(), body, http_response_code);
     } else {
       url_loader_factory_.AddResponse(
-          url, network::ResourceResponseHead(), body,
+          url, network::mojom::URLResponseHead::New(), body,
           network::URLLoaderCompletionStatus(net_error_code));
     }
 
@@ -103,8 +103,7 @@ class OAuth2AccessTokenFetcherImplTest : public testing::Test {
     GURL url(GaiaUrls::GetInstance()->oauth2_token_url());
     url_loader_factory_.AddResponse(
         url,
-        network::CreateResourceResponseHead(
-            net::HTTP_PROXY_AUTHENTICATION_REQUIRED),
+        network::CreateURLResponseHead(net::HTTP_PROXY_AUTHENTICATION_REQUIRED),
         std::string(),
         network::URLLoaderCompletionStatus(net::ERR_TUNNEL_CONNECTION_FAILED),
         network::TestURLLoaderFactory::Redirects(),

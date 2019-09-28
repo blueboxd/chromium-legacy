@@ -28,6 +28,7 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/test/fake_blob_data_handle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -109,6 +110,20 @@ class BlobStorageContextTest : public testing::Test {
 
   void DecrementRefCount(const std::string& uuid) {
     context_->DecrementBlobRefCount(uuid);
+  }
+
+  std::string UUIDFromBlob(blink::mojom::Blob* blob) {
+    base::RunLoop loop;
+    std::string received_uuid;
+    blob->GetInternalUUID(base::BindOnce(
+        [](base::OnceClosure quit_closure, std::string* uuid_out,
+           const std::string& uuid) {
+          *uuid_out = uuid;
+          std::move(quit_closure).Run();
+        },
+        loop.QuitClosure(), &received_uuid));
+    loop.Run();
+    return received_uuid;
   }
 
   std::vector<FileCreationInfo> files_;
@@ -606,31 +621,33 @@ TEST_F(BlobStorageContextTest, CompoundBlobs) {
 TEST_F(BlobStorageContextTest, PublicBlobUrls) {
   // Build up a basic blob.
   const std::string kId("id");
-  std::unique_ptr<BlobDataHandle> first_handle = SetupBasicBlob(kId);
+  mojo::PendingRemote<blink::mojom::Blob> pending_blob_remote;
+  BlobImpl::Create(SetupBasicBlob(kId),
+                   pending_blob_remote.InitWithNewPipeAndPassReceiver());
 
   // Now register a url for that blob.
   GURL kUrl("blob:id");
-  context_->RegisterPublicBlobURL(kUrl, kId);
-  std::unique_ptr<BlobDataHandle> blob_data_handle =
-      context_->GetBlobDataFromPublicURL(kUrl);
-  ASSERT_TRUE(blob_data_handle.get());
-  EXPECT_EQ(kId, blob_data_handle->uuid());
-  std::unique_ptr<BlobDataSnapshot> data = blob_data_handle->CreateSnapshot();
-  blob_data_handle.reset();
-  first_handle.reset();
+  context_->RegisterPublicBlobURL(kUrl, std::move(pending_blob_remote));
+  pending_blob_remote = context_->GetBlobFromPublicURL(kUrl);
+  ASSERT_TRUE(pending_blob_remote);
+  mojo::Remote<blink::mojom::Blob> blob_remote(std::move(pending_blob_remote));
+  EXPECT_EQ(kId, UUIDFromBlob(blob_remote.get()));
+  blob_remote.reset();
   base::RunLoop().RunUntilIdle();
 
   // The url registration should keep the blob alive even after
   // explicit references are dropped.
-  blob_data_handle = context_->GetBlobDataFromPublicURL(kUrl);
-  EXPECT_TRUE(blob_data_handle);
-  blob_data_handle.reset();
+  pending_blob_remote = context_->GetBlobFromPublicURL(kUrl);
+  EXPECT_TRUE(pending_blob_remote);
+  pending_blob_remote.reset();
 
   base::RunLoop().RunUntilIdle();
   // Finally get rid of the url registration and the blob.
   context_->RevokePublicBlobURL(kUrl);
-  blob_data_handle = context_->GetBlobDataFromPublicURL(kUrl);
-  EXPECT_FALSE(blob_data_handle.get());
+  pending_blob_remote = context_->GetBlobFromPublicURL(kUrl);
+  EXPECT_FALSE(pending_blob_remote);
+  base::RunLoop().RunUntilIdle();
+
   EXPECT_FALSE(context_->registry().HasEntry(kId));
 }
 

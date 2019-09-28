@@ -94,8 +94,7 @@ class StartupTracingInProcessTest : public ContentBrowserTest {
  public:
   StartupTracingInProcessTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kTracingPerfettoBackend,
-                              features::kTracingServiceInProcess},
+        /*enabled_features=*/{features::kTracingServiceInProcess},
         /*disabled_features=*/{});
   }
 

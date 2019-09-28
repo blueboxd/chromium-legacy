@@ -7,6 +7,8 @@
 
 #include "build/build_config.h"
 #include "components/viz/common/resources/transferable_resource.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info_mojom_traits.h"
 #include "services/viz/public/mojom/compositing/transferable_resource.mojom-shared.h"
 #include "ui/gfx/ipc/color/gfx_param_traits.h"
 
@@ -74,6 +76,11 @@ struct StructTraits<viz::mojom::TransferableResourceDataView,
   static const gfx::ColorSpace& color_space(
       const viz::TransferableResource& resource) {
     return resource.color_space;
+  }
+
+  static const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info(
+      const viz::TransferableResource& resource) {
+    return resource.ycbcr_info;
   }
 
   static bool Read(viz::mojom::TransferableResourceDataView data,

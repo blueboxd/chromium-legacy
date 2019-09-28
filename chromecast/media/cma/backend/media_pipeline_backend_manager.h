@@ -26,9 +26,7 @@ namespace media {
 enum class AudioContentType;
 class CastDecoderBuffer;
 class CmaBackend;
-class ExtraAudioStream;
 class MediaPipelineBackendWrapper;
-class ActiveAudioDecoderWrapper;
 class ActiveMediaPipelineBackendWrapper;
 
 // This class tracks all created media backends, tracking whether or not volume
@@ -116,18 +114,8 @@ class MediaPipelineBackendManager {
   // CmaBackend instance (for example, direct audio output using
   // CastMediaShlib::AddDirectAudioSource()). |sfx| indicates whether or not
   // the stream is a sound effects stream (has no effect on volume feedback).
-  void AddExtraPlayingStream(bool sfx,
-                             const AudioContentType type,
-                             ExtraAudioStream* extra_audio_stream = nullptr);
-  void RemoveExtraPlayingStream(bool sfx,
-                                const AudioContentType type,
-                                ExtraAudioStream* extra_audio_stream = nullptr);
-
-  // Sets a global multiplier for output volume for streams of the given |type|.
-  // The multiplier may be any value >= 0; if the resulting volume for an
-  // individual stream would be > 1.0, that stream's volume is clamped to 1.0.
-  // The default multiplier is 1.0. May be called on any thread.
-  void SetGlobalVolumeMultiplier(AudioContentType type, float multiplier);
+  void AddExtraPlayingStream(bool sfx, const AudioContentType type);
+  void RemoveExtraPlayingStream(bool sfx, const AudioContentType type);
 
   // |buffer_delegate| will get notified for all buffers on the media stream.
   // |buffer_delegate| must outlive |this|.
@@ -144,10 +132,6 @@ class MediaPipelineBackendManager {
 
  private:
   friend class ActiveMediaPipelineBackendWrapper;
-  friend class ActiveAudioDecoderWrapper;
-
-  void AddAudioDecoder(ActiveAudioDecoderWrapper* decoder);
-  void RemoveAudioDecoder(ActiveAudioDecoderWrapper* decoder);
 
   // Backend wrapper instances must use these APIs when allocating and releasing
   // decoder objects, so we can enforce global limit on #concurrent decoders.
@@ -176,11 +160,6 @@ class MediaPipelineBackendManager {
 
   scoped_refptr<base::ObserverListThreadSafe<AllowVolumeFeedbackObserver>>
       allow_volume_feedback_observers_;
-
-  base::flat_set<ActiveAudioDecoderWrapper*> audio_decoders_;
-  base::flat_map<AudioContentType, base::flat_set<ExtraAudioStream*>>
-      extra_audio_streams_;
-  base::flat_map<AudioContentType, float> global_volume_multipliers_;
 
   // Previously issued MediaPipelineBackendWrapper that uses a video decoder.
   MediaPipelineBackendWrapper* backend_wrapper_using_video_decoder_;

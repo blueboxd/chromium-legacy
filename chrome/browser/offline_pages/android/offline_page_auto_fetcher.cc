@@ -14,7 +14,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/bindings/self_owned_receiver.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -72,13 +72,13 @@ void OfflinePageAutoFetcher::CancelSchedule() {
 
 // static
 void OfflinePageAutoFetcher::Create(
-    chrome::mojom::OfflinePageAutoFetcherRequest request,
+    mojo::PendingReceiver<chrome::mojom::OfflinePageAutoFetcher> receiver,
     content::RenderFrameHost* render_frame_host) {
-  // Lifetime of the strong binding can exceed the render frame host, so
+  // Lifetime of the self owned receiver can exceed the render frame host, so
   // OfflinePageAutoFetcher does not retain a reference.
-  mojo::MakeStrongBinding(
+  mojo::MakeSelfOwnedReceiver(
       std::make_unique<OfflinePageAutoFetcher>(render_frame_host),
-      std::move(request));
+      std::move(receiver));
 }
 
 }  // namespace offline_pages

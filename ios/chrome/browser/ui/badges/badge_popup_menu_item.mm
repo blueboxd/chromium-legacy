@@ -71,6 +71,7 @@ const CGFloat kVerticalMargin = 8;
            withStyler:(ChromeTableViewStyler*)styler {
   [super configureCell:cell withStyler:styler];
   cell.titleLabel.text = self.title;
+  cell.accessibilityTraits = UIAccessibilityTraitButton;
   UIImage* badgeImage;
   switch (self.badgeType) {
     case BadgeType::kBadgeTypePasswordSave:
@@ -145,7 +146,7 @@ const CGFloat kVerticalMargin = 8;
 
     _trailingImageView = [[UIImageView alloc]
         initWithImage:
-            [[UIImage imageNamed:@"badge_menu_item_gear"]
+            [[UIImage imageNamed:@"infobar_settings_icon"]
                 imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate]];
     _trailingImageView.translatesAutoresizingMaskIntoConstraints = NO;
     _trailingImageView.tintColor = [UIColor colorNamed:kBlueColor];

@@ -24,7 +24,7 @@ struct PLATFORM_EXPORT BeginFrameProviderParams final {
 
 class PLATFORM_EXPORT BeginFrameProviderClient {
  public:
-  virtual void BeginFrame() = 0;
+  virtual void BeginFrame(const base::TimeTicks& frame_time) = 0;
   virtual ~BeginFrameProviderClient() = default;
 };
 

@@ -23,8 +23,42 @@
 #include "components/sync/base/sync_prefs.h"
 #include "components/sync/model/model_type_store_service.h"
 #include "components/sync_device_info/device_info_prefs.h"
+#include "components/sync_device_info/device_info_sync_client.h"
 #include "components/sync_device_info/device_info_sync_service_impl.h"
 #include "components/sync_device_info/local_device_info_provider_impl.h"
+
+namespace {
+
+class DeviceInfoSyncClient : public syncer::DeviceInfoSyncClient {
+ public:
+  explicit DeviceInfoSyncClient(Profile* profile) : profile_(profile) {}
+  ~DeviceInfoSyncClient() override = default;
+
+  // syncer::DeviceInfoSyncClient:
+  std::string GetSigninScopedDeviceId() const override {
+// Since the local sync backend is currently only supported on Windows don't
+// even check the pref on other os-es.
+#if defined(OS_WIN)
+    syncer::SyncPrefs prefs(profile_->GetPrefs());
+    if (prefs.IsLocalSyncEnabled()) {
+      return "local_device";
+    }
+#endif  // defined(OS_WIN)
+
+    return GetSigninScopedDeviceIdForProfile(profile_);
+  }
+
+  // syncer::DeviceInfoSyncClient:
+  bool GetSendTabToSelfReceivingEnabled() const override {
+    return send_tab_to_self::IsReceivingEnabledByUserOnThisDevice(
+        profile_->GetPrefs());
+  }
+
+ private:
+  Profile* const profile_;
+};
+
+}  // namespace
 
 // static
 syncer::DeviceInfoSyncService* DeviceInfoSyncServiceFactory::GetForProfile(
@@ -72,41 +106,17 @@ KeyedService* DeviceInfoSyncServiceFactory::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
   Profile* profile = Profile::FromBrowserContext(context);
 
-  syncer::LocalDeviceInfoProviderImpl::SigninScopedDeviceIdCallback
-      signin_scoped_device_id_callback;
-  syncer::LocalDeviceInfoProviderImpl::SendTabToSelfReceivingEnabledCallback
-      send_tab_to_self_receiving_enabled_callback;
-  bool local_sync_backend_enabled = false;
-
-// Since the local sync backend is currently only supported on Windows don't
-// even check the pref on other os-es.
-#if defined(OS_WIN)
-  syncer::SyncPrefs prefs(profile->GetPrefs());
-  local_sync_backend_enabled = prefs.IsLocalSyncEnabled();
-#endif  // defined(OS_WIN)
-
-  if (local_sync_backend_enabled) {
-    signin_scoped_device_id_callback =
-        base::BindRepeating([]() { return std::string("local_device"); });
-  } else {
-    signin_scoped_device_id_callback =
-        base::BindRepeating(&GetSigninScopedDeviceIdForProfile, profile);
-  }
-
-  send_tab_to_self_receiving_enabled_callback = base::BindRepeating(
-      &send_tab_to_self::IsReceivingEnabledByUserOnThisDevice,
-      profile->GetPrefs());
-
+  auto device_info_sync_client =
+      std::make_unique<DeviceInfoSyncClient>(profile);
   auto local_device_info_provider =
       std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
           chrome::GetChannel(), chrome::GetVersionString(),
-          signin_scoped_device_id_callback,
-          send_tab_to_self_receiving_enabled_callback);
-
+          device_info_sync_client.get());
   auto device_prefs =
       std::make_unique<syncer::DeviceInfoPrefs>(profile->GetPrefs());
 
   return new syncer::DeviceInfoSyncServiceImpl(
       ModelTypeStoreServiceFactory::GetForProfile(profile)->GetStoreFactory(),
-      std::move(local_device_info_provider), std::move(device_prefs));
+      std::move(local_device_info_provider), std::move(device_prefs),
+      std::move(device_info_sync_client));
 }

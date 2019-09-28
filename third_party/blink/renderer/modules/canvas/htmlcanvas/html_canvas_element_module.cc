@@ -37,6 +37,7 @@ void HTMLCanvasElementModule::getContext(
 }
 
 OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(
+    ExecutionContext* execution_context,
     HTMLCanvasElement& canvas,
     ExceptionState& exception_state) {
   OffscreenCanvas* offscreen_canvas = nullptr;
@@ -46,8 +47,8 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(
         "Cannot transfer control from a canvas for more than one time.");
   } else {
     canvas.CreateLayer();
-    offscreen_canvas =
-        TransferControlToOffscreenInternal(canvas, exception_state);
+    offscreen_canvas = TransferControlToOffscreenInternal(
+        execution_context, canvas, exception_state);
   }
 
   UMA_HISTOGRAM_BOOLEAN("Blink.OffscreenCanvas.TransferControlToOffscreen",
@@ -56,6 +57,7 @@ OffscreenCanvas* HTMLCanvasElementModule::transferControlToOffscreen(
 }
 
 OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
+    ExecutionContext* execution_context,
     HTMLCanvasElement& canvas,
     ExceptionState& exception_state) {
   if (canvas.RenderingContext()) {
@@ -64,8 +66,8 @@ OffscreenCanvas* HTMLCanvasElementModule::TransferControlToOffscreenInternal(
         "Cannot transfer control from a canvas that has a rendering context.");
     return nullptr;
   }
-  OffscreenCanvas* offscreen_canvas =
-      OffscreenCanvas::Create(canvas.width(), canvas.height());
+  OffscreenCanvas* offscreen_canvas = OffscreenCanvas::Create(
+      execution_context, canvas.width(), canvas.height());
   offscreen_canvas->SetFilterQuality(canvas.FilterQuality());
 
   // If this canvas is cross-origin, then the associated offscreen canvas

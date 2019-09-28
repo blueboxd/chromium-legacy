@@ -142,7 +142,6 @@ class LocalFrameClientImpl final : public LocalFrameClient {
   void ForwardResourceTimingToParent(const WebResourceTimingInfo&) override;
   void DownloadURL(const ResourceRequest&,
                    DownloadCrossOriginRedirects) override;
-  void LoadErrorPage(int reason) override;
   bool NavigateBackForward(int offset) const override;
   void DidAccessInitialDocument() override;
   void DidDisplayInsecureContent() override;

@@ -29,7 +29,6 @@ class FaviconService;
 
 class AccessoryController;
 class PasswordAccessoryController;
-class TouchToFillController;
 
 // Use ManualFillingController::GetOrCreate to obtain instances of this class.
 class ManualFillingControllerImpl
@@ -68,7 +67,6 @@ class ManualFillingControllerImpl
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
       base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller,
-      base::WeakPtr<TouchToFillController> touch_to_fill_controller,
       std::unique_ptr<ManualFillingViewInterface> test_view);
 
 #if defined(UNIT_TEST)
@@ -98,7 +96,6 @@ class ManualFillingControllerImpl
       base::WeakPtr<PasswordAccessoryController> pwd_controller,
       base::WeakPtr<autofill::AddressAccessoryController> address_controller,
       base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller,
-      base::WeakPtr<TouchToFillController> touch_to_fill_controller,
       std::unique_ptr<ManualFillingViewInterface> view);
 
   // Returns true if the keyboard accessory needs to be shown.
@@ -144,7 +141,6 @@ class ManualFillingControllerImpl
   base::WeakPtr<PasswordAccessoryController> pwd_controller_for_testing_;
   base::WeakPtr<autofill::AddressAccessoryController> address_controller_;
   base::WeakPtr<autofill::CreditCardAccessoryController> cc_controller_;
-  base::WeakPtr<TouchToFillController> touch_to_fill_controller_;
 
   // Hold the native instance of the view. Must be last declared and initialized
   // member so the view can be created in the constructor with a fully set up

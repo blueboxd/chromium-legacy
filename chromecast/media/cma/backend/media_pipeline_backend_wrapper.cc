@@ -195,7 +195,7 @@ ActiveMediaPipelineBackendWrapper::CreateAudioDecoderWrapper() {
   }
 
   auto audio_decoder = std::make_unique<AudioDecoderWrapper>(
-      backend_manager_, real_decoder, content_type_, delegate);
+      real_decoder, content_type_, delegate);
   audio_decoder_ptr_ = audio_decoder.get();
   return audio_decoder;
 }

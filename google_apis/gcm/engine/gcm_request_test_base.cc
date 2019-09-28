@@ -83,7 +83,7 @@ void GCMRequestTestBase::SetResponseForURLAndComplete(
   OnAboutToCompleteFetch();
   EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
       GURL(url), network::URLLoaderCompletionStatus(net_error_code),
-      network::CreateResourceResponseHead(status_code), response_body));
+      network::CreateURLResponseHead(status_code), response_body));
 }
 
 const net::HttpRequestHeaders* GCMRequestTestBase::GetExtraHeadersForURL(

@@ -121,3 +121,10 @@ settings.SortMethod = {
   MOST_VISITED: 'most-visited',
   STORAGE: 'data-stored',
 };
+
+/**
+ * String representation of the wildcard used for universal
+ * match for SiteExceptions.
+ * @type {string}
+ */
+settings.SITE_EXCEPTION_WILDCARD = '*';

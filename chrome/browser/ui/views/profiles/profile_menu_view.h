@@ -49,7 +49,8 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
     kOtherProfileButton = 13,
     kCookiesClearedOnExitLink = 14,
     kAddNewProfileButton = 15,
-    kMaxValue = kAddNewProfileButton,
+    kSyncSettingsButton = 16,
+    kMaxValue = kSyncSettingsButton,
   };
 
   ProfileMenuView(views::Button* anchor_button,
@@ -79,6 +80,7 @@ class ProfileMenuView : public ProfileMenuViewBase, public AvatarMenuObserver {
   void OnManageProfilesButtonClicked();
   void OnLockButtonClicked();
   void OnExitProfileButtonClicked();
+  void OnSyncSettingsButtonClicked();
   void OnSyncErrorButtonClicked(sync_ui_util::AvatarSyncErrorType error);
   void OnCurrentProfileCardClicked();
   void OnSigninButtonClicked();

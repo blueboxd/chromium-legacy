@@ -40,8 +40,8 @@
 #include "content/browser/data_url_loader_factory.h"
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/download/network_download_url_loader_factory_info.h"
-#include "content/browser/file_url_loader_factory.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
+#include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -727,7 +727,7 @@ void DownloadManagerImpl::CreateSavePackageDownloadItemWithId(
 void DownloadManagerImpl::ResumeInterruptedDownload(
     std::unique_ptr<download::DownloadUrlParameters> params,
     const GURL& site_url) {
-  BeginDownloadInternal(std::move(params), nullptr /* blob_data_handle */,
+  BeginDownloadInternal(std::move(params),
                         nullptr /* blob_url_loader_factory */, false, site_url);
 }
 
@@ -838,13 +838,11 @@ bool DownloadManagerImpl::CanDownload(
 
 void DownloadManagerImpl::DownloadUrl(
     std::unique_ptr<download::DownloadUrlParameters> params) {
-  DownloadUrl(std::move(params), nullptr /* blob_data_handle */,
-              nullptr /* blob_url_loader_factory */);
+  DownloadUrl(std::move(params), nullptr /* blob_url_loader_factory */);
 }
 
 void DownloadManagerImpl::DownloadUrl(
     std::unique_ptr<download::DownloadUrlParameters> params,
-    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory) {
   if (params->post_id() >= 0) {
     // Check this here so that the traceback is more useful.
@@ -858,8 +856,8 @@ void DownloadManagerImpl::DownloadUrl(
                                       params->render_frame_host_routing_id());
   if (rfh)
     params->set_frame_tree_node_id(rfh->GetFrameTreeNodeId());
-  BeginDownloadInternal(std::move(params), std::move(blob_data_handle),
-                        std::move(blob_url_loader_factory), true,
+  BeginDownloadInternal(std::move(params), std::move(blob_url_loader_factory),
+                        true,
                         rfh ? rfh->GetSiteInstance()->GetSiteURL() : GURL());
 }
 
@@ -1285,7 +1283,6 @@ void DownloadManagerImpl::BeginResourceDownloadOnChecksComplete(
 
 void DownloadManagerImpl::BeginDownloadInternal(
     std::unique_ptr<download::DownloadUrlParameters> params,
-    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
     scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
     bool is_new_download,
     const GURL& site_url) {

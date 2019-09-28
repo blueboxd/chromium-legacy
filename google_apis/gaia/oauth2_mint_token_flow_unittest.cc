@@ -16,7 +16,6 @@
 #include "google_apis/gaia/google_service_auth_error.h"
 #include "google_apis/gaia/oauth2_access_token_fetcher.h"
 #include "net/base/net_errors.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -299,7 +298,7 @@ TEST_F(OAuth2MintTokenFlowTest, ParseIssueAdviceResponse) {
 
 TEST_F(OAuth2MintTokenFlowTest, ProcessApiCallSuccess) {
   network::mojom::URLResponseHeadPtr head_200 =
-      network::CreateResourceResponseHead(net::HTTP_OK);
+      network::CreateURLResponseHead(net::HTTP_OK);
 
   {  // No body.
     CreateFlow(OAuth2MintTokenFlow::MODE_MINT_TOKEN_NO_FORCE);

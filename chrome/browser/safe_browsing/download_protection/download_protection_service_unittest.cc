@@ -395,7 +395,7 @@ class DownloadProtectionServiceTest : public ChromeRenderViewHostTestHarness {
       network::URLLoaderCompletionStatus status;
       sb_service_->test_url_loader_factory()->AddResponse(
           PPAPIDownloadRequest::GetDownloadRequestUrl(),
-          network::ResourceResponseHead(), std::string(),
+          network::mojom::URLResponseHead::New(), std::string(),
           network::URLLoaderCompletionStatus(net_error));
       return;
     }

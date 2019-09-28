@@ -24,6 +24,7 @@
 #include "ash/wm/overview/overview_utils.h"
 #include "ash/wm/splitview/split_view_constants.h"
 #include "ash/wm/splitview/split_view_divider.h"
+#include "ash/wm/splitview/split_view_observer.h"
 #include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_window_state.h"
@@ -292,12 +293,12 @@ bool SplitViewController::InSplitViewMode() const {
 }
 
 bool SplitViewController::InClamshellSplitViewMode() const {
-  return state_ != SplitViewState::kNoSnap &&
+  return state_ != State::kNoSnap &&
          split_view_type_ == SplitViewType::kClamshellType;
 }
 
 bool SplitViewController::InTabletSplitViewMode() const {
-  return state_ != SplitViewState::kNoSnap &&
+  return state_ != State::kNoSnap &&
          split_view_type_ == SplitViewType::kTabletType;
 }
 
@@ -319,7 +320,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
   RemoveWindowFromOverviewIfApplicable(window);
 
   bool do_divider_spawn_animation = false;
-  if (state_ == SplitViewState::kNoSnap) {
+  if (state_ == State::kNoSnap) {
     // Add observers when the split view mode starts.
     Shell::Get()->AddShellObserver(this);
     Shell::Get()->overview_controller()->AddObserver(this);
@@ -396,7 +397,7 @@ void SplitViewController::SnapWindow(aura::Window* window,
     // Update the divider position and window bounds before snapping a new
     // window. Since the minimum size of |window| maybe larger than currently
     // bounds in |snap_position|.
-  if (state_ != SplitViewState::kNoSnap &&
+  if (state_ != State::kNoSnap &&
       split_view_type_ == SplitViewType::kTabletType) {
     divider_position_ = GetClosestFixedDividerPosition();
     UpdateSnappedWindowsAndDividerBounds();
@@ -478,7 +479,7 @@ void SplitViewController::SwapWindows() {
 
   divider_position_ = GetClosestFixedDividerPosition();
   UpdateSnappedWindowsAndDividerBounds();
-  UpdateSplitViewStateAndNotifyObservers();
+  UpdateStateAndNotifyObservers();
 
   base::RecordAction(
       base::UserMetricsAction("SplitView_DoubleTapDividerSwapWindows"));
@@ -585,7 +586,7 @@ void SplitViewController::StartResize(const gfx::Point& location_in_screen) {
   }
 
   base::RecordAction(base::UserMetricsAction("SplitView_ResizeWindows"));
-  if (state_ == SplitViewState::kBothSnapped) {
+  if (state_ == State::kBothSnapped) {
     presentation_time_recorder_ = CreatePresentationTimeHistogramRecorder(
         split_view_divider_->divider_widget()->GetCompositor(),
         kSplitViewResizeMultiHistogram,
@@ -698,7 +699,7 @@ void SplitViewController::EndSplitView(EndReason end_reason) {
   divider_closest_ratio_ = std::numeric_limits<float>::quiet_NaN();
   snapping_window_transformed_bounds_map_.clear();
 
-  UpdateSplitViewStateAndNotifyObservers();
+  UpdateStateAndNotifyObservers();
   base::RecordAction(base::UserMetricsAction("SplitView_EndSplitView"));
   UMA_HISTOGRAM_LONG_TIMES("Ash.SplitView.TimeInSplitView",
                            base::Time::Now() - splitview_start_time_);
@@ -987,7 +988,7 @@ void SplitViewController::OnOverviewModeStarting() {
   } else if (default_snap_position_ == RIGHT) {
     StopObserving(LEFT);
   }
-  UpdateSplitViewStateAndNotifyObservers();
+  UpdateStateAndNotifyObservers();
 }
 
 void SplitViewController::OnOverviewModeEnding(
@@ -1005,7 +1006,7 @@ void SplitViewController::OnOverviewModeEnding(
 
   // If overview is ended because of a window getting snapped, suppress the
   // overview exiting animation.
-  if (state_ == SplitViewState::kBothSnapped)
+  if (state_ == State::kBothSnapped)
     overview_session->SetWindowListNotAnimatedWhenExiting(root_window);
 
   // If clamshell split view mode is active, end it and bail out.
@@ -1016,7 +1017,7 @@ void SplitViewController::OnOverviewModeEnding(
 
   // Tablet split view mode is active. If it still only has one snapped window,
   // snap the first snappable window in the overview grid on the other side.
-  if (state_ == SplitViewState::kBothSnapped)
+  if (state_ == State::kBothSnapped)
     return;
   OverviewGrid* current_grid =
       overview_session->GetGridWithRootWindow(root_window);
@@ -1209,26 +1210,25 @@ void SplitViewController::StopObserving(SnapPosition snap_position) {
   }
 }
 
-void SplitViewController::UpdateSplitViewStateAndNotifyObservers() {
-  SplitViewState previous_state = state_;
+void SplitViewController::UpdateStateAndNotifyObservers() {
+  State previous_state = state_;
   if (IsSnapped(left_window_) && IsSnapped(right_window_))
-    state_ = SplitViewState::kBothSnapped;
+    state_ = State::kBothSnapped;
   else if (IsSnapped(left_window_))
-    state_ = SplitViewState::kLeftSnapped;
+    state_ = State::kLeftSnapped;
   else if (IsSnapped(right_window_))
-    state_ = SplitViewState::kRightSnapped;
+    state_ = State::kRightSnapped;
   else
-    state_ = SplitViewState::kNoSnap;
+    state_ = State::kNoSnap;
 
   // We still notify observers even if |state_| doesn't change as it's possible
   // to snap a window to a position that already has a snapped window. However,
-  // |previous_state| and |state_| cannot both be |SplitViewState::kNoSnap|.
-  // When |previous_state| is |SplitViewState::kNoSnap|, it indicates to
+  // |previous_state| and |state_| cannot both be |State::kNoSnap|.
+  // When |previous_state| is |State::kNoSnap|, it indicates to
   // observers that split view mode started. Likewise, when |state_| is
-  // |SplitViewState::kNoSnap|, it indicates to observers that split view mode
+  // |State::kNoSnap|, it indicates to observers that split view mode
   // ended.
-  DCHECK(previous_state != SplitViewState::kNoSnap ||
-         state_ != SplitViewState::kNoSnap);
+  DCHECK(previous_state != State::kNoSnap || state_ != State::kNoSnap);
   for (auto& observer : observers_)
     observer.OnSplitViewStateChanged(previous_state, state_);
 }
@@ -1501,7 +1501,7 @@ int SplitViewController::GetDividerEndPosition() {
 
 void SplitViewController::OnWindowSnapped(aura::Window* window) {
   RestoreTransformIfApplicable(window);
-  UpdateSplitViewStateAndNotifyObservers();
+  UpdateStateAndNotifyObservers();
   UpdateWindowStackingAfterSnap(window);
 }
 
@@ -1530,7 +1530,7 @@ void SplitViewController::OnSnappedWindowDetached(aura::Window* window,
     // If there is still one snapped window after minimizing/closing one snapped
     // window, update its snap state and open overview window grid.
     default_snap_position_ = left_window_ ? LEFT : RIGHT;
-    UpdateSplitViewStateAndNotifyObservers();
+    UpdateStateAndNotifyObservers();
     Shell::Get()->overview_controller()->StartOverview(
         window_drag ? OverviewSession::EnterExitOverviewType::kImmediateEnter
                     : OverviewSession::EnterExitOverviewType::kNormal);

@@ -117,7 +117,8 @@
       </cr-button>
       <!-- Use policy properties from vpn_config_allowed to indicate when that
            pref disables buttons in this row. -->
-      <controlled-button id="connect" action-button on-click="onConnectTap_"
+      <controlled-button id="connect" class="action-button"
+          on-click="onConnectTap_"
           hidden$="[[!showConnect_(managedProperties_, globalPolicy,
               managedNetworkAvailable)]]"
           disabled="[[!enableConnect_(managedProperties_, defaultNetwork,
@@ -127,7 +128,7 @@
           pref="[[getFakeVpnConfigPrefForEnforcement_(managedProperties_,
               prefs.vpn_config_allowed)]]">
       </controlled-button>
-      <controlled-button id="disconnect" action-button
+      <controlled-button id="disconnect" class="action-button"
           on-click="onDisconnectTap_"
           hidden$="[[!showDisconnect_(managedProperties_)]]"
           label="$i18n{networkButtonDisconnect}"

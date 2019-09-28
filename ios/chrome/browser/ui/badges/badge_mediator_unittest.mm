@@ -158,7 +158,7 @@ TEST_F(BadgeMediatorTest, BadgeMediatorTestRemoveInfobar) {
   AddInfobar();
   AddSecondInfobar();
   EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,
-            BadgeType::kBadgeTypePasswordUpdate);
+            BadgeType::kBadgeTypeOverflow);
   RemoveInfobar();
   ASSERT_TRUE(badge_consumer_.displayedBadge);
   EXPECT_EQ(badge_consumer_.displayedBadge.badgeType,

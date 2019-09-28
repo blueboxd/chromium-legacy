@@ -18,8 +18,6 @@
 #include "components/viz/common/quads/tile_draw_quad.h"
 #include "components/viz/common/quads/video_hole_draw_quad.h"
 #include "components/viz/common/quads/yuv_video_draw_quad.h"
-#include "gpu/ipc/common/vulkan_ycbcr_info.h"
-#include "gpu/ipc/common/vulkan_ycbcr_info_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/filter_operation_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/filter_operations_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/shared_quad_state_mojom_traits.h"
@@ -301,13 +299,6 @@ struct StructTraits<viz::mojom::StreamVideoQuadStateDataView, viz::DrawQuad> {
     const viz::StreamVideoDrawQuad* quad =
         viz::StreamVideoDrawQuad::MaterialCast(&input);
     return quad->uv_bottom_right;
-  }
-
-  static const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info(
-      const viz::DrawQuad& input) {
-    const viz::StreamVideoDrawQuad* quad =
-        viz::StreamVideoDrawQuad::MaterialCast(&input);
-    return quad->ycbcr_info;
   }
 
   static bool Read(viz::mojom::StreamVideoQuadStateDataView data,

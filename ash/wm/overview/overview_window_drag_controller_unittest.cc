@@ -448,7 +448,8 @@ TEST_F(OverviewWindowDragControllerDesksPortraitTabletTest,
   // remains unshifted.
   event_generator->ReleaseLeftButton();
   EXPECT_TRUE(overview_controller()->InOverviewSession());
-  EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller()->state());
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
   EXPECT_EQ(window.get(), split_view_controller()->left_window());
   EXPECT_EQ(overview_grid()->bounds().y(),
             desks_bar_widget()->GetWindowBoundsInScreen().y());

@@ -39,8 +39,7 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   void Trace(blink::Visitor* visitor);
 
   // BeginFrameProviderClient
-  void BeginFrame() override;
-  bool InBeginFrame() const;
+  void BeginFrame(const base::TimeTicks& frame_time) override;
 
   void RegisterOffscreenCanvas(OffscreenCanvas*);
   void DeregisterOffscreenCanvas(OffscreenCanvas*);
@@ -55,7 +54,6 @@ class CORE_EXPORT WorkerAnimationFrameProvider
   // To avoid leaking OffscreenCanvas objects, the following vector must
   // not hold strong references.
   Vector<UntracedMember<OffscreenCanvas>> offscreen_canvases_;
-  bool in_begin_frame_;
 
   Member<ExecutionContext> context_;
 

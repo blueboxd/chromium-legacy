@@ -33,6 +33,7 @@
 #include "cc/input/scrollbar.h"
 #include "cc/layers/layer_collections.h"
 #include "cc/layers/layer_list_iterator.h"
+#include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/paint/node_id.h"
 #include "cc/trees/compositor_mode.h"
 #include "cc/trees/layer_tree_frame_sink.h"
@@ -567,7 +568,7 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   void BeginMainFrameNotExpectedSoon();
   void BeginMainFrameNotExpectedUntil(base::TimeTicks time);
   void AnimateLayers(base::TimeTicks monotonic_frame_begin_time);
-  void RequestMainFrameUpdate();
+  void RequestMainFrameUpdate(bool report_cc_metrics);
   void FinishCommitOnImplThread(LayerTreeHostImpl* host_impl);
   void WillCommit();
   void CommitComplete();
@@ -875,6 +876,12 @@ class CC_EXPORT LayerTreeHost : public MutatorHostClient {
   // Presentation time callbacks requested for the next frame are initially
   // added here.
   std::vector<PresentationTimeCallback> pending_presentation_time_callbacks_;
+
+  // Latency information for work done in ProxyMain::BeginMainFrame. The
+  // unique_ptr is allocated in RequestMainFrameUpdate, and passed to Blink's
+  // LocalFrameView that fills in the fields. This object adds the timing for
+  // UpdateLayers. CC reads the data during commit, and clears the unique_ptr.
+  std::unique_ptr<BeginMainFrameMetrics> begin_main_frame_metrics_;
 
   // Used to vend weak pointers to LayerTreeHost to ScopedDeferMainFrameUpdate
   // objects.

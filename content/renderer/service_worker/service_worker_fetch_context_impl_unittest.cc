@@ -48,7 +48,8 @@ TEST_F(ServiceWorkerFetchContextImplTest, SkipThrottling) {
       /*script_loader_factory_info=*/nullptr, kScriptUrlToSkipThrottling,
       std::make_unique<FakeURLLoaderThrottleProvider>(),
       /*websocket_handshake_throttle_provider=*/nullptr, mojo::NullReceiver(),
-      mojo::NullReceiver());
+      mojo::NullReceiver(),
+      /*service_worker_route_id=*/-1);
 
   {
     // Call WillSendRequest() for kScriptURL.

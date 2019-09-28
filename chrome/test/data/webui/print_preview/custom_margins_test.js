@@ -9,6 +9,7 @@ cr.define('custom_margins_test', function() {
     SetFromStickySettings: 'set from sticky settings',
     DragControls: 'drag controls',
     SetControlsWithTextbox: 'set controls with textbox',
+    SetControlsWithTextboxMetric: 'set controls with textbox metric',
     RestoreStickyMarginsAfterDefault: 'restore sticky margins after default',
     MediaSizeClearsCustomMargins: 'media size clears custom margins',
     LayoutClearsCustomMargins: 'layout clears custom margins',
@@ -30,6 +31,9 @@ cr.define('custom_margins_test', function() {
     /** @type {!Array<!print_preview.ticket_items.CustomMarginsOrientation>} */
     let sides = [];
 
+    /** @type {!print_preview.MeasurementSystem} */
+    let measurementSystem = null;
+
     /** @type {number} */
     const pixelsPerInch = 100;
 
@@ -45,6 +49,8 @@ cr.define('custom_margins_test', function() {
     /** @override */
     setup(function() {
       PolymerTest.clearBody();
+      measurementSystem = new print_preview.MeasurementSystem(
+          ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL);
       model = document.createElement('print-preview-model');
       document.body.appendChild(model);
       model.set('settings.mediaSize.available', true);
@@ -64,8 +70,6 @@ cr.define('custom_margins_test', function() {
       container.documentMargins = new print_preview.Margins(
           defaultMarginPts, defaultMarginPts, defaultMarginPts,
           defaultMarginPts);
-      container.measurementSystem = new print_preview.MeasurementSystem(
-          ',', '.', print_preview.MeasurementSystemUnitType.IMPERIAL);
       container.state = print_preview.State.NOT_READY;
     });
 
@@ -83,6 +87,7 @@ cr.define('custom_margins_test', function() {
      */
     function finishSetup() {
       // Wait for the control elements to be created before updating the state.
+      container.measurementSystem = measurementSystem;
       document.body.appendChild(container);
       let controlsAdded = test_util.eventToPromise('dom-change', container);
       return controlsAdded.then(() => {
@@ -164,7 +169,8 @@ cr.define('custom_margins_test', function() {
      * @param {string} input The new textbox input for the margin.
      * @param {boolean} invalid Whether the new value is invalid.
      * @param {number=} newValuePts the new margin value in pts. If not
-     *     specified, computes the value assuming it is in bounds.
+     *     specified, computes the value assuming it is in bounds and assuming
+     *     the default measurement system.
      * @return {!Promise} Promise that resolves when the test is complete.
      */
     function testControlTextbox(
@@ -399,38 +405,45 @@ cr.define('custom_margins_test', function() {
       });
     });
 
+    /**
+     * @param {!Array<!MarginControlElement>} controls
+     * @param {number} currentValue Current margin value in pts
+     * @param {string} input String to set in margin textboxes
+     * @param {boolean} invalid Whether the string is invalid
+     * @param {number=} newValuePts the new margin value in pts. If not
+     *     specified, computes the value assuming it is in bounds and assuming
+     *     the default measurement system.
+     * @return {!Promise} Promise that resolves when all controls have been
+     *     tested.
+     */
+    function testAllTextboxes(
+        controls, currentValue, input, invalid, newValuePts) {
+      return testControlTextbox(
+                 controls[0], keys[0], currentValue, input, invalid,
+                 newValuePts)
+          .then(
+              () => testControlTextbox(
+                  controls[1], keys[1], currentValue, input, invalid,
+                  newValuePts))
+          .then(
+              () => testControlTextbox(
+                  controls[2], keys[2], currentValue, input, invalid,
+                  newValuePts))
+          .then(
+              () => testControlTextbox(
+                  controls[3], keys[3], currentValue, input, invalid,
+                  newValuePts));
+    }
+
     // Test that setting the margin controls with their textbox inputs updates
     // the custom margins setting.
     test(assert(TestNames.SetControlsWithTextbox), function() {
-      /**
-       * @param {!Array<!MarginControlElement>} controls
-       * @param {number} currentValue Current margin value in pts
-       * @param {string} input String to set in margin textboxes
-       * @param {boolean} invalid Whether the string is invalid
-       * @return {!Promise} Promise that resolves when all controls have been
-       *     tested.
-       */
-      const testAllTextboxes = function(
-          controls, currentValue, input, invalid) {
-        return testControlTextbox(
-                   controls[0], keys[0], currentValue, input, invalid)
-            .then(
-                () => testControlTextbox(
-                    controls[1], keys[1], currentValue, input, invalid))
-            .then(
-                () => testControlTextbox(
-                    controls[2], keys[2], currentValue, input, invalid))
-            .then(
-                () => testControlTextbox(
-                    controls[3], keys[3], currentValue, input, invalid));
-      };
-
       return finishSetup().then(() => {
         const controls = getControls();
         // Set a shorter delay for testing so the test doesn't take too
         // long.
         controls.forEach(c => {
-          c.getInput().setAttribute('data-timeout-delay', 10);
+          c.getInput().setAttribute('data-timeout-delay', 1);
         });
         model.set(
             'settings.margins.value',
@@ -461,6 +474,65 @@ cr.define('custom_margins_test', function() {
             .then(
                 () => testControlTextbox(
                     controls[0], keys[0], maxTopMargin, '1,000', false,
+                    maxTopMargin));
+      });
+    });
+
+    // Test that setting the margin controls with their textbox inputs updates
+    // the custom margins setting, using a metric measurement system with a ','
+    // as the decimal delimiter and '.' as the thousands delimiter. Regression
+    // test for https://crbug.com/1005816.
+    test(assert(TestNames.SetControlsWithTextboxMetric), function() {
+      measurementSystem = new print_preview.MeasurementSystem(
+          '.', ',', print_preview.MeasurementSystemUnitType.METRIC);
+      return finishSetup().then(() => {
+        const controls = getControls();
+        // Set a shorter delay for testing so the test doesn't take too
+        // long.
+        controls.forEach(c => {
+          c.getInput().setAttribute('data-timeout-delay', 1);
+        });
+        model.set(
+            'settings.margins.value',
+            print_preview.ticket_items.MarginsTypeValue.CUSTOM);
+        Polymer.dom.flush();
+
+        // Verify entering a new value updates the settings.
+        // Then verify entering an invalid value invalidates the control
+        // and does not update the settings.
+        const pointsPerMM = pointsPerInch / 25.4;
+        const newMargin1 = '50,0';
+        const newMargin1Pts = Math.round(50 * pointsPerMM);
+        const newMargin2 = ',9';
+        const newMargin2Pts = Math.round(.9 * pointsPerMM);
+        const newMargin3 = '60';
+        const newMargin3Pts = Math.round(60 * pointsPerMM);
+        const maxTopMargin = container.pageSize.height - newMargin3Pts -
+            72 /* MINIMUM_DISTANCE, see margin_control.js */;
+        return testAllTextboxes(
+                   controls, defaultMarginPts, newMargin1, false, newMargin1Pts)
+            .then(
+                () => testAllTextboxes(
+                    controls, newMargin1Pts, 'abc', true, newMargin1Pts))
+            .then(
+                () => testAllTextboxes(
+                    controls, newMargin1Pts, '50,2abc', true, newMargin1Pts))
+            .then(
+                () => testAllTextboxes(
+                    controls, newMargin1Pts, '10,   2', true, newMargin1Pts))
+            .then(
+                () => testAllTextboxes(
+                    controls, newMargin1Pts, newMargin2, false, newMargin2Pts))
+            .then(
+                () => testAllTextboxes(
+                    controls, newMargin2Pts, newMargin3, false, newMargin3Pts))
+            .then(
+                () => testControlTextbox(
+                    controls[0], keys[0], newMargin3Pts, '1.000.000', false,
+                    maxTopMargin))
+            .then(
+                () => testControlTextbox(
+                    controls[0], keys[0], maxTopMargin, '1.000', false,
                     maxTopMargin));
       });
     });

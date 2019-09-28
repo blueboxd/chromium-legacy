@@ -92,14 +92,6 @@ LazyDomDistillerService::CreateDefaultDistillerPageWithHandle(
   return instance()->CreateDefaultDistillerPageWithHandle(std::move(handle));
 }
 
-void LazyDomDistillerService::AddObserver(DomDistillerObserver* observer) {
-  instance()->AddObserver(observer);
-}
-
-void LazyDomDistillerService::RemoveObserver(DomDistillerObserver* observer) {
-  instance()->RemoveObserver(observer);
-}
-
 DistilledPagePrefs* LazyDomDistillerService::GetDistilledPagePrefs() {
   return instance()->GetDistilledPagePrefs();
 }

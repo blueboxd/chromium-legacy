@@ -7,11 +7,11 @@
 
 #include "base/bind.h"
 #include "ui/gfx/native_widget_types.h"
+#include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/platform_window_handler/wm_platform_export.h"
 
 namespace ui {
 class OSExchangeData;
-class PlatformWindow;
 
 class WM_PLATFORM_EXPORT WmDragHandler {
  public:

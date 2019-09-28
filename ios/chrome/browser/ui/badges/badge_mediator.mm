@@ -4,12 +4,20 @@
 
 #import "ios/chrome/browser/ui/badges/badge_mediator.h"
 
+#include "base/mac/foundation_util.h"
+#include "base/metrics/user_metrics.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper.h"
 #include "ios/chrome/browser/infobars/infobar_badge_tab_helper_delegate.h"
+#include "ios/chrome/browser/infobars/infobar_metrics_recorder.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/ui/badges/badge_button.h"
 #import "ios/chrome/browser/ui/badges/badge_consumer.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/badges/badge_static_item.h"
+#import "ios/chrome/browser/ui/badges/badge_tappable_item.h"
+#import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
+#import "ios/chrome/browser/ui/commands/infobar_commands.h"
+#import "ios/chrome/browser/ui/list_model/list_model.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/web/public/browser_state.h"
@@ -17,6 +25,14 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+namespace {
+// The number of Fullscreen badges
+const int kNumberOfFullScrenBadges = 1;
+// The minimum number of non-Fullscreen badges to display the overflow popup
+// menu.
+const int kMinimumNonFullScreenBadgesForOverflow = 2;
+}
 
 @interface BadgeMediator () <InfobarBadgeTabHelperDelegate,
                              WebStateListObserving> {
@@ -70,7 +86,7 @@
 
 - (void)addInfobarBadge:(id<BadgeItem>)badgeItem {
   if (!self.badges) {
-    self.badges = [[NSMutableArray alloc] init];
+    self.badges = [NSMutableArray array];
   }
   [self.badges addObject:badgeItem];
   [self updateBadgesShown];
@@ -94,6 +110,47 @@
       return;
     }
   }
+}
+
+#pragma mark - BadgeDelegate
+
+- (void)passwordsBadgeButtonTapped:(id)sender {
+  BadgeButton* badgeButton = base::mac::ObjCCastStrict<BadgeButton>(sender);
+  MobileMessagesBadgeState state;
+  if (badgeButton.accepted) {
+    state = MobileMessagesBadgeState::Active;
+    base::RecordAction(
+        base::UserMetricsAction("MobileMessagesBadgeAcceptedTapped"));
+  } else {
+    state = MobileMessagesBadgeState::Inactive;
+    base::RecordAction(
+        base::UserMetricsAction("MobileMessagesBadgeNonAcceptedTapped"));
+  }
+  InfobarMetricsRecorder* metricsRecorder;
+  if (badgeButton.badgeType == BadgeType::kBadgeTypePasswordSave) {
+    metricsRecorder = [[InfobarMetricsRecorder alloc]
+        initWithType:InfobarType::kInfobarTypePasswordSave];
+    [self.dispatcher displayModalInfobar:InfobarType::kInfobarTypePasswordSave];
+  } else if (badgeButton.badgeType == BadgeType::kBadgeTypePasswordUpdate) {
+    metricsRecorder = [[InfobarMetricsRecorder alloc]
+        initWithType:InfobarType::kInfobarTypePasswordUpdate];
+    [self.dispatcher
+        displayModalInfobar:InfobarType::kInfobarTypePasswordUpdate];
+  }
+  [metricsRecorder recordBadgeTappedInState:state];
+}
+
+- (void)overflowBadgeButtonTapped:(id)sender {
+  NSMutableArray<id<BadgeItem>>* popupMenuBadges =
+      [[NSMutableArray alloc] init];
+  // Get all non-fullscreen badges.
+  for (id<BadgeItem> item in self.badges) {
+    if (![item isFullScreen]) {
+      [popupMenuBadges addObject:item];
+    }
+  }
+  [self.dispatcher displayPopupMenuWithBadgeItems:popupMenuBadges];
+  // TODO(crbug.com/976901): Add metric for this action.
 }
 
 #pragma mark - WebStateListObserver
@@ -131,11 +188,19 @@
   id<BadgeItem> displayedBadge;
   id<BadgeItem> fullScreenBadge;
   for (id<BadgeItem> item in self.badges) {
-    if (item.isFullScreen) {
+    if ([item isFullScreen]) {
       fullScreenBadge = item;
     } else {
       displayedBadge = item;
     }
+  }
+  NSInteger count = [self.badges count];
+  if (fullScreenBadge) {
+    count -= kNumberOfFullScrenBadges;
+  }
+  if (count >= kMinimumNonFullScreenBadgesForOverflow) {
+    displayedBadge = [[BadgeTappableItem alloc]
+        initWithBadgeType:BadgeType::kBadgeTypeOverflow];
   }
   [self.consumer updateDisplayedBadge:displayedBadge
                       fullScreenBadge:fullScreenBadge];
@@ -156,9 +221,11 @@
   self.badges = [[NSArray arrayWithObjects:&infobarBadges[0]
                                      count:infobarBadges.size()] mutableCopy];
   id<BadgeItem> displayedBadge;
-  // Set the last badge as the displayed badge, since there is currently only
-  // one Infobar with a badge.
-  if ([self.badges count] > 0) {
+  if ([self.badges count] > 1) {
+    // Show the overflow menu badge when there are multiple badges.
+    displayedBadge = [[BadgeTappableItem alloc]
+        initWithBadgeType:BadgeType::kBadgeTypeOverflow];
+  } else if ([self.badges count] == 1) {
     displayedBadge = [self.badges lastObject];
   }
   id<BadgeItem> fullScreenBadge;

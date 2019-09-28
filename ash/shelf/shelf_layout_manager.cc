@@ -750,10 +750,11 @@ void ShelfLayoutManager::OnPinnedStateChanged(aura::Window* pinned_window) {
   UpdateVisibilityState();
 }
 
-void ShelfLayoutManager::OnSplitViewStateChanged(SplitViewState previous_state,
-                                                 SplitViewState state) {
-  if (previous_state == SplitViewState::kNoSnap ||
-      state == SplitViewState::kNoSnap) {
+void ShelfLayoutManager::OnSplitViewStateChanged(
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
+  if (previous_state == SplitViewController::State::kNoSnap ||
+      state == SplitViewController::State::kNoSnap) {
     MaybeUpdateShelfBackground(AnimationChangeType::ANIMATE);
   }
 }
@@ -1386,28 +1387,27 @@ void ShelfLayoutManager::CalculateTargetBounds(
   int hotseat_width;
   int hotseat_height;
   if (shelf_->IsHorizontalAlignment()) {
-    int hotseat_y;
-    const int hotseat_size = Shell::Get()->shelf_config()->hotseat_size();
+    int hotseat_distance_from_bottom_of_display;
+    const int hotseat_size = ShelfConfig::Get()->hotseat_size();
     switch (state_.hotseat_state) {
       case HotseatState::kShown: {
         // When the hotseat state is HotseatState::kShown in tablet mode, the
         // home launcher is showing. Elevate the hotseat a few px to match the
         // navigation and status area.
-        const bool use_padding = chromeos::switches::ShouldShowShelfHotseat() &&
-                                 IsTabletModeEnabled();
-        hotseat_y =
-            use_padding
-                ? -Shell::Get()->shelf_config()->hotseat_bottom_padding()
-                : 0;
+        const bool use_padding = IsHotseatEnabled();
+        hotseat_distance_from_bottom_of_display =
+            hotseat_size +
+            (use_padding ? ShelfConfig::Get()->hotseat_bottom_padding() : 0);
       } break;
       case HotseatState::kHidden:
         // Show the hotseat offscreen.
-        hotseat_y = hotseat_size;
+        hotseat_distance_from_bottom_of_display = 0;
         break;
       case HotseatState::kExtended:
         // Show the hotseat at its extended position.
-        hotseat_y = -hotseat_size -
-                    Shell::Get()->shelf_config()->hotseat_bottom_padding();
+        hotseat_distance_from_bottom_of_display =
+            ShelfConfig::Get()->in_app_shelf_size() +
+            ShelfConfig::Get()->hotseat_bottom_padding() + hotseat_size;
         break;
     }
 
@@ -1415,21 +1415,19 @@ void ShelfLayoutManager::CalculateTargetBounds(
         shelf_width - target_bounds->nav_bounds_in_shelf.size().width() -
         home_button_edge_spacing - ShelfConfig::Get()->app_icon_group_margin() -
         status_size.width();
-
     int hotseat_x = base::i18n::IsRTL()
                         ? target_bounds->nav_bounds_in_shelf.x() -
                               home_button_edge_spacing - hotseat_width
                         : target_bounds->nav_bounds_in_shelf.right() +
                               home_button_edge_spacing;
-
     if (state_.hotseat_state != HotseatState::kShown) {
       // Give the hotseat more space if it is shown outside of the shelf.
       hotseat_width = available_bounds.width();
       hotseat_x = 0;
     }
-
+    const int hotseat_y =
+        -(hotseat_distance_from_bottom_of_display - shelf_size);
     hotseat_origin = gfx::Point(hotseat_x, hotseat_y);
-
     hotseat_height = hotseat_size;
   } else {
     hotseat_origin = gfx::Point(0, target_bounds->nav_bounds_in_shelf.bottom() +
@@ -2041,7 +2039,8 @@ bool ShelfLayoutManager::StartShelfDrag(
   // offset to the hotseats extended position.
   if (state_.hotseat_state == HotseatState::kExtended &&
       visibility_state() == SHELF_VISIBLE) {
-    drag_amount_ = -ShelfConfig::Get()->hotseat_size();
+    drag_amount_ = -(ShelfConfig::Get()->hotseat_size() +
+                     ShelfConfig::Get()->hotseat_bottom_padding());
   } else {
     drag_amount_ = 0.f;
   }

@@ -20,6 +20,7 @@
 #include "ui/gfx/font.h"
 #include "ui/gfx/font_fallback.h"
 #include "ui/gfx/font_fallback_skia_impl.h"
+#include "ui/gfx/platform_font.h"
 
 namespace gfx {
 
@@ -250,13 +251,18 @@ bool GetFallbackFont(const Font& font,
   if (text.find(kNulCharacter) != base::StringPiece16::npos)
     return false;
 
-  std::string skia_fallback_family =
-      GetFallbackFontFamilyNameSkia(font, locale, text);
+  sk_sp<SkTypeface> fallback_typeface =
+      GetSkiaFallbackTypeface(font, locale, text);
 
-  if (skia_fallback_family.empty())
+  if (!fallback_typeface)
     return false;
 
-  *result = Font(skia_fallback_family, font.GetFontSize());
+  // Fallback needs to keep the exact SkTypeface, as re-matching the font using
+  // family name and styling information loses access to the underlying platform
+  // font handles and is not guaranteed to result in the correct typeface, see
+  // https://crbug.com/1003829
+  *result = Font(PlatformFont::CreateFromSkTypeface(
+      std::move(fallback_typeface), font.GetFontSize()));
   return true;
 }
 

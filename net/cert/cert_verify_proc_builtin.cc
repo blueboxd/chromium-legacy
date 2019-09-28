@@ -43,6 +43,9 @@ constexpr uint32_t kPathBuilderIterationLimit = 25000;
 constexpr base::TimeDelta kMaxVerificationTime =
     base::TimeDelta::FromSeconds(60);
 
+constexpr base::TimeDelta kPerAttemptMinVerificationTimeLimit =
+    base::TimeDelta::FromSeconds(5);
+
 DEFINE_CERT_ERROR_ID(kPathLacksEVPolicy, "Path does not have an EV policy");
 
 RevocationPolicy NoRevocationChecking() {
@@ -589,13 +592,8 @@ int AssignVerifyResult(X509Certificate* input_cert,
 // This implementation is simplistic, and looks only for the presence of the
 // kUnacceptableSignatureAlgorithm error somewhere among the built paths.
 bool CanTryAgainWithWeakerDigestPolicy(const CertPathBuilder::Result& result) {
-  for (const auto& path : result.paths) {
-    if (path->errors.ContainsError(
-            cert_errors::kUnacceptableSignatureAlgorithm))
-      return true;
-  }
-
-  return false;
+  return result.AnyPathContainsError(
+      cert_errors::kUnacceptableSignatureAlgorithm);
 }
 
 int CertVerifyProcBuiltin::VerifyInternal(
@@ -672,6 +670,12 @@ int CertVerifyProcBuiltin::VerifyInternal(
     const auto& cur_attempt = attempts[cur_attempt_index];
     verification_type = cur_attempt.verification_type;
 
+    // If a previous attempt used up most/all of the deadline, extend the
+    // deadline a little bit to give this verification attempt a chance at
+    // success.
+    deadline = std::max(
+        deadline, base::TimeTicks::Now() + kPerAttemptMinVerificationTimeLimit);
+
     // Run the attempt through the path builder.
     result = TryBuildPath(
         target, &intermediates, ssl_trust_store.get(), verification_time,
@@ -679,8 +683,22 @@ int CertVerifyProcBuiltin::VerifyInternal(
         flags, ocsp_response, crl_set, net_fetcher_.get(), ev_metadata,
         &checked_revocation_for_some_path);
 
-    if (result.HasValidPath() || result.exceeded_deadline)
+    if (result.HasValidPath())
       break;
+
+    if (result.exceeded_deadline) {
+      if (verification_type == VerificationType::kEV &&
+          result.AnyPathContainsError(cert_errors::kUnableToCheckRevocation)) {
+        // EV verification failed due to deadline exceeded and unable to check
+        // revocation. Try the non-EV attempt even though the deadline has been
+        // reached, since a revocation checking failure on EV should be a
+        // soft-fail. (Since the non-EV attempt generally will not be using
+        // revocation checking it hopefully won't hit the deadline too.)
+        continue;
+      }
+      // Otherwise, stop immediately if an attempt exceeds the deadline.
+      break;
+    }
 
     // If this path building attempt (may have) failed due to the chain using a
     // weak signature algorithm, enqueue a similar attempt but with weaker

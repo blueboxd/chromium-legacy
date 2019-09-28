@@ -842,10 +842,10 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersAbsent) {
   StartLoadingURL(request, 0);
   client()->RunUntilRedirectReceived();
   EXPECT_TRUE(client()->has_received_redirect());
-  EXPECT_TRUE(!client()->response_head().raw_request_response_info);
+  EXPECT_TRUE(!client()->response_head()->raw_request_response_info);
   loader()->FollowRedirect({}, {}, base::nullopt);
   client()->RunUntilComplete();
-  EXPECT_TRUE(!client()->response_head().raw_request_response_info);
+  EXPECT_TRUE(!client()->response_head()->raw_request_response_info);
 }
 
 TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
@@ -859,8 +859,8 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
   client()->RunUntilRedirectReceived();
   EXPECT_TRUE(client()->has_received_redirect());
   {
-    scoped_refptr<HttpRawRequestResponseInfo> request_response_info =
-        client()->response_head().raw_request_response_info;
+    auto& request_response_info =
+        client()->response_head()->raw_request_response_info;
     ASSERT_TRUE(request_response_info);
     EXPECT_EQ(301, request_response_info->http_status_code);
     EXPECT_EQ("Moved Permanently", request_response_info->http_status_text);
@@ -876,8 +876,8 @@ TEST_F(NetworkServiceTestWithService, RawRequestHeadersPresent) {
   loader()->FollowRedirect({}, {}, base::nullopt);
   client()->RunUntilComplete();
   {
-    scoped_refptr<HttpRawRequestResponseInfo> request_response_info =
-        client()->response_head().raw_request_response_info;
+    auto& request_response_info =
+        client()->response_head()->raw_request_response_info;
     EXPECT_EQ(200, request_response_info->http_status_code);
     EXPECT_EQ("OK", request_response_info->http_status_text);
     EXPECT_TRUE(base::StartsWith(request_response_info->request_headers_text,
@@ -902,7 +902,7 @@ TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
 
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
-  EXPECT_FALSE(client()->response_head().raw_request_response_info);
+  EXPECT_FALSE(client()->response_head()->raw_request_response_info);
   service()->SetRawHeadersAccess(
       process_id,
       {url::Origin::CreateFromNormalizedTuple("http", "example.com", 80),
@@ -910,8 +910,8 @@ TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
   {
-    scoped_refptr<HttpRawRequestResponseInfo> request_response_info =
-        client()->response_head().raw_request_response_info;
+    auto& request_response_info =
+        client()->response_head()->raw_request_response_info;
     ASSERT_TRUE(request_response_info);
     EXPECT_EQ(200, request_response_info->http_status_code);
     EXPECT_EQ("OK", request_response_info->http_status_text);
@@ -920,14 +920,14 @@ TEST_F(NetworkServiceTestWithService, RawRequestAccessControl) {
   service()->SetRawHeadersAccess(process_id, {});
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
-  EXPECT_FALSE(client()->response_head().raw_request_response_info.get());
+  EXPECT_FALSE(client()->response_head()->raw_request_response_info.get());
 
   service()->SetRawHeadersAccess(
       process_id,
       {url::Origin::CreateFromNormalizedTuple("http", "example.com", 80)});
   StartLoadingURL(request, process_id);
   client()->RunUntilComplete();
-  EXPECT_FALSE(client()->response_head().raw_request_response_info.get());
+  EXPECT_FALSE(client()->response_head()->raw_request_response_info.get());
 }
 
 class NetworkServiceTestWithResolverMap : public NetworkServiceTestWithService {
@@ -959,31 +959,31 @@ TEST_F(NetworkServiceTestWithResolverMap, RawRequestAccessControlWithRedirect) {
 
   StartLoadingURL(request, process_id);
   client()->RunUntilRedirectReceived();  // from a.test to b.test
-  EXPECT_TRUE(client()->response_head().raw_request_response_info);
+  EXPECT_TRUE(client()->response_head()->raw_request_response_info);
 
   loader()->FollowRedirect({}, {}, base::nullopt);
   client()->ClearHasReceivedRedirect();
   client()->RunUntilRedirectReceived();  // from b.test to a.test
-  EXPECT_FALSE(client()->response_head().raw_request_response_info);
+  EXPECT_FALSE(client()->response_head()->raw_request_response_info);
 
   loader()->FollowRedirect({}, {}, base::nullopt);
   client()->RunUntilComplete();  // Done loading a.test
-  EXPECT_TRUE(client()->response_head().raw_request_response_info.get());
+  EXPECT_TRUE(client()->response_head()->raw_request_response_info.get());
 
   service()->SetRawHeadersAccess(process_id, {url::Origin::Create(url_b)});
 
   StartLoadingURL(request, process_id);
   client()->RunUntilRedirectReceived();  // from a.test to b.test
-  EXPECT_FALSE(client()->response_head().raw_request_response_info);
+  EXPECT_FALSE(client()->response_head()->raw_request_response_info);
 
   loader()->FollowRedirect({}, {}, base::nullopt);
   client()->ClearHasReceivedRedirect();
   client()->RunUntilRedirectReceived();  // from b.test to a.test
-  EXPECT_TRUE(client()->response_head().raw_request_response_info);
+  EXPECT_TRUE(client()->response_head()->raw_request_response_info);
 
   loader()->FollowRedirect({}, {}, base::nullopt);
   client()->RunUntilComplete();  // Done loading a.test
-  EXPECT_FALSE(client()->response_head().raw_request_response_info.get());
+  EXPECT_FALSE(client()->response_head()->raw_request_response_info.get());
 }
 
 TEST_F(NetworkServiceTestWithService, SetNetworkConditions) {
@@ -1247,7 +1247,7 @@ TEST_F(NetworkServiceTestWithService, AIAFetching) {
           mojom::kURLLoadOptionSendSSLInfoWithResponse);
   EXPECT_EQ(net::OK, client()->completion_status().error_code);
   EXPECT_EQ(
-      0u, client()->response_head().cert_status & net::CERT_STATUS_ALL_ERRORS);
+      0u, client()->response_head()->cert_status & net::CERT_STATUS_ALL_ERRORS);
   ASSERT_TRUE(client()->ssl_info());
   ASSERT_TRUE(client()->ssl_info()->cert);
   EXPECT_EQ(2u, client()->ssl_info()->cert->intermediate_buffers().size());

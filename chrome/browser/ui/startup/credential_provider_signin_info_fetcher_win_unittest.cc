@@ -110,17 +110,17 @@ void CredentialProviderFetcherTest::SetFakeResponses(
     int token_info_net_error) {
   test_url_loader_factory_.AddResponse(
       GaiaUrls::GetInstance()->oauth2_token_info_url(),
-      network::CreateResourceResponseHead(token_info_code), token_info_data,
+      network::CreateURLResponseHead(token_info_code), token_info_data,
       network::URLLoaderCompletionStatus(token_info_net_error));
 
   test_url_loader_factory_.AddResponse(
       GaiaUrls::GetInstance()->oauth_user_info_url(),
-      network::CreateResourceResponseHead(user_info_code), user_info_data,
+      network::CreateURLResponseHead(user_info_code), user_info_data,
       network::URLLoaderCompletionStatus(user_info_net_error));
 
   test_url_loader_factory_.AddResponse(
       GaiaUrls::GetInstance()->oauth2_token_url(),
-      network::CreateResourceResponseHead(access_token_fetch_code),
+      network::CreateURLResponseHead(access_token_fetch_code),
       access_token_fetch_data,
       network::URLLoaderCompletionStatus(access_token_net_error));
 }

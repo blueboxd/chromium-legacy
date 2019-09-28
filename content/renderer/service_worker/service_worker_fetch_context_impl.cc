@@ -33,7 +33,8 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
         preference_watcher_receiver,
     mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
-        pending_subresource_loader_updater)
+        pending_subresource_loader_updater,
+    int32_t service_worker_route_id)
     : renderer_preferences_(renderer_preferences),
       worker_script_url_(worker_script_url),
       url_loader_factory_info_(std::move(url_loader_factory_info)),
@@ -45,7 +46,8 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
       preference_watcher_pending_receiver_(
           std::move(preference_watcher_receiver)),
       pending_subresource_loader_updater_(
-          std::move(pending_subresource_loader_updater)) {}
+          std::move(pending_subresource_loader_updater)),
+      service_worker_route_id_(service_worker_route_id) {}
 
 ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
 
@@ -110,6 +112,7 @@ void ServiceWorkerFetchContextImpl::WillSendRequest(
   }
   auto extra_data = std::make_unique<RequestExtraData>();
   extra_data->set_originated_from_service_worker(true);
+  extra_data->set_render_frame_id(service_worker_route_id_);
 
   const bool needs_to_skip_throttling =
       static_cast<GURL>(request.Url()) == script_url_to_skip_throttling_ &&

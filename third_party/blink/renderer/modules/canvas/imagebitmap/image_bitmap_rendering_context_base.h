@@ -53,7 +53,7 @@ class MODULES_EXPORT ImageBitmapRenderingContextBase
   void SetUV(const FloatPoint& left_top, const FloatPoint& right_bottom);
   bool IsComposited() const final { return true; }
   bool IsAccelerated() const final;
-  void PushFrame() override;
+  bool PushFrame() override;
 
   bool IsOriginTopLeft() const override;
 

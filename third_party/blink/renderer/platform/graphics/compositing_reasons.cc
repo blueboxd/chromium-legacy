@@ -110,8 +110,6 @@ constexpr CompositingReasonStringMap kCompositingReasonsStringMap[] = {
      "tree"},
     {CompositingReason::kLayerForDescendantClip, "layerForDescendantClip",
      "Secondary layer, to clip descendants of the owning layer"},
-    {CompositingReason::kLayerForPerspective, "layerForPerspective",
-     "Secondary layer, to house the perspective transform for all descendants"},
     {CompositingReason::kLayerForHorizontalScrollbar,
      "layerForHorizontalScrollbar",
      "Secondary layer, the horizontal scrollbar layer"},

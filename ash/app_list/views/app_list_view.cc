@@ -932,16 +932,18 @@ void AppListView::EndDrag(const gfx::Point& location) {
     return;
   }
 
+  // Remember the last fling velocity, as the value gets reset in SetIsInDrag.
+  const int last_fling_velocity = last_fling_velocity_;
   SetIsInDrag(false);
 
   // Change the app list state based on where the drag ended. If fling velocity
   // was over the threshold, snap to the next state in the direction of the
   // fling.
-  if (std::abs(last_fling_velocity_) >= kDragVelocityThreshold) {
+  if (std::abs(last_fling_velocity) >= kDragVelocityThreshold) {
     // If the user releases drag with velocity over the threshold, snap to
     // the next state, ignoring the drag release position.
 
-    if (last_fling_velocity_ > 0) {
+    if (last_fling_velocity > 0) {
       switch (app_list_state_) {
         case ash::AppListViewState::kPeeking:
         case ash::AppListViewState::kHalf:
@@ -1785,6 +1787,10 @@ void AppListView::SetIsInDrag(bool is_in_drag) {
   if (is_in_drag == is_in_drag_)
     return;
 
+  // Reset |last_fling_velocity_| if it was set during the drag.
+  if (!is_in_drag)
+    last_fling_velocity_ = 0;
+
   // Don't allow dragging to interrupt the close animation, it probably is not
   // intentional.
   if (app_list_state_ == ash::AppListViewState::kClosed)
@@ -2191,6 +2197,17 @@ int AppListView::GetPreferredWidgetYForState(
   // container's y as the top of display.
   const display::Display display = GetDisplayNearestView();
   const gfx::Rect work_area_bounds = display.work_area();
+
+  // The ChromeVox panel as well as the Docked Magnifier viewport affect the
+  // workarea of the display. We need to account for that when applist is in
+  // fullscreen to avoid being shown below them.
+  const int fullscreen_height = work_area_bounds.y() - display.bounds().y();
+
+  // Force fullscreen height if onscreen keyboard is shown to match the UI state
+  // that's set by default when the onscreen keyboard is first shown.
+  if (onscreen_keyboard_shown_ && state != ash::AppListViewState::kClosed)
+    return fullscreen_height;
+
   switch (state) {
     case ash::AppListViewState::kPeeking:
       return display.bounds().height() -
@@ -2200,10 +2217,7 @@ int AppListView::GetPreferredWidgetYForState(
                       display.bounds().height() - kHalfAppListHeight);
     case ash::AppListViewState::kFullscreenAllApps:
     case ash::AppListViewState::kFullscreenSearch:
-      // The ChromeVox panel as well as the Docked Magnifier viewport affect the
-      // workarea of the display. We need to account for that when applist is in
-      // fullscreen to avoid being shown below them.
-      return work_area_bounds.y() - display.bounds().y();
+      return fullscreen_height;
     case ash::AppListViewState::kClosed:
       // Align the widget y with shelf y to avoid flicker in show animation. In
       // side shelf mode, the widget y is the top of work area because the

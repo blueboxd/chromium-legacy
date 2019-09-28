@@ -63,6 +63,9 @@ class ASH_EXPORT ShelfConfig : public TabletModeObserver,
   // width when the shelf is vertical).
   int shelf_size() const;
 
+  // Size of the shelf when an app is visible in tablet mode.
+  int in_app_shelf_size() const;
+
   // Size of the hotseat, which contains the scrollable shelf in tablet mode.
   int hotseat_size() const;
 

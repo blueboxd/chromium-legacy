@@ -343,9 +343,12 @@ void SplitViewDivider::RemoveObservedWindow(aura::Window* window) {
 void SplitViewDivider::OnWindowDragStarted(aura::Window* dragged_window) {
   is_dragging_window_ = true;
   SetAlwaysOnTop(false);
-  // Make sure |divider_widget_| is placed below the dragged window.
-  dragged_window->parent()->StackChildBelow(divider_widget_->GetNativeWindow(),
-                                            dragged_window);
+
+  aura::Window* divider_window = divider_widget_->GetNativeWindow();
+  // If |divider_window| and |dragged_window| are siblings, then make sure that
+  // |divider_window| is stacked below |dragged_window|.
+  if (divider_window->parent() == dragged_window->parent())
+    divider_window->parent()->StackChildBelow(divider_window, dragged_window);
 }
 
 void SplitViewDivider::OnWindowDragEnded() {

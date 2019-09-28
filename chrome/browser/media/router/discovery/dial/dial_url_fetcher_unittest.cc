@@ -59,22 +59,22 @@ TEST_F(DialURLFetcherTest, FetchSuccessful) {
   EXPECT_CALL(*this, OnSuccess(body));
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = body.size();
-  loader_factory_.AddResponse(url_, network::ResourceResponseHead(), body,
-                              status);
+  loader_factory_.AddResponse(url_, network::mojom::URLResponseHead::New(),
+                              body, status);
   StartGetRequest();
 }
 
 TEST_F(DialURLFetcherTest, FetchFailsOnMissingAppInfo) {
   EXPECT_CALL(*this, OnError(404, HasSubstr("404")));
   loader_factory_.AddResponse(
-      url_, network::ResourceResponseHead(), "",
+      url_, network::mojom::URLResponseHead::New(), "",
       network::URLLoaderCompletionStatus(net::HTTP_NOT_FOUND));
   StartGetRequest();
 }
 
 TEST_F(DialURLFetcherTest, FetchFailsOnEmptyAppInfo) {
   EXPECT_CALL(*this, OnError(_, HasSubstr("Missing or empty response")));
-  loader_factory_.AddResponse(url_, network::ResourceResponseHead(), "",
+  loader_factory_.AddResponse(url_, network::mojom::URLResponseHead::New(), "",
                               network::URLLoaderCompletionStatus());
   StartGetRequest();
 }
@@ -84,8 +84,8 @@ TEST_F(DialURLFetcherTest, FetchFailsOnBadAppInfo) {
   std::string body("\xfc\x9c\xbf\x80\xbf\x80");
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = body.size();
-  loader_factory_.AddResponse(url_, network::ResourceResponseHead(), body,
-                              status);
+  loader_factory_.AddResponse(url_, network::mojom::URLResponseHead::New(),
+                              body, status);
   StartGetRequest();
 }
 

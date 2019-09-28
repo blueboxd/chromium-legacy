@@ -429,6 +429,7 @@ bool HttpResponseInfo::DidUseQuic() const {
     case CONNECTION_INFO_QUIC_46:
     case CONNECTION_INFO_QUIC_47:
     case CONNECTION_INFO_QUIC_48:
+    case CONNECTION_INFO_QUIC_49:
     case CONNECTION_INFO_QUIC_99:
     case CONNECTION_INFO_QUIC_999:
       return true;
@@ -497,6 +498,8 @@ std::string HttpResponseInfo::ConnectionInfoToString(
       return "http/2+quic/47";
     case CONNECTION_INFO_QUIC_48:
       return "http/2+quic/48";
+    case CONNECTION_INFO_QUIC_49:
+      return "http/2+quic/49";
     case CONNECTION_INFO_QUIC_99:
       return "http/2+quic/99";
     case CONNECTION_INFO_HTTP0_9:

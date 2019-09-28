@@ -2741,28 +2741,109 @@ TEST_F(AXPlatformNodeTextRangeProviderTest,
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,
        TestITextRangeProviderGetEnclosingElement) {
-  Init(BuildTextDocument({"some text", "more text"}));
+  // Set up ax tree with the following structure:
+  //
+  // root
+  // |
+  // paragraph_______
+  // |               |
+  // static_text     link
+  // |               |
+  // text_node       static_text
+  //                 |
+  //                 text_node
+
+  ui::AXNodeData root_data;
+  root_data.id = 1;
+  root_data.role = ax::mojom::Role::kRootWebArea;
+
+  ui::AXNodeData paragraph_data;
+  paragraph_data.id = 2;
+  paragraph_data.role = ax::mojom::Role::kParagraph;
+  root_data.child_ids.push_back(paragraph_data.id);
+
+  ui::AXNodeData static_text_data1;
+  static_text_data1.id = 3;
+  static_text_data1.role = ax::mojom::Role::kStaticText;
+  paragraph_data.child_ids.push_back(static_text_data1.id);
+
+  ui::AXNodeData inline_text_data1;
+  inline_text_data1.id = 4;
+  inline_text_data1.role = ax::mojom::Role::kInlineTextBox;
+  static_text_data1.child_ids.push_back(inline_text_data1.id);
+
+  ui::AXNodeData link_data;
+  link_data.id = 5;
+  link_data.role = ax::mojom::Role::kLink;
+  paragraph_data.child_ids.push_back(link_data.id);
+
+  ui::AXNodeData static_text_data2;
+  static_text_data2.id = 6;
+  static_text_data2.role = ax::mojom::Role::kStaticText;
+  link_data.child_ids.push_back(static_text_data2.id);
+
+  ui::AXNodeData inline_text_data2;
+  inline_text_data2.id = 7;
+  inline_text_data2.role = ax::mojom::Role::kInlineTextBox;
+  static_text_data2.child_ids.push_back(inline_text_data2.id);
+
+  ui::AXTreeUpdate update;
+  ui::AXTreeData tree_data;
+  tree_data.tree_id = ui::AXTreeID::CreateNewAXTreeID();
+  update.tree_data = tree_data;
+  update.has_tree_data = true;
+  update.root_id = root_data.id;
+  update.nodes.push_back(root_data);
+  update.nodes.push_back(paragraph_data);
+  update.nodes.push_back(static_text_data1);
+  update.nodes.push_back(inline_text_data1);
+  update.nodes.push_back(link_data);
+  update.nodes.push_back(static_text_data2);
+  update.nodes.push_back(inline_text_data2);
+
+  Init(update);
+
+  // Set up variables from the tree for testing.
+  AXNode* paragraph_node = GetRootNode()->children()[0];
   AXNodePosition::SetTree(tree_.get());
-  AXNode* root_node = GetRootNode();
+  AXNode* static_text_node1 = paragraph_node->children()[0];
+  AXNode* link_node = paragraph_node->children()[1];
+  AXNode* inline_text_node1 = static_text_node1->children()[0];
+  AXNode* static_text_node2 = link_node->children()[0];
+  AXNode* inline_text_node2 = static_text_node2->children()[0];
 
-  // Test GetEnclosingElement for each child text node.
-  for (auto* child : root_node->children()) {
-    ComPtr<IRawElementProviderSimple> text_node_raw =
-        QueryInterfaceFromNode<IRawElementProviderSimple>(child);
+  ComPtr<IRawElementProviderSimple> link_node_raw =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(link_node);
+  ComPtr<IRawElementProviderSimple> inline_text_node_raw1 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node1);
+  ComPtr<IRawElementProviderSimple> inline_text_node_raw2 =
+      QueryInterfaceFromNode<IRawElementProviderSimple>(inline_text_node2);
 
-    ComPtr<ITextProvider> text_provider;
-    EXPECT_HRESULT_SUCCEEDED(
-        text_node_raw->GetPatternProvider(UIA_TextPatternId, &text_provider));
+  // Test GetEnclosingElement for the two leaves text nodes. The enclosing
+  // element of the first one should be itself and the enclosing element for the
+  // text node that is grandchild of the link node should return the link node.
+  ComPtr<ITextProvider> text_provider;
+  EXPECT_HRESULT_SUCCEEDED(inline_text_node_raw1->GetPatternProvider(
+      UIA_TextPatternId, &text_provider));
 
-    ComPtr<ITextRangeProvider> text_range_provider;
-    EXPECT_HRESULT_SUCCEEDED(
-        text_provider->get_DocumentRange(&text_range_provider));
+  ComPtr<ITextRangeProvider> text_range_provider;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
 
-    ComPtr<IRawElementProviderSimple> enclosing_element;
-    EXPECT_HRESULT_SUCCEEDED(
-        text_range_provider->GetEnclosingElement(&enclosing_element));
-    EXPECT_EQ(text_node_raw.Get(), enclosing_element.Get());
-  }
+  ComPtr<IRawElementProviderSimple> enclosing_element;
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetEnclosingElement(&enclosing_element));
+  EXPECT_EQ(inline_text_node_raw1.Get(), enclosing_element.Get());
+
+  EXPECT_HRESULT_SUCCEEDED(inline_text_node_raw2->GetPatternProvider(
+      UIA_TextPatternId, &text_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_provider->get_DocumentRange(&text_range_provider));
+
+  EXPECT_HRESULT_SUCCEEDED(
+      text_range_provider->GetEnclosingElement(&enclosing_element));
+  EXPECT_EQ(link_node_raw.Get(), enclosing_element.Get());
 }
 
 TEST_F(AXPlatformNodeTextRangeProviderTest,

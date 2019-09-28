@@ -17,8 +17,6 @@ source_set("badges") {
   sources = [
     "badge_button.h",
     "badge_button.mm",
-    "badge_button_action_handler.h",
-    "badge_button_action_handler.mm",
     "badge_button_factory.h",
     "badge_button_factory.mm",
     "badge_consumer.h",
@@ -34,7 +32,6 @@ source_set("badges") {
   ]
   deps = [
     ":public",
-    "resources:badge_menu_item_gear",
     "resources:incognito_badge",
     "resources:incognito_small_badge",
     "resources:wrench_badge",
@@ -47,6 +44,7 @@ source_set("badges") {
     "//ios/chrome/browser/ui/elements",
     "//ios/chrome/browser/ui/fullscreen:ui",
     "//ios/chrome/browser/ui/infobars:feature_flags",
+    "//ios/chrome/browser/ui/infobars/resources:infobar_settings_icon",
     "//ios/chrome/browser/ui/list_model",
     "//ios/chrome/browser/ui/util",
     "//ios/chrome/browser/web",

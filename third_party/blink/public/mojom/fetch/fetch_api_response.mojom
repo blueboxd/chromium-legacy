@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "mojo/public/mojom/base/time.mojom";
 import "services/network/public/mojom/fetch_api.mojom";
+import "services/network/public/mojom/content_security_policy.mojom";
 import "third_party/blink/public/mojom/blob/serialized_blob.mojom";
 import "third_party/blink/public/mojom/service_worker/service_worker_error_type.mojom";
 import "url/mojom/url.mojom";
@@ -61,4 +62,8 @@ struct FetchAPIResponse {
 
   // Side data is used to pass the metadata of the response (eg. V8 code cache).
   SerializedBlob? side_data_blob;
+
+  // In case this response had a Content-Security-Policy header, this is the
+  // parsed CSP.
+  network.mojom.ContentSecurityPolicy? content_security_policy;
 };

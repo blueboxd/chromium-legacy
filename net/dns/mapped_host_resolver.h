@@ -28,6 +28,8 @@ class NET_EXPORT MappedHostResolver : public HostResolver {
   explicit MappedHostResolver(std::unique_ptr<HostResolver> impl);
   ~MappedHostResolver() override;
 
+  void OnShutdown() override;
+
   // Adds a rule to this mapper. The format of the rule can be one of:
   //
   //   "MAP" <hostname_pattern> <replacement_host> [":" <replacement_port>]

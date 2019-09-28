@@ -85,6 +85,11 @@ void EnterpriseMemoryLimitEvaluator::SetResidentSetLimitMb(
   resident_set_limit_mb_ = resident_set_limit_mb;
 }
 
+bool EnterpriseMemoryLimitEvaluator::IsRunning() const {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  return observer_ != nullptr;
+}
+
 EnterpriseMemoryLimitEvaluator::GraphObserver::GraphObserver(
     base::RepeatingCallback<void(uint64_t)> on_sample_callback,
     scoped_refptr<base::SequencedTaskRunner> task_runner)

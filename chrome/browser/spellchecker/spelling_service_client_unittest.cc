@@ -26,7 +26,6 @@
 #include "content/public/test/browser_task_environment.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_util.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -147,8 +146,8 @@ class SpellingServiceClientTest
 // misspelled words with ones suggested by the service so this test can compare
 // the corrected text with the expected results. (If there are not any
 // misspelled words, |corrected_text| should be equal to |request_text|.)
-using Redirects =
-    std::vector<std::pair<net::RedirectInfo, network::ResourceResponseHead>>;
+using Redirects = std::vector<
+    std::pair<net::RedirectInfo, network::mojom::URLResponseHeadPtr>>;
 
 TEST_P(SpellingServiceClientTest, RequestTextCheck) {
   auto test_case = GetParam();
@@ -169,19 +168,20 @@ TEST_P(SpellingServiceClientTest, RequestTextCheck) {
   client_.test_url_loader_factory()->ClearResponses();
   net::HttpStatusCode http_status = test_case.response_status;
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string headers(base::StringPrintf(
       "HTTP/1.1 %d %s\nContent-type: application/json\n\n",
       static_cast<int>(http_status), net::GetHttpReasonPhrase(http_status)));
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head.mime_type = "application/json";
+  head->mime_type = "application/json";
 
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = test_case.response_data.size();
   GURL expected_request_url = client_.BuildEndpointUrl(test_case.request_type);
   client_.test_url_loader_factory()->AddResponse(
-      expected_request_url, head, test_case.response_data, status, Redirects(),
+      expected_request_url, std::move(head), test_case.response_data, status,
+      Redirects(),
       network::TestURLLoaderFactory::ResponseProduceFlags::
           kSendHeadersOnNetworkError);
 

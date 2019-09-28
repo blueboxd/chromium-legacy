@@ -125,6 +125,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/content_switches.h"
+#include "content/public/common/network_service_util.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
@@ -2068,7 +2069,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MarkDataAsNonSecure) {
   ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/plain,hello"));
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
+  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 
 // Ensure that HTTP-protocol origins are marked as Dangerous when the
@@ -5768,6 +5769,9 @@ class SSLUITestNoCert : public SSLUITest,
 
 // Checks that a newly-added certificate authority is usable immediately.
 IN_PROC_BROWSER_TEST_F(SSLUITestNoCert, NewCertificateAuthority) {
+  if (!content::IsOutOfProcessNetworkService())
+    return;
+
   ASSERT_TRUE(https_server_.Start());
 
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
@@ -7552,12 +7556,17 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
   }
 
   void TearDownOnMainThread() override {
-    mojo::ScopedAllowSyncCallForTesting allow_sync_call;
+    if (content::IsOutOfProcessNetworkService()) {
+      mojo::ScopedAllowSyncCallForTesting allow_sync_call;
 
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::GetSystemConnector()->BindInterface(
-        content::mojom::kNetworkServiceName, &network_service_test);
-    network_service_test->SetTransportSecurityStateSource(0);
+      network::mojom::NetworkServiceTestPtr network_service_test;
+      content::GetSystemConnector()->BindInterface(
+          content::mojom::kNetworkServiceName, &network_service_test);
+      network_service_test->SetTransportSecurityStateSource(0);
+    } else {
+      RunOnIOThreadBlocking(base::BindOnce(
+          &SSLPKPBrowserTest::CleanUpOnIOThread, base::Unretained(this)));
+    }
     CertVerifierBrowserTest::TearDownOnMainThread();
   }
 
@@ -7567,11 +7576,22 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
         content::BrowserContext::GetDefaultStoragePartition(
             browser()->profile());
     partition->GetNetworkContext()->EnableStaticKeyPinningForTesting();
+    partition->FlushNetworkInterfaceForTesting();
 
-    network::mojom::NetworkServiceTestPtr network_service_test;
-    content::GetSystemConnector()->BindInterface(
-        content::mojom::kNetworkServiceName, &network_service_test);
-    network_service_test->SetTransportSecurityStateSource(reporting_port);
+    if (content::IsOutOfProcessNetworkService()) {
+      network::mojom::NetworkServiceTestPtr network_service_test;
+      content::GetSystemConnector()->BindInterface(
+          content::mojom::kNetworkServiceName, &network_service_test);
+      network_service_test->SetTransportSecurityStateSource(reporting_port);
+    } else {
+      // TODO(https://crbug.com/1008175):  This code is not threadsafe, as the
+      // network stack does not run on the IO thread. Ideally, the
+      // NetworkServiceTest object would be set up in-process on the network
+      // service's thread, and this path would be removed.
+      RunOnIOThreadBlocking(base::BindOnce(
+          &SSLPKPBrowserTest::SetTransportSecurityStateSourceOnIO,
+          base::Unretained(this), reporting_port));
+    }
   }
 
  private:
@@ -7581,6 +7601,18 @@ class SSLPKPBrowserTest : public CertVerifierBrowserTest {
                            std::move(task), run_loop.QuitClosure());
     run_loop.Run();
   }
+
+  void SetTransportSecurityStateSourceOnIO(int reporting_port) {
+    transport_security_state_source_ =
+        std::make_unique<net::ScopedTransportSecurityStateSource>(
+            reporting_port);
+  }
+
+  void CleanUpOnIOThread() { transport_security_state_source_.reset(); }
+
+  // Only used when NetworkService is disabled. Accessed on IO thread.
+  std::unique_ptr<net::ScopedTransportSecurityStateSource>
+      transport_security_state_source_;
 };
 
 // Test case where a PKP report is sent.

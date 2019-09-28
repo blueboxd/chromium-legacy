@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/values.h"
 #include "chrome/browser/search/ntp_features.h"
 #include "chrome/common/pref_names.h"
@@ -144,7 +145,6 @@ void PromoService::Refresh() {
 
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url = GetApiUrl();
-  resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->request_initiator =
       url::Origin::Create(GURL(chrome::kChromeUINewTabURL));
 

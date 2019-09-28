@@ -1703,7 +1703,8 @@ template("monochrome_public_apk_or_module_tmpl") {
   # of manually-instantiated manifests.
   jinja_template("${target_name}__android_manifest") {
     includes = [ "java/AndroidManifest.xml" ]
-    variables = chrome_public_jinja_variables
+    variables =
+        chrome_public_jinja_variables + [ "include_arcore_manifest_flag=true" ]
     if (_is_trichrome) {
       input = "java/AndroidManifest_trichrome_chrome.xml"
       variables += trichrome_jinja_variables
@@ -1717,7 +1718,6 @@ template("monochrome_public_apk_or_module_tmpl") {
       variables += monochrome_android_manifest_jinja_variables + [
                      "target_sdk_version=$android_sdk_version",
                      "webview_library=libmonochrome${_arch}.so",
-                     "include_arcore_manifest_flag=true",
                    ]
     }
 

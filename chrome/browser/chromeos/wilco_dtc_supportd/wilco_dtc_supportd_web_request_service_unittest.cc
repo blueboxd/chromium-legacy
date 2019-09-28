@@ -106,11 +106,11 @@ class WilcoDtcSupportdWebRequestServiceTest : public testing::Test {
       std::unique_ptr<net::HttpStatusCode> response_status,
       net::Error net_error,
       const std::string& response_body) {
-    network::ResourceResponseHead response_head;
-    if (response_status)
-      response_head = network::CreateResourceResponseHead(*response_status);
+    auto response_head = response_status
+                             ? network::CreateURLResponseHead(*response_status)
+                             : network::mojom::URLResponseHead::New();
     test_url_loader_factory_.AddResponse(
-        GURL(url), response_head, response_body,
+        GURL(url), std::move(response_head), response_body,
         network::URLLoaderCompletionStatus(net_error));
   }
 

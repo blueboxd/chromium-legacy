@@ -48,8 +48,8 @@ std::string SslValidityChecker::GetInvalidSslCertificateErrorMessage(
     case security_state::NONE:
       level = "NONE";
       break;
-    case security_state::HTTP_SHOW_WARNING:
-      level = "HTTP_SHOW_WARNING";
+    case security_state::WARNING:
+      level = "WARNING";
       break;
     case security_state::DANGEROUS:
       level = "DANGEROUS";

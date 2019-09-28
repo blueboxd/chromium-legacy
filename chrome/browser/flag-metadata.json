@@ -441,6 +441,11 @@
     "expiry_milestone": 79
   },
   {
+    "name": "chrome-sharing-hub",
+    "owners": ["kmilka"],
+    "expiry_milestone": 83
+  },
+  {
     "name": "clear-old-browsing-data",
     "owners": [ "dullweber" ],
     "expiry_milestone": 78
@@ -892,6 +897,11 @@
     "name": "enable-arc-unified-audio-focus",
     "owners": [ "beccahughes", "media-dev" ],
     "expiry_milestone": 76
+  },
+  {
+    "name": "enable-assistant-aec",
+    "owners": [ "croissant-eng" ],
+    "expiry_milestone": 88
   },
   {
     "name": "enable-assistant-app-support",
@@ -2483,7 +2493,7 @@
   {
     "name": "ntp-disable-initial-most-visited-fade-in",
     "owners": ["dbeam"],
-    "expiry_milestone": 80
+    "expiry_milestone": 79
   },
   {
     "name": "ntp-dismiss-promos",
@@ -2734,11 +2744,6 @@
     "name": "omnibox-ui-swap-title-and-url",
     "owners": [ "tommycli", "chrome-omnibox-team@google.com" ],
     "expiry_milestone": 76
-  },
-  {
-    "name": "omnibox-wrap-popup-position",
-    "owners": [ "krb", "chrome-omnibox-team@google.com" ],
-    "expiry_milestone": 78
   },
   {
     "name": "omnibox-zero-suggestions-on-ntp",

@@ -2390,6 +2390,10 @@ const char kChromeDuetLabelsName[] = "Chrome Duet Labels";
 const char kChromeDuetLabelsDescription[] =
     "Enables Chrome Duet (split toolbar) labels.";
 
+const char kChromeSharingHubName[] = "Chrome Sharing Hub";
+const char kChromeSharingHubDescription[] =
+    "Enables the Chrome Sharing Hub/custom share sheet.";
+
 const char kClearOldBrowsingDataName[] = "Clear older browsing data";
 const char kClearOldBrowsingDataDescription[] =
     "Enables clearing of browsing data which is older than a given time "
@@ -2848,11 +2852,6 @@ const char kNtpCustomizationMenuV2Name[] = "NTP customization menu version 2";
 const char kNtpCustomizationMenuV2Description[] =
     "Use the second version of the NTP customization menu.";
 
-const char kNtpDisableInitialMostVisitedFadeInName[] =
-    "Disable NTP initial most visited fade in";
-const char kNtpDisableInitialMostVisitedFadeInDescription[] =
-    "Do not initially fade in most visited tiles on the New Tab Page";
-
 const char kNtpDismissPromosName[] = "Dismiss promos on the New Tab Page";
 const char kNtpDismissPromosDescription[] =
     "Enables a UI to persistently dismiss [non-emergency] promos on the "
@@ -2973,10 +2972,6 @@ const char kOmniboxTabSwitchSuggestionsDedicatedRowName[] =
 const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[] =
     "Put each tab switch suggestion in a separate suggestion, immediately "
     "following the original suggestion.";
-
-const char kOmniboxWrapPopupPositionName[] = "Omnibox wrap pop-up position";
-const char kOmniboxWrapPopupPositionDescription[] =
-    "Enable wrapping the Omnibox pop-up position between top and bottom.";
 
 const char kProactiveTabFreezeAndDiscardName[] =
     "Proactive Tab Freeze and Discard";
@@ -3387,6 +3382,11 @@ const char kEnableGoogleAssistantStereoInputName[] =
 const char kEnableGoogleAssistantStereoInputDescription[] =
     "Enable an experimental feature that uses stereo audio input for hotword "
     "and voice to text detection in Google Assistant.";
+
+const char kEnableGoogleAssistantAecName[] = "Enable Google Assistant AEC";
+const char kEnableGoogleAssistantAecDescription[] =
+    "Enable an experimental feature that removes local feedback from audio "
+    "input to help hotword and ASR when background audio is playing.";
 
 const char kEnableHeuristicStylusPalmRejectionName[] =
     "Enable Heuristic for Stylus/Palm Rejection.";

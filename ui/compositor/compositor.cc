@@ -25,6 +25,7 @@
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
+#include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/trees/latency_info_swap_promise.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -626,6 +627,11 @@ void Compositor::DidCommit() {
     observer.OnCompositingDidCommit(this);
 }
 
+std::unique_ptr<cc::BeginMainFrameMetrics>
+Compositor::GetBeginMainFrameMetrics() {
+  return nullptr;
+}
+
 void Compositor::DidReceiveCompositorFrameAck() {
   ++activated_frame_count_;
   for (auto& observer : observer_list_)
@@ -661,7 +667,7 @@ void Compositor::OnFrameTokenChanged(uint32_t frame_token) {
   NOTREACHED();
 }
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void Compositor::OnCompleteSwapWithNewSize(const gfx::Size& size) {
   for (auto& observer : observer_list_)
     observer.OnCompositingCompleteSwapWithNewSize(this, size);

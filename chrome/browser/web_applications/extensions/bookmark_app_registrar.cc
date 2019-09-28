@@ -70,11 +70,24 @@ int BookmarkAppRegistrar::CountUserInstalledApps() const {
 
 void BookmarkAppRegistrar::OnExtensionUninstalled(
     content::BrowserContext* browser_context,
-    const extensions::Extension* extension,
-    extensions::UninstallReason reason) {
+    const Extension* extension,
+    UninstallReason reason) {
   DCHECK_EQ(browser_context, profile());
   if (extension->from_bookmark())
     NotifyWebAppUninstalled(extension->id());
+}
+
+void BookmarkAppRegistrar::OnExtensionUnloaded(
+    content::BrowserContext* browser_context,
+    const Extension* extension,
+    UnloadedExtensionReason reason) {
+  DCHECK_EQ(browser_context, profile());
+  if (!extension->from_bookmark())
+    return;
+  // If a profile is removed, notify the web app that it is uninstalled, so it
+  // can cleanup any state outside the profile dir (e.g., registry settings).
+  if (reason == UnloadedExtensionReason::PROFILE_SHUTDOWN)
+    NotifyWebAppProfileWillBeDeleted(extension->id());
 }
 
 void BookmarkAppRegistrar::OnShutdown(ExtensionRegistry* registry) {

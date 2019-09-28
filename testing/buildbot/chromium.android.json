@@ -1273,8 +1273,7 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_instrumentation_tests_oreo.filter"
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -1321,8 +1320,7 @@
         "args": [
           "--disable-field-trials",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_instrumentation_tests_oreo.filter"
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -1706,8 +1704,7 @@
       {
         "args": [
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--gtest-filter=-org.chromium.android_webview.test.AwAutofillTest.testJavascriptNotTriggerSelectControlChangeNotification"
+          "--recover-devices"
         ],
         "merge": {
           "args": [
@@ -1754,8 +1751,7 @@
         "args": [
           "--disable-field-trials",
           "--gs-results-bucket=chromium-result-details",
-          "--recover-devices",
-          "--gtest-filter=-org.chromium.android_webview.test.AwAutofillTest.testJavascriptNotTriggerSelectControlChangeNotification"
+          "--recover-devices"
         ],
         "merge": {
           "args": [

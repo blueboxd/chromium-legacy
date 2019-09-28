@@ -177,12 +177,14 @@ void FakeSkiaOutputSurface::ReleaseImageContexts(
     std::vector<std::unique_ptr<ImageContext>> image_contexts) {}
 
 std::unique_ptr<ExternalUseClient::ImageContext>
-FakeSkiaOutputSurface::CreateImageContext(const gpu::MailboxHolder& holder,
-                                          const gfx::Size& size,
-                                          ResourceFormat format,
-                                          sk_sp<SkColorSpace> color_space) {
+FakeSkiaOutputSurface::CreateImageContext(
+    const gpu::MailboxHolder& holder,
+    const gfx::Size& size,
+    ResourceFormat format,
+    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
+    sk_sp<SkColorSpace> color_space) {
   return std::make_unique<ExternalUseClient::ImageContext>(
-      holder, size, format, std::move(color_space));
+      holder, size, format, ycbcr_info, std::move(color_space));
 }
 
 gpu::SyncToken FakeSkiaOutputSurface::SkiaSwapBuffers(OutputSurfaceFrame frame,

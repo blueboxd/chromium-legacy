@@ -436,21 +436,17 @@ void CloudExternalDataManagerBase::OnPolicyStoreLoaded() {
 void CloudExternalDataManagerBase::Connect(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  DCHECK(!external_policy_data_fetcher_backend_);
 
-  external_policy_data_fetcher_backend_ =
-      std::make_unique<ExternalPolicyDataFetcherBackend>(
-          std::move(url_loader_factory));
   backend_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&Backend::Connect, base::Unretained(backend_.get()),
-                     external_policy_data_fetcher_backend_->CreateFrontend(
-                         backend_task_runner_)));
+                     std::make_unique<ExternalPolicyDataFetcher>(
+                         std::move(url_loader_factory), backend_task_runner_)));
 }
 
 void CloudExternalDataManagerBase::Disconnect() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  external_policy_data_fetcher_backend_.reset();
+
   backend_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&Backend::Disconnect, base::Unretained(backend_.get())));

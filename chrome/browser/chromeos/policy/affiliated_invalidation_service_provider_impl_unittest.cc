@@ -493,8 +493,16 @@ TEST_P(AffiliatedInvalidationServiceProviderImplTest,
   SendInvalidatorStateChangeNotification(
       is_fcm_enabled(), device_invalidation_service_,
       syncer::INVALIDATION_CREDENTIALS_REJECTED);
-  EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
-  EXPECT_EQ(nullptr, consumer_->GetInvalidationService());
+  if (is_fcm_enabled()) {
+    EXPECT_EQ(1, consumer_->GetAndClearInvalidationServiceSetCount());
+    EXPECT_EQ(nullptr, consumer_->GetInvalidationService());
+  } else {
+    // TiclInvalidationService replaces INVALIDATION_CREDENTIALS_REJECTED with
+    // TRANSIENT_INVALIDATION_ERROR. Which doesn't cause disconnection.
+    EXPECT_EQ(0, consumer_->GetAndClearInvalidationServiceSetCount());
+    EXPECT_EQ(provider_->GetDeviceInvalidationServiceForTest(),
+              consumer_->GetInvalidationService());
+  }
 
   // Verify that the device-global invalidation service still exists.
   EXPECT_TRUE(provider_->GetDeviceInvalidationServiceForTest());

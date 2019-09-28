@@ -21,7 +21,10 @@ base::Value NetLogSettingsParams(const quic::SettingsFrame& frame) {
   base::Value dict(base::Value::Type::DICTIONARY);
   // TODO(renjietang): Use string literal for setting identifiers.
   for (auto setting : frame.values) {
-    dict.SetIntKey(base::NumberToString(setting.first), setting.second);
+    dict.SetIntKey(
+        quic::SpdyUtils::H3SettingsToString(
+            static_cast<quic::Http3AndQpackSettingsIdentifiers>(setting.first)),
+        setting.second);
   }
   return dict;
 }

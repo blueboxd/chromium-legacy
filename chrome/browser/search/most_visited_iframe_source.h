@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/browser/url_data_source.h"
-#include "ui/base/template_expressions.h"
 
 #if defined(OS_ANDROID)
 #error "Instant is only used on desktop";
@@ -40,8 +39,7 @@ class MostVisitedIframeSource : public content::URLDataSource {
 
   // Sends unmodified resource bytes.
   void SendResource(int resource_id,
-                    const content::URLDataSource::GotDataCallback& callback,
-                    const ui::TemplateReplacements* replacements = nullptr);
+                    const content::URLDataSource::GotDataCallback& callback);
 
   // Sends Javascript with an expected postMessage origin interpolated.
   void SendJSWithOrigin(

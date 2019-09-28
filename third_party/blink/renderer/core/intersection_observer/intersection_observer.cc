@@ -318,7 +318,8 @@ void IntersectionObserver::observe(Element* target,
     // be recorded after observe() is called, even if the target is detached.
     observation->ComputeIntersection(
         IntersectionObservation::kImplicitRootObserversNeedUpdate |
-        IntersectionObservation::kExplicitRootObserversNeedUpdate);
+        IntersectionObservation::kExplicitRootObserversNeedUpdate |
+        IntersectionObservation::kIgnoreDelay);
   }
 }
 

@@ -33,8 +33,6 @@
 
 namespace blink {
 
-using blink::WebLocalizedString;
-
 static String QueryString(int resource_id) {
   return Locale::DefaultLocale().QueryString(resource_id);
 }
@@ -90,8 +88,7 @@ DateTimeDayFieldElement::DateTimeDayFieldElement(Document& document,
                                   placeholder.IsEmpty() ? "--" : placeholder) {
   DEFINE_STATIC_LOCAL(AtomicString, day_pseudo_id,
                       ("-webkit-datetime-edit-day-field"));
-  Initialize(day_pseudo_id,
-             QueryString(WebLocalizedString::kAXDayOfMonthFieldText));
+  Initialize(day_pseudo_id, QueryString(IDS_AX_DAY_OF_MONTH_FIELD_TEXT));
 }
 
 void DateTimeDayFieldElement::PopulateDateTimeFieldsState(
@@ -139,8 +136,8 @@ DateTimeHourFieldElementBase::DateTimeHourFieldElementBase(
 void DateTimeHourFieldElementBase::Initialize() {
   DEFINE_STATIC_LOCAL(AtomicString, hour_pseudo_id,
                       ("-webkit-datetime-edit-hour-field"));
-  DateTimeNumericFieldElement::Initialize(
-      hour_pseudo_id, QueryString(WebLocalizedString::kAXHourFieldText));
+  DateTimeNumericFieldElement::Initialize(hour_pseudo_id,
+                                          QueryString(IDS_AX_HOUR_FIELD_TEXT));
 }
 
 void DateTimeHourFieldElementBase::SetValueAsDate(const DateComponents& date) {

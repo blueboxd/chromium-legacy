@@ -32,6 +32,7 @@ struct AXNodeData;
 }
 
 namespace views {
+class AXVirtualView;
 class ImageView;
 }
 
@@ -245,6 +246,10 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // This is used to offset the label animation by the current width (e.g. the
   // icon). Set before animation begins in AnimateIn().
   int grow_animation_starting_width_ = 0;
+
+  // Virtual view, used for announcing changes to the state of this view. A
+  // virtual child of this view.
+  views::AXVirtualView* alert_virtual_view_;
 
   ScopedObserver<ui::MaterialDesignController,
                  ui::MaterialDesignControllerObserver>

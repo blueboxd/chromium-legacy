@@ -5975,6 +5975,7 @@ crbug.com/981210 external/wpt/web-animations/interfaces/Animation/oncancel.html 
 # Sheriff 2019-07-04
 crbug.com/981267 [ Linux ] http/tests/devtools/persistence/persistence-move-breakpoints-on-reload.js [ Pass Failure ]
 crbug.com/981303 [ Mac ] http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
+crbug.com/981303 [ Mac ] virtual/audio-service/http/tests/media/controls/toggle-class-with-state-source.html [ Pass Timeout ]
 crbug.com/981331 fast/forms/form-submission-create-crash.xhtml [ Pass Timeout ]
 # TODO(crbug.com/980588): reenable once WPT is fixed
 crbug.com/980588 external/wpt/screen-orientation/lock-unlock-check.html [ Pass Failure ]

@@ -26,6 +26,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/page_load_metrics/renderer/metrics_render_frame_observer.h"
 #include "components/printing/renderer/print_render_frame_helper.h"
 #include "components/visitedlink/renderer/visitedlink_slave.h"
 #include "content/public/child/child_thread.h"
@@ -181,6 +182,9 @@ void AwContentRendererClient::RenderFrameCreated(
 #if BUILDFLAG(ENABLE_SPELLCHECK)
   new SpellCheckProvider(render_frame, spellcheck_.get(), this);
 #endif
+
+  // Owned by |render_frame|.
+  new page_load_metrics::MetricsRenderFrameObserver(render_frame);
 }
 
 void AwContentRendererClient::RenderViewCreated(

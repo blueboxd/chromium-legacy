@@ -10,6 +10,7 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/values.h"
+#include "build/buildflag.h"
 #include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/prefs/session_startup_pref.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/mixin_based_in_process_browser_test.h"
+#include "chromeos/assistant/buildflags.h"
 #include "components/arc/arc_features.h"
 #include "components/arc/arc_prefs.h"
 #include "components/policy/core/browser/browser_policy_connector.h"
@@ -220,7 +222,15 @@ IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerTest,
 
 using UserCloudPolicyManagerChildTest = UserCloudPolicyManagerTest;
 
-IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest, PolicyForChildUser) {
+// TODO(https://crbug.com/1005454): This test is failing on bots that show the
+// assistent opt-in screen.
+#if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
+#define MAYBE_PolicyForChildUser DISABLED_PolicyForChildUser
+#else
+#define MAYBE_PolicyForChildUser PolicyForChildUser
+#endif
+IN_PROC_BROWSER_TEST_P(UserCloudPolicyManagerChildTest,
+                       MAYBE_PolicyForChildUser) {
   policy::BrowserPolicyConnector::SetNonEnterpriseDomainForTesting(
       "example.com");
   EXPECT_TRUE(policy::BrowserPolicyConnector::IsNonEnterpriseUser(

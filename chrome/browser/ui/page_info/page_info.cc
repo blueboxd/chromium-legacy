@@ -456,7 +456,7 @@ void PageInfo::RecordPageInfoAction(PageInfoAction action) {
     return;
   }
 
-  if (security_level_ == security_state::HTTP_SHOW_WARNING) {
+  if (security_level_ == security_state::WARNING) {
     UMA_HISTOGRAM_ENUMERATION("Security.PageInfo.Action.HttpUrl.Warning",
                               action, PAGE_INFO_COUNT);
   } else if (security_level_ == security_state::DANGEROUS) {

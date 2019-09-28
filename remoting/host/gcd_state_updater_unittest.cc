@@ -166,14 +166,14 @@ TEST_F(GcdStateUpdaterTest, Retry) {
 
   auto* request = GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
-      request, network::ResourceResponseHead(), std::string(),
+      request, network::mojom::URLResponseHead::New(), std::string(),
       network::URLLoaderCompletionStatus(net::ERR_FAILED));
 
   task_environment_.FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   request = GetPendingRequest(1);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
-      request, network::CreateResourceResponseHead(net::HTTP_OK), std::string(),
+      request, network::CreateURLResponseHead(net::HTTP_OK), std::string(),
       network::URLLoaderCompletionStatus());
   EXPECT_EQ(1, on_success_count_);
 
@@ -193,7 +193,7 @@ TEST_F(GcdStateUpdaterTest, UnknownHost) {
 
   auto* request = GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
-      request, network::CreateResourceResponseHead(net::HTTP_NOT_FOUND),
+      request, network::CreateURLResponseHead(net::HTTP_NOT_FOUND),
       std::string(), network::URLLoaderCompletionStatus(net::OK));
   EXPECT_EQ(0, on_success_count_);
   EXPECT_EQ(1, on_host_id_error_count_);

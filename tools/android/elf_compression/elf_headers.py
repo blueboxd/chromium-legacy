@@ -416,11 +416,17 @@ class ElfHeader(ElfEntry):
     """Orders program LOAD headers by p_vaddr to comply with standard."""
 
     def HeaderToKey(phdr):
-      if phdr.p_type == ProgramHeader.Type.PT_LOAD:
+      # ELF standard required PT_INTERP and PT_PHDR to be strictly before
+      # PT_LOAD.
+      if phdr.p_type == ProgramHeader.Type.PT_INTERP:
         return (0, phdr.p_vaddr)
+      elif phdr.p_type == ProgramHeader.Type.PT_PHDR:
+        return (1, phdr.p_vaddr)
+      elif phdr.p_type == ProgramHeader.Type.PT_LOAD:
+        return (2, phdr.p_vaddr)
       else:
         # We want to preserve the order of non LOAD segments.
-        return (1, 0)
+        return (3, 0)
 
     self.phdrs.sort(key=HeaderToKey)
 

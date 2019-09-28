@@ -320,18 +320,16 @@ bool SysmemBufferCollection::CreateVkImage(
       break;
 
     case fuchsia::sysmem::ColorSpaceType::REC709: {
-      VkFormatFeatureFlags format_features =
-          VK_FORMAT_FEATURE_COSITED_CHROMA_SAMPLES_BIT |
-          VK_FORMAT_FEATURE_MIDPOINT_CHROMA_SAMPLES_BIT |
-          VK_FORMAT_FEATURE_SAMPLED_IMAGE_YCBCR_CONVERSION_LINEAR_FILTER_BIT;
-
       // Currently sysmem doesn't specify location of chroma samples relative to
-      // luma (see MTWN-397). Assume they are cosited with luma.
+      // luma (see fxb/13677). Assume they are cosited with luma. YCbCr info
+      // here must match the values passed for the same buffer in
+      // FuchsiaVideoDecoder. |format_features| are resolved later in the GPU
+      // process before the ycbcr info is passed to Skia.
       *ycbcr_info = gpu::VulkanYCbCrInfo(
           vk_image_info->format, /*external_format=*/0,
           VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709,
           VK_SAMPLER_YCBCR_RANGE_ITU_NARROW, VK_CHROMA_LOCATION_COSITED_EVEN,
-          VK_CHROMA_LOCATION_COSITED_EVEN, format_features);
+          VK_CHROMA_LOCATION_COSITED_EVEN, /*format_features=*/0);
       break;
     }
 

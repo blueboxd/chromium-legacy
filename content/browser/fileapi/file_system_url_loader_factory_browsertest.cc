@@ -664,10 +664,10 @@ IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileTest) {
   EXPECT_TRUE(client->has_received_completion());
   std::string response_text = ReadDataPipe(client->response_body_release());
   EXPECT_EQ(kTestFileData, response_text);
-  ASSERT_TRUE(client->response_head().headers) << "No response headers";
-  EXPECT_EQ(200, client->response_head().headers->response_code());
+  ASSERT_TRUE(client->response_head()->headers) << "No response headers";
+  EXPECT_EQ(200, client->response_head()->headers->response_code());
   std::string cache_control;
-  EXPECT_TRUE(client->response_head().headers->GetNormalizedHeader(
+  EXPECT_TRUE(client->response_head()->headers->GetNormalizedHeader(
       "cache-control", &cache_control));
   EXPECT_EQ("no-cache", cache_control);
 }
@@ -838,8 +838,8 @@ IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileGetMimeType) {
   EXPECT_TRUE(client->has_received_response());
   EXPECT_TRUE(client->has_received_completion());
 
-  EXPECT_EQ(mime_type_direct, client->response_head().mime_type);
-  EXPECT_TRUE(client->response_head().did_mime_sniff);
+  EXPECT_EQ(mime_type_direct, client->response_head()->mime_type);
+  EXPECT_TRUE(client->response_head()->did_mime_sniff);
 }
 
 IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileIncognito) {
@@ -865,7 +865,7 @@ IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileIncognito) {
   EXPECT_TRUE(client->has_received_completion());
   std::string response_text = ReadDataPipe(client->response_body_release());
   EXPECT_EQ(kTestFileData, response_text);
-  EXPECT_EQ(200, client->response_head().headers->response_code());
+  EXPECT_EQ(200, client->response_head()->headers->response_code());
 }
 
 IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileAutoMountFileTest) {
@@ -878,10 +878,10 @@ IN_PROC_BROWSER_TEST_P(FileSystemURLLoaderFactoryTest, FileAutoMountFileTest) {
   EXPECT_TRUE(client->has_received_completion());
   std::string response_text = ReadDataPipe(client->response_body_release());
   EXPECT_EQ(kTestFileData, response_text);
-  EXPECT_EQ(200, client->response_head().headers->response_code());
+  EXPECT_EQ(200, client->response_head()->headers->response_code());
 
   std::string cache_control;
-  EXPECT_TRUE(client->response_head().headers->GetNormalizedHeader(
+  EXPECT_TRUE(client->response_head()->headers->GetNormalizedHeader(
       "cache-control", &cache_control));
   EXPECT_EQ("no-cache", cache_control);
 

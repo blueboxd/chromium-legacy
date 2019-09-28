@@ -217,7 +217,6 @@ CompositedLayerMapping::~CompositedLayerMapping() {
   }
 
   UpdateOverflowControlsLayers(false, false, false);
-  UpdateChildTransformLayer(false);
   UpdateForegroundLayer(false);
   UpdateMaskLayer(false);
   UpdateScrollingLayers(false);
@@ -257,7 +256,6 @@ void CompositedLayerMapping::DestroyGraphicsLayers() {
 
   graphics_layer_ = nullptr;
   foreground_layer_ = nullptr;
-  child_transform_layer_ = nullptr;
   mask_layer_ = nullptr;
 
   scrolling_layer_ = nullptr;
@@ -502,11 +500,6 @@ bool CompositedLayerMapping::UpdateGraphicsLayerConfiguration(
   if (UpdateOverflowControlsLayers(RequiresHorizontalScrollbarLayer(),
                                    RequiresVerticalScrollbarLayer(),
                                    RequiresScrollCornerLayer()))
-    layer_config_changed = true;
-
-  bool has_perspective = style.HasPerspective();
-  bool needs_child_transform_layer = has_perspective && layout_object.IsBox();
-  if (UpdateChildTransformLayer(needs_child_transform_layer))
     layer_config_changed = true;
 
   if (UpdateSquashingLayers(!squashed_layers_.IsEmpty()))
@@ -870,8 +863,6 @@ void CompositedLayerMapping::UpdateGraphicsLayerGeometry(
       snapped_offset_from_composited_ancestor, squashed_layers_,
       layers_needing_paint_invalidation);
 
-  UpdateChildTransformLayerGeometry();
-
   UpdateMaskLayerGeometry();
   UpdateTransformGeometry(snapped_offset_from_composited_ancestor,
                           relative_compositing_bounds);
@@ -1033,18 +1024,6 @@ void CompositedLayerMapping::UpdateOverflowControlsHostLayerGeometry(
   overflow_controls_host_layer_->SetMasksToBounds(true);
 }
 
-void CompositedLayerMapping::UpdateChildTransformLayerGeometry() {
-  if (!child_transform_layer_)
-    return;
-
-  PhysicalRect border_box =
-      ToLayoutBox(owning_layer_.GetLayoutObject()).PhysicalBorderBoxRect();
-  border_box.Move(ContentOffsetInCompositingLayer());
-  child_transform_layer_->SetSize(gfx::Size(border_box.PixelSnappedSize()));
-  child_transform_layer_->SetOffsetFromLayoutObject(IntSize());
-  child_transform_layer_->SetPosition(FloatPoint(border_box.offset));
-}
-
 void CompositedLayerMapping::UpdateMaskLayerGeometry() {
   if (!mask_layer_)
     return;
@@ -1102,11 +1081,8 @@ void CompositedLayerMapping::UpdateScrollingLayerGeometry(
   // When a m_childTransformLayer exists, local content offsets for the
   // m_scrollingLayer have already been applied. Otherwise, we apply them here.
   IntSize local_content_offset(0, 0);
-  if (!child_transform_layer_) {
-    local_content_offset =
-        RoundedIntPoint(owning_layer_.SubpixelAccumulation()) -
-        local_compositing_bounds.Location();
-  }
+  local_content_offset = RoundedIntPoint(owning_layer_.SubpixelAccumulation()) -
+                         local_compositing_bounds.Location();
   scrolling_layer_->SetPosition(
       FloatPoint(overflow_clip_rect.Location() + local_content_offset));
 
@@ -1215,7 +1191,6 @@ void CompositedLayerMapping::UpdateInternalHierarchy() {
     }
   };
 
-  update_bottom_layer(child_transform_layer_.get());
   update_bottom_layer(scrolling_layer_.get());
 
   // Now constructing the subtree for the overflow controls.
@@ -1348,33 +1323,7 @@ void CompositedLayerMapping::UpdateDrawsContentAndPaintsHitTest() {
 }
 
 void CompositedLayerMapping::UpdateChildrenTransform() {
-  if (GraphicsLayer* child_transform_layer = ChildTransformLayer()) {
-    child_transform_layer->SetTransform(OwningLayer().PerspectiveTransform());
-    child_transform_layer->SetTransformOrigin(
-        OwningLayer().PerspectiveOrigin());
-  }
-
   UpdateShouldFlattenTransform();
-}
-
-bool CompositedLayerMapping::UpdateChildTransformLayer(
-    bool needs_child_transform_layer) {
-  bool layers_changed = false;
-
-  if (needs_child_transform_layer) {
-    if (!child_transform_layer_) {
-      child_transform_layer_ =
-          CreateGraphicsLayer(CompositingReason::kLayerForPerspective);
-      child_transform_layer_->SetDrawsContent(false);
-      layers_changed = true;
-    }
-  } else if (child_transform_layer_) {
-    child_transform_layer_->RemoveFromParent();
-    child_transform_layer_ = nullptr;
-    layers_changed = true;
-  }
-
-  return layers_changed;
 }
 
 bool CompositedLayerMapping::ToggleScrollbarLayerIfNeeded(
@@ -1546,10 +1495,6 @@ static void ApplyToGraphicsLayers(const CompositedLayerMapping* mapping,
   DCHECK(mode);
 
   if (((mode & kApplyToLayersAffectedByPreserve3D) ||
-       (mode & kApplyToChildContainingLayers)) &&
-      mapping->ChildTransformLayer())
-    f(mapping->ChildTransformLayer());
-  if (((mode & kApplyToLayersAffectedByPreserve3D) ||
        (mode & kApplyToContentLayers) ||
        (mode & kApplyToNonScrollingContentLayers)) &&
       mapping->MainGraphicsLayer())
@@ -1606,13 +1551,11 @@ void CompositedLayerMapping::UpdateShouldFlattenTransform() {
   // invalidation for this flag. See crbug.com/783614.
   bool is_flat = !owning_layer_.ShouldPreserve3D();
 
-  if (GraphicsLayer* layer = ChildTransformLayer())
-    layer->SetShouldFlattenTransform(false);
   if (GraphicsLayer* layer = ScrollingLayer())
     layer->SetShouldFlattenTransform(false);
   graphics_layer_->SetShouldFlattenTransform(is_flat && !HasScrollingLayer());
   if (GraphicsLayer* layer = ScrollingContentsLayer())
-    layer->SetShouldFlattenTransform(is_flat && !HasChildTransformLayer());
+    layer->SetShouldFlattenTransform(is_flat);
   if (GraphicsLayer* layer = ForegroundLayer())
     layer->SetShouldFlattenTransform(is_flat);
 }
@@ -2076,9 +2019,6 @@ GraphicsLayer* CompositedLayerMapping::DetachLayerForDecorationOutline() {
 GraphicsLayer* CompositedLayerMapping::ParentForSublayers() const {
   if (scrolling_contents_layer_)
     return scrolling_contents_layer_.get();
-
-  if (child_transform_layer_)
-    return child_transform_layer_.get();
 
   return graphics_layer_.get();
 }
@@ -2797,8 +2737,6 @@ String CompositedLayerMapping::DebugName(
            ")";
   } else if (graphics_layer == foreground_layer_.get()) {
     name = owning_layer_.DebugName() + " (foreground) Layer";
-  } else if (graphics_layer == child_transform_layer_.get()) {
-    name = "Child Transform Layer";
   } else if (graphics_layer == mask_layer_.get()) {
     name = "Mask Layer";
   } else if (graphics_layer == layer_for_horizontal_scrollbar_.get()) {

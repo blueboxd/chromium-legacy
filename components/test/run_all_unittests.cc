@@ -5,5 +5,5 @@
 #include "components/test/components_test_suite.h"
 
 int main(int argc, char** argv) {
-  return base::LaunchUnitTests(argc, argv, GetLaunchCallback(argc, argv));
+  return base::LaunchUnitTests(argc, argv, GetLaunchCallback(argc, argv), 0U);
 }

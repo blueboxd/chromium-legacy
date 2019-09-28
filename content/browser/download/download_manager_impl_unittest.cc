@@ -25,8 +25,10 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "components/download/public/common/download_create_info.h"
+#include "components/download/public/common/download_features.h"
 #include "components/download/public/common/download_file_factory.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
@@ -66,6 +68,8 @@ ACTION_TEMPLATE(RunCallback,
 namespace content {
 
 namespace {
+
+const char kGuid[] = "8DF158E8-C980-4618-BB03-EBA3242EB48B";
 
 bool URLAlwaysSafe(int render_process_id, const GURL& url) {
   return true;
@@ -473,6 +477,27 @@ class DownloadManagerTest : public testing::Test {
     return item;
   }
 
+  // Helper function to create a download item.
+  download::DownloadItem* CreateDownloadItem(
+      const base::Time& start_time,
+      const std::vector<GURL>& url_chain,
+      download::DownloadItem::DownloadState download_state) {
+    download::DownloadItem* download_item =
+        download_manager_->CreateDownloadItem(
+            kGuid, 10, base::FilePath(), base::FilePath(), url_chain,
+            GURL("http://example.com/a"), GURL("http://example.com/a"),
+            GURL("http://example.com/a"), GURL("http://example.com/a"),
+            url::Origin::Create(GURL("http://example.com/")),
+            "application/octet-stream", "application/octet-stream", start_time,
+            base::Time::Now(), std::string(), std::string(), 10, 10,
+            std::string(), download_state,
+            download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
+            download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false,
+            base::Time::Now(), true,
+            std::vector<download::DownloadItem::ReceivedSlice>());
+    return download_item;
+  }
+
   download::MockDownloadItemImpl& GetMockDownloadItem(int id) {
     download::MockDownloadItemImpl* itemp =
         mock_download_item_factory_->GetItem(id);
@@ -678,24 +703,12 @@ TEST_F(DownloadManagerTest, GetDownloadByGuid) {
 
   ASSERT_FALSE(download_manager_->GetDownloadByGuid(""));
 
-  const char kGuid[] = "8DF158E8-C980-4618-BB03-EBA3242EB48B";
   std::vector<GURL> url_chain;
   url_chain.emplace_back("http://example.com/1.zip");
-  download::DownloadItem* persisted_item =
-      download_manager_->CreateDownloadItem(
-          kGuid, 10, base::FilePath(), base::FilePath(), url_chain,
-          GURL("http://example.com/a"), GURL("http://example.com/a"),
-          GURL("http://example.com/a"), GURL("http://example.com/a"),
-          url::Origin::Create(GURL("http://example.com/")),
-          "application/octet-stream", "application/octet-stream",
-          base::Time::Now(), base::Time::Now(), std::string(), std::string(),
-          10, 10, std::string(), download::DownloadItem::INTERRUPTED,
-          download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS,
-          download::DOWNLOAD_INTERRUPT_REASON_SERVER_FAILED, false,
-          base::Time::Now(), true,
-          std::vector<download::DownloadItem::ReceivedSlice>());
+  EXPECT_CALL(GetMockObserver(), OnDownloadCreated(download_manager_.get(), _));
+  download::DownloadItem* persisted_item = CreateDownloadItem(
+      base::Time::Now(), url_chain, download::DownloadItem::INTERRUPTED);
   ASSERT_TRUE(persisted_item);
-
   ASSERT_EQ(persisted_item, download_manager_->GetDownloadByGuid(kGuid));
 }
 
@@ -732,7 +745,6 @@ TEST_F(DownloadManagerTest, RemoveDownloadsByURL) {
 // DownloadManager.
 TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
   auto in_progress_manager = std::make_unique<TestInProgressManager>();
-  const char kGuid[] = "8DF158E8-C980-4618-BB03-EBA3242EB48B";
   std::vector<GURL> url_chain;
   url_chain.emplace_back("http://example.com/1.zip");
   auto in_progress_item = std::make_unique<download::DownloadItemImpl>(
@@ -768,6 +780,38 @@ TEST_F(DownloadManagerTest, OnInProgressDownloadsLoaded) {
   ASSERT_EQ(1u, vector.size());
   download->Remove();
   ASSERT_FALSE(download_manager_->GetDownloadByGuid(kGuid));
+}
+
+// Verifies that expired canceled or interrupted downloads are deleted
+// correctly.
+TEST_F(DownloadManagerTest, DeleteExpiredDownload) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  std::map<std::string, std::string> params = {
+      {download::kExpiredDownloadDeleteTimeFinchKey, base::NumberToString(1)}};
+  scoped_feature_list.InitAndEnableFeatureWithParameters(
+      download::features::kDeleteExpiredDownloads, params);
+
+  std::vector<GURL> url_chain;
+  url_chain.emplace_back("http://example.com/1.zip");
+  auto expired_start_time = base::Time::Now() - base::TimeDelta::FromDays(10);
+  download::DownloadItem* download_item = CreateDownloadItem(
+      expired_start_time, url_chain, download::DownloadItem::INTERRUPTED);
+  EXPECT_FALSE(download_item)
+      << "Expired interrupted download will be deleted.";
+
+  download_item = CreateDownloadItem(expired_start_time, url_chain,
+                                     download::DownloadItem::CANCELLED);
+  EXPECT_FALSE(download_item) << "Expired canceled download will be deleted.";
+
+  download_item = CreateDownloadItem(expired_start_time, std::vector<GURL>(),
+                                     download::DownloadItem::COMPLETE);
+  EXPECT_FALSE(download_item) << "Download without URL chain will be deleted.";
+
+  EXPECT_CALL(GetMockObserver(), OnDownloadCreated(download_manager_.get(), _));
+  download_item = CreateDownloadItem(expired_start_time, url_chain,
+                                     download::DownloadItem::COMPLETE);
+  EXPECT_TRUE(download_item)
+      << "Expired complete download will not be deleted.";
 }
 
 }  // namespace content

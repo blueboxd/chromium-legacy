@@ -1774,6 +1774,11 @@ const char kPrintPreviewStickySettings[] =
 // launches.
 const char kRegisteredBackgroundContents[] = "background_contents.registered";
 
+// Integer that specifies the total memory usage, in mb, that chrome will
+// attempt to stay under. Can be specified via policy in addition to the default
+// memory pressure rules applied per platform.
+const char kTotalMemoryLimitMb[] = "total_memory_limit_mb";
+
 // String that lists supported HTTP authentication schemes.
 const char kAuthSchemes[] = "auth.schemes";
 

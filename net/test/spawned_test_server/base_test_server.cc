@@ -331,7 +331,7 @@ const HostPortPair& BaseTestServer::host_port_pair() const {
   return host_port_pair_;
 }
 
-const base::DictionaryValue& BaseTestServer::server_data() const {
+const base::Value& BaseTestServer::server_data() const {
   DCHECK(server_data_);
   return *server_data_;
 }
@@ -513,19 +513,22 @@ bool BaseTestServer::SetAndParseServerData(const std::string& server_data,
                                            int* port) {
   VLOG(1) << "Server data: " << server_data;
   base::JSONReader json_reader;
-  std::unique_ptr<base::Value> value(
-      json_reader.ReadToValueDeprecated(server_data));
-  if (!value.get() || !value->is_dict()) {
+  base::Optional<base::Value> value(json_reader.ReadToValue(server_data));
+  if (!value || !value->is_dict()) {
     LOG(ERROR) << "Could not parse server data: "
                << json_reader.GetErrorMessage();
     return false;
   }
 
-  server_data_.reset(static_cast<base::DictionaryValue*>(value.release()));
-  if (!server_data_->GetInteger("port", port)) {
+  server_data_ = std::move(value);
+
+  base::Optional<int> port_value = server_data_->FindIntKey("port");
+  if (!port_value) {
     LOG(ERROR) << "Could not find port value";
     return false;
   }
+
+  *port = *port_value;
   if ((*port <= 0) || (*port > std::numeric_limits<uint16_t>::max())) {
     LOG(ERROR) << "Invalid port value: " << port;
     return false;

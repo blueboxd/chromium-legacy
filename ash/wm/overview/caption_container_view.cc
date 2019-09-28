@@ -274,6 +274,14 @@ void CaptionContainerView::MaybeCloseHighlightedView() {
     event_delegate_->OnHighlightedViewClosed();
 }
 
+gfx::Point CaptionContainerView::GetMagnifierFocusPointInScreen() {
+  // When this item is tabbed into, put the magnifier focus on the front of the
+  // title, so that users can read the title first thing.
+  const gfx::Rect title_bounds = title_label_->GetBoundsInScreen();
+  return gfx::Point(GetMirroredXInView(title_bounds.x()),
+                    title_bounds.CenterPoint().y());
+}
+
 void CaptionContainerView::Layout() {
   gfx::Rect bounds(GetLocalBounds());
   bounds.Inset(kOverviewMargin, kOverviewMargin);

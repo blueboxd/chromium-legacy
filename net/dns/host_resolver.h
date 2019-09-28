@@ -270,6 +270,12 @@ class NET_EXPORT HostResolver {
   // be called.
   virtual ~HostResolver();
 
+  // Cancels any pending requests without calling callbacks, same as
+  // destruction, except also leaves the resolver in a mostly-noop state. Any
+  // future request Start() calls (for requests created before or after
+  // OnShutdown()) will immediately fail with ERR_CONTEXT_SHUT_DOWN.
+  virtual void OnShutdown() = 0;
+
   // Creates a request to resolve the given hostname (or IP address literal).
   // Profiling information for the request is saved to |net_log| if non-NULL.
   //

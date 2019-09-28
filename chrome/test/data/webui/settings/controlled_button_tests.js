@@ -74,8 +74,13 @@ suite('controlled button', function() {
   test('action-button', function() {
     assertNotEquals(
         'action-button', controlledButton.$$('cr-button').className);
-    controlledButton.actionButton = true;
+
+    let controlledActionButton = document.createElement('controlled-button');
+    controlledActionButton.pref = uncontrolledPref;
+    controlledActionButton.className = 'action-button';
+    document.body.appendChild(controlledActionButton);
     Polymer.dom.flush();
-    assertEquals('action-button', controlledButton.$$('cr-button').className);
+    assertEquals(
+        'action-button', controlledActionButton.$$('cr-button').className);
   });
 });

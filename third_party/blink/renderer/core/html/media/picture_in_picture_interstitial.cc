@@ -5,7 +5,7 @@
 #include "third_party/blink/renderer/core/html/media/picture_in_picture_interstitial.h"
 
 #include "cc/layers/layer.h"
-#include "third_party/blink/public/platform/web_localized_string.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/dom/document.h"
 #include "third_party/blink/renderer/core/geometry/dom_rect_read_only.h"
 #include "third_party/blink/renderer/core/html/html_image_element.h"
@@ -81,7 +81,7 @@ PictureInPictureInterstitial::PictureInPictureInterstitial(
       AtomicString("-internal-picture-in-picture-interstitial-message"));
   message_element_->setInnerText(
       GetVideoElement().GetLocale().QueryString(
-          WebLocalizedString::kPictureInPictureInterstitialText),
+          IDS_MEDIA_PICTURE_IN_PICTURE_INTERSTITIAL_TEXT),
       ASSERT_NO_EXCEPTION);
   ParserAppendChild(message_element_);
 

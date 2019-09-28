@@ -47,7 +47,7 @@ class CORE_EXPORT CanvasRenderingContextHost : public CanvasResourceHost,
   virtual void DidDraw() = 0;
 
   virtual void FinalizeFrame() = 0;
-  virtual void PushFrame(scoped_refptr<CanvasResource> frame,
+  virtual bool PushFrame(scoped_refptr<CanvasResource> frame,
                          const SkIRect& damage_rect) = 0;
   virtual bool OriginClean() const = 0;
   virtual void SetOriginTainted() = 0;

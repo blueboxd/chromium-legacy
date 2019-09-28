@@ -28,7 +28,7 @@ namespace blink {
 
 static constexpr base::TimeDelta kTimerDelay =
     base::TimeDelta::FromMilliseconds(500);
-static const float kMovementThreshold = 3.0;  // CSS pixels.
+static const float kMovementThreshold = 1.0;  // CSS pixels.
 
 static FloatPoint LogicalStart(const FloatRect& rect,
                                const LayoutObject& object) {

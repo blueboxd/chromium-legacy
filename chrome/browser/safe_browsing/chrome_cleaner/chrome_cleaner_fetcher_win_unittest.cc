@@ -100,7 +100,7 @@ TEST_F(ChromeCleanerFetcherTest, NetworkError) {
   // For this test, just use any http response code other than net::HTTP_OK
   // and net::HTTP_NOT_FOUND.
   test_url_loader_factory_.AddResponse(
-      GetSRTDownloadURL(), network::ResourceResponseHead(), "contents",
+      GetSRTDownloadURL(), network::mojom::URLResponseHead::New(), "contents",
       network::URLLoaderCompletionStatus(net::ERR_ADDRESS_INVALID));
 
   StartFetch();

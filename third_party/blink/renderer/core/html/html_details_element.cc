@@ -21,6 +21,7 @@
 #include "third_party/blink/renderer/core/html/html_details_element.h"
 
 #include "third_party/blink/public/platform/task_type.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"
 #include "third_party/blink/renderer/core/dom/element_traversal.h"
@@ -82,7 +83,7 @@ void HTMLDetailsElement::DidAddUserAgentShadowRoot(ShadowRoot& root) {
       MakeGarbageCollected<HTMLSummaryElement>(GetDocument());
   default_summary->AppendChild(
       Text::Create(GetDocument(),
-                   GetLocale().QueryString(WebLocalizedString::kDetailsLabel)));
+                   GetLocale().QueryString(IDS_DETAILS_WITHOUT_SUMMARY_LABEL)));
 
   HTMLSlotElement* summary_slot =
       HTMLSlotElement::CreateUserAgentCustomAssignSlot(GetDocument());

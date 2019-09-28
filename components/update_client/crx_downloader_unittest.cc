@@ -158,17 +158,17 @@ void CrxDownloaderTest::AddResponse(const GURL& url,
   if (net_error == net::OK) {
     std::string data;
     EXPECT_TRUE(base::ReadFileToString(file_path, &data));
-    network::ResourceResponseHead head;
-    head.content_length = data.size();
+    auto head = network::mojom::URLResponseHead::New();
+    head->content_length = data.size();
     network::URLLoaderCompletionStatus status(net_error);
     status.decoded_body_length = data.size();
-    test_url_loader_factory_.AddResponse(url, head, data, status);
+    test_url_loader_factory_.AddResponse(url, std::move(head), data, status);
     return;
   }
 
   EXPECT_NE(net_error, net::OK);
   test_url_loader_factory_.AddResponse(
-      url, network::ResourceResponseHead(), std::string(),
+      url, network::mojom::URLResponseHead::New(), std::string(),
       network::URLLoaderCompletionStatus(net_error));
 }
 

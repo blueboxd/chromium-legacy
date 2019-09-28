@@ -14,6 +14,10 @@ namespace base {
 class TickClock;
 }
 
+namespace cc {
+struct BeginMainFrameMetrics;
+}
+
 namespace ukm {
 class UkmRecorder;
 }
@@ -237,6 +241,12 @@ class CORE_EXPORT LocalFrameUkmAggregator
   void BeginMainFrame();
 
   bool InMainFrame() { return in_main_frame_update_; }
+
+  // Populate a BeginMainFrameMetrics structure with the latency numbers for
+  // the most recent frame. Must be called when within a main frame update.
+  // That is, after calling BeginMainFrame and before calling
+  // RecordEndOfFrameMetrics.
+  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics();
 
   // The caller is the owner of the |clock|. The |clock| must outlive the
   // LocalFrameUkmAggregator.

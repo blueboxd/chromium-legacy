@@ -46,6 +46,9 @@ class XR final : public EventTargetWithInlineData,
   ScriptPromise supportsSession(ScriptState*,
                                 const String&,
                                 ExceptionState& exception_state);
+  ScriptPromise isSessionSupported(ScriptState*,
+                                   const String&,
+                                   ExceptionState& exception_state);
   ScriptPromise requestSession(ScriptState*,
                                const String&,
                                XRSessionInit*,
@@ -177,11 +180,13 @@ class XR final : public EventTargetWithInlineData,
   class PendingSupportsSessionQuery final
       : public GarbageCollected<PendingSupportsSessionQuery> {
    public:
-    PendingSupportsSessionQuery(ScriptPromiseResolver*, XRSession::SessionMode);
+    PendingSupportsSessionQuery(ScriptPromiseResolver*,
+                                XRSession::SessionMode,
+                                bool throw_on_unsupported);
     virtual ~PendingSupportsSessionQuery() = default;
 
     // Resolves underlying promise.
-    void Resolve();
+    void Resolve(bool supported, ExceptionState* exception_state = nullptr);
 
     // Rejects underlying promise with a DOMException.
     // Do not call this with |DOMExceptionCode::kSecurityError|, use
@@ -204,6 +209,8 @@ class XR final : public EventTargetWithInlineData,
     void RejectWithTypeError(const String& message,
                              ExceptionState* exception_state);
 
+    bool ThrowOnUnsupported() const { return throw_on_unsupported_; }
+
     XRSession::SessionMode mode() const;
 
     virtual void Trace(blink::Visitor*);
@@ -212,8 +219,16 @@ class XR final : public EventTargetWithInlineData,
     Member<ScriptPromiseResolver> resolver_;
     const XRSession::SessionMode mode_;
 
+    // Only set when calling the deprecated supportsSession method.
+    const bool throw_on_unsupported_ = false;
+
     DISALLOW_COPY_AND_ASSIGN(PendingSupportsSessionQuery);
   };
+
+  ScriptPromise InternalIsSessionSupported(ScriptState*,
+                                           const String&,
+                                           ExceptionState& exception_state,
+                                           bool throw_on_unsupported);
 
   const char* CheckInlineSessionRequestAllowed(
       LocalFrame* frame,

@@ -187,7 +187,7 @@ void RankerModelLoaderImplTest::InitRemoteModels() {
   test_loader_factory_.AddResponse(invalid_model_url_.spec(),
                                    kInvalidModelData);
   test_loader_factory_.AddResponse(
-      failed_model_url_, network::ResourceResponseHead(), "",
+      failed_model_url_, network::mojom::URLResponseHead::New(), "",
       network::URLLoaderCompletionStatus(net::HTTP_INTERNAL_SERVER_ERROR));
 }
 

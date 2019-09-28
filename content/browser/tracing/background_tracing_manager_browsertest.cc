@@ -1616,8 +1616,7 @@ class ProtoBackgroundTracingTest : public DevToolsProtocolTest {
  public:
   ProtoBackgroundTracingTest() {
     scoped_feature_list_.InitWithFeatures(
-        /*enabled_features=*/{features::kTracingPerfettoBackend,
-                              features::kBackgroundTracingProtoOutput},
+        /*enabled_features=*/{features::kBackgroundTracingProtoOutput},
         /*disabled_features=*/{});
   }
 

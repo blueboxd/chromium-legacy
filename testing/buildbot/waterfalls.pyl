@@ -734,6 +734,11 @@
           'chromiumos_preflight',
         ],
       },
+      'chromeos-amd64-generic-dbg': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
+      },
       'chromeos-amd64-generic-rel': {
         'additional_compile_targets': [
           'chromiumos_preflight',
@@ -754,6 +759,11 @@
             },
           ],
         },
+      },
+      'chromeos-arm-generic-dbg': {
+        'additional_compile_targets': [
+          'chromiumos_preflight',
+        ],
       },
       'chromeos-arm-generic-rel': {
         'additional_compile_targets': [
@@ -781,21 +791,6 @@
         },
         'os_type': 'chromeos',
       },
-      # Replicate linux-chromeos-rel for code coverage experiment.
-      # TODO(crbug.com/1000367): Remove once linux-chromeos-coverage-rel is
-      # folded into linux-chromeos-rel.
-      'linux-chromeos-coverage-rel-dummy': {
-        'mixins': [
-          'linux-xenial',
-          'code-coverage',
-        ],
-        'additional_compile_targets': [
-          'gn_all',
-        ],
-        'test_suites': {
-          'gtest_tests': 'linux_chromeos_gtests',
-        },
-      },
       'linux-chromeos-dbg': {
         'mixins': [
           'linux-xenial',
@@ -807,6 +802,7 @@
       'linux-chromeos-rel': {
         'mixins': [
           'linux-xenial',
+          'code-coverage',
         ],
         'additional_compile_targets': [
           'gn_all',
@@ -4391,23 +4387,6 @@
   {
     'name': 'tryserver.chromium.android',
     'machines': {
-      'android-kitkat-arm-coverage-rel': {
-        'mixins': [
-          'code-coverage',
-          'kitkat',
-          'hammerhead',
-        ],
-        'additional_compile_targets': [
-          'cronet_test_instrumentation_apk',
-          'monochrome_static_initializers',
-        ],
-        'test_suites': {
-          'gtest_tests': 'chromium_android_gtests',
-          'junit_tests': 'chromium_junit_tests',
-          'isolated_scripts': 'monochrome_apk_checker_isolated_script',
-        },
-        'os_type': 'android',
-      },
       'android-marshmallow-arm64-coverage-rel': {
         'mixins': [
           'code-coverage',

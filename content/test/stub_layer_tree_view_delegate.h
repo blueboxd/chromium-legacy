@@ -30,6 +30,8 @@ class StubLayerTreeViewDelegate : public LayerTreeViewDelegate {
   void DidBeginMainFrame() override {}
   void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks) override {}
+  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
+      override;
   void BeginUpdateLayers() override {}
   void EndUpdateLayers() override {}
   void RequestNewLayerTreeFrameSink(

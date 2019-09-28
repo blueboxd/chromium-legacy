@@ -41,7 +41,7 @@ blink::WebSecurityStyle SecurityLevelToSecurityStyle(
     security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::NONE:
-    case security_state::HTTP_SHOW_WARNING:
+    case security_state::WARNING:
       return blink::kWebSecurityStyleNeutral;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
     case security_state::EV_SECURE:

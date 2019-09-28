@@ -51,17 +51,17 @@ void PrefetchRequestTestBase::RespondWithNetError(int net_error) {
   network::URLLoaderCompletionStatus completion_status(net_error);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       GetPendingRequest(0)->request.url, completion_status,
-      network::ResourceResponseHead(), std::string());
+      network::mojom::URLResponseHead::New(), std::string());
 }
 
 void PrefetchRequestTestBase::RespondWithHttpError(
     net::HttpStatusCode http_error) {
   int pending_requests_count = test_url_loader_factory_.NumPending();
-  auto resource_response_head = network::CreateResourceResponseHead(http_error);
+  auto url_response_head = network::CreateURLResponseHead(http_error);
   DCHECK(pending_requests_count > 0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       GetPendingRequest(0)->request.url,
-      network::URLLoaderCompletionStatus(net::OK), resource_response_head,
+      network::URLLoaderCompletionStatus(net::OK), std::move(url_response_head),
       std::string());
 }
 
@@ -75,11 +75,11 @@ void PrefetchRequestTestBase::RespondWithHttpErrorAndData(
     net::HttpStatusCode http_error,
     const std::string& data) {
   int pending_requests_count = test_url_loader_factory_.NumPending();
-  auto resource_response_head = network::CreateResourceResponseHead(http_error);
+  auto url_response_head = network::CreateURLResponseHead(http_error);
   DCHECK(pending_requests_count > 0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       GetPendingRequest(0)->request.url,
-      network::URLLoaderCompletionStatus(net::OK), resource_response_head,
+      network::URLLoaderCompletionStatus(net::OK), std::move(url_response_head),
       data);
 }
 

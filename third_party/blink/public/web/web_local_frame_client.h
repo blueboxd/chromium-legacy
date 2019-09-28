@@ -353,9 +353,6 @@ class BLINK_EXPORT WebLocalFrameClient {
                            CrossOriginRedirects cross_origin_redirect_behavior,
                            mojo::ScopedMessagePipeHandle blob_url_token) {}
 
-  // The client should load an error page in the current frame.
-  virtual void LoadErrorPage(int reason) {}
-
   // Navigational queries ------------------------------------------------
 
   // Requests the client to begin a navigation for this frame.

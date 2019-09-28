@@ -60,7 +60,6 @@ import org.chromium.chrome.browser.tab.TrustedCdn;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarTabController;
 import org.chromium.chrome.browser.ui.widget.TintedDrawable;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -72,6 +71,7 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.text.SpanApplier.SpanInfo;
+import org.chromium.ui.widget.Toast;
 
 import java.util.List;
 import java.util.regex.Pattern;
@@ -520,8 +520,7 @@ public class CustomTabToolbar extends ToolbarLayout implements View.OnLongClickL
     @Override
     public boolean onLongClick(View v) {
         if (v == mCloseButton || v.getParent() == mCustomActionButtons) {
-            return AccessibilityUtil.showAccessibilityToast(
-                    getContext(), v, v.getContentDescription());
+            return Toast.showAnchoredToast(getContext(), v, v.getContentDescription());
         }
         if (v == mTitleUrlContainer) {
             Tab tab = getCurrentTab();

@@ -39,6 +39,7 @@ class CORE_EXPORT InterpolableValue {
   virtual bool IsList() const { return false; }
   virtual bool IsLength() const { return false; }
   virtual bool IsShadow() const { return false; }
+  virtual bool IsFilter() const { return false; }
 
   // TODO(alancutter): Remove Equals().
   virtual bool Equals(const InterpolableValue&) const = 0;

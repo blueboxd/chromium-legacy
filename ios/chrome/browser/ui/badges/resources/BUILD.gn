@@ -27,11 +27,3 @@ imageset("wrench_badge") {
     "wrench_badge.imageset/wrench_badge@3x.png",
   ]
 }
-
-imageset("badge_menu_item_gear") {
-  sources = [
-    "badge_menu_item_gear.imageset/Contents.json",
-    "badge_menu_item_gear.imageset/badge_menu_item_gear@2x.png",
-    "badge_menu_item_gear.imageset/badge_menu_item_gear@3x.png",
-  ]
-}

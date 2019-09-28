@@ -279,6 +279,14 @@ void X11Window::Deactivate() {
   XWindow::Deactivate();
 }
 
+bool X11Window::IsSyncExtensionAvailable() const {
+  return ui::IsSyncExtensionAvailable();
+}
+
+void X11Window::OnCompleteSwapAfterResize() {
+  XWindow::NotifySwapAfterResize();
+}
+
 void X11Window::SetUseNativeFrame(bool use_native_frame) {
   XWindow::SetUseNativeFrame(use_native_frame);
 }

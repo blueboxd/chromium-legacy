@@ -369,7 +369,7 @@ class VIEWS_EXPORT TableView
   int active_visible_column_index_ = -1;
 
   // Used to draw a focus indicator around the active cell.
-  std::unique_ptr<FocusRing> focus_ring_;
+  std::unique_ptr<FocusRing> focus_ring_ = FocusRing::Install(this);
 
   // The header. This is only created if more than one column is specified or
   // the first column has a non-empty title.

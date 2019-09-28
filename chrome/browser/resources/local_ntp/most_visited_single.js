@@ -64,7 +64,6 @@ const CLASSES = {
   MD_TILE: 'md-tile',
   MD_TILE_INNER: 'md-tile-inner',
   MD_TITLE: 'md-title',
-  NO_INITIAL_FADE: 'no-initial-fade',
 };
 
 /**
@@ -956,11 +955,6 @@ function swapInNewTiles() {
   // that when we then set it to 1, that triggers the CSS transition.
   flushOpacity();
   cur.style.opacity = 1.0;
-
-  if (document.documentElement.classList.contains(CLASSES.NO_INITIAL_FADE)) {
-    flushOpacity();
-    document.documentElement.classList.remove(CLASSES.NO_INITIAL_FADE);
-  }
 
   // Make sure the tiles variable contain the next tileset we'll use if the host
   // page sends us an updated set of tiles.

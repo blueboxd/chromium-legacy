@@ -26,6 +26,7 @@
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/layer_impl.h"
+#include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/metrics/compositor_timing_history.h"
 #include "cc/test/animation_test_common.h"
 #include "cc/test/fake_compositor_frame_reporting_controller.h"
@@ -401,6 +402,9 @@ class LayerTreeHostClientForTesting : public LayerTreeHostClient,
 
   void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks) override {}
+  std::unique_ptr<BeginMainFrameMetrics> GetBeginMainFrameMetrics() override {
+    return nullptr;
+  }
 
   void UpdateLayerTreeHost() override { test_hooks_->UpdateLayerTreeHost(); }
 

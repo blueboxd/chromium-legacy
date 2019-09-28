@@ -251,7 +251,7 @@ void GCMAccountTrackerTest::FinishAccountAddition(
   EXPECT_TRUE(test_url_loader_factory()->IsPending(kOAuthURL));
   test_url_loader_factory()->SimulateResponseForPendingRequest(
       GURL(kOAuthURL), network::URLLoaderCompletionStatus(net::OK),
-      network::CreateResourceResponseHead(net::HTTP_OK),
+      network::CreateURLResponseHead(net::HTTP_OK),
       GetValidTokenInfoResponse(account_id));
 
   GetValidTokenInfoResponse(account_id);

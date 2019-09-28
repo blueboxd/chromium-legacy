@@ -186,9 +186,8 @@ IN_PROC_BROWSER_TEST_F(DevicePolicyCloudExternalDataManagerTest,
   EXPECT_EQ(0, ComputeExternalDataCacheDirectorySize());
 }
 
-// Disabled. See https://crbug.com/1008275.
 IN_PROC_BROWSER_TEST_F(DevicePolicyCloudExternalDataManagerTest,
-                       DISABLED_CleanUpResourceCache) {
+                       CleanUpResourceCache) {
   EXPECT_EQ(0, ComputeExternalDataCacheDirectorySize());
 
   std::string external_data = ReadExternalDataFile(kExternalDataPath);
@@ -207,6 +206,10 @@ IN_PROC_BROWSER_TEST_F(DevicePolicyCloudExternalDataManagerTest,
             ComputeExternalDataCacheDirectorySize());
 
   ClearDeviceNativePrintersExternalData();
+  // We have to wait until
+  // CloudExternalDataManagerBase::Backend::OnMetadataUpdated(), which is
+  // responsible for removing outdated external policy files, is completed.
+  content::RunAllTasksUntilIdle();
   // Check that policy data was cleared.
   EXPECT_EQ(0, ComputeExternalDataCacheDirectorySize());
 }

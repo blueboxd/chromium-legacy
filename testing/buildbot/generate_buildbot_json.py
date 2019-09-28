@@ -1049,8 +1049,6 @@ class BBJSONGenerator(object):
       'win32-dbg',
       'win-archive-dbg',
       'win32-archive-dbg',
-      # code coverage, see https://crbug.com/1000367.
-      'linux-chromeos-coverage-rel-dummy',
     ]
 
   def get_internal_waterfalls(self):

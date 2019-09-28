@@ -74,24 +74,16 @@ class LockManager::Lock {
   Lock(const std::string& name,
        LockMode mode,
        int64_t lock_id,
-       const std::string& client_id,
+       const ReceiverState& receiver_state,
        mojo::AssociatedRemote<blink::mojom::LockRequest> request)
       : name_(name),
         mode_(mode),
-        client_id_(client_id),
         lock_id_(lock_id),
+        client_id_(receiver_state.client_id),
+        execution_context_(receiver_state.execution_context),
         request_(std::move(request)) {}
 
   ~Lock() = default;
-
-  // Abort a lock request.
-  void Abort(const std::string& message) {
-    DCHECK(request_);
-    DCHECK(!handle_);
-
-    request_->Abort(message);
-    request_.reset();
-  }
 
   // Grant a lock request. This mints a LockHandle and returns it over the
   // request pipe.
@@ -125,13 +117,17 @@ class LockManager::Lock {
   LockMode mode() const { return mode_; }
   int64_t lock_id() const { return lock_id_; }
   const std::string& client_id() const { return client_id_; }
+  const ExecutionContext& execution_context() const {
+    return execution_context_;
+  }
   bool is_granted() const { return !!handle_; }
 
  private:
   const std::string name_;
   const LockMode mode_;
-  const std::string client_id_;
   const int64_t lock_id_;
+  const std::string client_id_;
+  const ExecutionContext execution_context_;
 
   // Exactly one of the following is non-null at any given time.
 
@@ -170,28 +166,27 @@ class LockManager::OriginState {
   void PreemptLock(int64_t lock_id,
                    const std::string& name,
                    LockMode mode,
-                   const std::string& client_id,
                    mojo::AssociatedRemote<blink::mojom::LockRequest> request,
-                   const url::Origin origin) {
+                   const ReceiverState& receiver_state) {
     // Preempting shared locks is not supported.
     DCHECK_EQ(mode, LockMode::EXCLUSIVE);
     std::list<Lock>& request_queue = resource_names_to_requests_[name];
     while (!request_queue.empty() && request_queue.front().is_granted())
       BreakFront(request_queue);
-    request_queue.emplace_front(name, mode, lock_id, client_id,
+    request_queue.emplace_front(name, mode, lock_id, receiver_state,
                                 std::move(request));
     auto it = request_queue.begin();
     lock_id_to_iterator_.emplace(it->lock_id(), it);
-    it->Grant(lock_manager_->weak_ptr_factory_.GetWeakPtr(), origin);
+    it->Grant(lock_manager_->weak_ptr_factory_.GetWeakPtr(),
+              receiver_state.origin);
   }
 
   void AddRequest(int64_t lock_id,
                   const std::string& name,
                   LockMode mode,
-                  const std::string& client_id,
                   mojo::AssociatedRemote<blink::mojom::LockRequest> request,
                   WaitMode wait,
-                  const url::Origin origin) {
+                  const ReceiverState& receiver_state) {
     DCHECK(wait != WaitMode::PREEMPT);
     std::list<Lock>& request_queue = resource_names_to_requests_[name];
     bool can_grant = request_queue.empty() ||
@@ -204,12 +199,14 @@ class LockManager::OriginState {
       return;
     }
 
-    request_queue.emplace_back(name, mode, lock_id, client_id,
+    request_queue.emplace_back(name, mode, lock_id, receiver_state,
                                std::move(request));
     auto it = --(request_queue.end());
     lock_id_to_iterator_.emplace(it->lock_id(), it);
-    if (can_grant)
-      it->Grant(lock_manager_->weak_ptr_factory_.GetWeakPtr(), origin);
+    if (can_grant) {
+      it->Grant(lock_manager_->weak_ptr_factory_.GetWeakPtr(),
+                receiver_state.origin);
+    }
   }
 
   void EraseLock(int64_t lock_id, const url::Origin& origin) {
@@ -319,7 +316,7 @@ void LockManager::BindReceiver(
   const std::string client_id = base::GenerateGUID();
 
   receivers_.Add(this, std::move(receiver),
-                 {client_id, render_process_id, render_frame_id, origin});
+                 {client_id, {render_process_id, render_frame_id}, origin});
 }
 
 void LockManager::RequestLock(
@@ -354,11 +351,10 @@ void LockManager::RequestLock(
 
   OriginState& origin_state = origins_.find(context.origin)->second;
   if (wait == WaitMode::PREEMPT) {
-    origin_state.PreemptLock(lock_id, name, mode, context.client_id,
-                             std::move(request), context.origin);
+    origin_state.PreemptLock(lock_id, name, mode, std::move(request), context);
   } else
-    origin_state.AddRequest(lock_id, name, mode, context.client_id,
-                            std::move(request), wait, context.origin);
+    origin_state.AddRequest(lock_id, name, mode, std::move(request), wait,
+                            context);
 }
 
 void LockManager::ReleaseLock(const url::Origin& origin, int64_t lock_id) {

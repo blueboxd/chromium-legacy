@@ -90,8 +90,8 @@ void LookalikeUrlInterstitialPage::PopulateInterstitialStrings(
   const base::string16 hostname =
       security_interstitials::common_string_util::GetFormattedHostName(
           request_url());
-  load_time_data->SetString("tabTitle", l10n_util::GetStringFUTF16(
-                                            IDS_LOOKALIKE_URL_TITLE, hostname));
+  load_time_data->SetString("tabTitle",
+                            l10n_util::GetStringUTF16(IDS_LOOKALIKE_URL_TITLE));
   load_time_data->SetString(
       "heading",
       l10n_util::GetStringFUTF16(IDS_LOOKALIKE_URL_HEADING, hostname));

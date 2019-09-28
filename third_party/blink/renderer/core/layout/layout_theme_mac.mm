@@ -1014,7 +1014,7 @@ String LayoutThemeMac::FileListNameForWidth(Locale& locale,
       str_to_truncate = file->name();
   } else {
     return StringTruncator::RightTruncate(
-        locale.QueryString(WebLocalizedString::kMultipleFileUploadText,
+        locale.QueryString(IDS_FORM_FILE_MULTIPLE_UPLOAD,
                            locale.ConvertToLocalizedNumber(
                                String::Number(file_list->length()))),
         width, font);

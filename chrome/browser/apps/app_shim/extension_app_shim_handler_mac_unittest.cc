@@ -52,7 +52,6 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   base::FilePath GetFullProfilePath(const base::FilePath& relative_path) {
     return relative_path;
   }
-  MOCK_METHOD1(ProfileExistsForPath, bool(const base::FilePath&));
   MOCK_METHOD1(ProfileForPath, Profile*(const base::FilePath&));
   void LoadProfileAsync(const base::FilePath& path,
                         base::OnceCallback<void(Profile*)> callback) override {
@@ -113,10 +112,10 @@ class MockDelegate : public ExtensionAppShimHandler::Delegate {
   void SetHostForCreate(std::unique_ptr<AppShimHost> host_for_create) {
     host_for_create_ = std::move(host_for_create);
   }
-  std::unique_ptr<AppShimHost> CreateHost(
-      AppShimHost::Client* client,
-      Profile* profile,
-      const extensions::Extension* extension) override {
+  std::unique_ptr<AppShimHost> CreateHost(AppShimHost::Client* client,
+                                          const base::FilePath& profile_path,
+                                          const std::string& app_id,
+                                          bool use_remote_cocoa) override {
     DCHECK(host_for_create_);
     std::unique_ptr<AppShimHost> result = std::move(host_for_create_);
     return result;
@@ -179,10 +178,12 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
   TestingAppShimHostBootstrap(
       const base::FilePath& profile_path,
       const std::string& app_id,
+      bool is_from_bookmark,
       base::Optional<apps::AppShimLaunchResult>* launch_result)
       : AppShimHostBootstrap(getpid()),
         profile_path_(profile_path),
         app_id_(app_id),
+        is_from_bookmark_(is_from_bookmark),
         launch_result_(launch_result),
         weak_factory_(this) {}
   void DoTestLaunch(apps::AppShimLaunchType launch_type,
@@ -191,7 +192,8 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
     auto app_shim_info = chrome::mojom::AppShimInfo::New();
     app_shim_info->profile_path = profile_path_;
     app_shim_info->app_id = app_id_;
-    app_shim_info->app_url = GURL("https://example.com");
+    if (is_from_bookmark_)
+      app_shim_info->app_url = GURL("https://example.com");
     app_shim_info->launch_type = launch_type;
     app_shim_info->files = files;
     OnShimConnected(
@@ -213,8 +215,9 @@ class TestingAppShimHostBootstrap : public AppShimHostBootstrap {
   }
 
  private:
-  base::FilePath profile_path_;
-  std::string app_id_;
+  const base::FilePath profile_path_;
+  const std::string app_id_;
+  const bool is_from_bookmark_;
   // Note that |launch_result_| is optional so that we can track whether or not
   // the callback to set it has arrived.
   base::Optional<apps::AppShimLaunchResult>* launch_result_;
@@ -250,6 +253,8 @@ class TestHost : public AppShimHost {
     return test_weak_factory_.GetWeakPtr();
   }
 
+  using AppShimHost::ProfileSelectedFromMenu;
+
  private:
   bool did_connect_to_host_ = false;
 
@@ -266,20 +271,25 @@ class ExtensionAppShimHandlerTest : public testing::Test {
         profile_path_b_("Profile B") {
     AppShimHostBootstrap::SetClient(handler_.get());
     bootstrap_aa_ = (new TestingAppShimHostBootstrap(
-                         profile_path_a_, kTestAppIdA, &bootstrap_aa_result_))
+                         profile_path_a_, kTestAppIdA,
+                         true /* is_from_bookmark */, &bootstrap_aa_result_))
                         ->GetWeakPtr();
     bootstrap_ab_ = (new TestingAppShimHostBootstrap(
-                         profile_path_a_, kTestAppIdB, &bootstrap_ab_result_))
+                         profile_path_a_, kTestAppIdB,
+                         false /* is_from_bookmark */, &bootstrap_ab_result_))
                         ->GetWeakPtr();
     bootstrap_bb_ = (new TestingAppShimHostBootstrap(
-                         profile_path_b_, kTestAppIdB, &bootstrap_bb_result_))
+                         profile_path_b_, kTestAppIdB,
+                         false /* is_from_bookmark */, &bootstrap_bb_result_))
                         ->GetWeakPtr();
     bootstrap_aa_duplicate_ =
         (new TestingAppShimHostBootstrap(profile_path_a_, kTestAppIdA,
+                                         true /* is_from_bookmark */,
                                          &bootstrap_aa_duplicate_result_))
             ->GetWeakPtr();
     bootstrap_aa_thethird_ =
         (new TestingAppShimHostBootstrap(profile_path_a_, kTestAppIdA,
+                                         true /* is_from_bookmark */,
                                          &bootstrap_aa_thethird_result_))
             ->GetWeakPtr();
 
@@ -314,14 +324,10 @@ class ExtensionAppShimHandlerTest : public testing::Test {
                        .SetID(kTestAppIdB)
                        .Build();
 
-    EXPECT_CALL(*delegate_, ProfileExistsForPath(profile_path_a_))
-        .WillRepeatedly(Return(true));
     EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_a_))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
         .WillRepeatedly(Return(&profile_a_));
-    EXPECT_CALL(*delegate_, ProfileExistsForPath(profile_path_b_))
-        .WillRepeatedly(Return(true));
     EXPECT_CALL(*delegate_, IsProfileLockedForPath(profile_path_b_))
         .WillRepeatedly(Return(false));
     EXPECT_CALL(*delegate_, ProfileForPath(profile_path_b_))
@@ -448,10 +454,10 @@ class ExtensionAppShimHandlerTest : public testing::Test {
 
 TEST_F(ExtensionAppShimHandlerTest, LaunchProfileNotFound) {
   // Bad profile path.
-  EXPECT_CALL(*delegate_, ProfileExistsForPath(profile_path_a_))
-      .WillOnce(Return(false))
-      .WillRepeatedly(Return(true));
+  EXPECT_CALL(*delegate_, ProfileForPath(profile_path_a_))
+      .WillRepeatedly(Return(static_cast<Profile*>(nullptr)));
   NormalLaunch(bootstrap_aa_, nullptr);
+  delegate_->RunLoadProfileCallback(profile_path_a_, nullptr);
   EXPECT_EQ(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND, *bootstrap_aa_result_);
 }
 
@@ -819,6 +825,79 @@ TEST_F(ExtensionAppShimHandlerTest, MultiProfile) {
     EXPECT_EQ(host_bb_.get(), handler_->FindHost(&profile_b_, kTestAppIdB));
     EXPECT_FALSE(host_bb_->did_connect_to_host());
   }
+}
+
+TEST_F(ExtensionAppShimHandlerTest, MultiProfileShimLaunch) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAppShimMultiProfile},
+      /*disabled_features=*/{});
+
+  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  ShimLaunchedCallback launched_callback;
+  delegate_->SetCaptureShimLaunchedCallback(&launched_callback);
+  ShimTerminatedCallback terminated_callback;
+  delegate_->SetCaptureShimTerminatedCallback(&terminated_callback);
+
+  // Launch the app for profile A. This should trigger a shim launch request.
+  EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(),
+                                       false /* recreate_shim */));
+  EXPECT_EQ(nullptr, handler_->FindHost(&profile_a_, kTestAppIdA));
+  handler_->OnAppActivated(&profile_a_, kTestAppIdA);
+  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
+  EXPECT_FALSE(host_aa_->did_connect_to_host());
+
+  // Launch the app for profile B. This should not cause a shim launch request.
+  EXPECT_CALL(*delegate_, DoLaunchShim(_, _, _)).Times(0);
+  handler_->OnAppActivated(&profile_b_, kTestAppIdA);
+
+  // Indicate the profile A that its launch succeeded.
+  EXPECT_TRUE(launched_callback);
+  EXPECT_TRUE(terminated_callback);
+  std::move(launched_callback).Run(base::Process(5));
+  EXPECT_FALSE(launched_callback);
+  EXPECT_TRUE(terminated_callback);
+}
+
+TEST_F(ExtensionAppShimHandlerTest, MultiProfileSelectMenu) {
+  base::test::ScopedFeatureList scoped_features;
+  scoped_features.InitWithFeatures(
+      /*enabled_features=*/{features::kAppShimMultiProfile},
+      /*disabled_features=*/{});
+
+  delegate_->SetHostForCreate(std::move(host_aa_unique_));
+  ShimLaunchedCallback launched_callback;
+  delegate_->SetCaptureShimLaunchedCallback(&launched_callback);
+  ShimTerminatedCallback terminated_callback;
+  delegate_->SetCaptureShimTerminatedCallback(&terminated_callback);
+
+  // Launch the app for profile A. This should trigger a shim launch request.
+  EXPECT_CALL(*delegate_, DoLaunchShim(&profile_a_, extension_a_.get(),
+                                       false /* recreate_shim */));
+  EXPECT_EQ(nullptr, handler_->FindHost(&profile_a_, kTestAppIdA));
+  handler_->OnAppActivated(&profile_a_, kTestAppIdA);
+  EXPECT_EQ(host_aa_.get(), handler_->FindHost(&profile_a_, kTestAppIdA));
+  EXPECT_FALSE(host_aa_->did_connect_to_host());
+
+  // Indicate the profile A that its launch succeeded.
+  EXPECT_TRUE(launched_callback);
+  EXPECT_TRUE(terminated_callback);
+  std::move(launched_callback).Run(base::Process(5));
+  EXPECT_FALSE(launched_callback);
+  EXPECT_TRUE(terminated_callback);
+
+  // Select profile B from the menu. This should request that the app be
+  // launched.
+  EXPECT_CALL(*delegate_, LaunchApp(&profile_b_, extension_a_.get(), _));
+  host_aa_->ProfileSelectedFromMenu(profile_path_b_);
+  EXPECT_CALL(*delegate_, DoLaunchShim(_, _, _)).Times(0);
+  handler_->OnAppActivated(&profile_b_, kTestAppIdA);
+
+  // Select profile A and B from the menu -- this should not request a launch,
+  // because the profiles are already enabled.
+  EXPECT_CALL(*delegate_, LaunchApp(_, _, _)).Times(0);
+  host_aa_->ProfileSelectedFromMenu(profile_path_a_);
+  host_aa_->ProfileSelectedFromMenu(profile_path_b_);
 }
 
 }  // namespace apps

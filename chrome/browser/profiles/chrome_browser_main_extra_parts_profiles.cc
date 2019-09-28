@@ -109,6 +109,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/android_sms/android_sms_service_factory.h"
+#include "chrome/browser/chromeos/bluetooth/debug_logs_manager_factory.h"
 #include "chrome/browser/chromeos/crostini/crostini_registry_service_factory.h"
 #include "chrome/browser/chromeos/extensions/login_screen/login_state/session_state_changed_event_dispatcher.h"
 #include "chrome/browser/chromeos/extensions/printing_metrics/print_job_finished_event_dispatcher.h"
@@ -273,6 +274,7 @@ void ChromeBrowserMainExtraPartsProfiles::
 #endif
 #if defined(OS_CHROMEOS)
   chromeos::AccountManagerMigratorFactory::GetInstance();
+  chromeos::bluetooth::DebugLogsManagerFactory::GetInstance();
   chromeos::CupsPrintJobManagerFactory::GetInstance();
   chromeos::CupsPrintersManagerFactory::GetInstance();
   chromeos::PrintJobHistoryServiceFactory::GetInstance();

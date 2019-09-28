@@ -623,11 +623,11 @@ TEST_F(AnimationAnimationTestNoCompositing, Finish) {
 
 TEST_F(AnimationAnimationTestNoCompositing, FinishAfterEffectEnd) {
   NonThrowableExceptionState exception_state;
+  // OK to set current time out of bounds.
   animation->setCurrentTime(40000, false);
   animation->finish(exception_state);
-  // TODO(crbug/958433): This is not to spec.  Finish should trigger a snap to
-  // the upper boundary.
-  EXPECT_EQ(40000, animation->currentTime());
+  // The finish method triggers a snap to the upper boundary.
+  EXPECT_EQ(30000, animation->currentTime());
 }
 
 TEST_F(AnimationAnimationTestNoCompositing, FinishBeforeStart) {

@@ -520,7 +520,7 @@ class SecurityStateTabHelperTest : public CertVerifierBrowserTest {
           security_state::features::kMarkHttpAsParameterDangerous) {
         expected_security_level = security_state::DANGEROUS;
       } else {
-        expected_security_level = security_state::HTTP_SHOW_WARNING;
+        expected_security_level = security_state::WARNING;
       }
     }
 
@@ -1022,7 +1022,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithAutoupgradesDisabled,
 }
 
 // Tests that the security level of data: URLs is always downgraded to
-// HTTP_SHOW_WARNING.
+// WARNING.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                        SecurityLevelDowngradedOnDataUrl) {
   content::WebContents* contents =
@@ -1036,7 +1036,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("data:text/html,<html></html>"));
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
+  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 
   // Ensure that WebContentsObservers don't show an incorrect Form Not Secure
   // explanation. Regression test for https://crbug.com/691412.
@@ -1144,7 +1144,7 @@ IN_PROC_BROWSER_TEST_F(
 }
 
 // Tests that the security level of ftp: URLs is always downgraded to
-// HTTP_SHOW_WARNING.
+// WARNING.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                        SecurityLevelDowngradedOnFtpUrl) {
   content::WebContents* contents =
@@ -1158,7 +1158,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   ASSERT_TRUE(helper);
 
   ui_test_utils::NavigateToURL(browser(), GURL("ftp://example.test/"));
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
+  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 
   // Ensure that WebContentsObservers don't show an incorrect Form Not Secure
   // explanation. Regression test for https://crbug.com/691412.
@@ -1363,25 +1363,25 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
       browser(),
       GetURLWithNonLocalHostname(embedded_test_server(),
                                  "/textinput/focus_input_on_load.html"));
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
+  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 
   // Verify a value set operation isn't treated as user-input.
   EXPECT_TRUE(content::ExecuteScript(
       contents, "document.getElementById('text_id').value='v';"));
   InjectScript(contents);
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
+  ASSERT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 
   // Verify an InsertText operation isn't treated as user-input.
   EXPECT_TRUE(content::ExecuteScript(
       contents, "document.execCommand('InsertText',false,'a');"));
   InjectScript(contents);
   base::RunLoop().RunUntilIdle();
-  ASSERT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
+  ASSERT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 
 // Tests that the security level of a HTTP page is downgraded from
-// HTTP_SHOW_WARNING to DANGEROUS after editing a form field in the relevant
+// WARNING to DANGEROUS after editing a form field in the relevant
 // configurations.
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
                        SecurityLevelDowngradedAfterFileSelection) {
@@ -1401,7 +1401,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   ui_test_utils::NavigateToURL(
       browser(),
       GetURLWithNonLocalHostname(embedded_test_server(), "/file_input.html"));
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
+  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 
   // Prepare a file for the upload form.
   base::FilePath file_path;
@@ -1429,7 +1429,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   // Verify that after a refresh, the DANGEROUS state is cleared.
   contents->GetController().Reload(content::ReloadType::NORMAL, false);
   content::WaitForLoadStop(contents);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
+  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 
 // A Browser subclass that keeps track of messages that have been
@@ -1911,7 +1911,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
       GetURLWithNonLocalHostname(embedded_test_server(),
                                  "/textinput/focus_input_on_load.html"));
 
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
+  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 
   {
     // Ensure that the security level remains Dangerous in the
@@ -1951,7 +1951,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   // Verify that after a refresh, the DANGEROUS state is cleared.
   contents->GetController().Reload(content::ReloadType::NORMAL, false);
   content::WaitForLoadStop(contents);
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
+  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
 }
 
 IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
@@ -1975,7 +1975,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
       browser(),
       GetURLWithNonLocalHostname(embedded_test_server(), "/file_input.html"));
 
-  EXPECT_EQ(security_state::HTTP_SHOW_WARNING, helper->GetSecurityLevel());
+  EXPECT_EQ(security_state::WARNING, helper->GetSecurityLevel());
   SecurityStyleTestObserver observer(contents);
 
   // Prepare a file for the upload form.
@@ -2013,8 +2013,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTestWithAutoupgradesDisabled,
     ui_test_utils::NavigateToURL(
         browser(),
         GetURLWithNonLocalHostname(embedded_test_server(), "/title1.html"));
-    histograms.ExpectUniqueSample(kHistogramName,
-                                  security_state::HTTP_SHOW_WARNING, 1);
+    histograms.ExpectUniqueSample(kHistogramName, security_state::WARNING, 1);
   }
 }
 

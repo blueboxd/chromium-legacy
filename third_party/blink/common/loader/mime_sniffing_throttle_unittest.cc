@@ -325,7 +325,7 @@ TEST_F(MimeSniffingThrottleTest, NoBody) {
   // The mime type should be updated to the default mime type ("text/plain").
   EXPECT_TRUE(delegate->destination_loader_client()->has_received_response());
   EXPECT_EQ("text/plain",
-            delegate->destination_loader_client()->response_head().mime_type);
+            delegate->destination_loader_client()->response_head()->mime_type);
 }
 
 TEST_F(MimeSniffingThrottleTest, EmptyBody) {
@@ -355,7 +355,7 @@ TEST_F(MimeSniffingThrottleTest, EmptyBody) {
   // The mime type should be updated to the default mime type ("text/plain").
   EXPECT_TRUE(delegate->destination_loader_client()->has_received_response());
   EXPECT_EQ("text/plain",
-            delegate->destination_loader_client()->response_head().mime_type);
+            delegate->destination_loader_client()->response_head()->mime_type);
 }
 
 TEST_F(MimeSniffingThrottleTest, Body_PlainText) {
@@ -379,7 +379,7 @@ TEST_F(MimeSniffingThrottleTest, Body_PlainText) {
   // The mime type should be updated.
   EXPECT_TRUE(delegate->is_resumed());
   EXPECT_EQ("text/plain",
-            delegate->destination_loader_client()->response_head().mime_type);
+            delegate->destination_loader_client()->response_head()->mime_type);
 }
 
 TEST_F(MimeSniffingThrottleTest, Body_Docx) {
@@ -403,7 +403,7 @@ TEST_F(MimeSniffingThrottleTest, Body_Docx) {
   // The mime type should be updated.
   EXPECT_TRUE(delegate->is_resumed());
   EXPECT_EQ("application/msword",
-            delegate->destination_loader_client()->response_head().mime_type);
+            delegate->destination_loader_client()->response_head()->mime_type);
 }
 
 TEST_F(MimeSniffingThrottleTest, Body_PNG) {
@@ -427,7 +427,7 @@ TEST_F(MimeSniffingThrottleTest, Body_PNG) {
   // The mime type should be updated.
   EXPECT_TRUE(delegate->is_resumed());
   EXPECT_EQ("image/png",
-            delegate->destination_loader_client()->response_head().mime_type);
+            delegate->destination_loader_client()->response_head()->mime_type);
 }
 
 TEST_F(MimeSniffingThrottleTest, Body_LongPlainText) {
@@ -483,7 +483,7 @@ TEST_F(MimeSniffingThrottleTest, Body_LongPlainText) {
   // The mime type should be updated.
   EXPECT_TRUE(delegate->is_resumed());
   EXPECT_EQ("text/plain",
-            delegate->destination_loader_client()->response_head().mime_type);
+            delegate->destination_loader_client()->response_head()->mime_type);
 }
 
 TEST_F(MimeSniffingThrottleTest, Abort_NoBodyPipe) {

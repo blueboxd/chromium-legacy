@@ -522,9 +522,36 @@ pixel test failures are actual failures or need to be rebaselined." step.
 
 [pixel wrangling triage]: pixel_wrangling.md#How-to-Keep-the-Bots-Green
 
+If you are adding a new pixel test, it is beneficial to set the
+`grace_period_end` argument in the test's definition. This will allow the test
+to run for a period without actually failing on the waterfall bots, giving you
+some time to triage any additional images that show up on them. This helps
+prevent new tests from making the bots red because they're producing slightly
+different but valid images from the ones triaged while the CL was in review.
+Example:
+
+```
+from datetime import date
+
+...
+
+PixelTestPage(
+  'foo_pixel_test.html',
+  ...
+  grace_period_end=date(2020, 1, 1)
+)
+```
+
+You should typically set the grace period to end 1-2 days after the the CL will
+land.
+
 Once your CL passes the CQ, you should be mostly good to go, although you should
 keep an eye on the waterfall bots for a short period after your CL lands in case
 any configurations not covered by the CQ need to have images approved, as well.
+All untriaged images for your test can be found by substituting your test name
+into:
+
+`https://chrome-gpu-gold.skia.org/search?query=name%3D<test name>`
 
 ## Stamping out Flakiness
 

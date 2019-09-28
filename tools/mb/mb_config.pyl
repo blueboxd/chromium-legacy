@@ -97,7 +97,9 @@
 
       'chromeos-amd64-generic-asan-rel': 'cros_chrome_sdk_asan',
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_headless_ozone_cfi_thin_lto',
+      'chromeos-amd64-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-arm-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-arm-generic-rel': 'cros_chrome_sdk',
       'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone',
       'linux-chromeos-rel': 'chromeos_with_codecs_release_bot',
@@ -648,7 +650,6 @@
       # TODO(crbug/597596): Switch this back to debug_trybot when cronet's
       # shared library loading is fixed.
       'android-cronet-arm-dbg': 'android_cronet_debug_static_bot_arm_no_neon',
-      'android-kitkat-arm-coverage-rel': 'android_release_trybot_java_coverage',
       'android-kitkat-arm-rel': 'android_release_trybot',
       'android-marshmallow-arm64-coverage-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting_java_coverage',
       'android-marshmallow-arm64-rel': 'gpu_tests_android_release_trybot_arm64_resource_whitelisting',
@@ -735,16 +736,14 @@
       # TODO(crbug.com/913750): Enable DCHECKS on the two amd64-generic bots
       # and two kevin bots when the PFQ has it enabled.
       'chromeos-amd64-generic-cfi-thin-lto-rel': 'cros_chrome_sdk_headless_ozone_cfi_thin_lto',
+      'chromeos-amd64-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-amd64-generic-rel': 'cros_chrome_sdk_headless_ozone',
+      'chromeos-arm-generic-dbg': 'cros_chrome_sdk_dbg',
       'chromeos-arm-generic-rel': 'cros_chrome_sdk_dchecks_always_on',
       'chromeos-kevin-compile-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-experimental-rel': 'cros_chrome_sdk_headless_ozone',
       'chromeos-kevin-rel': 'cros_chrome_sdk_headless_ozone',
-      'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot',
-      # Replicate linux-chromeos-rel for code coverage experiment.
-      # TODO(crbug.com/1000367): Remove once linux-chromeos-coverage-rel is
-      # folded into linux-chromeos-rel.
-      'linux-chromeos-coverage-rel': 'chromeos_with_codecs_release_trybot_code_coverage',
+      'linux-chromeos-rel': 'chromeos_with_codecs_release_trybot_code_coverage',
       'linux-chromeos-compile-dbg': 'chromeos_with_codecs_debug_bot',
       'linux-chromeos-dbg': 'chromeos_with_codecs_debug_bot',
     },
@@ -1142,11 +1141,6 @@
       'webview_google',
     ],
 
-    'android_release_trybot_java_coverage': [
-      'android', 'release_trybot', 'strip_debug_info', 'java_coverage',
-      'partial_code_coverage_instrumentation',
-    ],
-
     'android_release_trybot_x86': [
       'android', 'release_trybot', 'strip_debug_info', 'x86',
     ],
@@ -1301,6 +1295,7 @@
       'chromeos_with_codecs', 'release_trybot', 'no_symbols',
     ],
 
+    # Keep in sync with chromeos_with_codecs_release_trybot.
     'chromeos_with_codecs_release_trybot_code_coverage': [
       'chromeos_with_codecs', 'release_trybot', 'no_symbols',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',
@@ -1436,6 +1431,10 @@
 
     'cros_chrome_sdk_asan': [
       'cros_chrome_sdk', 'asan',
+    ],
+
+    'cros_chrome_sdk_dbg': [
+      'cros_chrome_sdk', 'debug',
     ],
 
     'cros_chrome_sdk_dchecks_always_on': [
@@ -1654,6 +1653,8 @@
       'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
     ],
 
+    # Keep in sync with
+    # gpu_tests_release_trybot_no_symbols_use_dummy_lastchange.
     'gpu_tests_release_trybot_no_symbols_use_dummy_lastchange_code_coverage': [
       'gpu_tests', 'release_trybot', 'no_symbols', 'use_dummy_lastchange',
       'use_clang_coverage', 'partial_code_coverage_instrumentation',

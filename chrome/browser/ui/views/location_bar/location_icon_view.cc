@@ -170,13 +170,12 @@ bool LocationIconView::ShouldAnimateTextVisibilityChange() const {
     return false;
 
   SecurityLevel level = delegate_->GetLocationBarModel()->GetSecurityLevel();
-  // Do not animate transitions from HTTP_SHOW_WARNING to DANGEROUS, since the
-  // transition can look confusing/messy.
+  // Do not animate transitions from WARNING to DANGEROUS, since
+  // the transition can look confusing/messy.
   if (level == SecurityLevel::DANGEROUS &&
-      last_update_security_level_ == SecurityLevel::HTTP_SHOW_WARNING)
+      last_update_security_level_ == SecurityLevel::WARNING)
     return false;
-  return (level == SecurityLevel::DANGEROUS ||
-          level == SecurityLevel::HTTP_SHOW_WARNING);
+  return (level == SecurityLevel::DANGEROUS || level == SecurityLevel::WARNING);
 }
 
 void LocationIconView::UpdateTextVisibility(bool suppress_animations) {

@@ -110,11 +110,11 @@ class BundledExchangesURLLoaderFactoryTest : public testing::Test {
     EXPECT_FALSE(test_client_.has_received_upload_progress());
     EXPECT_FALSE(test_client_.has_received_cached_metadata());
 
-    ASSERT_TRUE(test_client_.response_head().headers);
+    ASSERT_TRUE(test_client_.response_head()->headers);
     ASSERT_TRUE(test_client_.response_body());
 
     EXPECT_EQ(expected_response_code,
-              test_client_.response_head().headers->response_code());
+              test_client_.response_head()->headers->response_code());
 
     if (!expected_body.empty()) {
       std::vector<char> buffer(expected_body.size() * 2);
@@ -192,9 +192,9 @@ TEST_F(BundledExchangesURLLoaderFactoryTest, RangeRequest) {
   auto loader = CreateLoaderAndStart(std::move(response));
 
   RunAndCheck(206, GetBody().substr(10, 10));
-  EXPECT_EQ(10, GetTestClient().response_head().headers->GetContentLength());
+  EXPECT_EQ(10, GetTestClient().response_head()->headers->GetContentLength());
   std::string content_range;
-  EXPECT_TRUE(GetTestClient().response_head().headers->EnumerateHeader(
+  EXPECT_TRUE(GetTestClient().response_head()->headers->EnumerateHeader(
       nullptr, net::HttpResponseHeaders::kContentRange, &content_range));
   EXPECT_EQ("bytes 10-19/25", content_range);
 }

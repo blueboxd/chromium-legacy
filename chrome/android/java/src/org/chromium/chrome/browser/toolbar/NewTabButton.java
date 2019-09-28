@@ -18,10 +18,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.toolbar.IncognitoStateProvider.IncognitoStateObserver;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.widget.ChromeImageButton;
+import org.chromium.ui.widget.Toast;
 
 /**
  * Button for creating new tabs.
@@ -55,7 +55,7 @@ public class NewTabButton
         CharSequence description = getResources().getString(mIsIncognito
                         ? org.chromium.chrome.R.string.button_new_incognito_tab
                         : org.chromium.chrome.R.string.button_new_tab);
-        return AccessibilityUtil.showAccessibilityToast(getContext(), v, description);
+        return Toast.showAnchoredToast(getContext(), v, description);
     }
 
     public void setIncognitoStateProvider(IncognitoStateProvider incognitoStateProvider) {

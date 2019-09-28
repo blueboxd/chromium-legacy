@@ -380,14 +380,8 @@ Response TracingAgent::end() {
 void TracingAgent::StartTracing(std::unique_ptr<StartCallback> callback) {
   trace_config_.SetProcessFilterConfig(CreateProcessFilterConfig(gpu_pid_));
 
-  if (tracing::TracingUsesPerfettoBackend()) {
-    perfetto_session_ =
-        std::make_unique<PerfettoTracingSession>(connector_.get());
-  } else {
-    callback->sendFailure(
-        Response::Error("Could not start tracing by Perfetto."));
-    return;
-  }
+  perfetto_session_ =
+      std::make_unique<PerfettoTracingSession>(connector_.get());
   perfetto_session_->EnableTracing(
       trace_config_,
       base::BindOnce(&TracingAgent::OnRecordingEnabled,

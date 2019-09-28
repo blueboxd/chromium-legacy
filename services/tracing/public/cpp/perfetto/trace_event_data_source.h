@@ -20,6 +20,7 @@
 #include "base/trace_event/trace_config.h"
 #include "services/tracing/public/cpp/perfetto/perfetto_traced_process.h"
 #include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_metadata.pbzero.h"
+#include "third_party/perfetto/protos/perfetto/trace/chrome/chrome_trace_event.pbzero.h"
 
 namespace perfetto {
 class StartupTraceWriter;
@@ -60,7 +61,9 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
       perfetto::protos::pbzero::ChromeMetadataPacket*,
       bool /* privacy_filtering_enabled */)>;
 
-  // Any callbacks passed here will be called when tracing starts.
+  // Any callbacks passed here will be called when tracing. Note that if tracing
+  // is enabled while calling this method, the callback may be invoked
+  // directly.
   void AddGeneratorFunction(JsonMetadataGeneratorFunction generator);
   // Same as above, but for filling in proto format.
   void AddGeneratorFunction(MetadataGeneratorFunction generator);
@@ -81,15 +84,29 @@ class COMPONENT_EXPORT(TRACING_CPP) TraceEventMetadataSource
   TraceEventMetadataSource();
   ~TraceEventMetadataSource() override;
 
-  void GenerateMetadata(std::unique_ptr<perfetto::TraceWriter> trace_writer);
+  void GenerateMetadata(
+      std::unique_ptr<std::vector<JsonMetadataGeneratorFunction>>
+          json_generators,
+      std::unique_ptr<std::vector<MetadataGeneratorFunction>> proto_generators);
+  void GenerateMetadataFromGenerator(
+      const MetadataGeneratorFunction& generator);
+  void GenerateJsonMetadataFromGenerator(
+      const JsonMetadataGeneratorFunction& generator,
+      perfetto::protos::pbzero::ChromeEventBundle* event_bundle);
   std::unique_ptr<base::DictionaryValue> GenerateTraceConfigMetadataDict();
 
+  // All members are protected by |lock_|.
+  base::Lock lock_;
   std::vector<JsonMetadataGeneratorFunction> json_generator_functions_;
   std::vector<MetadataGeneratorFunction> generator_functions_;
-  scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
+
+  const scoped_refptr<base::SequencedTaskRunner> origin_task_runner_;
+
   std::unique_ptr<perfetto::TraceWriter> trace_writer_;
   bool privacy_filtering_enabled_ = false;
   std::string chrome_config_;
+  std::unique_ptr<base::trace_event::TraceConfig> parsed_chrome_config_;
+  bool emit_metadata_at_start_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TraceEventMetadataSource);
 };

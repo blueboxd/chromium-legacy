@@ -59,10 +59,11 @@ class Time {
       case TimeColumnType.MILLISECOND:
         // TODO(https://crbug.com/1008294): Use increments of 1 instead of 100 for milliseconds.
         // support 100, 200, 300... for milliseconds
-        this.millisecond_ = (Math.round(this.millisecond_ / 100) * 100 + 100) % 1000;
+        this.millisecond_ =
+            (Math.round(this.millisecond_ / 100) * 100 + 100) % 1000;
         break;
     }
-  }
+  };
 
   value = (columnType) => {
     switch (columnType) {
@@ -75,10 +76,11 @@ class Time {
       case TimeColumnType.MILLISECOND:
         return this.millisecond_.toString().padStart(3, '0');
     }
-  }
+  };
 
   toString = (hasSecond, hasMillisecond) => {
-    let value = `${this.value(TimeColumnType.HOUR)}:${this.value(TimeColumnType.MINUTE)}`;
+    let value = `${this.value(TimeColumnType.HOUR)}:${
+        this.value(TimeColumnType.MINUTE)}`;
     if (hasSecond) {
       value += `:${this.value(TimeColumnType.SECOND)}`;
     }
@@ -86,7 +88,7 @@ class Time {
       value += `.${this.value(TimeColumnType.MILLISECOND)}`;
     }
     return value;
-  }
+  };
 
   static parse = (str) => {
     var match = Time.ISOStringRegExp.exec(str);
@@ -101,13 +103,14 @@ class Time {
     if (match[4])
       millisecond = parseInt(match[4], 10);
     return new Time(hour, minute, second, millisecond);
-  }
+  };
 
   static currentTime = () => {
     var currentDate = new Date();
-    return new Time(currentDate.getHours(), currentDate.getMinutes(),
-                    currentDate.getSeconds(), currentDate.getMilliseconds());
-  }
+    return new Time(
+        currentDate.getHours(), currentDate.getMinutes(),
+        currentDate.getSeconds(), currentDate.getMilliseconds());
+  };
 
   static numberOfValues = (columnType) => {
     switch (columnType) {
@@ -120,7 +123,7 @@ class Time {
       case TimeColumnType.MILLISECOND:
         return Time.MILLISECOND_VALUES;
     }
-  }
+  };
 }
 // See platform/date_components.h.
 Time.Minimum = new Time(0, 0, 0, 0);
@@ -145,9 +148,8 @@ class TimePicker extends HTMLElement {
     this.initializeFromConfig_(config);
 
     this.timeColumns_ = new TimeColumns(this);
-    this.submissionControls_ =
-        new SubmissionControls(this.onSubmitButtonClick_,
-                               this.onCancelButtonClick_);
+    this.submissionControls_ = new SubmissionControls(
+        this.onSubmitButtonClick_, this.onCancelButtonClick_);
     this.append(this.timeColumns_, this.submissionControls_);
   }
 
@@ -223,8 +225,8 @@ class TimeColumns extends HTMLElement {
       this.width_ += TimePicker.ColumnWidth;
     }
     if (timePicker.hasMillisecond) {
-      this.millisecondColumn_ = new TimeColumn(TimeColumnType.MILLISECOND,
-        timePicker);
+      this.millisecondColumn_ =
+          new TimeColumn(TimeColumnType.MILLISECOND, timePicker);
       this.append(this.millisecondColumn_);
       this.width_ += TimePicker.ColumnWidth;
     }
@@ -237,10 +239,12 @@ class TimeColumns extends HTMLElement {
   selectedValue = () => {
     const hour = parseInt(this.hourColumn_.selectedTimeCell.value, 10);
     const minute = parseInt(this.minuteColumn_.selectedTimeCell.value, 10);
-    const second = this.secondColumn_ ? parseInt(this.secondColumn_.selectedTimeCell.value, 10)
-                                      : 0;
-    const millisecond = this.millisecondColumn_ ? parseInt(this.millisecondColumn_.selectedTimeCell.value, 10)
-                                                : 0;
+    const second = this.secondColumn_ ?
+        parseInt(this.secondColumn_.selectedTimeCell.value, 10) :
+        0;
+    const millisecond = this.millisecondColumn_ ?
+        parseInt(this.millisecondColumn_.selectedTimeCell.value, 10) :
+        0;
     return new Time(hour, minute, second, millisecond);
   }
 }
@@ -291,7 +295,7 @@ class TimeColumn extends HTMLUListElement {
   }
 }
 TimeColumn.ClassName = 'time-column';
-window.customElements.define('time-column', TimeColumn, { extends: "ul" });
+window.customElements.define('time-column', TimeColumn, {extends: 'ul'});
 
 /**
  * TimeCell: List item with a custom look that displays a time value.
@@ -306,7 +310,7 @@ class TimeCell extends HTMLLIElement {
   }
 }
 TimeCell.ClassName = 'time-cell';
-window.customElements.define('time-cell', TimeCell, { extends: "li" });
+window.customElements.define('time-cell', TimeCell, {extends: 'li'});
 
 /**
  * SubmissionControls: Provides functionality to submit or discard a change.
@@ -319,22 +323,22 @@ class SubmissionControls extends HTMLElement {
     padding.setAttribute('id', 'submission-controls-padding');
     this.append(padding);
 
-    this.className = SubmissionControls.ClassName
+    this.className = SubmissionControls.ClassName;
 
-    this.submitButton_ = new SubmissionButton(submitCallback,
+    this.submitButton_ = new SubmissionButton(
+        submitCallback,
         '<svg width="14" height="10" viewBox="0 0 14 10" fill="none" ' +
-        'xmlns="http://www.w3.org/2000/svg"><path d="M13.3516 ' +
-        '1.35156L5 9.71094L0.648438 5.35156L1.35156 4.64844L5 ' +
-        '8.28906L12.6484 0.648438L13.3516 1.35156Z" fill="black"/></svg>'
-    );
-    this.cancelButton_ = new SubmissionButton(cancelCallback,
+            'xmlns="http://www.w3.org/2000/svg"><path d="M13.3516 ' +
+            '1.35156L5 9.71094L0.648438 5.35156L1.35156 4.64844L5 ' +
+            '8.28906L12.6484 0.648438L13.3516 1.35156Z" fill="black"/></svg>');
+    this.cancelButton_ = new SubmissionButton(
+        cancelCallback,
         '<svg width="14" height="14" viewBox="0 0 14 14" fill="none" ' +
-        'xmlns="http://www.w3.org/2000/svg"><path d="M7.71094 7L13.1016 ' +
-        '12.3984L12.3984 13.1016L7 7.71094L1.60156 13.1016L0.898438 ' +
-        '12.3984L6.28906 7L0.898438 1.60156L1.60156 0.898438L7 ' +
-        '6.28906L12.3984 0.898438L13.1016 1.60156L7.71094 7Z" ' +
-        'fill="black"/></svg>'
-    );
+            'xmlns="http://www.w3.org/2000/svg"><path d="M7.71094 7L13.1016 ' +
+            '12.3984L12.3984 13.1016L7 7.71094L1.60156 13.1016L0.898438 ' +
+            '12.3984L6.28906 7L0.898438 1.60156L1.60156 0.898438L7 ' +
+            '6.28906L12.3984 0.898438L13.1016 1.60156L7.71094 7Z" ' +
+            'fill="black"/></svg>');
     this.append(this.submitButton_, this.cancelButton_);
   }
 
@@ -357,10 +361,11 @@ class SubmissionButton extends HTMLButtonElement {
   constructor(clickCallback, htmlString) {
     super();
 
-    this.className = SubmissionButton.ClassName
+    this.className = SubmissionButton.ClassName;
     this.innerHTML = htmlString;
     this.addEventListener('click', clickCallback);
   }
 }
 SubmissionButton.ClassName = 'submission-button';
-window.customElements.define('submission-button', SubmissionButton, { extends: 'button' });
+window.customElements.define(
+    'submission-button', SubmissionButton, {extends: 'button'});

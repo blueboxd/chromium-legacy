@@ -85,6 +85,11 @@ class CHROMECAST_EXPORT VolumeControl {
                         AudioContentType type,
                         float level);
 
+  // Sets a multiplier on the attenuation level for a given audio stream type.
+  // Used for stereo pair balance.
+  static void SetVolumeMultiplier(AudioContentType type, float multiplier)
+      __attribute__((weak));
+
   // Gets/sets the mute state for a given audio stream |type|.
   // AudioContentType::kOther is not a valid |type| for these methods.
   static bool IsMuted(AudioContentType type);

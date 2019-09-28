@@ -4571,4 +4571,52 @@ TEST_F(DisplayManagerTest, DPSizeTest) {
             display::Screen::GetScreen()->GetPrimaryDisplay().size());
 }
 
+TEST_F(DisplayManagerTest, PanelOrientation) {
+  int64_t display_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         display_id);
+
+  // The panel is portrait but its orientation is landscape.
+  display::ManagedDisplayInfo native_display_info =
+      display::CreateDisplayInfo(display_id, gfx::Rect(0, 0, 1920, 1080));
+  native_display_info.set_panel_orientation(
+      display::PanelOrientation::kRightUp);
+  const display::ManagedDisplayMode base_mode(gfx::Size(1920, 1080), 60.0f,
+                                              false, false);
+  display::ManagedDisplayInfo::ManagedDisplayModeList mode_list =
+      CreateInternalManagedDisplayModeList(base_mode);
+  native_display_info.SetManagedDisplayModes(mode_list);
+
+  std::vector<display::ManagedDisplayInfo> display_info_list;
+  display_info_list.push_back(native_display_info);
+  display_manager()->OnNativeDisplaysChanged(display_info_list);
+  // Check display is landscape at ROTATE_0.
+  EXPECT_EQ(gfx::Size(1080, 1920),
+            display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel());
+  EXPECT_EQ(display::Display::ROTATE_0,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+
+  // Check the orientation controller reports correct orientation.
+  auto* screen_orientation_controller =
+      Shell::Get()->screen_orientation_controller();
+  EXPECT_EQ(OrientationLockType::kLandscape,
+            screen_orientation_controller->natural_orientation());
+  EXPECT_EQ(OrientationLockType::kLandscapePrimary,
+            screen_orientation_controller->GetCurrentOrientation());
+
+  // Test if changing rotation works as if it's landscape panel.
+  DisplayConfigurationController::DisableAnimatorForTest();
+  ScreenOrientationControllerTestApi(screen_orientation_controller)
+      .SetDisplayRotation(display::Display::ROTATE_270,
+                          display::Display::RotationSource::USER);
+
+  EXPECT_EQ(gfx::Size(1920, 1080),
+            display::Screen::GetScreen()->GetPrimaryDisplay().GetSizeInPixel());
+  EXPECT_EQ(display::Display::ROTATE_270,
+            display::Screen::GetScreen()->GetPrimaryDisplay().rotation());
+  EXPECT_EQ(OrientationLockType::kPortraitPrimary,
+            screen_orientation_controller->GetCurrentOrientation());
+}
+
 }  // namespace ash

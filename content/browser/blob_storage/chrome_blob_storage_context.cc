@@ -217,10 +217,10 @@ ChromeBlobStorageContext::URLLoaderFactoryForUrl(
       base::BindOnce(
           [](scoped_refptr<ChromeBlobStorageContext> context,
              network::mojom::URLLoaderFactoryRequest request, const GURL& url) {
-            auto blob_handle =
-                context->context()->GetBlobDataFromPublicURL(url);
-            storage::BlobURLLoaderFactory::Create(std::move(blob_handle), url,
-                                                  std::move(request));
+            auto blob_remote = context->context()->GetBlobFromPublicURL(url);
+            storage::BlobURLLoaderFactory::Create(
+                std::move(blob_remote), url, context->context()->AsWeakPtr(),
+                std::move(request));
           },
           base::WrapRefCounted(GetFor(browser_context)),
           MakeRequest(&blob_url_loader_factory_ptr), url));

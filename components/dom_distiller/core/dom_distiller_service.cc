@@ -272,20 +272,6 @@ void DomDistillerService::AddDistilledPageToList(
   }
 }
 
-void DomDistillerService::AddObserver(DomDistillerObserver* observer) {
-  DCHECK(observer);
-  if (store_) {
-    store_->AddObserver(observer);
-  }
-}
-
-void DomDistillerService::RemoveObserver(DomDistillerObserver* observer) {
-  DCHECK(observer);
-  if (store_) {
-    store_->RemoveObserver(observer);
-  }
-}
-
 DistilledPagePrefs* DomDistillerService::GetDistilledPagePrefs() {
   return distilled_page_prefs_.get();
 }

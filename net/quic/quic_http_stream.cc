@@ -99,6 +99,8 @@ HttpResponseInfo::ConnectionInfo QuicHttpStream::ConnectionInfoFromQuicVersion(
       return HttpResponseInfo::CONNECTION_INFO_QUIC_47;
     case quic::QUIC_VERSION_48:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_48;
+    case quic::QUIC_VERSION_49:
+      return HttpResponseInfo::CONNECTION_INFO_QUIC_49;
     case quic::QUIC_VERSION_99:
       return HttpResponseInfo::CONNECTION_INFO_QUIC_99;
     case quic::QUIC_VERSION_RESERVED_FOR_NEGOTIATION:

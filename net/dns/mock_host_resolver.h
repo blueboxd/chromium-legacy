@@ -113,6 +113,7 @@ class MockHostResolverBase
   }
 
   // HostResolver methods:
+  void OnShutdown() override;
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
       const NetLogWithSource& net_log,
@@ -447,6 +448,7 @@ class HangingHostResolver : public HostResolver {
  public:
   HangingHostResolver();
   ~HangingHostResolver() override;
+  void OnShutdown() override;
   std::unique_ptr<ResolveHostRequest> CreateRequest(
       const HostPortPair& host,
       const NetLogWithSource& net_log,

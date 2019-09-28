@@ -134,11 +134,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   GraphicsLayer* ChildForSuperlayers() const;
   void SetSublayers(const GraphicsLayerVector&);
 
-  bool HasChildTransformLayer() const { return child_transform_layer_.get(); }
-  GraphicsLayer* ChildTransformLayer() const {
-    return child_transform_layer_.get();
-  }
-
   GraphicsLayer* SquashingContainmentLayer() const {
     return squashing_containment_layer_.get();
   }
@@ -360,7 +355,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
 
   void UpdateInternalHierarchy();
   void UpdatePaintingPhases();
-  bool UpdateChildTransformLayer(bool needs_child_transform_layer);
   bool UpdateOverflowControlsLayers(bool needs_horizontal_scrollbar_layer,
                                     bool needs_vertical_scrollbar_layer,
                                     bool needs_scroll_corner_layer);
@@ -446,8 +440,7 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // looks like this:
   //
   //    + graphics_layer_
-  //      + child_transform_layer_ [OPTIONAL]
-  //      |   (scrolling_layer_ + scrolling_contents_layer_) [OPTIONAL]
+  //      + (scrolling_layer_ + scrolling_contents_layer_) [OPTIONAL]
   //      | + overflow_controls_host_layer_ [OPTIONAL]
   //      |   + layer_for_vertical_scrollbar_ [OPTIONAL]
   //      |   + layer_for_horizontal_scrollbar_ [OPTIONAL]
@@ -457,9 +450,6 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // tree by the RLC to ensure that they stack above scrolling content.
 
   std::unique_ptr<GraphicsLayer> graphics_layer_;
-
-  // Only used if we have perspective.
-  std::unique_ptr<GraphicsLayer> child_transform_layer_;
 
   // Only used if the layer is using composited scrolling.
   std::unique_ptr<GraphicsLayer> scrolling_layer_;

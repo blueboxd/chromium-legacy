@@ -18,17 +18,13 @@
 
 namespace syncer {
 
+class DeviceInfoSyncClient;
+
 class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
  public:
-  using SigninScopedDeviceIdCallback = base::RepeatingCallback<std::string()>;
-  using SendTabToSelfReceivingEnabledCallback = base::RepeatingCallback<bool()>;
-
-  LocalDeviceInfoProviderImpl(
-      version_info::Channel channel,
-      const std::string& version,
-      const SigninScopedDeviceIdCallback& signin_scoped_device_id_callback,
-      const SendTabToSelfReceivingEnabledCallback&
-          send_tab_to_self_receiving_enabled_callback);
+  LocalDeviceInfoProviderImpl(version_info::Channel channel,
+                              const std::string& version,
+                              const DeviceInfoSyncClient* sync_client);
   ~LocalDeviceInfoProviderImpl() override;
 
   // MutableLocalDeviceInfoProvider implementation.
@@ -47,9 +43,7 @@ class LocalDeviceInfoProviderImpl : public MutableLocalDeviceInfoProvider {
   // The version string for the current client.
   const std::string version_;
 
-  const SigninScopedDeviceIdCallback signin_scoped_device_id_callback_;
-  const SendTabToSelfReceivingEnabledCallback
-      send_tab_to_self_receiving_enabled_callback_;
+  const DeviceInfoSyncClient* const sync_client_;
 
   std::unique_ptr<DeviceInfo> local_device_info_;
   base::CallbackList<void(void)> callback_list_;

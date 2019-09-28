@@ -12,9 +12,10 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/public/cpp/split_view.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/scoped_overview_hide_windows.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_observer.h"
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/time/time.h"
@@ -260,8 +261,8 @@ class ASH_EXPORT OverviewSession : public display::DisplayObserver,
   void OnKeyEvent(ui::KeyEvent* event) override;
 
   // SplitViewObserver:
-  void OnSplitViewStateChanged(SplitViewState previous_state,
-                               SplitViewState state) override;
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
   void OnSplitViewDividerPositionChanged() override;
 
   OverviewDelegate* delegate() { return delegate_; }

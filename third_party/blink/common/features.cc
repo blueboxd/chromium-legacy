@@ -64,13 +64,7 @@ const base::Feature kDisplayLocking{"DisplayLocking",
 // a mask layer.
 const base::Feature kFastBorderRadius {
   "FastBorderRadius",
-#if defined(OS_MACOSX)
-      // A FastBorderRadiusMac experiment is rolling out separately for that
-      // platform, due to complications with CALayer overlay optimizations.
-      base::FEATURE_DISABLED_BY_DEFAULT
-#else
       base::FEATURE_ENABLED_BY_DEFAULT
-#endif
 };
 
 // Enable LayoutNG.

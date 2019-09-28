@@ -10,9 +10,12 @@
 #include "base/strings/string_piece.h"
 #include "ui/gfx/font.h"
 
+#include "third_party/skia/include/core/SkRefCnt.h"
+#include "third_party/skia/include/core/SkTypeface.h"
+
 namespace gfx {
 
-std::string GetFallbackFontFamilyNameSkia(const Font& template_font,
+sk_sp<SkTypeface> GetSkiaFallbackTypeface(const Font& template_font,
                                           const std::string& locale,
                                           base::StringPiece16 text);
 }

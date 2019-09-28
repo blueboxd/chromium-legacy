@@ -259,6 +259,14 @@ URLRegistry& Blob::Registry() const {
   return instance;
 }
 
+bool Blob::IsMojoBlob() {
+  return true;
+}
+
+void Blob::CloneMojoBlob(mojo::PendingReceiver<mojom::blink::Blob> receiver) {
+  blob_data_handle_->CloneBlobRemote(std::move(receiver));
+}
+
 mojo::PendingRemote<mojom::blink::Blob> Blob::AsMojoBlob() {
   return blob_data_handle_->CloneBlobRemote();
 }

@@ -408,7 +408,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   // Request 2: Unsuccessful upload.
   request = test_url_loader_factory_.GetPendingRequest(2);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
-      request, network::CreateResourceResponseHead(net::HTTP_NOT_FOUND),
+      request, network::CreateURLResponseHead(net::HTTP_NOT_FOUND),
       responses[2], network::URLLoaderCompletionStatus(net::OK));
   histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
                               net::HTTP_NOT_FOUND, 1);
@@ -464,8 +464,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
                                AutofillMetrics::QUERY_SENT, 2);
   histogram.ExpectUniqueSample("Autofill.Query.Method", METHOD_GET, 2);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
-      request,
-      network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
+      request, network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
       responses[0], network::URLLoaderCompletionStatus(net::OK));
   histogram.ExpectBucketCount("Autofill.Query.HttpResponseOrErrorCode",
                               net::HTTP_INTERNAL_SERVER_ERROR, 1);
@@ -489,7 +488,7 @@ TEST_F(AutofillDownloadManagerTest, QueryAndUploadTest) {
   network::URLLoaderCompletionStatus status(net::OK);
   status.exists_in_cache = true;
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
-      request, network::CreateResourceResponseHead(net::HTTP_OK), responses[0],
+      request, network::CreateURLResponseHead(net::HTTP_OK), responses[0],
       status);
 
   // Check Request 5.
@@ -845,9 +844,8 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {
 
   // Request error incurs a retry after 1 second.
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
-      request,
-      network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR), "",
-      network::URLLoaderCompletionStatus(net::OK));
+      request, network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
+      "", network::URLLoaderCompletionStatus(net::OK));
 
   EXPECT_EQ(1U, responses_.size());
   EXPECT_LT(download_manager_.loader_backoff_.GetTimeUntilRelease(),
@@ -864,7 +862,7 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Query) {
   // Next error incurs a retry after 2 seconds.
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request,
-      network::CreateResourceResponseHead(net::HTTP_REQUEST_ENTITY_TOO_LARGE),
+      network::CreateURLResponseHead(net::HTTP_REQUEST_ENTITY_TOO_LARGE),
       "<html></html>", network::URLLoaderCompletionStatus(net::OK));
 
   EXPECT_EQ(2U, responses_.size());
@@ -915,9 +913,8 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
 
   // Error incurs a retry after 1 second.
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
-      request,
-      network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR), "",
-      network::URLLoaderCompletionStatus(net::OK));
+      request, network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
+      "", network::URLLoaderCompletionStatus(net::OK));
   EXPECT_EQ(1U, responses_.size());
   EXPECT_LT(download_manager_.loader_backoff_.GetTimeUntilRelease(),
             base::TimeDelta::FromMilliseconds(1100));
@@ -959,8 +956,8 @@ TEST_F(AutofillDownloadManagerTest, BackoffLogic_Upload) {
   request = test_url_loader_factory_.GetPendingRequest(2);
   test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
       request,
-      network::CreateResourceResponseHead(net::HTTP_REQUEST_ENTITY_TOO_LARGE),
-      "", network::URLLoaderCompletionStatus(net::OK));
+      network::CreateURLResponseHead(net::HTTP_REQUEST_ENTITY_TOO_LARGE), "",
+      network::URLLoaderCompletionStatus(net::OK));
   ASSERT_EQ(test_url_loader_factory_.NumPending(), 0);
   histogram.ExpectBucketCount("Autofill.Upload.HttpResponseOrErrorCode",
                               net::HTTP_REQUEST_ENTITY_TOO_LARGE, 1);
@@ -1012,7 +1009,7 @@ TEST_F(AutofillDownloadManagerTest, RetryLimit_Query) {
     // Request error incurs a retry after 1 second.
     test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
         request,
-        network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
+        network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
         "<html></html>", network::URLLoaderCompletionStatus(net::OK));
 
     EXPECT_EQ(1U, responses_.size());
@@ -1089,8 +1086,8 @@ TEST_F(AutofillDownloadManagerTest, RetryLimit_Upload) {
     // Simulate a server failure.
     test_url_loader_factory_.SimulateResponseWithoutRemovingFromPendingList(
         request,
-        network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
-        "", network::URLLoaderCompletionStatus(net::OK));
+        network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR), "",
+        network::URLLoaderCompletionStatus(net::OK));
 
     // Check that it was a failure.
     ASSERT_EQ(1U, responses_.size());

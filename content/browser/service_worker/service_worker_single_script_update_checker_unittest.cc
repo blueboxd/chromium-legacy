@@ -152,13 +152,13 @@ class ServiceWorkerSingleScriptUpdateCheckerTest : public testing::Test {
       const std::string& body,
       net::Error error) {
     auto loader_factory = std::make_unique<network::TestURLLoaderFactory>();
-    network::ResourceResponseHead head;
-    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+    auto head = network::mojom::URLResponseHead::New();
+    head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(header));
-    head.headers->GetMimeType(&head.mime_type);
+    head->headers->GetMimeType(&head->mime_type);
     network::URLLoaderCompletionStatus status(error);
     status.decoded_body_length = body.size();
-    loader_factory->AddResponse(url, head, body, status);
+    loader_factory->AddResponse(url, std::move(head), body, status);
     return loader_factory;
   }
 
@@ -474,11 +474,11 @@ TEST_P(ServiceWorkerSingleScriptUpdateCheckerToggleAsyncTest,
       std::move(loader_factory->GetPendingRequest(0)->client);
 
   // Simulate sending the response head.
-  network::ResourceResponseHead head;
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(kSuccessHeader));
-  head.headers->GetMimeType(&head.mime_type);
-  client->OnReceiveResponse(head);
+  head->headers->GetMimeType(&head->mime_type);
+  client->OnReceiveResponse(std::move(head));
 
   // Simulate sending the response body. The buffer size for the data pipe
   // should be larger than the body to send the whole body in one chunk.
@@ -784,12 +784,11 @@ TEST_F(ServiceWorkerSingleScriptUpdateCheckerTest,
   // Simulate to send the head and the body back to the checker.
   // Note that OnComplete() is not called yet.
   {
-    network::ResourceResponseHead head =
-        network::CreateResourceResponseHead(net::HTTP_OK);
-    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+    auto head = network::CreateURLResponseHead(net::HTTP_OK);
+    head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(kSuccessHeader));
-    head.headers->GetMimeType(&head.mime_type);
-    request->client->OnReceiveResponse(head);
+    head->headers->GetMimeType(&head->mime_type);
+    request->client->OnReceiveResponse(std::move(head));
 
     MojoCreateDataPipeOptions options;
     options.struct_size = sizeof(MojoCreateDataPipeOptions);

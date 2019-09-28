@@ -33,6 +33,7 @@
 #include "third_party/blink/public/mojom/choosers/date_time_chooser.mojom-blink.h"
 #include "third_party/blink/public/platform/task_type.h"
 #include "third_party/blink/public/platform/web_scroll_into_view_params.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_event_listener.h"
 #include "third_party/blink/renderer/core/accessibility/ax_object_cache.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -919,7 +920,7 @@ String HTMLInputElement::AltText() const {
   if (alt.IsNull())
     alt = FastGetAttribute(kValueAttr);
   if (alt.IsNull())
-    alt = GetLocale().QueryString(WebLocalizedString::kInputElementAltText);
+    alt = GetLocale().QueryString(IDS_FORM_INPUT_ALT);
   return alt;
 }
 

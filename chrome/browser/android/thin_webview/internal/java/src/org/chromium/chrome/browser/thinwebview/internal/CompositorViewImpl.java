@@ -146,7 +146,7 @@ public class CompositorViewImpl implements CompositorView {
     }
 
     private static boolean useSurfaceView() {
-        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
+        return Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
     }
 
     @NativeMethods

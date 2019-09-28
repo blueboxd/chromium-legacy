@@ -106,7 +106,8 @@ void NavigateToURLBlockUntilNavigationsComplete(Shell* window,
 // Navigates |window| to |url|, blocks until the navigation finishes, and
 // checks that the navigation did not commit (e.g., due to a crash or
 // download).
-bool NavigateToURLAndExpectNoCommit(Shell* window, const GURL& url);
+WARN_UNUSED_RESULT bool NavigateToURLAndExpectNoCommit(Shell* window,
+                                                       const GURL& url);
 
 // Reloads |window|, blocking until the given number of navigations finishes.
 void ReloadBlockUntilNavigationsComplete(Shell* window,

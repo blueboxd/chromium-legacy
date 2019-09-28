@@ -6,6 +6,7 @@ include_rules = [
 
   "+components/autofill/content/renderer",
   "+components/cdm/renderer",
+  "+components/page_load_metrics/renderer",
   "+components/printing/common",
   "+components/printing/renderer",
   "+components/safe_browsing/common",

@@ -70,7 +70,6 @@ using CompositingReasons = uint64_t;
   /* CompositedLayerMapping internal hierarchy reasons. */                    \
   V(LayerForAncestorClip)                                                     \
   V(LayerForDescendantClip)                                                   \
-  V(LayerForPerspective)                                                      \
   V(LayerForHorizontalScrollbar)                                              \
   V(LayerForVerticalScrollbar)                                                \
   V(LayerForOverflowControlsHost)                                             \

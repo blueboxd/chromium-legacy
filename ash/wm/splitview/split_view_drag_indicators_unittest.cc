@@ -316,7 +316,8 @@ TEST_F(SplitViewDragIndicatorsTest, SplitViewDragIndicatorsState) {
   // Snap window to the left.
   overview_session_->CompleteDrag(item, gfx::PointF(edge_inset, y_position));
   ASSERT_TRUE(split_view_controller()->InSplitViewMode());
-  ASSERT_EQ(SplitViewState::kLeftSnapped, split_view_controller()->state());
+  ASSERT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller()->state());
 
   // Verify that when there is a left snapped window, dragging an item to the
   // right will show the right preview area.

@@ -996,7 +996,7 @@ TEST_F(PageInfoTest, SecurityLevelMetrics) {
        "Security.PageInfo.Action.HttpsUrl.Downgraded"},
       {"https://example.test", security_state::DANGEROUS,
        "Security.PageInfo.Action.HttpsUrl.Dangerous"},
-      {"http://example.test", security_state::HTTP_SHOW_WARNING,
+      {"http://example.test", security_state::WARNING,
        "Security.PageInfo.Action.HttpUrl.Warning"},
       {"http://example.test", security_state::DANGEROUS,
        "Security.PageInfo.Action.HttpUrl.Dangerous"},

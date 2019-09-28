@@ -86,6 +86,18 @@ base::Optional<double> ValueOrUnresolved(double a) {
   return value;
 }
 
+double Max(base::Optional<double> a, double b) {
+  if (a.has_value())
+    return std::max(a.value(), b);
+  return b;
+}
+
+double Min(base::Optional<double> a, double b) {
+  if (a.has_value())
+    return std::min(a.value(), b);
+  return b;
+}
+
 void RecordCompositorAnimationFailureReasons(
     CompositorAnimations::FailureReasons failure_reasons) {
   // UMA_HISTOGRAM_ENUMERATION requires that the enum_max must be strictly
@@ -271,6 +283,36 @@ void Animation::setCurrentTime(double new_current_time,
     start_time_ = CalculateStartTime(new_current_time);
 }
 
+// https://drafts.csswg.org/web-animations/#setting-the-current-time-of-an-animation
+// See steps for silently setting the current time. The preliminary step of
+// handling an unresolved time are to be handled by the caller.
+void Animation::SetCurrentTimeInternal(double new_current_time) {
+  DCHECK(std::isfinite(new_current_time));
+
+  base::Optional<double> previous_start_time = start_time_;
+  base::Optional<double> previous_hold_time = hold_time_;
+
+  // Update either the hold time or the start time.
+  if (hold_time_ || !start_time_ || !timeline_ || !timeline_->IsActive() ||
+      playback_rate_ == 0)
+    hold_time_ = new_current_time;
+  else
+    start_time_ = CalculateStartTime(new_current_time);
+
+  // Preserve invariant that we can only set a start time or a hold time in the
+  // absence of an active timeline.
+  if (!timeline_ || !timeline_->IsActive())
+    start_time_ = base::nullopt;
+
+  // Reset the previous current time.
+  previous_current_time_ = base::nullopt;
+
+  if (previous_start_time != start_time_ || previous_hold_time != hold_time_)
+    SetOutdated();
+}
+
+// TODO(crbug.com/960944): Deprecate. This method is only called by methods that
+// are pending refactoring to align with the web-animation spec.
 void Animation::SetCurrentTimeInternal(double new_current_time,
                                        TimingUpdateReason reason) {
   DCHECK(std::isfinite(new_current_time));
@@ -295,6 +337,8 @@ void Animation::SetCurrentTimeInternal(double new_current_time,
     finished_ = false;
     outdated = true;
   }
+
+  previous_current_time_ = base::nullopt;
 
   if (outdated) {
     SetOutdated();
@@ -798,6 +842,7 @@ void Animation::pause(ExceptionState& exception_state) {
   // (https://drafts.csswg.org/web-animations/#play-states).
   paused_ = true;
   pending_pause_ = true;
+  pending_play_ = false;
 
   current_time_pending_ = true;
   SetCurrentTimeInternal(new_current_time, kTimingUpdateOnDemand);
@@ -843,6 +888,7 @@ void Animation::play(ExceptionState& exception_state) {
 
   internal_play_state_ = kUnset;
   pending_play_ = true;
+  pending_pause_ = false;
   finished_ = false;
   UnpauseInternal();
 
@@ -883,40 +929,129 @@ void Animation::reverse(ExceptionState& exception_state) {
   }
 }
 
+// ----------------------------------------------
+// Finish methods.
+// ----------------------------------------------
+
 // https://drafts.csswg.org/web-animations/#finishing-an-animation-section
 void Animation::finish(ExceptionState& exception_state) {
-  // Force resolution of PlayStateUpdateScope to enable immediate queuing of
-  // the finished event.
-  {
-    PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
-
-    if (!playback_rate_) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kInvalidStateError,
-          "Cannot finish Animation with a playbackRate of 0.");
-      return;
-    }
-    if (playback_rate_ > 0 &&
-        EffectEnd() == std::numeric_limits<double>::infinity()) {
-      exception_state.ThrowDOMException(
-          DOMExceptionCode::kInvalidStateError,
-          "Cannot finish Animation with an infinite target effect end.");
-      return;
-    }
-
-    // Avoid updating start time when already finished.
-    if (CalculatePlayState() == kFinished)
-      return;
-
-    double new_current_time = playback_rate_ < 0 ? 0 : EffectEnd();
-    SetCurrentTimeInternal(new_current_time, kTimingUpdateOnDemand);
-    paused_ = false;
-    current_time_pending_ = false;
-    start_time_ = CalculateStartTime(new_current_time);
-    internal_play_state_ = kFinished;
-    ResetPendingTasks();
+  if (!EffectivePlaybackRate()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot finish Animation with a playbackRate of 0.");
+    return;
   }
-  // Resolve finished event immediately.
+  if (EffectivePlaybackRate() > 0 &&
+      EffectEnd() == std::numeric_limits<double>::infinity()) {
+    exception_state.ThrowDOMException(
+        DOMExceptionCode::kInvalidStateError,
+        "Cannot finish Animation with an infinite target effect end.");
+    return;
+  }
+
+  ApplyPendingPlaybackRate();
+
+  double new_current_time = playback_rate_ < 0 ? 0 : EffectEnd();
+  SetCurrentTimeInternal(new_current_time);
+
+  if (!start_time_ && timeline_ && timeline_->IsActive())
+    start_time_ = CalculateStartTime(new_current_time);
+
+  if (pending_pause_ && start_time_) {
+    hold_time_ = base::nullopt;
+    pending_pause_ = false;
+    if (ready_promise_)
+      ResolvePromiseMaybeAsync(ready_promise_.Get());
+  }
+  if (pending_play_ && start_time_) {
+    pending_play_ = false;
+    if (ready_promise_)
+      ResolvePromiseMaybeAsync(ready_promise_.Get());
+  }
+
+  // TODO(crbug.com/960944): Cleanup use of legacy flags.
+  paused_ = false;
+  current_time_pending_ = false;
+  internal_play_state_ = kUnset;
+  ResetPendingTasks();
+
+  SetOutdated();
+  UpdateFinishedState(UpdateType::kDiscontinuous, NotificationType::kSync);
+  animation_play_state_ = internal_play_state_ = kFinished;
+}
+
+void Animation::UpdateFinishedState(UpdateType update_type,
+                                    NotificationType notification_type) {
+  bool did_seek = update_type == UpdateType::kDiscontinuous;
+  // 1. Calculate the unconstrained current time. The dependency on did_seek is
+  // required to accommodate timelines that may change direction. Without this
+  // distinction, a once-finished animation would remain finished even when its
+  // timeline progresses in the opposite direction.
+  double unconstrained_current_time =
+      did_seek ? CurrentTimeInternal() : CalculateCurrentTime();
+
+  // 2. Conditionally update the hold time.
+  if (!IsNull(unconstrained_current_time) && start_time_ && !pending_play_ &&
+      !pending_pause_) {
+    // Can seek outside the bounds of the active effect. Set the hold time to
+    // the unconstrained value of the current time in the even that this update
+    // this the result of explicitly setting the current time and the new time
+    // is out of bounds. An update due to a time tick should not snap the hold
+    // value back to the boundary if previously set outside the normal effect
+    // boundary. The value of previous current time is used to retain this
+    // value.
+    double playback_rate = EffectivePlaybackRate();
+    if (playback_rate > 0 && unconstrained_current_time >= EffectEnd()) {
+      hold_time_ = did_seek ? unconstrained_current_time
+                            : Max(previous_current_time_, EffectEnd());
+    } else if (playback_rate < 0 && unconstrained_current_time <= 0) {
+      hold_time_ = did_seek ? unconstrained_current_time
+                            : Min(previous_current_time_, 0);
+      // Hack for resolving precision issue at zero.
+      if (hold_time_.value() == -0)
+        hold_time_ = 0;
+    } else if (playback_rate != 0) {
+      // Update start time and reset hold time.
+      if (did_seek && hold_time_)
+        start_time_ = CalculateStartTime(hold_time_.value());
+      hold_time_ = base::nullopt;
+    }
+  }
+
+  // 3. Set the previous current time.
+  previous_current_time_ = ValueOrUnresolved(CurrentTimeInternal());
+
+  // 4. Set the current finished state.
+  AnimationPlayState play_state = CalculateAnimationPlayState();
+
+  if (play_state == kFinished) {
+    // 5. Setup finished notification.
+    if (notification_type == NotificationType::kSync) {
+      CommitFinishNotification();
+    } else {
+      // TODO(crbug.com/960944): Schedule an asynchronous notification.
+      // This code path is not currently being used as the only call site
+      // for UpdateFinishedState is from finish() which triggers a synchronous
+      // notification.
+      NOTIMPLEMENTED();
+    }
+  } else {
+    // 6. If not finished but the current finished promise is already resolved,
+    //    create a new promise.
+    finished_ = false;
+    if (finished_promise_ &&
+        finished_promise_->GetState() == AnimationPromise::kResolved) {
+      finished_promise_->Reset();
+    }
+  }
+  NotifyProbe();
+}
+
+void Animation::CommitFinishNotification() {
+  if (finished_promise_ &&
+      finished_promise_->GetState() == AnimationPromise::kPending) {
+    ResolvePromiseMaybeAsync(finished_promise_.Get());
+  }
   QueueFinishedEvent();
 }
 
@@ -1006,6 +1141,17 @@ double Animation::playbackRate() const {
   // uses an 'effective playback rate' to be forward looking and 'playback rate'
   // for its current value.
   return active_playback_rate_.value_or(playback_rate_);
+}
+
+double Animation::EffectivePlaybackRate() const {
+  // TODO(crbug.com/960944): Use pending playback rate.
+  return playback_rate_;
+}
+
+void Animation::ApplyPendingPlaybackRate() {
+  // TODO(crbug.com/960944): If pending playback rate is set, then update the
+  // playback rate accordingly.
+  active_playback_rate_ = base::nullopt;
 }
 
 void Animation::setPlaybackRate(double playback_rate,

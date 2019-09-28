@@ -397,6 +397,8 @@ void RenderWidgetHostViewAura::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& bounds_in_screen) {
   DCHECK_EQ(widget_type_, WidgetType::kPopup);
+  DCHECK(!static_cast<RenderWidgetHostViewBase*>(parent_host_view)
+              ->IsRenderWidgetHostViewChildFrame());
 
   popup_parent_host_view_ =
       static_cast<RenderWidgetHostViewAura*>(parent_host_view);

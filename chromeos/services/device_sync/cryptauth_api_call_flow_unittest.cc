@@ -172,17 +172,17 @@ class DeviceSyncCryptAuthApiCallFlowTest : public testing::Test {
       base::Optional<int> response_code = base::nullopt,
       const base::Optional<std::string>& response_string = base::nullopt) {
     network::URLLoaderCompletionStatus completion_status(error);
-    network::ResourceResponseHead response_head;
+    auto response_head = network::mojom::URLResponseHead::New();
     std::string content;
     if (error == net::OK) {
-      response_head = network::CreateResourceResponseHead(
+      response_head = network::CreateURLResponseHead(
           static_cast<net::HttpStatusCode>(*response_code));
       content = *response_string;
     }
 
     // Use kUrlMatchPrefix flag to match URL without query parameters.
     EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GURL(kRequestUrl), completion_status, response_head, content,
+        GURL(kRequestUrl), completion_status, std::move(response_head), content,
         network::TestURLLoaderFactory::ResponseMatchFlags::kUrlMatchPrefix));
 
     task_environment_.RunUntilIdle();
@@ -196,17 +196,17 @@ class DeviceSyncCryptAuthApiCallFlowTest : public testing::Test {
       base::Optional<int> response_code = base::nullopt,
       const base::Optional<std::string>& response_string = base::nullopt) {
     network::URLLoaderCompletionStatus completion_status(error);
-    network::ResourceResponseHead response_head;
+    auto response_head = network::mojom::URLResponseHead::New();
     std::string content;
     if (error == net::OK) {
-      response_head = network::CreateResourceResponseHead(
+      response_head = network::CreateURLResponseHead(
           static_cast<net::HttpStatusCode>(*response_code));
       content = *response_string;
     }
 
     // Use kUrlMatchPrefix flag to match URL without query parameters.
     EXPECT_TRUE(test_url_loader_factory_.SimulateResponseForPendingRequest(
-        GURL(kRequestUrl), completion_status, response_head, content,
+        GURL(kRequestUrl), completion_status, std::move(response_head), content,
         network::TestURLLoaderFactory::ResponseMatchFlags::kUrlMatchPrefix));
 
     task_environment_.RunUntilIdle();

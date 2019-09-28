@@ -7,6 +7,10 @@
 
 #import "ios/showcase/common/navigation_coordinator.h"
 
+// A11y identifier for button that will replace the displayed badge with the
+// overflow badge button.
+extern NSString* const kSCDisplayedBadgeToggleButton;
+
 @interface SCBadgeCoordinator : NSObject <NavigationCoordinator>
 
 @end

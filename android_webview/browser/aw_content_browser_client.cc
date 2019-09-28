@@ -56,6 +56,8 @@
 #include "components/content_capture/browser/content_capture_receiver_manager.h"
 #include "components/crash/content/browser/crash_handler_host_linux.h"
 #include "components/navigation_interception/intercept_navigation_delegate.h"
+#include "components/page_load_metrics/browser/metrics_navigation_throttle.h"
+#include "components/page_load_metrics/browser/metrics_web_contents_observer.h"
 #include "components/policy/content/policy_blacklist_navigation_throttle.h"
 #include "components/policy/core/browser/browser_policy_connector_base.h"
 #include "components/prefs/pref_service.h"
@@ -155,12 +157,9 @@ class AwContentsMessageFilter : public content::BrowserMessageFilter {
 };
 
 AwContentsMessageFilter::AwContentsMessageFilter(int process_id)
-    : BrowserMessageFilter(AndroidWebViewMsgStart),
-      process_id_(process_id) {
-}
+    : BrowserMessageFilter(AndroidWebViewMsgStart), process_id_(process_id) {}
 
-AwContentsMessageFilter::~AwContentsMessageFilter() {
-}
+AwContentsMessageFilter::~AwContentsMessageFilter() = default;
 
 void AwContentsMessageFilter::OverrideThreadForMessage(
     const IPC::Message& message,
@@ -656,6 +655,13 @@ AwContentBrowserClient::CreateThrottlesForNavigation(
   // is used to post onPageStarted. We handle shouldOverrideUrlLoading
   // via a sync IPC.
   if (navigation_handle->IsInMainFrame()) {
+    // MetricsNavigationThrottle requires that it runs before
+    // NavigationThrottles that may delay or cancel navigations, so only
+    // NavigationThrottles that don't delay or cancel navigations (e.g.
+    // throttles that are only observing callbacks without affecting navigation
+    // behavior) should be added before MetricsNavigationThrottle.
+    throttles.push_back(page_load_metrics::MetricsNavigationThrottle::Create(
+        navigation_handle));
     // Use Synchronous mode for the navigation interceptor, since this class
     // doesn't actually call into an arbitrary client, it just posts a task to
     // call onPageStarted. shouldOverrideUrlLoading happens earlier (see
@@ -1032,6 +1038,15 @@ AwContentBrowserClient::GetWideColorGamutHeuristic() {
   if (base::FeatureList::IsEnabled(features::kWebViewWideColorGamutSupport))
     return WideColorGamutHeuristic::kUseWindow;
   return WideColorGamutHeuristic::kNone;
+}
+
+void AwContentBrowserClient::LogWebFeatureForCurrentPage(
+    content::RenderFrameHost* render_frame_host,
+    blink::mojom::WebFeature feature) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  page_load_metrics::mojom::PageLoadFeatures new_features({feature}, {}, {});
+  page_load_metrics::MetricsWebContentsObserver::RecordFeatureUsage(
+      render_frame_host, new_features);
 }
 
 content::SpeechRecognitionManagerDelegate*

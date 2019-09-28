@@ -54,6 +54,8 @@ class ProfilePolicyConnector final {
 
   void InitForTesting(std::unique_ptr<PolicyService> service);
   void OverrideIsManagedForTesting(bool is_managed);
+  void SetPlatformPolicyProviderForTesting(
+      ConfigurationPolicyProvider* platform_policy_provider_for_testing);
 
   void Shutdown();
 
@@ -79,6 +81,12 @@ class ProfilePolicyConnector final {
   // highest priority will be returned.
   const ConfigurationPolicyProvider* DeterminePolicyProviderForPolicy(
       const char* policy_key) const;
+
+  // Returns the platform policy provider, which will be used as the highest
+  // priority policy provider in PolicyService created by this
+  // ProfilePolicyConnector.
+  ConfigurationPolicyProvider* GetPlatformProvider(
+      policy::ChromeBrowserPolicyConnector* browser_policy_connector);
 
 #if defined(OS_CHROMEOS)
   // On Chrome OS, primary Profile user policies are forwarded to the
@@ -131,6 +139,10 @@ class ProfilePolicyConnector final {
       wrapped_platform_policy_provider_;
   const ConfigurationPolicyProvider* configuration_policy_provider_ = nullptr;
   const CloudPolicyStore* policy_store_ = nullptr;
+
+  // If this is not nullptr, this provider will be used as (highest priority)
+  // platform policy provider.
+  ConfigurationPolicyProvider* platform_policy_provider_for_testing_ = nullptr;
 
   // |policy_providers_| contains a list of the policy providers available for
   // the PolicyService of this connector, in decreasing order of priority.

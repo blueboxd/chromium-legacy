@@ -30,6 +30,7 @@
 
 #include <math.h>
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/aom/accessible_node.h"
 #include "third_party/blink/renderer/core/display_lock/display_lock_utilities.h"
 #include "third_party/blink/renderer/core/dom/element.h"
@@ -3060,8 +3061,8 @@ String AXNodeObject::NativeTextAlternative(
 
     // localised default value ("Submit")
     name_from = ax::mojom::NameFrom::kValue;
-    text_alternative = input_element->GetLocale().QueryString(
-        WebLocalizedString::kSubmitButtonDefaultLabel);
+    text_alternative =
+        input_element->GetLocale().QueryString(IDS_FORM_SUBMIT_LABEL);
     if (name_sources) {
       name_sources->push_back(NameSource(*found_text_alternative, kTypeAttr));
       NameSource& source = name_sources->back();

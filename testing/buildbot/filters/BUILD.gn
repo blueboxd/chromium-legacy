@@ -172,7 +172,6 @@ source_set("webview_instrumentation_test_apk_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/android.webview_instrumentation_tests_oreo.filter",
     "//testing/buildbot/filters/mojo.fyi.network_webview_instrumentation_test_apk.filter",
   ]
 }

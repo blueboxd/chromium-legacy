@@ -291,8 +291,12 @@ const LayerTreeDebugState& LayerTreeHost::GetDebugState() const {
   return debug_state_;
 }
 
-void LayerTreeHost::RequestMainFrameUpdate() {
+void LayerTreeHost::RequestMainFrameUpdate(bool report_cc_metrics) {
   client_->UpdateLayerTreeHost();
+  if (report_cc_metrics)
+    begin_main_frame_metrics_ = client_->GetBeginMainFrameMetrics();
+  else
+    begin_main_frame_metrics_.reset();
 }
 
 // This function commits the LayerTreeHost to an impl tree. When modifying
@@ -678,7 +682,7 @@ void LayerTreeHost::LayoutAndUpdateLayers() {
   DCHECK(IsSingleThreaded());
   // This function is only valid when not using the scheduler.
   DCHECK(!settings_.single_thread_proxy_scheduler);
-  RequestMainFrameUpdate();
+  RequestMainFrameUpdate(false);
   UpdateLayers();
 }
 
@@ -704,8 +708,11 @@ bool LayerTreeHost::UpdateLayers() {
   client_->DidUpdateLayers();
   micro_benchmark_controller_.DidUpdateLayers();
 
+  base::TimeDelta elapsed_delta = timer.Elapsed();
+  if (begin_main_frame_metrics_)
+    begin_main_frame_metrics_->update_layers = elapsed_delta;
   if (const char* client_name = GetClientNameForMetrics()) {
-    auto elapsed = timer.Elapsed().InMicroseconds();
+    auto elapsed = elapsed_delta.InMicroseconds();
 
     std::string histogram_name =
         base::StringPrintf("Compositing.%s.LayersUpdateTime", client_name);

@@ -26,6 +26,9 @@ VulkanYCbCrInfo::VulkanYCbCrInfo(uint32_t image_format,
       format_features(format_features) {
   // One and only one of the format fields must be non-zero.
   DCHECK((image_format == 0) ^ (external_format == 0));
+
+  // |format_features| must be set for external images.
+  DCHECK(external_format == 0 || format_features != 0);
 }
 
 }  // namespace gpu

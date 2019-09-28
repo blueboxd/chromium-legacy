@@ -54,8 +54,6 @@ class TestDomDistillerService : public DomDistillerServiceInterface {
   MOCK_METHOD1(HasEntry, bool(const std::string&));
   MOCK_METHOD1(GetUrlForEntry, std::string(const std::string&));
   MOCK_CONST_METHOD0(GetEntries, std::vector<ArticleEntry>());
-  MOCK_METHOD1(AddObserver, void(DomDistillerObserver*));
-  MOCK_METHOD1(RemoveObserver, void(DomDistillerObserver*));
   MOCK_METHOD0(ViewUrlImpl, ViewerHandle*());
   std::unique_ptr<ViewerHandle> ViewUrl(
       ViewRequestDelegate*,

@@ -382,7 +382,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
             assert securityLevel != ConnectionSecurityLevel.DANGEROUS;
             return (URI.create(publisherUrl).getScheme().equals(UrlConstants.HTTPS_SCHEME))
                     ? ConnectionSecurityLevel.SECURE
-                    : ConnectionSecurityLevel.HTTP_SHOW_WARNING;
+                    : ConnectionSecurityLevel.WARNING;
         }
         return securityLevel;
     }
@@ -406,7 +406,7 @@ public class LocationBarModel implements ToolbarDataProvider, ToolbarCommonPrope
                                         || getNewTabPageForCurrentTab() != null)
                         ? 0
                         : R.drawable.omnibox_info;
-            case ConnectionSecurityLevel.HTTP_SHOW_WARNING:
+            case ConnectionSecurityLevel.WARNING:
                 return R.drawable.omnibox_info;
             case ConnectionSecurityLevel.DANGEROUS:
                 return R.drawable.omnibox_https_invalid;

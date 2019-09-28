@@ -460,7 +460,7 @@ _CONFIG = [
     },
     {
         'paths': ['third_party/blink/renderer/core/clipboard'],
-        'allowed': ['gfx::PNGCodec', 'net::EscapeForHTML'],
+        'allowed': ['net::EscapeForHTML'],
     },
     {
         'paths': ['third_party/blink/renderer/core/css'],

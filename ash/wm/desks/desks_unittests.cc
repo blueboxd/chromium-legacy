@@ -1692,7 +1692,8 @@ TEST_F(
     waiter.Wait();
   }
   EXPECT_TRUE(WindowState::Get(win1.get())->IsSnapped());
-  EXPECT_EQ(SplitViewState::kNoSnap, split_view_controller->state());
+  EXPECT_EQ(SplitViewController::State::kNoSnap,
+            split_view_controller->state());
   EXPECT_FALSE(overview_controller->InOverviewSession());
 
   // Switch back to |desk_1| and verify that split view is arranged as before.
@@ -1709,7 +1710,8 @@ TEST_F(
     waiter.Wait();
   }
   EXPECT_TRUE(WindowState::Get(win1.get())->IsSnapped());
-  EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller->state());
   EXPECT_EQ(win1.get(), split_view_controller->left_window());
   EXPECT_TRUE(overview_controller->InOverviewSession());
 }
@@ -1771,7 +1773,8 @@ TEST_F(TabletModeDesksTest, RemovingDesksWithSplitView) {
   RemoveDesk(desk_2);
   EXPECT_EQ(win1.get(), split_view_controller->left_window());
   EXPECT_EQ(win2.get(), split_view_controller->right_window());
-  EXPECT_EQ(SplitViewState::kBothSnapped, split_view_controller->state());
+  EXPECT_EQ(SplitViewController::State::kBothSnapped,
+            split_view_controller->state());
 }
 
 TEST_F(TabletModeDesksTest, RemoveDeskWithMaximizedWindowAndMergeWithSnapped) {
@@ -1797,7 +1800,8 @@ TEST_F(TabletModeDesksTest, RemoveDeskWithMaximizedWindowAndMergeWithSnapped) {
   EXPECT_TRUE(Shell::Get()->overview_controller()->InOverviewSession());
   EXPECT_EQ(win1.get(), split_view_controller->left_window());
   EXPECT_EQ(nullptr, split_view_controller->right_window());
-  EXPECT_EQ(SplitViewState::kLeftSnapped, split_view_controller->state());
+  EXPECT_EQ(SplitViewController::State::kLeftSnapped,
+            split_view_controller->state());
 }
 
 TEST_F(TabletModeDesksTest, BackdropsStacking) {

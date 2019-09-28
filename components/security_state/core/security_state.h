@@ -40,7 +40,8 @@ namespace security_state {
 // GENERATED_JAVA_ENUM_PACKAGE: org.chromium.components.security_state
 // GENERATED_JAVA_CLASS_NAME_OVERRIDE: ConnectionSecurityLevel
 enum SecurityLevel {
-  // HTTP/no URL/HTTPS but with insecure passive content on the page.
+  // Neutral; neither positively secure nor insecure. Used for e.g. some types
+  // of non-http/https URLs.
   NONE = 0,
 
   // HTTP, in a case where we want to show a visible warning about the page's
@@ -49,7 +50,8 @@ enum SecurityLevel {
   // The criteria used to classify pages as NONE vs. HTTP_SHOW_WARNING will
   // change over time. Eventually, NONE will be eliminated.
   // See https://crbug.com/647754.
-  HTTP_SHOW_WARNING = 1,
+  // DEPRECATED: Use WARNING instead in most cases.
+  // HTTP_SHOW_WARNING = 1,
 
   // HTTPS with valid EV cert.
   EV_SECURE = 2,
@@ -68,6 +70,11 @@ enum SecurityLevel {
   // insecure active content on the page, malware, phishing, or any other
   // serious security issue that could be dangerous.
   DANGEROUS = 5,
+
+  // Pages deemed insecure, where we should show a warning indicator. This
+  // includes HTTP pages (previously these were HTTP_SHOW_WARNING) and cases
+  // where we consider an HTTPS page to be insecure (e.g., legacy TLS versions).
+  WARNING = 6,
 
   SECURITY_LEVEL_COUNT
 };

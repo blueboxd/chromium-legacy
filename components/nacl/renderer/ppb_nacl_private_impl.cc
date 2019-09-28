@@ -51,7 +51,6 @@
 #include "content/public/renderer/render_thread.h"
 #include "content/public/renderer/render_view.h"
 #include "content/public/renderer/renderer_ppapi_host.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/base/data_url.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -534,9 +533,8 @@ void PPBNaClPrivate::LaunchSelLdr(
   std::unique_ptr<TrustedPluginChannel> trusted_plugin_channel(
       new TrustedPluginChannel(
           load_manager,
-          mojo::PendingReceiver<mojom::NaClRendererHost>(
-              mojo::ScopedMessagePipeHandle(
-                  launch_result.trusted_ipc_channel_handle.mojo_handle)),
+          mojom::NaClRendererHostRequest(mojo::ScopedMessagePipeHandle(
+              launch_result.trusted_ipc_channel_handle.mojo_handle)),
           is_helper_nexe));
   load_manager->set_trusted_plugin_channel(std::move(trusted_plugin_channel));
 

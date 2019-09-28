@@ -13,7 +13,11 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 
 #if defined(OS_CHROMEOS)
+namespace chromeos {
+namespace bluetooth {
 class DebugLogsManager;
+}  // namespace bluetooth
+}  // namespace chromeos
 #endif
 
 // Handles API requests from chrome://bluetooth-internals page by implementing
@@ -25,7 +29,8 @@ class BluetoothInternalsHandler : public mojom::BluetoothInternalsHandler {
   ~BluetoothInternalsHandler() override;
 
 #if defined(OS_CHROMEOS)
-  void set_debug_logs_manager(DebugLogsManager* debug_logs_manager) {
+  void set_debug_logs_manager(
+      chromeos::bluetooth::DebugLogsManager* debug_logs_manager) {
     debug_logs_manager_ = debug_logs_manager;
   }
 #endif
@@ -42,7 +47,7 @@ class BluetoothInternalsHandler : public mojom::BluetoothInternalsHandler {
   mojo::Receiver<mojom::BluetoothInternalsHandler> receiver_;
 
 #if defined(OS_CHROMEOS)
-  DebugLogsManager* debug_logs_manager_ = nullptr;
+  chromeos::bluetooth::DebugLogsManager* debug_logs_manager_ = nullptr;
 #endif
 
   base::WeakPtrFactory<BluetoothInternalsHandler> weak_ptr_factory_{this};

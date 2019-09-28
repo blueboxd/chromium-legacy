@@ -105,11 +105,11 @@ class AffiliationFetcherTest : public testing::Test {
   }
 
   void SetupNetworkErrorResponse() {
-    network::ResourceResponseHead head =
-        network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR);
-    head.mime_type = "application/protobuf";
+    auto head = network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR);
+    head->mime_type = "application/protobuf";
     network::URLLoaderCompletionStatus status(net::ERR_NETWORK_CHANGED);
-    test_url_loader_factory_.AddResponse(interception_url(), head, "", status);
+    test_url_loader_factory_.AddResponse(interception_url(), std::move(head),
+                                         "", status);
   }
 
   void WaitForResponse() { task_environment_.RunUntilIdle(); }

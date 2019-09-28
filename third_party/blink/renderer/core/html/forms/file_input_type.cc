@@ -51,7 +51,6 @@
 
 namespace blink {
 
-using blink::WebLocalizedString;
 using mojom::blink::FileChooserParams;
 using namespace html_names;
 

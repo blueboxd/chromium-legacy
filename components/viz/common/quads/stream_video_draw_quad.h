@@ -24,16 +24,14 @@ class VIZ_COMMON_EXPORT StreamVideoDrawQuad : public DrawQuad {
   ~StreamVideoDrawQuad() override;
   StreamVideoDrawQuad(const StreamVideoDrawQuad& quad);
 
-  void SetNew(
-      const SharedQuadState* shared_quad_state,
-      const gfx::Rect& rect,
-      const gfx::Rect& visible_rect,
-      bool needs_blending,
-      unsigned resource_id,
-      gfx::Size resource_size_in_pixels,
-      const gfx::PointF& uv_top_left,
-      const gfx::PointF& uv_bottom_right,
-      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info = base::nullopt);
+  void SetNew(const SharedQuadState* shared_quad_state,
+              const gfx::Rect& rect,
+              const gfx::Rect& visible_rect,
+              bool needs_blending,
+              unsigned resource_id,
+              gfx::Size resource_size_in_pixels,
+              const gfx::PointF& uv_top_left,
+              const gfx::PointF& uv_bottom_right);
 
   void SetAll(const SharedQuadState* shared_quad_state,
               const gfx::Rect& rect,
@@ -52,9 +50,6 @@ class VIZ_COMMON_EXPORT StreamVideoDrawQuad : public DrawQuad {
     gfx::Size size_in_pixels[Resources::kMaxResourceIdCount];
   };
   OverlayResources overlay_resources;
-
-  // Sampler conversion information which is used in vulkan context for android.
-  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
 
   static const StreamVideoDrawQuad* MaterialCast(const DrawQuad*);
 

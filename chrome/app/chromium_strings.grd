@@ -474,48 +474,6 @@ Chromium is unable to recover your settings.
         Google API keys are missing. Some functionality of Chromium will be disabled.
       </message>
 
-      <!-- About Chrome page -->
-      <if expr="not chromeos">
-        <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chromium">
-          Nearly up to date! Relaunch Chromium to finish updating.
-        </message>
-      </if>
-      <if expr="chromeos">
-        <message name="IDS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Chromium OS">
-          Nearly up to date! Restart your device to finish updating.
-        </message>
-      </if>
-      <if expr="chromeos">
-        <message name="IDS_UPGRADE_SUCCESSFUL_CHANNEL_SWITCH" desc="Status label: Channel was successfully switched on Chromium OS">
-          Channel changed. Restart your device to apply changes.
-        </message>
-      </if>
-      <if expr="not chromeos">
-        <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Chromium)">
-          Chromium is up to date.
-        </message>
-      </if>
-      <if expr="chromeos">
-        <message name="IDS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Chromium OS)">
-          Your <ph name="DEVICE_TYPE">$1<ex>Chromebook</ex></ph> is up to date.
-        </message>
-      </if>
-      <if expr="not chromeos">
-        <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Chromium">
-          Updating Chromium...
-        </message>
-      </if>
-      <if expr="chromeos">
-        <message name="IDS_UPGRADE_UPDATING" desc="Status label: Updating Chromium OS">
-          Updating your device...
-        </message>
-      </if>
-      <if expr="chromeos">
-        <message name="IDS_UPGRADE_UPDATING_CHANNEL_SWITCH" desc="Status label: Updating Chromium OS to a specified channel">
-          Updating your device to <ph name="CHANNEL_NAME">$1<ex>stable</ex></ph> channel...
-        </message>
-      </if>
-
       <!-- Extension/App install prompt -->
       <if expr="enable_extensions">
         <!-- Extension installed bubble -->

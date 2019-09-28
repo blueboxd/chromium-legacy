@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #import "ios/chrome/browser/infobars/infobar_type.h"
+#import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/browser/ui/badges/badge_item.h"
 #import "ios/chrome/browser/ui/badges/badge_popup_menu_item.h"
 #import "ios/chrome/browser/ui/popup_menu/public/cells/popup_menu_item.h"
@@ -45,6 +46,8 @@
   self.popupViewController = [[PopupMenuTableViewController alloc] init];
   self.popupViewController.baseViewController = self.baseViewController;
   self.popupViewController.delegate = self;
+  self.popupViewController.tableView.accessibilityIdentifier =
+      kBadgePopupMenuTableViewAccessibilityIdentifier;
   self.consumer = self.popupViewController;
   [self.consumer setPopupMenuItems:self.popupMenuItems];
   self.popupMenuPresenter = [[PopupMenuPresenter alloc] init];

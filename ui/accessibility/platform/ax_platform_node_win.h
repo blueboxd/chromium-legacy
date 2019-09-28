@@ -1032,6 +1032,9 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   // Helper to recursively find live-regions and fire a change event on them
   void FireLiveRegionChangeRecursive();
 
+  // Returns the parent node that makes this node inaccessible.
+  AXPlatformNodeWin* GetLowestAccessibleElement();
+
   // Convert a mojo event to an MSAA event. Exposed for testing.
   static base::Optional<DWORD> MojoEventToMSAAEvent(ax::mojom::Event event);
 
@@ -1070,6 +1073,10 @@ class AX_EXPORT __declspec(uuid("26f5641a-246d-457b-a96d-07f3fae6acf2"))
   bool IsUIAControl() const;
 
   base::Optional<LONG> ComputeUIALandmarkType() const;
+
+  bool IsInaccessibleDueToAncestor() const;
+
+  bool ShouldHideChildren() const;
 
   // AXPlatformNodeBase overrides.
   void Dispose() override;

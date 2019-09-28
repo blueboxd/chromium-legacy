@@ -305,27 +305,18 @@ struct VisibleVisitCountToHostResult {
 struct MostVisitedURL {
   MostVisitedURL();
   MostVisitedURL(const GURL& url, const base::string16& title);
-  MostVisitedURL(const GURL& url,
-                 const base::string16& title,
-                 const RedirectList& preceding_redirects);
   MostVisitedURL(const MostVisitedURL& other);
   MostVisitedURL(MostVisitedURL&& other) noexcept;
   ~MostVisitedURL();
-
-  // Initializes |redirects| from |preceding_redirects|, ensuring that |url| is
-  // always present as the last item.
-  void InitRedirects(const RedirectList& preceding_redirects);
-
-  GURL url;
-  base::string16 title;
-
-  RedirectList redirects;
 
   MostVisitedURL& operator=(const MostVisitedURL&);
 
   bool operator==(const MostVisitedURL& other) const {
     return url == other.url;
   }
+
+  GURL url;
+  base::string16 title;
 };
 
 // FilteredURL -----------------------------------------------------------------

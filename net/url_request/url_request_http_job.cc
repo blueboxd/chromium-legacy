@@ -58,6 +58,7 @@
 #include "net/http/http_util.h"
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
+#include "net/log/net_log_values.h"
 #include "net/log/net_log_with_source.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/proxy_resolution/proxy_info.h"
@@ -671,6 +672,13 @@ void URLRequestHttpJob::SetCookieHeaderAndStart(
       status.AddExclusionReason(
           CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
+    if (!status.IsInclude()) {
+      request_->net_log().AddEvent(
+          NetLogEventType::COOKIE_INCLUSION_STATUS, [&] {
+            return NetLogParamsWithString("exclusion_reason",
+                                          status.GetDebugString());
+          });
+    }
     maybe_sent_cookies.push_back({cookie_with_status.cookie, status});
   }
 
@@ -749,6 +757,11 @@ void URLRequestHttpJob::SaveCookiesAndNotifyHeadersComplete(int result) {
           CanonicalCookie::CookieInclusionStatus::EXCLUDE_USER_PREFERENCES);
     }
     if (!returned_status.IsInclude()) {
+      request_->net_log().AddEvent(
+          NetLogEventType::COOKIE_INCLUSION_STATUS, [&] {
+            return NetLogParamsWithString("exclusion_reason",
+                                          returned_status.GetDebugString());
+          });
       OnSetCookieResult(options, cookie_to_return, std::move(cookie_string),
                         returned_status);
       continue;

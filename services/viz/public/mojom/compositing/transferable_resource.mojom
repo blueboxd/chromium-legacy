@@ -5,9 +5,10 @@
 module viz.mojom;
 
 import "gpu/ipc/common/mailbox_holder.mojom";
+import "gpu/ipc/common/vulkan_ycbcr_info.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
-import "ui/gfx/mojom/color_space.mojom";
 import "ui/gfx/mojom/buffer_types.mojom";
+import "ui/gfx/mojom/color_space.mojom";
 
 // Corresponds to viz::ResourceFormat.
 enum ResourceFormat {
@@ -47,4 +48,5 @@ struct TransferableResource {
   bool is_backed_by_surface_texture;
   bool wants_promotion_hint;
   gfx.mojom.ColorSpace color_space;
+  gpu.mojom.VulkanYCbCrInfo ? ycbcr_info;
 };

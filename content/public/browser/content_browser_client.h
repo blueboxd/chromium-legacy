@@ -497,6 +497,12 @@ class CONTENT_EXPORT ContentBrowserClient {
 
   // Indicates whether a file path should be accessible via file URL given a
   // request from a browser context which lives within |profile_path|.
+  //
+  // On POSIX platforms, |absolute_path| is the path after resolving all
+  // symboling links. On Windows, if the file URL is a shortcut,
+  // IsFileAccessAllowed will be called twice: Once for the shortcut, which is
+  // treated like a redirect, and once for the destination path after following
+  // the shortcut, assuming access to the shortcut path was allowed.
   virtual bool IsFileAccessAllowed(const base::FilePath& path,
                                    const base::FilePath& absolute_path,
                                    const base::FilePath& profile_path);

@@ -30,13 +30,16 @@ bool HasValidTargetDevice(Profile* profile);
 //  User is not in Incongnito mode.
 bool IsContentRequirementsMet(const GURL& gurl, Profile* profile);
 
-// Returns true if all conditions are true and shows the option onto the menu.
+// Returns true if the feature should be offered in menus.
 bool ShouldOfferFeature(content::WebContents* web_contents);
 
-// Returns true if all conditions are true and shows the option onto the link
-// menu.
+// Returns true if the feature should be offered in link context menus.
 bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
                                const GURL& link_url);
+
+// Returns true if the omnibox icon for the feature should be offered.
+bool ShouldOfferOmniboxIcon(content::WebContents* web_contents);
+
 }  // namespace send_tab_to_self
 
 #endif  // CHROME_BROWSER_SEND_TAB_TO_SELF_SEND_TAB_TO_SELF_UTIL_H_

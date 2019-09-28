@@ -86,10 +86,10 @@ class OAuth2ApiCallFlowTest : public testing::Test {
                       const std::string& body) {
     net::Error error = fetch_succeeds ? net::OK : net::ERR_FAILED;
 
-    network::ResourceResponseHead http_head =
-        network::CreateResourceResponseHead(response_code);
+    auto http_head = network::CreateURLResponseHead(response_code);
     test_url_loader_factory_.AddResponse(
-        url, http_head, body, network::URLLoaderCompletionStatus(error));
+        url, std::move(http_head), body,
+        network::URLLoaderCompletionStatus(error));
   }
 
   void SetupApiCall(bool succeeds, net::HttpStatusCode status) {

@@ -82,15 +82,15 @@ class DigitalAssetLinksHandlerTest : public ::testing::Test {
     request_url_ =
         test_url_loader_factory_.pending_requests()->at(0).request.url;
 
-    network::ResourceResponseHead response_head;
+    auto response_head = network::mojom::URLResponseHead::New();
     std::string status_line =
         "HTTP/1.1 " + base::NumberToString(response_code) + " " +
         net::GetHttpReasonPhrase(
             static_cast<net::HttpStatusCode>(response_code));
-    response_head.headers =
+    response_head->headers =
         base::MakeRefCounted<net::HttpResponseHeaders>(status_line);
     test_url_loader_factory_.AddResponse(
-        request_url_, response_head, "",
+        request_url_, std::move(response_head), "",
         network::URLLoaderCompletionStatus(error));
 
     base::RunLoop().RunUntilIdle();

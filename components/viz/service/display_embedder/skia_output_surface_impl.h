@@ -130,6 +130,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
       const gpu::MailboxHolder& holder,
       const gfx::Size& size,
       ResourceFormat format,
+      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
       sk_sp<SkColorSpace> color_space) override;
 
   // Set the fields of |capabilities_| and propagates to |impl_on_gpu_|. Should
@@ -161,7 +162,7 @@ class VIZ_SERVICE_EXPORT SkiaOutputSurfaceImpl : public SkiaOutputSurface {
   GrBackendFormat GetGrBackendFormatForTexture(
       ResourceFormat resource_format,
       uint32_t gl_texture_target,
-      base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info = base::nullopt);
+      const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info);
   void PrepareYUVATextureIndices(const std::vector<ImageContext*>& contexts,
                                  bool has_alpha,
                                  SkYUVAIndex indices[4]);

@@ -41,12 +41,6 @@ class FakeViewRequestDelegate : public ViewRequestDelegate {
                void(ArticleDistillationUpdate article_update));
 };
 
-class MockDistillerObserver : public DomDistillerObserver {
- public:
-  MOCK_METHOD1(ArticleEntriesUpdated, void(const std::vector<ArticleUpdate>&));
-  ~MockDistillerObserver() override {}
-};
-
 class MockArticleAvailableCallback {
  public:
   MOCK_METHOD1(DistillationCompleted, void(bool));
@@ -271,8 +265,6 @@ TEST_F(DomDistillerServiceTest, TestAddAndRemoveEntry) {
 
 TEST_F(DomDistillerServiceTest, TestCancellation) {
   FakeDistiller* distiller = new FakeDistiller(false);
-  MockDistillerObserver observer;
-  service_->AddObserver(&observer);
 
   EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
       .WillOnce(Return(distiller));
@@ -286,50 +278,6 @@ TEST_F(DomDistillerServiceTest, TestCancellation) {
       ArticleCallback(&article_cb));
 
   // Remove entry will cause the |article_cb| to be called with false value.
-  service_->RemoveEntry(entry_id);
-  base::RunLoop().RunUntilIdle();
-}
-
-TEST_F(DomDistillerServiceTest, TestMultipleObservers) {
-  FakeDistiller* distiller = new FakeDistiller(false);
-  EXPECT_CALL(*distiller_factory_, CreateDistillerImpl())
-      .WillOnce(Return(distiller));
-
-  const int kObserverCount = 5;
-  MockDistillerObserver observers[kObserverCount];
-  for (int i = 0; i < kObserverCount; ++i) {
-    service_->AddObserver(&observers[i]);
-  }
-
-  DomDistillerService::ArticleAvailableCallback article_cb;
-  GURL url("http://www.example.com/p1");
-  std::string entry_id = service_->AddToList(
-      url, service_->CreateDefaultDistillerPage(gfx::Size()), article_cb);
-
-  // Distillation should notify all observers that article is added.
-  std::vector<DomDistillerObserver::ArticleUpdate> expected_updates;
-  DomDistillerObserver::ArticleUpdate update;
-  update.entry_id = entry_id;
-  update.update_type = DomDistillerObserver::ArticleUpdate::ADD;
-  expected_updates.push_back(update);
-
-  for (int i = 0; i < kObserverCount; ++i) {
-    EXPECT_CALL(observers[i], ArticleEntriesUpdated(
-                                  util::HasExpectedUpdates(expected_updates)));
-  }
-
-  std::unique_ptr<DistilledArticleProto> proto = CreateDefaultArticle();
-  RunDistillerCallback(distiller, std::move(proto));
-
-  // Remove should notify all observers that article is removed.
-  update.update_type = DomDistillerObserver::ArticleUpdate::REMOVE;
-  expected_updates.clear();
-  expected_updates.push_back(update);
-  for (int i = 0; i < kObserverCount; ++i) {
-    EXPECT_CALL(observers[i], ArticleEntriesUpdated(
-                                  util::HasExpectedUpdates(expected_updates)));
-  }
-
   service_->RemoveEntry(entry_id);
   base::RunLoop().RunUntilIdle();
 }

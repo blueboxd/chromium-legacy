@@ -1584,6 +1584,18 @@ void WebViewImpl::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
       .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now());
 }
 
+std::unique_ptr<cc::BeginMainFrameMetrics>
+WebViewImpl::GetBeginMainFrameMetrics() {
+  if (!MainFrameImpl())
+    return nullptr;
+
+  return MainFrameImpl()
+      ->GetFrame()
+      ->View()
+      ->EnsureUkmAggregator()
+      .GetBeginMainFrameMetrics();
+}
+
 void WebViewImpl::UpdateLifecycle(WebWidget::LifecycleUpdate requested_update,
                                   WebWidget::LifecycleUpdateReason reason) {
   TRACE_EVENT0("blink", "WebViewImpl::updateAllLifecyclePhases");

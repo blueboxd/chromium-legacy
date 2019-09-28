@@ -224,11 +224,11 @@ TEST_F(URLDownloaderTest, SingleDownloadPDF) {
   task_environment_.RunUntilIdle();
 
   auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
-  auto response_info = network::CreateResourceResponseHead(net::HTTP_OK);
-  response_info.mime_type = "application/pdf";
+  auto response_info = network::CreateURLResponseHead(net::HTTP_OK);
+  response_info->mime_type = "application/pdf";
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       pending_request->request.url, network::URLLoaderCompletionStatus(net::OK),
-      response_info, std::string("123456789"));
+      std::move(response_info), std::string("123456789"));
 
   // Wait for all asynchronous tasks to complete.
   task_environment_.RunUntilIdle();

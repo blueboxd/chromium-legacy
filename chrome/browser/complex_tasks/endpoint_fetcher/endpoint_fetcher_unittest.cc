@@ -84,17 +84,17 @@ class EndpointFetcherTest : public testing::Test {
                        const std::string& response_data,
                        net::HttpStatusCode response_code,
                        net::Error error) {
-    network::ResourceResponseHead head;
+    auto head = network::mojom::URLResponseHead::New();
     std::string headers(base::StringPrintf(
         "HTTP/1.1 %d %s\nContent-type: application/json\n\n",
         static_cast<int>(response_code), GetHttpReasonPhrase(response_code)));
-    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+    head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(headers));
-    head.mime_type = "application/json";
+    head->mime_type = "application/json";
     network::URLLoaderCompletionStatus status(error);
     status.decoded_body_length = response_data.size();
-    test_url_loader_factory_.AddResponse(request_url, head, response_data,
-                                         status);
+    test_url_loader_factory_.AddResponse(request_url, std::move(head),
+                                         response_data, status);
   }
 
  private:

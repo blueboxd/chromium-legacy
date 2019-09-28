@@ -43,6 +43,7 @@ import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.DeviceFormFactor;
+import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -344,7 +345,7 @@ public class ToolbarTablet extends ToolbarLayout
         } else if (v == mSaveOfflineButton) {
             description = resources.getString(R.string.menu_download);
         }
-        return AccessibilityUtil.showAccessibilityToast(context, v, description);
+        return Toast.showAnchoredToast(context, v, description);
     }
 
     private void updateSwitcherButtonVisibility(boolean enabled) {

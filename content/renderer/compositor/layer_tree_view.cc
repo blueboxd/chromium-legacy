@@ -267,6 +267,11 @@ void LayerTreeView::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
   delegate_->RecordEndOfFrameMetrics(frame_begin_time);
 }
 
+std::unique_ptr<cc::BeginMainFrameMetrics>
+LayerTreeView::GetBeginMainFrameMetrics() {
+  return delegate_->GetBeginMainFrameMetrics();
+}
+
 void LayerTreeView::DidSubmitCompositorFrame() {}
 
 void LayerTreeView::DidLoseLayerTreeFrameSink() {}

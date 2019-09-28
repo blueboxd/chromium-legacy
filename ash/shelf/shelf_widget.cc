@@ -50,6 +50,7 @@ constexpr int kShelfBlurRadius = 30;
 // the screen edge).
 constexpr int kShelfMaxOvershootHeight = 40;
 constexpr float kShelfBlurQuality = 0.33f;
+constexpr gfx::Size kDragHandleSize(80, 4);
 
 // Return the first or last focusable child of |root|.
 views::View* FindFirstOrLastFocusableChild(views::View* root,
@@ -101,6 +102,8 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   void ReorderChildLayers(ui::Layer* parent_layer) override;
   void UpdateBackgroundBlur();
   void UpdateOpaqueBackground();
+  void UpdateDragHandle();
+
   // This will be called when the parent local bounds change.
   void OnBoundsChanged(const gfx::Rect& old_bounds) override;
 
@@ -119,6 +122,10 @@ class ShelfWidget::DelegateView : public views::WidgetDelegate,
   // ShelfBackgroundAnimator.
   ui::Layer opaque_background_;
 
+  // A drag handle shown in tablet mode when we are not on the home screen.
+  // Owned by the view hierarchy.
+  views::View* drag_handle_ = nullptr;
+
   // When true, the default focus of the shelf is the last focusable child.
   bool default_last_focusable_child_ = false;
 
@@ -136,8 +143,14 @@ ShelfWidget::DelegateView::DelegateView(ShelfWidget* shelf_widget)
   DCHECK(shelf_widget_);
   set_owned_by_client();  // Deleted by DeleteDelegate().
 
-  SetLayoutManager(std::make_unique<views::FillLayout>());
   set_allow_deactivate_on_esc(true);
+
+  std::unique_ptr<views::View> drag_handle_ptr =
+      std::make_unique<views::View>();
+  drag_handle_ = AddChildView(std::move(drag_handle_ptr));
+  drag_handle_->SetPaintToLayer(ui::LAYER_SOLID_COLOR);
+  drag_handle_->layer()->SetColor(SK_ColorWHITE);
+  drag_handle_->SetSize(kDragHandleSize);
 
   UpdateOpaqueBackground();
 }
@@ -239,8 +252,25 @@ void ShelfWidget::DelegateView::UpdateOpaqueBackground() {
     opaque_background_.AddCacheRenderSurfaceRequest();
   }
   opaque_background_.SetBounds(opaque_background_bounds);
+  UpdateDragHandle();
   UpdateBackgroundBlur();
   SchedulePaint();
+}
+
+void ShelfWidget::DelegateView::UpdateDragHandle() {
+  if (!Shell::Get()->tablet_mode_controller()->InTabletMode() ||
+      !ShelfConfig::Get()->is_in_app() ||
+      !chromeos::switches::ShouldShowShelfHotseat()) {
+    drag_handle_->SetVisible(false);
+    return;
+  }
+  drag_handle_->SetVisible(true);
+  drag_handle_->SetX((shelf_widget_->GetClientAreaBoundsInScreen().width() -
+                      kDragHandleSize.width()) /
+                     2);
+  drag_handle_->SetY((shelf_widget_->GetClientAreaBoundsInScreen().height() -
+                      kDragHandleSize.height()) /
+                     2);
 }
 
 void ShelfWidget::DelegateView::OnBoundsChanged(const gfx::Rect& old_bounds) {
@@ -528,29 +558,11 @@ void ShelfWidget::OnSessionStateChanged(session_manager::SessionState state) {
   if (!using_views_shelf || unknown_state || hide_on_secondary_screen) {
     HideIfShown();
   } else {
-    switch (state) {
-      case session_manager::SessionState::ACTIVE:
-        login_shelf_view_->SetVisible(false);
-        hotseat_widget()->GetShelfView()->SetVisible(true);
-        break;
-      case session_manager::SessionState::LOCKED:
-      case session_manager::SessionState::LOGIN_SECONDARY:
-        hotseat_widget()->GetShelfView()->SetVisible(false);
-        login_shelf_view_->SetVisible(true);
-        break;
-      case session_manager::SessionState::OOBE:
-        login_shelf_view_->SetVisible(true);
-        hotseat_widget()->GetShelfView()->SetVisible(false);
-        break;
-      case session_manager::SessionState::LOGIN_PRIMARY:
-      case session_manager::SessionState::LOGGED_IN_NOT_ACTIVE:
-        login_shelf_view_->SetVisible(true);
-        hotseat_widget()->GetShelfView()->SetVisible(false);
-        break;
-      default:
-        // session_manager::SessionState::UNKNOWN handled in if statement above.
-        NOTREACHED();
-    }
+    bool show_hotseat = (state == session_manager::SessionState::ACTIVE);
+    hotseat_widget()->GetShelfView()->SetVisible(show_hotseat);
+    login_shelf_view()->SetVisible(!show_hotseat);
+    delegate_view_->SetLayoutManager(
+        show_hotseat ? nullptr : std::make_unique<views::FillLayout>());
     ShowIfHidden();
   }
   login_shelf_view_->UpdateAfterSessionChange();

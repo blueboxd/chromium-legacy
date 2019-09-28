@@ -179,25 +179,13 @@ void TracingService::OnDisconnected() {
 void TracingService::OnStart() {
   tracing_agent_registry_ = std::make_unique<AgentRegistry>();
 
-  if (TracingUsesPerfettoBackend()) {
-    auto perfetto_coordinator = std::make_unique<PerfettoTracingCoordinator>(
-        tracing_agent_registry_.get(),
-        base::BindRepeating(&TracingService::OnCoordinatorConnectionClosed,
-                            base::Unretained(this)));
-    registry_.AddInterface(
-        base::BindRepeating(&PerfettoTracingCoordinator::BindCoordinatorRequest,
-                            base::Unretained(perfetto_coordinator.get())));
-    tracing_coordinator_ = std::move(perfetto_coordinator);
-  } else {
-    auto tracing_coordinator = std::make_unique<Coordinator>(
-        tracing_agent_registry_.get(),
-        base::BindRepeating(&TracingService::OnCoordinatorConnectionClosed,
-                            base::Unretained(this)));
-    registry_.AddInterface(
-        base::BindRepeating(&Coordinator::BindCoordinatorRequest,
-                            base::Unretained(tracing_coordinator.get())));
-    tracing_coordinator_ = std::move(tracing_coordinator);
-  }
+  tracing_coordinator_ = std::make_unique<PerfettoTracingCoordinator>(
+      tracing_agent_registry_.get(),
+      base::BindRepeating(&TracingService::OnCoordinatorConnectionClosed,
+                          base::Unretained(this)));
+  registry_.AddInterface(
+      base::BindRepeating(&PerfettoTracingCoordinator::BindCoordinatorRequest,
+                          base::Unretained(tracing_coordinator_.get())));
 
   registry_.AddInterface(
       base::BindRepeating(&ConsumerHost::BindConsumerRequest,

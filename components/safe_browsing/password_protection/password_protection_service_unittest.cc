@@ -805,9 +805,9 @@ TEST_P(PasswordProtectionServiceTest, TestNoRequestSentIfVerdictAlreadyCached) {
 TEST_P(PasswordProtectionServiceTest, TestResponseFetchFailed) {
   histograms_.ExpectTotalCount(kPasswordOnFocusRequestOutcomeHistogram, 0);
   // Set up failed response.
-  network::ResourceResponseHead head;
   network::URLLoaderCompletionStatus status(net::ERR_FAILED);
-  test_url_loader_factory_.AddResponse(url_, head, std::string(), status);
+  test_url_loader_factory_.AddResponse(
+      url_, network::mojom::URLResponseHead::New(), std::string(), status);
   std::unique_ptr<content::WebContents> web_contents = GetWebContents();
 
   InitializeAndStartPasswordOnFocusRequest(false /* match whitelist */,

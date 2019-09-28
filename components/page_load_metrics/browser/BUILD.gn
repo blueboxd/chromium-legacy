@@ -10,6 +10,9 @@ source_set("browser") {
     "metrics_navigation_throttle.h",
     "metrics_web_contents_observer.cc",
     "metrics_web_contents_observer.h",
+    "observers/use_counter/ukm_features.cc",
+    "observers/use_counter_page_load_metrics_observer.cc",
+    "observers/use_counter_page_load_metrics_observer.h",
     "page_load_metrics_embedder_base.cc",
     "page_load_metrics_embedder_base.h",
     "page_load_metrics_embedder_interface.h",
@@ -34,6 +37,7 @@ source_set("browser") {
     "//content/public/browser",
     "//content/public/common",
     "//net",
+    "//services/metrics/public/cpp:ukm_builders",
     "//ui/base",
   ]
 }

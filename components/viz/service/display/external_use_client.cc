@@ -10,11 +10,13 @@ ExternalUseClient::ImageContext::ImageContext(
     const gpu::MailboxHolder& mailbox_holder,
     const gfx::Size& size,
     ResourceFormat resource_format,
+    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
     sk_sp<SkColorSpace> color_space)
     : mailbox_holder_(mailbox_holder),
       size_(size),
       resource_format_(resource_format),
-      color_space_(std::move(color_space)) {}
+      color_space_(std::move(color_space)),
+      ycbcr_info_(ycbcr_info) {}
 
 ExternalUseClient::ImageContext::~ImageContext() = default;
 

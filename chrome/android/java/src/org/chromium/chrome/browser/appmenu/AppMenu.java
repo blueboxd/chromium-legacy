@@ -40,8 +40,8 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omaha.UpdateMenuItemHelper;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.chrome.browser.widget.ViewHighlighter;
+import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -412,7 +412,7 @@ class AppMenu implements OnItemClickListener, OnKeyListener {
                     ? resources.getString(R.string.menu_refresh)
                     : resources.getString(R.string.menu_stop_refresh);
         }
-        return AccessibilityUtil.showAccessibilityToast(context, view, description);
+        return Toast.showAnchoredToast(context, view, description);
     }
 
     @Override

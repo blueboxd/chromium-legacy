@@ -13,6 +13,10 @@ namespace user_manager {
 class User;
 }  // namespace user_manager
 
+namespace chromeos {
+
+namespace bluetooth {
+
 // Manages the use of debug Bluetooth logs. Under normal usage, only warning and
 // error logs are captured, but there are some situations in which it is
 // advantageous to capture more verbose logs (e.g., in noisy environments or on
@@ -50,5 +54,9 @@ class DebugLogsManager : public mojom::DebugLogsChangeHandler {
 
   DISALLOW_COPY_AND_ASSIGN(DebugLogsManager);
 };
+
+}  // namespace bluetooth
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_BLUETOOTH_DEBUG_LOGS_MANAGER_H_

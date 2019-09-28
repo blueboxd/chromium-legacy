@@ -22,7 +22,7 @@ class CanvasResource;
 
 class CanvasResourceDispatcherClient {
  public:
-  virtual void BeginFrame() = 0;
+  virtual bool BeginFrame() = 0;
 };
 
 class PLATFORM_EXPORT CanvasResourceDispatcher

@@ -252,21 +252,24 @@ TEST_F(ChromeSigninProxyingURLLoaderFactoryTest, ModifyHeaders) {
     // referrer but we do for testing purposes.
     redirect_info.new_referrer = kTestURL.spec();
 
-    network::ResourceResponseHead redirect_head;
-    redirect_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    redirect_head.headers->AddHeader("X-Response-1: Foo");
-    redirect_head.headers->AddHeader("X-Response-2: Bar");
+    auto redirect_head = network::mojom::URLResponseHead::New();
+    redirect_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    redirect_head->headers->AddHeader("X-Response-1: Foo");
+    redirect_head->headers->AddHeader("X-Response-2: Bar");
 
-    network::ResourceResponseHead response_head;
-    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    response_head.headers->AddHeader("X-Response-3: Foo");
-    response_head.headers->AddHeader("X-Response-4: Bar");
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    response_head->headers->AddHeader("X-Response-3: Foo");
+    response_head->headers->AddHeader("X-Response-4: Bar");
     std::string body("Hello.");
     network::URLLoaderCompletionStatus status;
     status.decoded_body_length = body.size();
 
-    factory()->AddResponse(kTestURL, response_head, body, status,
-                           {{redirect_info, redirect_head}});
+    network::TestURLLoaderFactory::Redirects redirects;
+    redirects.push_back({redirect_info, std::move(redirect_head)});
+
+    factory()->AddResponse(kTestURL, std::move(response_head), body, status,
+                           std::move(redirects));
   }
 
   // Wait for the request to complete and check the response.

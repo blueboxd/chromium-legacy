@@ -70,7 +70,11 @@ void IntersectionObservation::Disconnect() {
     ElementIntersectionObserverData* observer_data =
         target_->IntersectionObserverData();
     observer_data->RemoveObservation(*Observer());
-    if (target_->isConnected() &&
+    // We track connected elements that are either the root of an explicit root
+    // observer, or the target of an implicit root observer. If the target was
+    // previously being tracked, but no longer needs to be tracked, then remove
+    // it.
+    if (target_->isConnected() && Observer()->RootIsImplicit() &&
         !observer_data->IsTargetOfImplicitRootObserver() &&
         !observer_data->IsRoot()) {
       IntersectionObserverController* controller =

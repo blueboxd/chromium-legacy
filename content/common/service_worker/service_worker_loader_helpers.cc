@@ -17,9 +17,10 @@
 #include "net/http/http_util.h"
 #include "net/url_request/redirect_util.h"
 #include "services/network/loader_util.h"
+#include "services/network/public/cpp/content_security_policy.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/resource_request_body.h"
-#include "services/network/public/cpp/resource_response.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "ui/base/page_transition_types.h"
 
@@ -52,7 +53,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
     const int status_code,
     const std::string& status_text,
     const base::flat_map<std::string, std::string>& headers,
-    network::ResourceResponseHead* out_head) {
+    network::mojom::URLResponseHead* out_head) {
   // Build a string instead of using HttpResponseHeaders::AddHeader on
   // each header, since AddHeader has O(n^2) performance.
   std::string buf(base::StringPrintf("HTTP/1.1 %d %s\r\n", status_code,
@@ -93,7 +94,7 @@ void ServiceWorkerLoaderHelpers::SaveResponseHeaders(
 // static
 void ServiceWorkerLoaderHelpers::SaveResponseInfo(
     const blink::mojom::FetchAPIResponse& response,
-    network::ResourceResponseHead* out_head) {
+    network::mojom::URLResponseHead* out_head) {
   out_head->was_fetched_via_service_worker = true;
   out_head->was_fallback_required_by_service_worker = false;
   out_head->url_list_via_service_worker = response.url_list;
@@ -108,13 +109,15 @@ void ServiceWorkerLoaderHelpers::SaveResponseInfo(
     out_head->cache_storage_cache_name.clear();
   out_head->cors_exposed_header_names = response.cors_exposed_header_names;
   out_head->did_service_worker_navigation_preload = false;
+  out_head->content_security_policy =
+      network::ContentSecurityPolicy(response.content_security_policy.Clone());
 }
 
 // static
 base::Optional<net::RedirectInfo>
 ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
     const network::ResourceRequest& original_request,
-    const network::ResourceResponseHead& response_head) {
+    const network::mojom::URLResponseHead& response_head) {
   std::string new_location;
   if (!response_head.headers->IsRedirect(&new_location))
     return base::nullopt;

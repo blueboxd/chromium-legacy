@@ -19,6 +19,7 @@
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "components/send_tab_to_self/test_send_tab_to_self_model.h"
 #include "components/sync/driver/sync_driver_switches.h"
+#include "content/public/test/navigation_simulator.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -112,7 +113,7 @@ TEST_F(SendTabToSelfUtilTest, IncognitoMode) {
   EXPECT_FALSE(IsContentRequirementsMet(url_, incognito_profile_));
 }
 
-TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForTelephoneLink) {
+TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureForTelephoneLink) {
   url_ = GURL("tel:07387252578");
 
   scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI}, {});
@@ -139,6 +140,32 @@ TEST_F(SendTabToSelfUtilTest, ShouldOfferFeatureForGoogleLink) {
 
   EXPECT_TRUE(ShouldOfferFeatureForLink(web_contents, url_));
 }
+
+TEST_F(SendTabToSelfUtilTest, ShouldNotOfferFeatureInOmniboxWhileNavigating) {
+  scoped_feature_list_.InitWithFeatures({kSendTabToSelfShowSendingUI}, {});
+  AddTab(browser(), url_);
+  SendTabToSelfSyncServiceFactory::GetInstance()->SetTestingFactory(
+      profile(), base::BindRepeating(&BuildTestSendTabToSelfSyncService));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_FALSE(web_contents->IsWaitingForResponse());
+  EXPECT_TRUE(ShouldOfferOmniboxIcon(web_contents));
+
+  std::unique_ptr<content::NavigationSimulator> simulator =
+      content::NavigationSimulator::CreateRendererInitiated(
+          GURL("http://test.com/"), web_contents->GetMainFrame());
+  simulator->SetTransition(ui::PAGE_TRANSITION_LINK);
+  simulator->Start();
+  EXPECT_TRUE(web_contents->IsWaitingForResponse());
+  EXPECT_FALSE(ShouldOfferOmniboxIcon(web_contents));
+
+  simulator->Commit();
+  EXPECT_FALSE(web_contents->IsWaitingForResponse());
+  EXPECT_TRUE(ShouldOfferOmniboxIcon(web_contents));
+}
+
 }  // namespace
 
 }  // namespace send_tab_to_self

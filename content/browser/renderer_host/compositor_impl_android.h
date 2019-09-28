@@ -135,6 +135,8 @@ class CONTENT_EXPORT CompositorImpl
       const gfx::PresentationFeedback& feedback) override {}
   void RecordStartOfFrameMetrics() override {}
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) override {}
+  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics()
+      override;
 
   // LayerTreeHostSingleThreadClient implementation.
   void DidSubmitCompositorFrame() override;

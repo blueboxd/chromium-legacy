@@ -40,8 +40,3 @@ crbug.com/937545 [ win10 nvidia ] VideoPathTraceTest_DirectComposition_ComplexOv
 crbug.com/960007 [ win10 nvidia ] OverlayModeTraceTest_DirectComposition_Nonroot [ RetryOnFailure ]
 crbug.com/969117 [ win10 intel ] OverlayModeTraceTest_DirectComposition_Video_MP4_FourColors_Aspect_4x3 [ RetryOnFailure ]
 crbug.com/978181 [ win10 nvidia ] OverlayModeTraceTest_DirectComposition_Underlay [ RetryOnFailure ]
-
-# These tests check if overlay is being used for the test, but they shouldn't.
-# TODO(sunnyps) - Remove when this inherent check is removed.
-crbug.com/1007411 [ win10 ] OverlayModeTraceTest_DirectComposition_Video_MP4_Rounded_Corner [ Failure ]
-crbug.com/1007411 [ win10 ] VideoPathTraceTest_DirectComposition_Video_MP4_Rounded_Corner [ Failure ]

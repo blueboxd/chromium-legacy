@@ -441,6 +441,10 @@ StaleHostResolver::StaleHostResolver(
 
 StaleHostResolver::~StaleHostResolver() {}
 
+void StaleHostResolver::OnShutdown() {
+  inner_resolver_->OnShutdown();
+}
+
 std::unique_ptr<net::HostResolver::ResolveHostRequest>
 StaleHostResolver::CreateRequest(
     const net::HostPortPair& host,

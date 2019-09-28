@@ -15,6 +15,7 @@
 #include "components/viz/common/resources/shared_bitmap.h"
 #include "components/viz/common/viz_common_export.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "ui/gfx/buffer_types.h"
 #include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/size.h"
@@ -104,6 +105,10 @@ struct VIZ_COMMON_EXPORT TransferableResource {
   // out-of-band, and a gpu fence needs to be waited on before the resource is
   // returned and reused.
   bool read_lock_fences_enabled = false;
+
+  // YCbCr info for resources backed by YCbCr Vulkan images.
+  base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
+
 #if defined(OS_ANDROID)
   // Indicates whether this resource may not be overlayed on Android, since
   // it's not backed by a SurfaceView.  This may be set in combination with

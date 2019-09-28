@@ -192,10 +192,10 @@ Polymer({
     const validationRegex =
         new RegExp(`^-?(?:${whole}${fractional}?|${fractional})$`);
     if (validationRegex.test(value)) {
-      // Replacing decimal point with the dot symbol and removing thousands
-      // marker in order to use parseFloat() properly.
-      value =
-          value.replace(decimal, '.').replace(new RegExp(thousands, 'g'), '');
+      // Removing thousands delimiters and replacing the decimal delimiter with
+      // the dot symbol in order to use parseFloat() properly.
+      value = value.replace(new RegExp(`\\${thousands}`, 'g'), '')
+                  .replace(decimal, '.');
       return this.measurementSystem.convertToPoints(parseFloat(value));
     }
     return null;

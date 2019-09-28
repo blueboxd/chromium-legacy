@@ -118,7 +118,9 @@ class CORE_EXPORT Blob : public ScriptWrappable,
 
   // URLRegistrable to support PublicURLs.
   URLRegistry& Registry() const final;
-  mojo::PendingRemote<mojom::blink::Blob> AsMojoBlob() final;
+  bool IsMojoBlob() final;
+  void CloneMojoBlob(mojo::PendingReceiver<mojom::blink::Blob>) final;
+  mojo::PendingRemote<mojom::blink::Blob> AsMojoBlob();
 
   // ImageBitmapSource implementation
   bool IsBlob() const override { return true; }

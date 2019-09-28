@@ -379,9 +379,9 @@ void TabletModeWindowManager::OnOverviewModeEndingAnimationComplete(
 }
 
 void TabletModeWindowManager::OnSplitViewStateChanged(
-    SplitViewState previous_state,
-    SplitViewState state) {
-  if (state != SplitViewState::kNoSnap)
+    SplitViewController::State previous_state,
+    SplitViewController::State state) {
+  if (state != SplitViewController::State::kNoSnap)
     return;
   switch (Shell::Get()->split_view_controller()->end_reason()) {
     case SplitViewController::EndReason::kNormal:

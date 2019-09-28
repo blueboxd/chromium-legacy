@@ -17,7 +17,7 @@
 #include "base/macros.h"
 #include "base/task/post_task.h"
 #include "content/browser/appcache/appcache_navigation_handle.h"
-#include "content/browser/file_url_loader_factory.h"
+#include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/storage_partition_impl.h"
 #include "content/browser/url_loader_factory_getter.h"

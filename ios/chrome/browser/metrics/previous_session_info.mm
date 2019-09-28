@@ -120,21 +120,6 @@ NSString* const kOSStartTime = @"OSStartTime";
 
 @implementation PreviousSessionInfo
 
-@synthesize availableDeviceStorage = _availableDeviceStorage;
-@synthesize deviceBatteryLevel = _deviceBatteryLevel;
-@synthesize deviceBatteryState = _deviceBatteryState;
-@synthesize deviceThermalState = _deviceThermalState;
-@synthesize deviceWasInLowPowerMode = _deviceWasInLowPowerMode;
-@synthesize didBeginRecordingCurrentSession = _didBeginRecordingCurrentSession;
-@synthesize didSeeMemoryWarningShortlyBeforeTerminating =
-    _didSeeMemoryWarningShortlyBeforeTerminating;
-@synthesize isFirstSessionAfterOSUpgrade = _isFirstSessionAfterOSUpgrade;
-@synthesize isFirstSessionAfterUpgrade = _isFirstSessionAfterUpgrade;
-@synthesize isFirstSessionAfterLanguageChange =
-    _isFirstSessionAfterLanguageChange;
-@synthesize OSVersion = _OSVersion;
-@synthesize sessionEndTime = _sessionEndTime;
-
 // Singleton PreviousSessionInfo.
 static PreviousSessionInfo* gSharedInstance = nil;
 

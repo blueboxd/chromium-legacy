@@ -70,6 +70,8 @@ class StaleHostResolver : public net::HostResolver {
 
   // HostResolver implementation:
 
+  void OnShutdown() override;
+
   // Resolves as a regular HostResolver, but if stale data is available and
   // usable (according to the options passed to the constructor), and fresh data
   // is not returned before the specified delay, returns the stale data instead.

@@ -44,6 +44,7 @@ class ImageContextImpl final : public ExternalUseClient::ImageContext {
   ImageContextImpl(const gpu::MailboxHolder& mailbox_holder,
                    const gfx::Size& size,
                    ResourceFormat resource_format,
+                   const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
                    sk_sp<SkColorSpace> color_space);
 
   // TODO(https://crbug.com/991659): The use of ImageContext for

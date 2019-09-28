@@ -559,15 +559,15 @@ TEST_F(VariationsServiceTest, InstanceManipulations) {
     service.set_intercepts_fetch(false);
 
     std::string headers("HTTP/1.1 200 OK\n\n");
-    network::ResourceResponseHead head;
-    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+    auto head = network::mojom::URLResponseHead::New();
+    head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(headers));
     if (!cases[i].im.empty())
-      head.headers->AddHeader(cases[i].im);
+      head->headers->AddHeader(cases[i].im);
     network::URLLoaderCompletionStatus status;
     status.decoded_body_length = serialized_seed.size();
     service.test_url_loader_factory()->AddResponse(
-        service.interception_url(), head, serialized_seed, status);
+        service.interception_url(), std::move(head), serialized_seed, status);
 
     service.DoActualFetch();
 
@@ -589,14 +589,14 @@ TEST_F(VariationsServiceTest, CountryHeader) {
   service.set_intercepts_fetch(false);
 
   std::string headers("HTTP/1.1 200 OK\n\n");
-  network::ResourceResponseHead head;
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head.headers->AddHeader("X-Country: test");
+  head->headers->AddHeader("X-Country: test");
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = serialized_seed.size();
-  service.test_url_loader_factory()->AddResponse(service.interception_url(),
-                                                 head, serialized_seed, status);
+  service.test_url_loader_factory()->AddResponse(
+      service.interception_url(), std::move(head), serialized_seed, status);
 
   service.DoActualFetch();
 
@@ -897,14 +897,14 @@ TEST_F(VariationsServiceTest, SafeMode_SuccessfulFetchClearsFailureStreaks) {
       std::string("X-Seed-Signature:") + kBase64SeedSignature;
 
   std::string headers("HTTP/1.1 200 OK\n\n");
-  network::ResourceResponseHead head;
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head.headers->AddHeader(seed_signature_header);
+  head->headers->AddHeader(seed_signature_header);
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = response.size();
-  service.test_url_loader_factory()->AddResponse(service.interception_url(),
-                                                 head, response, status);
+  service.test_url_loader_factory()->AddResponse(
+      service.interception_url(), std::move(head), response, status);
 
   service.DoActualFetch();
 
@@ -927,12 +927,12 @@ TEST_F(VariationsServiceTest, SafeMode_NotModifiedFetchClearsFailureStreaks) {
   service.set_intercepts_fetch(false);
 
   std::string headers("HTTP/1.1 304 Not Modified\n\n");
-  network::ResourceResponseHead head;
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
   network::URLLoaderCompletionStatus status;
   service.test_url_loader_factory()->AddResponse(service.interception_url(),
-                                                 head, "", status);
+                                                 std::move(head), "", status);
 
   service.DoActualFetch();
 
@@ -1037,15 +1037,15 @@ TEST_F(VariationsServiceTest, SeedNotStoredWhenRedirected) {
   net::RedirectInfo redirect_info;
   redirect_info.status_code = 301;
   redirect_info.new_url = service.interception_url();
-  network::TestURLLoaderFactory::Redirects redirects{
-      {redirect_info, network::ResourceResponseHead()}};
+  network::TestURLLoaderFactory::Redirects redirects;
+  redirects.push_back({redirect_info, network::mojom::URLResponseHead::New()});
 
-  network::ResourceResponseHead head =
-      network::CreateResourceResponseHead(net::HTTP_OK);
+  auto head = network::CreateURLResponseHead(net::HTTP_OK);
 
   service.test_url_loader_factory()->AddResponse(
-      service.interception_url(), head, SerializeSeed(CreateTestSeed()),
-      network::URLLoaderCompletionStatus(), redirects);
+      service.interception_url(), std::move(head),
+      SerializeSeed(CreateTestSeed()), network::URLLoaderCompletionStatus(),
+      std::move(redirects));
 
   service.set_intercepts_fetch(false);
   service.DoActualFetch();
@@ -1067,20 +1067,21 @@ TEST_F(VariationsServiceTest, NullResponseReceivedWithHTTPOk) {
       std::string("X-Seed-Signature:") + kBase64SeedSignature;
 
   std::string headers("HTTP/1.1 200 OK\n\n");
-  network::ResourceResponseHead head;
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  auto head = network::mojom::URLResponseHead::New();
+  auto http_response_headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  EXPECT_EQ(net::HTTP_OK, head.headers->response_code());
-  head.headers->AddHeader(seed_signature_header);
+  head->headers = http_response_headers;
+  EXPECT_EQ(net::HTTP_OK, http_response_headers->response_code());
+  http_response_headers->AddHeader(seed_signature_header);
   // Set ERR_FAILED status code despite the 200 response code.
   network::URLLoaderCompletionStatus status(net::ERR_FAILED);
   status.decoded_body_length = response.size();
   service.test_url_loader_factory()->AddResponse(
-      service.interception_url(), head, response, status,
+      service.interception_url(), std::move(head), response, status,
       network::TestURLLoaderFactory::Redirects(),
       // We pass the flag below to preserve the 200 code with an error response.
       network::TestURLLoaderFactory::kSendHeadersOnNetworkError);
-  EXPECT_EQ(net::HTTP_OK, head.headers->response_code());
+  EXPECT_EQ(net::HTTP_OK, http_response_headers->response_code());
 
   base::HistogramTester histogram_tester;
   service.DoActualFetch();

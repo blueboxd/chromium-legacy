@@ -15,9 +15,9 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
 import org.chromium.chrome.browser.toolbar.TabCountProvider.TabCountObserver;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.ui.modelutil.PropertyModel;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import org.chromium.ui.widget.Toast;
 
 /**
  * The controller for the tab switcher button. This class handles all interactions that the tab
@@ -53,7 +53,7 @@ public class TabSwitcherButtonCoordinator {
 
         CharSequence description = root.getResources().getString(R.string.open_tabs);
         mTabSwitcherButtonModel.set(TabSwitcherButtonProperties.ON_LONG_CLICK_LISTENER,
-                v -> AccessibilityUtil.showAccessibilityToast(root.getContext(), v, description));
+                v -> Toast.showAnchoredToast(root.getContext(), v, description));
     }
 
     /**

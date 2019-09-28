@@ -17,11 +17,17 @@
 
 namespace viz {
 
-ImageContextImpl::ImageContextImpl(const gpu::MailboxHolder& mailbox_holder,
-                                   const gfx::Size& size,
-                                   ResourceFormat resource_format,
-                                   sk_sp<SkColorSpace> color_space)
-    : ImageContext(mailbox_holder, size, resource_format, color_space) {}
+ImageContextImpl::ImageContextImpl(
+    const gpu::MailboxHolder& mailbox_holder,
+    const gfx::Size& size,
+    ResourceFormat resource_format,
+    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
+    sk_sp<SkColorSpace> color_space)
+    : ImageContext(mailbox_holder,
+                   size,
+                   resource_format,
+                   ycbcr_info,
+                   color_space) {}
 
 ImageContextImpl::ImageContextImpl(RenderPassId render_pass_id,
                                    const gfx::Size& size,
@@ -31,6 +37,7 @@ ImageContextImpl::ImageContextImpl(RenderPassId render_pass_id,
     : ImageContext(gpu::MailboxHolder(),
                    size,
                    resource_format,
+                   /*ycbcr_info=*/base::nullopt,
                    std::move(color_space)),
       render_pass_id_(render_pass_id),
       mipmap_(mipmap ? GrMipMapped::kYes : GrMipMapped::kNo) {}

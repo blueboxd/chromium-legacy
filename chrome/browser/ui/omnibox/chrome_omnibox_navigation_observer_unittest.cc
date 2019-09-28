@@ -298,13 +298,14 @@ TEST_F(ChromeOmniboxNavigationObserverTest, AlternateNavInfoBar) {
       net::RedirectInfo redir_info;
       redir_info.new_url = GURL(response.urls[dest]);
       redir_info.status_code = net::HTTP_MOVED_PERMANENTLY;
-      network::ResourceResponseHead redir_head =
-          network::CreateResourceResponseHead(net::HTTP_MOVED_PERMANENTLY);
-      redirects.push_back({redir_info, redir_head});
+      auto redir_head =
+          network::CreateURLResponseHead(net::HTTP_MOVED_PERMANENTLY);
+      redirects.push_back({redir_info, std::move(redir_head)});
     }
 
     // Fill in final response.
-    network::ResourceResponseHead http_head;
+    network::mojom::URLResponseHeadPtr http_head =
+        network::mojom::URLResponseHead::New();
     network::URLLoaderCompletionStatus net_status;
     network::TestURLLoaderFactory::ResponseProduceFlags response_flags =
         network::TestURLLoaderFactory::kResponseDefault;
@@ -316,13 +317,13 @@ TEST_F(ChromeOmniboxNavigationObserverTest, AlternateNavInfoBar) {
       net_status = network::URLLoaderCompletionStatus(net::ERR_FAILED);
     } else {
       net_status = network::URLLoaderCompletionStatus(net::OK);
-      http_head = network::CreateResourceResponseHead(
-          static_cast<net::HttpStatusCode>(response.http_response_code));
+      http_head = std::move(network::CreateURLResponseHead(
+          static_cast<net::HttpStatusCode>(response.http_response_code)));
     }
 
-    test_url_loader_factory.AddResponse(GURL(response.urls[0]), http_head,
-                                        response.content, net_status,
-                                        redirects);
+    test_url_loader_factory.AddResponse(GURL(response.urls[0]),
+                                        std::move(http_head), response.content,
+                                        net_status, std::move(redirects));
 
     // Create the alternate nav match and the observer.
     // |observer| gets deleted automatically after all fetchers complete.

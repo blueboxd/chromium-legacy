@@ -248,8 +248,8 @@ TEST_F(AndroidStreamReaderURLLoaderTest, ReadFakeStream) {
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
   EXPECT_EQ("HTTP/1.1 200 OK",
-            client->response_head().headers->GetStatusLine());
-  VerifyHeaderNameAndValue(client->response_head().headers.get(), "Client-Via",
+            client->response_head()->headers->GetStatusLine());
+  VerifyHeaderNameAndValue(client->response_head()->headers.get(), "Client-Via",
                            "shouldInterceptRequest");
 }
 
@@ -276,7 +276,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, ValidRangeRequest) {
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
   EXPECT_EQ("HTTP/1.1 200 OK",
-            client->response_head().headers->GetStatusLine());
+            client->response_head()->headers->GetStatusLine());
 }
 
 TEST_F(AndroidStreamReaderURLLoaderTest, InvalidRangeRequest) {
@@ -304,8 +304,8 @@ TEST_F(AndroidStreamReaderURLLoaderTest, NullInputStream) {
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
   EXPECT_EQ("HTTP/1.1 404 Not Found",
-            client->response_head().headers->GetStatusLine());
-  VerifyHeaderNameAndValue(client->response_head().headers.get(), "Client-Via",
+            client->response_head()->headers->GetStatusLine());
+  VerifyHeaderNameAndValue(client->response_head()->headers.get(), "Client-Via",
                            "shouldInterceptRequest");
 }
 
@@ -321,8 +321,8 @@ TEST_F(AndroidStreamReaderURLLoaderTest, ReadFakeStreamWithBody) {
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
   EXPECT_EQ("HTTP/1.1 200 OK",
-            client->response_head().headers->GetStatusLine());
-  VerifyHeaderNameAndValue(client->response_head().headers.get(), "Client-Via",
+            client->response_head()->headers->GetStatusLine());
+  VerifyHeaderNameAndValue(client->response_head()->headers.get(), "Client-Via",
                            "shouldInterceptRequest");
   std::string body = ReadAvailableBody(client.get());
   EXPECT_EQ(expected_body, body);
@@ -341,7 +341,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest, ReadFakeStreamWithBodyMultipleReads) {
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
   EXPECT_EQ("HTTP/1.1 200 OK",
-            client->response_head().headers->GetStatusLine());
+            client->response_head()->headers->GetStatusLine());
   std::string body = ReadAvailableBody(client.get());
   EXPECT_EQ(expected_body + expected_body, body);
 }
@@ -364,7 +364,7 @@ TEST_F(AndroidStreamReaderURLLoaderTest,
   EXPECT_TRUE(client->has_received_response());
   EXPECT_FALSE(client->has_received_completion());
   EXPECT_EQ("HTTP/1.1 200 OK",
-            client->response_head().headers->GetStatusLine());
+            client->response_head()->headers->GetStatusLine());
   auto response_body = client->response_body_release();
   response_body.reset();
   client->RunUntilComplete();
@@ -389,10 +389,10 @@ TEST_F(AndroidStreamReaderURLLoaderTest, CustomResponseHeaderAndStatus) {
   client->RunUntilComplete();
   EXPECT_EQ(net::OK, client->completion_status().error_code);
   EXPECT_EQ(custom_status_line,
-            client->response_head().headers->GetStatusLine());
-  VerifyHeaderNameAndValue(client->response_head().headers.get(),
+            client->response_head()->headers->GetStatusLine());
+  VerifyHeaderNameAndValue(client->response_head()->headers.get(),
                            custom_header_name, custom_header_value);
-  VerifyHeaderNameAndValue(client->response_head().headers.get(), "Client-Via",
+  VerifyHeaderNameAndValue(client->response_head()->headers.get(), "Client-Via",
                            "shouldInterceptRequest");
 }
 

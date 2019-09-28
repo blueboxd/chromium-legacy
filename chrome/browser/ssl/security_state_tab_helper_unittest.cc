@@ -77,7 +77,7 @@ TEST_F(SecurityStateTabHelperHistogramTest, FormSubmissionHistogram) {
   base::HistogramTester histograms;
   StartFormSubmissionNavigation();
   histograms.ExpectUniqueSample(kFormSubmissionSecurityLevelHistogram,
-                                security_state::HTTP_SHOW_WARNING, 1);
+                                security_state::WARNING, 1);
 }
 
 }  // namespace

@@ -70,11 +70,11 @@ bool LocalCardMigrationIconView::Update() {
       // credit card icon.
       case LocalCardMigrationFlowStep::OFFER_DIALOG: {
         UpdateIconImage();
-        AnimateInkDrop(views::InkDropState::ACTIVATED, /*event=*/nullptr);
+        SetHighlighted(true);
         break;
       }
       case LocalCardMigrationFlowStep::MIGRATION_RESULT_PENDING: {
-        AnimateInkDrop(views::InkDropState::HIDDEN, /*event=*/nullptr);
+        SetHighlighted(false);
         // Disable the credit card icon so it does not update if user clicks
         // on it.
         SetEnabled(false);
@@ -95,6 +95,7 @@ bool LocalCardMigrationIconView::Update() {
         break;
     }
   } else {
+    SetHighlighted(false);
     // Handle corner cases where users navigate away or close the tab.
     UnpauseAnimation();
   }

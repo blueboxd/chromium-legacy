@@ -1545,6 +1545,13 @@ void RenderWidget::RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time) {
     GetWebWidget()->RecordEndOfFrameMetrics(frame_begin_time);
 }
 
+std::unique_ptr<cc::BeginMainFrameMetrics>
+RenderWidget::GetBeginMainFrameMetrics() {
+  if (GetWebWidget())
+    return GetWebWidget()->GetBeginMainFrameMetrics();
+  return nullptr;
+}
+
 void RenderWidget::BeginUpdateLayers() {
   if (GetWebWidget())
     GetWebWidget()->BeginUpdateLayers();

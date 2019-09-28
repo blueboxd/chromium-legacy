@@ -16,8 +16,6 @@ import android.util.TypedValue;
 import android.view.View;
 import android.view.ViewGroup;
 
-import androidx.annotation.DrawableRes;
-
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
@@ -123,20 +121,6 @@ public class ViewUtils {
         region.op(sLocationTmp[0], sLocationTmp[1],
                 sLocationTmp[0] + view.getRight() - view.getLeft(),
                 sLocationTmp[1] + view.getBottom() - view.getTop(), Region.Op.DIFFERENCE);
-    }
-
-    /**
-     * Sets the background of a view to the given 9-patch resource and restores its padding. This
-     * works around a bug in Android where the padding is lost when a 9-patch resource is applied
-     * programmatically.
-     */
-    public static void setNinePatchBackgroundResource(View view, @DrawableRes int resource) {
-        int left = view.getPaddingLeft();
-        int top = view.getPaddingTop();
-        int right = view.getPaddingRight();
-        int bottom = view.getPaddingBottom();
-        view.setBackgroundResource(resource);
-        view.setPadding(left, top, right, bottom);
     }
 
     /**

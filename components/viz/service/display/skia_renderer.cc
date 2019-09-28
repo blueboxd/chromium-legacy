@@ -459,11 +459,6 @@ class SkiaRenderer::ScopedSkImageBuilder {
                        ResourceId resource_id,
                        SkAlphaType alpha_type = kPremul_SkAlphaType,
                        GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin);
-  ScopedSkImageBuilder(SkiaRenderer* skia_renderer,
-                       ResourceId resource_id,
-                       base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info,
-                       SkAlphaType alpha_type = kPremul_SkAlphaType,
-                       GrSurfaceOrigin origin = kTopLeft_GrSurfaceOrigin);
   ~ScopedSkImageBuilder() = default;
 
   const SkImage* sk_image() const { return sk_image_; }
@@ -478,18 +473,6 @@ class SkiaRenderer::ScopedSkImageBuilder {
 SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     SkiaRenderer* skia_renderer,
     ResourceId resource_id,
-    SkAlphaType alpha_type,
-    GrSurfaceOrigin origin)
-    : SkiaRenderer::ScopedSkImageBuilder(skia_renderer,
-                                         resource_id,
-                                         base::nullopt,
-                                         alpha_type,
-                                         origin) {}
-
-SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
-    SkiaRenderer* skia_renderer,
-    ResourceId resource_id,
-    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info,
     SkAlphaType alpha_type,
     GrSurfaceOrigin origin) {
   if (!resource_id)
@@ -510,7 +493,6 @@ SkiaRenderer::ScopedSkImageBuilder::ScopedSkImageBuilder(
     if (!image_context->has_image()) {
       image_context->set_alpha_type(alpha_type);
       image_context->set_origin(origin);
-      image_context->set_ycbcr_info(ycbcr_info);
     }
     skia_renderer->skia_output_surface_->MakePromiseSkImage(image_context);
     LOG_IF(ERROR, !image_context->has_image())
@@ -1312,7 +1294,7 @@ void SkiaRenderer::DrawStreamVideoQuad(const StreamVideoDrawQuad* quad,
                                        DrawQuadParams* params) {
   DCHECK(!MustFlushBatchedQuads(quad, *params));
 
-  ScopedSkImageBuilder builder(this, quad->resource_id(), quad->ycbcr_info,
+  ScopedSkImageBuilder builder(this, quad->resource_id(),
                                kUnpremul_SkAlphaType);
   const SkImage* image = builder.sk_image();
   if (!image)

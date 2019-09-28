@@ -488,15 +488,24 @@ STDMETHODIMP AXPlatformNodeTextRangeProviderWin::GetEnclosingElement(
 
   const AXTreeID tree_id = common_anchor->tree()->GetAXTreeID();
   const AXNode::AXID node_id = common_anchor->id();
-  AXPlatformNodeDelegate* delegate = GetDelegate(tree_id, node_id);
-  DCHECK(delegate);
-  while (ui::IsIgnored(delegate->GetData())) {
+  AXPlatformNodeWin* enclosing_node =
+      static_cast<AXPlatformNodeWin*>(AXPlatformNode::FromNativeViewAccessible(
+          GetDelegate(tree_id, node_id)->GetNativeViewAccessible()));
+  DCHECK(enclosing_node);
+  // If this node has an ancestor that is a control type, use that as the
+  // enclosing element.
+  enclosing_node = enclosing_node->GetLowestAccessibleElement();
+  DCHECK(enclosing_node);
+
+  while (ui::IsIgnored(enclosing_node->GetData())) {
     AXPlatformNodeWin* parent = static_cast<AXPlatformNodeWin*>(
-        AXPlatformNode::FromNativeViewAccessible(delegate->GetParent()));
+        AXPlatformNode::FromNativeViewAccessible(enclosing_node->GetParent()));
     DCHECK(parent);
-    delegate = parent->GetDelegate();
+    enclosing_node = parent;
   }
-  delegate->GetNativeViewAccessible()->QueryInterface(IID_PPV_ARGS(element));
+
+  enclosing_node->GetNativeViewAccessible()->QueryInterface(
+      IID_PPV_ARGS(element));
 
   DCHECK(*element);
   return S_OK;

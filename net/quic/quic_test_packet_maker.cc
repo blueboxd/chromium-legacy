@@ -12,6 +12,7 @@
 #include "net/quic/mock_crypto_client_stream.h"
 #include "net/quic/quic_chromium_client_session.h"
 #include "net/quic/quic_http_utils.h"
+#include "net/third_party/quiche/src/quic/core/crypto/null_encrypter.h"
 #include "net/third_party/quiche/src/quic/core/http/http_constants.h"
 #include "net/third_party/quiche/src/quic/core/quic_framer.h"
 #include "net/third_party/quiche/src/quic/core/quic_utils.h"
@@ -163,6 +164,13 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(uint64_t num,
   quic::QuicFramer framer(quic::test::SupportedVersions(version_),
                           clock_->Now(), perspective_,
                           quic::kQuicDefaultConnectionIdLength);
+  framer.SetInitialObfuscators(perspective_ == quic::Perspective::IS_CLIENT
+                                   ? header_.destination_connection_id
+                                   : header_.source_connection_id);
+  if (encryption_level_ != quic::ENCRYPTION_INITIAL) {
+    framer.SetEncrypter(encryption_level_,
+                        std::make_unique<quic::NullEncrypter>(perspective_));
+  }
   size_t max_plaintext_size =
       framer.GetMaxPlaintextSize(quic::kDefaultMaxPacketSize);
   char buffer[quic::kDefaultMaxPacketSize];
@@ -185,7 +193,7 @@ QuicTestPacketMaker::MakeConnectivityProbingPacket(uint64_t num,
                                             payloads, true, encryption_level_);
   }
   size_t encrypted_size = framer.EncryptInPlace(
-      quic::ENCRYPTION_INITIAL, header_.packet_number,
+      encryption_level_, header_.packet_number,
       GetStartOfEncryptedData(framer.transport_version(), header_), length,
       quic::kDefaultMaxPacketSize, buffer);
   EXPECT_EQ(quic::kDefaultMaxPacketSize, encrypted_size);
@@ -618,6 +626,13 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   quic::QuicFramer framer(quic::test::SupportedVersions(version_),
                           clock_->Now(), perspective_,
                           quic::kQuicDefaultConnectionIdLength);
+  framer.SetInitialObfuscators(perspective_ == quic::Perspective::IS_CLIENT
+                                   ? header_.destination_connection_id
+                                   : header_.source_connection_id);
+  if (encryption_level_ != quic::ENCRYPTION_INITIAL) {
+    framer.SetEncrypter(encryption_level_,
+                        std::make_unique<quic::NullEncrypter>(perspective_));
+  }
   quic::QuicFrames frames;
   quic::QuicFrame ack_frame(&ack);
   frames.push_back(ack_frame);
@@ -638,8 +653,8 @@ std::unique_ptr<quic::QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
       quic::test::BuildUnsizedDataPacket(&framer, header_, frames));
   char buffer[quic::kMaxOutgoingPacketSize];
   size_t encrypted_size =
-      framer.EncryptPayload(quic::ENCRYPTION_INITIAL, header_.packet_number,
-                            *packet, buffer, quic::kMaxOutgoingPacketSize);
+      framer.EncryptPayload(encryption_level_, header_.packet_number, *packet,
+                            buffer, quic::kMaxOutgoingPacketSize);
   EXPECT_NE(0u, encrypted_size);
   quic::QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(),
                                      false);
@@ -1086,6 +1101,13 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
   quic::QuicFramer framer(quic::test::SupportedVersions(version_),
                           clock_->Now(), perspective_,
                           quic::kQuicDefaultConnectionIdLength);
+  framer.SetInitialObfuscators(perspective_ == quic::Perspective::IS_CLIENT
+                                   ? header_.destination_connection_id
+                                   : header_.source_connection_id);
+  if (encryption_level_ != quic::ENCRYPTION_INITIAL) {
+    framer.SetEncrypter(encryption_level_,
+                        std::make_unique<quic::NullEncrypter>(perspective_));
+  }
   if (data_producer != nullptr) {
     framer.set_data_producer(data_producer);
   }
@@ -1117,8 +1139,8 @@ QuicTestPacketMaker::MakeMultipleFramesPacket(
       &framer, header, frames_copy, max_plaintext_size));
   char buffer[quic::kMaxOutgoingPacketSize];
   size_t encrypted_size =
-      framer.EncryptPayload(quic::ENCRYPTION_INITIAL, header.packet_number,
-                            *packet, buffer, quic::kMaxOutgoingPacketSize);
+      framer.EncryptPayload(encryption_level_, header.packet_number, *packet,
+                            buffer, quic::kMaxOutgoingPacketSize);
   EXPECT_NE(0u, encrypted_size);
   quic::QuicReceivedPacket encrypted(buffer, encrypted_size, clock_->Now(),
                                      false);

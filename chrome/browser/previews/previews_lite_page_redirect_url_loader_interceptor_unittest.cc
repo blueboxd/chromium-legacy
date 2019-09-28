@@ -87,7 +87,7 @@ class PreviewsLitePageRedirectURLLoaderInterceptorTest : public testing::Test {
                        net::HttpStatusCode code,
                        int net_error) {
     test_url_loader_factory_.AddResponse(
-        url, network::CreateResourceResponseHead(code), data,
+        url, network::CreateURLResponseHead(code), data,
         network::URLLoaderCompletionStatus(net_error));
   }
 
@@ -95,7 +95,7 @@ class PreviewsLitePageRedirectURLLoaderInterceptorTest : public testing::Test {
                         net::HttpStatusCode code,
                         int net_error) {
     test_url_loader_factory_.AddResponse(
-        url, network::CreateResourceResponseHead(code), "data",
+        url, network::CreateURLResponseHead(code), "data",
         network::URLLoaderCompletionStatus(net_error));
   }
 

@@ -64,8 +64,6 @@
 #include "third_party/blink/renderer/platform/wtf/wtf_size_t.h"
 #include "third_party/skia/include/core/SkMatrix44.h"
 
-using blink::WebLocalizedString;
-
 namespace blink {
 
 using namespace html_names;

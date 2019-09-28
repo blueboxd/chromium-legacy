@@ -69,7 +69,7 @@ void StubURLChecker::SetUpResponse(net::Error error,
   network::URLLoaderCompletionStatus status(error);
   status.decoded_body_length = response.size();
   test_url_loader_factory_.AddResponse(GURL(kSafeSearchApiUrl),
-                                       network::ResourceResponseHead(),
+                                       network::mojom::URLResponseHead::New(),
                                        response, status);
 }
 

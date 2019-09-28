@@ -3105,11 +3105,21 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
   if (!widget_host_view)
     return;
 
-  RenderWidgetHostView* view = nullptr;
-  if (GetOuterWebContents()) {
-    view = GetOuterWebContents()->GetRenderWidgetHostView();
-  } else {
-    view = GetRenderWidgetHostView();
+  // GetOutermostWebContents() returns |this| if there are no outer WebContents.
+  RenderWidgetHostView* view =
+      GetOutermostWebContents()->GetRenderWidgetHostView();
+
+  gfx::Rect transformed_rect(initial_rect);
+  RenderWidgetHostView* this_view = GetRenderWidgetHostView();
+  if (this_view != view) {
+    // We need to transform the coordinates of initial_rect.
+    gfx::Point origin =
+        this_view->TransformPointToRootCoordSpace(initial_rect.origin());
+    gfx::Point bottom_right =
+        this_view->TransformPointToRootCoordSpace(initial_rect.bottom_right());
+    transformed_rect =
+        gfx::Rect(origin.x(), origin.y(), bottom_right.x() - origin.x(),
+                  bottom_right.y() - origin.y());
   }
 
   // Fullscreen child widgets are frames, other child widgets are popups.
@@ -3131,7 +3141,7 @@ void WebContentsImpl::ShowCreatedWidget(int process_id,
     if (!widget_host_view->HasFocus())
       widget_host_view->Focus();
   } else {
-    widget_host_view->InitAsPopup(view, initial_rect);
+    widget_host_view->InitAsPopup(view, transformed_rect);
   }
 
   RenderWidgetHostImpl* render_widget_host_impl = widget_host_view->host();

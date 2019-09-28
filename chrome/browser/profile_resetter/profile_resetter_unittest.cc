@@ -754,7 +754,7 @@ TEST_F(ProfileResetterTest, ResetFewFlags) {
 TEST_F(ConfigParserTest, NoConnectivity) {
   const GURL url("http://test");
   test_url_loader_factory().AddResponse(
-      url, network::ResourceResponseHead(), "",
+      url, network::mojom::URLResponseHead::New(), "",
       network::URLLoaderCompletionStatus(net::HTTP_INTERNAL_SERVER_ERROR));
 
   std::unique_ptr<BrandcodeConfigFetcher> fetcher = WaitForRequest(GURL(url));
@@ -769,14 +769,15 @@ TEST_F(ConfigParserTest, ParseConfig) {
   ReplaceString(&xml_config,
                 "placeholder_for_id",
                 "abbaabbaabbaabbaabbaabbaabbaabba");
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string headers("HTTP/1.1 200 OK\nContent-type: text/xml\n\n");
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head.mime_type = "text/xml";
+  head->mime_type = "text/xml";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = xml_config.size();
-  test_url_loader_factory().AddResponse(url, head, xml_config, status);
+  test_url_loader_factory().AddResponse(url, std::move(head), xml_config,
+                                        status);
 
   std::unique_ptr<BrandcodeConfigFetcher> fetcher = WaitForRequest(GURL(url));
   std::unique_ptr<BrandcodedDefaultSettings> settings = fetcher->GetSettings();

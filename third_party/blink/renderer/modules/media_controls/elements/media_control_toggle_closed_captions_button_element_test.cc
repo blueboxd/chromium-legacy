@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/modules/media_controls/elements/media_control_toggle_closed_captions_button_element.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/testing/page_test_base.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_impl.h"
@@ -21,7 +22,7 @@ const char kEnglishLabel[] = "English";
 class LocalePlatformSupport : public TestingPlatformSupport {
  public:
   WebString QueryLocalizedString(int resource_id) override {
-    if (resource_id == WebLocalizedString::kTextTracksOff)
+    if (resource_id == IDS_MEDIA_TRACKS_OFF)
       return kTextTracksOffString;
     return TestingPlatformSupport::QueryLocalizedString(resource_id);
   }

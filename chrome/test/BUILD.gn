@@ -5204,11 +5204,6 @@ test("unit_tests") {
   if (enable_openscreen) {
     include_dirs = [ "//third_party/openscreen/src" ]
 
-    deps += [
-      "//third_party/openscreen/src/platform:platform_unittests",
-      "//third_party/openscreen/src/platform:test",
-    ]
-
     sources += [
       "../browser/media/router/providers/openscreen/discovery/open_screen_listener_unittest.cc",
       "../browser/media/router/providers/openscreen/network_service_quic_packet_writer_unittest.cc",

@@ -6,6 +6,7 @@
 #define UI_COMPOSITOR_COMPOSITOR_OBSERVER_H_
 
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "ui/compositor/compositor_export.h"
 
 namespace gfx {
@@ -41,11 +42,11 @@ class COMPOSITOR_EXPORT CompositorObserver {
   // Called when a child of the compositor is resizing.
   virtual void OnCompositingChildResizing(Compositor* compositor) {}
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // Called when a swap with new size is completed.
   virtual void OnCompositingCompleteSwapWithNewSize(ui::Compositor* compositor,
                                                     const gfx::Size& size) {}
-#endif
+#endif  // defined(OS_LINUX)
 
   // Called at the top of the compositor's destructor, to give observers a
   // chance to remove themselves.

@@ -92,7 +92,7 @@ class AppShimHost : public chrome::mojom::AppShimHost {
   // Return the app shim interface.
   chrome::mojom::AppShim* GetAppShim() const;
 
- private:
+ protected:
   void ChannelError(uint32_t custom_reason, const std::string& description);
 
   // Helper function to launch the app shim process.

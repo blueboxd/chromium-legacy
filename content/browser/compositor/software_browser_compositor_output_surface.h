@@ -39,7 +39,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   gfx::BufferFormat GetOverlayBufferFormat() const override;
   uint32_t GetFramebufferCopyTextureFormat() override;
   unsigned UpdateGpuFence() override;
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void SetNeedsSwapSizeNotifications(
       bool needs_swap_size_notifications) override;
 #endif
@@ -55,7 +55,7 @@ class CONTENT_EXPORT SoftwareBrowserCompositorOutputSurface
   base::TimeDelta refresh_interval_;
   ui::LatencyTracker latency_tracker_;
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   bool needs_swap_size_notifications_ = false;
 #endif
 

@@ -33,6 +33,7 @@
 #include "cc/base/switches.h"
 #include "cc/input/input_handler.h"
 #include "cc/layers/layer.h"
+#include "cc/metrics/begin_main_frame_metrics.h"
 #include "cc/mojo_embedder/async_layer_tree_frame_sink.h"
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/layer_tree_host.h"
@@ -699,6 +700,11 @@ void CompositorImpl::DidLoseLayerTreeFrameSink() {
 
 void CompositorImpl::DidCommit() {
   root_window_->OnCompositingDidCommit();
+}
+
+std::unique_ptr<cc::BeginMainFrameMetrics>
+CompositorImpl::GetBeginMainFrameMetrics() {
+  return nullptr;
 }
 
 void CompositorImpl::AttachLayerForReadback(scoped_refptr<cc::Layer> layer) {

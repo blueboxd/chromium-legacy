@@ -76,6 +76,10 @@ size_t MockDecrypter::GetKeySize() const {
   return 0;
 }
 
+size_t MockDecrypter::GetNoncePrefixSize() const {
+  return 0;
+}
+
 size_t MockDecrypter::GetIVSize() const {
   return 0;
 }

@@ -39,6 +39,15 @@ class GFX_EXPORT PlatformFont : public base::RefCounted<PlatformFont> {
   static PlatformFont* CreateFromNameAndSize(const std::string& font_name,
                                              int font_size);
 
+  // Creates a PlatformFont instance from the provided SkTypeface, ideally by
+  // just wrapping it without triggering a new font match. Implemented for
+  // PlatformFontWin and PlatformFontSkia, where only the latter provides true
+  // wrapping of the provided SkTypeface, while PlatformFontWin creates a
+  // PlatformFont object by extracting the family name and falls back to
+  // CreateFromNameAndSize().
+  static PlatformFont* CreateFromSkTypeface(sk_sp<SkTypeface> typeface,
+                                            int size);
+
   // Returns a new Font derived from the existing font.
   // |size_delta| is the size in pixels to add to the current font.
   // The style parameter specifies the new style for the font, and is a

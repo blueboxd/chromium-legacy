@@ -74,6 +74,10 @@ class CertBuilder {
   // Sets the SAN for the certificate to a single dNSName.
   void SetSubjectAltName(const std::string& dns_name);
 
+  // Sets the certificatePolicies extension with the specified policyIdentifier
+  // OIDs, which must be specified in dotted string notation (e.g. "1.2.3.4").
+  void SetCertificatePolicies(const std::vector<std::string>& policy_oids);
+
   void SetValidity(base::Time not_before, base::Time not_after);
 
   // Sets the signature algorithm for the certificate to either

@@ -1415,6 +1415,9 @@ extern const char kChromeDuetDescription[];
 extern const char kChromeDuetLabelsName[];
 extern const char kChromeDuetLabelsDescription[];
 
+extern const char kChromeSharingHubName[];
+extern const char kChromeSharingHubDescription[];
+
 extern const char kClearOldBrowsingDataName[];
 extern const char kClearOldBrowsingDataDescription[];
 
@@ -1676,9 +1679,6 @@ extern const char kGridLayoutForNtpShortcutsDescription[];
 extern const char kNtpCustomizationMenuV2Name[];
 extern const char kNtpCustomizationMenuV2Description[];
 
-extern const char kNtpDisableInitialMostVisitedFadeInName[];
-extern const char kNtpDisableInitialMostVisitedFadeInDescription[];
-
 extern const char kNtpDismissPromosName[];
 extern const char kNtpDismissPromosDescription[];
 
@@ -1742,9 +1742,6 @@ extern const char kOmniboxTabSwitchSuggestionsDescription[];
 
 extern const char kOmniboxTabSwitchSuggestionsDedicatedRowName[];
 extern const char kOmniboxTabSwitchSuggestionsDedicatedRowDescription[];
-
-extern const char kOmniboxWrapPopupPositionName[];
-extern const char kOmniboxWrapPopupPositionDescription[];
 
 extern const char kProactiveTabFreezeAndDiscardName[];
 extern const char kProactiveTabFreezeAndDiscardDescription[];
@@ -2012,6 +2009,9 @@ extern const char kEnableGoogleAssistantDspDescription[];
 
 extern const char kEnableGoogleAssistantStereoInputName[];
 extern const char kEnableGoogleAssistantStereoInputDescription[];
+
+extern const char kEnableGoogleAssistantAecName[];
+extern const char kEnableGoogleAssistantAecDescription[];
 
 extern const char kEnableHeuristicStylusPalmRejectionName[];
 extern const char kEnableHeuristicStylusPalmRejectionDescription[];

@@ -44,6 +44,7 @@ class FileHandlerManager : public AppRegistrarObserver {
   // AppRegistrarObserver:
   void OnWebAppInstalled(const AppId& app_id) override;
   void OnWebAppUninstalled(const AppId& app_id) override;
+  void OnWebAppProfileWillBeDeleted(const AppId& app_id) override;
   void OnAppRegistrarDestroyed() override;
 
   ScopedObserver<AppRegistrar, AppRegistrarObserver> registrar_observer_;

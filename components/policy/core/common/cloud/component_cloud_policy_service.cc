@@ -285,14 +285,11 @@ ComponentCloudPolicyService::ComponentCloudPolicyService(
          policy_type == dm_protocol::kChromeSigninExtensionPolicyType);
   CHECK(!core_->client());
 
-  external_policy_data_fetcher_backend_.reset(
-      new ExternalPolicyDataFetcherBackend(client->GetURLLoaderFactory()));
-
   backend_.reset(
       new Backend(weak_ptr_factory_.GetWeakPtr(), backend_task_runner_,
                   base::ThreadTaskRunnerHandle::Get(), std::move(cache),
-                  external_policy_data_fetcher_backend_->CreateFrontend(
-                      backend_task_runner_),
+                  std::make_unique<ExternalPolicyDataFetcher>(
+                      client->GetURLLoaderFactory(), backend_task_runner_),
                   policy_type, policy_source));
 
   // Observe the schema registry for keeping |current_schema_map_| up to date.

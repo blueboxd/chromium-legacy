@@ -501,8 +501,6 @@ const BluetoothRemoteGattService* FidoBleConnection::GetFidoService() {
     // and a caBLE device.
     if (service->GetUUID() == BluetoothUUID(kFidoServiceUUID) ||
         service->GetUUID() == BluetoothUUID(kCableAdvertisementUUID128)) {
-      FIDO_LOG(EVENT) << "Found caBLE service UUID: "
-                      << service->GetUUID().value();
       return service;
     }
   }

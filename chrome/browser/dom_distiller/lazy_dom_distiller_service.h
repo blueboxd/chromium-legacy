@@ -57,8 +57,6 @@ class LazyDomDistillerService : public DomDistillerServiceInterface,
       const gfx::Size& render_view_size) override;
   std::unique_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
       std::unique_ptr<SourcePageHandle> handle) override;
-  void AddObserver(DomDistillerObserver* observer) override;
-  void RemoveObserver(DomDistillerObserver* observer) override;
   DistilledPagePrefs* GetDistilledPagePrefs() override;
 
  private:

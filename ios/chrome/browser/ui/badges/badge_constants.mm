@@ -19,3 +19,6 @@ NSString* const kBadgeButtonIncognitoAccessibilityIdentifier =
 
 NSString* const kBadgeButtonOverflowAccessibilityIdentifier =
     @"badgeButtonOverflowAXID";
+
+NSString* const kBadgePopupMenuTableViewAccessibilityIdentifier =
+    @"badgePopupMenuOverflowAXID";

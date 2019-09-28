@@ -242,13 +242,18 @@ test("jpeg_decode_accelerator_unittest") {
     deps += [
       "//media/gpu/vaapi",
       "//media/gpu/vaapi:jpeg_decoder_unit_test",
-
-      # TODO(crbug.com/986074): we should move this to its own executable, but
-      # this would imply creating a new Tast wrapper in Chrome OS. So, for
-      # convenience, we make the WebP tests run with the
-      # jpeg_decode_accelerator_unittest binary.
-      "//media/gpu/vaapi:webp_decoder_unit_test",
     ]
+
+    # TODO(crbug.com/1008962): Build this on component builds as well.
+    if (!is_component_build) {
+      deps += [
+        # TODO(crbug.com/986074): we should move this to its own executable, but
+        # this would imply creating a new Tast wrapper in Chrome OS. So, for
+        # convenience, we make the WebP tests run with the
+        # jpeg_decode_accelerator_unittest binary.
+        "//media/gpu/vaapi:webp_decoder_unit_test",
+      ]
+    }
 
     data += [ "//media/test/data/pixel-1280x720.jpg" ]
   }

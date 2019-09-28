@@ -36,8 +36,8 @@
 #include "content/public/common/service_names.mojom.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/mock_render_thread.h"
-#include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 #include "net/base/net_errors.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -2683,8 +2683,9 @@ class FakeOfflinePageAutoFetcher
 
   void CancelSchedule() override { cancel_calls_++; }
 
-  void AddBinding(chrome::mojom::OfflinePageAutoFetcherRequest request) {
-    bindings_.AddBinding(this, std::move(request));
+  void AddReceiver(
+      mojo::PendingReceiver<chrome::mojom::OfflinePageAutoFetcher> receiver) {
+    receivers_.Add(this, std::move(receiver));
   }
 
   int cancel_calls() const { return cancel_calls_; }
@@ -2695,7 +2696,7 @@ class FakeOfflinePageAutoFetcher
   }
 
  private:
-  mojo::BindingSet<chrome::mojom::OfflinePageAutoFetcher> bindings_;
+  mojo::ReceiverSet<chrome::mojom::OfflinePageAutoFetcher> receivers_;
   int cancel_calls_ = 0;
   std::vector<TryScheduleParameters> try_schedule_calls_;
 
@@ -2706,17 +2707,19 @@ class FakeOfflinePageAutoFetcher
 class TestPageAutoFetcherHelper : public PageAutoFetcherHelper {
  public:
   explicit TestPageAutoFetcherHelper(
-      base::RepeatingCallback<chrome::mojom::OfflinePageAutoFetcherPtr()>
-          binder)
+      base::RepeatingCallback<
+          mojo::PendingRemote<chrome::mojom::OfflinePageAutoFetcher>()> binder)
       : PageAutoFetcherHelper(nullptr), binder_(binder) {}
   bool Bind() override {
     if (!fetcher_)
-      fetcher_ = binder_.Run();
+      fetcher_.Bind(binder_.Run());
     return true;
   }
 
  private:
-  base::RepeatingCallback<chrome::mojom::OfflinePageAutoFetcherPtr()> binder_;
+  base::RepeatingCallback<
+      mojo::PendingRemote<chrome::mojom::OfflinePageAutoFetcher>()>
+      binder_;
 };
 
 // Provides set up for testing the 'auto fetch on dino' feature.
@@ -2725,9 +2728,10 @@ class NetErrorHelperCoreAutoFetchTest : public NetErrorHelperCoreTest {
   void SetUp() override {
     NetErrorHelperCoreTest::SetUp();
     auto binder = base::BindLambdaForTesting([&]() {
-      chrome::mojom::OfflinePageAutoFetcherPtr fetcher_ptr;
-      fake_fetcher_.AddBinding(mojo::MakeRequest(&fetcher_ptr));
-      return fetcher_ptr;
+      mojo::PendingRemote<chrome::mojom::OfflinePageAutoFetcher> fetcher_remote;
+      fake_fetcher_.AddReceiver(
+          fetcher_remote.InitWithNewPipeAndPassReceiver());
+      return fetcher_remote;
     });
 
     core()->SetPageAutoFetcherHelperForTesting(

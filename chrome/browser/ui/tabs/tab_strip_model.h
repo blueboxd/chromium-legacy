@@ -68,6 +68,9 @@ class WebContents;
 // the View, and the Browser object likewise implements to be able to update
 // its bookkeeping when such events happen.
 //
+// This implementation of TabStripModel is not thread-safe and should only be
+// accessed on the UI thread.
+//
 ////////////////////////////////////////////////////////////////////////////////
 class TabStripModel {
  public:

@@ -17993,6 +17993,32 @@
 
       See https://www.chromestatus.com/feature/4664843055398912 .''',
     },
+    {
+      'name': 'TotalMemoryLimitMb',
+      'owners': ['catan-team@chromium.org'],
+      'type': 'int',
+      'schema': {
+        'type': 'integer',
+        'minimum': 2048,
+      },
+      'supported_on': ['chrome.win:79-', 'chrome.mac:79-'],
+      'future': True,
+      'features': {
+        'dynamic_refresh': True,
+        'per_profile': False,
+      },
+      'example_value': 2048,
+      'id': 616,
+      'caption': '''Set limit on megabytes of memory a single Chrome instance can use.''',
+      'tags': [],
+      'desc': '''Configures the amount of memory that a single <ph name="PRODUCT_NAME">$1<ex>Google Chrome</ex></ph> instance can use before tabs start being discarded (I.E. the memory used by the tab will be freed and the tab will have to be reloaded when switched to) to save memory.
+
+      If the policy is set, browser will begin to discard tabs to save memory once the limitation is exceeded. However, there is no guarantee that the browser is always running under the limit. Any value under 2048 will be rounded up to 2048.
+
+      If this policy is not set, the browser will only begin attempts to save memory once it has detected that the amount of physical memory on its machine is low.''',
+
+      'label': '''Set memory limit for Chrome instances''',
+    }
   ],
 
   'messages': {
@@ -18801,6 +18827,6 @@ The recommended way to configure policy on Windows is via GPO, although provisio
   ],
   'placeholders': [],
   'deleted_policy_ids': [412, 546, 562, 569],
-  'highest_id_currently_used': 615,
+  'highest_id_currently_used': 616,
   'highest_atomic_group_id_currently_used': 37
 }

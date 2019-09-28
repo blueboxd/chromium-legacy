@@ -180,7 +180,7 @@ TEST_F(ExternalFileURLLoaderFactoryTest, RegularFile) {
   client.RunUntilComplete();
 
   ASSERT_EQ(net::OK, client.completion_status().error_code);
-  EXPECT_EQ("text/plain", client.response_head().mime_type);
+  EXPECT_EQ("text/plain", client.response_head()->mime_type);
   std::string response_body;
   ASSERT_TRUE(mojo::BlockingCopyToString(client.response_body_release(),
                                          &response_body));

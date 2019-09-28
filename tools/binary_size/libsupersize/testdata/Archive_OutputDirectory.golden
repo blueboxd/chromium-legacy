@@ -1,4 +1,4 @@
-Section .text: has 0.2% of 83792 bytes accounted for from 16 symbols. 35816920 bytes are unaccounted for.
+Section .text: has 0.2% of 83792 bytes accounted for from 16 symbols. 35898456 bytes are unaccounted for.
 * Padding accounts for 13808 bytes (16.5%)
 * 14 have source paths. Accounts for 74034 bytes (88.4%).
 * 14 have a component assigned. Accounts for 74034 bytes (88.4%).

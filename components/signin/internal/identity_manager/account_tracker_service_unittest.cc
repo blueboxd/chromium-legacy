@@ -379,7 +379,7 @@ void AccountTrackerServiceTest::ReturnFetchResults(
   while (GetTestURLLoaderFactory()->IsPending(url.spec())) {
     GetTestURLLoaderFactory()->SimulateResponseForPendingRequest(
         url, network::URLLoaderCompletionStatus(net::OK),
-        network::CreateResourceResponseHead(response_code), response_string,
+        network::CreateURLResponseHead(response_code), response_string,
         network::TestURLLoaderFactory::kMostRecentMatch);
   }
 }

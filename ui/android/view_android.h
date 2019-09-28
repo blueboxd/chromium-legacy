@@ -163,7 +163,7 @@ class UI_ANDROID_EXPORT ViewAndroid {
   void OnBottomControlsChanged(float bottom_controls_offset,
                                float bottom_content_offset);
 
-  // Gets the Visual Viewport inset to apply.
+  // Gets the Visual Viewport inset to apply in physical pixels.
   int GetViewportInsetBottom();
 
   ScopedAnchorView AcquireAnchorView();

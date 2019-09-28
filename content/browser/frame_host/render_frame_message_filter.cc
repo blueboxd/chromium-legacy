@@ -107,12 +107,8 @@ void CreateChildFrameOnUI(
   }
 }
 
-// |blob_data_handle| is only here for the legacy code path. With network
-// service enabled |blob_url_token| should be provided and will be used instead
-// to download the correct blob.
 void DownloadUrlOnUIThread(
     std::unique_ptr<download::DownloadUrlParameters> parameters,
-    std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
     mojo::PendingRemote<blink::mojom::BlobURLToken> blob_url_token) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
@@ -134,7 +130,6 @@ void DownloadUrlOnUIThread(
       BrowserContext::GetDownloadManager(browser_context);
   parameters->set_download_source(download::DownloadSource::FROM_RENDERER);
   download_manager->DownloadUrl(std::move(parameters),
-                                std::move(blob_data_handle),
                                 std::move(blob_url_loader_factory));
 }
 
@@ -360,24 +355,9 @@ void RenderFrameMessageFilter::DownloadUrl(
       Referrer::ReferrerPolicyForUrlRequest(referrer.policy));
   parameters->set_initiator(initiator);
 
-  // If network service is enabled we should always have a |blob_url_token|,
-  // which will be used to download the correct blob. But in the legacy
-  // non-network service code path we still need to look up the BlobDataHandle
-  // for the URL here, to make sure the correct blob ends up getting downloaded.
-  std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
-  if (url.SchemeIsBlob()) {
-    ChromeBlobStorageContext* blob_context =
-        GetChromeBlobStorageContextForResourceContext(resource_context_);
-
-    blob_data_handle = blob_context->context()->GetBlobDataFromPublicURL(url);
-    // Don't care if the above fails. We are going to let the download go
-    // through and allow it to be interrupted so that the embedder can deal.
-  }
-
-  base::PostTask(
-      FROM_HERE, {BrowserThread::UI},
-      base::BindOnce(&DownloadUrlOnUIThread, std::move(parameters),
-                     std::move(blob_data_handle), std::move(blob_url_token)));
+  base::PostTask(FROM_HERE, {BrowserThread::UI},
+                 base::BindOnce(&DownloadUrlOnUIThread, std::move(parameters),
+                                std::move(blob_url_token)));
 }
 
 void RenderFrameMessageFilter::OnCreateChildFrame(

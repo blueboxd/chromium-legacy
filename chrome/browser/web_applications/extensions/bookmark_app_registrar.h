@@ -46,6 +46,9 @@ class BookmarkAppRegistrar : public web_app::AppRegistrar,
   void OnExtensionUninstalled(content::BrowserContext* browser_context,
                               const Extension* extension,
                               UninstallReason reason) override;
+  void OnExtensionUnloaded(content::BrowserContext* browser_context,
+                           const Extension* extension,
+                           UnloadedExtensionReason reason) override;
   void OnShutdown(ExtensionRegistry* registry) override;
 
  private:

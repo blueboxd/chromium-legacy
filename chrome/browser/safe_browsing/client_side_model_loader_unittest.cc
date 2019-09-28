@@ -97,7 +97,7 @@ class ModelLoaderTest : public testing::Test {
     if (net_error != net::OK) {
       network::URLLoaderCompletionStatus status;
       test_url_loader_factory_.AddResponse(
-          model_url_, network::ResourceResponseHead(), std::string(),
+          model_url_, network::mojom::URLResponseHead::New(), std::string(),
           network::URLLoaderCompletionStatus(net_error));
       return;
     }

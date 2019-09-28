@@ -374,6 +374,16 @@ mojo::PendingRemote<mojom::blink::Blob> BlobDataHandle::CloneBlobRemote() {
   return blob_clone;
 }
 
+void BlobDataHandle::CloneBlobRemote(
+    mojo::PendingReceiver<mojom::blink::Blob> receiver) {
+  MutexLocker locker(blob_remote_mutex_);
+  if (!blob_remote_.is_valid())
+    return;
+  mojo::Remote<mojom::blink::Blob> blob(std::move(blob_remote_));
+  blob->Clone(std::move(receiver));
+  blob_remote_ = blob.Unbind();
+}
+
 mojo::PendingRemote<network::mojom::blink::DataPipeGetter>
 BlobDataHandle::AsDataPipeGetter() {
   MutexLocker locker(blob_remote_mutex_);

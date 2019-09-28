@@ -525,6 +525,15 @@ bool CertPathBuilder::Result::HasValidPath() const {
   return GetBestValidPath() != nullptr;
 }
 
+bool CertPathBuilder::Result::AnyPathContainsError(CertErrorId error_id) const {
+  for (const auto& path : paths) {
+    if (path->errors.ContainsError(error_id))
+      return true;
+  }
+
+  return false;
+}
+
 const CertPathBuilderResultPath* CertPathBuilder::Result::GetBestValidPath()
     const {
   const CertPathBuilderResultPath* result_path = GetBestPathPossiblyInvalid();

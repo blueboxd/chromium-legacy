@@ -217,6 +217,13 @@ void ProxyMain::BeginMainFrame(
   }
 
   layer_tree_host_->WillBeginMainFrame();
+
+  // This call winds through to the LocalFrameView to mark the beginning
+  // of a main frame for metrics purposes. Some metrics are only gathered
+  // between calls to RecordStartOfFrameMetrics and RecordEndOfFrameMetrics.
+  // This is not wrapped into layer_tree_host_->WillBeginMainFrame because
+  // it should only be called from the multi-threaded proxy (we do not want
+  // metrics gathering in tests).
   layer_tree_host_->RecordStartOfFrameMetrics();
 
   // See LayerTreeHostClient::BeginMainFrame for more documentation on
@@ -236,7 +243,7 @@ void ProxyMain::BeginMainFrame(
 
   // See LayerTreeHostClient::MainFrameUpdate for more documentation on
   // what this does.
-  layer_tree_host_->RequestMainFrameUpdate();
+  layer_tree_host_->RequestMainFrameUpdate(true /* report_cc_metrics */);
 
   // At this point the main frame may have deferred main frame updates to
   // avoid committing right now, or we may be deferring commits but not

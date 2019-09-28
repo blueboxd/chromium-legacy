@@ -876,7 +876,7 @@ void BrowserView::OnActiveTabChanged(content::WebContents* old_contents,
   infobar_container_->ChangeInfoBarManager(
       InfoBarService::FromWebContents(new_contents));
 
-  ObserveAppBannerManager(
+  OnAppBannerManagerChanged(
       banners::AppBannerManager::FromWebContents(new_contents));
 
   UpdateUIForContents(new_contents);
@@ -933,7 +933,7 @@ void BrowserView::OnTabDetached(content::WebContents* contents,
     web_contents_close_handler_->ActiveTabChanged();
     contents_web_view_->SetWebContents(nullptr);
     infobar_container_->ChangeInfoBarManager(nullptr);
-    ObserveAppBannerManager(nullptr);
+    app_banner_manager_observer_.RemoveAll();
     UpdateDevToolsForContents(nullptr, true);
   }
 }
@@ -3250,6 +3250,12 @@ void BrowserView::OnImmersiveModeControllerDestroyed() {
 
 ///////////////////////////////////////////////////////////////////////////////
 // BrowserView, banners::AppBannerManager::Observer implementation:
+void BrowserView::OnAppBannerManagerChanged(
+    banners::AppBannerManager* new_manager) {
+  app_banner_manager_observer_.RemoveAll();
+  app_banner_manager_observer_.Add(new_manager);
+}
+
 void BrowserView::OnInstallableWebAppStatusUpdated() {
   UpdatePageActionIcon(PageActionIconType::kPwaInstall);
 }

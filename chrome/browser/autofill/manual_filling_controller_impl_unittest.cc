@@ -70,7 +70,6 @@ class ManualFillingControllerTest : public testing::Test {
     ManualFillingControllerImpl::CreateForWebContentsForTesting(
         web_contents(), favicon_service(), mock_pwd_controller_.AsWeakPtr(),
         mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
-        touch_to_fill_controller_.AsWeakPtr(),
         std::make_unique<NiceMock<MockManualFillingView>>());
   }
 
@@ -112,7 +111,6 @@ class ManualFillingControllerTest : public testing::Test {
   NiceMock<MockPasswordAccessoryController> mock_pwd_controller_;
   NiceMock<MockAddressAccessoryController> mock_address_controller_;
   NiceMock<MockCreditCardAccessoryController> mock_cc_controller_;
-  TouchToFillController touch_to_fill_controller_{web_contents_};
 
   std::unique_ptr<StrictMock<favicon::MockFaviconService>>
       mock_favicon_service_ =

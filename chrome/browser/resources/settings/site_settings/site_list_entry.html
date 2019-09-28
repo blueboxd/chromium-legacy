@@ -36,16 +36,17 @@
         <site-favicon url="[[model.origin]]"></site-favicon>
         <div class="middle no-min-width">
           <div class="text-elide">
-            <span class="url-directionality">[[model.displayName]]</span>
+            <span class="url-directionality">[[computeDisplayName_(model)]]
+            </span>
           </div>
 
           <!-- This div must not contain extra whitespace. -->
           <div class="secondary text-elide"
-              id="siteDescription">[[siteDescription_]]</div>
+              id="siteDescription">[[computeSiteDescription_(model)]]</div>
         </div>
         <template is="dom-if" if="[[allowNavigateToSiteDetail_]]">
           <cr-icon-button class="subpage-arrow"
-              aria-label$="[[model.displayName]]"
+              aria-label$="[[computeDisplayName_(model)]]"
               aria-describedby="siteDescription" focus-row-control
               focus-type="site-details"></cr-icon-button>
           <div class="separator"></div>

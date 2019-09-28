@@ -1451,6 +1451,51 @@ TEST_P(AppListPresenterDelegateTest,
   GetAppListTestHelper()->CheckVisibility(false);
 }
 
+// Tests that drag using a mouse does not always close the app list if the app
+// list was previously closed using a fling gesture.
+TEST_P(AppListPresenterDelegateTest, MouseDragAfterDownwardFliing) {
+  const bool test_fullscreen = GetParam();
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+
+  app_list::AppListView* view = GetAppListView();
+  const gfx::Point expand_arrow_point = view->app_list_main_view()
+                                            ->contents_view()
+                                            ->expand_arrow_view()
+                                            ->GetBoundsInScreen()
+                                            .CenterPoint();
+
+  if (test_fullscreen)
+    GetEventGenerator()->GestureTapAt(expand_arrow_point);
+  GetAppListTestHelper()->CheckState(test_fullscreen
+                                         ? AppListViewState::kFullscreenAllApps
+                                         : AppListViewState::kPeeking);
+
+  // Fling down, the app list should close.
+  FlingUpOrDown(GetEventGenerator(), view, false /* down */);
+  GetAppListTestHelper()->WaitUntilIdle();
+  GetAppListTestHelper()->CheckState(AppListViewState::kClosed);
+
+  // Show the app list again, and perform mouse drag that ends up at the same
+  // position.
+  GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());
+  if (test_fullscreen)
+    GetEventGenerator()->GestureTapAt(expand_arrow_point);
+  GetAppListTestHelper()->CheckState(test_fullscreen
+                                         ? AppListViewState::kFullscreenAllApps
+                                         : AppListViewState::kPeeking);
+
+  GetEventGenerator()->MoveMouseTo(GetPointOutsideSearchbox());
+  GetEventGenerator()->PressLeftButton();
+  GetEventGenerator()->MoveMouseBy(0, -10);
+  GetEventGenerator()->MoveMouseBy(0, 10);
+  GetEventGenerator()->ReleaseLeftButton();
+
+  // Verify the app list state has not changed.
+  GetAppListTestHelper()->CheckState(test_fullscreen
+                                         ? AppListViewState::kFullscreenAllApps
+                                         : AppListViewState::kPeeking);
+}
+
 TEST_F(AppListPresenterDelegateTest,
        MouseWheelFromAppListPresenterImplTransitionsAppListState) {
   GetAppListTestHelper()->ShowAndRunLoop(GetPrimaryDisplayId());

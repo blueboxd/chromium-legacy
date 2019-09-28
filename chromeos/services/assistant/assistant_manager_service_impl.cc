@@ -1002,12 +1002,13 @@ void AssistantManagerServiceImpl::OnCommunicationError(int error_code) {
 void AssistantManagerServiceImpl::StartAssistantInternal(
     const base::Optional<std::string>& access_token) {
   DCHECK(background_thread_.task_runner()->BelongsToCurrentThread());
-
-  display_connection_ = std::make_unique<CrosDisplayConnection>(
+  base::AutoLock lock(new_assistant_manager_lock_);
+  // There can only be one |AssistantManager| instance at any given time.
+  DCHECK(!assistant_manager_);
+  new_display_connection_ = std::make_unique<CrosDisplayConnection>(
       this, assistant::features::IsFeedbackUiEnabled(),
       assistant::features::IsMediaSessionIntegrationEnabled());
 
-  base::AutoLock lock(new_assistant_manager_lock_);
   new_assistant_manager_.reset(assistant_client::AssistantManager::Create(
       platform_api_.get(), CreateLibAssistantConfig()));
   auto* assistant_manager_internal =
@@ -1015,7 +1016,8 @@ void AssistantManagerServiceImpl::StartAssistantInternal(
 
   UpdateInternalOptions(assistant_manager_internal);
 
-  assistant_manager_internal->SetDisplayConnection(display_connection_.get());
+  assistant_manager_internal->SetDisplayConnection(
+      new_display_connection_.get());
   assistant_manager_internal->RegisterActionModule(action_module_.get());
   assistant_manager_internal->SetAssistantManagerDelegate(this);
   assistant_manager_internal->GetFuchsiaApiHelperOrDie()->SetFuchsiaApiDelegate(
@@ -1054,6 +1056,7 @@ void AssistantManagerServiceImpl::PostInitAssistant(
       return;
     }
 
+    display_connection_ = std::move(new_display_connection_);
     assistant_manager_ = std::move(new_assistant_manager_);
   }
 

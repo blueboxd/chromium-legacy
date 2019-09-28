@@ -91,6 +91,11 @@ void WebViewFrameWidget::RecordEndOfFrameMetrics(
   web_view_->RecordEndOfFrameMetrics(frame_begin_time);
 }
 
+std::unique_ptr<cc::BeginMainFrameMetrics>
+WebViewFrameWidget::GetBeginMainFrameMetrics() {
+  return web_view_->GetBeginMainFrameMetrics();
+}
+
 void WebViewFrameWidget::UpdateLifecycle(LifecycleUpdate requested_update,
                                          LifecycleUpdateReason reason) {
   web_view_->UpdateLifecycle(requested_update, reason);

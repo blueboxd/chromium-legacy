@@ -3531,12 +3531,12 @@ TEST_F(SearchProviderTest, TestDeleteMatch) {
   EXPECT_FALSE(provider_->deletion_handlers_.empty());
   ASSERT_TRUE(test_url_loader_factory_.IsPending(kDeleteUrl));
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string headers("HTTP/1.1 500 Owiee\nContent-type: application/json\n\n");
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head.mime_type = "application/json";
-  test_url_loader_factory_.AddResponse(GURL(kDeleteUrl), head, "",
+  head->mime_type = "application/json";
+  test_url_loader_factory_.AddResponse(GURL(kDeleteUrl), std::move(head), "",
                                        network::URLLoaderCompletionStatus());
 
   profile_.BlockUntilHistoryProcessesPendingRequests();

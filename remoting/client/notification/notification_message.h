@@ -24,6 +24,7 @@ struct NotificationMessage final {
   NotificationMessage& operator=(NotificationMessage&&);
 
   Appearance appearance;
+  std::string message_id;
   std::string message_text;
   std::string link_text;
   std::string link_url;

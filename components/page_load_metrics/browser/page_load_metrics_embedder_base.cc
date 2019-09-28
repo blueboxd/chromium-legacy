@@ -5,6 +5,8 @@
 #include "components/page_load_metrics/browser/page_load_metrics_embedder_base.h"
 
 #include "base/timer/timer.h"
+#include "components/page_load_metrics/browser/observers/use_counter_page_load_metrics_observer.h"
+#include "components/page_load_metrics/browser/page_load_tracker.h"
 
 namespace page_load_metrics {
 
@@ -14,8 +16,12 @@ PageLoadMetricsEmbedderBase::PageLoadMetricsEmbedderBase(
 
 PageLoadMetricsEmbedderBase::~PageLoadMetricsEmbedderBase() = default;
 
-void PageLoadMetricsEmbedderBase::RegisterObservers(PageLoadTracker* metrics) {
-  RegisterEmbedderObservers(metrics);
+void PageLoadMetricsEmbedderBase::RegisterObservers(PageLoadTracker* tracker) {
+  // Register observers used by all embedders
+  if (!IsPrerendering())
+    tracker->AddObserver(std::make_unique<UseCounterPageLoadMetricsObserver>());
+  // Allow the embedder to register any embedder-specific observers
+  RegisterEmbedderObservers(tracker);
 }
 
 std::unique_ptr<base::OneShotTimer> PageLoadMetricsEmbedderBase::CreateTimer() {

@@ -89,7 +89,7 @@ void SoftwareBrowserCompositorOutputSurface::SwapBuffersCallback(
     const gfx::Size& pixel_size) {
   latency_tracker_.OnGpuSwapBuffersCompleted(latency_info);
   client_->DidReceiveSwapBuffersAck({swap_time, swap_time});
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   if (needs_swap_size_notifications_)
     client_->DidSwapWithSize(pixel_size);
 #endif
@@ -129,7 +129,7 @@ unsigned SoftwareBrowserCompositorOutputSurface::UpdateGpuFence() {
   return 0;
 }
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
 void SoftwareBrowserCompositorOutputSurface::SetNeedsSwapSizeNotifications(
     bool needs_swap_size_notifications) {
   needs_swap_size_notifications_ = needs_swap_size_notifications;

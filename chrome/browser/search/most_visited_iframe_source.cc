@@ -4,8 +4,6 @@
 
 #include "chrome/browser/search/most_visited_iframe_source.h"
 
-#include "base/command_line.h"
-#include "base/feature_list.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/strings/string_piece.h"
 #include "base/strings/string_util.h"
@@ -68,11 +66,7 @@ void MostVisitedIframeSource::StartDataRequest(
   std::string path(url.path());
 
   if (path == kSingleHTMLPath) {
-    ui::TemplateReplacements replacements;
-    bool disable_fade = base::FeatureList::IsEnabled(
-        features::kDisableInitialMostVisitedFadeIn);
-    replacements["noInitialFade"] = disable_fade ? "no-initial-fade" : "";
-    SendResource(IDR_MOST_VISITED_SINGLE_HTML, callback, &replacements);
+    SendResource(IDR_MOST_VISITED_SINGLE_HTML, callback);
   } else if (path == kSingleCSSPath) {
     SendResource(IDR_MOST_VISITED_SINGLE_CSS, callback);
   } else if (path == kSingleJSPath) {
@@ -162,20 +156,9 @@ bool MostVisitedIframeSource::ServesPath(const std::string& path) const {
 
 void MostVisitedIframeSource::SendResource(
     int resource_id,
-    const content::URLDataSource::GotDataCallback& callback,
-    const ui::TemplateReplacements* replacements) {
-  scoped_refptr<base::RefCountedMemory> bytes =
-      ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
-          resource_id);
-  if (!replacements) {
-    callback.Run(bytes);
-    return;
-  }
-
-  base::StringPiece input(reinterpret_cast<const char*>(bytes->front()),
-                          bytes->size());
-  std::string response = ui::ReplaceTemplateExpressions(input, *replacements);
-  callback.Run(base::RefCountedString::TakeString(&response));
+    const content::URLDataSource::GotDataCallback& callback) {
+  callback.Run(ui::ResourceBundle::GetSharedInstance().LoadDataResourceBytes(
+      resource_id));
 }
 
 void MostVisitedIframeSource::SendJSWithOrigin(

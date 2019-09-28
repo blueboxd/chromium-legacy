@@ -26,6 +26,7 @@
 #include "chrome/browser/profiles/profiles_state.h"
 #include "chrome/browser/signin/identity_manager_factory.h"
 #include "chrome/browser/signin/scoped_account_consistency.h"
+#include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/test/integration/secondary_account_helper.h"
 #include "chrome/browser/themes/theme_service.h"
 #include "chrome/browser/themes/theme_service_factory.h"
@@ -46,6 +47,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/signin/public/base/signin_pref_names.h"
 #include "components/signin/public/identity_manager/identity_test_utils.h"
+#include "components/sync/driver/sync_service.h"
+#include "components/sync/driver/sync_user_settings.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_registry.h"
@@ -622,6 +625,14 @@ class ProfileMenuClickTest : public InProcessBrowserTest,
 
   void SetTargetBrowser(Browser* browser) { target_browser_ = browser; }
 
+  signin::IdentityManager* identity_manager() {
+    return IdentityManagerFactory::GetForProfile(browser()->profile());
+  }
+
+  syncer::SyncService* sync_service() {
+    return ProfileSyncServiceFactory::GetForProfile(browser()->profile());
+  }
+
  private:
   void OpenProfileMenu() {
     BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(
@@ -716,14 +727,15 @@ INSTANTIATE_TEST_SUITE_P(
         base::size(
             ProfileMenuClickTest_MultipleProfiles::kOrderedActionableItems)));
 
-class ProfileMenuClickTest_WithPrimaryAccount : public ProfileMenuClickTest {
+class ProfileMenuClickTest_SyncEnabled : public ProfileMenuClickTest {
  public:
   // List of actionable items in the correct order as they appear in the menu.
   // If a new button is added to the menu, it should also be added to this list.
-  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[8] =
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[9] =
       {ProfileMenuView::ActionableItem::kPasswordsButton,
        ProfileMenuView::ActionableItem::kCreditCardsButton,
        ProfileMenuView::ActionableItem::kAddressesButton,
+       ProfileMenuView::ActionableItem::kSyncSettingsButton,
        ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
        ProfileMenuView::ActionableItem::kManageProfilesButton,
        ProfileMenuView::ActionableItem::kGuestProfileButton,
@@ -732,37 +744,92 @@ class ProfileMenuClickTest_WithPrimaryAccount : public ProfileMenuClickTest {
        // there are no other buttons at the end.
        ProfileMenuView::ActionableItem::kPasswordsButton};
 
-  ProfileMenuClickTest_WithPrimaryAccount() = default;
+  ProfileMenuClickTest_SyncEnabled() = default;
 
   ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
       size_t index) override {
     return kOrderedActionableItems[index];
   }
 
-  DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest_WithPrimaryAccount);
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest_SyncEnabled);
 };
 
 // static
 constexpr ProfileMenuView::ActionableItem
-    ProfileMenuClickTest_WithPrimaryAccount::kOrderedActionableItems[];
+    ProfileMenuClickTest_SyncEnabled::kOrderedActionableItems[];
 
-IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_WithPrimaryAccount,
-                       SetupAndRunTest) {
-  signin::IdentityManager* identity_manager =
-      IdentityManagerFactory::GetForProfile(browser()->profile());
-  ASSERT_FALSE(identity_manager->HasPrimaryAccount());
-  signin::MakePrimaryAccountAvailable(identity_manager, "primary@example.com");
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SyncEnabled,
+                       DISABLED_SetupAndRunTest) {
+  // Set primary account.
+  ASSERT_FALSE(identity_manager()->HasPrimaryAccount());
+  signin::MakePrimaryAccountAvailable(identity_manager(),
+                                      "primary@example.com");
+  ASSERT_TRUE(identity_manager()->HasPrimaryAccount());
+  // Start sync.
+  sync_service()->GetUserSettings()->SetSyncRequested(true);
+  sync_service()->GetUserSettings()->SetFirstSetupComplete(
+      syncer::SyncFirstSetupCompleteSource::BASIC_FLOW);
+  ASSERT_TRUE(sync_service()->IsSyncFeatureEnabled());
 
   RunTest();
 }
 
 INSTANTIATE_TEST_SUITE_P(
     ,
-    ProfileMenuClickTest_WithPrimaryAccount,
+    ProfileMenuClickTest_SyncEnabled,
     ::testing::Range(
         size_t(0),
-        base::size(
-            ProfileMenuClickTest_WithPrimaryAccount::kOrderedActionableItems)));
+        base::size(ProfileMenuClickTest_SyncEnabled::kOrderedActionableItems)));
+
+class ProfileMenuClickTest_SyncError : public ProfileMenuClickTest {
+ public:
+  // List of actionable items in the correct order as they appear in the menu.
+  // If a new button is added to the menu, it should also be added to this list.
+  static constexpr ProfileMenuView::ActionableItem kOrderedActionableItems[9] =
+      {ProfileMenuView::ActionableItem::kPasswordsButton,
+       ProfileMenuView::ActionableItem::kCreditCardsButton,
+       ProfileMenuView::ActionableItem::kAddressesButton,
+       ProfileMenuView::ActionableItem::kSyncErrorButton,
+       ProfileMenuView::ActionableItem::kManageGoogleAccountButton,
+       ProfileMenuView::ActionableItem::kManageProfilesButton,
+       ProfileMenuView::ActionableItem::kGuestProfileButton,
+       ProfileMenuView::ActionableItem::kAddNewProfileButton,
+       // The first button is added again to finish the cycle and test that
+       // there are no other buttons at the end.
+       ProfileMenuView::ActionableItem::kPasswordsButton};
+
+  ProfileMenuClickTest_SyncError() = default;
+
+  ProfileMenuView::ActionableItem GetExpectedActionableItemAtIndex(
+      size_t index) override {
+    return kOrderedActionableItems[index];
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileMenuClickTest_SyncError);
+};
+
+// static
+constexpr ProfileMenuView::ActionableItem
+    ProfileMenuClickTest_SyncError::kOrderedActionableItems[];
+
+IN_PROC_BROWSER_TEST_P(ProfileMenuClickTest_SyncError,
+                       DISABLED_SetupAndRunTest) {
+  // Set primary account without setting up sync.
+  ASSERT_FALSE(identity_manager()->HasPrimaryAccount());
+  signin::MakePrimaryAccountAvailable(identity_manager(),
+                                      "primary@example.com");
+  ASSERT_TRUE(identity_manager()->HasPrimaryAccount());
+  ASSERT_FALSE(sync_service()->IsSyncFeatureEnabled());
+
+  RunTest();
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    ,
+    ProfileMenuClickTest_SyncError,
+    ::testing::Range(
+        size_t(0),
+        base::size(ProfileMenuClickTest_SyncError::kOrderedActionableItems)));
 
 class ProfileMenuClickTest_WithUnconsentedPrimaryAccount
     : public ProfileMenuClickTest {

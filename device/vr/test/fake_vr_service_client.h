@@ -7,8 +7,8 @@
 
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "device/vr/vr_export.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace device {
 class FakeVRDisplayImplClient;
@@ -16,7 +16,8 @@ class FakeVRDisplayImplClient;
 // TODO(mthiesse, crbug.com/769373): Remove DEVICE_VR_EXPORT.
 class DEVICE_VR_EXPORT FakeVRServiceClient : public mojom::VRServiceClient {
  public:
-  FakeVRServiceClient(mojom::VRServiceClientRequest request);
+  explicit FakeVRServiceClient(
+      mojo::PendingReceiver<mojom::VRServiceClient> receiver);
   ~FakeVRServiceClient() override;
 
   void OnDeviceChanged() override {}
@@ -27,7 +28,7 @@ class DEVICE_VR_EXPORT FakeVRServiceClient : public mojom::VRServiceClient {
   std::vector<mojom::VRDisplayInfoPtr> displays_;
   std::vector<std::unique_ptr<FakeVRDisplayImplClient>> display_clients_;
   mojom::XRDeviceId last_device_id_ = static_cast<mojom::XRDeviceId>(0);
-  mojo::Binding<mojom::VRServiceClient> m_binding_;
+  mojo::Receiver<mojom::VRServiceClient> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVRServiceClient);
 };

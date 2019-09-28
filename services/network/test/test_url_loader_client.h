@@ -13,10 +13,10 @@
 #include "mojo/public/c/system/data_pipe.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/cpp/url_loader_completion_status.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom-forward.h"
 
 namespace network {
 
@@ -57,9 +57,12 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   bool has_received_connection_error() const {
     return has_received_connection_error_;
   }
-  const ResourceResponseHead& response_head() const { return response_head_; }
+  const mojom::URLResponseHeadPtr& response_head() const {
+    return response_head_;
+  }
   const base::Optional<net::SSLInfo>& ssl_info() const {
-    return response_head_.ssl_info;
+    DCHECK(response_head_);
+    return response_head_->ssl_info;
   }
   const net::RedirectInfo& redirect_info() const { return redirect_info_; }
   const std::string& cached_metadata() const { return cached_metadata_; }
@@ -96,7 +99,7 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   void OnConnectionError();
 
   mojo::Binding<mojom::URLLoaderClient> binding_;
-  ResourceResponseHead response_head_;
+  mojom::URLResponseHeadPtr response_head_;
   net::RedirectInfo redirect_info_;
   std::string cached_metadata_;
   mojo::ScopedDataPipeConsumerHandle response_body_;

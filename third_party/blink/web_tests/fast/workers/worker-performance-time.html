@@ -7,7 +7,7 @@ var countWorker = 10;
 function animate(time) {
   var timeNow = performance.now();
   countWorker--;
-  self.postMessage([time,timeNow, countWorker]);
+  self.postMessage([time, timeNow, countWorker]);
   if(countWorker > 0)
     requestAnimationFrame(animate);
 };
@@ -18,13 +18,18 @@ self.onmessage = function(msg){
 </script>
 <script>
 async_test(function(t) {
-  var blob = new Blob([document.getElementById("worker").textContent]);
-  var worker = new Worker(URL.createObjectURL(blob));
+  const blob = new Blob([document.getElementById("worker").textContent]);
+  const worker = new Worker(URL.createObjectURL(blob));
+  let delta = 0;
   worker.onmessage = t.step_func(function(pairTime) {
-    var time = pairTime.data[0];
-    var timeNow = pairTime.data[1];
-    var count = pairTime.data[2];
-    assert_approx_equals(time, timeNow, 1000, "Times must be close enough");
+    const time = pairTime.data[0];
+    const timeNow = pairTime.data[1];
+    const count = pairTime.data[2];
+    if (count == 9) {
+      delta = time - timeNow;
+    }
+    console.log(time, timeNow, count, delta);
+    assert_approx_equals(time, timeNow + delta, 1000, "Times must be close enough");
     if(count == 0)
       t.done();
   });

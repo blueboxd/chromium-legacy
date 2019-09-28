@@ -42,6 +42,13 @@ void FileHandlerManager::OnWebAppUninstalled(const AppId& installed_app_id) {
   }
 }
 
+void FileHandlerManager::OnWebAppProfileWillBeDeleted(const AppId& app_id) {
+  if (base::FeatureList::IsEnabled(blink::features::kFileHandlingAPI) &&
+      OsSupportsWebAppFileHandling()) {
+    UnregisterFileHandlersForWebApp(app_id, *profile_);
+  }
+}
+
 void FileHandlerManager::OnAppRegistrarDestroyed() {
   registrar_observer_.RemoveAll();
 }

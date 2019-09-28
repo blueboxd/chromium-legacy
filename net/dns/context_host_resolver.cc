@@ -112,6 +112,10 @@ ContextHostResolver::~ContextHostResolver() {
     (*active_requests_.begin())->Cancel();
 }
 
+void ContextHostResolver::OnShutdown() {
+  // TODO(crbug.com/1006902): Implement.
+}
+
 std::unique_ptr<HostResolver::ResolveHostRequest>
 ContextHostResolver::CreateRequest(
     const HostPortPair& host,

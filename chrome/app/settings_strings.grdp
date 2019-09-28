@@ -3604,6 +3604,9 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_CLEAR_THIRD_PARTY_COOKIES" desc="Label for the confirmation dialog button to delete all cookies and site data for third-party contexts.">
     Clear third-party cookies
   </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_THIRD_PARTY_COOKIES_EXCEPTION_LABEL" desc="Label for site exceptions that affect third party cookies.">
+    Including third-party cookies
+  </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_REMOVE_DIALOG_TITLE" desc="Title of the dialog that warns about deleting all site data.">
     Clear site data
   </message>

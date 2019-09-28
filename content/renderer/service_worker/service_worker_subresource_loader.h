@@ -17,7 +17,6 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/redirect_info.h"
-#include "services/network/public/cpp/resource_response.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "third_party/blink/public/common/service_worker/service_worker_status_code.h"
 #include "third_party/blink/public/mojom/blob/blob.mojom.h"
@@ -143,7 +142,8 @@ class CONTENT_EXPORT ServiceWorkerSubresourceLoader
 
   void TransitionToStatus(Status new_status);
 
-  network::ResourceResponseHead response_head_;
+  network::mojom::URLResponseHeadPtr response_head_ =
+      network::mojom::URLResponseHead::New();
   base::Optional<net::RedirectInfo> redirect_info_;
   int redirect_limit_;
 

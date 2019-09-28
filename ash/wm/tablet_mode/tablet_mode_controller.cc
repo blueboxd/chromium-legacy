@@ -1018,8 +1018,8 @@ void TabletModeController::FinishInitTabletMode() {
   // side, then overview mode should be started (to be seen on the side with
   // no snapped window).
   const auto state = Shell::Get()->split_view_controller()->state();
-  if (state == SplitViewState::kLeftSnapped ||
-      state == SplitViewState::kRightSnapped) {
+  if (state == SplitViewController::State::kLeftSnapped ||
+      state == SplitViewController::State::kRightSnapped) {
     Shell::Get()->overview_controller()->StartOverview();
   }
 

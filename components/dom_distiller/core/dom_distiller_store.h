@@ -10,10 +10,8 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "base/observer_list.h"
 #include "components/dom_distiller/core/article_entry.h"
 #include "components/dom_distiller/core/dom_distiller_model.h"
-#include "components/dom_distiller/core/dom_distiller_observer.h"
 #include "components/leveldb_proto/public/proto_database.h"
 #include "components/sync/model/sync_change.h"
 #include "components/sync/model/sync_data.h"
@@ -39,10 +37,6 @@ class DomDistillerStoreInterface {
 
   // Gets a copy of all the current entries.
   virtual std::vector<ArticleEntry> GetEntries() const = 0;
-
-  virtual void AddObserver(DomDistillerObserver* observer) = 0;
-
-  virtual void RemoveObserver(DomDistillerObserver* observer) = 0;
 };
 
 // Implements syncing/storing of DomDistiller entries. This keeps three
@@ -84,9 +78,6 @@ class DomDistillerStore : public DomDistillerStoreInterface {
   bool GetEntryByUrl(const GURL& url, ArticleEntry* entry) override;
   std::vector<ArticleEntry> GetEntries() const override;
 
-  void AddObserver(DomDistillerObserver* observer) override;
-  void RemoveObserver(DomDistillerObserver* observer) override;
-
  private:
   void OnDatabaseInit(leveldb_proto::Enums::InitStatus status);
   void OnDatabaseLoad(bool success, std::unique_ptr<EntryVector> entries);
@@ -108,11 +99,8 @@ class DomDistillerStore : public DomDistillerStoreInterface {
                            syncer::SyncChangeList* changes_applied,
                            syncer::SyncChangeList* changes_missing);
 
-  void NotifyObservers(const syncer::SyncChangeList& changes);
-
   std::unique_ptr<leveldb_proto::ProtoDatabase<ArticleEntry>> database_;
   bool database_loaded_;
-  base::ObserverList<DomDistillerObserver>::Unchecked observers_;
 
   DomDistillerModel model_;
 

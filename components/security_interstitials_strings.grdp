@@ -66,7 +66,7 @@
 
   <!-- Lookalike URL warning -->
   <message name="IDS_LOOKALIKE_URL_TITLE" desc="Tab title. Context: the requested URL might be trying to trick the user since it looks like a more popular URL. This interstitial points the user to the safe site instead.">
-    Did you mean <ph name="DOMAIN">$1<ex>example.com</ex></ph>?
+    Did you mean?
   </message>
   <message name="IDS_LOOKALIKE_URL_HEADING" desc="Large heading. Context: the error page that's shown when the requested URL might be trying to trick the user since it looks like a more popular URL. This interstitial points the user to the safe site instead.">
     Did you mean &lt;a href="#" id="dont-proceed-link"&gt;<ph name="DOMAIN">$1<ex>example.com</ex></ph>&lt;/a&gt;?

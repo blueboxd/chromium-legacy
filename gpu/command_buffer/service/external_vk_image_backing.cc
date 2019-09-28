@@ -14,11 +14,13 @@
 #include "components/viz/common/resources/resource_sizes.h"
 #include "gpu/command_buffer/service/external_vk_image_gl_representation.h"
 #include "gpu/command_buffer/service/external_vk_image_skia_representation.h"
+#include "gpu/command_buffer/service/skia_utils.h"
 #include "gpu/ipc/common/vulkan_ycbcr_info.h"
 #include "gpu/vulkan/vulkan_command_buffer.h"
 #include "gpu/vulkan/vulkan_command_pool.h"
 #include "gpu/vulkan/vulkan_fence_helper.h"
 #include "gpu/vulkan/vulkan_function_pointers.h"
+#include "gpu/vulkan/vulkan_util.h"
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gl/buildflags.h"
 #include "ui/gl/gl_context.h"
@@ -39,26 +41,13 @@ namespace gpu {
 
 namespace {
 
-GrVkImageInfo CreateGrVkImageInfo(VkImage image,
-                                  VkFormat vk_format,
-                                  VkDeviceMemory memory,
-                                  size_t memory_size,
-                                  bool use_protected_memory,
-                                  base::Optional<VulkanYCbCrInfo> ycbcr_info) {
-  GrVkYcbcrConversionInfo gr_ycbcr_info{};
-  if (ycbcr_info) {
-    gr_ycbcr_info = GrVkYcbcrConversionInfo(
-        static_cast<VkFormat>(ycbcr_info->image_format),
-        ycbcr_info->external_format,
-        static_cast<VkSamplerYcbcrModelConversion>(
-            ycbcr_info->suggested_ycbcr_model),
-        static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range),
-        static_cast<VkChromaLocation>(ycbcr_info->suggested_xchroma_offset),
-        static_cast<VkChromaLocation>(ycbcr_info->suggested_ychroma_offset),
-        static_cast<VkFilter>(VK_FILTER_LINEAR),
-        /*forceExplicitReconstruction=*/false,
-        static_cast<VkFormatFeatureFlags>(ycbcr_info->format_features));
-  }
+GrVkImageInfo CreateGrVkImageInfo(
+    VkImage image,
+    VkFormat vk_format,
+    VkDeviceMemory memory,
+    size_t memory_size,
+    bool use_protected_memory,
+    const GrVkYcbcrConversionInfo& gr_ycbcr_info) {
   GrVkAlloc alloc(memory, 0 /* offset */, memory_size, 0 /* flags */);
   return GrVkImageInfo(
       image, alloc, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_LAYOUT_UNDEFINED,
@@ -179,8 +168,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
     const gfx::ColorSpace& color_space,
     uint32_t usage,
     base::span<const uint8_t> pixel_data,
-    bool using_gmb,
-    base::Optional<VulkanYCbCrInfo> ycbcr_info) {
+    bool using_gmb) {
   VkDevice device =
       context_state->vk_context_provider()->GetDeviceQueue()->GetVulkanDevice();
   VkFormat vk_format = ToVkFormat(format);
@@ -246,7 +234,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::Create(
 
   auto backing = base::WrapUnique(new ExternalVkImageBacking(
       mailbox, format, size, color_space, usage, context_state, image, memory,
-      requirements.size, vk_format, command_pool, ycbcr_info,
+      requirements.size, vk_format, command_pool, GrVkYcbcrConversionInfo(),
       GetDawnFormat(format), mem_alloc_info.memoryTypeIndex));
 
   if (!pixel_data.empty()) {
@@ -286,7 +274,7 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
     VkImageCreateInfo vk_image_info = {VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO};
     VkDeviceMemory vk_device_memory = VK_NULL_HANDLE;
     VkDeviceSize memory_size = 0;
-    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info;
+    base::Optional<VulkanYCbCrInfo> ycbcr_info;
 
     if (!vulkan_implementation->CreateImageFromGpuMemoryHandle(
             vk_device, std::move(handle), size, &vk_image, &vk_image_info,
@@ -303,10 +291,16 @@ std::unique_ptr<ExternalVkImageBacking> ExternalVkImageBacking::CreateFromGMB(
       return nullptr;
     }
 
+    GrVkYcbcrConversionInfo gr_ycbcr_info =
+        CreateGrVkYcbcrConversionInfo(context_state->vk_context_provider()
+                                          ->GetDeviceQueue()
+                                          ->GetVulkanPhysicalDevice(),
+                                      vk_image_info.tiling, ycbcr_info);
+
     return base::WrapUnique(new ExternalVkImageBacking(
         mailbox, resource_format, size, color_space, usage, context_state,
         vk_image, vk_device_memory, memory_size, vk_image_info.format,
-        command_pool, ycbcr_info, GetDawnFormat(resource_format), {}));
+        command_pool, gr_ycbcr_info, GetDawnFormat(resource_format), {}));
   }
 
   if (gfx::NumberOfPlanesForLinearBufferFormat(buffer_format) != 1) {
@@ -406,7 +400,7 @@ ExternalVkImageBacking::ExternalVkImageBacking(
     size_t memory_size,
     VkFormat vk_format,
     VulkanCommandPool* command_pool,
-    base::Optional<VulkanYCbCrInfo> ycbcr_info,
+    const GrVkYcbcrConversionInfo& ycbcr_info,
     base::Optional<DawnTextureFormat> dawn_format,
     base::Optional<uint32_t> memory_type_index)
     : SharedImageBacking(mailbox,

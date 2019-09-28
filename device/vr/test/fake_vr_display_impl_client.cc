@@ -8,8 +8,8 @@
 namespace device {
 
 FakeVRDisplayImplClient::FakeVRDisplayImplClient(
-    mojom::VRDisplayClientRequest request)
-    : m_binding_(this, std::move(request)) {}
+    mojo::PendingReceiver<mojom::VRDisplayClient> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 FakeVRDisplayImplClient::~FakeVRDisplayImplClient() {}
 

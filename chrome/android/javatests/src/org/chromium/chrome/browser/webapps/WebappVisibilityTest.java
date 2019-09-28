@@ -65,7 +65,7 @@ public class WebappVisibilityTest {
         Assert.assertTrue(canAutoHideBrowserControls(ConnectionSecurityLevel.NONE));
         Assert.assertTrue(canAutoHideBrowserControls(ConnectionSecurityLevel.SECURE));
         Assert.assertTrue(canAutoHideBrowserControls(ConnectionSecurityLevel.EV_SECURE));
-        Assert.assertTrue(canAutoHideBrowserControls(ConnectionSecurityLevel.HTTP_SHOW_WARNING));
+        Assert.assertTrue(canAutoHideBrowserControls(ConnectionSecurityLevel.WARNING));
         Assert.assertFalse(canAutoHideBrowserControls(ConnectionSecurityLevel.DANGEROUS));
     }
 

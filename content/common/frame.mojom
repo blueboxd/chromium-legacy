@@ -260,6 +260,12 @@ interface FrameBindingsControl {
   // that allow JS content extended privileges. See BindingsPolicy for valid
   // flag values.
   AllowBindings(int32 enabled_bindings_flags);
+
+  // Used to tell the RenderFrame to enable Mojo JS bindings, which allows
+  // JS code running in the renderer process to connect to Mojo interfaces
+  // and make method calls on them.
+  // This is used for WebUI only at this time.
+  EnableMojoJsBindings();
 };
 
 // Implemented by a service that provides implementations of the Frame

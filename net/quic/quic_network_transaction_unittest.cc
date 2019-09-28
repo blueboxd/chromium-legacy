@@ -1283,10 +1283,6 @@ TEST_P(QuicNetworkTransactionTest, ForceQuic) {
 }
 
 TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
-  // TODO(rch): honor the max header list size. b/136108828
-  if (quic::VersionUsesQpack(version_.transport_version))
-    return;
-
   session_params_.quic_params.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
 
@@ -2469,7 +2465,7 @@ TEST_P(QuicNetworkTransactionTest, UseAlternativeServiceAllSupportedVersion) {
 
 TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
   if (version_.transport_version == quic::QUIC_VERSION_99) {
-    // Not available under version 99
+    // GoAway is not available under version 99
     return;
   }
   MockQuicData mock_quic_data(version_);
@@ -8886,8 +8882,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPushUpdatesPriority) {
   }
 
   if (quic::VersionUsesQpack(version_.transport_version)) {
-    // TODO(rch): both stream_dependencies and priority frames need to be
-    // supported in IETF QUIC.
+    // HTTP/3 currently doesn't support PRIORITY.
     return;
   }
 

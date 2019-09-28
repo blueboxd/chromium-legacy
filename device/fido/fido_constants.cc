@@ -32,7 +32,7 @@ const char kCredentialManagementPreviewMapKey[] = "credentialMgmtPreview";
 const char kBioEnrollmentMapKey[] = "bioEnroll";
 const char kBioEnrollmentPreviewMapKey[] = "userVerificationMgmtPreview";
 
-const base::TimeDelta kDeviceTimeout = base::TimeDelta::FromSeconds(10);
+const base::TimeDelta kDeviceTimeout = base::TimeDelta::FromSeconds(15);
 const base::TimeDelta kU2fRetryDelay = base::TimeDelta::FromMilliseconds(200);
 
 const char kFormatKey[] = "fmt";

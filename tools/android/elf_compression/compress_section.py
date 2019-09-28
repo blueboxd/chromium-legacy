@@ -4,9 +4,9 @@
 # found in the LICENSE file.
 """This script compresses a part of shared library without breaking it.
 
-It compresses the specified file range which will be used by a new library
-constructor that uses userfaultfd to intercept access attempts to the range
-and decompress its data on demand.
+It compresses the specified file range which will be used by a library's
+decompression hook that uses userfaultfd to intercept access attempts to the
+range and decompress its data on demand.
 
 Technically this script does the following steps:
   1) Makes a copy of specified range, compresses it and adds it to the binary
@@ -20,8 +20,8 @@ Technically this script does the following steps:
     process.
   6) Changes cut range LOAD segment by zeroing the file_sz and setting
     mem_sz to the original range size, essentially lazily zeroing the space.
-  7) Changes address of the symbols provided by the library constructor to
-    point to the cut range and compressed section.
+  7) Changes magic bytes provided by the decompression hook to contain
+   addresses of cut range and compressed range.
 """
 
 import argparse

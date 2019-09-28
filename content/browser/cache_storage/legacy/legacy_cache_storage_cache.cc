@@ -356,7 +356,7 @@ blink::mojom::FetchAPIResponsePtr CreateResponse(
       std::vector<std::string>(
           metadata.response().cors_exposed_header_names().begin(),
           metadata.response().cors_exposed_header_names().end()),
-      nullptr /* side_data_blob */);
+      nullptr /* side_data_blob */, nullptr /* content_security_policy */);
 }
 
 // The size of opaque (non-cors) resource responses are padded in order

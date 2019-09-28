@@ -169,12 +169,12 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLNoViaHeader) {
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
   task_environment.RunUntilIdle();
 
-  auto resource_response_head =
-      network::CreateResourceResponseHead(net::HTTP_OK);
-  resource_response_head.proxy_server = proxy_server;
+  auto url_response_head = network::CreateURLResponseHead(net::HTTP_OK);
+  url_response_head->proxy_server = proxy_server;
   test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
-      test_url_loader_factory.GetPendingRequest(0), resource_response_head,
-      "foobarbaz", network::URLLoaderCompletionStatus(net::OK));
+      test_url_loader_factory.GetPendingRequest(0),
+      std::move(url_response_head), "foobarbaz",
+      network::URLLoaderCompletionStatus(net::OK));
 
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
@@ -215,15 +215,15 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithViaHeader) {
   EXPECT_TRUE(warmup_url_fetcher.IsFetchInFlight());
   task_environment.RunUntilIdle();
 
-  auto resource_response_head =
-      network::CreateResourceResponseHead(net::HTTP_NOT_FOUND);
-  resource_response_head.proxy_server = proxy_server;
+  auto url_response_head = network::CreateURLResponseHead(net::HTTP_NOT_FOUND);
+  url_response_head->proxy_server = proxy_server;
   static const char kDataReductionProxyViaValue[] =
       "Via: 1.1 Chrome-Compression-Proxy";
-  resource_response_head.headers->AddHeader(kDataReductionProxyViaValue);
+  url_response_head->headers->AddHeader(kDataReductionProxyViaValue);
   test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
-      test_url_loader_factory.GetPendingRequest(0), resource_response_head,
-      "foobarbaz", network::URLLoaderCompletionStatus(net::OK));
+      test_url_loader_factory.GetPendingRequest(0),
+      std::move(url_response_head), "foobarbaz",
+      network::URLLoaderCompletionStatus(net::OK));
 
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
 
@@ -265,15 +265,15 @@ TEST(WarmupURLFetcherTest,
   warmup_url_fetcher.FetchWarmupURL(0, DataReductionProxyServer(proxy_server));
   base::RunLoop().RunUntilIdle();
 
-  auto resource_response_head =
-      network::CreateResourceResponseHead(net::HTTP_NO_CONTENT);
-  resource_response_head.proxy_server = proxy_server;
+  auto url_response_head = network::CreateURLResponseHead(net::HTTP_NO_CONTENT);
+  url_response_head->proxy_server = proxy_server;
   static const char kDataReductionProxyViaValue[] =
       "Via: 1.1 Chrome-Compression-Proxy";
-  resource_response_head.headers->AddHeader(kDataReductionProxyViaValue);
+  url_response_head->headers->AddHeader(kDataReductionProxyViaValue);
   test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
-      test_url_loader_factory.GetPendingRequest(0), resource_response_head,
-      "foobarbaz", network::URLLoaderCompletionStatus(net::OK));
+      test_url_loader_factory.GetPendingRequest(0),
+      std::move(url_response_head), "foobarbaz",
+      network::URLLoaderCompletionStatus(net::OK));
 
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.WarmupURL.FetchInitiated", 1, 1);
@@ -309,7 +309,7 @@ TEST(WarmupURLFetcherTest, TestConnectionResetFetchWarmupURL) {
 
   test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
       test_url_loader_factory.GetPendingRequest(0),
-      network::ResourceResponseHead(), "foobarbaz",
+      network::mojom::URLResponseHead::New(), "foobarbaz",
       network::URLLoaderCompletionStatus(net::ERR_CONNECTION_RESET));
 
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
@@ -385,15 +385,15 @@ TEST(WarmupURLFetcherTest, TestSuccessfulFetchWarmupURLWithDelay) {
   warmup_url_fetcher.FetchWarmupURL(1, DataReductionProxyServer(proxy_server));
   task_environment.FastForwardBy(base::TimeDelta::FromMilliseconds(2));
 
-  auto resource_response_head =
-      network::CreateResourceResponseHead(net::HTTP_NOT_FOUND);
-  resource_response_head.proxy_server = proxy_server;
+  auto url_response_head = network::CreateURLResponseHead(net::HTTP_NOT_FOUND);
+  url_response_head->proxy_server = proxy_server;
   static const char kDataReductionProxyViaValue[] =
       "Via: 1.1 Chrome-Compression-Proxy";
-  resource_response_head.headers->AddHeader(kDataReductionProxyViaValue);
+  url_response_head->headers->AddHeader(kDataReductionProxyViaValue);
   test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
-      test_url_loader_factory.GetPendingRequest(0), resource_response_head,
-      "foobarbaz", network::URLLoaderCompletionStatus(net::OK));
+      test_url_loader_factory.GetPendingRequest(0),
+      std::move(url_response_head), "foobarbaz",
+      network::URLLoaderCompletionStatus(net::OK));
 
   EXPECT_FALSE(warmup_url_fetcher.IsFetchInFlight());
   base::RunLoop().RunUntilIdle();

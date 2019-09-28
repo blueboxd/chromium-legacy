@@ -5,7 +5,7 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPUOrigin3D {
-    required unsigned long x;
-    required unsigned long y;
-    required unsigned long z;
+    unsigned long x = 0;
+    unsigned long y = 0;
+    unsigned long z = 0;
 };

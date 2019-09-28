@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 563 tests; 530 PASS, 33 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 563 tests; 531 PASS, 32 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Setup
 PASS align-content (type: discrete) has testAccumulation function
 PASS align-content: "flex-end" onto "flex-start"
@@ -543,7 +543,7 @@ PASS vector-effect (type: discrete) has testAccumulation function
 PASS vector-effect: "non-scaling-stroke" onto "none"
 PASS vector-effect: "none" onto "non-scaling-stroke"
 PASS visibility (type: visibility) has testAccumulation function
-FAIL visibility: onto "visible" assert_equals: The value should be visible at 1000ms expected "visible" but got "hidden"
+PASS visibility: onto "visible"
 PASS visibility: onto "hidden"
 PASS white-space (type: discrete) has testAccumulation function
 PASS white-space: "nowrap" onto "pre"

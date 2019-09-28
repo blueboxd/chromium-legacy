@@ -8,5 +8,5 @@ dictionary GPUTextureCopyView {
     required GPUTexture texture;
     unsigned long mipLevel = 0;
     unsigned long arrayLayer = 0;
-    required GPUOrigin3D origin;
+    GPUOrigin3D origin;
 };

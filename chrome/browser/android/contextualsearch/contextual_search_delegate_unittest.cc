@@ -383,7 +383,7 @@ TEST_F(ContextualSearchDelegateTest, InvalidResponse) {
   auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       pending_request->request.url, network::URLLoaderCompletionStatus(net::OK),
-      network::ResourceResponseHead(), std::string());
+      network::mojom::URLResponseHead::New(), std::string());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_FALSE(do_prevent_preload());

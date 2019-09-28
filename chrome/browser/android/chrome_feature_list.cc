@@ -116,6 +116,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDarkenWebsitesCheckboxInThemesSetting,
     &kDontAutoHideBrowserControls,
     &kChromeDuetLabeled,
+    &kChromeSharingHub,
     &kChromeSmartSelection,
     &kClickToCallOpenDialerDirectly,
     &kCommandLineOnNonRooted,
@@ -345,6 +346,9 @@ const base::Feature kDontAutoHideBrowserControls{
 
 const base::Feature kChromeDuetLabeled{"ChromeDuetLabeled",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kChromeSharingHub{"ChromeSharingHub",
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeSmartSelection{"ChromeSmartSelection",
                                           base::FEATURE_ENABLED_BY_DEFAULT};

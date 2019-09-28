@@ -637,15 +637,17 @@ void OverviewController::ToggleOverview(
     // between user sessions, or on transition between virtual desks. Those are
     // the cases where code arranges split view by first snapping a window on
     // one side and then starting overview to be seen on the other side, meaning
-    // that the split view state here will be |SplitViewState::kLeftSnapped| or
-    // |SplitViewState::kRightSnapped|. We have to check the split view state
-    // before |SplitViewController::OnOverviewModeStarting|, because in case of
-    // |SplitViewState::kBothSnapped|, that function will insert one of the two
-    // snapped windows to overview.
-    const SplitViewState split_view_state =
+    // that the split view state here will be
+    // |SplitViewController::State::kLeftSnapped| or
+    // |SplitViewController::State::kRightSnapped|. We have to check the split
+    // view state before |SplitViewController::OnOverviewModeStarting|, because
+    // in case of |SplitViewController::State::kBothSnapped|, that function will
+    // insert one of the two snapped windows to overview.
+    const SplitViewController::State split_view_state =
         Shell::Get()->split_view_controller()->state();
-    should_focus_overview_ = split_view_state == SplitViewState::kNoSnap ||
-                             split_view_state == SplitViewState::kBothSnapped;
+    should_focus_overview_ =
+        split_view_state == SplitViewController::State::kNoSnap ||
+        split_view_state == SplitViewController::State::kBothSnapped;
 
     // Suspend occlusion tracker until the enter animation is complete.
     PauseOcclusionTracker();
@@ -719,7 +721,8 @@ bool OverviewController::CanEndOverview(
   // up from the shelf in tablet mode, or ending overview immediately without
   // animations.
   if (split_view_controller->InTabletSplitViewMode() &&
-      split_view_controller->state() != SplitViewState::kBothSnapped &&
+      split_view_controller->state() !=
+          SplitViewController::State::kBothSnapped &&
       InOverviewSession() && overview_session_->IsEmpty() &&
       type != OverviewSession::EnterExitOverviewType::kSwipeFromShelf &&
       type != OverviewSession::EnterExitOverviewType::kImmediateExit) {

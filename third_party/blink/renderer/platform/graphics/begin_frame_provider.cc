@@ -95,10 +95,15 @@ void BeginFrameProvider::RequestBeginFrame() {
 void BeginFrameProvider::OnBeginFrame(
     const viz::BeginFrameArgs& args,
     WTF::HashMap<uint32_t, ::viz::mojom::blink::FrameTimingDetailsPtr>) {
+  if (args.deadline < base::TimeTicks::Now()) {
+    compositor_frame_sink_->DidNotProduceFrame(viz::BeginFrameAck(args, false));
+    return;
+  }
+
   // If there was no need for a BeginFrame, just skip it.
   if (needs_begin_frame_ && requested_needs_begin_frame_) {
     requested_needs_begin_frame_ = false;
-    begin_frame_client_->BeginFrame();
+    begin_frame_client_->BeginFrame(args.frame_time);
   } else {
     if (!requested_needs_begin_frame_) {
       needs_begin_frame_ = false;

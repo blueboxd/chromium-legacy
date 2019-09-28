@@ -37,6 +37,7 @@
 #include "chromecast/browser/cast_content_browser_client.h"
 #include "chromecast/browser/cast_feature_list_creator.h"
 #include "chromecast/browser/cast_system_memory_pressure_evaluator.h"
+#include "chromecast/browser/cast_system_memory_pressure_evaluator_adjuster.h"
 #include "chromecast/browser/devtools/remote_debugging_server.h"
 #include "chromecast/browser/media/media_caps_impl.h"
 #include "chromecast/browser/metrics/cast_browser_metrics.h"
@@ -356,7 +357,8 @@ CastBrowserMainParts::CastBrowserMainParts(
       parameters_(parameters),
       cast_content_browser_client_(cast_content_browser_client),
       url_request_context_factory_(url_request_context_factory),
-      media_caps_(new media::MediaCapsImpl()) {
+      media_caps_(new media::MediaCapsImpl()),
+      cast_system_memory_pressure_evaluator_adjuster_(nullptr) {
   DCHECK(cast_content_browser_client);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   AddDefaultCommandLineSwitches(command_line);
@@ -471,9 +473,13 @@ int CastBrowserMainParts::PreCreateThreads() {
 void CastBrowserMainParts::PreMainMessageLoopRun() {
 #if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
   memory_pressure_monitor_.reset(new util::MultiSourceMemoryPressureMonitor());
-  memory_pressure_monitor_->SetSystemEvaluator(
+  auto cast_system_memory_pressure_evaluator =
       std::make_unique<CastSystemMemoryPressureEvaluator>(
-          memory_pressure_monitor_->CreateVoter()));
+          memory_pressure_monitor_->CreateVoter());
+  cast_system_memory_pressure_evaluator_adjuster_ =
+      cast_system_memory_pressure_evaluator.get();
+  memory_pressure_monitor_->SetSystemEvaluator(
+      std::move(cast_system_memory_pressure_evaluator));
 
   // base::Unretained() is safe because the browser client will outlive any
   // component in the browser; this factory method will not be called after
@@ -545,6 +551,7 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
   cast_browser_process_->SetCastService(
       cast_browser_process_->browser_client()->CreateCastService(
           cast_browser_process_->browser_context(),
+          cast_system_memory_pressure_evaluator_adjuster_,
           cast_browser_process_->pref_service(),
           video_plane_controller_.get(), window_manager_.get()));
   cast_browser_process_->cast_service()->Initialize();

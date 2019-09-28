@@ -69,11 +69,11 @@ TopicSet TopicSetFromTopics(const Topics& topics) {
   return topic_set;
 }
 
-network::ResourceResponseHead CreateHeadersForTest(int responce_code) {
-  network::ResourceResponseHead head;
-  head.headers = new net::HttpResponseHeaders(base::StringPrintf(
+network::mojom::URLResponseHeadPtr CreateHeadersForTest(int responce_code) {
+  auto head = network::mojom::URLResponseHead::New();
+  head->headers = new net::HttpResponseHeaders(base::StringPrintf(
       "HTTP/1.1 %d OK\nContent-type: text/html\n\n", responce_code));
-  head.mime_type = "text/html";
+  head->mime_type = "text/html";
   return head;
 }
 

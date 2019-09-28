@@ -128,7 +128,7 @@ public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
     default int getSecurityIconContentDescription() {
         switch (getSecurityLevel()) {
             case ConnectionSecurityLevel.NONE:
-            case ConnectionSecurityLevel.HTTP_SHOW_WARNING:
+            case ConnectionSecurityLevel.WARNING:
                 return R.string.accessibility_security_btn_warn;
             case ConnectionSecurityLevel.DANGEROUS:
                 return R.string.accessibility_security_btn_dangerous;
@@ -157,7 +157,7 @@ public interface ToolbarDataProvider extends ToolbarCommonPropertiesModel {
      */
     @Nullable
     @Override
-    default public String getDisplaySearchTerms() {
+    public default String getDisplaySearchTerms() {
         return null;
     }
 }

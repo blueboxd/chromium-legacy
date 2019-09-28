@@ -57,6 +57,10 @@ MappedHostResolver::MappedHostResolver(std::unique_ptr<HostResolver> impl)
 
 MappedHostResolver::~MappedHostResolver() = default;
 
+void MappedHostResolver::OnShutdown() {
+  impl_->OnShutdown();
+}
+
 std::unique_ptr<HostResolver::ResolveHostRequest>
 MappedHostResolver::CreateRequest(
     const HostPortPair& host,

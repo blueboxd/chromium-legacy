@@ -91,7 +91,6 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
  private:
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<ResourceCache> cache_;
-  std::unique_ptr<ExternalPolicyDataFetcherBackend> fetcher_backend_;
   std::string public_key_;
 };
 
@@ -130,11 +129,10 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
   auto url_loader_factory =
       base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
           &loader_factory_);
-  fetcher_backend_ = std::make_unique<ExternalPolicyDataFetcherBackend>(
-      std::move(url_loader_factory));
   updater_ = std::make_unique<ComponentCloudPolicyUpdater>(
       task_env_.GetMainThreadTaskRunner(),
-      fetcher_backend_->CreateFrontend(task_env_.GetMainThreadTaskRunner()),
+      std::make_unique<ExternalPolicyDataFetcher>(
+          std::move(url_loader_factory), task_env_.GetMainThreadTaskRunner()),
       store_.get());
   ASSERT_EQ(store_->policy().end(), store_->policy().begin());
 }

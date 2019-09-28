@@ -157,8 +157,7 @@ void DateTimeChooserImpl::WriteDocument(SharedBuffer* data) {
   AddProperty("todayLabel", today_label_string, data);
   AddProperty("clearLabel", GetLocale().QueryString(IDS_FORM_CALENDAR_CLEAR),
               data);
-  AddProperty("weekLabel",
-              GetLocale().QueryString(WebLocalizedString::kWeekNumberLabel),
+  AddProperty("weekLabel", GetLocale().QueryString(IDS_FORM_WEEK_NUMBER_LABEL),
               data);
   AddProperty("axShowMonthSelector",
               GetLocale().QueryString(IDS_AX_CALENDAR_SHOW_MONTH_SELECTOR),

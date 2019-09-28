@@ -136,6 +136,10 @@ bool HatsService::ShouldShowSurvey(const std::string& trigger) const {
     return true;
   }
 
+  // Survey can not be loaded and shown if there is no network connection.
+  if (net::NetworkChangeNotifier::IsOffline())
+    return false;
+
   bool consent_given =
       g_browser_process->GetMetricsServicesManager()->IsMetricsConsentGiven();
   if (!consent_given)

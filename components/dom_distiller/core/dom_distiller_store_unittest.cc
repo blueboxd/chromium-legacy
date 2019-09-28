@@ -77,12 +77,6 @@ ArticleEntry GetSampleEntry(int id) {
   return entries[id % 9];
 }
 
-class MockDistillerObserver : public DomDistillerObserver {
- public:
-  MOCK_METHOD1(ArticleEntriesUpdated, void(const std::vector<ArticleUpdate>&));
-  ~MockDistillerObserver() override {}
-};
-
 }  // namespace
 
 class DomDistillerStoreTest : public testing::Test {
@@ -232,39 +226,6 @@ TEST_F(DomDistillerStoreTest, TestAddAndUpdateEntry) {
   store_->RemoveEntry(updated_entry);
   EXPECT_FALSE(store_->UpdateEntry(updated_entry));
   EXPECT_FALSE(store_->UpdateEntry(GetSampleEntry(0)));
-}
-
-TEST_F(DomDistillerStoreTest, TestObserver) {
-  CreateStore();
-  MockDistillerObserver observer;
-  store_->AddObserver(&observer);
-  fake_db_->InitStatusCallback(leveldb_proto::Enums::InitStatus::kOK);
-  fake_db_->LoadCallback(true);
-  std::vector<DomDistillerObserver::ArticleUpdate> expected_updates;
-  DomDistillerObserver::ArticleUpdate update;
-  update.entry_id = GetSampleEntry(0).entry_id();
-  update.update_type = DomDistillerObserver::ArticleUpdate::ADD;
-  expected_updates.push_back(update);
-  EXPECT_CALL(observer, ArticleEntriesUpdated(
-                            test::util::HasExpectedUpdates(expected_updates)));
-  store_->AddEntry(GetSampleEntry(0));
-
-  expected_updates.clear();
-  update.entry_id = GetSampleEntry(1).entry_id();
-  update.update_type = DomDistillerObserver::ArticleUpdate::ADD;
-  expected_updates.push_back(update);
-  EXPECT_CALL(observer, ArticleEntriesUpdated(
-                            test::util::HasExpectedUpdates(expected_updates)));
-  store_->AddEntry(GetSampleEntry(1));
-
-  expected_updates.clear();
-  update.entry_id = GetSampleEntry(0).entry_id();
-  update.update_type = DomDistillerObserver::ArticleUpdate::REMOVE;
-  expected_updates.clear();
-  expected_updates.push_back(update);
-  EXPECT_CALL(observer, ArticleEntriesUpdated(
-                            test::util::HasExpectedUpdates(expected_updates)));
-  store_->RemoveEntry(GetSampleEntry(0));
 }
 
 }  // namespace dom_distiller

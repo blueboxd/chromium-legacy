@@ -298,17 +298,15 @@ void TableView::ResetFocusIndicator() {
 
   if (GetHasFocusIndicator()) {
     // Draw a focus indicator around the active column.
-    focus_ring_ = FocusRing::Install(this);
     const gfx::Rect cell_bounds(GetCellBounds(
         ModelToView(selection_model_.active()), active_visible_column_index_));
     auto path = std::make_unique<SkPath>();
     path->addRect(gfx::RectToSkRect(cell_bounds));
     SetProperty(views::kHighlightPathKey, path.release());
-    focus_ring_->SchedulePaint();
   } else {
     ClearProperty(views::kHighlightPathKey);
-    focus_ring_.reset();
   }
+  focus_ring_->SchedulePaint();
 }
 
 const TableView::VisibleColumn& TableView::GetVisibleColumn(int index) {
@@ -404,8 +402,7 @@ void TableView::Layout() {
                   gfx::Size(width, header_->GetPreferredSize().height())));
   }
 
-  if (focus_ring_)
-    focus_ring_->Layout();
+  focus_ring_->Layout();
 }
 
 gfx::Size TableView::CalculatePreferredSize() const {
@@ -822,19 +819,12 @@ void TableView::OnPaint(gfx::Canvas* canvas) {
 }
 
 void TableView::OnFocus() {
-  ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
-  if (scroll_view)
-    scroll_view->SetHasFocusIndicator(true);
-
   SchedulePaintForSelection();
   ResetFocusIndicator();
   UpdateAccessibilityFocus();
 }
 
 void TableView::OnBlur() {
-  ScrollView* scroll_view = ScrollView::GetScrollViewForContents(this);
-  if (scroll_view)
-    scroll_view->SetHasFocusIndicator(false);
   SchedulePaintForSelection();
   ResetFocusIndicator();
   UpdateAccessibilityFocus();

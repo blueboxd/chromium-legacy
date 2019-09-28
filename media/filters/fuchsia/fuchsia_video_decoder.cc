@@ -8,6 +8,7 @@
 #include <fuchsia/mediacodec/cpp/fidl.h>
 #include <fuchsia/sysmem/cpp/fidl.h>
 #include <lib/sys/cpp/component_context.h>
+#include <vulkan/vulkan.h>
 #include <zircon/rights.h>
 
 #include "base/bind.h"
@@ -819,16 +820,19 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
 
   VideoPixelFormat pixel_format;
   gfx::BufferFormat buffer_format;
+  VkFormat vk_format;
   switch (sysmem_pixel_format) {
     case fuchsia::sysmem::PixelFormatType::NV12:
       pixel_format = PIXEL_FORMAT_NV12;
       buffer_format = gfx::BufferFormat::YUV_420_BIPLANAR;
+      vk_format = VK_FORMAT_G8_B8R8_2PLANE_420_UNORM;
       break;
 
     case fuchsia::sysmem::PixelFormatType::I420:
     case fuchsia::sysmem::PixelFormatType::YV12:
       pixel_format = PIXEL_FORMAT_I420;
       buffer_format = gfx::BufferFormat::YVU_420;
+      vk_format = VK_FORMAT_G8_B8_R8_3PLANE_420_UNORM;
       break;
 
     default:
@@ -895,6 +899,18 @@ void FuchsiaVideoDecoder::OnOutputPacket(fuchsia::media::Packet output_packet,
       base::BindOnce(&FuchsiaVideoDecoder::OnReuseMailbox,
                      base::Unretained(this), buffer_index,
                      output_packet.header().packet_index()));
+
+  // Currently sysmem doesn't specify location of chroma samples relative to
+  // luma (see fxb/13677). Assume they are cosited with luma. YCbCr info here
+  // must match the values passed for the same buffer in
+  // ui::SysmemBufferCollection::CreateVkImage() (see
+  // ui/ozone/platform/scenic/sysmem_buffer_collection.cc). |format_features|
+  // are resolved later in the GPU process before this info is passed to Skia.
+  frame->set_ycbcr_info(gpu::VulkanYCbCrInfo(
+      vk_format, /*external_format=*/0,
+      VK_SAMPLER_YCBCR_MODEL_CONVERSION_YCBCR_709,
+      VK_SAMPLER_YCBCR_RANGE_ITU_NARROW, VK_CHROMA_LOCATION_COSITED_EVEN,
+      VK_CHROMA_LOCATION_COSITED_EVEN, /*format_features=*/0));
 
   // Mark the frame as power-efficient when software decoders are disabled. The
   // codec may still decode on hardware even when |enable_sw_decoding_| is set

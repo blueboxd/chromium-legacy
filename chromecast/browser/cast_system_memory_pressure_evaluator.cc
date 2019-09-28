@@ -11,10 +11,20 @@
 #include "base/location.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/process/process_metrics.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/base/metrics/cast_metrics_helper.h"
+
+#define MAKE_SURE_THREAD(callback, ...)                                 \
+  if (!task_runner_->BelongsToCurrentThread()) {                        \
+    task_runner_->PostTask(                                             \
+        FROM_HERE,                                                      \
+        base::BindOnce(&CastSystemMemoryPressureEvaluator::callback,    \
+                       weak_ptr_factory_.GetWeakPtr(), ##__VA_ARGS__)); \
+    return;                                                             \
+  }
 
 namespace chromecast {
 namespace {
@@ -24,6 +34,10 @@ namespace {
 // TODO(halliwell): tune thresholds based on data.
 constexpr float kCriticalMemoryFraction = 0.25f;
 constexpr float kModerateMemoryFraction = 0.4f;
+
+// Default Relaxed memory thresholds selectively applied to a few apps.
+constexpr float kRelaxedCriticalMemoryFraction = 0.1f;
+constexpr float kRelaxedModerateMemoryFraction = 0.2f;
 
 // Memory thresholds in MB for the simple heuristic based on 'free' memory.
 constexpr int kCriticalFreeMemoryKB = 20 * 1024;
@@ -46,14 +60,22 @@ int GetSystemReservedKb() {
 CastSystemMemoryPressureEvaluator::CastSystemMemoryPressureEvaluator(
     std::unique_ptr<util::MemoryPressureVoter> voter)
     : util::SystemMemoryPressureEvaluator(std::move(voter)),
-      critical_memory_fraction_(
+      critical_memory_fraction_command_line_(
           GetSwitchValueDouble(switches::kCastMemoryPressureCriticalFraction,
-                               kCriticalMemoryFraction)),
-      moderate_memory_fraction_(
+                               -1.0f)),
+      moderate_memory_fraction_command_line_(
           GetSwitchValueDouble(switches::kCastMemoryPressureModerateFraction,
-                               kModerateMemoryFraction)),
+                               -1.0f)),
       system_reserved_kb_(GetSystemReservedKb()),
+      task_runner_(base::ThreadTaskRunnerHandle::Get()),
       weak_ptr_factory_(this) {
+  relaxed_critical_memory_fraction_ = kRelaxedCriticalMemoryFraction;
+  relaxed_moderate_memory_fraction_ = kRelaxedModerateMemoryFraction;
+  critical_memory_fraction_ = critical_memory_fraction_command_line_;
+  moderate_memory_fraction_ = moderate_memory_fraction_command_line_;
+  // If the fractions from command line parameters are invalid they are subject
+  // to adjustment.
+  AdjustMemoryFractions(false);
   PollPressureLevel();
 }
 
@@ -61,6 +83,7 @@ CastSystemMemoryPressureEvaluator::~CastSystemMemoryPressureEvaluator() =
     default;
 
 void CastSystemMemoryPressureEvaluator::PollPressureLevel() {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   base::MemoryPressureListener::MemoryPressureLevel level =
       base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE;
 
@@ -106,7 +129,7 @@ void CastSystemMemoryPressureEvaluator::PollPressureLevel() {
                                 info.available / 1024, 1, 2000, 100);
   }
 
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+  task_runner_->PostDelayedTask(
       FROM_HERE,
       base::BindOnce(&CastSystemMemoryPressureEvaluator::PollPressureLevel,
                      weak_ptr_factory_.GetWeakPtr()),
@@ -115,6 +138,7 @@ void CastSystemMemoryPressureEvaluator::PollPressureLevel() {
 
 void CastSystemMemoryPressureEvaluator::UpdateMemoryPressureLevel(
     base::MemoryPressureListener::MemoryPressureLevel new_level) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
   auto old_vote = current_vote();
   SetCurrentVote(new_level);
 
@@ -126,6 +150,58 @@ void CastSystemMemoryPressureEvaluator::UpdateMemoryPressureLevel(
 
   metrics::CastMetricsHelper::GetInstance()->RecordApplicationEventWithValue(
       "Memory.Pressure.LevelChange", new_level);
+}
+
+void CastSystemMemoryPressureEvaluator::AdjustMemoryFractions(bool relax) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  if (critical_memory_fraction_command_line_ < 0) {
+    critical_memory_fraction_ =
+        relax ? relaxed_critical_memory_fraction_ : kCriticalMemoryFraction;
+  }
+  if (moderate_memory_fraction_command_line_ < 0) {
+    moderate_memory_fraction_ =
+        relax ? relaxed_moderate_memory_fraction_ : kModerateMemoryFraction;
+  }
+  LOG(INFO) << __func__
+            << ": critical_memory_fraction_=" << critical_memory_fraction_
+            << ", moderate_memory_fraction_=" << moderate_memory_fraction_;
+}
+
+void CastSystemMemoryPressureEvaluator::ConfigRelaxMemoryPressureThresholds(
+    float relaxed_critical_memory_fraction,
+    float relaxed_moderate_memory_fraction) {
+  MAKE_SURE_THREAD(ConfigRelaxMemoryPressureThresholds,
+                   relaxed_critical_memory_fraction,
+                   relaxed_moderate_memory_fraction);
+
+  LOG(INFO) << __func__ << ", " << relaxed_critical_memory_fraction << ", "
+            << relaxed_moderate_memory_fraction;
+
+  if (relaxed_critical_memory_fraction > 0) {
+    relaxed_critical_memory_fraction_ = relaxed_critical_memory_fraction;
+  }
+  if (relaxed_moderate_memory_fraction > 0) {
+    relaxed_moderate_memory_fraction_ = relaxed_moderate_memory_fraction;
+  }
+}
+
+void CastSystemMemoryPressureEvaluator::RelaxMemoryPressureThresholds(
+    std::string requesting_app_session_id) {
+  MAKE_SURE_THREAD(RelaxMemoryPressureThresholds,
+                   std::move(requesting_app_session_id));
+  apps_needing_relaxed_memory_pressure_thresholds_.insert(
+      std::move(requesting_app_session_id));
+  AdjustMemoryFractions(true);
+}
+void CastSystemMemoryPressureEvaluator::RestoreMemoryPressureThresholds(
+    const std::string& requesting_app_session_id) {
+  MAKE_SURE_THREAD(RestoreMemoryPressureThresholds, requesting_app_session_id);
+  apps_needing_relaxed_memory_pressure_thresholds_.erase(
+      requesting_app_session_id);
+  if (apps_needing_relaxed_memory_pressure_thresholds_.empty()) {
+    AdjustMemoryFractions(false);
+  }
 }
 
 }  // namespace chromecast

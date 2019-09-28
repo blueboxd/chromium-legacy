@@ -170,6 +170,7 @@ Polymer({
   },
 
   observers: [
+    'handleDeviceStateChange_(deviceState_.*)',
     'updateAlwaysOnVpnPrefValue_(prefs.arc.vpn.always_on.*)',
     'updateAlwaysOnVpnPrefEnforcement_(managedProperties_,' +
         'prefs.vpn_config_allowed.*)',
@@ -343,10 +344,9 @@ Polymer({
     if (!this.didSetFocus_) {
       // Focus a button once the initial state is set.
       this.didSetFocus_ = true;
-      const button = this.$$('#titleDiv .action-button:not([hidden])') ||
-          this.$$('#titleDiv cr-button:not([hidden])');
+      const button = this.$$('#titleDiv .action-button:not([hidden])');
       if (button) {
-        setTimeout(() => button.focus());
+        Polymer.RenderStatus.afterNextRender(this, () => button.focus());
       }
     }
 
@@ -366,6 +366,10 @@ Polymer({
       return;
     }
     this.networkConfig_.getDeviceStateList().then(response => {
+      if (!this.managedProperties_) {
+        return;
+      }
+
       const devices = response.result;
       this.deviceState_ =
           devices.find(device => device.type == this.managedProperties_.type) ||
@@ -495,7 +499,7 @@ Polymer({
       this.close();
     }
     this.propertiesReceived_ = true;
-    this.outOfRange_ = false;
+    this.outOfRange_ = !this.isDeviceStateEnabled_();
     if (!this.deviceState_) {
       this.getDeviceState_();
     }
@@ -533,7 +537,7 @@ Polymer({
     this.managedProperties_ = managedProperties;
 
     this.propertiesReceived_ = true;
-    this.outOfRange_ = false;
+    this.outOfRange_ = !this.isDeviceStateEnabled_();
   },
 
   /**
@@ -977,6 +981,13 @@ Polymer({
       return false;
     }
     return true;
+  },
+
+  /** @private */
+  handleDeviceStateChange_: function() {
+    // Consider the network out of range if its associated device is not enabled
+    // (e.g., a Wi-Fi network would be out of range if Wi-Fi is off).
+    this.outOfRange_ |= !this.isDeviceStateEnabled_();
   },
 
   /** @private */
@@ -1635,6 +1646,13 @@ Polymer({
       }
     }
     return true;
+  },
+
+  /** @return {boolean} */
+  isDeviceStateEnabled_: function() {
+    return !!this.deviceState_ &&
+        this.deviceState_.deviceState ==
+        chromeos.networkConfig.mojom.DeviceStateType.kEnabled;
   },
 });
 })();

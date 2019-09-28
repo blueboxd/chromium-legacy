@@ -11,17 +11,17 @@
 
 @class BadgeButtonActionHandler;
 @class BadgeButton;
+@protocol BadgeDelegate;
 
 // BadgeButtonFactory Factory creates BadgButton objects with certain
 // styles and configurations, depending on its type.
 @interface BadgeButtonFactory : NSObject
 
-- (instancetype)initWithActionHandler:(BadgeButtonActionHandler*)actionHandler
-    NS_DESIGNATED_INITIALIZER;
-- (instancetype)init NS_UNAVAILABLE;
-
 // Yes if in Incognito mode.
 @property(nonatomic, assign) BOOL incognito;
+
+// Action handler delegate for the buttons.
+@property(nonatomic, weak) id<BadgeDelegate> delegate;
 
 // Returns a properly configured BadgButton associated with |badgeType|.
 - (BadgeButton*)getBadgeButtonForBadgeType:(BadgeType)badgeType;

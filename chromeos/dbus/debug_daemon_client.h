@@ -248,11 +248,18 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) DebugDaemonClient
   // to 0.
   virtual void SetRlzPingSent(SetRlzPingSentCallback callback) = 0;
 
-  // Request switching to the scheduler configuration profile indicated. The
-  // profile names are defined by debugd, which adjusts various knobs affecting
-  // kernel level task scheduling (see debugd source code for details).
+  // Deprecated. Use SetSchedulerConfigurationV2 instead.
+  // TODO(abhishekbh): Remove the method.
   virtual void SetSchedulerConfiguration(const std::string& config_name,
                                          VoidDBusMethodCallback callback) = 0;
+
+  // Request switching to the scheduler configuration profile indicated. The
+  // profile names are defined by debugd, which adjusts various knobs affecting
+  // kernel level task scheduling (see debugd source code for details). When
+  // |lock_policy| is true, the policy is locked until the device is rebooted.
+  virtual void SetSchedulerConfigurationV2(const std::string& config_name,
+                                           bool lock_policy,
+                                           VoidDBusMethodCallback callback) = 0;
 
   // Set U2F flags.
   virtual void SetU2fFlags(const std::set<std::string>& flags,

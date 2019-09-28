@@ -995,6 +995,7 @@ class CORE_EXPORT Element : public ContainerNode, public Animatable {
 
   scoped_refptr<ComputedStyle> OriginalStyleForLayoutObject();
 
+  // Step 4 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
   Node* InsertAdjacent(const String& where, Node* new_child, ExceptionState&);
 
   virtual void ParserDidSetAttributes() {}

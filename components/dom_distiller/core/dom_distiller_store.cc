@@ -100,53 +100,14 @@ bool DomDistillerStore::ChangeEntry(const ArticleEntry& entry,
   return true;
 }
 
-void DomDistillerStore::AddObserver(DomDistillerObserver* observer) {
-  observers_.AddObserver(observer);
-}
-
-void DomDistillerStore::RemoveObserver(DomDistillerObserver* observer) {
-  observers_.RemoveObserver(observer);
-}
-
 std::vector<ArticleEntry> DomDistillerStore::GetEntries() const {
   return model_.GetEntries();
-}
-
-void DomDistillerStore::NotifyObservers(const syncer::SyncChangeList& changes) {
-  if (observers_.might_have_observers() && changes.size() > 0) {
-    std::vector<DomDistillerObserver::ArticleUpdate> article_changes;
-    for (auto it = changes.begin(); it != changes.end(); ++it) {
-      DomDistillerObserver::ArticleUpdate article_update;
-      switch (it->change_type()) {
-        case SyncChange::ACTION_ADD:
-          article_update.update_type = DomDistillerObserver::ArticleUpdate::ADD;
-          break;
-        case SyncChange::ACTION_UPDATE:
-          article_update.update_type =
-              DomDistillerObserver::ArticleUpdate::UPDATE;
-          break;
-        case SyncChange::ACTION_DELETE:
-          article_update.update_type =
-              DomDistillerObserver::ArticleUpdate::REMOVE;
-          break;
-        case SyncChange::ACTION_INVALID:
-          NOTREACHED();
-          break;
-      }
-      const ArticleEntry& entry = GetEntryFromChange(*it);
-      article_update.entry_id = entry.entry_id();
-      article_changes.push_back(article_update);
-    }
-    for (DomDistillerObserver& observer : observers_)
-      observer.ArticleEntriesUpdated(article_changes);
-  }
 }
 
 void DomDistillerStore::ApplyChangesToModel(const SyncChangeList& changes,
                                             SyncChangeList* changes_applied,
                                             SyncChangeList* changes_missing) {
   model_.ApplyChangesToModel(changes, changes_applied, changes_missing);
-  NotifyObservers(*changes_applied);
 }
 
 void DomDistillerStore::OnDatabaseInit(

@@ -5200,5 +5200,16 @@
     "pref_mappings": [
       { "pref": "hsts.policy.upgrade_bypass_list", "local_state": true }
     ]
+  },
+
+  "TotalMemoryLimitMb": {
+    "os": ["win", "mac"],
+    "test_policy": { "TotalMemoryLimitMb": 2048 },
+    "pref_mappings": [
+      {
+        "pref": "total_memory_limit_mb",
+        "local_state":  true
+      }
+    ]
   }
 }

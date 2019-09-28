@@ -3,12 +3,12 @@ Name,Size
 .bss,1300456
 .data,101768
 .data.rel.ro,1065224
-.other,33984171
+.other,33902635
 .rel.dyn,2655384
 .rodata,5927652
 .strtab,34841854
 .symtab,17166112
-.text,35900712
+.text,35982248
 
 GroupCount,Address,SizeWithoutPadding,Padding,NumAliases,PSS,Section,Name
 ,0x2de7000,4,0,1,4.0,d,google::protobuf::internal::pLinuxKernelCmpxchg
@@ -24,7 +24,7 @@ GroupCount,Address,SizeWithoutPadding,Padding,NumAliases,PSS,Section,Name
 ,0x2c17740,789904,0,1,789904.0,R,chrome::mojom::FieldTrialRecorderProxy [vtable]
 ,0x2cd84e0,16,16,1,32.0,R,.Lswitch.table.45
 ,0x2cd84f0,8,0,1,8.0,R,kSystemClassPrefixes
-,0x0,0,33984171,1,33984171.0,o,Overhead: ELF file
+,0x0,0,33902635,1,33902635.0,o,Overhead: ELF file
 ,0x266e600,5,0,2,2.5,r,"""Str1"""
 ,0x266e600,5,0,2,2.5,r,"""Str1"""
 ,0x266e605,16,0,1,16.0,r,"""String literal2"""

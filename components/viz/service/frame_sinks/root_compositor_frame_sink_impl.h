@@ -135,7 +135,7 @@ class RootCompositorFrameSinkImpl : public mojom::CompositorFrameSink,
   // to the BFS.
   std::unique_ptr<Display> display_;
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   gfx::Size last_swap_pixel_size_;
 #endif
 

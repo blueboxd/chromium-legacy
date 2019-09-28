@@ -1978,6 +1978,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-chrome-duet-labels", flag_descriptions::kChromeDuetLabelsName,
      flag_descriptions::kChromeDuetLabelsDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeDuetLabeled)},
+    {"chrome-sharing-hub", flag_descriptions::kChromeSharingHubName,
+     flag_descriptions::kChromeSharingHubDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kChromeSharingHub)},
     {"enable-bookmark-reorder", flag_descriptions::kReorderBookmarksName,
      flag_descriptions::kReorderBookmarksDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kReorderBookmarks)},
@@ -2807,10 +2810,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kOmniboxTabSwitchSuggestionsDedicatedRowDescription,
      kOsDesktop,
      FEATURE_VALUE_TYPE(omnibox::kOmniboxTabSwitchSuggestionsDedicatedRow)},
-    {"omnibox-wrap-popup-position",
-     flag_descriptions::kOmniboxWrapPopupPositionName,
-     flag_descriptions::kOmniboxWrapPopupPositionDescription, kOsDesktop,
-     FEATURE_VALUE_TYPE(omnibox::kOmniboxWrapPopupPosition)},
     {"omnibox-pedal-suggestions",
      flag_descriptions::kOmniboxPedalSuggestionsName,
      flag_descriptions::kOmniboxPedalSuggestionsDescription, kOsDesktop,
@@ -3088,12 +3087,6 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kNtpCustomizationMenuV2Name,
      flag_descriptions::kNtpCustomizationMenuV2Description, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kNtpCustomizationMenuV2)},
-
-    {"ntp-disable-initial-most-visited-fade-in",
-     flag_descriptions::kNtpDisableInitialMostVisitedFadeInName,
-     flag_descriptions::kNtpDisableInitialMostVisitedFadeInDescription,
-     kOsDesktop,
-     FEATURE_VALUE_TYPE(features::kDisableInitialMostVisitedFadeIn)},
 
     {"ntp-dismiss-promos", flag_descriptions::kNtpDismissPromosName,
      flag_descriptions::kNtpDismissPromosDescription, kOsDesktop,
@@ -4639,6 +4632,12 @@ const FeatureEntry kFeatureEntries[] = {
     {"show-legacy-tls-warnings", flag_descriptions::kLegacyTLSWarningsName,
      flag_descriptions::kLegacyTLSWarningsDescription, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kLegacyTLSWarnings)},
+#endif
+
+#if defined(OS_CHROMEOS)
+    {"enable-assistant-aec", flag_descriptions::kEnableGoogleAssistantAecName,
+     flag_descriptions::kEnableGoogleAssistantAecDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(chromeos::assistant::features::kAssistantAudioEraser)},
 #endif
 
     // NOTE: Adding a new flag requires adding a corresponding entry to enum

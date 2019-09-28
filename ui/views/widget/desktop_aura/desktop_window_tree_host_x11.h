@@ -156,7 +156,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   void EnableEventListening();
 
   // Callback for a swapbuffer after resize.
-  void OnCompleteSwapWithNewSize(const gfx::Size& size);
+  void OnCompleteSwapWithNewSize(const gfx::Size& size) override;
 
   // PlatformWindowDelegate overrides:
   //
@@ -205,8 +205,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   std::unique_ptr<aura::ScopedWindowTargeter> targeter_for_modal_;
 
   uint32_t modal_dialog_counter_ = 0;
-
-  std::unique_ptr<CompositorObserver> compositor_observer_;
 
   // The display and the native X window hosting the root window.
   base::WeakPtrFactory<DesktopWindowTreeHostX11> weak_factory_{this};

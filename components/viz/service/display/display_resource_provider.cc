@@ -927,7 +927,7 @@ DisplayResourceProvider::LockSetForExternalUse::LockResource(
       resource.image_context =
           resource_provider_->external_use_client_->CreateImageContext(
               resource.transferable.mailbox_holder, resource.transferable.size,
-              resource.transferable.format,
+              resource.transferable.format, resource.transferable.ycbcr_info,
               // The resource |color_space| is ignored by SkiaRenderer for video
               // planes and usually cannot be converted to SkColorSpace.
               is_video_plane

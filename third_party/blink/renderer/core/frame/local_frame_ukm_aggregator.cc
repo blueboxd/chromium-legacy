@@ -7,6 +7,7 @@
 #include "base/format_macros.h"
 #include "base/rand_util.h"
 #include "base/time/default_tick_clock.h"
+#include "cc/metrics/begin_main_frame_metrics.h"
 #include "services/metrics/public/cpp/ukm_builders.h"
 #include "services/metrics/public/cpp/ukm_recorder.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
@@ -122,6 +123,48 @@ LocalFrameUkmAggregator::GetScopedTimer(size_t metric_index) {
 void LocalFrameUkmAggregator::BeginMainFrame() {
   DCHECK(!in_main_frame_update_);
   in_main_frame_update_ = true;
+}
+
+std::unique_ptr<cc::BeginMainFrameMetrics>
+LocalFrameUkmAggregator::GetBeginMainFrameMetrics() {
+  DCHECK(InMainFrame());
+
+  // Use the main_frame_percentage_records_ because they are the ones that
+  // only count time between the Begin and End of a main frame update.
+  std::unique_ptr<cc::BeginMainFrameMetrics> metrics_data =
+      std::make_unique<cc::BeginMainFrameMetrics>();
+  metrics_data->handle_input_events =
+      main_frame_percentage_records_[static_cast<unsigned>(
+                                         MetricId::kHandleInputEvents)]
+          .interval_duration;
+  metrics_data->animate =
+      main_frame_percentage_records_[static_cast<unsigned>(MetricId::kAnimate)]
+          .interval_duration;
+  metrics_data->style_update =
+      main_frame_percentage_records_[static_cast<unsigned>(MetricId::kStyle)]
+          .interval_duration;
+  metrics_data->layout_update =
+      main_frame_percentage_records_[static_cast<unsigned>(MetricId::kLayout)]
+          .interval_duration;
+  metrics_data->prepaint =
+      main_frame_percentage_records_[static_cast<unsigned>(MetricId::kPrePaint)]
+          .interval_duration;
+  metrics_data->composite =
+      main_frame_percentage_records_[static_cast<unsigned>(
+                                         MetricId::kCompositing)]
+          .interval_duration;
+  metrics_data->paint =
+      main_frame_percentage_records_[static_cast<unsigned>(MetricId::kPaint)]
+          .interval_duration;
+  metrics_data->scrolling_coordinator =
+      main_frame_percentage_records_[static_cast<unsigned>(
+                                         MetricId::kScrollingCoordinator)]
+          .interval_duration;
+  metrics_data->composite_commit =
+      main_frame_percentage_records_[static_cast<unsigned>(
+                                         MetricId::kCompositingCommit)]
+          .interval_duration;
+  return metrics_data;
 }
 
 void LocalFrameUkmAggregator::SetTickClockForTesting(

@@ -81,38 +81,6 @@ DEFINE_UI_CLASS_PROPERTY_KEY(DesktopWindowTreeHostX11*,
 
 namespace {
 
-class SwapWithNewSizeObserverHelper : public ui::CompositorObserver {
- public:
-  using HelperCallback = base::RepeatingCallback<void(const gfx::Size&)>;
-  SwapWithNewSizeObserverHelper(ui::Compositor* compositor,
-                                const HelperCallback& callback)
-      : compositor_(compositor), callback_(callback) {
-    compositor_->AddObserver(this);
-  }
-  ~SwapWithNewSizeObserverHelper() override {
-    if (compositor_)
-      compositor_->RemoveObserver(this);
-  }
-
- private:
-  // ui::CompositorObserver:
-  void OnCompositingCompleteSwapWithNewSize(ui::Compositor* compositor,
-                                            const gfx::Size& size) override {
-    DCHECK_EQ(compositor, compositor_);
-    callback_.Run(size);
-  }
-  void OnCompositingShuttingDown(ui::Compositor* compositor) override {
-    DCHECK_EQ(compositor, compositor_);
-    compositor_->RemoveObserver(this);
-    compositor_ = nullptr;
-  }
-
-  ui::Compositor* compositor_;
-  const HelperCallback callback_;
-
-  DISALLOW_COPY_AND_ASSIGN(SwapWithNewSizeObserverHelper);
-};
-
 bool ShouldDiscardKeyEvent(XEvent* xev) {
 #if BUILDFLAG(USE_ATK)
   return ui::AtkUtilAuraLinux::HandleKeyEvent(xev) ==
@@ -203,7 +171,7 @@ void DesktopWindowTreeHostX11::CleanUpWindowList(
 // DesktopWindowTreeHostX11, DesktopWindowTreeHost implementation:
 
 void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
-  DesktopWindowTreeHostPlatform::Init(params);
+  DesktopWindowTreeHostLinux::Init(params);
 
   // Set XEventDelegate to receive selection, drag&drop and raw key events.
   //
@@ -212,15 +180,6 @@ void DesktopWindowTreeHostX11::Init(const Widget::InitParams& params) {
   // unified so that DragAndrDropClientOzone is used and XEvent are handled on
   // platform level.
   static_cast<ui::X11Window*>(platform_window())->SetXEventDelegate(this);
-
-  // Can it be unified and will Ozone benefit from this? Check comment above
-  // where this class is defined and declared.
-  if (ui::IsSyncExtensionAvailable()) {
-    compositor_observer_ = std::make_unique<SwapWithNewSizeObserverHelper>(
-        compositor(), base::BindRepeating(
-                          &DesktopWindowTreeHostX11::OnCompleteSwapWithNewSize,
-                          base::Unretained(this)));
-  }
 }
 
 void DesktopWindowTreeHostX11::OnNativeWidgetCreated(

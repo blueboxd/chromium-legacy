@@ -231,9 +231,10 @@ ServiceProcessControl* CloudPrintProxyService::GetServiceProcessControl() {
 }
 
 cloud_print::mojom::CloudPrint& CloudPrintProxyService::GetCloudPrintProxy() {
-  if (!cloud_print_proxy_ || cloud_print_proxy_.encountered_error()) {
+  if (!cloud_print_proxy_ || !cloud_print_proxy_.is_connected()) {
+    cloud_print_proxy_.reset();
     GetServiceProcessControl()->remote_interfaces().GetInterface(
-        &cloud_print_proxy_);
+        cloud_print_proxy_.BindNewPipeAndPassReceiver());
   }
   return *cloud_print_proxy_;
 }

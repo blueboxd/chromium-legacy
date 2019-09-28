@@ -45,7 +45,6 @@ void EnableStartupTracingIfNeeded() {
 
   if (startup_config->IsEnabled()) {
     const TraceConfig& trace_config = startup_config->GetTraceConfig();
-    if (TracingUsesPerfettoBackend()) {
       if (trace_config.IsCategoryGroupEnabled(
               TRACE_DISABLED_BY_DEFAULT("cpu_profiler"))) {
         TracingSamplerProfiler::SetupStartupTracing();
@@ -53,7 +52,6 @@ void EnableStartupTracingIfNeeded() {
       TraceEventDataSource::GetInstance()->SetupStartupTracing(
           startup_config->GetSessionOwner() ==
           TraceStartupConfig::SessionOwner::kBackgroundTracing);
-    }
 
     uint8_t modes = TraceLog::RECORDING_MODE;
     if (!trace_config.event_filters().empty())
@@ -66,9 +64,8 @@ void EnableStartupTracingIfNeeded() {
     LOG(ERROR) << "Start " << switches::kTraceToConsole
                << " with CategoryFilter '"
                << trace_config.ToCategoryFilterString() << "'.";
-    if (TracingUsesPerfettoBackend())
-      TraceEventDataSource::GetInstance()->SetupStartupTracing(
-          /*privacy_filtering_enabled=*/false);
+    TraceEventDataSource::GetInstance()->SetupStartupTracing(
+        /*privacy_filtering_enabled=*/false);
     trace_log->SetEnabled(trace_config, TraceLog::RECORDING_MODE);
   }
 }

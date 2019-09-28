@@ -33,7 +33,7 @@ public final class ToolbarSecurityIconTest {
     private static final boolean IS_OFFLINE_PAGE = true;
     private static final boolean IS_PREVIEW = true;
     private static final int[] SECURITY_LEVELS = new int[] {ConnectionSecurityLevel.NONE,
-            ConnectionSecurityLevel.HTTP_SHOW_WARNING, ConnectionSecurityLevel.DANGEROUS,
+            ConnectionSecurityLevel.WARNING, ConnectionSecurityLevel.DANGEROUS,
             ConnectionSecurityLevel.SECURE, ConnectionSecurityLevel.EV_SECURE};
 
     @Mock
@@ -72,7 +72,7 @@ public final class ToolbarSecurityIconTest {
                 ConnectionSecurityLevel.SECURE,
                 LocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, "https://example.com"));
         assertEquals("Wrong security level returned for HTTP publisher URL",
-                ConnectionSecurityLevel.HTTP_SHOW_WARNING,
+                ConnectionSecurityLevel.WARNING,
                 LocationBarModel.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, "http://example.com"));
 
         when(mTab.getSecurityLevel()).thenReturn(ConnectionSecurityLevel.DANGEROUS);
@@ -110,10 +110,10 @@ public final class ToolbarSecurityIconTest {
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_info,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.WARNING,
                         IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
         assertEquals(R.drawable.omnibox_info,
-                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.HTTP_SHOW_WARNING,
+                mLocationBarModel.getSecurityIconResource(ConnectionSecurityLevel.WARNING,
                         !IS_SMALL_DEVICE, !IS_OFFLINE_PAGE, !IS_PREVIEW));
 
         assertEquals(R.drawable.omnibox_https_invalid,

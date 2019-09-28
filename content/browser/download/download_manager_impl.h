@@ -88,7 +88,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   void DownloadUrl(
       std::unique_ptr<download::DownloadUrlParameters> parameters) override;
   void DownloadUrl(std::unique_ptr<download::DownloadUrlParameters> params,
-                   std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
                    scoped_refptr<network::SharedURLLoaderFactory>
                        blob_url_loader_factory) override;
   void AddObserver(Observer* observer) override;
@@ -243,7 +242,6 @@ class CONTENT_EXPORT DownloadManagerImpl
   // Helper method to start or resume a download.
   void BeginDownloadInternal(
       std::unique_ptr<download::DownloadUrlParameters> params,
-      std::unique_ptr<storage::BlobDataHandle> blob_data_handle,
       scoped_refptr<network::SharedURLLoaderFactory> blob_url_loader_factory,
       bool is_new_download,
       const GURL& site_url);

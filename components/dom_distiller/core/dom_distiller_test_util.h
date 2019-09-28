@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "components/dom_distiller/core/dom_distiller_observer.h"
+#include "components/dom_distiller/core/article_entry.h"
 #include "components/leveldb_proto/testing/fake_db.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -17,28 +17,6 @@ class DomDistillerStore;
 
 namespace test {
 namespace util {
-
-class ObserverUpdatesMatcher
-    : public testing::MatcherInterface<
-          const std::vector<DomDistillerObserver::ArticleUpdate>&> {
- public:
-  explicit ObserverUpdatesMatcher(
-      const std::vector<DomDistillerObserver::ArticleUpdate>&);
-
-  // MatcherInterface overrides.
-  bool MatchAndExplain(
-      const std::vector<DomDistillerObserver::ArticleUpdate>& actual_updates,
-      testing::MatchResultListener* listener) const override;
-  void DescribeTo(std::ostream* os) const override;
-  void DescribeNegationTo(std::ostream* os) const override;
-
- private:
-  void DescribeUpdates(std::ostream* os) const;
-  const std::vector<DomDistillerObserver::ArticleUpdate>& expected_updates_;
-};
-
-testing::Matcher<const std::vector<DomDistillerObserver::ArticleUpdate>&>
-HasExpectedUpdates(const std::vector<DomDistillerObserver::ArticleUpdate>&);
 
 // Creates a simple DomDistillerStore backed by |fake_db| and initialized
 // with |store_model|.

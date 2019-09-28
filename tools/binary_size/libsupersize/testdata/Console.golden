@@ -78,19 +78,19 @@ Section Sizes (Total=128.0mb (134218045 bytes)):
     .bss: 1.24mb (1300456 bytes) (not included in totals)
     .data: 99.4kb (101768 bytes) (0.1%)
     .data.rel.ro: 1.02mb (1065224 bytes) (0.8%)
-    .other: 32.4mb (33984171 bytes) (25.3%)
+    .other: 32.3mb (33902635 bytes) (25.3%)
     .rel.dyn: 2.53mb (2655384 bytes) (2.0%)
     .rodata: 5.65mb (5927652 bytes) (4.4%)
     .strtab: 33.2mb (34841854 bytes) (26.0%)
     .symtab: 16.4mb (17166112 bytes) (12.8%)
-    .text: 34.2mb (35900712 bytes) (26.7%)
+    .text: 34.3mb (35982248 bytes) (26.8%)
 
-Showing 51 symbols (45 unique) with total pss: 37499787 bytes
+Showing 51 symbols (45 unique) with total pss: 37418251 bytes
 Histogram of symbols based on PSS:
      [2,4): 7    [16,32): 12     [128,256): 2      [8192,16384): 1     [262144,524288): 1   [33554432,67108864): 1
      [4,8): 6    [32,64): 9      [256,512): 1    [65536,131072): 1    [524288,1048576): 2
     [8,16): 3   [64,128): 1    [2048,4096): 1   [131072,262144): 2   [1048576,2097152): 1
-Sizes: .text=81.8kb     .rodata=2.52mb     .data.rel.ro=92 bytes   .data=168 bytes  .bss=512kb      .other=32.4mb     total=35.8mb
+Sizes: .text=81.8kb     .rodata=2.52mb     .data.rel.ro=92 bytes   .data=168 bytes  .bss=512kb      .other=32.3mb     total=35.7mb
 Counts: .text=21 .rodata=11 .data.rel.ro=3 .data=5 .bss=6 .other=1
 Number of unique paths: 9
 
@@ -123,78 +123,78 @@ Index | Running Total | Section@Address | PSS | Path
              .Lswitch.table.45
 12)    790284 (2.1%)  R@0x2cd84f0  8              third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o
              kSystemClassPrefixes
-13)  34774455 (92.7%) o@0x0        33984171       {no path}
+13)  34692919 (92.7%) o@0x0        33902635       {no path}
              Overhead: ELF file
-14)  34774457 (92.7%) r@0x266e600  2.5 (size=5)   base/page_allocator.cc
+14)  34692921 (92.7%) r@0x266e600  2.5 (size=5)   base/page_allocator.cc
              "Str1" (num_aliases=2)
-15)  34774460 (92.7%) r@0x266e600  2.5 (size=5)   $root_gen_dir/third_party/icu/ucnv_ext.c
+15)  34692924 (92.7%) r@0x266e600  2.5 (size=5)   $root_gen_dir/third_party/icu/ucnv_ext.c
              "Str1" (num_aliases=2)
-16)  34774476 (92.7%) r@0x266e605  16             $root_gen_dir/third_party/icu/ucnv_ext.c
+16)  34692940 (92.7%) r@0x266e605  16             $root_gen_dir/third_party/icu/ucnv_ext.c
              "String literal2"
-17)  34774519 (92.7%) r@0x266e630  43             {no path}
+17)  34692983 (92.7%) r@0x266e630  43             {no path}
              ** merge strings
-18)  36739864 (98.0%) r@0x284d600  1965345        {no path}
+18)  36658328 (98.0%) r@0x284d600  1965345        {no path}
              ** merge constants
-19)  36739867 (98.0%) r@0x284e364  3              {no path}
+19)  36658331 (98.0%) r@0x284e364  3              {no path}
              ** symbol gap 0
-20)  36739875 (98.0%) r@0x284e364  8              base/page_allocator.cc
-21)  36739919 (98.0%) r@0x284e370  44             base/page_allocator.cc
+20)  36658339 (98.0%) r@0x284e364  8              base/page_allocator.cc
+21)  36658383 (98.0%) r@0x284e370  44             base/page_allocator.cc
              Name
-22)  36739951 (98.0%) r@0x284e398  32             third_party/container/container.c
+22)  36658415 (98.0%) r@0x284e398  32             third_party/container/container.c
              chrome::mojom::FilePatcher::Name_
-23)  37415991 (99.8%) r@0x28f3450  676040         third_party/paint.cc
+23)  37334455 (99.8%) r@0x28f3450  676040         third_party/paint.cc
              kAnimationFrameTimeHistogramClassPath
-24)  37415995 (99.8%) r@0x28f3480  4              third_party/paint.cc
+24)  37334459 (99.8%) r@0x28f3480  4              third_party/paint.cc
              blink::CSSValueKeywordsHash::findValueImpl::value_word_list
-25)  37416011 (99.8%) t@0x28d900   16             base/page_allocator.cc
+25)  37334475 (99.8%) t@0x28d900   16             base/page_allocator.cc
              _GLOBAL__sub_I_page_allocator.cc
-26)  37416067 (99.8%) t@0x28d910   56             base/page_allocator.cc
+26)  37334531 (99.8%) t@0x28d910   56             base/page_allocator.cc
              _GLOBAL__sub_I_bbr_sender.cc
-27)  37416095 (99.8%) t@0x28d948   28             base/page_allocator.cc
+27)  37334559 (99.8%) t@0x28d948   28             base/page_allocator.cc
              _GLOBAL__sub_I_pacing_sender.cc
-28)  37416133 (99.8%) t@0x28d964   38             base/page_allocator.cc
+28)  37334597 (99.8%) t@0x28d964   38             base/page_allocator.cc
              extFromUUseMapping
-29)  37416165 (99.8%) t@0x28d98a   32             base/page_allocator.cc
+29)  37334629 (99.8%) t@0x28d98a   32             base/page_allocator.cc
              extFromUUseMapping
-30)  37425923 (99.8%) t@Group      9758           {no path}
+30)  37344387 (99.8%) t@Group      9758           {no path}
              ** symbol gaps (count=2)
-31)  37426371 (99.8%) t@0x28f000   448            $root_gen_dir/third_party/icu/ucnv_ext.c
+31)  37344835 (99.8%) t@0x28f000   448            $root_gen_dir/third_party/icu/ucnv_ext.c
              ucnv_extMatchFromU
-32)  37426399 (99.8%) t@0x28f1c8   28             $root_gen_dir/third_party/icu/ucnv_ext.c
+32)  37344863 (99.8%) t@0x28f1c8   28             $root_gen_dir/third_party/icu/ucnv_ext.c
              _GLOBAL__sub_I_SkDeviceProfile.cpp
-33)  37495523 (100.0%) t@0x28f1e0   69124          $root_gen_dir/third_party/icu/ucnv_ext.c
+33)  37413987 (100.0%) t@0x28f1e0   69124          $root_gen_dir/third_party/icu/ucnv_ext.c
              foo_bar
-34)  37495547 (100.0%) t@0x2a0000   24 (size=48)   $root_gen_dir/third_party/icu/ucnv_ext.c
+34)  37414011 (100.0%) t@0x2a0000   24 (size=48)   $root_gen_dir/third_party/icu/ucnv_ext.c
              BazAlias (num_aliases=2)
-35)  37495571 (100.0%) t@0x2a0000   24 (size=48)   {no path}
+35)  37414035 (100.0%) t@0x2a0000   24 (size=48)   {no path}
              blink::ContiguousContainerBase::shrinkToFit (num_aliases=2)
-36)  37495574 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
+36)  37414038 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
              BarAlias (num_aliases=4)
-37)  37495577 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
+37)  37414041 (100.0%) t@0x2a0010   3 (size=12)    third_party/fft_float.cc
              FooAlias (num_aliases=4)
-38)  37495580 (100.0%) t@0x2a0010   3 (size=12)    $root_gen_dir/third_party/icu/ucnv_ext.c
+38)  37414044 (100.0%) t@0x2a0010   3 (size=12)    $root_gen_dir/third_party/icu/ucnv_ext.c
              blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
-39)  37495583 (100.0%) t@0x2a0010   3 (size=12)    third_party/paint.cc
+39)  37414047 (100.0%) t@0x2a0010   3 (size=12)    third_party/paint.cc
              blink::ContiguousContainerBase::shrinkToFit (num_aliases=4)
-40)  37495611 (100.0%) t@0x2a0020   28             third_party/container/container.c
+40)  37414075 (100.0%) t@0x2a0020   28             third_party/container/container.c
              blink::ContiguousContainerBase::ContiguousContainerBase
-41)  37495705 (100.0%) t@0x2a1000   94             third_party/container/container.c
+41)  37414169 (100.0%) t@0x2a1000   94             third_party/container/container.c
              blink::PaintChunker::releasePaintChunks
-42)  37499739 (100.0%) t@0x2a2000   4034           third_party/container/container.c
+42)  37418203 (100.0%) t@0x2a2000   4034           third_party/container/container.c
              ** outlined function
-43)  37499763 (100.0%) t@0x2a2020   24 (size=48)   {no path}
+43)  37418227 (100.0%) t@0x2a2020   24 (size=48)   {no path}
              ** outlined function * 2 (num_aliases=2)
-44)  37499787 (100.0%) t@0x2a2020   24 (size=48)   {no path}
+44)  37418251 (100.0%) t@0x2a2020   24 (size=48)   {no path}
              aliasedWithOutlinedFunction (num_aliases=2)
-45)  37499787 (100.0%) b@0x0        262144         third_party/fft_float.cc
+45)  37418251 (100.0%) b@0x0        262144         third_party/fft_float.cc
              ff_cos_131072
-46)  37499787 (100.0%) b@0x0        131072         third_party/fft_fixed.cc
+46)  37418251 (100.0%) b@0x0        131072         third_party/fft_fixed.cc
              ff_cos_131072_fixed
-47)  37499787 (100.0%) b@0x0        131072         third_party/fft_float.cc
+47)  37418251 (100.0%) b@0x0        131072         third_party/fft_float.cc
              ff_cos_65536
-48)  37499787 (100.0%) b@0x2dffda0  28             $root_gen_dir/third_party/icu/ucnv_ext.c
+48)  37418251 (100.0%) b@0x2dffda0  28             $root_gen_dir/third_party/icu/ucnv_ext.c
              g_chrome_content_browser_client
-49)  37499787 (100.0%) b@0x2dffe80  200            $root_gen_dir/third_party/icu/ucnv_ext.c
+49)  37418251 (100.0%) b@0x2dffe80  200            $root_gen_dir/third_party/icu/ucnv_ext.c
              SaveHistogram::atomic_histogram_pointer
-50)  37499787 (100.0%) b@0x2dffe84  4              $root_gen_dir/third_party/icu/ucnv_ext.c
+50)  37418251 (100.0%) b@0x2dffe84  4              $root_gen_dir/third_party/icu/ucnv_ext.c
              g_AnimationFrameTimeHistogram_clazz

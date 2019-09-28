@@ -2839,9 +2839,13 @@ void PaintLayerScrollableArea::DidScrollWithScrollbar(
     WebInputEvent::Type type) {
   WebFeature scrollbar_use_uma;
   switch (part) {
-    case kBackButtonStartPart:
-    case kForwardButtonStartPart:
     case kBackButtonEndPart:
+    case kForwardButtonStartPart:
+      UseCounter::Count(
+          GetLayoutBox()->GetDocument(),
+          WebFeature::kScrollbarUseScrollbarButtonReversedDirection);
+      U_FALLTHROUGH;
+    case kBackButtonStartPart:
     case kForwardButtonEndPart:
       scrollbar_use_uma =
           (orientation == kVerticalScrollbar

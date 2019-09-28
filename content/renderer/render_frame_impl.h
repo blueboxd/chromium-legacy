@@ -535,6 +535,7 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // mojom::FrameBindingsControl implementation:
   void AllowBindings(int32_t enabled_bindings_flags) override;
+  void EnableMojoJsBindings() override;
 
   // mojom::FrameNavigationControl implementation:
   void PostMessageEvent(int32_t source_routing_id,
@@ -737,7 +738,6 @@ class CONTENT_EXPORT RenderFrameImpl
   void DownloadURL(const blink::WebURLRequest& request,
                    CrossOriginRedirects cross_origin_redirect_behavior,
                    mojo::ScopedMessagePipeHandle blob_url_token) override;
-  void LoadErrorPage(int reason) override;
   void BeginNavigation(std::unique_ptr<blink::WebNavigationInfo> info) override;
   void WillSendSubmitEvent(const blink::WebFormElement& form) override;
   void DidCreateDocumentLoader(
@@ -1696,6 +1696,10 @@ class CONTENT_EXPORT RenderFrameImpl
   // A bitwise OR of bindings types that have been enabled for this RenderFrame.
   // See BindingsPolicy for details.
   int enabled_bindings_ = 0;
+
+  // This boolean indicates whether JS bindings for Mojo should be enabled at
+  // the time the next script context is created.
+  bool enable_mojo_js_bindings_ = false;
 
   service_manager::BindSourceInfo browser_info_;
 

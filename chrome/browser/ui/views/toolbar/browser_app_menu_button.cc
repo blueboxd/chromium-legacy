@@ -299,6 +299,13 @@ void BrowserAppMenuButton::OnTouchUiChanged() {
   PreferredSizeChanged();
 }
 
+void BrowserAppMenuButton::OnBoundsChanged(const gfx::Rect& previous_bounds) {
+  // AppMenuButton overrides parts of the ToolbarButton behavior.
+  // BrowserAppMenuButton is hosted on the toolbar so we need to make sure that
+  // ToolbarButton backgrounds etc. are properly updated.
+  ToolbarButton::OnBoundsChanged(previous_bounds);
+}
+
 const char* BrowserAppMenuButton::GetClassName() const {
   return "BrowserAppMenuButton";
 }

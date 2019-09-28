@@ -1396,16 +1396,19 @@ void WebGLRenderingContextBase::DidDraw() {
   CanvasRenderingContext::DidDraw();
 }
 
-void WebGLRenderingContextBase::PushFrame() {
+bool WebGLRenderingContextBase::PushFrame() {
   int width = GetDrawingBuffer()->Size().Width();
   int height = GetDrawingBuffer()->Size().Height();
+  int submitted_frame = false;
   if (PaintRenderingResultsToCanvas(kBackBuffer)) {
     if (Host()->GetOrCreateCanvasResourceProvider(kPreferAcceleration)) {
-      Host()->PushFrame(Host()->ResourceProvider()->ProduceCanvasResource(),
-                        SkIRect::MakeWH(width, height));
+      submitted_frame =
+          Host()->PushFrame(Host()->ResourceProvider()->ProduceCanvasResource(),
+                            SkIRect::MakeWH(width, height));
     }
   }
   MarkLayerComposited();
+  return submitted_frame;
 }
 
 void WebGLRenderingContextBase::FinalizeFrame() {

@@ -333,11 +333,11 @@ TEST_F(OmahaServiceTest, SendPingFailure) {
   base::Time next_tries_time = service.next_tries_time_;
 
   auto* pending_request = test_url_loader_factory_.GetPendingRequest(0);
-  auto resource_response_head =
-      network::CreateResourceResponseHead(net::HTTP_BAD_REQUEST);
+  auto url_response_head =
+      network::CreateURLResponseHead(net::HTTP_BAD_REQUEST);
   test_url_loader_factory_.SimulateResponseForPendingRequest(
       pending_request->request.url, network::URLLoaderCompletionStatus(net::OK),
-      resource_response_head, std::string());
+      std::move(url_response_head), std::string());
 
   EXPECT_EQ(1, service.number_of_tries_);
   EXPECT_TRUE(service.current_ping_time_.is_null());

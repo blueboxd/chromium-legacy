@@ -48,7 +48,7 @@ SecurityLevel GetSecurityLevelForNonSecureFieldTrial(
 
   // Default to dangerous on editing form fields and otherwise
   // warning.
-  return input_events.insecure_field_edited ? DANGEROUS : HTTP_SHOW_WARNING;
+  return input_events.insecure_field_edited ? DANGEROUS : WARNING;
 }
 
 std::string GetHistogramSuffixForSecurityLevel(
@@ -60,8 +60,8 @@ std::string GetHistogramSuffixForSecurityLevel(
       return "SECURE";
     case NONE:
       return "NONE";
-    case HTTP_SHOW_WARNING:
-      return "HTTP_SHOW_WARNING";
+    case WARNING:
+      return "WARNING";
     case SECURE_WITH_POLICY_INSTALLED_CERT:
       return "SECURE_WITH_POLICY_INSTALLED_CERT";
     case DANGEROUS:
@@ -118,7 +118,7 @@ SecurityLevel GetSecurityLevel(
   //
   // Display a "Not secure" badge for all these URLs.
   if (url.SchemeIs(url::kDataScheme) || url.SchemeIs(url::kFtpScheme)) {
-    return HTTP_SHOW_WARNING;
+    return WARNING;
   }
 
   // Display DevTools pages as neutral since we can't be confident the page

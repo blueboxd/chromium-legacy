@@ -186,6 +186,8 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CrashRenderers) {
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
 
 #if defined(OS_WIN)
+  // Consult Stability Team before changing this test as it's recorded to
+  // histograms and used for stability measurement.
   histogram_tester.ExpectUniqueSample(
       "CrashExitCodes.Renderer",
       std::abs(static_cast<int32_t>(STATUS_ACCESS_VIOLATION)), 1);
@@ -230,6 +232,8 @@ IN_PROC_BROWSER_TEST_F(MetricsServiceBrowserTest, MAYBE_CheckCrashRenderers) {
   EXPECT_EQ(1, prefs->GetInteger(metrics::prefs::kStabilityRendererCrashCount));
 
 #if defined(OS_WIN)
+  // Consult Stability Team before changing this test as it's recorded to
+  // histograms and used for stability measurement.
   histogram_tester.ExpectUniqueSample(
       "CrashExitCodes.Renderer",
       std::abs(static_cast<int32_t>(STATUS_BREAKPOINT)), 1);

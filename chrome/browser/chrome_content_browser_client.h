@@ -18,7 +18,6 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "build/build_config.h"
 #include "chrome/browser/startup_data.h"
 #include "content/public/browser/content_browser_client.h"
@@ -692,8 +691,7 @@ class ChromeContentBrowserClient : public content::ContentBrowserClient {
   scoped_refptr<safe_browsing::UrlCheckerDelegate>
       safe_browsing_url_checker_delegate_;
 
-  std::unique_ptr<data_reduction_proxy::DataReductionProxyThrottleManager,
-                  base::OnTaskRunnerDeleter>
+  std::unique_ptr<data_reduction_proxy::DataReductionProxyThrottleManager>
       data_reduction_proxy_throttle_manager_;
 
   std::unique_ptr<service_manager::BinderRegistry> frame_interfaces_;

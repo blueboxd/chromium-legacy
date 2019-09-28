@@ -862,7 +862,7 @@ String LayoutTheme::FileListNameForWidth(Locale& locale,
     string = file_list->item(0)->name();
   } else {
     return StringTruncator::RightTruncate(
-        locale.QueryString(WebLocalizedString::kMultipleFileUploadText,
+        locale.QueryString(IDS_FORM_FILE_MULTIPLE_UPLOAD,
                            locale.ConvertToLocalizedNumber(
                                String::Number(file_list->length()))),
         width, font);

@@ -1097,10 +1097,7 @@ blink::UserAgentMetadata GetUserAgentMetadata() {
 
 ChromeContentBrowserClient::ChromeContentBrowserClient(
     StartupData* startup_data)
-    : data_reduction_proxy_throttle_manager_(
-          nullptr,
-          base::OnTaskRunnerDeleter(nullptr)),
-      startup_data_(startup_data) {
+    : startup_data_(startup_data) {
 #if BUILDFLAG(ENABLE_PLUGINS)
   for (size_t i = 0; i < base::size(kPredefinedAllowedDevChannelOrigins); ++i)
     allowed_dev_channel_origins_.insert(kPredefinedAllowedDevChannelOrigins[i]);
@@ -4535,16 +4532,13 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
       data_reduction_proxy::params::IsEnabledWithNetworkService() &&
       drp_settings) {
     if (!data_reduction_proxy_throttle_manager_) {
-      data_reduction_proxy_throttle_manager_ = std::unique_ptr<
-          data_reduction_proxy::DataReductionProxyThrottleManager,
-          base::OnTaskRunnerDeleter>(
-          new data_reduction_proxy::DataReductionProxyThrottleManager(
-              drp_settings->data_reduction_proxy_service(),
-              data_reduction_proxy::DataReductionProxyThrottleManager::
-                  CreateConfig(drp_settings->data_reduction_proxy_service()
-                                   ->config()
-                                   ->GetProxiesForHttp())),
-          base::OnTaskRunnerDeleter(base::SequencedTaskRunnerHandle::Get()));
+      data_reduction_proxy_throttle_manager_ = std::make_unique<
+          data_reduction_proxy::DataReductionProxyThrottleManager>(
+          drp_settings->data_reduction_proxy_service(),
+          data_reduction_proxy::DataReductionProxyThrottleManager::CreateConfig(
+              drp_settings->data_reduction_proxy_service()
+                  ->config()
+                  ->GetProxiesForHttp()));
     }
     net::HttpRequestHeaders headers;
     data_reduction_proxy::DataReductionProxyRequestOptions::

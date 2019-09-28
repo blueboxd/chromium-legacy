@@ -24,7 +24,6 @@ class DistilledArticleProto;
 class DistilledContentStore;
 class DistillerFactory;
 class DistillerPageFactory;
-class DomDistillerObserver;
 class DomDistillerStoreInterface;
 class TaskTracker;
 class ViewerHandle;
@@ -92,9 +91,6 @@ class DomDistillerServiceInterface {
   virtual std::unique_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
       std::unique_ptr<SourcePageHandle> handle) = 0;
 
-  virtual void AddObserver(DomDistillerObserver* observer) = 0;
-  virtual void RemoveObserver(DomDistillerObserver* observer) = 0;
-
   // Returns the DistilledPagePrefs owned by the instance of
   // DomDistillerService.
   virtual DistilledPagePrefs* GetDistilledPagePrefs() = 0;
@@ -138,8 +134,6 @@ class DomDistillerService : public DomDistillerServiceInterface {
       const gfx::Size& render_view_size) override;
   std::unique_ptr<DistillerPage> CreateDefaultDistillerPageWithHandle(
       std::unique_ptr<SourcePageHandle> handle) override;
-  void AddObserver(DomDistillerObserver* observer) override;
-  void RemoveObserver(DomDistillerObserver* observer) override;
   DistilledPagePrefs* GetDistilledPagePrefs() override;
 
  private:

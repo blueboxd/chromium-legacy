@@ -375,15 +375,16 @@ class ThreatDetailsTest : public ChromeRenderViewHostTestHarness {
   void WriteCacheEntry(const std::string& url,
                        const std::string& headers,
                        const std::string& content) {
-    network::ResourceResponseHead head;
-    head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+    auto head = network::mojom::URLResponseHead::New();
+    head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         net::HttpUtil::AssembleRawHeaders(headers));
-    head.remote_endpoint = net::IPEndPoint(net::IPAddress(1, 2, 3, 4), 80);
-    head.mime_type = "text/html";
+    head->remote_endpoint = net::IPEndPoint(net::IPAddress(1, 2, 3, 4), 80);
+    head->mime_type = "text/html";
     network::URLLoaderCompletionStatus status;
     status.decoded_body_length = content.size();
 
-    test_url_loader_factory_.AddResponse(GURL(url), head, content, status);
+    test_url_loader_factory_.AddResponse(GURL(url), std::move(head), content,
+                                         status);
   }
 
   void SimulateFillCache(const std::string& url) {
@@ -1736,10 +1737,10 @@ TEST_F(ThreatDetailsTest, HTTPCacheNoEntries) {
 
   // Simulate no cache entry found.
   test_url_loader_factory_.AddResponse(
-      GURL(kThreatURL), network::ResourceResponseHead(), std::string(),
+      GURL(kThreatURL), network::mojom::URLResponseHead::New(), std::string(),
       network::URLLoaderCompletionStatus(net::ERR_CACHE_MISS));
   test_url_loader_factory_.AddResponse(
-      GURL(kLandingURL), network::ResourceResponseHead(), std::string(),
+      GURL(kLandingURL), network::mojom::URLResponseHead::New(), std::string(),
       network::URLLoaderCompletionStatus(net::ERR_CACHE_MISS));
 
   // The cache collection starts after the IPC from the DOM is fired.

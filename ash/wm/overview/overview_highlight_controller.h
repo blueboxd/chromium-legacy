@@ -59,6 +59,10 @@ class ASH_EXPORT OverviewHighlightController {
     // Returns true if this is the current highlighted view.
     bool IsViewHighlighted();
 
+    // Returns the point the accessibility magnifiers should focus when this is
+    // highlighted. If not overridden, this will return the centerpoint.
+    virtual gfx::Point GetMagnifierFocusPointInScreen();
+
    protected:
     virtual ~OverviewHighlightableView() {}
   };

@@ -8,7 +8,6 @@ source_set("commands") {
   sources = [
     "activity_service_commands.h",
     "application_commands.h",
-    "badge_commands.h",
     "browser_commands.h",
     "browser_coordinator_commands.h",
     "browsing_data_commands.h",

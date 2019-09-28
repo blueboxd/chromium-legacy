@@ -41,7 +41,7 @@ const char kTextTracksOffString[] = "Off";
 class LocalePlatformSupport : public TestingPlatformSupport {
  public:
   WebString QueryLocalizedString(int resource_id) override {
-    if (resource_id == WebLocalizedString::kTextTracksOff)
+    if (resource_id == IDS_MEDIA_TRACKS_OFF)
       return kTextTracksOffString;
     return TestingPlatformSupport::QueryLocalizedString(resource_id);
   }

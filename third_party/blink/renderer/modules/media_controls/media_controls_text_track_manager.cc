@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/media_controls_text_track_manager.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/core/html/track/text_track.h"
 #include "third_party/blink/renderer/core/html/track/text_track_list.h"
@@ -18,8 +19,7 @@ MediaControlsTextTrackManager::MediaControlsTextTrackManager(
 String MediaControlsTextTrackManager::GetTextTrackLabel(
     TextTrack* track) const {
   if (!track) {
-    return media_element_->GetLocale().QueryString(
-        WebLocalizedString::kTextTracksOff);
+    return media_element_->GetLocale().QueryString(IDS_MEDIA_TRACKS_OFF);
   }
 
   String track_label = track->label();
@@ -29,8 +29,7 @@ String MediaControlsTextTrackManager::GetTextTrackLabel(
 
   if (track_label.IsEmpty()) {
     track_label = String(media_element_->GetLocale().QueryString(
-        WebLocalizedString::kTextTracksNoLabel,
-        String::Number(track->TrackIndex() + 1)));
+        IDS_MEDIA_TRACKS_NO_LABEL, String::Number(track->TrackIndex() + 1)));
   }
 
   return track_label;

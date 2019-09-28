@@ -4,7 +4,6 @@
 
 #include "third_party/blink/renderer/core/html/media/media_remoting_interstitial.h"
 
-#include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
 #include "third_party/blink/renderer/core/css_value_keywords.h"

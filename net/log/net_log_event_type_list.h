@@ -2027,6 +2027,38 @@ EVENT_TYPE(QUIC_SESSION_STOP_SENDING_FRAME_SENT)
 //  }
 EVENT_TYPE(QUIC_SESSION_STOP_SENDING_FRAME_RECEIVED)
 
+// Session sent a STREAMS_BLOCKED frame.
+//  {
+//    "stream_count": <The number of streams that the sender wishes to exceed>
+//    "unidirectional": <boolean to indicate if the frame is for unidirectional
+//    streams.>
+//  }
+EVENT_TYPE(QUIC_SESSION_STREAMS_BLOCKED_FRAME_SENT)
+
+// Session received a STREAMS_BLOCKED frame.
+//  {
+//    "stream_count": <The number of streams that the sender wishes to exceed>
+//    "unidirectional": <boolean to indicate if the frame is for unidirectional
+//    streams.>
+//  }
+EVENT_TYPE(QUIC_SESSION_STREAMS_BLOCKED_FRAME_RECEIVED)
+
+// Session sent a MAX_STREAMS frame.
+//  {
+//    "stream_count": <The number of streams that may be opened>
+//    "unidirectional": <boolean to indicate if the frame is for unidirectional
+//    streams.>
+//  }
+EVENT_TYPE(QUIC_SESSION_MAX_STREAMS_FRAME_SENT)
+
+// Session received a MAX_STREAMS frame.
+//  {
+//    "stream_count": <The number of streams that may be opened>
+//    "unidirectional": <boolean to indicate if the frame is for unidirectional
+//    streams.>
+//  }
+EVENT_TYPE(QUIC_SESSION_MAX_STREAMS_FRAME_RECEIVED)
+
 // ------------------------------------------------------------------------
 // QuicHttpStream
 // ------------------------------------------------------------------------
@@ -3265,9 +3297,17 @@ EVENT_TYPE(COOKIE_GET_BLOCKED_BY_NETWORK_DELEGATE)
 //  }
 EVENT_TYPE(COOKIE_SET_BLOCKED_BY_NETWORK_DELEGATE)
 
-//
+// Event emitted when cookies are associated with domain but not sent
+// and received but not stored
+//  {
+//    "exclusion_reason": <Exclusion flags>
+//  }
+EVENT_TYPE(COOKIE_INCLUSION_STATUS)
+
+// -----------------------------------------------------------------------------
 // HTTP/3 events.
-//
+// -----------------------------------------------------------------------------
+
 // Event emitted when peer created control stream type is received.
 EVENT_TYPE(HTTP3_PEER_CONTROL_STREAM_CREATED)
 

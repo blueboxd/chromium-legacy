@@ -150,11 +150,10 @@ class AvailabilityProberTest : public testing::Test {
     ASSERT_EQ(request->request.url.host(), kTestUrl.host());
     ASSERT_EQ(request->request.url.scheme(), kTestUrl.scheme());
 
-    network::ResourceResponseHead head =
-        network::CreateResourceResponseHead(http_status);
+    auto head = network::CreateURLResponseHead(http_status);
     network::URLLoaderCompletionStatus status(net_error);
-    test_url_loader_factory_.AddResponse(request->request.url, head, "content",
-                                         status);
+    test_url_loader_factory_.AddResponse(request->request.url, std::move(head),
+                                         "content", status);
     RunUntilIdle();
     // Clear responses in the network service so we can inspect the next request
     // that comes in before it is responded to.

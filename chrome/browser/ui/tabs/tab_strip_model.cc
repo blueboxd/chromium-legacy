@@ -64,6 +64,23 @@ namespace {
 
 class RenderWidgetHostVisibilityTracker;
 
+// Works similarly to base::AutoReset but checks for access from the wrong
+// thread as well as ensuring that the previous value of the re-entrancy guard
+// variable was false.
+class ReentrancyCheck {
+ public:
+  explicit ReentrancyCheck(bool* guard_flag) : guard_flag_(guard_flag) {
+    DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    DCHECK(!*guard_flag_);
+    *guard_flag_ = true;
+  }
+
+  ~ReentrancyCheck() { *guard_flag_ = false; }
+
+ private:
+  bool* const guard_flag_;
+};
+
 // Returns true if the specified transition is one of the types that cause the
 // opener relationships for the tab in which the transition occurred to be
 // forgotten. This is generally any navigation that isn't a link click (i.e.
@@ -382,17 +399,14 @@ int TabStripModel::InsertWebContentsAt(int index,
                                        std::unique_ptr<WebContents> contents,
                                        int add_types,
                                        base::Optional<TabGroupId> group) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
-
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
   return InsertWebContentsAtImpl(index, std::move(contents), add_types, group);
 }
 
 std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
     int index,
     std::unique_ptr<WebContents> new_contents) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   delegate()->WillAddWebContents(new_contents.get());
 
@@ -426,8 +440,7 @@ std::unique_ptr<content::WebContents> TabStripModel::ReplaceWebContentsAt(
 
 std::unique_ptr<content::WebContents> TabStripModel::DetachWebContentsAt(
     int index) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   DCHECK_NE(active_index(), kNoTab) << "Activate the TabStripModel by "
                                        "selecting at least one tab before "
@@ -549,8 +562,7 @@ void TabStripModel::SendDetachWebContentsNotifications(
 }
 
 void TabStripModel::ActivateTabAt(int index, UserGestureDetails user_gesture) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   DCHECK(ContainsIndex(index));
   TRACE_EVENT0("ui", "TabStripModel::ActivateTabAt");
@@ -613,8 +625,7 @@ void TabStripModel::RecordTabScrubbingMetrics() {
 int TabStripModel::MoveWebContentsAt(int index,
                                      int to_position,
                                      bool select_after_move) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   DCHECK(ContainsIndex(index));
 
@@ -634,8 +645,7 @@ int TabStripModel::MoveWebContentsAt(int index,
 }
 
 void TabStripModel::MoveSelectedTabsTo(int index) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   int total_pinned_count = IndexOfFirstNonPinnedTab();
   int selected_pinned_count = 0;
@@ -704,8 +714,7 @@ void TabStripModel::SetTabNeedsAttentionAt(int index, bool attention) {
 }
 
 void TabStripModel::CloseAllTabs() {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   // Set state so that observers can adjust their behavior to suit this
   // specific condition when CloseWebContentsAt causes a flurry of
@@ -803,8 +812,7 @@ void TabStripModel::SetTabBlocked(int index, bool blocked) {
 }
 
 void TabStripModel::SetTabPinned(int index, bool pinned) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   SetTabPinnedImpl(index, pinned);
 }
@@ -845,8 +853,7 @@ base::string16 TabStripModel::GetUserVisibleGroupTitle(TabGroupId group) const {
 
 void TabStripModel::SetVisualDataForGroup(TabGroupId group,
                                           TabGroupVisualData data) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   DCHECK(base::Contains(group_data_, group));
   auto data_it = group_data_.find(group);
@@ -955,8 +962,7 @@ void TabStripModel::AddWebContents(std::unique_ptr<WebContents> contents,
                                    ui::PageTransition transition,
                                    int add_types,
                                    base::Optional<TabGroupId> group) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   // If the newly-opened tab is part of the same task as the parent tab, we want
   // to inherit the parent's opener attribute, so that if this tab is then
@@ -1038,8 +1044,7 @@ void TabStripModel::AddWebContents(std::unique_ptr<WebContents> contents,
 }
 
 void TabStripModel::CloseSelectedTabs() {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   InternalCloseTabs(
       GetWebContentsesByIndices(selection_model_.selected_indices()),
@@ -1071,8 +1076,7 @@ void TabStripModel::MoveTabPrevious() {
 }
 
 TabGroupId TabStripModel::AddToNewGroup(const std::vector<int>& indices) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   // The odds of |new_group| colliding with an existing group are astronomically
   // low. If there is a collision, a DCHECK will fail in |AddToNewGroupImpl()|,
@@ -1085,8 +1089,7 @@ TabGroupId TabStripModel::AddToNewGroup(const std::vector<int>& indices) {
 
 void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
                                        TabGroupId group) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   AddToExistingGroupImpl(indices, group);
 }
@@ -1094,16 +1097,14 @@ void TabStripModel::AddToExistingGroup(const std::vector<int>& indices,
 void TabStripModel::MoveTabsIntoGroup(const std::vector<int>& indices,
                                       int destination_index,
                                       TabGroupId group) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   MoveTabsIntoGroupImpl(indices, destination_index, group);
 }
 
 void TabStripModel::AddToGroupForRestore(const std::vector<int>& indices,
                                          TabGroupId group) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   const bool group_exists = base::Contains(group_data_, group);
   if (group_exists)
@@ -1116,8 +1117,7 @@ void TabStripModel::UpdateGroupForDragRevert(
     int index,
     base::Optional<TabGroupId> group_id,
     base::Optional<TabGroupVisualData> group_data) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   // Ungroup tab before moving, so that if this is the last tab in the group
   // observers can delete that group.
@@ -1151,8 +1151,7 @@ void TabStripModel::UpdateGroupForDragRevert(
 }
 
 void TabStripModel::RemoveFromGroup(const std::vector<int>& indices) {
-  DCHECK(!reentrancy_guard_);
-  base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+  ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
   // Remove each tab from the group it's in, if any. Go from right to left
   // since tabs may move to the right.
@@ -1294,8 +1293,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     }
 
     case CommandCloseTab: {
-      DCHECK(!reentrancy_guard_);
-      base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+      ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
       base::RecordAction(UserMetricsAction("TabContextMenu_CloseTab"));
       InternalCloseTabs(
@@ -1305,8 +1303,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     }
 
     case CommandCloseTabsToRight: {
-      DCHECK(!reentrancy_guard_);
-      base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+      ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
       base::RecordAction(UserMetricsAction("TabContextMenu_CloseTabsToRight"));
       InternalCloseTabs(GetWebContentsesByIndices(GetIndicesClosedByCommand(
@@ -1323,8 +1320,7 @@ void TabStripModel::ExecuteContextMenuCommand(int context_index,
     }
 
     case CommandTogglePinned: {
-      DCHECK(!reentrancy_guard_);
-      base::AutoReset<bool> resetter(&reentrancy_guard_, true);
+      ReentrancyCheck reentrancy_check(&reentrancy_guard_);
 
       base::RecordAction(UserMetricsAction("TabContextMenu_TogglePinned"));
       std::vector<int> indices = GetIndicesForCommand(context_index);

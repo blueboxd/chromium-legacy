@@ -263,12 +263,21 @@ FidoCableDiscovery::Result::Result() = default;
 
 FidoCableDiscovery::Result::Result(const CableDiscoveryData& in_discovery_data,
                                    const CableNonce& in_nonce,
-                                   const CableEidArray& in_eid)
-    : discovery_data(in_discovery_data), nonce(in_nonce), eid(in_eid) {}
+                                   const CableEidArray& in_eid,
+                                   base::Optional<int> in_ticks_back)
+    : discovery_data(in_discovery_data),
+      nonce(in_nonce),
+      eid(in_eid),
+      ticks_back(in_ticks_back) {}
 
 FidoCableDiscovery::Result::Result(const Result& other) = default;
 
 FidoCableDiscovery::Result::~Result() = default;
+
+// FidoCableDiscovery::ObservedDeviceData -------------------------------------
+
+FidoCableDiscovery::ObservedDeviceData::ObservedDeviceData() = default;
+FidoCableDiscovery::ObservedDeviceData::~ObservedDeviceData() = default;
 
 // FidoCableDiscovery ---------------------------------------------------------
 
@@ -347,7 +356,6 @@ void FidoCableDiscovery::DeviceAdded(BluetoothAdapter* adapter,
   if (!IsCableDevice(device))
     return;
 
-  FIDO_LOG(DEBUG) << "Discovered caBLE device: " << device->GetAddress();
   CableDeviceFound(adapter, device);
 }
 
@@ -356,8 +364,6 @@ void FidoCableDiscovery::DeviceChanged(BluetoothAdapter* adapter,
   if (!IsCableDevice(device))
     return;
 
-  FIDO_LOG(DEBUG) << "Device changed for caBLE device: "
-                  << device->GetAddress();
   CableDeviceFound(adapter, device);
 }
 
@@ -504,6 +510,7 @@ void FidoCableDiscovery::CableDeviceFound(BluetoothAdapter* adapter,
 
   FIDO_LOG(EVENT) << "Found new caBLE device.";
   active_devices_.insert(device_address);
+  active_authenticator_eids_.insert(maybe_result->eid);
 
   auto cable_device =
       std::make_unique<FidoCableDevice>(adapter, device->GetAddress());
@@ -549,22 +556,63 @@ void FidoCableDiscovery::ValidateAuthenticatorHandshakeMessage(
 
 base::Optional<FidoCableDiscovery::Result>
 FidoCableDiscovery::GetCableDiscoveryData(const BluetoothDevice* device) const {
-  auto maybe_result = GetCableDiscoveryDataFromServiceData(device);
-  if (maybe_result) {
-    FIDO_LOG(DEBUG) << "Found caBLE service data.";
-    return maybe_result;
+  base::Optional<CableEidArray> maybe_eid_from_service_data =
+      MaybeGetEidFromServiceData(device);
+  std::vector<CableEidArray> uuids = GetUUIDs(device);
+
+  const std::string address = device->GetAddress();
+  const auto it = observed_devices_.find(address);
+  const bool known = it != observed_devices_.end();
+  if (known) {
+    std::unique_ptr<ObservedDeviceData>& data = it->second;
+    if (maybe_eid_from_service_data == data->service_data &&
+        uuids == data->uuids) {
+      // Duplicate data. Ignore.
+      return base::nullopt;
+    }
   }
 
-  FIDO_LOG(DEBUG)
-      << "caBLE service data not found. Searching for caBLE UUIDs instead.";
-  // iOS devices cannot advertise service data. These devices instead put the
-  // authenticator EID as a second UUID in addition to the caBLE UUID.
-  return GetCableDiscoveryDataFromServiceUUIDs(device);
+  auto data = std::make_unique<ObservedDeviceData>();
+  data->service_data = maybe_eid_from_service_data;
+  data->uuids = uuids;
+  observed_devices_.emplace(std::make_pair(address, std::move(data)));
+
+  // New or updated device information.
+  if (known) {
+    FIDO_LOG(DEBUG) << "Updated information for caBLE device " << address
+                    << ":";
+  } else {
+    FIDO_LOG(DEBUG) << "New caBLE device " << address << ":";
+  }
+
+  base::Optional<FidoCableDiscovery::Result> ret;
+  if (maybe_eid_from_service_data.has_value()) {
+    ret =
+        GetCableDiscoveryDataFromAuthenticatorEid(*maybe_eid_from_service_data);
+    FIDO_LOG(DEBUG) << "  Service data: "
+                    << ResultDebugString(*maybe_eid_from_service_data, ret);
+
+  } else {
+    FIDO_LOG(DEBUG) << "  Service data: <none>";
+  }
+
+  if (!uuids.empty()) {
+    FIDO_LOG(DEBUG) << "  UUIDs:";
+    for (const auto& uuid : uuids) {
+      auto result = GetCableDiscoveryDataFromAuthenticatorEid(uuid);
+      FIDO_LOG(DEBUG) << "    " << ResultDebugString(uuid, result);
+      if (!ret.has_value() && result.has_value()) {
+        ret = result;
+      }
+    }
+  }
+
+  return ret;
 }
 
-base::Optional<FidoCableDiscovery::Result>
-FidoCableDiscovery::GetCableDiscoveryDataFromServiceData(
-    const BluetoothDevice* device) const {
+// static
+base::Optional<CableEidArray> FidoCableDiscovery::MaybeGetEidFromServiceData(
+    const BluetoothDevice* device) {
   const auto* service_data =
       device->GetServiceDataForUUID(CableAdvertisementUUID());
   if (!service_data) {
@@ -581,19 +629,16 @@ FidoCableDiscovery::GetCableDiscoveryDataFromServiceData(
       *service_data, 2, &received_authenticator_eid);
   if (!extract_success)
     return base::nullopt;
-
-  return GetCableDiscoveryDataFromAuthenticatorEid(
-      std::move(received_authenticator_eid));
+  return received_authenticator_eid;
 }
 
-base::Optional<FidoCableDiscovery::Result>
-FidoCableDiscovery::GetCableDiscoveryDataFromServiceUUIDs(
-    const BluetoothDevice* device) const {
+// static
+std::vector<CableEidArray> FidoCableDiscovery::GetUUIDs(
+    const BluetoothDevice* device) {
+  std::vector<CableEidArray> ret;
+
   const auto service_uuids = device->GetUUIDs();
   for (const auto& uuid : service_uuids) {
-    if (uuid == CableAdvertisementUUID())
-      continue;
-
     // |uuid_hex| is a hex string with the format:
     // xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx
     const std::string& uuid_hex = uuid.canonical_value();
@@ -618,14 +663,10 @@ FidoCableDiscovery::GetCableDiscoveryDataFromServiceUUIDs(
     memcpy(authenticator_eid.data(), uuid_binary.data(),
            authenticator_eid.size());
 
-    auto maybe_result =
-        GetCableDiscoveryDataFromAuthenticatorEid(authenticator_eid);
-    if (maybe_result) {
-      return maybe_result;
-    }
+    ret.emplace_back(std::move(authenticator_eid));
   }
 
-  return base::nullopt;
+  return ret;
 }
 
 base::Optional<FidoCableDiscovery::Result>
@@ -634,7 +675,7 @@ FidoCableDiscovery::GetCableDiscoveryDataFromAuthenticatorEid(
   for (const auto& candidate : discovery_data_) {
     auto maybe_nonce = candidate.Match(authenticator_eid);
     if (maybe_nonce) {
-      return Result(candidate, *maybe_nonce, authenticator_eid);
+      return Result(candidate, *maybe_nonce, authenticator_eid, base::nullopt);
     }
   }
 
@@ -652,12 +693,77 @@ FidoCableDiscovery::GetCableDiscoveryDataFromAuthenticatorEid(
       CableDiscoveryData candidate(qr_secret);
       auto maybe_nonce = candidate.Match(authenticator_eid);
       if (maybe_nonce) {
-        return Result(candidate, *maybe_nonce, authenticator_eid);
+        return Result(candidate, *maybe_nonce, authenticator_eid, i);
       }
     }
   }
 
   return base::nullopt;
+}
+
+// static
+std::string FidoCableDiscovery::ResultDebugString(
+    const CableEidArray& eid,
+    const base::Optional<FidoCableDiscovery::Result>& result) {
+  static const uint8_t kAppleContinuity[16] = {
+      0xd0, 0x61, 0x1e, 0x78, 0xbb, 0xb4, 0x45, 0x91,
+      0xa5, 0xf8, 0x48, 0x79, 0x10, 0xae, 0x43, 0x66,
+  };
+  static const uint8_t kAppleUnknown[16] = {
+      0x9f, 0xa4, 0x80, 0xe0, 0x49, 0x67, 0x45, 0x42,
+      0x93, 0x90, 0xd3, 0x43, 0xdc, 0x5d, 0x04, 0xae,
+  };
+  static const uint8_t kAppleMedia[16] = {
+      0x89, 0xd3, 0x50, 0x2b, 0x0f, 0x36, 0x43, 0x3a,
+      0x8e, 0xf4, 0xc5, 0x02, 0xad, 0x55, 0xf8, 0xdc,
+  };
+  static const uint8_t kAppleNotificationCenter[16] = {
+      0x79, 0x05, 0xf4, 0x31, 0xb5, 0xce, 0x4e, 0x99,
+      0xa4, 0x0f, 0x4b, 0x1e, 0x12, 0x2d, 0x00, 0xd0,
+  };
+  static const uint8_t kCable[16] = {
+      0x00, 0x00, 0xfd, 0xe2, 0x00, 0x00, 0x10, 0x00,
+      0x80, 0x00, 0x00, 0x80, 0x5f, 0x9b, 0x34, 0xfb,
+  };
+
+  std::string ret = base::HexEncode(eid) + "";
+
+  if (!result) {
+    // Try to identify some common UUIDs that are random and thus otherwise look
+    // like potential EIDs.
+    if (memcmp(eid.data(), kAppleContinuity, eid.size()) == 0) {
+      ret += " (Apple Continuity service)";
+    } else if (memcmp(eid.data(), kAppleUnknown, eid.size()) == 0) {
+      ret += " (Apple service)";
+    } else if (memcmp(eid.data(), kAppleMedia, eid.size()) == 0) {
+      ret += " (Apple Media service)";
+    } else if (memcmp(eid.data(), kAppleNotificationCenter, eid.size()) == 0) {
+      ret += " (Apple Notification service)";
+    } else if (memcmp(eid.data(), kCable, eid.size()) == 0) {
+      ret += " (caBLE indicator)";
+    }
+    return ret;
+  }
+
+  switch (result->discovery_data.version) {
+    case CableDiscoveryData::Version::V1:
+      ret += " (version one match";
+      break;
+    case CableDiscoveryData::Version::V2:
+      ret += " (version two match";
+      break;
+    case CableDiscoveryData::Version::INVALID:
+      NOTREACHED();
+  }
+
+  if (!result->ticks_back) {
+    ret += " against pairing data)";
+  } else {
+    ret += " from QR, " + base::NumberToString(*result->ticks_back) +
+           " tick(s) ago)";
+  }
+
+  return ret;
 }
 
 }  // namespace device

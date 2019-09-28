@@ -15,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileKey;
@@ -61,8 +62,9 @@ public class OfflinePageBridge {
     public static OfflinePageBridge getForProfile(Profile profile) {
         ThreadUtils.assertOnUiThread();
 
-        if (profile == null)
+        if (profile == null) {
             return null;
+        }
 
         return getForProfileKey(profile.getProfileKey());
     }
@@ -77,7 +79,7 @@ public class OfflinePageBridge {
     public static OfflinePageBridge getForProfileKey(ProfileKey profileKey) {
         ThreadUtils.assertOnUiThread();
 
-        return nativeGetOfflinePageBridgeForProfileKey(profileKey);
+        return OfflinePageBridgeJni.get().getOfflinePageBridgeForProfileKey(profileKey);
     }
 
     /**
@@ -140,7 +142,7 @@ public class OfflinePageBridge {
      * @return True if an offline copy of the given URL can be saved.
      */
     public static boolean canSavePage(String url) {
-        return nativeCanSavePage(url);
+        return OfflinePageBridgeJni.get().canSavePage(url);
     }
 
     /**
@@ -176,7 +178,8 @@ public class OfflinePageBridge {
     @VisibleForTesting
     public void getAllPages(final Callback<List<OfflinePageItem>> callback) {
         List<OfflinePageItem> result = new ArrayList<>();
-        nativeGetAllPages(mNativeOfflinePageBridge, result, callback);
+        OfflinePageBridgeJni.get().getAllPages(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, result, callback);
     }
 
     /**
@@ -198,7 +201,8 @@ public class OfflinePageBridge {
         }
 
         List<OfflinePageItem> result = new ArrayList<>();
-        nativeGetPagesByClientId(mNativeOfflinePageBridge, result, namespaces, ids, callback);
+        OfflinePageBridgeJni.get().getPagesByClientId(mNativeOfflinePageBridge,
+                OfflinePageBridge.this, result, namespaces, ids, callback);
     }
 
     /**
@@ -209,7 +213,8 @@ public class OfflinePageBridge {
      */
     public void getPagesByRequestOrigin(String origin, Callback<List<OfflinePageItem>> callback) {
         List<OfflinePageItem> result = new ArrayList<>();
-        nativeGetPagesByRequestOrigin(mNativeOfflinePageBridge, result, origin, callback);
+        OfflinePageBridgeJni.get().getPagesByRequestOrigin(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, result, origin, callback);
     }
 
     /**
@@ -223,7 +228,8 @@ public class OfflinePageBridge {
     public void getPagesByNamespace(
             final String namespace, final Callback<List<OfflinePageItem>> callback) {
         List<OfflinePageItem> result = new ArrayList<>();
-        nativeGetPagesByNamespace(mNativeOfflinePageBridge, result, namespace, callback);
+        OfflinePageBridgeJni.get().getPagesByNamespace(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, result, namespace, callback);
     }
 
     /**
@@ -236,7 +242,8 @@ public class OfflinePageBridge {
      */
     public void selectPageForOnlineUrl(String onlineUrl, int tabId,
             Callback<OfflinePageItem> callback) {
-        nativeSelectPageForOnlineUrl(mNativeOfflinePageBridge, onlineUrl, tabId, callback);
+        OfflinePageBridgeJni.get().selectPageForOnlineUrl(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, onlineUrl, tabId, callback);
     }
 
     /**
@@ -247,7 +254,8 @@ public class OfflinePageBridge {
      *         pass back <code>null</code> if not.
      */
     public void getPageByOfflineId(final long offlineId, final Callback<OfflinePageItem> callback) {
-        nativeGetPageByOfflineId(mNativeOfflinePageBridge, offlineId, callback);
+        OfflinePageBridgeJni.get().getPageByOfflineId(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, offlineId, callback);
     }
 
     /**
@@ -289,8 +297,9 @@ public class OfflinePageBridge {
         assert webContents != null;
         assert origin != null;
 
-        nativeSavePage(mNativeOfflinePageBridge, callback, webContents, clientId.getNamespace(),
-                clientId.getId(), origin.encodeAsJsonString());
+        OfflinePageBridgeJni.get().savePage(mNativeOfflinePageBridge, OfflinePageBridge.this,
+                callback, webContents, clientId.getNamespace(), clientId.getId(),
+                origin.encodeAsJsonString());
     }
 
     /**
@@ -324,7 +333,8 @@ public class OfflinePageBridge {
             ids[i] = clientIds.get(i).getId();
         }
 
-        nativeDeletePagesByClientId(mNativeOfflinePageBridge, namespaces, ids, callback);
+        OfflinePageBridgeJni.get().deletePagesByClientId(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, namespaces, ids, callback);
     }
 
     /**
@@ -345,8 +355,8 @@ public class OfflinePageBridge {
             ids[i] = clientIds.get(i).getId();
         }
 
-        nativeDeletePagesByClientIdAndOrigin(
-                mNativeOfflinePageBridge, namespaces, ids, origin.encodeAsJsonString(), callback);
+        OfflinePageBridgeJni.get().deletePagesByClientIdAndOrigin(mNativeOfflinePageBridge,
+                OfflinePageBridge.this, namespaces, ids, origin.encodeAsJsonString(), callback);
     }
 
     /**
@@ -369,7 +379,8 @@ public class OfflinePageBridge {
         for (int i = 0; i < offlineIdList.size(); i++) {
             offlineIds[i] = offlineIdList.get(i).longValue();
         }
-        nativeDeletePagesByOfflineId(mNativeOfflinePageBridge, offlineIds, callback);
+        OfflinePageBridgeJni.get().deletePagesByOfflineId(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, offlineIds, callback);
     }
 
     /**
@@ -379,8 +390,8 @@ public class OfflinePageBridge {
      *         the new path of the file.
      */
     public void publishInternalPageByOfflineId(long offlineId, Callback<String> publishedCallback) {
-        nativePublishInternalPageByOfflineId(
-                mNativeOfflinePageBridge, offlineId, publishedCallback);
+        OfflinePageBridgeJni.get().publishInternalPageByOfflineId(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, offlineId, publishedCallback);
     }
 
     /**
@@ -389,7 +400,8 @@ public class OfflinePageBridge {
      * @param publishedCallback Function to call when publishing is done.
      */
     public void publishInternalPageByGuid(String guid, Callback<String> publishedCallback) {
-        nativePublishInternalPageByGuid(mNativeOfflinePageBridge, guid, publishedCallback);
+        OfflinePageBridgeJni.get().publishInternalPageByGuid(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, guid, publishedCallback);
     }
 
     /**
@@ -405,7 +417,8 @@ public class OfflinePageBridge {
      * @return The extra request header string.
      */
     public String getOfflinePageHeaderForReload(WebContents webContents) {
-        return nativeGetOfflinePageHeaderForReload(mNativeOfflinePageBridge, webContents);
+        return OfflinePageBridgeJni.get().getOfflinePageHeaderForReload(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, webContents);
     }
 
     /**
@@ -413,7 +426,8 @@ public class OfflinePageBridge {
      * @return True if an offline preview is being shown.
      */
     public boolean isShowingOfflinePreview(WebContents webContents) {
-        return nativeIsShowingOfflinePreview(mNativeOfflinePageBridge, webContents);
+        return OfflinePageBridgeJni.get().isShowingOfflinePreview(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, webContents);
     }
 
     /**
@@ -421,12 +435,14 @@ public class OfflinePageBridge {
      * @return True if download button is being shown in the error page.
      */
     public boolean isShowingDownloadButtonInErrorPage(WebContents webContents) {
-        return nativeIsShowingDownloadButtonInErrorPage(mNativeOfflinePageBridge, webContents);
+        return OfflinePageBridgeJni.get().isShowingDownloadButtonInErrorPage(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, webContents);
     }
 
     /** Tells the native side that the tab of |webContents| will be closed. */
     void willCloseTab(WebContents webContents) {
-        nativeWillCloseTab(mNativeOfflinePageBridge, webContents);
+        OfflinePageBridgeJni.get().willCloseTab(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, webContents);
     }
 
     /**
@@ -456,7 +472,8 @@ public class OfflinePageBridge {
      */
     public void scheduleDownload(WebContents webContents, String nameSpace, String url,
             int uiAction, OfflinePageOrigin origin) {
-        nativeScheduleDownload(mNativeOfflinePageBridge, webContents, nameSpace, url, uiAction,
+        OfflinePageBridgeJni.get().scheduleDownload(mNativeOfflinePageBridge,
+                OfflinePageBridge.this, webContents, nameSpace, url, uiAction,
                 origin.encodeAsJsonString());
     }
 
@@ -466,7 +483,8 @@ public class OfflinePageBridge {
      * @return True if the offline page is opened.
      */
     public boolean isOfflinePage(WebContents webContents) {
-        return nativeIsOfflinePage(mNativeOfflinePageBridge, webContents);
+        return OfflinePageBridgeJni.get().isOfflinePage(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, webContents);
     }
 
     /**
@@ -475,7 +493,8 @@ public class OfflinePageBridge {
      * @return true if the page is in a temporary namespace.
      */
     public boolean isTemporaryNamespace(String nameSpace) {
-        return nativeIsTemporaryNamespace(mNativeOfflinePageBridge, nameSpace);
+        return OfflinePageBridgeJni.get().isTemporaryNamespace(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, nameSpace);
     }
 
     /**
@@ -484,7 +503,8 @@ public class OfflinePageBridge {
      * @return True if the file is in a private directory.
      */
     public boolean isInPrivateDirectory(String filePath) {
-        return nativeIsInPrivateDirectory(mNativeOfflinePageBridge, filePath);
+        return OfflinePageBridgeJni.get().isInPrivateDirectory(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, filePath);
     }
 
     /**
@@ -494,7 +514,8 @@ public class OfflinePageBridge {
      */
     @Nullable
     public OfflinePageItem getOfflinePage(WebContents webContents) {
-        return nativeGetOfflinePage(mNativeOfflinePageBridge, webContents);
+        return OfflinePageBridgeJni.get().getOfflinePage(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, webContents);
     }
 
     /**
@@ -506,7 +527,8 @@ public class OfflinePageBridge {
      *         if no fresh enough content is found.
      */
     public void checkForNewOfflineContent(long freshnessTimeMillis, Callback<String> callback) {
-        nativeCheckForNewOfflineContent(mNativeOfflinePageBridge, freshnessTimeMillis, callback);
+        OfflinePageBridgeJni.get().checkForNewOfflineContent(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, freshnessTimeMillis, callback);
     }
 
     /**
@@ -521,7 +543,8 @@ public class OfflinePageBridge {
      */
     public void getLoadUrlParamsByOfflineId(
             long offlineId, @LaunchLocation int location, Callback<LoadUrlParams> callback) {
-        nativeGetLoadUrlParamsByOfflineId(mNativeOfflinePageBridge, offlineId, location, callback);
+        OfflinePageBridgeJni.get().getLoadUrlParamsByOfflineId(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, offlineId, location, callback);
     }
 
     /**
@@ -532,7 +555,8 @@ public class OfflinePageBridge {
      */
     public void getLoadUrlParamsForOpeningMhtmlFileOrContent(
             String url, Callback<LoadUrlParams> callback) {
-        nativeGetLoadUrlParamsForOpeningMhtmlFileOrContent(mNativeOfflinePageBridge, url, callback);
+        OfflinePageBridgeJni.get().getLoadUrlParamsForOpeningMhtmlFileOrContent(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, url, callback);
     }
 
     /**
@@ -541,7 +565,8 @@ public class OfflinePageBridge {
      * @return True if a trusted offline page is shown.
      */
     public boolean isShowingTrustedOfflinePage(WebContents webContents) {
-        return nativeIsShowingTrustedOfflinePage(mNativeOfflinePageBridge, webContents);
+        return OfflinePageBridgeJni.get().isShowingTrustedOfflinePage(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, webContents);
     }
 
     /**
@@ -551,7 +576,8 @@ public class OfflinePageBridge {
      * @param callback Callback to notify the result.
      */
     public void acquireFileAccessPermission(WebContents webContents, Callback<Boolean> callback) {
-        nativeAcquireFileAccessPermission(mNativeOfflinePageBridge, webContents, callback);
+        OfflinePageBridgeJni.get().acquireFileAccessPermission(
+                mNativeOfflinePageBridge, OfflinePageBridge.this, webContents, callback);
     }
 
     @CalledByNative
@@ -633,69 +659,65 @@ public class OfflinePageBridge {
         return loadUrlParams;
     }
 
-    private static native boolean nativeCanSavePage(String url);
-    private static native OfflinePageBridge nativeGetOfflinePageBridgeForProfileKey(
-            ProfileKey profileKey);
-    @VisibleForTesting
-    native void nativeGetAllPages(long nativeOfflinePageBridge, List<OfflinePageItem> offlinePages,
-            final Callback<List<OfflinePageItem>> callback);
-    private native void nativeWillCloseTab(long nativeOfflinePageBridge, WebContents webContents);
-
-    @VisibleForTesting
-    native void nativeGetPageByOfflineId(
-            long nativeOfflinePageBridge, long offlineId, Callback<OfflinePageItem> callback);
-    @VisibleForTesting
-    native void nativeGetPagesByClientId(long nativeOfflinePageBridge, List<OfflinePageItem> result,
-            String[] namespaces, String[] ids, Callback<List<OfflinePageItem>> callback);
-    native void nativeGetPagesByRequestOrigin(long nativeOfflinePageBridge,
-            List<OfflinePageItem> result, String requestOrigin,
-            Callback<List<OfflinePageItem>> callback);
-    native void nativeGetPagesByNamespace(long nativeOfflinePageBridge,
-            List<OfflinePageItem> result, String nameSpace,
-            Callback<List<OfflinePageItem>> callback);
-    @VisibleForTesting
-    native void nativeDeletePagesByClientId(long nativeOfflinePageBridge, String[] namespaces,
-            String[] ids, Callback<Integer> callback);
-    native void nativeDeletePagesByClientIdAndOrigin(long nativeOfflinePageBridge,
-            String[] namespaces, String[] ids, String origin, Callback<Integer> callback);
-    @VisibleForTesting
-    native void nativeDeletePagesByOfflineId(
-            long nativeOfflinePageBridge, long[] offlineIds, Callback<Integer> callback);
-    @VisibleForTesting
-    private native void nativePublishInternalPageByOfflineId(
-            long nativeOfflinePageBridge, long offlineId, Callback<String> publishedCallback);
-    @VisibleForTesting
-    private native void nativePublishInternalPageByGuid(
-            long nativeOfflinePageBridge, String guid, Callback<String> publishedCallback);
-    private native void nativeSelectPageForOnlineUrl(
-            long nativeOfflinePageBridge, String onlineUrl, int tabId,
-            Callback<OfflinePageItem> callback);
-    private native void nativeSavePage(long nativeOfflinePageBridge, SavePageCallback callback,
-            WebContents webContents, String clientNamespace, String clientId, String origin);
-    private native String nativeGetOfflinePageHeaderForReload(
-            long nativeOfflinePageBridge, WebContents webContents);
-    private native boolean nativeIsShowingOfflinePreview(
-            long nativeOfflinePageBridge, WebContents webContents);
-    private native boolean nativeIsShowingDownloadButtonInErrorPage(
-            long nativeOfflinePageBridge, WebContents webContents);
-    private native void nativeScheduleDownload(long nativeOfflinePageBridge,
-            WebContents webContents, String nameSpace, String url, int uiAction, String origin);
-    private native boolean nativeIsOfflinePage(
-            long nativeOfflinePageBridge, WebContents webContents);
-    private native boolean nativeIsInPrivateDirectory(
-            long nativeOfflinePageBridge, String filePath);
-    private native boolean nativeIsTemporaryNamespace(
-            long nativeOfflinePageBridge, String nameSpace);
-    private native OfflinePageItem nativeGetOfflinePage(
-            long nativeOfflinePageBridge, WebContents webContents);
-    private native void nativeCheckForNewOfflineContent(
-            long nativeOfflinePageBridge, long freshnessTimeMillis, Callback<String> callback);
-    private native void nativeGetLoadUrlParamsByOfflineId(long nativeOfflinePageBridge,
-            long offlineId, int location, Callback<LoadUrlParams> callback);
-    private native boolean nativeIsShowingTrustedOfflinePage(
-            long nativeOfflinePageBridge, WebContents webContents);
-    private native void nativeGetLoadUrlParamsForOpeningMhtmlFileOrContent(
-            long nativeOfflinePageBridge, String url, Callback<LoadUrlParams> callback);
-    private native void nativeAcquireFileAccessPermission(
-            long nativeOfflinePageBridge, WebContents webContents, Callback<Boolean> callback);
+    @NativeMethods
+    interface Natives {
+        boolean canSavePage(String url);
+        OfflinePageBridge getOfflinePageBridgeForProfileKey(ProfileKey profileKey);
+        void getAllPages(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                List<OfflinePageItem> offlinePages, final Callback<List<OfflinePageItem>> callback);
+        void willCloseTab(
+                long nativeOfflinePageBridge, OfflinePageBridge caller, WebContents webContents);
+        void getPageByOfflineId(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                long offlineId, Callback<OfflinePageItem> callback);
+        void getPagesByClientId(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                List<OfflinePageItem> result, String[] namespaces, String[] ids,
+                Callback<List<OfflinePageItem>> callback);
+        void getPagesByRequestOrigin(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                List<OfflinePageItem> result, String requestOrigin,
+                Callback<List<OfflinePageItem>> callback);
+        void getPagesByNamespace(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                List<OfflinePageItem> result, String nameSpace,
+                Callback<List<OfflinePageItem>> callback);
+        void deletePagesByClientId(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                String[] namespaces, String[] ids, Callback<Integer> callback);
+        void deletePagesByClientIdAndOrigin(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                String[] namespaces, String[] ids, String origin, Callback<Integer> callback);
+        void deletePagesByOfflineId(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                long[] offlineIds, Callback<Integer> callback);
+        void publishInternalPageByOfflineId(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                long offlineId, Callback<String> publishedCallback);
+        void publishInternalPageByGuid(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                String guid, Callback<String> publishedCallback);
+        void selectPageForOnlineUrl(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                String onlineUrl, int tabId, Callback<OfflinePageItem> callback);
+        void savePage(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                SavePageCallback callback, WebContents webContents, String clientNamespace,
+                String clientId, String origin);
+        String getOfflinePageHeaderForReload(
+                long nativeOfflinePageBridge, OfflinePageBridge caller, WebContents webContents);
+        boolean isShowingOfflinePreview(
+                long nativeOfflinePageBridge, OfflinePageBridge caller, WebContents webContents);
+        boolean isShowingDownloadButtonInErrorPage(
+                long nativeOfflinePageBridge, OfflinePageBridge caller, WebContents webContents);
+        void scheduleDownload(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                WebContents webContents, String nameSpace, String url, int uiAction, String origin);
+        boolean isOfflinePage(
+                long nativeOfflinePageBridge, OfflinePageBridge caller, WebContents webContents);
+        boolean isInPrivateDirectory(
+                long nativeOfflinePageBridge, OfflinePageBridge caller, String filePath);
+        boolean isTemporaryNamespace(
+                long nativeOfflinePageBridge, OfflinePageBridge caller, String nameSpace);
+        OfflinePageItem getOfflinePage(
+                long nativeOfflinePageBridge, OfflinePageBridge caller, WebContents webContents);
+        void checkForNewOfflineContent(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                long freshnessTimeMillis, Callback<String> callback);
+        void getLoadUrlParamsByOfflineId(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                long offlineId, int location, Callback<LoadUrlParams> callback);
+        boolean isShowingTrustedOfflinePage(
+                long nativeOfflinePageBridge, OfflinePageBridge caller, WebContents webContents);
+        void getLoadUrlParamsForOpeningMhtmlFileOrContent(long nativeOfflinePageBridge,
+                OfflinePageBridge caller, String url, Callback<LoadUrlParams> callback);
+        void acquireFileAccessPermission(long nativeOfflinePageBridge, OfflinePageBridge caller,
+                WebContents webContents, Callback<Boolean> callback);
+    }
 }

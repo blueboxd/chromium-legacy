@@ -204,6 +204,7 @@ public abstract class ChromeFeatureList {
     public static final String CHROME_DUET_ADAPTIVE = "ChromeDuetAdaptive";
     public static final String DONT_AUTO_HIDE_BROWSER_CONTROLS = "DontAutoHideBrowserControls";
     public static final String CHROME_DUET_LABELED = "ChromeDuetLabeled";
+    public static final String CHROME_SHARING_HUB = "ChromeSharingHub";
     public static final String CHROME_SMART_SELECTION = "ChromeSmartSelection";
     public static final String CLEAR_OLD_BROWSING_DATA = "ClearOldBrowsingData";
     public static final String CLICK_TO_CALL_OPEN_DIALER_DIRECTLY = "ClickToCallOpenDialerDirectly";

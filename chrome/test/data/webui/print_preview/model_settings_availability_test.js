@@ -322,12 +322,23 @@ cr.define('model_settings_availability_test', function() {
 
       // PDF -> Save as PDF
       model.set('documentSettings.isModifiable', false);
+      model.set('documentSettings.isPdf', true);
       assertFalse(model.settings.scaling.available);
 
       // PDF -> printer
       model.set('destination', defaultDestination);
       assertTrue(model.settings.scaling.available);
       assertFalse(model.settings.scaling.setFromUi);
+
+      // Non-PDF Plugin -> Save as PDF
+      setSaveAsPdfDestination();
+      model.set('documentSettings.isPdf', false);
+      assertFalse(model.settings.scaling.available);
+
+      // Non-PDF Plugin -> printer
+      model.set('destination', defaultDestination);
+      assertFalse(model.settings.scaling.available);
+
     });
 
     test('fit to page', function() {
@@ -341,12 +352,22 @@ cr.define('model_settings_availability_test', function() {
 
       // PDF -> Save as PDF
       model.set('documentSettings.isModifiable', false);
+      model.set('documentSettings.isPdf', true);
       assertFalse(model.settings.fitToPage.available);
 
       // PDF -> printer
       model.set('destination', defaultDestination);
       assertTrue(model.settings.fitToPage.available);
       assertFalse(model.settings.fitToPage.setFromUi);
+
+      // Non-PDF Plugin -> Save as PDF
+      setSaveAsPdfDestination();
+      model.set('documentSettings.isPdf', false);
+      assertFalse(model.settings.fitToPage.available);
+
+      // Non-PDF Plugin -> printer
+      model.set('destination', defaultDestination);
+      assertFalse(model.settings.fitToPage.available);
     });
 
     test('header footer', function() {

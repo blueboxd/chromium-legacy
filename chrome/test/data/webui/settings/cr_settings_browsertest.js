@@ -2531,7 +2531,13 @@ var CrSettingsSplitSettingsFlagTest = class extends CrSettingsBrowserTest {
   }
 };
 
-TEST_F('CrSettingsSplitSettingsFlagTest', 'All', function() {
+// Test is consistently failing. http://crbug.com/1008916
+GEN('#if !defined(NDEBUG)');
+GEN('#define MAYBE_All3 DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All3 All');
+GEN('#endif');
+TEST_F('CrSettingsSplitSettingsFlagTest', 'MAYBE_All3', function() {
   mocha.run();
 });
 

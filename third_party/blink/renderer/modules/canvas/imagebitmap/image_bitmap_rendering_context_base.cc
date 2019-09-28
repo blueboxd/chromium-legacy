@@ -99,11 +99,11 @@ bool ImageBitmapRenderingContextBase::CanCreateCanvas2dResourceProvider()
   return !!static_cast<OffscreenCanvas*>(Host())->GetOrCreateResourceProvider();
 }
 
-void ImageBitmapRenderingContextBase::PushFrame() {
+bool ImageBitmapRenderingContextBase::PushFrame() {
   DCHECK(Host());
   DCHECK(Host()->IsOffscreenCanvas());
   if (!CanCreateCanvas2dResourceProvider())
-    return;
+    return false;
 
   scoped_refptr<StaticBitmapImage> image = image_layer_bridge_->GetImage();
   cc::PaintFlags paint_flags;
@@ -116,6 +116,7 @@ void ImageBitmapRenderingContextBase::PushFrame() {
       std::move(resource),
       SkIRect::MakeWH(image_layer_bridge_->GetImage()->Size().Width(),
                       image_layer_bridge_->GetImage()->Size().Height()));
+  return true;
 }
 
 bool ImageBitmapRenderingContextBase::IsOriginTopLeft() const {

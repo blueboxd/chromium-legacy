@@ -100,8 +100,6 @@
 #include "third_party/blink/renderer/platform/text/text_direction.h"
 #include "third_party/blink/renderer/platform/wtf/std_lib_extras.h"
 
-using blink::WebLocalizedString;
-
 namespace {
 bool IsNeutralWithinTable(blink::AXObject* obj) {
   if (!obj)

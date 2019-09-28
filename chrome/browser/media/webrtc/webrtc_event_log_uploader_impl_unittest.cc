@@ -122,7 +122,7 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
     const std::string kResponseId = "ec1ed029734b8f7e";  // Arbitrary.
     test_url_loader_factory_.AddResponse(
         GURL(WebRtcEventLogUploaderImpl::kUploadURL),
-        network::CreateResourceResponseHead(http_code), kResponseId,
+        network::CreateURLResponseHead(http_code), kResponseId,
         network::URLLoaderCompletionStatus(net_error));
   }
 

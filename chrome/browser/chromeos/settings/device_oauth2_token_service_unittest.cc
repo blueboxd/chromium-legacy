@@ -193,7 +193,7 @@ void DeviceOAuth2TokenServiceTest::ReturnOAuthUrlFetchResults(
   if (test_url_loader_factory_.IsPending(url)) {
     test_url_loader_factory_.SimulateResponseForPendingRequest(
         GURL(url), network::URLLoaderCompletionStatus(net::OK),
-        network::CreateResourceResponseHead(response_code), response_string);
+        network::CreateURLResponseHead(response_code), response_string);
   }
 }
 

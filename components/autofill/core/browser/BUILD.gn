@@ -295,8 +295,10 @@ jumbo_static_library("browser") {
       "ui/mobile_label_formatter.h",
       "ui/payments/card_expiration_date_fix_flow_view_delegate_mobile.cc",
       "ui/payments/card_expiration_date_fix_flow_view_delegate_mobile.h",
-      "ui/payments/card_name_fix_flow_view_delegate_mobile.cc",
-      "ui/payments/card_name_fix_flow_view_delegate_mobile.h",
+      "ui/payments/card_name_fix_flow_controller.h",
+      "ui/payments/card_name_fix_flow_controller_impl.cc",
+      "ui/payments/card_name_fix_flow_controller_impl.h",
+      "ui/payments/card_name_fix_flow_view.h",
     ]
   }
 
@@ -601,6 +603,7 @@ source_set("unit_tests") {
     sources += [
       "autofill_assistant_unittest.cc",
       "ui/mobile_label_formatter_unittest.cc",
+      "ui/payments/card_name_fix_flow_controller_impl_unittest.cc",
     ]
   }
 

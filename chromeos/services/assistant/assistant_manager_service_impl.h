@@ -318,6 +318,10 @@ class AssistantManagerServiceImpl
   // NOTE: |display_connection_| is used by |assistant_manager_| and must be
   // declared before so it will be destructed after.
   std::unique_ptr<CrosDisplayConnection> display_connection_;
+  // Similar to |new_asssistant_manager_|, created on |background_thread_| then
+  // posted to main thread to finish initialization then move to
+  // |display_connection_|.
+  std::unique_ptr<CrosDisplayConnection> new_display_connection_;
   std::unique_ptr<assistant_client::AssistantManager> assistant_manager_;
   std::unique_ptr<AssistantSettingsManagerImpl> assistant_settings_manager_;
   // |new_asssistant_manager_| is created on |background_thread_| then posted to

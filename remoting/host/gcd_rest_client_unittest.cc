@@ -97,7 +97,7 @@ TEST_F(GcdRestClientTest, NetworkErrorOnPost) {
   test_url_loader_factory_.SetInterceptor(
       base::BindLambdaForTesting([&](const network::ResourceRequest& request) {
         test_url_loader_factory_.AddResponse(
-            request.url, network::ResourceResponseHead(), std::string(),
+            request.url, network::mojom::URLResponseHead::New(), std::string(),
             network::URLLoaderCompletionStatus(net::ERR_FAILED));
       }));
 

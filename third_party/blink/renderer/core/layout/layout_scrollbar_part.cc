@@ -47,9 +47,13 @@ LayoutScrollbarPart::LayoutScrollbarPart(ScrollableArea* scrollable_area,
 
 static void RecordScrollbarPartStats(Document& document, ScrollbarPart part) {
   switch (part) {
-    case kBackButtonStartPart:
-    case kForwardButtonStartPart:
     case kBackButtonEndPart:
+    case kForwardButtonStartPart:
+      UseCounter::Count(
+          document,
+          WebFeature::kCSSSelectorPseudoScrollbarButtonReversedDirection);
+      U_FALLTHROUGH;
+    case kBackButtonStartPart:
     case kForwardButtonEndPart:
       UseCounter::Count(document,
                         WebFeature::kCSSSelectorPseudoScrollbarButton);

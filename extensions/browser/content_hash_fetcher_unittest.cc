@@ -176,7 +176,7 @@ class ContentHashFetcherTest : public ExtensionsTest {
 
   void RegisterInterceptionWithFailure(const GURL& url, int net_error) {
     test_url_loader_factory_.AddResponse(
-        GURL(url), network::ResourceResponseHead(), std::string(),
+        GURL(url), network::mojom::URLResponseHead::New(), std::string(),
         network::URLLoaderCompletionStatus(net_error));
   }
 

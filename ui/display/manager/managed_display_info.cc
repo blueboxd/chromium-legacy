@@ -333,6 +333,15 @@ Display::Rotation ManagedDisplayInfo::GetActiveRotation() const {
   return GetRotation(Display::RotationSource::ACTIVE);
 }
 
+Display::Rotation ManagedDisplayInfo::GetLogicalActiveRotation() const {
+  return GetRotationWithPanelOrientation(
+      GetRotation(Display::RotationSource::ACTIVE));
+}
+
+Display::Rotation ManagedDisplayInfo::GetNaturalOrientationRotation() const {
+  return GetRotationWithPanelOrientation(Display::ROTATE_0);
+}
+
 Display::Rotation ManagedDisplayInfo::GetRotation(
     Display::RotationSource source) const {
   if (rotations_.find(source) == rotations_.end())
@@ -398,8 +407,18 @@ float ManagedDisplayInfo::GetEffectiveDeviceScaleFactor() const {
   return device_scale_factor_ * zoom_factor_;
 }
 
+gfx::Size ManagedDisplayInfo::GetSizeInPixelWithPanelOrientation() const {
+  gfx::Size size = bounds_in_native_.size();
+  if (panel_orientation_ == display::PanelOrientation::kLeftUp ||
+      panel_orientation_ == display::PanelOrientation::kRightUp) {
+    return gfx::Size(size.height(), size.width());
+  }
+  return size;
+}
+
 void ManagedDisplayInfo::UpdateDisplaySize() {
-  size_in_pixel_ = bounds_in_native_.size();
+  size_in_pixel_ = GetSizeInPixelWithPanelOrientation();
+
   if (!overscan_insets_in_dip_.IsEmpty()) {
     gfx::Insets insets_in_pixel =
         overscan_insets_in_dip_.Scale(device_scale_factor_);
@@ -465,6 +484,26 @@ std::string ManagedDisplayInfo::ToFullString() const {
                         m.device_scale_factor());
   }
   return ToString() + ", display_modes==" + display_modes_str;
+}
+
+Display::Rotation ManagedDisplayInfo::GetRotationWithPanelOrientation(
+    Display::Rotation rotation) const {
+  int offset = 0;
+  switch (panel_orientation_) {
+    case PanelOrientation::kNormal:
+      break;
+    case PanelOrientation::kBottomUp:
+      offset = 2;
+      break;
+    case PanelOrientation::kRightUp:
+      offset = 1;
+      break;
+    case PanelOrientation::kLeftUp:
+      offset = 3;
+      break;
+  }
+  return static_cast<Display::Rotation>((static_cast<int>(rotation) + offset) %
+                                        4);
 }
 
 void ResetDisplayIdForTest() {

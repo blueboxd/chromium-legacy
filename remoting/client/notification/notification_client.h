@@ -28,6 +28,7 @@ class NotificationClient final {
   using NotificationCallback =
       base::OnceCallback<void(base::Optional<NotificationMessage>)>;
 
+  NotificationClient();
   ~NotificationClient();
 
   // Fetches notifications from the server and calls |callback| with the
@@ -45,7 +46,8 @@ class NotificationClient final {
   NotificationClient(std::unique_ptr<JsonFetcher> fetcher,
                      const std::string& current_platform,
                      const std::string& current_version,
-                     const std::string& locale);
+                     const std::string& locale,
+                     bool should_ignore_dev_messages);
 
   void OnRulesFetched(const std::string& user_email,
                       NotificationCallback callback,
@@ -69,6 +71,7 @@ class NotificationClient final {
   std::string current_platform_;
   std::string current_version_;
   std::string locale_;
+  bool should_ignore_dev_messages_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationClient);
 };

@@ -517,6 +517,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
       use_dx11_(false),
       use_keyed_mutex_(false),
       using_angle_device_(false),
+      using_debug_device_(false),
       enable_accelerated_vpx_decode_(
           !workarounds.disable_accelerated_vpx_decode),
       processing_config_changed_(false) {
@@ -852,6 +853,7 @@ bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
       RETURN_ON_HR_FAILURE(hr, "Failed to create debug DX11 device", false);
     }
 #endif
+    using_debug_device_ = !!d3d11_device_context_;
     if (!d3d11_device_context_) {
       hr = D3D11CreateDevice(NULL, D3D_DRIVER_TYPE_HARDWARE, NULL, flags,
                              feature_levels, base::size(feature_levels),
@@ -1855,6 +1857,35 @@ void DXVAVideoDecodeAccelerator::StopOnError(
   if (client_)
     client_->NotifyError(error);
   client_ = NULL;
+
+#ifdef _DEBUG
+  if (using_debug_device_) {
+    // MSDN says that this needs to be casted twice, then GetMessage should
+    // be called with a malloc.
+    Microsoft::WRL::ComPtr<ID3D11Debug> debug_layer;
+    if (SUCCEEDED(d3d11_device_.As(&debug_layer))) {
+      Microsoft::WRL::ComPtr<ID3D11InfoQueue> message_layer;
+      if (SUCCEEDED(debug_layer.As(&message_layer))) {
+        uint64_t message_count = message_layer->GetNumStoredMessages();
+        for (uint64_t i = 0; i < message_count; i++) {
+          SIZE_T message_size;
+          message_layer->GetMessage(i, nullptr, &message_size);
+          D3D11_MESSAGE* message =
+              reinterpret_cast<D3D11_MESSAGE*>(malloc(message_size));
+          if (message) {
+            message_layer->GetMessage(i, message, &message_size);
+            if (media_log_) {
+              MEDIA_LOG(INFO, media_log_) << message->pDescription;
+            } else {
+              DVLOG(1) << message->pDescription;
+            }
+            free(message);
+          }
+        }
+      }
+    }
+  }
+#endif
 
   if (GetState() != kUninitialized) {
     Invalidate();

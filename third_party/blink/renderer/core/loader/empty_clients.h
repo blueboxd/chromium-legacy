@@ -318,7 +318,6 @@ class CORE_EXPORT EmptyLocalFrameClient : public LocalFrameClient {
 
   void DownloadURL(const ResourceRequest&,
                    DownloadCrossOriginRedirects) override {}
-  void LoadErrorPage(int reason) override {}
 
   DocumentLoader* CreateDocumentLoader(
       LocalFrame*,

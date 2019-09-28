@@ -118,7 +118,7 @@ class MODULES_EXPORT OffscreenCanvasRenderingContext2D final
 
   void Trace(blink::Visitor*) override;
 
-  void PushFrame() override;
+  bool PushFrame() override;
 
  protected:
   void NeedsFinalizeFrame() override {

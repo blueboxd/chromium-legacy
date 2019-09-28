@@ -14,11 +14,11 @@
 
 namespace gfx {
 
-std::string GetFallbackFontFamilyNameSkia(const Font& template_font,
+sk_sp<SkTypeface> GetSkiaFallbackTypeface(const Font& template_font,
                                           const std::string& locale,
                                           base::StringPiece16 text) {
   if (text.empty())
-    return std::string();
+    return nullptr;
 
   sk_sp<SkFontMgr> font_mgr(SkFontMgr::RefDefault());
 
@@ -35,7 +35,7 @@ std::string GetFallbackFontFamilyNameSkia(const Font& template_font,
       italic ? SkFontStyle::kItalic_Slant : SkFontStyle::kUpright_Slant);
 
   std::set<SkFontID> tested_typeface;
-  SkString skia_family_name;
+  sk_sp<SkTypeface> fallback_typeface;
   size_t fewest_missing_glyphs = text.length() + 1;
 
   size_t offset = 0;
@@ -62,7 +62,7 @@ std::string GetFallbackFontFamilyNameSkia(const Font& template_font,
 
     if (missing_glyphs < fewest_missing_glyphs) {
       fewest_missing_glyphs = missing_glyphs;
-      typeface->getFamilyName(&skia_family_name);
+      fallback_typeface = typeface;
     }
 
     // The font is a valid fallback font for the given text.
@@ -70,7 +70,7 @@ std::string GetFallbackFontFamilyNameSkia(const Font& template_font,
       break;
   }
 
-  return skia_family_name.c_str();
+  return fallback_typeface;
 }
 
 }  // namespace gfx

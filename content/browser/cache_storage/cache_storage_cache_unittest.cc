@@ -527,7 +527,7 @@ class CacheStorageCacheTest : public testing::Test {
         nullptr /* blob */, blink::mojom::ServiceWorkerResponseError::kUnknown,
         response_time_, std::string() /* cache_storage_cache_name */,
         std::vector<std::string>() /* cors_exposed_header_names */,
-        nullptr /* side_data_blob */);
+        nullptr /* side_data_blob */, nullptr /* content_security_policy */);
   }
 
   std::unique_ptr<storage::BlobDataHandle> BuildBlobHandle(

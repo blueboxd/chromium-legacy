@@ -6,8 +6,8 @@
 #define DEVICE_VR_TEST_FAKE_VR_DISPLAY_IMPL_CLIENT_H_
 
 #include "device/vr/public/mojom/vr_service.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 namespace device {
 class FakeVRServiceClient;
@@ -15,7 +15,8 @@ class FakeVRServiceClient;
 class FakeVRDisplayImplClient : public mojom::VRDisplayClient,
                                 public mojom::XRSessionClient {
  public:
-  FakeVRDisplayImplClient(mojom::VRDisplayClientRequest request);
+  explicit FakeVRDisplayImplClient(
+      mojo::PendingReceiver<mojom::VRDisplayClient> receiver);
   ~FakeVRDisplayImplClient() override;
 
   void SetServiceClient(FakeVRServiceClient* service_client);
@@ -32,7 +33,7 @@ class FakeVRDisplayImplClient : public mojom::VRDisplayClient,
  private:
   FakeVRServiceClient* service_client_;
   mojom::VRDisplayInfoPtr last_display_;
-  mojo::Binding<mojom::VRDisplayClient> m_binding_;
+  mojo::Receiver<mojom::VRDisplayClient> receiver_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeVRDisplayImplClient);
 };

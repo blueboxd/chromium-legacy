@@ -45,7 +45,6 @@
 #include "content/browser/devtools/devtools_instrumentation.h"
 #include "content/browser/dom_storage/dom_storage_context_wrapper.h"
 #include "content/browser/download/mhtml_generation_manager.h"
-#include "content/browser/file_url_loader_factory.h"
 #include "content/browser/fileapi/file_system_manager_impl.h"
 #include "content/browser/fileapi/file_system_url_loader_factory.h"
 #include "content/browser/frame_host/back_forward_cache_impl.h"
@@ -66,6 +65,7 @@
 #include "content/browser/generic_sensor/sensor_provider_proxy_impl.h"
 #include "content/browser/geolocation/geolocation_service_impl.h"
 #include "content/browser/interface_provider_filtering.h"
+#include "content/browser/loader/file_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/prefetch_url_loader_service.h"
 #include "content/browser/log_console_message.h"
@@ -7648,6 +7648,18 @@ void RenderFrameHostImpl::LogCannotCommitOriginCrashKeys(
                                             base::debug::CrashKeySize::Size64),
         navigation_request->GetStartingSiteInstance()->GetSiteURL().spec());
   }
+}
+
+void RenderFrameHostImpl::EnableMojoJsBindings() {
+  // This method should only be called on RenderFrameHost which is for a WebUI.
+  DCHECK_NE(WebUI::kNoWebUI,
+            WebUIControllerFactoryRegistry::GetInstance()->GetWebUIType(
+                GetSiteInstance()->GetBrowserContext(),
+                site_instance_->GetSiteURL()));
+
+  if (!frame_bindings_control_)
+    GetRemoteAssociatedInterfaces()->GetInterface(&frame_bindings_control_);
+  frame_bindings_control_->EnableMojoJsBindings();
 }
 
 }  // namespace content

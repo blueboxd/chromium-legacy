@@ -18122,7 +18122,7 @@ Called by update_net_error_codes.py.-->
   <int value="602" label="ReportDeviceOsUpdateStatus"/>
   <int value="603" label="DeviceLoginScreenWebUsbAllowDevicesForUrls"/>
   <int value="604" label="AllowSyncXHRInPageDismissal"/>
-  <int value="605" label="DeviceLoginSpokenFeedbackEnabled"/>
+  <int value="605" label="DeviceLoginScreenSpokenFeedbackEnabled"/>
   <int value="606" label="DeviceLoginScreenHighContrastEnabled"/>
   <int value="607" label="DeviceLoginScreenVirtualKeyboardEnabled"/>
   <int value="608" label="CloudExtensionRequestEnabled"/>
@@ -18133,6 +18133,7 @@ Called by update_net_error_codes.py.-->
   <int value="613" label="DeviceLoginScreenCursorHighlightEnabled"/>
   <int value="614" label="DeviceLoginScreenCaretHighlightEnabled"/>
   <int value="615" label="DeviceLoginScreenMonoAudioEnabled"/>
+  <int value="616" label="TotalMemoryLimitMb"/>
 </enum>
 
 <enum name="EnterprisePolicyInvalidations">
@@ -24750,6 +24751,9 @@ Called by update_net_error_codes.py.-->
   <int value="3034"
       label="MediaSourceGroupEndTimestampDecreaseWithinMediaSegment"/>
   <int value="3035" label="TextFragmentAnchorTapToDismiss"/>
+  <int value="3036" label="XRIsSessionSupported"/>
+  <int value="3037" label="ScrollbarUseScrollbarButtonReversedDirection"/>
+  <int value="3038" label="CSSSelectorPseudoScrollbarButtonReversedDirection"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -36261,6 +36265,7 @@ from previous Chrome versions.
   <int value="-240531943" label="ContextualSearchRankerQuery:disabled"/>
   <int value="-239616243" label="HighDynamicRange:enabled"/>
   <int value="-239176328" label="BluetoothAggressiveAppearanceFilter:enabled"/>
+  <int value="-237367320" label="AssistantAudioEraser:disabled"/>
   <int value="-234966279" label="PointerEvent:disabled"/>
   <int value="-234687894"
       label="NonValidatingReloadOnRefreshContentV2:disabled"/>
@@ -36831,6 +36836,7 @@ from previous Chrome versions.
   <int value="549483647" label="EnableUnifiedMultiDeviceSettings:disabled"/>
   <int value="550378029" label="reset-app-list-install-state"/>
   <int value="550387510" label="NTPAssetDownloadSuggestions:disabled"/>
+  <int value="555959995" label="ChromeSharingHub:enabled"/>
   <int value="556555487"
       label="AutofillDoNotUploadSaveUnsupportedCards:disabled"/>
   <int value="557200974" label="WebSocketHandshakeReuseConnection:disabled"/>
@@ -36958,6 +36964,7 @@ from previous Chrome versions.
   <int value="715617684" label="OriginTrials:disabled"/>
   <int value="716073306" label="AssistantVoiceMatch:disabled"/>
   <int value="716080990" label="restrict-iframe-permissions"/>
+  <int value="717827121" label="ChromeSharingHub:disabled"/>
   <int value="719267310"
       label="KeepAliveRendererForKeepaliveRequests:disabled"/>
   <int value="720931007" label="WebAuthenticationBle:enabled"/>
@@ -37289,6 +37296,7 @@ from previous Chrome versions.
   <int value="1183431946" label="v8-cache-options"/>
   <int value="1184225265" label="AllowSyncXHRInPageDismissal:enabled"/>
   <int value="1185424279" label="enable-media-router"/>
+  <int value="1188109510" label="AssistantAudioEraser:enabled"/>
   <int value="1190035852" label="MediaRemoting:enabled"/>
   <int value="1192302892" label="gesture-typing"/>
   <int value="1192913630" label="OfflinePagesBackgroundLoading:disabled"/>
@@ -54206,11 +54214,12 @@ Called by update_net_trust_anchors.py.-->
 
 <enum name="SecurityLevel">
   <int value="0" label="None"/>
-  <int value="1" label="Non-secure with warning"/>
+  <int value="1" label="HTTP with warning (deprecated)"/>
   <int value="2" label="Secure with EV certificate"/>
   <int value="3" label="Secure"/>
   <int value="4" label="Secure with policy-installed certificate"/>
   <int value="5" label="Dangerous"/>
+  <int value="6" label="Warning"/>
 </enum>
 
 <enum name="SelectFileDialogScope">

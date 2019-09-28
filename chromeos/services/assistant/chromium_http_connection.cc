@@ -41,18 +41,6 @@ constexpr int kResponseCodeInvalid = -1;
 
 }  // namespace
 
-ChromiumHttpConnectionFactory::ChromiumHttpConnectionFactory(
-    std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info)
-    : url_loader_factory_(
-          SharedURLLoaderFactory::Create(std::move(url_loader_factory_info))) {}
-
-ChromiumHttpConnectionFactory::~ChromiumHttpConnectionFactory() = default;
-
-HttpConnection* ChromiumHttpConnectionFactory::Create(
-    HttpConnection::Delegate* delegate) {
-  return new ChromiumHttpConnection(url_loader_factory_->Clone(), delegate);
-}
-
 ChromiumHttpConnection::ChromiumHttpConnection(
     std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info,
     Delegate* delegate)
@@ -402,6 +390,18 @@ void ChromiumHttpConnection::OnResponseStarted(
     // invoked to honor the API contract.
     delegate_->OnHeaderResponse(response_header.headers->raw_headers());
   }
+}
+
+ChromiumHttpConnectionFactory::ChromiumHttpConnectionFactory(
+    std::unique_ptr<SharedURLLoaderFactoryInfo> url_loader_factory_info)
+    : url_loader_factory_(
+          SharedURLLoaderFactory::Create(std::move(url_loader_factory_info))) {}
+
+ChromiumHttpConnectionFactory::~ChromiumHttpConnectionFactory() = default;
+
+HttpConnection* ChromiumHttpConnectionFactory::Create(
+    HttpConnection::Delegate* delegate) {
+  return new ChromiumHttpConnection(url_loader_factory_->Clone(), delegate);
 }
 
 }  // namespace assistant

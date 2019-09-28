@@ -239,9 +239,13 @@ void DragDownloadFile::Start(ui::DownloadFileObserver* observer) {
 
 bool DragDownloadFile::Wait() {
   CheckThread();
+  // Store the weakptr in a local variable as |this| may be deleted while
+  // waiting for the nested RunLoop.
+  auto ref = weak_ptr_factory_.GetWeakPtr();
   if (state_ == STARTED)
     nested_loop_.Run();
-  return state_ == SUCCESS;
+  // If the weakptr is destroyed, the download should be successful.
+  return !ref.get() || state_ == SUCCESS;
 }
 
 void DragDownloadFile::Stop() {

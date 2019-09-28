@@ -151,6 +151,9 @@ class ContainerURLRequestContext final : public URLRequestContext {
     // down before this cancels the ProxyResolutionService's URLRequests.
     proxy_resolution_service()->OnShutdown();
 
+    DCHECK(host_resolver());
+    host_resolver()->OnShutdown();
+
     AssertNoURLRequests();
   }
 

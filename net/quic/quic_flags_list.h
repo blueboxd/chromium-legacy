@@ -83,7 +83,7 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_99, false)
 QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_unified_iw_options, false)
 
 // Number of packets that the pacing sender allows in bursts during pacing.
-QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 1)
+QUIC_FLAG(int32_t, FLAGS_quic_lumpy_pacing_size, 2)
 
 // Congestion window fraction that the pacing sender allows in bursts during
 // pacing.
@@ -173,6 +173,9 @@ QUIC_FLAG(
     FLAGS_quic_reloadable_flag_send_quic_fallback_server_config_on_leto_error,
     false)
 
+// If true, enable QUIC version 49.
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_version_49, false)
+
 // If true, GFE will not request private keys when fetching QUIC ServerConfigs
 // from Leto.
 QUIC_FLAG(bool,
@@ -204,13 +207,6 @@ QUIC_FLAG(bool,
 
 // If true, use predictable version negotiation versions.
 QUIC_FLAG(bool, FLAGS_quic_disable_version_negotiation_grease_randomness, false)
-
-// If true and --quic_lumpy_pacing_size is 1, QUIC will use a lumpy size of two
-// for pacing.
-QUIC_FLAG(
-    bool,
-    FLAGS_quic_reloadable_flag_quic_change_default_lumpy_pacing_size_to_two,
-    true)
 
 // If true, do not add connection ID of packets with unknown connection ID
 // and no version to time wait list, instead, send appropriate responses
@@ -259,7 +255,7 @@ QUIC_FLAG(bool,
 // frames.
 QUIC_FLAG(
     bool,
-    FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames2,
+    FLAGS_quic_reloadable_flag_quic_add_upper_limit_of_buffered_control_frames3,
     false)
 
 // If true, static streams should never be closed before QuicSession
@@ -295,7 +291,7 @@ QUIC_FLAG(
 // closed streams whose highest byte offset is not received yet.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_aggressive_connection_aliveness,
-          false)
+          true)
 
 // If true, QuicStreamSequencer will not take in new data if the stream is
 // reset.
@@ -345,29 +341,27 @@ QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_supports_tls_handshake, true)
 
 // If true, deprecate SpuriousRetransmitDetected and call SpuriousLossDetected
 // instead.
-QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_detect_spurious_loss, false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_detect_spurious_loss, true)
 
 // If true, a stream will reset itself if it receives a stream frame that
 // includes a data beyond the close offset.
 QUIC_FLAG(
     bool,
     FLAGS_quic_reloadable_flag_quic_rst_if_stream_frame_beyond_close_offset,
-    false)
+    true)
 
 // If true, enable IETF loss detection as described in
 // https://tools.ietf.org/html/draft-ietf-quic-recovery-22#section-6.1.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_enable_ietf_loss_detection,
-          false)
+          true)
 
 // If true, skip packet number before sending the last PTO retransmission.
 QUIC_FLAG(bool,
           FLAGS_quic_reloadable_flag_quic_skip_packet_number_for_pto,
-          false)
+          true)
 // If true, enable HTTP/2 default scheduling(round robin).
-QUIC_FLAG(bool,
-          FLAGS_quic_reloadable_flag_quic_enable_rr_write_scheduler,
-          false)
+QUIC_FLAG(bool, FLAGS_quic_reloadable_flag_quic_enable_rr_write_scheduler, true)
 
 // If true, when timer fires in RTO or PTO mode, make sure there is enough
 // credits to retransmit one packet.

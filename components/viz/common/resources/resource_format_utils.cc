@@ -23,7 +23,6 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     return kN32_SkColorType;
   }
 
-  // Use kN32_SkColorType if there is no corresponding SkColorType.
   switch (format) {
     case RGBA_4444:
       return kARGB_4444_SkColorType;
@@ -40,6 +39,13 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     case RGBX_8888:
     case ETC1:
       return kRGB_888x_SkColorType;
+
+    // YUV images are sampled as RGB.
+    case YVU_420:
+    case YUV_420_BIPLANAR:
+      return kRGB_888x_SkColorType;
+
+    // Use kN32_SkColorType if there is no corresponding SkColorType.
     case RED_8:
       return kGray_8_SkColorType;
     case LUMINANCE_F16:
@@ -49,10 +55,9 @@ SkColorType ResourceFormatToClosestSkColorType(bool gpu_compositing,
     case BGRX_8888:
     case RGBX_1010102:
     case BGRX_1010102:
-    case YVU_420:
-    case YUV_420_BIPLANAR:
     case P010:
       return kN32_SkColorType;
+
     case RGBA_F16:
       return kRGBA_F16_SkColorType;
   }

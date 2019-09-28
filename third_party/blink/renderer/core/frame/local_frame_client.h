@@ -192,7 +192,6 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
 
   virtual void DownloadURL(const ResourceRequest&,
                            DownloadCrossOriginRedirects) = 0;
-  virtual void LoadErrorPage(int reason) = 0;
 
   virtual bool NavigateBackForward(int offset) const = 0;
 

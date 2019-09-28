@@ -5,6 +5,7 @@
 #include "third_party/blink/renderer/core/frame/local_frame_ukm_aggregator.h"
 
 #include "base/test/test_mock_time_task_runner.h"
+#include "cc/metrics/begin_main_frame_metrics.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -244,6 +245,45 @@ TEST_F(LocalFrameUkmAggregatorTest, EventsRecordedAtIntervals) {
   // new interval.
   VerifyEntries(3u, millisecond_per_frame, millisecond_per_step,
                 expected_percentage);
+}
+
+TEST_F(LocalFrameUkmAggregatorTest, LatencyDataIsPopulated) {
+  // Although the tests use a mock clock, the UKM aggregator checks if the
+  // system has a high resolution clock before recording results. As a result,
+  // the tests will fail if the system does not have a high resolution clock.
+  if (!base::TimeTicks::IsHighResolution())
+    return;
+
+  // The initial interval is always zero, so we should see one set of metrics
+  // for the initial frame, regardless of the initial interval.
+  FramesToNextEventForTest(1);
+  unsigned millisecond_for_step = 1;
+  aggregator().BeginMainFrame();
+  for (int i = 0; i < LocalFrameUkmAggregator::kCount; ++i) {
+    auto timer =
+        aggregator().GetScopedTimer(i % LocalFrameUkmAggregator::kCount);
+    test_task_runner_->FastForwardBy(
+        base::TimeDelta::FromMilliseconds(millisecond_for_step));
+  }
+
+  // Need to populate before the end of the frame.
+  std::unique_ptr<cc::BeginMainFrameMetrics> metrics_data =
+      aggregator().GetBeginMainFrameMetrics();
+  EXPECT_EQ(metrics_data->handle_input_events.InMillisecondsF(),
+            millisecond_for_step);
+  EXPECT_EQ(metrics_data->animate.InMillisecondsF(), millisecond_for_step);
+  EXPECT_EQ(metrics_data->style_update.InMillisecondsF(), millisecond_for_step);
+  EXPECT_EQ(metrics_data->layout_update.InMillisecondsF(),
+            millisecond_for_step);
+  EXPECT_EQ(metrics_data->prepaint.InMillisecondsF(), millisecond_for_step);
+  EXPECT_EQ(metrics_data->composite.InMillisecondsF(), millisecond_for_step);
+  EXPECT_EQ(metrics_data->paint.InMillisecondsF(), millisecond_for_step);
+  EXPECT_EQ(metrics_data->scrolling_coordinator.InMillisecondsF(),
+            millisecond_for_step);
+  EXPECT_EQ(metrics_data->composite_commit.InMillisecondsF(),
+            millisecond_for_step);
+  // Do not check the value in metrics_data.update_layers because it
+  // is not set by the aggregator.
 }
 
 }  // namespace blink

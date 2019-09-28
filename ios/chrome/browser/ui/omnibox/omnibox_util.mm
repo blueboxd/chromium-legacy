@@ -105,7 +105,7 @@ LocationBarSecurityIconType GetLocationBarSecurityIconTypeForSecurityState(
     security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::NONE:
-    case security_state::HTTP_SHOW_WARNING:
+    case security_state::WARNING:
       return INSECURE;
     case security_state::EV_SECURE:
     case security_state::SECURE:
@@ -187,7 +187,7 @@ int GetIconForAutocompleteMatchType(AutocompleteMatchType::Type type,
 int GetIconForSecurityState(security_state::SecurityLevel security_level) {
   switch (security_level) {
     case security_state::NONE:
-    case security_state::HTTP_SHOW_WARNING:
+    case security_state::WARNING:
       return IDR_IOS_OMNIBOX_HTTP;
     case security_state::EV_SECURE:
     case security_state::SECURE:

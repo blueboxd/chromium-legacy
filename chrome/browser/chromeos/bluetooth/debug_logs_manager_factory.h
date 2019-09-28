@@ -8,8 +8,13 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
-class DebugLogsManager;
 class Profile;
+
+namespace chromeos {
+
+namespace bluetooth {
+
+class DebugLogsManager;
 
 // Factory for DebugLogsManager.
 class DebugLogsManagerFactory : public BrowserContextKeyedServiceFactory {
@@ -30,5 +35,9 @@ class DebugLogsManagerFactory : public BrowserContextKeyedServiceFactory {
 
   DISALLOW_COPY_AND_ASSIGN(DebugLogsManagerFactory);
 };
+
+}  // namespace bluetooth
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_BLUETOOTH_DEBUG_LOGS_MANAGER_FACTORY_H_

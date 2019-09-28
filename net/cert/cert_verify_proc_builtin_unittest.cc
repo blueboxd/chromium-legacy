@@ -10,6 +10,7 @@
 #include "net/base/test_completion_callback.h"
 #include "net/cert/cert_verify_proc.h"
 #include "net/cert/crl_set.h"
+#include "net/cert/ev_root_ca_metadata.h"
 #include "net/cert/internal/system_trust_store.h"
 #include "net/cert_net/cert_net_fetcher_impl.h"
 #include "net/log/net_log_with_source.h"
@@ -295,5 +296,78 @@ TEST_F(CertVerifyProcBuiltinTest, RevocationCheckDeadlineOCSP) {
   // should be OK even though none of the OCSP responses could be retrieved.
   EXPECT_THAT(error, IsOk());
 }
+
+#if defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
+// Tests that if the verification deadline is exceeded during EV revocation
+// checking, the certificate is verified as non-EV.
+TEST_F(CertVerifyProcBuiltinTest, EVRevocationCheckDeadline) {
+  std::unique_ptr<CertBuilder> leaf, intermediate, root;
+  CreateChain(&leaf, &intermediate, &root);
+  ASSERT_TRUE(leaf && intermediate && root);
+
+  // Add test EV policy to leaf and intermediate.
+  static const char kEVTestCertPolicy[] = "1.2.3.4";
+  leaf->SetCertificatePolicies({kEVTestCertPolicy});
+  intermediate->SetCertificatePolicies({kEVTestCertPolicy});
+
+  const base::TimeDelta timeout_increment =
+      CertNetFetcherImpl::GetDefaultTimeoutForTesting() +
+      base::TimeDelta::FromMilliseconds(1);
+  const int expected_request_count =
+      GetCertVerifyProcBuiltinTimeLimitForTesting() / timeout_increment + 1;
+
+  EmbeddedTestServer test_server(EmbeddedTestServer::TYPE_HTTP);
+  ASSERT_TRUE(test_server.InitializeAndListen());
+
+  // Set up the test intermediate to have enough OCSP urls that if all the
+  // requests hang the deadline will be exceeded.
+  std::vector<GURL> ocsp_urls;
+  std::vector<base::RunLoop> runloops(expected_request_count);
+  for (int i = 0; i < expected_request_count; ++i) {
+    std::string path = base::StringPrintf("/hung/%i", i);
+    ocsp_urls.emplace_back(test_server.GetURL(path));
+    test_server.RegisterRequestHandler(
+        base::BindRepeating(&test_server::HandlePrefixedRequest, path,
+                            base::BindRepeating(&HangRequestAndCallback,
+                                                runloops[i].QuitClosure())));
+  }
+  intermediate->SetCaIssuersAndOCSPUrls({}, ocsp_urls);
+
+  test_server.StartAcceptingConnections();
+
+  // Consider the root of the test chain a valid EV root for the test policy.
+  ScopedTestEVPolicy scoped_test_ev_policy(
+      EVRootCAMetadata::GetInstance(),
+      X509Certificate::CalculateFingerprint256(root->GetCertBuffer()),
+      kEVTestCertPolicy);
+
+  scoped_refptr<X509Certificate> chain = leaf->GetX509CertificateChain();
+  ASSERT_TRUE(chain.get());
+
+  CertVerifyResult verify_result;
+  TestCompletionCallback verify_callback;
+  Verify(chain.get(), "www.example.com",
+         /*flags=*/0,
+         /*additional_trust_anchors=*/{root->GetX509Certificate()},
+         &verify_result, verify_callback.callback());
+
+  for (int i = 0; i < expected_request_count; i++) {
+    // Wait for request #|i| to be made.
+    runloops[i].Run();
+    // Advance virtual time to cause the timeout task to become runnable.
+    task_environment().AdvanceClock(timeout_increment);
+  }
+
+  // Once |expected_request_count| requests have been made and timed out, the
+  // overall deadline should be reached, causing the EV verification attempt to
+  // fail.
+  int error = verify_callback.WaitForResult();
+  // EV uses soft-fail revocation checking, therefore verification result
+  // should be OK but not EV.
+  EXPECT_THAT(error, IsOk());
+  EXPECT_FALSE(verify_result.cert_status & CERT_STATUS_IS_EV);
+  EXPECT_TRUE(verify_result.cert_status & CERT_STATUS_REV_CHECKING_ENABLED);
+}
+#endif  // defined(PLATFORM_USES_CHROMIUM_EV_METADATA)
 
 }  // namespace net

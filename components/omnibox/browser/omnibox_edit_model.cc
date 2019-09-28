@@ -1636,20 +1636,9 @@ void OmniboxEditModel::SetFocusState(OmniboxFocusState state,
 }
 
 size_t OmniboxEditModel::GetNewSelectedLine(int count) {
-  if (!OmniboxFieldTrial::IsOmniboxWrapPopupPositionEnabled()) {
-    if (count < 0) {
-      if ((size_t)-count >= popup_model()->selected_line())
-        return 0;
-    } else if (count + popup_model()->selected_line() >=
-               popup_model()->result().size()) {
-      return popup_model()->result().size() - 1;
-    }
-    return popup_model()->selected_line() + count;
-  } else {
-    int line_no = (static_cast<int>(popup_model()->selected_line()) + count) %
-                  static_cast<int>(popup_model()->result().size());
-    if (line_no < 0)
-      line_no += popup_model()->result().size();
-    return line_no;
-  }
+  int line_no = (static_cast<int>(popup_model()->selected_line()) + count) %
+                static_cast<int>(popup_model()->result().size());
+  if (line_no < 0)
+    line_no += popup_model()->result().size();
+  return line_no;
 }

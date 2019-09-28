@@ -18,6 +18,7 @@ import android.content.Context;
 import android.os.Bundle;
 
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -33,6 +34,7 @@ import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.ShadowDeviceConditions;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
@@ -92,10 +94,14 @@ public class PrefetchBackgroundTaskUnitTest {
     public static final boolean METERED = true;
     public static final boolean SCREEN_ON_AND_UNLOCKED = true;
 
+    @Rule
+    public JniMocker mocker = new JniMocker();
     @Spy
     private PrefetchBackgroundTask mPrefetchBackgroundTask = new PrefetchBackgroundTask();
     @Mock
     private ChromeBrowserInitializer mChromeBrowserInitializer;
+    @Mock
+    private PrefetchBackgroundTask.Natives mPrefetchBackgroundTaskJniMock;
     @Captor
     ArgumentCaptor<BrowserParts> mBrowserParts;
     private FakeBackgroundTaskScheduler mFakeTaskScheduler;
@@ -103,6 +109,7 @@ public class PrefetchBackgroundTaskUnitTest {
     @Before
     public void setUp() {
         MockitoAnnotations.initMocks(this);
+        mocker.mock(PrefetchBackgroundTaskJni.TEST_HOOKS, mPrefetchBackgroundTaskJniMock);
         doNothing().when(mChromeBrowserInitializer).handlePreNativeStartup(any(BrowserParts.class));
         try {
             doAnswer(new Answer<Void>() {
@@ -127,9 +134,10 @@ public class PrefetchBackgroundTaskUnitTest {
                 return Boolean.TRUE;
             }
         })
-                .when(mPrefetchBackgroundTask)
-                .nativeStartPrefetchTask();
-        doReturn(true).when(mPrefetchBackgroundTask).nativeOnStopTask(1);
+                .when(mPrefetchBackgroundTaskJniMock)
+                .startPrefetchTask(mPrefetchBackgroundTask);
+
+        doReturn(true).when(mPrefetchBackgroundTaskJniMock).onStopTask(1, mPrefetchBackgroundTask);
 
         mFakeTaskScheduler = new FakeBackgroundTaskScheduler();
         BackgroundTaskSchedulerFactory.setSchedulerForTesting(mFakeTaskScheduler);

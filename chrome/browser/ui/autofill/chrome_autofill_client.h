@@ -23,11 +23,13 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-#if !defined(OS_ANDROID)
+#if defined(OS_ANDROID)
+#include "components/autofill/core/browser/ui/payments/card_name_fix_flow_controller_impl.h"
+#else  // !OS_ANDROID
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller.h"
 #include "components/zoom/zoom_observer.h"
-#endif  // !defined(OS_ANDROID)
+#endif
 
 namespace content {
 class WebContents;
@@ -166,6 +168,9 @@ class ChromeAutofillClient
   base::WeakPtr<AutofillPopupControllerImpl> popup_controller_;
   CardUnmaskPromptControllerImpl unmask_controller_;
   std::unique_ptr<LogManager> log_manager_;
+#if defined(OS_ANDROID)
+  CardNameFixFlowControllerImpl card_name_fix_flow_controller_;
+#endif
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 

@@ -124,6 +124,16 @@ bool VulkanFunctionPointers::BindInstanceFunctionPointers(
     return false;
   }
 
+  vkGetPhysicalDeviceFormatPropertiesFn =
+      reinterpret_cast<PFN_vkGetPhysicalDeviceFormatProperties>(
+          vkGetInstanceProcAddrFn(vk_instance,
+                                  "vkGetPhysicalDeviceFormatProperties"));
+  if (!vkGetPhysicalDeviceFormatPropertiesFn) {
+    DLOG(WARNING) << "Failed to bind vulkan entrypoint: "
+                  << "vkGetPhysicalDeviceFormatProperties";
+    return false;
+  }
+
   vkGetPhysicalDeviceMemoryPropertiesFn =
       reinterpret_cast<PFN_vkGetPhysicalDeviceMemoryProperties>(
           vkGetInstanceProcAddrFn(vk_instance,

@@ -43,6 +43,8 @@ void BluetoothInternalsHandler::GetDebugLogsChangeHandler(
   bool initial_toggle_value = false;
 
 #if defined(OS_CHROMEOS)
+  using chromeos::bluetooth::DebugLogsManager;
+
   // If no logs manager exists for this user, debug logs are not supported.
   DebugLogsManager::DebugLogsState state =
       debug_logs_manager_ ? debug_logs_manager_->GetDebugLogsState()

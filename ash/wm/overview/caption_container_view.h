@@ -95,6 +95,7 @@ class ASH_EXPORT CaptionContainerView
   gfx::Rect GetHighlightBoundsInScreen() override;
   void MaybeActivateHighlightedView() override;
   void MaybeCloseHighlightedView() override;
+  gfx::Point GetMagnifierFocusPointInScreen() override;
 
   // TODO(sammiequon): Move these to a test api.
   views::View* header_view() { return header_view_; }

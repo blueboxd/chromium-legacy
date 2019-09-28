@@ -284,6 +284,11 @@ void ProfileMenuView::OnExitProfileButtonClicked() {
   profiles::CloseProfileWindows(browser()->profile());
 }
 
+void ProfileMenuView::OnSyncSettingsButtonClicked() {
+  RecordClick(ActionableItem::kSyncSettingsButton);
+  chrome::ShowSettingsSubPage(browser(), chrome::kSyncSetupSubPage);
+}
+
 void ProfileMenuView::OnSyncErrorButtonClicked(
     sync_ui_util::AvatarSyncErrorType error) {
   RecordClick(ActionableItem::kSyncErrorButton);
@@ -507,7 +512,32 @@ void ProfileMenuView::BuildSyncInfo() {
       IdentityManagerFactory::GetForProfile(browser()->profile());
 
   if (identity_manager->HasPrimaryAccount()) {
-    // TODO(crbug.com/995720): Implement sync-is-on state.
+    // Show sync state.
+    int description_string_id, button_string_id;
+    sync_ui_util::AvatarSyncErrorType error =
+        sync_ui_util::GetMessagesForAvatarSyncError(
+            browser()->profile(), &description_string_id, &button_string_id);
+    switch (error) {
+      case sync_ui_util::NO_SYNC_ERROR:
+        SetSyncInfo(
+            /*description=*/base::string16(),
+            l10n_util::GetStringUTF16(IDS_SETTINGS_SYNC_ADVANCED_PAGE_TITLE),
+            base::BindRepeating(&ProfileMenuView::OnSyncSettingsButtonClicked,
+                                base::Unretained(this)));
+        break;
+      case sync_ui_util::MANAGED_USER_UNRECOVERABLE_ERROR:
+      case sync_ui_util::UNRECOVERABLE_ERROR:
+      case sync_ui_util::UPGRADE_CLIENT_ERROR:
+      case sync_ui_util::PASSPHRASE_ERROR:
+      case sync_ui_util::SETTINGS_UNCONFIRMED_ERROR:
+      case sync_ui_util::AUTH_ERROR:
+        SetSyncInfo(
+            l10n_util::GetStringUTF16(description_string_id),
+            l10n_util::GetStringUTF16(button_string_id),
+            base::BindRepeating(&ProfileMenuView::OnSyncErrorButtonClicked,
+                                base::Unretained(this), error));
+        break;
+    }
     return;
   }
 

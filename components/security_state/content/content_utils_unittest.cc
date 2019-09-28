@@ -584,14 +584,14 @@ TEST(SecurityStateContentUtilsTest, MixedContentAndCertErrorExplanations) {
   }
 }
 
-// Tests that a security level of HTTP_SHOW_WARNING produces
+// Tests that a security level of WARNING produces
 // blink::WebSecurityStyleNeutral.
 TEST(SecurityStateContentUtilsTest, HTTPWarning) {
   security_state::VisibleSecurityState visible_security_state;
   visible_security_state.url = GURL("http://scheme-is-not-cryptographic.test");
   content::SecurityStyleExplanations explanations;
   blink::WebSecurityStyle security_style = GetSecurityStyle(
-      security_state::HTTP_SHOW_WARNING, visible_security_state, &explanations);
+      security_state::WARNING, visible_security_state, &explanations);
   EXPECT_EQ(blink::kWebSecurityStyleNeutral, security_style);
   // Verify no explanation was shown.
   EXPECT_EQ(0u, explanations.neutral_explanations.size());

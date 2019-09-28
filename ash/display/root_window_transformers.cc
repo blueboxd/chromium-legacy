@@ -36,12 +36,13 @@ gfx::Transform CreateRootWindowRotationTransform(
     const display::Display& display) {
   display::ManagedDisplayInfo info =
       Shell::Get()->display_manager()->GetDisplayInfo(display.id());
-  gfx::SizeF size(display.GetSizeInPixel());
+  gfx::SizeF size(info.size_in_pixel());
+
   // Use SizeF so that the origin of translated layer will be
   // aligned when scaled back at pixels.
   size.Scale(1.f / display.device_scale_factor());
   return CreateRotationTransform(display::Display::ROTATE_0,
-                                 info.GetActiveRotation(), size);
+                                 info.GetLogicalActiveRotation(), size);
 }
 
 gfx::Transform CreateInsetsAndScaleTransform(const gfx::Insets& insets,
@@ -141,8 +142,8 @@ class MirrorRootWindowTransformer : public RootWindowTransformer {
       // Calculate the transform to undo the rotation and apply it to the
       // source display.
       rotation_transform = CreateRotationTransform(
-          source_display_info.GetActiveRotation(), display::Display::ROTATE_0,
-          gfx::SizeF(root_bounds_.size()));
+          source_display_info.GetLogicalActiveRotation(),
+          display::Display::ROTATE_0, gfx::SizeF(root_bounds_.size()));
       gfx::RectF rotated_bounds(root_bounds_);
       rotation_transform.TransformRect(&rotated_bounds);
       root_bounds_ = gfx::ToNearestRect(rotated_bounds);

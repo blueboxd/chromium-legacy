@@ -132,6 +132,7 @@ cr.define('preview_generation_test', function() {
     test(assert(TestNames.FitToPage), function() {
       // Set PDF document so setting is available.
       initialSettings.previewModifiable = false;
+      initialSettings.previewIsPdf = true;
       return testSimpleSetting(
           'fitToPage', false, true, 'fitToPageEnabled', false, true);
     });

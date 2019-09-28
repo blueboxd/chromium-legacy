@@ -9,10 +9,11 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
-#include "ash/public/cpp/split_view.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/public/cpp/wallpaper_controller_observer.h"
 #include "ash/wm/overview/overview_observer.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_observer.h"
 #include "base/macros.h"
 #include "ui/gfx/geometry/rect.h"
 
@@ -77,8 +78,8 @@ class ASH_EXPORT BackdropController : public AccessibilityObserver,
   void OnAccessibilityStatusChanged() override;
 
   // SplitViewObserver:
-  void OnSplitViewStateChanged(SplitViewState previous_state,
-                               SplitViewState state) override;
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
   void OnSplitViewDividerPositionChanged() override;
 
   // WallpaperControllerObserver:

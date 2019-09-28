@@ -211,14 +211,14 @@ void GCMDriverBaseTest::SendWebPushMessage(
     const network::DataElement& body = body_elements->back();
     send_web_push_message_payload_ = std::string(body.bytes(), body.length());
 
-    network::ResourceResponseHead response_head =
-        network::CreateResourceResponseHead(*completion_status);
-    response_head.headers->AddHeader(
+    auto response_head = network::CreateURLResponseHead(*completion_status);
+    response_head->headers->AddHeader(
         "location:https://fcm.googleapis.com/message_id");
 
     test_url_loader_factory_.SimulateResponseForPendingRequest(
         pendingRequest->request.url,
-        network::URLLoaderCompletionStatus(net::OK), response_head, "");
+        network::URLLoaderCompletionStatus(net::OK), std::move(response_head),
+        "");
   }
 
   if (wait_to_finish == WAIT)

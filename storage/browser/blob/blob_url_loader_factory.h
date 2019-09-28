@@ -21,8 +21,9 @@ class BlobStorageContext;
 class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLLoaderFactory
     : public network::mojom::URLLoaderFactory {
  public:
-  static void Create(std::unique_ptr<BlobDataHandle> handle,
+  static void Create(mojo::PendingRemote<blink::mojom::Blob> blob,
                      const GURL& blob_url,
+                     base::WeakPtr<BlobStorageContext> context,
                      network::mojom::URLLoaderFactoryRequest request);
 
   // Creates a factory for a BlobURLToken. The token is used to look up the blob

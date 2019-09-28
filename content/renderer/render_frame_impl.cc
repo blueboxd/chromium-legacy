@@ -3139,12 +3139,6 @@ blink::WebPlugin* RenderFrameImpl::CreatePlugin(
   return nullptr;
 }
 
-void RenderFrameImpl::LoadErrorPage(int reason) {
-  LoadNavigationErrorPage(frame_->GetDocumentLoader(),
-                          WebURLError(reason, frame_->GetDocument().Url()),
-                          base::nullopt, true /* replace_current_item */);
-}
-
 void RenderFrameImpl::ExecuteJavaScript(const base::string16& javascript) {
   JavaScriptExecuteRequest(javascript, false, base::DoNothing());
 }
@@ -3348,6 +3342,10 @@ void RenderFrameImpl::AllowBindings(int32_t enabled_bindings_flags) {
 
   // Keep track of the total bindings accumulated in this process.
   RenderProcess::current()->AddBindings(enabled_bindings_flags);
+}
+
+void RenderFrameImpl::EnableMojoJsBindings() {
+  enable_mojo_js_bindings_ = true;
 }
 
 // mojom::FrameNavigationControl implementation --------------------------------
@@ -5560,8 +5558,9 @@ bool RenderFrameImpl::ShouldTrackUseCounter(const blink::WebURL& url) {
 
 void RenderFrameImpl::DidCreateScriptContext(v8::Local<v8::Context> context,
                                              int world_id) {
-  if ((enabled_bindings_ & BINDINGS_POLICY_MOJO_WEB_UI) && IsMainFrame() &&
-      world_id == ISOLATED_WORLD_ID_GLOBAL) {
+  if (((enabled_bindings_ & BINDINGS_POLICY_MOJO_WEB_UI) ||
+       enable_mojo_js_bindings_) &&
+      IsMainFrame() && world_id == ISOLATED_WORLD_ID_GLOBAL) {
     // We only allow these bindings to be installed when creating the main
     // world context of the main frame.
     blink::WebContextFeatures::EnableMojoJS(context, true);

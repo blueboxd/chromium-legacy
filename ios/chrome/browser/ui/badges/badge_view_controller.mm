@@ -169,10 +169,4 @@ const double kFullScreenProgressThreshold = 0.85;
   [self.stackView insertArrangedSubview:_fullScreenBadge atIndex:0];
 }
 
-#pragma mark - Helpers
-
-- (void)updateDisplayedBadges {
-  self.displayedBadge = [self.badges lastObject];
-}
-
 @end

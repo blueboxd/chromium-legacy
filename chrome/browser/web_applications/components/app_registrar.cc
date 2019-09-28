@@ -45,6 +45,11 @@ void AppRegistrar::NotifyWebAppUninstalled(const AppId& app_id) {
   RecordWebAppUninstallation(profile()->GetPrefs(), app_id);
 }
 
+void AppRegistrar::NotifyWebAppProfileWillBeDeleted(const AppId& app_id) {
+  for (AppRegistrarObserver& observer : observers_)
+    observer.OnWebAppProfileWillBeDeleted(app_id);
+}
+
 void AppRegistrar::NotifyAppRegistrarShutdown() {
   for (AppRegistrarObserver& observer : observers_)
     observer.OnAppRegistrarShutdown();

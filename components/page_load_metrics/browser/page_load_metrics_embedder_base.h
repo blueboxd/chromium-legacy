@@ -27,7 +27,7 @@ class PageLoadMetricsEmbedderBase : public PageLoadMetricsEmbedderInterface {
 
  protected:
   ~PageLoadMetricsEmbedderBase() override;
-  virtual void RegisterEmbedderObservers(PageLoadTracker* metrics) = 0;
+  virtual void RegisterEmbedderObservers(PageLoadTracker* tracker) = 0;
   virtual bool IsPrerendering() const = 0;
 
  private:

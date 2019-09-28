@@ -135,10 +135,14 @@ int ShelfConfig::shelf_size() const {
   if (!Shell::Get()->tablet_mode_controller()->InTabletMode())
     return 48;
 
-  if (is_dense_)
-    return is_in_app() ? 36 : 48;
-  else
-    return is_in_app() ? 40 : 56;
+  if (is_in_app())
+    return in_app_shelf_size();
+
+  return is_dense_ ? 48 : 56;
+}
+
+int ShelfConfig::in_app_shelf_size() const {
+  return is_dense_ ? 36 : 40;
 }
 
 int ShelfConfig::hotseat_size() const {

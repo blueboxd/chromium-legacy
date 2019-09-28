@@ -10,15 +10,15 @@
 namespace ash {
 
 bool InTabletMode() {
-  auto* shell = Shell::Get();
-  return shell && shell->tablet_mode_controller() &&
-         shell->tablet_mode_controller()->InTabletMode();
+  TabletModeController* tablet_mode_controller =
+      Shell::Get()->tablet_mode_controller();
+  return tablet_mode_controller && tablet_mode_controller->InTabletMode();
 }
 
 bool IsInSplitView() {
-  auto* shell = Shell::Get();
-  return shell && shell->split_view_controller() &&
-         shell->split_view_controller()->InSplitViewMode();
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  return split_view_controller && split_view_controller->InSplitViewMode();
 }
 
 }  // namespace ash

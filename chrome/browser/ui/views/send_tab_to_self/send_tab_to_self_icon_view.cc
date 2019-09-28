@@ -41,7 +41,7 @@ views::BubbleDialogDelegateView* SendTabToSelfIconView::GetBubble() const {
 
 bool SendTabToSelfIconView::Update() {
   content::WebContents* web_contents = GetWebContents();
-  if (!web_contents) {
+  if (!send_tab_to_self::ShouldOfferOmniboxIcon(web_contents)) {
     return false;
   }
 
@@ -68,17 +68,14 @@ bool SendTabToSelfIconView::Update() {
         }
       }
     }
-  } else {
-    if (send_tab_to_self::ShouldOfferFeature(web_contents) &&
-        omnibox_view->model()->has_focus() &&
-        !omnibox_view->model()->user_input_in_progress()) {
-      // Shows the "Send" animation one time per window.
-      if (initial_animation_state_ == AnimationState::kNotShown) {
-        AnimateIn(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF);
-        initial_animation_state_ = AnimationState::kShowing;
-      }
-      SetVisible(true);
+  } else if (omnibox_view->model()->has_focus() &&
+             !omnibox_view->model()->user_input_in_progress()) {
+    // Shows the "Send" animation one time per window.
+    if (initial_animation_state_ == AnimationState::kNotShown) {
+      AnimateIn(IDS_OMNIBOX_ICON_SEND_TAB_TO_SELF);
+      initial_animation_state_ = AnimationState::kShowing;
     }
+    SetVisible(true);
   }
 
   return was_visible != GetVisible();

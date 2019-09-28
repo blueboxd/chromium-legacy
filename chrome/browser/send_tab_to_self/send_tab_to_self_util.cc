@@ -52,12 +52,10 @@ bool IsContentRequirementsMet(const GURL& url, Profile* profile) {
 }
 
 bool ShouldOfferFeature(content::WebContents* web_contents) {
-  if (!web_contents) {
+  if (!web_contents)
     return false;
-  }
   Profile* profile =
       Profile::FromBrowserContext(web_contents->GetBrowserContext());
-
   // If sending is enabled, then so is receiving.
   return IsSendingEnabled() && IsUserSyncTypeActive(profile) &&
          HasValidTargetDevice(profile) &&
@@ -77,6 +75,13 @@ bool ShouldOfferFeatureForLink(content::WebContents* web_contents,
          !link_url.SchemeIs(url::kTelScheme) &&
          (IsContentRequirementsMet(web_contents->GetURL(), profile) ||
           IsContentRequirementsMet(link_url, profile));
+}
+
+bool ShouldOfferOmniboxIcon(content::WebContents* web_contents) {
+  if (!web_contents)
+    return false;
+  return !web_contents->IsWaitingForResponse() &&
+         ShouldOfferFeature(web_contents);
 }
 
 }  // namespace send_tab_to_self

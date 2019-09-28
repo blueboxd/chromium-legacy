@@ -114,14 +114,13 @@ TEST_F(WebPushSenderTest, SendMessageTest) {
   const network::DataElement& body = body_elements->back();
   ASSERT_EQ("payload", std::string(body.bytes(), body.length()));
 
-  network::ResourceResponseHead response_head =
-      network::CreateResourceResponseHead(net::HTTP_OK);
-  response_head.headers->AddHeader(
+  auto response_head = network::CreateURLResponseHead(net::HTTP_OK);
+  response_head->headers->AddHeader(
       "location:https://fcm.googleapis.com/message_id");
 
   loader().SimulateResponseForPendingRequest(
       pendingRequest->request.url, network::URLLoaderCompletionStatus(net::OK),
-      response_head, "");
+      std::move(response_head), "");
 
   ASSERT_EQ(SendWebPushMessageResult::kSuccessful, result);
   ASSERT_EQ("message_id", message_id);
@@ -211,7 +210,7 @@ TEST_P(WebPushHttpStatusTest, HttpStatusTest) {
   loader().SimulateResponseForPendingRequest(
       loader().GetPendingRequest(0)->request.url,
       network::URLLoaderCompletionStatus(GetParam().error_code),
-      network::CreateResourceResponseHead(GetParam().http_status), "");
+      network::CreateURLResponseHead(GetParam().http_status), "");
 
   ASSERT_EQ(GetParam().expected_result, result);
   ASSERT_FALSE(message_id);

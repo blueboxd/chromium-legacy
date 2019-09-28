@@ -669,7 +669,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void DidDraw(const SkIRect&) override;
   void DidDraw() override;
   void FinalizeFrame() override;
-  void PushFrame() override;
+  bool PushFrame() override;
 
   // DrawingBuffer::Client implementation.
   bool DrawingBufferClientIsBoundForDraw() override;

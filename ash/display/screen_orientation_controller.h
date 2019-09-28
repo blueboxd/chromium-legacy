@@ -12,8 +12,9 @@
 #include "ash/ash_export.h"
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/window_tree_host_manager.h"
-#include "ash/public/cpp/split_view.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
+#include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_observer.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/aura/window_observer.h"
@@ -155,8 +156,8 @@ class ASH_EXPORT ScreenOrientationController
   void OnTabletModeEnded() override;
 
   // SplitViewObserver:
-  void OnSplitViewStateChanged(SplitViewState previous_state,
-                               SplitViewState state) override;
+  void OnSplitViewStateChanged(SplitViewController::State previous_state,
+                               SplitViewController::State state) override;
 
  private:
   friend class ScreenOrientationControllerTestApi;

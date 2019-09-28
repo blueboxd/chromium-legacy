@@ -6,7 +6,6 @@
 
 #include <algorithm>
 #include <cmath>
-#include <map>
 #include <memory>
 #include <string>
 #include <utility>
@@ -14,6 +13,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/containers/flat_map.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
@@ -168,6 +168,24 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
                                   false /* from_system */));
   }
 
+  void SetVolumeMultiplier(AudioContentType type, float multiplier) {
+    if (type == AudioContentType::kOther) {
+      NOTREACHED() << "Can't set volume multiplier for content type kOther";
+      return;
+    }
+
+    if (BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
+      LOG(INFO) << "Ignore global volume multiplier since volume is externally "
+                << "controlled";
+      return;
+    }
+
+    thread_.task_runner()->PostTask(
+        FROM_HERE,
+        base::BindOnce(&VolumeControlInternal::SetVolumeMultiplierOnThread,
+                       base::Unretained(this), type, multiplier));
+  }
+
   bool IsMuted(AudioContentType type) {
     base::AutoLock lock(volume_lock_);
     return muted_[type];
@@ -214,6 +232,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
                       AudioContentType::kCommunication}) {
       CHECK(stored_values_.GetDouble(ContentTypeToDbFSKey(type), &dbfs));
       volumes_[type] = VolumeControl::DbFSToVolume(dbfs);
+      volume_multipliers_[type] = 1.0f;
       if (BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
         // If ALSA owns volume, our internal mixer should not apply any scaling
         // multiplier.
@@ -251,6 +270,7 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
     DCHECK(thread_.task_runner()->BelongsToCurrentThread());
     DCHECK(type != AudioContentType::kOther);
     DCHECK(!from_system || type == AudioContentType::kMedia);
+    DCHECK(volume_multipliers_.find(type) != volume_multipliers_.end());
 
     {
       base::AutoLock lock(volume_lock_);
@@ -266,7 +286,8 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
 
     float dbfs = VolumeControl::VolumeToDbFS(level);
     if (!BUILDFLAG(SYSTEM_OWNS_VOLUME)) {
-      StreamMixer::Get()->SetVolume(type, DbFsToScale(dbfs));
+      StreamMixer::Get()->SetVolume(
+          type, DbFsToScale(dbfs) * volume_multipliers_[type]);
     }
 
     if (!from_system && type == AudioContentType::kMedia) {
@@ -282,6 +303,17 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
 
     stored_values_.SetDouble(ContentTypeToDbFSKey(type), dbfs);
     SerializeJsonToFile(storage_path_, stored_values_);
+  }
+
+  void SetVolumeMultiplierOnThread(AudioContentType type, float multiplier) {
+    DCHECK(thread_.task_runner()->BelongsToCurrentThread());
+    DCHECK(type != AudioContentType::kOther);
+    DCHECK(!BUILDFLAG(SYSTEM_OWNS_VOLUME));
+
+    volume_multipliers_[type] = multiplier;
+    float scale =
+        DbFsToScale(VolumeControl::VolumeToDbFS(volumes_[type])) * multiplier;
+    StreamMixer::Get()->SetVolume(type, scale);
   }
 
   void SetMutedOnThread(VolumeChangeSource source,
@@ -353,8 +385,9 @@ class VolumeControlInternal : public SystemVolumeControl::Delegate {
   base::DictionaryValue stored_values_;
 
   base::Lock volume_lock_;
-  std::map<AudioContentType, float> volumes_;
-  std::map<AudioContentType, bool> muted_;
+  base::flat_map<AudioContentType, float> volumes_;
+  base::flat_map<AudioContentType, float> volume_multipliers_;
+  base::flat_map<AudioContentType, bool> muted_;
 
   base::Lock observer_lock_;
   std::vector<VolumeObserver*> volume_observers_;
@@ -405,6 +438,12 @@ void VolumeControl::SetVolume(VolumeChangeSource source,
                               AudioContentType type,
                               float level) {
   GetVolumeControl().SetVolume(source, type, level);
+}
+
+// static
+void VolumeControl::SetVolumeMultiplier(AudioContentType type,
+                                        float multiplier) {
+  GetVolumeControl().SetVolumeMultiplier(type, multiplier);
 }
 
 // static

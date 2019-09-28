@@ -859,7 +859,7 @@ void SingleThreadProxy::DoBeginMainFrame(
   layer_tree_host_->WillBeginMainFrame();
   layer_tree_host_->BeginMainFrame(begin_frame_args);
   layer_tree_host_->AnimateLayers(begin_frame_args.frame_time);
-  layer_tree_host_->RequestMainFrameUpdate();
+  layer_tree_host_->RequestMainFrameUpdate(false /* record_cc_metrics */);
 }
 
 void SingleThreadProxy::DoPainting() {

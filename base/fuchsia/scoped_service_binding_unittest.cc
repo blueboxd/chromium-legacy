@@ -106,5 +106,21 @@ TEST_F(ScopedServiceBindingTest, ConnectDebugService) {
   VerifyTestInterface(&release_stub, ZX_ERR_PEER_CLOSED);
 }
 
+TEST_F(ScopedServiceBindingTest, SingleBindingSetOnLastClientCallback) {
+  service_binding_.reset();
+  ScopedSingleClientServiceBinding<testfidl::TestInterface>
+      single_service_binding(outgoing_directory_.get(), &test_service_);
+
+  base::RunLoop run_loop;
+  single_service_binding.SetOnLastClientCallback(run_loop.QuitClosure());
+
+  auto current_client =
+      public_service_directory_->Connect<testfidl::TestInterface>();
+  VerifyTestInterface(&current_client, ZX_OK);
+  current_client.Unbind();
+
+  run_loop.Run();
+}
+
 }  // namespace fuchsia
 }  // namespace base

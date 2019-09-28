@@ -8,6 +8,7 @@
 #include "ash/ash_export.h"
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
+#include "ash/wm/splitview/split_view_drag_indicators.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/transform.h"
 
@@ -104,6 +105,19 @@ ASH_EXPORT bool CanSnapInSplitview(aura::Window* window);
 ASH_EXPORT void ShowAppCannotSnapToast();
 
 ASH_EXPORT bool IsPhysicalLeftOrTop(SplitViewController::SnapPosition position);
+
+// Returns the desired snap position based on |location_in_screen|. The window
+// needs to be dragged into the drag indicator area on the edge of the screen
+// to be able to get snapped.
+ASH_EXPORT SplitViewController::SnapPosition GetSnapPosition(
+    aura::Window* window,
+    const gfx::Point& location_in_screen,
+    const gfx::Rect& work_area);
+
+// Returns the desried indicator state based on the desired |snap_position|.
+ASH_EXPORT IndicatorState
+GetIndicatorState(aura::Window* window,
+                  SplitViewController::SnapPosition snap_position);
 
 }  // namespace ash
 

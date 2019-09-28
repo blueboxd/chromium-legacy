@@ -163,7 +163,8 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   mojo::Remote<blink::mojom::Blob> body_as_blob_;
 
   bool did_navigation_preload_ = false;
-  network::ResourceResponseHead response_head_;
+  network::mojom::URLResponseHeadPtr response_head_ =
+      network::mojom::URLResponseHead::New();
 
   bool devtools_attached_ = false;
   blink::mojom::ServiceWorkerFetchEventTimingPtr fetch_event_timing_;

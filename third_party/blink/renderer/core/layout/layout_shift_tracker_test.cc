@@ -92,33 +92,6 @@ TEST_F(LayoutShiftTrackerTest, RtlDistance) {
   EXPECT_FLOAT_EQ(20.0, GetLayoutShiftTracker().OverallMaxDistance());
 }
 
-TEST_F(LayoutShiftTrackerTest, SmallMovementIgnored) {
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #j { position: relative; width: 300px; height: 100px; }
-    </style>
-    <div id='j'></div>
-  )HTML");
-  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
-                                                  AtomicString("top: 2px"));
-  UpdateAllLifecyclePhases();
-  EXPECT_EQ(0.0, GetLayoutShiftTracker().Score());
-}
-
-TEST_F(LayoutShiftTrackerTest, SmallMovementIgnoredWithZoom) {
-  GetDocument().GetFrame()->SetPageZoomFactor(2);
-  SetBodyInnerHTML(R"HTML(
-    <style>
-      #j { position: relative; width: 300px; height: 100px; }
-    </style>
-    <div id='j'></div>
-  )HTML");
-  GetDocument().getElementById("j")->setAttribute(html_names::kStyleAttr,
-                                                  AtomicString("top: 2px"));
-  UpdateAllLifecyclePhases();
-  EXPECT_EQ(0.0, GetLayoutShiftTracker().Score());
-}
-
 TEST_F(LayoutShiftTrackerTest, IgnoreAfterInput) {
   SetBodyInnerHTML(R"HTML(
     <style>

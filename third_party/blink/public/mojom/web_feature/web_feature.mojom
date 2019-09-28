@@ -2408,14 +2408,19 @@ enum WebFeature {
   kDeprecatedFileSystemRead = 3025,
   kDeprecatedFileSystemWrite = 3026,
   kPointerLockUnadjustedMovement = 3027,
+  // The above items are available in M78 branch.
+
   kCreateObjectBlob = 3028,
-  kQuotaRead = 3029,
+  kQuotaRead = 3029,  // available in M78 branch.
   kDelegateFocus = 3030,
   kDelegateFocusNotFirstInFlatTree = 3031,
   kThirdPartySharedWorker = 3032,
   kThirdPartyBroadcastChannel = 3033,
   kMediaSourceGroupEndTimestampDecreaseWithinMediaSegment = 3034,
-  kTextFragmentAnchorTapToDismiss = 3035,
+  kTextFragmentAnchorTapToDismiss = 3035,  // available in M78 branch.
+  kXRIsSessionSupported = 3036,
+  kScrollbarUseScrollbarButtonReversedDirection = 3037,
+  kCSSSelectorPseudoScrollbarButtonReversedDirection = 3038,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

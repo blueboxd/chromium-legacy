@@ -42,7 +42,7 @@ class VIZ_HOST_EXPORT HostDisplayClient : public mojom::DisplayClient {
       mojo::PendingReceiver<mojom::LayeredWindowUpdater> receiver) override;
 #endif
 
-#if defined(USE_X11)
+#if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   void DidCompleteSwapWithNewSize(const gfx::Size& size) override;
 #endif
 

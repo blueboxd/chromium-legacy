@@ -22,24 +22,46 @@ void CreateFactoryForToken(mojo::Remote<blink::mojom::BlobURLToken>,
                            const base::WeakPtr<BlobStorageContext>& context,
                            network::mojom::URLLoaderFactoryRequest request,
                            const base::UnguessableToken& token) {
-  std::unique_ptr<BlobDataHandle> handle;
+  mojo::PendingRemote<blink::mojom::Blob> blob;
   GURL blob_url;
-  if (context) {
-    std::string uuid;
-    if (context->registry().GetTokenMapping(token, &blob_url, &uuid))
-      handle = context->GetBlobDataFromUUID(uuid);
-  }
-  BlobURLLoaderFactory::Create(std::move(handle), blob_url, std::move(request));
+  if (context)
+    context->registry().GetTokenMapping(token, &blob_url, &blob);
+  BlobURLLoaderFactory::Create(std::move(blob), blob_url, context,
+                               std::move(request));
 }
 
 }  // namespace
 
 // static
 void BlobURLLoaderFactory::Create(
-    std::unique_ptr<BlobDataHandle> handle,
+    mojo::PendingRemote<blink::mojom::Blob> pending_blob,
     const GURL& blob_url,
+    base::WeakPtr<BlobStorageContext> context,
     network::mojom::URLLoaderFactoryRequest request) {
-  new BlobURLLoaderFactory(std::move(handle), blob_url, std::move(request));
+  if (!pending_blob) {
+    new BlobURLLoaderFactory(nullptr, blob_url, std::move(request));
+    return;
+  }
+  // Not every URLLoaderFactory user deals with the URLLoaderFactory simply
+  // disconnecting very well, so make sure we always at least bind the request
+  // to some factory that can then fail with a network error. Hence the callback
+  // is wrapped in WrapCallbackWithDefaultInvokeIfNotRun.
+  mojo::Remote<blink::mojom::Blob> blob(std::move(pending_blob));
+  blink::mojom::Blob* raw_blob = blob.get();
+  raw_blob->GetInternalUUID(mojo::WrapCallbackWithDefaultInvokeIfNotRun(
+      base::BindOnce(
+          [](mojo::Remote<blink::mojom::Blob>,
+             base::WeakPtr<BlobStorageContext> context, const GURL& blob_url,
+             network::mojom::URLLoaderFactoryRequest request,
+             const std::string& uuid) {
+            std::unique_ptr<BlobDataHandle> blob;
+            if (context)
+              blob = context->GetBlobDataFromUUID(uuid);
+            new BlobURLLoaderFactory(std::move(blob), blob_url,
+                                     std::move(request));
+          },
+          std::move(blob), std::move(context), blob_url, std::move(request)),
+      ""));
 }
 
 // static

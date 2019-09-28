@@ -77,7 +77,7 @@
 #include "components/autofill/core/browser/payments/autofill_save_card_infobar_delegate_mobile.h"
 #include "components/autofill/core/browser/payments/autofill_save_card_infobar_mobile.h"
 #include "components/autofill/core/browser/ui/payments/card_expiration_date_fix_flow_view_delegate_mobile.h"
-#include "components/autofill/core/browser/ui/payments/card_name_fix_flow_view_delegate_mobile.h"
+#include "components/autofill/core/browser/ui/payments/card_name_fix_flow_view.h"
 #include "components/infobars/core/infobar.h"
 #include "ui/android/window_android.h"
 #else  // !OS_ANDROID
@@ -334,18 +334,12 @@ void ChromeAutofillClient::ConfirmSaveCreditCardLocally(
 #if defined(OS_ANDROID)
 void ChromeAutofillClient::ConfirmAccountNameFixFlow(
     base::OnceCallback<void(const base::string16&)> callback) {
-  std::unique_ptr<CardNameFixFlowViewDelegateMobile>
-      card_name_fix_flow_view_delegate_mobile =
-          std::make_unique<CardNameFixFlowViewDelegateMobile>(
-              GetAccountHolderName(),
-              /*upload_save_card_callback=*/std::move(callback));
-
-  // Destruction is handled by the fix flow dialog by explicitly calling delete
-  // when the prompt is dismissed.
   CardNameFixFlowViewAndroid* card_name_fix_flow_view_android =
-      new CardNameFixFlowViewAndroid(
-          std::move(card_name_fix_flow_view_delegate_mobile), web_contents());
-  card_name_fix_flow_view_android->Show();
+      new CardNameFixFlowViewAndroid(&card_name_fix_flow_controller_,
+                                     web_contents());
+  card_name_fix_flow_controller_.Show(
+      card_name_fix_flow_view_android, GetAccountHolderName(),
+      /*upload_save_card_callback=*/std::move(callback));
 }
 
 void ChromeAutofillClient::ConfirmExpirationDateFixFlow(

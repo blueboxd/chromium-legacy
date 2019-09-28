@@ -47,8 +47,9 @@ struct EmbeddedWorkerStartParams {
   // The string used for "user-agent" HTTP header.
   string user_agent;
 
-  // The id to talk with the DevTools agent for the worker.
-  int32 worker_devtools_agent_route_id;
+  // The id this service worker uses as render_frame_id in
+  // network::ResourceRequests it makes.
+  int32 service_worker_route_id;
 
   // Unique token identifying this worker for DevTools.
   mojo_base.mojom.UnguessableToken devtools_worker_token;

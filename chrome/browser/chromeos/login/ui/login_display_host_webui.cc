@@ -654,7 +654,6 @@ void LoginDisplayHostWebUI::OnStartAppLaunch() {
 void LoginDisplayHostWebUI::OnStartArcKiosk() {
   finalize_animation_type_ = ANIMATION_FADE_OUT;
   if (!login_window_) {
-    LoadURL(GURL(kAppLaunchSplashURL));
     LoadURL(GURL(kArcKioskSplashURL));
   }
 

@@ -87,7 +87,7 @@ class LocationIconViewTest : public ChromeViewsTestBase {
 
     base::string16 secure_display_text = base::string16();
     if (level == security_state::SecurityLevel::DANGEROUS ||
-        level == security_state::SecurityLevel::HTTP_SHOW_WARNING)
+        level == security_state::SecurityLevel::WARNING)
       secure_display_text = base::ASCIIToUTF16("Insecure");
 
     location_bar_model()->set_secure_display_text(secure_display_text);
@@ -129,7 +129,7 @@ TEST_F(LocationIconViewTest, ShouldAnimateTextWhenWarning) {
   SetSecurityLevel(security_state::SecurityLevel::SECURE);
   view()->Update(/*suppress_animations=*/true);
 
-  SetSecurityLevel(security_state::SecurityLevel::HTTP_SHOW_WARNING);
+  SetSecurityLevel(security_state::SecurityLevel::WARNING);
   view()->Update(/*suppress_animations=*/false);
   EXPECT_TRUE(view()->is_animating_label());
 }
@@ -146,7 +146,7 @@ TEST_F(LocationIconViewTest, ShouldAnimateTextWhenDangerous) {
 
 TEST_F(LocationIconViewTest, ShouldNotAnimateWarningToDangerous) {
   // Make sure the initial status is secure.
-  SetSecurityLevel(security_state::SecurityLevel::HTTP_SHOW_WARNING);
+  SetSecurityLevel(security_state::SecurityLevel::WARNING);
   view()->Update(/*suppress_animations=*/true);
 
   SetSecurityLevel(security_state::SecurityLevel::DANGEROUS);

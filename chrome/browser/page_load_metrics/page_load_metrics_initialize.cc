@@ -41,7 +41,6 @@
 #include "chrome/browser/page_load_metrics/observers/tab_restore_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/third_party_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/ukm_page_load_metrics_observer.h"
-#include "chrome/browser/page_load_metrics/observers/use_counter_page_load_metrics_observer.h"
 #include "chrome/browser/prerender/prerender_contents.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search/search.h"
@@ -133,7 +132,6 @@ void PageLoadMetricsEmbedder::RegisterEmbedderObservers(
             web_contents()->GetBrowserContext()));
     tracker->AddObserver(std::make_unique<ProtocolPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<TabRestorePageLoadMetricsObserver>());
-    tracker->AddObserver(std::make_unique<UseCounterPageLoadMetricsObserver>());
     tracker->AddObserver(
         std::make_unique<DataSaverSiteBreakdownMetricsObserver>());
     std::unique_ptr<AdsPageLoadMetricsObserver> ads_observer =
@@ -207,6 +205,9 @@ bool PageLoadMetricsEmbedder::IsExtensionUrl(const GURL& url) {
 
 void InitializePageLoadMetricsForWebContents(
     content::WebContents* web_contents) {
+  // Change this method? consider to modify the peer in
+  // android_webview/browser/page_load_metrics/page_load_metrics_initialize.cc
+  // as well.
   page_load_metrics::MetricsWebContentsObserver::CreateForWebContents(
       web_contents, std::make_unique<PageLoadMetricsEmbedder>(web_contents));
 }

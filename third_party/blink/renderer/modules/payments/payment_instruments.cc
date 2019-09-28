@@ -365,7 +365,8 @@ void PaymentInstruments::OnRequestPermission(
                                      "PaymentInstruments", "set");
       BasicCardHelper::ParseBasiccardData(
           details->capabilities(), instrument->supported_networks,
-          instrument->supported_types, exception_state);
+          instrument->supported_types, /*has_supported_card_types=*/nullptr,
+          exception_state);
       if (exception_state.HadException()) {
         resolver->Reject(exception_state);
         return;

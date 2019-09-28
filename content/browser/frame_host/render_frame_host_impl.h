@@ -486,6 +486,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
     return should_reuse_web_ui_ ? web_ui_.get() : pending_web_ui_.get();
   }
 
+  // Enable Mojo JavaScript bindings in the renderer process. It will be
+  // effective on the first creation of script context after the call is made.
+  // If called at frame creation time (RenderFrameCreated) or just before a
+  // document is committed (ReadyToCommitNavigation), the resulting document
+  // will have the JS bindings enabled.
+  void EnableMojoJsBindings();
+
   // Returns this RenderFrameHost's loading state. This method is only used by
   // FrameTreeNode. The proper way to check whether a frame is loading is to
   // call FrameTreeNode::IsLoading.

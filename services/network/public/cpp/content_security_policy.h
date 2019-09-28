@@ -34,6 +34,9 @@ class COMPONENT_EXPORT(NETWORK_CPP) ContentSecurityPolicy {
   // Parses the Content-Security-Policy headers specified in |headers|.
   bool Parse(const net::HttpResponseHeaders& headers);
 
+  // Parses a Content-Security-Policy |header|.
+  bool Parse(base::StringPiece header);
+
   const mojom::ContentSecurityPolicyPtr& content_security_policy_ptr() {
     return content_security_policy_ptr_;
   }
@@ -42,8 +45,6 @@ class COMPONENT_EXPORT(NETWORK_CPP) ContentSecurityPolicy {
   }
 
  private:
-  friend int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size);
-  bool Parse(base::StringPiece header);
 
   // Parses the frame-ancestor directive of a Content-Security-Policy header.
   bool ParseFrameAncestors(base::StringPiece header_value);

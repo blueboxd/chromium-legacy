@@ -102,7 +102,7 @@ void DoRequest(network::TestURLLoaderFactory* factory,
   network::URLLoaderCompletionStatus status;
   status.error_code = net::OK;
 
-  network::ResourceResponseHead response;
+  auto response = network::mojom::URLResponseHead::New();
 
   std::string headers = "HTTP/1.1 ";
   headers += std::to_string(code);
@@ -116,7 +116,7 @@ void DoRequest(network::TestURLLoaderFactory* factory,
   }
   HeadersToRaw(&headers);
 
-  response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(headers);
+  response->headers = base::MakeRefCounted<net::HttpResponseHeaders>(headers);
 
   // To simplify the fuzzer, we respond to all requests with a manifest.
   // When we're performing a manifest fetch, this data will affect the
@@ -126,7 +126,7 @@ void DoRequest(network::TestURLLoaderFactory* factory,
   content += "\n# ";
 
   factory->SimulateResponseForPendingRequest(
-      GURL(GetUrl(url)), status, response, content,
+      GURL(GetUrl(url)), status, std::move(response), content,
       network::TestURLLoaderFactory::kUrlMatchPrefix);
 }
 

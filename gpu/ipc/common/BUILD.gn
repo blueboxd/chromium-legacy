@@ -186,7 +186,7 @@ source_set("surface_handle_type") {
   ]
 }
 
-source_set("vulkan_ycbcr_info") {
+component("vulkan_ycbcr_info") {
   sources = [
     "vulkan_ycbcr_info.cc",
     "vulkan_ycbcr_info.h",
@@ -194,6 +194,7 @@ source_set("vulkan_ycbcr_info") {
   deps = [
     "//base",
   ]
+  configs += [ "//gpu:gpu_implementation" ]
 }
 
 mojom("interfaces") {

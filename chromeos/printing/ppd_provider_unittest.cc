@@ -112,8 +112,8 @@ class PpdProviderTest : public ::testing::Test {
       }
 
       loader_factory_.AddResponse(FileToURL(entry.first),
-                                  network::ResourceResponseHead(), entry.second,
-                                  status);
+                                  network::mojom::URLResponseHead::New(),
+                                  entry.second, status);
     }
   }
 
@@ -197,7 +197,8 @@ class PpdProviderTest : public ::testing::Test {
     network::URLLoaderCompletionStatus status(net::ERR_ADDRESS_UNREACHABLE);
     for (const auto& entry : server_contents()) {
       loader_factory_.AddResponse(FileToURL(entry.first),
-                                  network::ResourceResponseHead(), "", status);
+                                  network::mojom::URLResponseHead::New(), "",
+                                  status);
     }
   }
 

@@ -21,11 +21,11 @@
 #include "net/http/http_status_code.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
-#include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/url_loader.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/test/test_url_loader_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -111,11 +111,11 @@ IN_PROC_BROWSER_TEST_F(StoragePartititionImplBrowsertest, NetworkContext) {
   // Just wait until headers are received - if the right headers are received,
   // no need to read the body.
   client.RunUntilResponseBodyArrived();
-  ASSERT_TRUE(client.response_head().headers);
-  EXPECT_EQ(200, client.response_head().headers->response_code());
+  ASSERT_TRUE(client.response_head()->headers);
+  EXPECT_EQ(200, client.response_head()->headers->response_code());
 
   std::string foo_header_value;
-  ASSERT_TRUE(client.response_head().headers->GetNormalizedHeader(
+  ASSERT_TRUE(client.response_head()->headers->GetNormalizedHeader(
       "foo", &foo_header_value));
   EXPECT_EQ("bar", foo_header_value);
 }

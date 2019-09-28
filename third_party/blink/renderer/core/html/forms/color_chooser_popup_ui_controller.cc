@@ -26,6 +26,7 @@
 #include "third_party/blink/renderer/core/html/forms/color_chooser_popup_ui_controller.h"
 
 #include "third_party/blink/public/platform/platform.h"
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/frame/local_frame_view.h"
 #include "third_party/blink/renderer/core/html/forms/chooser_resource_loader.h"
@@ -143,8 +144,8 @@ void ColorChooserPopupUIController::WriteColorSuggestionPickerDocument(
       data);
   PagePopupClient::AddProperty("values", suggestion_values, data);
   PagePopupClient::AddProperty(
-      "otherColorLabel",
-      GetLocale().QueryString(WebLocalizedString::kOtherColorLabel), data);
+      "otherColorLabel", GetLocale().QueryString(IDS_FORM_OTHER_COLOR_LABEL),
+      data);
   if (RuntimeEnabledFeatures::FormControlsRefreshEnabled()) {
     PagePopupClient::AddProperty("selectedColor",
                                  client_->CurrentColor().Serialized(), data);

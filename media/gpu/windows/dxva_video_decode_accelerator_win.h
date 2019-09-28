@@ -158,6 +158,20 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
     kMaxValue = BIND
   };
 
+  enum class DXVALifetimeProgression {
+    kInitializeStarted = 0,
+    kInitializeSucceeded = 1,
+    kPlaybackSucceeded = 2,
+
+    // For UMA. Must be the last entry. It should be initialized to the
+    // numerically largest value above; if you add more entries, then please
+    // update this to the last one.
+    kMaxValue = kPlaybackSucceeded
+  };
+
+  // Log UMA progression state.
+  void AddLifetimeProgressionStage(DXVALifetimeProgression stage);
+
   // Creates and initializes an instance of the D3D device and the
   // corresponding device manager. The device manager instance is eventually
   // passed to the IMFTransform interface implemented by the decoder.
@@ -402,6 +416,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   int processor_width_ = 0;
   int processor_height_ = 0;
+  bool already_initialized_ = false;
 
   Microsoft::WRL::ComPtr<IDirectXVideoProcessorService>
       video_processor_service_;
@@ -559,6 +574,7 @@ class MEDIA_GPU_EXPORT DXVAVideoDecodeAccelerator
 
   // Set to true if we are sharing ANGLE's device.
   bool using_angle_device_;
+  bool using_debug_device_;
 
   // Enables hardware acceleration for VP9 video decoding.
   const bool enable_accelerated_vpx_decode_;

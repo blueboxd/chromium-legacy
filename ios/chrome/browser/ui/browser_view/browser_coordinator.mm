@@ -22,6 +22,7 @@
 #import "ios/chrome/browser/ui/autofill/form_input_accessory/form_input_accessory_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/all_password_coordinator.h"
 #import "ios/chrome/browser/ui/autofill/manual_fill/manual_fill_injection_handler.h"
+#import "ios/chrome/browser/ui/badges/badge_popup_menu_coordinator.h"
 #import "ios/chrome/browser/ui/browser_container/browser_container_coordinator.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller+private.h"
 #import "ios/chrome/browser/ui/browser_view/browser_view_controller.h"
@@ -29,6 +30,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_coordinator_commands.h"
 #import "ios/chrome/browser/ui/commands/command_dispatcher.h"
+#import "ios/chrome/browser/ui/commands/infobar_commands.h"
 #import "ios/chrome/browser/ui/download/ar_quick_look_coordinator.h"
 #import "ios/chrome/browser/ui/download/pass_kit_coordinator.h"
 #import "ios/chrome/browser/ui/open_in/open_in_mediator.h"
@@ -89,6 +91,10 @@
 // Coordinator to add new credit card.
 @property(nonatomic, strong)
     AutofillAddCreditCardCoordinator* addCreditCardCoordinator;
+
+// Coordinator for the badge popup menu.
+@property(nonatomic, strong)
+    BadgePopupMenuCoordinator* badgePopupMenuCoordinator;
 
 // Coordinator in charge of the presenting autofill options above the
 // keyboard.
@@ -211,6 +217,15 @@
 
   [self.viewController clearPresentedStateWithCompletion:completion
                                           dismissOmnibox:dismissOmnibox];
+}
+
+- (void)displayPopupMenuWithBadgeItems:(NSArray<id<BadgeItem>>*)badgeItems {
+  self.badgePopupMenuCoordinator = [[BadgePopupMenuCoordinator alloc]
+      initWithBaseViewController:self.viewController];
+  self.badgePopupMenuCoordinator.dispatcher =
+      static_cast<id<InfobarCommands>>(self.dispatcher);
+  [self.badgePopupMenuCoordinator setBadgeItemsToShow:badgeItems];
+  [self.badgePopupMenuCoordinator start];
 }
 
 #pragma mark - Private

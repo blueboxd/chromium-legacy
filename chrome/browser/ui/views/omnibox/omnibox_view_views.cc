@@ -1014,10 +1014,10 @@ void OmniboxViewViews::UpdateSchemeStyle(const gfx::Range& range) {
 
   // Only SECURE and DANGEROUS levels (pages served over HTTPS or flagged by
   // SafeBrowsing) get a special scheme color treatment. If the security level
-  // is NONE or HTTP_SHOW_WARNING, we do not override the text style previously
-  // applied to the scheme text range by SetEmphasis().
+  // is NONE or WARNING, we do not override the text style
+  // previously applied to the scheme text range by SetEmphasis().
   if (security_level == security_state::NONE ||
-      security_level == security_state::HTTP_SHOW_WARNING)
+      security_level == security_state::WARNING)
     return;
   ApplyColor(location_bar_view_->GetSecurityChipColor(security_level), range);
   if (security_level == security_state::DANGEROUS)

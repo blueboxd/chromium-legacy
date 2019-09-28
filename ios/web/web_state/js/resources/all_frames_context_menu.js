@@ -265,10 +265,10 @@ var elementsFromCoordinates = function(coordinates) {
  * @return {Object}
  */
 var spiralCoordinates_ = function(x, y) {
-  var MAX_ANGLE = Math.PI * 2.0 * 3.0;
-  var POINT_COUNT = 30;
+  var MAX_ANGLE = Math.PI * 2.0 * 2.0;
+  var POINT_COUNT = 10;
   var ANGLE_STEP = MAX_ANGLE / POINT_COUNT;
-  var TOUCH_MARGIN = 25;
+  var TOUCH_MARGIN = 15;
   var SPEED = TOUCH_MARGIN / MAX_ANGLE;
 
   var coordinates = [];

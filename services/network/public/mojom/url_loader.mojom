@@ -253,11 +253,10 @@ struct URLRequest {
   //   created by a frame.
   // - MSG_ROUTING_NONE for nested dedicated workers.
   // - MSG_ROUTING_NONE for subresource requests from a dedicated/shared worker.
+  // - service_worker_route_id from EmbeddedWorkerStartParams for service worker
+  //   main script requests and subresource requests.
   // - The frame tree node ID for navigation requests only. Please do not use
   //   frame tree node ID for other requests.
-  // TODO(nhiroki): Clarify which frame id should be used for service workers.
-  // Probably the render frame id of the frame calling register() or update(),
-  // and MSG_ROUTING_NONE for the soft update.
   int32 render_frame_id;
 
   // True if |frame_id| is the main frame of a RenderView.

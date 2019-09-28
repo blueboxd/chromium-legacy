@@ -159,14 +159,15 @@ OffscreenCanvasRenderingContext2D::ProduceCanvasResource() {
   return frame;
 }
 
-void OffscreenCanvasRenderingContext2D::PushFrame() {
+bool OffscreenCanvasRenderingContext2D::PushFrame() {
   if (dirty_rect_for_commit_.isEmpty())
-    return;
+    return false;
 
   SkIRect damage_rect(dirty_rect_for_commit_);
-  Host()->PushFrame(ProduceCanvasResource(), damage_rect);
+  bool ret = Host()->PushFrame(ProduceCanvasResource(), damage_rect);
   dirty_rect_for_commit_.setEmpty();
   GetOffscreenFontCache().PruneLocalFontCache(kMaxCachedFonts);
+  return ret;
 }
 
 ImageBitmap* OffscreenCanvasRenderingContext2D::TransferToImageBitmap(

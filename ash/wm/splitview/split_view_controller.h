@@ -10,7 +10,6 @@
 
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/ash_export.h"
-#include "ash/public/cpp/split_view.h"
 #include "ash/public/cpp/tablet_mode_observer.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/overview/overview_observer.h"
@@ -35,6 +34,7 @@ class PresentationTimeRecorder;
 class OverviewSession;
 class SplitViewControllerTest;
 class SplitViewDivider;
+class SplitViewObserver;
 class SplitViewOverviewSessionTest;
 
 // The controller for the split view. It snaps a window to left/right side of
@@ -85,6 +85,13 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   enum class SplitViewType {
     kTabletType = 0,
     kClamshellType,
+  };
+
+  enum class State {
+    kNoSnap,
+    kLeftSnapped,
+    kRightSnapped,
+    kBothSnapped,
   };
 
   SplitViewController();
@@ -214,7 +221,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   aura::Window* left_window() { return left_window_; }
   aura::Window* right_window() { return right_window_; }
   int divider_position() const { return divider_position_; }
-  SplitViewState state() const { return state_; }
+  State state() const { return state_; }
   SnapPosition default_snap_position() const { return default_snap_position_; }
   SplitViewDivider* split_view_divider() { return split_view_divider_.get(); }
   bool is_resizing() const { return is_resizing_; }
@@ -238,7 +245,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   void StopObserving(SnapPosition snap_position);
 
   // Update split view state and notify its observer about the change.
-  void UpdateSplitViewStateAndNotifyObservers();
+  void UpdateStateAndNotifyObservers();
 
   // Notifies observers that the split view divider position has been changed.
   void NotifyDividerPositionChanged();
@@ -406,7 +413,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   // to left or right, the left and right window will be resized accordingly.
   std::unique_ptr<SplitViewDivider> split_view_divider_;
 
-  // A black scrim layer that fades in over a window when it’s width drops under
+  // A black scrim layer that fades in over a window when its width drops under
   // 1/3 of the width of the screen, increasing in opacity as the divider gets
   // closer to the edge of the screen.
   std::unique_ptr<ui::Layer> black_scrim_layer_;
@@ -437,7 +444,7 @@ class ASH_EXPORT SplitViewController : public aura::WindowObserver,
   std::unique_ptr<DividerSnapAnimation> divider_snap_animation_;
 
   // Current snap state.
-  SplitViewState state_ = SplitViewState::kNoSnap;
+  State state_ = State::kNoSnap;
 
   // The default snap position. It's decided by the first snapped window. If the
   // first window was snapped left, then |default_snap_position_| equals LEFT,

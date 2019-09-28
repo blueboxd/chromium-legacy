@@ -9,6 +9,10 @@
 #include "chromeos/constants/chromeos_features.h"
 #include "components/user_manager/user.h"
 
+namespace chromeos {
+
+namespace bluetooth {
+
 namespace {
 const char kSupportedEmailSuffix[] = "@google.com";
 }  // namespace
@@ -51,3 +55,7 @@ bool DebugLogsManager::AreDebugLogsSupported() const {
   return base::EndsWith(primary_user_->GetDisplayEmail(), kSupportedEmailSuffix,
                         base::CompareCase::INSENSITIVE_ASCII);
 }
+
+}  // namespace bluetooth
+
+}  // namespace chromeos

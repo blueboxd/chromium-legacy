@@ -19,7 +19,6 @@
   'android_webview_unittests': {
     'remove_from': [
       # On chromium.android, these do not need to run prior to M.
-      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
@@ -282,11 +281,6 @@
     ],
     'modifications': {
       # chromium.android
-      'android-kitkat-arm-coverage-rel': {
-        'swarming': {
-          'shards': 12,
-        }
-      },
       'KitKat Phone Tester (dbg)': {
         'swarming': {
           'shards': 20,
@@ -1036,7 +1030,6 @@
       # chromium.android
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
@@ -1051,7 +1044,6 @@
       # chromium.android
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
@@ -1066,7 +1058,6 @@
       # chromium.android
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
@@ -1088,7 +1079,6 @@
       # chromium.android
       'android-asan',
       # Don't run on trybots; waterfall is enough.
-      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
@@ -1102,7 +1092,6 @@
     # Only run these on the phone testers for now due to capacity.
     'remove_from': [
       # chromium.android
-      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
@@ -1217,6 +1206,11 @@
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
         ],
       },
+      'chromeos-betty-pi-arc-google-rel': {
+        'args': [
+          '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
+        ],
+      },
       'linux-chromeos-google-rel': {
         'args': [
           '--test-launcher-filter-file=../../testing/buildbot/filters/chromeos.ozone_unittests.filter',
@@ -1228,7 +1222,6 @@
     'remove_from': [
       'android-asan',
       'android-code-coverage',
-      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'android-marshmallow-arm64-coverage-rel',
       'android-marshmallow-arm64-rel',
@@ -1428,20 +1421,6 @@
   'telemetry_perf_unittests': {
     'modifications': {
       # chromium.android
-      'android-kitkat-arm-coverage-rel': {
-        'args': [
-          '--browser=android-chromium',
-          '--device=android',
-        ],
-        'swarming': {
-          'dimension_sets': [
-            {
-              'temp_band': '<30',
-            },
-          ],
-          'shards': 15,
-        },
-      },
       'android-kitkat-arm-rel': {
         'args': [
           '--browser=android-chromium',
@@ -2021,7 +2000,6 @@
     'remove_from': [
       # This test frequently fails on Android, https://crbug.com/824959
       # chromium.android
-      'android-kitkat-arm-coverage-rel',
       'android-kitkat-arm-rel',
       'KitKat Phone Tester (dbg)',
       'KitKat Tablet Tester',
@@ -2040,34 +2018,6 @@
         # TODO(https://crbug.com/884413): Re-enable this once the tests are
         # either passing or there is more capacity.
         'experiment_percentage': 0,
-      },
-      'Android WebView O (dbg)': {
-        #TODO(crbug.com/997362): Remove test filters once bug is resolved.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_instrumentation_tests_oreo.filter',
-        ],
-      },
-      'Android WebView P (dbg)': {
-        #TODO(crbug.com/1001309): Remove test filters once bug is resolved.
-        'args': [
-          '--gtest-filter=-org.chromium.android_webview.test.AwAutofillTest.testJavascriptNotTriggerSelectControlChangeNotification',
-        ],
-      },
-    },
-  },
-  'webview_instrumentation_test_apk_no_field_trial': {
-    'modifications': {
-      'Android WebView O (dbg)': {
-        #TODO(crbug.com/997362): Remove test filters once bug is resolved.
-        'args': [
-          '--test-launcher-filter-file=../../testing/buildbot/filters/android.webview_instrumentation_tests_oreo.filter',
-        ],
-      },
-      'Android WebView P (dbg)': {
-        #TODO(crbug.com/1001309): Remove test filters once bug is resolved.
-        'args': [
-          '--gtest-filter=-org.chromium.android_webview.test.AwAutofillTest.testJavascriptNotTriggerSelectControlChangeNotification',
-        ],
       },
     },
   },

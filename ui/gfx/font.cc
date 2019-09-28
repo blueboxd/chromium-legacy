@@ -100,4 +100,21 @@ std::ostream& operator<<(std::ostream& stream, const Font::Weight weight) {
 }
 #endif
 
+Font::Weight FontWeightFromInt(int weight) {
+  static const Font::Weight weights[] = {
+      Font::Weight::INVALID,  Font::Weight::THIN,   Font::Weight::EXTRA_LIGHT,
+      Font::Weight::LIGHT,    Font::Weight::NORMAL, Font::Weight::MEDIUM,
+      Font::Weight::SEMIBOLD, Font::Weight::BOLD,   Font::Weight::EXTRA_BOLD,
+      Font::Weight::BLACK};
+
+  const Font::Weight* next_bigger_weight = std::lower_bound(
+      std::begin(weights), std::end(weights), weight,
+      [](const Font::Weight& a, const int& b) {
+        return static_cast<std::underlying_type<Font::Weight>::type>(a) < b;
+      });
+  if (next_bigger_weight != std::end(weights))
+    return *next_bigger_weight;
+  return Font::Weight::INVALID;
+}
+
 }  // namespace gfx

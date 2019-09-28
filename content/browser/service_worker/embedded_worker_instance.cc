@@ -210,15 +210,13 @@ void SetupOnUIThread(
   }
 
   // Register to DevTools and update params accordingly.
-  // TODO(dgozman): we can now remove this routing id and use something else
-  // as id when talking to ServiceWorkerDevToolsManager.
   const int routing_id = rph->GetNextRoutingID();
   ServiceWorkerDevToolsManager::GetInstance()->WorkerCreated(
       process_id, routing_id, context, weak_context,
       params->service_worker_version_id, params->script_url, params->scope,
       params->is_installed, &params->devtools_worker_token,
       &params->wait_for_debugger);
-  params->worker_devtools_agent_route_id = routing_id;
+  params->service_worker_route_id = routing_id;
   // Create DevToolsProxy here to ensure that the WorkerCreated() call is
   // balanced by DevToolsProxy's destructor calling WorkerDestroyed().
   devtools_proxy = std::make_unique<EmbeddedWorkerInstance::DevToolsProxy>(
@@ -718,7 +716,8 @@ void EmbeddedWorkerInstance::Start(
   for (auto& observer : listener_list_)
     observer.OnStarting();
 
-  params->worker_devtools_agent_route_id = MSG_ROUTING_NONE;
+  // service_worker_route_id will be set later in SetupOnUIThread
+  params->service_worker_route_id = MSG_ROUTING_NONE;
   params->wait_for_debugger = false;
   params->subresource_loader_updater =
       subresource_loader_updater_.BindNewPipeAndPassReceiver();

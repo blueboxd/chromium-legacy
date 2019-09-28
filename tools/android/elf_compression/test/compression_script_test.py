@@ -17,7 +17,7 @@ import compress_section
 LIBRARY_CC_NAME = 'libtest.cc'
 OPENER_CC_NAME = 'library_opener.cc'
 
-CONSTRUCTOR_C_PATH = '../constructor/library_constructor.c'
+CONSTRUCTOR_C_PATH = '../decompression_hook/decompression_hook.c'
 SCRIPT_PATH = '../compress_section.py'
 
 # src/third_party/llvm-build/Release+Asserts/bin/clang++
@@ -79,7 +79,7 @@ class CompressionScriptTest(unittest.TestCase):
 
     library_build_result = subprocess.run([
         LLVM_CLANG_PATH, '-shared', '-fPIC', '-O2', library_object_path,
-        constructor_object_path, '-o', library_path
+        constructor_object_path, '-o', library_path, '-pthread'
     ])
     self.assertEqual(library_build_result.returncode, 0)
     return library_path
@@ -125,7 +125,6 @@ class CompressionScriptTest(unittest.TestCase):
                                        stdout=subprocess.PIPE,
                                        stderr=subprocess.PIPE,
                                        encoding='utf-8')
-
     self.assertEqual(opener_run_result.stderr, '')
     self.assertEqual(opener_run_result.returncode, 0)
     return opener_run_result.stdout
@@ -136,8 +135,9 @@ class CompressionScriptTest(unittest.TestCase):
     opener_path = self._BuildOpener()
 
     patched_library_path = self._RunScript(library_path)
-    opener_output = self._RunOpener(opener_path, patched_library_path)
-    self.assertEqual(opener_output, '1046543\n')
+    for _ in range(10):
+      opener_output = self._RunOpener(opener_path, patched_library_path)
+      self.assertEqual(opener_output, '1046543\n')
 
   def testAlignUp(self):
     """Tests for AlignUp method of the script."""

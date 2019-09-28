@@ -234,9 +234,6 @@ class TracingControllerTest : public ContentBrowserTest {
     Navigate(shell());
 
     TracingControllerImpl* controller = TracingControllerImpl::GetInstance();
-    tracing::TraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
-        base::Bind(&TracingControllerTest::GenerateMetadataDict,
-                   base::Unretained(this)));
 
     {
       base::RunLoop run_loop;
@@ -266,6 +263,9 @@ class TracingControllerTest : public ContentBrowserTest {
 
       metadata_ = std::make_unique<base::DictionaryValue>();
       metadata_->SetString("not-whitelisted", "this_not_found");
+      tracing::TraceEventAgent::GetInstance()->AddMetadataGeneratorFunction(
+          base::Bind(&TracingControllerTest::GenerateMetadataDict,
+                     base::Unretained(this)));
 
       bool result = controller->StopTracing(trace_data_endpoint);
       ASSERT_TRUE(result);

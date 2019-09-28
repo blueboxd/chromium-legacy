@@ -86,14 +86,14 @@ class FeedNetworkingHostTest : public testing::Test {
                net::HttpStatusCode code = net::HTTP_OK,
                network::URLLoaderCompletionStatus status =
                    network::URLLoaderCompletionStatus()) {
-    network::ResourceResponseHead head;
+    auto head = network::mojom::URLResponseHead::New();
     if (code >= 0) {
-      head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+      head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
           "HTTP/1.1 " + base::NumberToString(code));
       status.decoded_body_length = response_string.length();
     }
 
-    test_factory_.AddResponse(url, head, response_string, status);
+    test_factory_.AddResponse(url, std::move(head), response_string, status);
 
     task_environment_.FastForwardUntilNoTasksRemain();
   }

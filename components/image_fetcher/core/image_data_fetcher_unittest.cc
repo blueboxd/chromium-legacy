@@ -85,16 +85,17 @@ TEST_F(ImageDataFetcherTest, FetchImageData) {
   EXPECT_EQ(pending_request->credentials_mode,
             network::mojom::CredentialsMode::kOmit);
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string raw_header =
       "HTTP/1.1 200 OK\n"
       "Content-type: image/png\n\n";
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(raw_header));
-  head.mime_type = "image/png";
+  head->mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
-  test_url_loader_factory_.AddResponse(GURL(kImageURL), head, content, status);
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), std::move(head),
+                                       content, status);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -119,16 +120,17 @@ TEST_F(ImageDataFetcherTest, FetchImageDataWithCookies) {
   EXPECT_EQ(pending_request->credentials_mode,
             network::mojom::CredentialsMode::kInclude);
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string raw_header =
       "HTTP/1.1 200 OK\n"
       "Content-type: image/png\n\n";
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(raw_header));
-  head.mime_type = "image/png";
+  head->mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
-  test_url_loader_factory_.AddResponse(GURL(kImageURL), head, content, status);
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), std::move(head),
+                                       content, status);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -150,16 +152,17 @@ TEST_F(ImageDataFetcherTest, FetchImageData_NotFound) {
   // Check to make sure the request is pending, and provide a response.
   EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL));
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string raw_header =
       "HTTP/1.1 404 Not Found\n"
       "Content-type: image/png\n\n";
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(raw_header));
-  head.mime_type = "image/png";
+  head->mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
-  test_url_loader_factory_.AddResponse(GURL(kImageURL), head, content, status);
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), std::move(head),
+                                       content, status);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -182,17 +185,18 @@ TEST_F(ImageDataFetcherTest, FetchImageData_WithContentLocation) {
   // Check to make sure the request is pending, and provide a response.
   EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL));
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string raw_header =
       "HTTP/1.1 404 Not Found\n"
       "Content-type: image/png\n"
       "Content-location: http://test-location/image.png\n\n";
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(raw_header));
-  head.mime_type = "image/png";
+  head->mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.decoded_body_length = content.size();
-  test_url_loader_factory_.AddResponse(GURL(kImageURL), head, content, status);
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), std::move(head),
+                                       content, status);
   base::RunLoop().RunUntilIdle();
 }
 
@@ -211,11 +215,12 @@ TEST_F(ImageDataFetcherTest, FetchImageData_FailedRequest) {
   // Check to make sure the request is pending, and provide a response.
   EXPECT_TRUE(test_url_loader_factory_.IsPending(kImageURL));
 
-  network::ResourceResponseHead head;
-  head.mime_type = "image/png";
+  auto head = network::mojom::URLResponseHead::New();
+  head->mime_type = "image/png";
   network::URLLoaderCompletionStatus status;
   status.error_code = net::ERR_INVALID_URL;
-  test_url_loader_factory_.AddResponse(GURL(kImageURL), head, "", status);
+  test_url_loader_factory_.AddResponse(GURL(kImageURL), std::move(head), "",
+                                       status);
   base::RunLoop().RunUntilIdle();
 }
 

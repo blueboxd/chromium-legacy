@@ -7,11 +7,16 @@
 
 #import <UIKit/UIKit.h>
 
+#import "ios/chrome/browser/ui/badges/badge_delegate.h"
+
 @protocol BadgeConsumer;
+@protocol BadgeItem;
+@protocol BrowserCoordinatorCommands;
+@protocol InfobarCommands;
 class WebStateList;
 
 // A mediator object that updates the consumer when the state of badges changes.
-@interface BadgeMediator : NSObject
+@interface BadgeMediator : NSObject <BadgeDelegate>
 
 - (instancetype)initWithConsumer:(id<BadgeConsumer>)consumer
                     webStateList:(WebStateList*)webStateList
@@ -20,6 +25,10 @@ class WebStateList;
 
 // Stops observing all objects.
 - (void)disconnect;
+
+// The dispatcher for badge related actions.
+@property(nonatomic, weak) id<InfobarCommands, BrowserCoordinatorCommands>
+    dispatcher;
 
 @end
 

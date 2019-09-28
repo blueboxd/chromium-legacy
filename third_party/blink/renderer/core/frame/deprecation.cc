@@ -666,6 +666,12 @@ DeprecationInfo GetDeprecationInfo(WebFeature feature) {
                             "elements other than textarea",
                             kM79, "5070237827334144")};
 
+    case WebFeature::kXRSupportsSession:
+      return {"XRSupportsSession", kM80,
+              ReplacedBy(
+                  "supportsSession()",
+                  "isSessionSupported() and check the resolved boolean value")};
+
     // Features that aren't deprecated don't have a deprecation message.
     default:
       return {"NotDeprecated", kUnknown, ""};

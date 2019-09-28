@@ -155,7 +155,13 @@ int APP_SHIM_ENTRY_POINT_NAME(const app_mode::ChromeAppModeInfo* info) {
     // <user_data_dir>/<profile_dir>/Web Applications/_crx_extensionid/.
     controller_params.user_data_dir =
         base::FilePath(info->user_data_dir).DirName().DirName().DirName();
-    controller_params.profile_dir = base::FilePath(info->profile_dir);
+    // Similarly, extract the full profile path from |info->user_data_dir|.
+    // Ignore |info->profile_dir| because it is only the relative path (unless
+    // it is empty, in which case this is a profile-agnostic app).
+    if (!base::FilePath(info->profile_dir).empty()) {
+      controller_params.profile_dir =
+          base::FilePath(info->user_data_dir).DirName().DirName();
+    }
     controller_params.app_id = info->app_mode_id;
     controller_params.app_name = base::UTF8ToUTF16(info->app_mode_name);
     controller_params.app_url = GURL(info->app_mode_url);

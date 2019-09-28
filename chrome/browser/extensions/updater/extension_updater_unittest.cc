@@ -1282,8 +1282,7 @@ class ExtensionUpdaterTest : public testing::Test {
       // Code 5xx causes ExtensionDownloader to retry.
       helper.test_url_loader_factory().SimulateResponseForPendingRequest(
           request->request.url, network::URLLoaderCompletionStatus(net::OK),
-          network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
-          "");
+          network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR), "");
       RunUntilIdle();
     }
     Mock::VerifyAndClearExpectations(&delegate);
@@ -1307,8 +1306,7 @@ class ExtensionUpdaterTest : public testing::Test {
       auto* request = helper.GetPendingRequest(0);
       helper.test_url_loader_factory().SimulateResponseForPendingRequest(
           request->request.url, network::URLLoaderCompletionStatus(net::OK),
-          network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
-          "");
+          network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR), "");
     }
     RunUntilIdle();
 
@@ -1318,7 +1316,7 @@ class ExtensionUpdaterTest : public testing::Test {
       auto* request = helper.GetPendingRequest(0);
       helper.test_url_loader_factory().SimulateResponseForPendingRequest(
           request->request.url, network::URLLoaderCompletionStatus(net::OK),
-          network::CreateResourceResponseHead(net::HTTP_BAD_REQUEST), "");
+          network::CreateURLResponseHead(net::HTTP_BAD_REQUEST), "");
     }
     RunUntilIdle();
 

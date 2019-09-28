@@ -211,7 +211,7 @@ std::tuple<std::array<uint8_t, 32>, std::array<uint8_t, 32>> HKDF2(
     base::span<const uint8_t> ikm) {
   uint8_t output[32 * 2];
   HKDF(output, sizeof(output), EVP_sha256(), ikm.data(), ikm.size(), ck.data(),
-       ck.size(), /*salt=*/nullptr, 0);
+       ck.size(), /*info=*/nullptr, 0);
 
   std::array<uint8_t, 32> a, b;
   memcpy(a.data(), &output[0], 32);
@@ -230,7 +230,7 @@ std::tuple<std::array<uint8_t, 32>,
 HKDF3(base::span<const uint8_t, 32> ck, base::span<const uint8_t> ikm) {
   uint8_t output[32 * 3];
   HKDF(output, sizeof(output), EVP_sha256(), ikm.data(), ikm.size(), ck.data(),
-       ck.size(), /*salt=*/nullptr, 0);
+       ck.size(), /*info=*/nullptr, 0);
 
   std::array<uint8_t, 32> a, b, c;
   memcpy(a.data(), &output[0], 32);

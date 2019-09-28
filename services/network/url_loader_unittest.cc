@@ -642,12 +642,12 @@ class URLLoaderTest : public testing::Test {
   // Convenience methods after calling Load();
   std::string mime_type() const {
     DCHECK(ran_);
-    return client_.response_head().mime_type;
+    return client_.response_head()->mime_type;
   }
 
   bool did_mime_sniff() const {
     DCHECK(ran_);
-    return client_.response_head().did_mime_sniff;
+    return client_.response_head()->did_mime_sniff;
   }
 
   const base::Optional<net::SSLInfo>& ssl_info() const {
@@ -805,15 +805,16 @@ TEST_F(URLLoaderTest, SSLSentOnlyWhenRequested) {
 TEST_F(URLLoaderTest, AuthChallengeInfo) {
   GURL url = test_server()->GetURL("/auth-basic");
   EXPECT_EQ(net::OK, Load(url));
-  ASSERT_TRUE(client()->response_head().auth_challenge_info.has_value());
-  EXPECT_FALSE(client()->response_head().auth_challenge_info->is_proxy);
+  ASSERT_TRUE(client()->response_head()->auth_challenge_info.has_value());
+  EXPECT_FALSE(client()->response_head()->auth_challenge_info->is_proxy);
   EXPECT_EQ(url::Origin::Create(url),
-            client()->response_head().auth_challenge_info->challenger);
-  EXPECT_EQ("basic", client()->response_head().auth_challenge_info->scheme);
-  EXPECT_EQ("testrealm", client()->response_head().auth_challenge_info->realm);
+            client()->response_head()->auth_challenge_info->challenger);
+  EXPECT_EQ("basic", client()->response_head()->auth_challenge_info->scheme);
+  EXPECT_EQ("testrealm", client()->response_head()->auth_challenge_info->realm);
   EXPECT_EQ("Basic realm=\"testrealm\"",
-            client()->response_head().auth_challenge_info->challenge);
-  EXPECT_EQ("/auth-basic", client()->response_head().auth_challenge_info->path);
+            client()->response_head()->auth_challenge_info->challenge);
+  EXPECT_EQ("/auth-basic",
+            client()->response_head()->auth_challenge_info->path);
 }
 
 // Tests that no auth challenge info is present on the response when a request
@@ -821,7 +822,7 @@ TEST_F(URLLoaderTest, AuthChallengeInfo) {
 TEST_F(URLLoaderTest, NoAuthChallengeInfo) {
   GURL url = test_server()->GetURL("/");
   EXPECT_EQ(net::OK, Load(url));
-  EXPECT_FALSE(client()->response_head().auth_challenge_info.has_value());
+  EXPECT_FALSE(client()->response_head()->auth_challenge_info.has_value());
 }
 
 // Test decoded_body_length / encoded_body_length when they're different.
@@ -2310,7 +2311,7 @@ TEST_F(URLLoaderTest, CertStatusOnResponse) {
 
   EXPECT_EQ(net::OK, Load(GURL("https://example.test/")));
   EXPECT_EQ(net::CERT_STATUS_DATE_INVALID,
-            client()->response_head().cert_status);
+            client()->response_head()->cert_status);
 }
 
 // Verifies if URLLoader works well with ResourceScheduler.
@@ -2811,12 +2812,12 @@ TEST_F(URLLoaderTest, SetAuth) {
   client()->RunUntilComplete();
   EXPECT_TRUE(client()->has_received_completion());
   scoped_refptr<net::HttpResponseHeaders> headers =
-      client()->response_head().headers;
+      client()->response_head()->headers;
   ASSERT_TRUE(headers);
   EXPECT_EQ(200, headers->response_code());
   EXPECT_EQ(1, network_context_client.on_auth_required_call_counter());
   ASSERT_FALSE(url_loader);
-  EXPECT_FALSE(client()->response_head().auth_challenge_info.has_value());
+  EXPECT_FALSE(client()->response_head()->auth_challenge_info.has_value());
 }
 
 TEST_F(URLLoaderTest, CancelAuth) {
@@ -2855,7 +2856,7 @@ TEST_F(URLLoaderTest, CancelAuth) {
   client()->RunUntilComplete();
   EXPECT_TRUE(client()->has_received_completion());
   scoped_refptr<net::HttpResponseHeaders> headers =
-      client()->response_head().headers;
+      client()->response_head()->headers;
   ASSERT_TRUE(headers);
   EXPECT_EQ(401, headers->response_code());
   EXPECT_EQ(1, network_context_client.on_auth_required_call_counter());
@@ -2899,7 +2900,7 @@ TEST_F(URLLoaderTest, TwoChallenges) {
   client()->RunUntilComplete();
   EXPECT_TRUE(client()->has_received_completion());
   scoped_refptr<net::HttpResponseHeaders> headers =
-      client()->response_head().headers;
+      client()->response_head()->headers;
   ASSERT_TRUE(headers);
   EXPECT_EQ(200, headers->response_code());
   EXPECT_EQ(2, network_context_client.on_auth_required_call_counter());
@@ -2944,7 +2945,7 @@ TEST_F(URLLoaderTest, NoAuthRequiredForFavicon) {
   client()->RunUntilComplete();
   EXPECT_TRUE(client()->has_received_completion());
   scoped_refptr<net::HttpResponseHeaders> headers =
-      client()->response_head().headers;
+      client()->response_head()->headers;
   ASSERT_TRUE(headers);
   EXPECT_EQ(200, headers->response_code());
   // No auth required for favicon.
@@ -4389,11 +4390,11 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
 
     EXPECT_EQ("policy=policy-1", mock_origin_policy_manager.header_value());
     EXPECT_TRUE(mock_origin_policy_manager.retrieve_origin_policy_called());
-    EXPECT_TRUE(loader_client.response_head().origin_policy.has_value());
+    EXPECT_TRUE(loader_client.response_head()->origin_policy.has_value());
     EXPECT_EQ(OriginPolicyState::kLoaded,
-              loader_client.response_head().origin_policy.value().state);
+              loader_client.response_head()->origin_policy.value().state);
     EXPECT_EQ(server.base_url(),
-              loader_client.response_head().origin_policy.value().policy_url);
+              loader_client.response_head()->origin_policy.value().policy_url);
   }
 
   // If the "Sec-Origin-Policy" header is not present in the response, still
@@ -4426,11 +4427,11 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
 
     EXPECT_EQ("", mock_origin_policy_manager.header_value());
     EXPECT_TRUE(mock_origin_policy_manager.retrieve_origin_policy_called());
-    EXPECT_TRUE(loader_client.response_head().origin_policy.has_value());
+    EXPECT_TRUE(loader_client.response_head()->origin_policy.has_value());
     EXPECT_EQ(OriginPolicyState::kLoaded,
-              loader_client.response_head().origin_policy.value().state);
+              loader_client.response_head()->origin_policy.value().state);
     EXPECT_EQ(server.base_url(),
-              loader_client.response_head().origin_policy.value().policy_url);
+              loader_client.response_head()->origin_policy.value().policy_url);
   }
 
   // If "obey_origin_policy" is not set, don't call the origin policy manager
@@ -4462,7 +4463,7 @@ TEST_F(URLLoaderTest, OriginPolicyManagerCalled) {
     delete_run_loop.Run();
 
     EXPECT_FALSE(mock_origin_policy_manager.retrieve_origin_policy_called());
-    EXPECT_FALSE(loader_client.response_head().origin_policy.has_value());
+    EXPECT_FALSE(loader_client.response_head()->origin_policy.has_value());
   }
 }
 

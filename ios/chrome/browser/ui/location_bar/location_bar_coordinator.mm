@@ -23,7 +23,6 @@
 #import "ios/chrome/browser/ntp/new_tab_page_tab_helper.h"
 #import "ios/chrome/browser/overlays/public/overlay_presenter.h"
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
-#import "ios/chrome/browser/ui/badges/badge_button_action_handler.h"
 #import "ios/chrome/browser/ui/badges/badge_button_factory.h"
 #import "ios/chrome/browser/ui/badges/badge_delegate.h"
 #import "ios/chrome/browser/ui/badges/badge_mediator.h"
@@ -73,8 +72,7 @@ const char* const kOmniboxQueryLocationAuthorizationStatusHistogram =
 const int kLocationAuthorizationStatusCount = 5;
 }  // namespace
 
-@interface LocationBarCoordinator () <BadgeDelegate,
-                                      LoadQueryCommands,
+@interface LocationBarCoordinator () <LoadQueryCommands,
                                       LocationBarDelegate,
                                       LocationBarViewControllerDelegate,
                                       LocationBarConsumer> {
@@ -175,16 +173,9 @@ const int kLocationAuthorizationStatusCount = 5;
   self.omniboxPopupCoordinator.webStateList = self.webStateList;
   [self.omniboxPopupCoordinator start];
 
-  // Create an action handler that will handle the action to take for button
-  // taps.
-  BadgeButtonActionHandler* actionHandler =
-      [[BadgeButtonActionHandler alloc] init];
-  actionHandler.dispatcher = static_cast<id<InfobarCommands>>(self.dispatcher);
-  actionHandler.buttonActionDelegate = self;
   // Create button factory that wil be used by the ViewController to get
   // BadgeButtons for a BadgeType.
-  BadgeButtonFactory* buttonFactory =
-      [[BadgeButtonFactory alloc] initWithActionHandler:actionHandler];
+  BadgeButtonFactory* buttonFactory = [[BadgeButtonFactory alloc] init];
   buttonFactory.incognito = isIncognito;
   self.badgeViewController =
       [[BadgeViewController alloc] initWithButtonFactory:buttonFactory];
@@ -195,6 +186,10 @@ const int kLocationAuthorizationStatusCount = 5;
   self.badgeMediator =
       [[BadgeMediator alloc] initWithConsumer:self.badgeViewController
                                  webStateList:self.webStateList];
+  self.badgeMediator.dispatcher =
+      static_cast<id<InfobarCommands, BrowserCoordinatorCommands>>(
+          self.dispatcher);
+  buttonFactory.delegate = self.badgeMediator;
   _fullscreenBadgeObserver =
       std::make_unique<FullscreenUIUpdater>(self.badgeViewController);
   FullscreenControllerFactory::GetInstance()
@@ -260,13 +255,6 @@ const int kLocationAuthorizationStatusCount = 5;
 
 - (id<EditViewAnimatee>)editViewAnimatee {
   return self.omniboxCoordinator.animatee;
-}
-
-#pragma mark - BadgeDelegate
-
-- (void)showOverflowMenu {
-  // TODO(crbug.com/976901): Retrieve badges to show in overflow menu and send
-  // signal to BVC.
 }
 
 #pragma mark - LoadQueryCommands

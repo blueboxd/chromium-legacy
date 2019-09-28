@@ -66,7 +66,6 @@
 #endif
 
 using blink::WebData;
-using blink::WebLocalizedString;
 using blink::WebString;
 using blink::WebThemeEngine;
 using blink::WebURL;
@@ -86,65 +85,6 @@ std::unique_ptr<blink::WebThemeEngine> GetWebThemeEngine() {
 #else
   return std::make_unique<WebThemeEngineDefault>();
 #endif
-}
-
-int ToMessageID(int resource_id) {
-  switch (resource_id) {
-    case WebLocalizedString::kAXDayOfMonthFieldText:
-      return IDS_AX_DAY_OF_MONTH_FIELD_TEXT;
-    case WebLocalizedString::kAXHourFieldText:
-      return IDS_AX_HOUR_FIELD_TEXT;
-    case WebLocalizedString::kDetailsLabel:
-      return IDS_DETAILS_WITHOUT_SUMMARY_LABEL;
-    case WebLocalizedString::kInputElementAltText:
-      return IDS_FORM_INPUT_ALT;
-    case WebLocalizedString::kMissingPluginText:
-      return IDS_PLUGIN_INITIALIZATION_ERROR;
-    case WebLocalizedString::kMediaScrubbingMessageText:
-      return IDS_MEDIA_SCRUBBING_MESSAGE_TEXT;
-    case WebLocalizedString::kMultipleFileUploadText:
-      return IDS_FORM_FILE_MULTIPLE_UPLOAD;
-    case WebLocalizedString::kOtherColorLabel:
-      return IDS_FORM_OTHER_COLOR_LABEL;
-    case WebLocalizedString::kOverflowMenuCaptionsSubmenuTitle:
-      return IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS_SUBMENU_TITLE;
-    case WebLocalizedString::kOverflowMenuUnmute:
-      return IDS_MEDIA_OVERFLOW_MENU_UNMUTE;
-    case WebLocalizedString::kPictureInPictureInterstitialText:
-      return IDS_MEDIA_PICTURE_IN_PICTURE_INTERSTITIAL_TEXT;
-    case WebLocalizedString::kPlaceholderForDayOfMonthField:
-      return IDS_FORM_PLACEHOLDER_FOR_DAY_OF_MONTH_FIELD;
-    case WebLocalizedString::kPlaceholderForMonthField:
-      return IDS_FORM_PLACEHOLDER_FOR_MONTH_FIELD;
-    case WebLocalizedString::kPlaceholderForYearField:
-      return IDS_FORM_PLACEHOLDER_FOR_YEAR_FIELD;
-    case WebLocalizedString::kResetButtonDefaultLabel:
-      return IDS_FORM_RESET_LABEL;
-    case WebLocalizedString::kSubmitButtonDefaultLabel:
-      return IDS_FORM_SUBMIT_LABEL;
-    case WebLocalizedString::kValidationStepMismatchCloseToLimit:
-      return IDS_FORM_VALIDATION_STEP_MISMATCH_CLOSE_TO_LIMIT;
-    case WebLocalizedString::kValidationTooShort:
-      return IDS_FORM_VALIDATION_TOO_SHORT;
-    case WebLocalizedString::kValidationTooShortPlural:
-      return IDS_FORM_VALIDATION_TOO_SHORT_PLURAL;
-    case WebLocalizedString::kWeekNumberLabel:
-      return IDS_FORM_WEEK_NUMBER_LABEL;
-    case WebLocalizedString::kTextTracksNoLabel:
-      return IDS_MEDIA_TRACKS_NO_LABEL;
-    case WebLocalizedString::kTextTracksOff:
-      return IDS_MEDIA_TRACKS_OFF;
-    // There is no matched IDS_FOO for kBlockedPluginText. Return -1.
-    case WebLocalizedString::kBlockedPluginText:
-      return -1;
-    // This "default:" line exists to avoid compile warnings about enum
-    // coverage when we add a new symbol to WebLocalizedString.h in blink.
-    // After a planned blink patch is landed, we need to add a case statement
-    // for the added symbol here.
-    default:
-      break;
-  }
-  return resource_id;
 }
 
 // This must match third_party/WebKit/public/blink_resources.grd.
@@ -258,28 +198,26 @@ WebData BlinkPlatformImpl::UncompressDataResource(int resource_id) {
 }
 
 WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id) {
-  int message_id = ToMessageID(resource_id);
-  if (message_id < 0)
+  if (resource_id < 0)
     return WebString();
   return WebString::FromUTF16(
-      GetContentClient()->GetLocalizedString(message_id));
+      GetContentClient()->GetLocalizedString(resource_id));
 }
 
 WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id,
                                                   const WebString& value) {
-  int message_id = ToMessageID(resource_id);
-  if (message_id < 0)
+  if (resource_id < 0)
     return WebString();
 
   base::string16 format_string =
-      GetContentClient()->GetLocalizedString(message_id);
+      GetContentClient()->GetLocalizedString(resource_id);
 
   // If the ContentClient returned an empty string, e.g. because it's using the
   // default implementation of ContentClient::GetLocalizedString, return an
   // empty string instead of crashing with a failed DCHECK in
   // base::ReplaceStringPlaceholders below. This is useful for tests that don't
   // specialize a full ContentClient, since this way they can behave as though
-  // there isn't a defined |message_id| for the |name| instead of crashing
+  // there isn't a defined |resource_id| for the |name| instead of crashing
   // outright.
   if (format_string.empty())
     return WebString();
@@ -291,15 +229,14 @@ WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id,
 WebString BlinkPlatformImpl::QueryLocalizedString(int resource_id,
                                                   const WebString& value1,
                                                   const WebString& value2) {
-  int message_id = ToMessageID(resource_id);
-  if (message_id < 0)
+  if (resource_id < 0)
     return WebString();
   std::vector<base::string16> values;
   values.reserve(2);
   values.push_back(value1.Utf16());
   values.push_back(value2.Utf16());
   return WebString::FromUTF16(base::ReplaceStringPlaceholders(
-      GetContentClient()->GetLocalizedString(message_id), values, nullptr));
+      GetContentClient()->GetLocalizedString(resource_id), values, nullptr));
 }
 
 bool BlinkPlatformImpl::AllowScriptExtensionForServiceWorker(

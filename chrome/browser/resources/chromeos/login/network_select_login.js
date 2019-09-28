@@ -328,16 +328,15 @@
       var oncType = OncMojo.getNetworkTypeString(networkState.type);
       var guid = networkState.guid;
 
+      var shouldShowNetworkDetails = isConnected ||
+          networkState.connectionState ==
+              chromeos.networkConfig.mojom.ConnectionStateType.kConnecting;
       // Cellular should normally auto connect. If it is selected, show the
       // details UI since there is no configuration UI for Cellular.
-      if (networkState.type ==
-          chromeos.networkConfig.mojom.NetworkType.kCellular) {
-        chrome.send('showNetworkDetails', [oncType, guid]);
-        return;
-      }
+      shouldShowNetworkDetails |= networkState.type ==
+          chromeos.networkConfig.mojom.NetworkType.kCellular;
 
-      // Allow proxy to be set for connected networks.
-      if (isConnected) {
+      if (shouldShowNetworkDetails) {
         chrome.send('showNetworkDetails', [oncType, guid]);
         return;
       }

@@ -503,21 +503,22 @@ void MetadataHasNamedValue(const google::protobuf::RepeatedPtrField<
   NOTREACHED();
 }
 
-TEST_F(TraceEventDataSourceTest, MetadataSourceBasicTypes) {
+std::unique_ptr<base::DictionaryValue> AddJsonMetadataGenerator() {
+  auto metadata = std::make_unique<base::DictionaryValue>();
+  metadata->SetInteger("foo_int", 42);
+  metadata->SetString("foo_str", "bar");
+  metadata->SetBoolean("foo_bool", true);
+
+  auto child_dict = std::make_unique<base::DictionaryValue>();
+  child_dict->SetString("child_str", "child_val");
+  metadata->Set("child_dict", std::move(child_dict));
+  return metadata;
+}
+
+TEST_F(TraceEventDataSourceTest, MetadataGeneratorBeforeTracing) {
   auto* metadata_source = TraceEventMetadataSource::GetInstance();
-  metadata_source->AddGeneratorFunction(base::BindRepeating([]() {
-    auto metadata = std::make_unique<base::DictionaryValue>();
-    metadata->SetInteger("foo_int", 42);
-    metadata->SetString("foo_str", "bar");
-    metadata->SetBoolean("foo_bool", true);
-
-    auto child_dict = std::make_unique<base::DictionaryValue>();
-    child_dict->SetString("child_str", "child_val");
-    metadata->Set("child_dict", std::move(child_dict));
-    return metadata;
-  }));
-
-  CreateTraceEventDataSource();
+  metadata_source->AddGeneratorFunction(
+      base::BindRepeating(&AddJsonMetadataGenerator));
 
   metadata_source->StartTracing(producer_client(),
                                 perfetto::DataSourceConfig());
@@ -535,6 +536,61 @@ TEST_F(TraceEventDataSourceTest, MetadataSourceBasicTypes) {
   auto child_dict = std::make_unique<base::DictionaryValue>();
   child_dict->SetString("child_str", "child_val");
   MetadataHasNamedValue(metadata, "child_dict", *child_dict);
+}
+
+TEST_F(TraceEventDataSourceTest, MetadataGeneratorWhileTracing) {
+  auto* metadata_source = TraceEventMetadataSource::GetInstance();
+
+  metadata_source->StartTracing(producer_client(),
+                                perfetto::DataSourceConfig());
+  metadata_source->AddGeneratorFunction(
+      base::BindRepeating(&AddJsonMetadataGenerator));
+
+  base::RunLoop wait_for_stop;
+  metadata_source->StopTracing(wait_for_stop.QuitClosure());
+  wait_for_stop.Run();
+
+  auto metadata = producer_client()->GetChromeMetadata();
+  EXPECT_EQ(4, metadata.size());
+  MetadataHasNamedValue(metadata, "foo_int", 42);
+  MetadataHasNamedValue(metadata, "foo_str", "bar");
+  MetadataHasNamedValue(metadata, "foo_bool", true);
+
+  auto child_dict = std::make_unique<base::DictionaryValue>();
+  child_dict->SetString("child_str", "child_val");
+  MetadataHasNamedValue(metadata, "child_dict", *child_dict);
+}
+
+TEST_F(TraceEventDataSourceTest, MultipleMetadataGenerators) {
+  auto* metadata_source = TraceEventMetadataSource::GetInstance();
+  metadata_source->AddGeneratorFunction(base::BindRepeating([]() {
+    auto metadata = std::make_unique<base::DictionaryValue>();
+    metadata->SetInteger("before_int", 42);
+    return metadata;
+  }));
+
+  metadata_source->StartTracing(producer_client(),
+                                perfetto::DataSourceConfig());
+  metadata_source->AddGeneratorFunction(
+      base::BindRepeating(&AddJsonMetadataGenerator));
+
+  base::RunLoop wait_for_stop;
+  metadata_source->StopTracing(wait_for_stop.QuitClosure());
+  wait_for_stop.Run();
+
+  auto metadata = producer_client()->GetChromeMetadata();
+  EXPECT_EQ(4, metadata.size());
+  MetadataHasNamedValue(metadata, "foo_int", 42);
+  MetadataHasNamedValue(metadata, "foo_str", "bar");
+  MetadataHasNamedValue(metadata, "foo_bool", true);
+
+  auto child_dict = std::make_unique<base::DictionaryValue>();
+  child_dict->SetString("child_str", "child_val");
+  MetadataHasNamedValue(metadata, "child_dict", *child_dict);
+
+  metadata = producer_client()->GetChromeMetadata(1);
+  EXPECT_EQ(1, metadata.size());
+  MetadataHasNamedValue(metadata, "before_int", 42);
 }
 
 TEST_F(TraceEventDataSourceTest, BasicTraceEvent) {

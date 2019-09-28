@@ -216,7 +216,9 @@ class BlobURLTest : public testing::Test {
       EXPECT_TRUE(mojo::BlockingCopyToString(
           url_loader_client.response_body_release(), &response_));
     }
-    response_headers_ = url_loader_client.response_head().headers;
+    response_headers_ = url_loader_client.response_head()
+                            ? url_loader_client.response_head()->headers
+                            : nullptr;
     response_metadata_ = url_loader_client.cached_metadata();
     response_error_code_ = url_loader_client.completion_status().error_code;
 

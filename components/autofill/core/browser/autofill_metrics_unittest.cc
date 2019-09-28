@@ -8434,9 +8434,9 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel) {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogUserHappinessBySecurityLevel(
         AutofillMetrics::FIELD_WAS_AUTOFILLED, PASSWORD_FORM,
-        security_state::SecurityLevel::HTTP_SHOW_WARNING);
+        security_state::SecurityLevel::WARNING);
     histogram_tester.ExpectBucketCount(
-        "Autofill.UserHappiness.Password.HTTP_SHOW_WARNING",
+        "Autofill.UserHappiness.Password.WARNING",
         AutofillMetrics::FIELD_WAS_AUTOFILLED, 1);
   }
 
@@ -8496,16 +8496,14 @@ TEST_F(AutofillMetricsTest, LogUserHappinessBySecurityLevel_FromFormEvents) {
   // Simulate suggestions shown twice with separate popups.
   {
     base::HistogramTester histogram_tester;
-    autofill_client_.set_security_level(
-        security_state::SecurityLevel::HTTP_SHOW_WARNING);
+    autofill_client_.set_security_level(security_state::SecurityLevel::WARNING);
     autofill_manager_->DidShowSuggestions(true, form, field);
     autofill_manager_->DidShowSuggestions(true, form, field);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.UserHappiness.Address.HTTP_SHOW_WARNING",
-        AutofillMetrics::SUGGESTIONS_SHOWN, 2);
-    histogram_tester.ExpectBucketCount(
-        "Autofill.UserHappiness.Address.HTTP_SHOW_WARNING",
-        AutofillMetrics::SUGGESTIONS_SHOWN_ONCE, 1);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address.WARNING",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN, 2);
+    histogram_tester.ExpectBucketCount("Autofill.UserHappiness.Address.WARNING",
+                                       AutofillMetrics::SUGGESTIONS_SHOWN_ONCE,
+                                       1);
   }
 }
 
@@ -8751,9 +8749,9 @@ TEST_F(AutofillMetricsTest, LogSaveCardPromptMetricBySecurityLevel) {
     base::HistogramTester histogram_tester;
     AutofillMetrics::LogSaveCardPromptMetricBySecurityLevel(
         AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, /*is_uploading=*/true,
-        security_state::SecurityLevel::HTTP_SHOW_WARNING);
+        security_state::SecurityLevel::WARNING);
     histogram_tester.ExpectBucketCount(
-        "Autofill.SaveCreditCardPrompt.Upload.HTTP_SHOW_WARNING",
+        "Autofill.SaveCreditCardPrompt.Upload.WARNING",
         AutofillMetrics::SAVE_CARD_PROMPT_END_ACCEPTED, 1);
   }
 

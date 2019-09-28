@@ -347,7 +347,6 @@ void BrowserChildProcessHostImpl::LaunchWithoutExtraCommandLineSwitches(
       service_manager::switches::kDisableInProcessStackTraces,
       switches::kDisableBestEffortTasks,
       switches::kDisableLogging,
-      switches::kDisablePerfetto,
       switches::kEnableLogging,
       switches::kIPCConnectionTimeout,
       switches::kLogBestEffortTasks,

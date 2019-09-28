@@ -540,6 +540,8 @@ class BrowserView : public BrowserWindow,
   void OnImmersiveModeControllerDestroyed() override;
 
   // banners::AppBannerManager::Observer:
+  void OnAppBannerManagerChanged(
+      banners::AppBannerManager* new_manager) override;
   void OnInstallableWebAppStatusUpdated() override;
 
   // Creates an accessible tab label for screen readers that includes the tab
@@ -845,6 +847,9 @@ class BrowserView : public BrowserWindow,
   std::unique_ptr<FullscreenControlHost> fullscreen_control_host_;
 
   ReopenTabPromoController reopen_tab_promo_controller_{this};
+
+  ScopedObserver<banners::AppBannerManager, banners::AppBannerManager::Observer>
+      app_banner_manager_observer_{this};
 
   struct ResizeSession {
     // The time when user started resizing the window.

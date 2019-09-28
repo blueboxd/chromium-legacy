@@ -121,16 +121,16 @@ TEST_F(BlobURLStoreImplTest, BasicRegisterRevoke) {
   BlobURLStoreImpl url_store(context_->AsWeakPtr(), &delegate_);
   RegisterURL(&url_store, std::move(blob), kValidUrl);
 
-  std::unique_ptr<BlobDataHandle> blob_data_handle =
-      context_->GetBlobDataFromPublicURL(kValidUrl);
-  ASSERT_TRUE(blob_data_handle);
-  EXPECT_EQ(kId, blob_data_handle->uuid());
-  blob_data_handle = nullptr;
+  blob = context_->GetBlobFromPublicURL(kValidUrl);
+  ASSERT_TRUE(blob);
+  mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob));
+  EXPECT_EQ(kId, UUIDFromBlob(blob_remote.get()));
+  blob_remote.reset();
 
   // Revoke the URL.
   url_store.Revoke(kValidUrl);
-  blob_data_handle = context_->GetBlobDataFromPublicURL(kValidUrl);
-  EXPECT_FALSE(blob_data_handle);
+  blob = context_->GetBlobFromPublicURL(kValidUrl);
+  EXPECT_FALSE(blob);
 
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(context_->registry().HasEntry(kId));
@@ -142,7 +142,7 @@ TEST_F(BlobURLStoreImplTest, RegisterInvalidScheme) {
 
   mojo::Remote<BlobURLStore> url_store(CreateURLStore());
   RegisterURL(url_store.get(), std::move(blob), kInvalidUrl);
-  EXPECT_FALSE(context_->GetBlobDataFromPublicURL(kInvalidUrl));
+  EXPECT_FALSE(context_->GetBlobFromPublicURL(kInvalidUrl));
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
@@ -154,7 +154,7 @@ TEST_F(BlobURLStoreImplTest, RegisterCantCommit) {
 
   mojo::Remote<BlobURLStore> url_store(CreateURLStore());
   RegisterURL(url_store.get(), std::move(blob), kValidUrl);
-  EXPECT_FALSE(context_->GetBlobDataFromPublicURL(kValidUrl));
+  EXPECT_FALSE(context_->GetBlobFromPublicURL(kValidUrl));
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
@@ -164,7 +164,7 @@ TEST_F(BlobURLStoreImplTest, RegisterUrlFragment) {
 
   mojo::Remote<BlobURLStore> url_store(CreateURLStore());
   RegisterURL(url_store.get(), std::move(blob), kFragmentUrl);
-  EXPECT_FALSE(context_->GetBlobDataFromPublicURL(kFragmentUrl));
+  EXPECT_FALSE(context_->GetBlobFromPublicURL(kFragmentUrl));
   EXPECT_EQ(1u, bad_messages_.size());
 }
 
@@ -178,14 +178,14 @@ TEST_F(BlobURLStoreImplTest, ImplicitRevoke) {
   auto url_store =
       std::make_unique<BlobURLStoreImpl>(context_->AsWeakPtr(), &delegate_);
   RegisterURL(url_store.get(), blob.Unbind(), kValidUrl);
-  EXPECT_TRUE(context_->GetBlobDataFromPublicURL(kValidUrl));
+  EXPECT_TRUE(context_->GetBlobFromPublicURL(kValidUrl));
   RegisterURL(url_store.get(), std::move(blob2), kValidUrl2);
-  EXPECT_TRUE(context_->GetBlobDataFromPublicURL(kValidUrl2));
+  EXPECT_TRUE(context_->GetBlobFromPublicURL(kValidUrl2));
 
   // Destroy URL Store, should revoke URLs.
   url_store = nullptr;
-  EXPECT_FALSE(context_->GetBlobDataFromPublicURL(kValidUrl));
-  EXPECT_FALSE(context_->GetBlobDataFromPublicURL(kValidUrl2));
+  EXPECT_FALSE(context_->GetBlobFromPublicURL(kValidUrl));
+  EXPECT_FALSE(context_->GetBlobFromPublicURL(kValidUrl2));
 }
 
 TEST_F(BlobURLStoreImplTest, RevokeThroughDifferentURLStore) {
@@ -196,10 +196,10 @@ TEST_F(BlobURLStoreImplTest, RevokeThroughDifferentURLStore) {
   BlobURLStoreImpl url_store2(context_->AsWeakPtr(), &delegate_);
 
   RegisterURL(&url_store1, std::move(blob), kValidUrl);
-  EXPECT_TRUE(context_->GetBlobDataFromPublicURL(kValidUrl));
+  EXPECT_TRUE(context_->GetBlobFromPublicURL(kValidUrl));
 
   url_store2.Revoke(kValidUrl);
-  EXPECT_FALSE(context_->GetBlobDataFromPublicURL(kValidUrl));
+  EXPECT_FALSE(context_->GetBlobFromPublicURL(kValidUrl));
 }
 
 TEST_F(BlobURLStoreImplTest, RevokeInvalidScheme) {
@@ -226,7 +226,7 @@ TEST_F(BlobURLStoreImplTest, RevokeCantCommit_ProcessNotValid) {
   url_store->Revoke(kValidUrl);
   url_store.FlushForTesting();
   EXPECT_TRUE(bad_messages_.empty());
-  EXPECT_FALSE(context_->GetBlobDataFromPublicURL(kValidUrl));
+  EXPECT_FALSE(context_->GetBlobFromPublicURL(kValidUrl));
 }
 
 TEST_F(BlobURLStoreImplTest, RevokeURLWithFragment) {
@@ -318,11 +318,10 @@ TEST_F(BlobURLStoreImplTest, ResolveForNavigation) {
   loop.Run();
 
   GURL blob_url;
-  std::string blob_uuid;
-  EXPECT_TRUE(
-      context_->registry().GetTokenMapping(token, &blob_url, &blob_uuid));
+  EXPECT_TRUE(context_->registry().GetTokenMapping(token, &blob_url, &blob));
   EXPECT_EQ(kValidUrl, blob_url);
-  EXPECT_EQ(kId, blob_uuid);
+  mojo::Remote<blink::mojom::Blob> blob_remote(std::move(blob));
+  EXPECT_EQ(kId, UUIDFromBlob(blob_remote.get()));
 }
 
 }  // namespace storage

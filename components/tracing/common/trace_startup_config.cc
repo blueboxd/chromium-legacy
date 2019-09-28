@@ -79,14 +79,12 @@ TraceStartupConfig::GetDefaultBrowserStartupConfig() {
 
 TraceStartupConfig::TraceStartupConfig() {
   auto* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kDisablePerfetto)) {
-    const std::string value =
-        command_line->GetSwitchValueASCII(switches::kTraceStartupOwner);
-    if (value == "devtools") {
-      session_owner_ = SessionOwner::kDevToolsTracingHandler;
-    } else if (value == "system") {
-      session_owner_ = SessionOwner::kSystemTracing;
-    }
+  const std::string value =
+      command_line->GetSwitchValueASCII(switches::kTraceStartupOwner);
+  if (value == "devtools") {
+    session_owner_ = SessionOwner::kDevToolsTracingHandler;
+  } else if (value == "system") {
+    session_owner_ = SessionOwner::kSystemTracing;
   }
 
   if (EnableFromCommandLine()) {

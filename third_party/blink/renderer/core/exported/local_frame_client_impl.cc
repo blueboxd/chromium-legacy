@@ -663,11 +663,6 @@ void LocalFrameClientImpl::DownloadURL(
       blob_url_token.PassPipe());
 }
 
-void LocalFrameClientImpl::LoadErrorPage(int reason) {
-  if (web_frame_->Client())
-    web_frame_->Client()->LoadErrorPage(reason);
-}
-
 bool LocalFrameClientImpl::NavigateBackForward(int offset) const {
   WebViewImpl* webview = web_frame_->ViewImpl();
   DCHECK(webview->Client());

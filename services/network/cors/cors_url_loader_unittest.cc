@@ -66,15 +66,15 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   void NotifyClientOnReceiveResponse(
       int status_code,
       const std::vector<std::string>& extra_headers) {
-    ResourceResponseHead response;
-    response.headers = new net::HttpResponseHeaders(
+    auto response = mojom::URLResponseHead::New();
+    response->headers = new net::HttpResponseHeaders(
         base::StringPrintf("HTTP/1.1 %d OK\n"
                            "Content-Type: image/png\n",
                            status_code));
     for (const auto& header : extra_headers)
-      response.headers->AddHeader(header);
+      response->headers->AddHeader(header);
 
-    client_ptr_->OnReceiveResponse(response);
+    client_ptr_->OnReceiveResponse(std::move(response));
   }
 
   void NotifyClientOnComplete(int error_code) {
@@ -85,13 +85,13 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
   void NotifyClientOnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
       const std::vector<std::string>& extra_headers) {
-    ResourceResponseHead response;
-    response.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+    auto response = mojom::URLResponseHead::New();
+    response->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         base::StringPrintf("HTTP/1.1 %d\n", redirect_info.status_code));
     for (const auto& header : extra_headers)
-      response.headers->AddHeader(header);
+      response->headers->AddHeader(header);
 
-    client_ptr_->OnReceiveRedirect(redirect_info, response);
+    client_ptr_->OnReceiveRedirect(redirect_info, std::move(response));
   }
 
   bool IsCreateLoaderAndStartCalled() { return !!client_ptr_; }
@@ -1217,7 +1217,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_Allowed) {
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_TRUE(client().has_received_response());
   EXPECT_EQ(network::mojom::FetchResponseType::kBasic,
-            client().response_head().response_type);
+            client().response_head()->response_type);
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
@@ -1251,7 +1251,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_IsolatedWorldOrigin) {
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_TRUE(client().has_received_response());
   EXPECT_EQ(network::mojom::FetchResponseType::kBasic,
-            client().response_head().response_type);
+            client().response_head()->response_type);
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
@@ -1303,7 +1303,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_IsolatedWorldOrigin_Redirect) {
   EXPECT_TRUE(client().has_received_redirect());
   EXPECT_TRUE(client().has_received_response());
   EXPECT_EQ(network::mojom::FetchResponseType::kBasic,
-            client().response_head().response_type);
+            client().response_head()->response_type);
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
@@ -1355,7 +1355,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_AllowedByFactoryList) {
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_TRUE(client().has_received_response());
   EXPECT_EQ(network::mojom::FetchResponseType::kBasic,
-            client().response_head().response_type);
+            client().response_head()->response_type);
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::OK, client().completion_status().error_code);
 }
@@ -1407,7 +1407,7 @@ TEST_F(CorsURLLoaderTest, OriginAccessList_NoCors) {
   EXPECT_FALSE(client().has_received_redirect());
   EXPECT_TRUE(client().has_received_response());
   EXPECT_EQ(network::mojom::FetchResponseType::kBasic,
-            client().response_head().response_type);
+            client().response_head()->response_type);
   EXPECT_TRUE(client().has_received_completion());
   EXPECT_EQ(net::OK, client().completion_status().error_code);
 }

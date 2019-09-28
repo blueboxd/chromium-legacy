@@ -128,6 +128,7 @@ class NET_EXPORT URLRequestContext
   }
 
   void set_host_resolver(HostResolver* host_resolver) {
+    DCHECK(host_resolver);
     host_resolver_ = host_resolver;
   }
 

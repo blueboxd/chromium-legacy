@@ -641,7 +641,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
       test_url_loader_factory_.SimulateResponseForPendingRequest(
           GaiaUrls::GetInstance()->oauth2_token_url(),
           network::URLLoaderCompletionStatus(net::OK),
-          network::CreateResourceResponseHead(url_fetcher_response_code_),
+          network::CreateURLResponseHead(url_fetcher_response_code_),
           url_fetcher_response_string_);
     }
 

@@ -34,6 +34,11 @@
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_gl_api_implementation.h"
 
+#if BUILDFLAG(ENABLE_VULKAN)
+#include "components/viz/common/gpu/vulkan_context_provider.h"
+#include "gpu/vulkan/vulkan_device_queue.h"
+#endif  // BUILDFLAG(ENABLE_VULKAN)
+
 namespace viz {
 
 namespace {
@@ -327,7 +332,8 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromYUV(
     auto* context = static_cast<ImageContextImpl*>(contexts[i]);
     DCHECK(context->origin() == kTopLeft_GrSurfaceOrigin);
     formats[i] = GetGrBackendFormatForTexture(
-        context->resource_format(), context->mailbox_holder().texture_target);
+        context->resource_format(), context->mailbox_holder().texture_target,
+        /*ycbcr_info=*/base::nullopt);
     yuva_sizes[i].set(context->size().width(), context->size().height());
 
     // NOTE: We don't have promises for individual planes, but still need format
@@ -365,11 +371,13 @@ void SkiaOutputSurfaceImpl::ReleaseImageContexts(
 }
 
 std::unique_ptr<ExternalUseClient::ImageContext>
-SkiaOutputSurfaceImpl::CreateImageContext(const gpu::MailboxHolder& holder,
-                                          const gfx::Size& size,
-                                          ResourceFormat format,
-                                          sk_sp<SkColorSpace> color_space) {
-  return std::make_unique<ImageContextImpl>(holder, size, format,
+SkiaOutputSurfaceImpl::CreateImageContext(
+    const gpu::MailboxHolder& holder,
+    const gfx::Size& size,
+    ResourceFormat format,
+    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info,
+    sk_sp<SkColorSpace> color_space) {
+  return std::make_unique<ImageContextImpl>(holder, size, format, ycbcr_info,
                                             std::move(color_space));
 }
 
@@ -505,8 +513,8 @@ sk_sp<SkImage> SkiaOutputSurfaceImpl::MakePromiseSkImageFromRenderPass(
   if (!image_context->has_image()) {
     SkColorType color_type =
         ResourceFormatToClosestSkColorType(true /* gpu_compositing */, format);
-    GrBackendFormat backend_format =
-        GetGrBackendFormatForTexture(format, GL_TEXTURE_2D);
+    GrBackendFormat backend_format = GetGrBackendFormatForTexture(
+        format, GL_TEXTURE_2D, /*ycbcr_info=*/base::nullopt);
     image_context->SetImage(
         current_paint_->recorder()->makePromiseTexture(
             backend_format, image_context->size().width(),
@@ -721,7 +729,7 @@ void SkiaOutputSurfaceImpl::ScheduleGpuTask(
 GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     ResourceFormat resource_format,
     uint32_t gl_texture_target,
-    base::Optional<gpu::VulkanYCbCrInfo> ycbcr_info) {
+    const base::Optional<gpu::VulkanYCbCrInfo>& ycbcr_info) {
   if (!is_using_vulkan_) {
     DCHECK(!ycbcr_info);
     // Convert internal format from GLES2 to platform GL.
@@ -731,21 +739,18 @@ GrBackendFormat SkiaOutputSurfaceImpl::GetGrBackendFormatForTexture(
     return GrBackendFormat::MakeGL(texture_storage_format, gl_texture_target);
   } else {
 #if BUILDFLAG(ENABLE_VULKAN)
-    if (!ycbcr_info)
+    if (!ycbcr_info) {
+      // YCbCr info is required for YUV images.
+      DCHECK(resource_format != YVU_420 && resource_format != YUV_420_BIPLANAR);
       return GrBackendFormat::MakeVk(ToVkFormat(resource_format));
+    }
 
-    VkFormat format = ycbcr_info->external_format ? VK_FORMAT_UNDEFINED
-                                                  : ToVkFormat(resource_format);
-    GrVkYcbcrConversionInfo gr_ycbcr_info(
-        format, ycbcr_info->external_format,
-        static_cast<VkSamplerYcbcrModelConversion>(
-            ycbcr_info->suggested_ycbcr_model),
-        static_cast<VkSamplerYcbcrRange>(ycbcr_info->suggested_ycbcr_range),
-        static_cast<VkChromaLocation>(ycbcr_info->suggested_xchroma_offset),
-        static_cast<VkChromaLocation>(ycbcr_info->suggested_ychroma_offset),
-        VK_FILTER_LINEAR,  // VkFilter
-        0,                 // VkBool32 forceExplicitReconstruction,
-        static_cast<VkFormatFeatureFlags>(ycbcr_info->format_features));
+    // Assume optimal tiling.
+    GrVkYcbcrConversionInfo gr_ycbcr_info =
+        CreateGrVkYcbcrConversionInfo(dependency_->GetVulkanContextProvider()
+                                          ->GetDeviceQueue()
+                                          ->GetVulkanPhysicalDevice(),
+                                      VK_IMAGE_TILING_OPTIMAL, ycbcr_info);
     return GrBackendFormat::MakeVk(gr_ycbcr_info);
 #else
     NOTREACHED();

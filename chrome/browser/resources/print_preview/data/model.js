@@ -709,8 +709,12 @@ Polymer({
     this.setSettingPath_('fitToPage.unavailableValue', !isSaveAsPDF);
     this.setSettingPath_(
         'fitToPage.available',
-        !knownSizeToSaveAsPdf && !this.documentSettings.isModifiable);
-    this.setSettingPath_('scaling.available', !knownSizeToSaveAsPdf);
+        !knownSizeToSaveAsPdf && this.documentSettings.isPdf);
+    this.setSettingPath_(
+        'scaling.available',
+        !knownSizeToSaveAsPdf &&
+            (this.documentSettings.isModifiable ||
+             this.documentSettings.isPdf));
     const caps = this.destination && this.destination.capabilities ?
         this.destination.capabilities.printer :
         null;

@@ -46,9 +46,8 @@ class CORE_EXPORT URLRegistrable {
  public:
   virtual ~URLRegistrable() = default;
   virtual URLRegistry& Registry() const = 0;
-  virtual mojo::PendingRemote<mojom::blink::Blob> AsMojoBlob() {
-    return mojo::NullRemote();
-  }
+  virtual bool IsMojoBlob() { return false; }
+  virtual void CloneMojoBlob(mojo::PendingReceiver<mojom::blink::Blob>) {}
 };
 
 class CORE_EXPORT URLRegistry {

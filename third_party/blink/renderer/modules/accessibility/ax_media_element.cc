@@ -11,8 +11,6 @@
 
 namespace blink {
 
-using blink::WebLocalizedString;
-
 AXObject* AccessibilityMediaElement::Create(
     LayoutObject* layout_object,
     AXObjectCacheImpl& ax_object_cache) {

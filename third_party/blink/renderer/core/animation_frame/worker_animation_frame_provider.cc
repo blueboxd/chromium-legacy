@@ -6,6 +6,7 @@
 
 #include "third_party/blink/renderer/core/offscreencanvas/offscreen_canvas.h"
 #include "third_party/blink/renderer/core/timing/worker_global_scope_performance.h"
+#include "third_party/blink/renderer/platform/bindings/microtask.h"
 #include "third_party/blink/renderer/platform/wtf/cross_thread_functional.h"
 
 namespace blink {
@@ -35,27 +36,23 @@ void WorkerAnimationFrameProvider::CancelCallback(int id) {
   callback_collection_.CancelFrameCallback(id);
 }
 
-void WorkerAnimationFrameProvider::BeginFrame() {
-  // TODO(fserb): Remove this once the Mojo changes for scheduling are in.
-  context_->GetTaskRunner(TaskType::kWorkerAnimation)
-      ->PostTask(
-          FROM_HERE,
-          WTF::Bind(
-              [](base::WeakPtr<WorkerAnimationFrameProvider> provider) {
-                ExecutionContext* context = provider->context_;
-                Performance* performance =
-                    WorkerGlobalScopePerformance::performance(
-                        *To<WorkerGlobalScope>(context));
-                double time = performance->now();
+void WorkerAnimationFrameProvider::BeginFrame(
+    const base::TimeTicks& frame_time) {
+  TRACE_EVENT0("blink", "WorkerAnimationFrameProvider::BeginFrame");
 
-                provider->callback_collection_.ExecuteFrameCallbacks(time,
-                                                                     time);
+  double time = (frame_time - base::TimeTicks()).InMillisecondsF();
 
-                for (auto& offscreen_canvas : provider->offscreen_canvases_) {
-                  offscreen_canvas->PushFrameIfNeeded();
-                }
-              },
-              weak_factory_.GetWeakPtr()));
+  Microtask::EnqueueMicrotask(WTF::Bind(
+      [](base::WeakPtr<WorkerAnimationFrameProvider> provider, double time) {
+        TRACE_EVENT0("blink",
+                     "WorkerAnimationFrameProvider::RequestAnimationFrame");
+        provider->callback_collection_.ExecuteFrameCallbacks(time, time);
+
+        for (auto& offscreen_canvas : provider->offscreen_canvases_) {
+          offscreen_canvas->PushFrameIfNeeded();
+        }
+      },
+      weak_factory_.GetWeakPtr(), time));
 }
 
 void WorkerAnimationFrameProvider::RegisterOffscreenCanvas(

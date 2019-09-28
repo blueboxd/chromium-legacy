@@ -41,6 +41,7 @@ class MockDecrypter : public quic::QuicDecrypter {
                      size_t* output_length,
                      size_t max_output_length) override;
   size_t GetKeySize() const override;
+  size_t GetNoncePrefixSize() const override;
   size_t GetIVSize() const override;
   quic::QuicStringPiece GetKey() const override;
   quic::QuicStringPiece GetNoncePrefix() const override;

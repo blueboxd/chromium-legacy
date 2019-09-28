@@ -227,12 +227,12 @@ String Locale::ValidationMessageTooLongText(unsigned value_length,
 String Locale::ValidationMessageTooShortText(unsigned value_length,
                                              int min_length) {
   if (value_length == 1) {
-    return QueryString(WebLocalizedString::kValidationTooShort,
+    return QueryString(IDS_FORM_VALIDATION_TOO_SHORT,
                        ConvertToLocalizedNumber(String::Number(value_length)),
                        ConvertToLocalizedNumber(String::Number(min_length)));
   }
 
-  return QueryString(WebLocalizedString::kValidationTooShortPlural,
+  return QueryString(IDS_FORM_VALIDATION_TOO_SHORT_PLURAL,
                      ConvertToLocalizedNumber(String::Number(value_length)),
                      ConvertToLocalizedNumber(String::Number(min_length)));
 }

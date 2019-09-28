@@ -262,10 +262,10 @@ class DialMediaRouteProviderTest : public ::testing::Test {
 
     // Simulate a successful launch response.
     app_instance_url_ = GURL(app_launch_url.spec() + "/run");
-    network::ResourceResponseHead response_head;
-    response_head.headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
-    response_head.headers->AddHeader("LOCATION: " + app_instance_url_.spec());
-    loader_factory_.AddResponse(app_launch_url, response_head, "",
+    auto response_head = network::mojom::URLResponseHead::New();
+    response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>("");
+    response_head->headers->AddHeader("LOCATION: " + app_instance_url_.spec());
+    loader_factory_.AddResponse(app_launch_url, std::move(response_head), "",
                                 network::URLLoaderCompletionStatus());
     std::vector<MediaRoute> routes;
     EXPECT_CALL(mock_router_, OnRoutesUpdated(_, Not(IsEmpty()), _, IsEmpty()))
@@ -283,7 +283,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     activity_manager_->SetExpectedRequest(app_instance_url_, "DELETE",
                                           base::nullopt);
     loader_factory_.AddResponse(app_instance_url_,
-                                network::ResourceResponseHead(), "",
+                                network::mojom::URLResponseHead::New(), "",
                                 network::URLLoaderCompletionStatus());
     EXPECT_CALL(*this, OnTerminateRoute(_, RouteRequestResult::OK));
     provider_->TerminateRoute(
@@ -323,7 +323,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     activity_manager_->SetExpectedRequest(app_instance_url_, "DELETE",
                                           base::nullopt);
     loader_factory_.AddResponse(app_instance_url_,
-                                network::ResourceResponseHead(), "",
+                                network::mojom::URLResponseHead::New(), "",
                                 network::URLLoaderCompletionStatus());
 
     provider_->SendRouteMessage(route_id, kStopSessionMessage);
@@ -360,7 +360,7 @@ class DialMediaRouteProviderTest : public ::testing::Test {
     activity_manager_->SetExpectedRequest(app_instance_url_, "DELETE",
                                           base::nullopt);
     loader_factory_.AddResponse(
-        app_instance_url_, network::ResourceResponseHead(), "",
+        app_instance_url_, network::mojom::URLResponseHead::New(), "",
         network::URLLoaderCompletionStatus(net::HTTP_SERVICE_UNAVAILABLE));
     EXPECT_CALL(*this,
                 OnTerminateRoute(_, testing::Ne(RouteRequestResult::OK)));

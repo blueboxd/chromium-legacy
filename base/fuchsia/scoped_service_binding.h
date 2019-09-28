@@ -152,7 +152,7 @@ class ScopedSingleClientServiceBinding
                   dispatcher);
   }
 
-  void OnBindingEmpty() {
+  void OnBindingEmpty(zx_status_t status) {
     binding_.set_error_handler(nullptr);
     std::move(on_last_client_callback_).Run();
   }

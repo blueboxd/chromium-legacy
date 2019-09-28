@@ -19,10 +19,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 
-#if defined(OS_MACOSX)
-#include "base/mac/mac_util.h"
-#endif
-
 namespace content {
 namespace {
 
@@ -56,6 +52,14 @@ void SetCookie(
           [&](net::CanonicalCookie::CookieInclusionStatus status) {
             run_loop.Quit();
           }));
+  run_loop.Run();
+}
+
+void FlushCookies(
+    const mojo::Remote<network::mojom::CookieManager>& cookie_manager) {
+  base::RunLoop run_loop;
+  cookie_manager->FlushCookieStore(
+      base::BindLambdaForTesting([&]() { run_loop.Quit(); }));
   run_loop.Run();
 }
 
@@ -96,23 +100,11 @@ IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, PRE_EncryptedCookies) {
   ASSERT_EQ(1u, cookies.size());
   EXPECT_EQ(kCookieName, cookies[0].Name());
   EXPECT_EQ(kCookieValue, cookies[0].Value());
+
+  FlushCookies(cookie_manager);
 }
 
-#if defined(OS_WIN)
-// The cookies.size() ASSERT is failing flakily on the Win7 bots.
-// See https://crbug.com/868667
-#define MAYBE_EncryptedCookies DISABLED_EncryptedCookies
-#else
-#define MAYBE_EncryptedCookies EncryptedCookies
-#endif
-
-IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest,
-                       MAYBE_EncryptedCookies) {
-#if defined(OS_MACOSX)
-  // TODO(https://crbug.com/868667): Fix and reenable test.
-  if (base::mac::IsOS10_11())
-    return;
-#endif
+IN_PROC_BROWSER_TEST_F(ChromeNetworkServiceBrowserTest, EncryptedCookies) {
   net::CookieCryptoDelegate* crypto_delegate =
       cookie_config::GetCookieCryptoDelegate();
   std::string ciphertext;

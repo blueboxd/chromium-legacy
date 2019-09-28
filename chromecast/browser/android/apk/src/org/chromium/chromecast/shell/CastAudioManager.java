@@ -6,6 +6,7 @@ package org.chromium.chromecast.shell;
 
 import android.content.Context;
 import android.media.AudioManager;
+import android.media.audiopolicy.AudioPolicy;
 import android.os.Build;
 import android.support.annotation.Nullable;
 
@@ -114,6 +115,14 @@ public class CastAudioManager {
 
     public int getStreamMaxVolume(int streamType) {
         return mInternal.getStreamMaxVolume(streamType);
+    }
+
+    public int registerAudioPolicy(AudioPolicy audioPolicy) {
+        return mInternal.registerAudioPolicy(audioPolicy);
+    }
+
+    public void unregisterAudioPolicyAsync(AudioPolicy audioPolicy) {
+        mInternal.unregisterAudioPolicyAsync(audioPolicy);
     }
 
     // TODO(sanfin): Do not expose this. All needed AudioManager methods can be adapted with

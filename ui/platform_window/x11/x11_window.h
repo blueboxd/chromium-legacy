@@ -64,6 +64,8 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   PlatformWindowState GetPlatformWindowState() const override;
   void Activate() override;
   void Deactivate() override;
+  bool IsSyncExtensionAvailable() const override;
+  void OnCompleteSwapAfterResize() override;
   void SetUseNativeFrame(bool use_native_frame) override;
   void SetCursor(PlatformCursor cursor) override;
   void MoveCursorTo(const gfx::Point& location) override;

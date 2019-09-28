@@ -81,8 +81,7 @@ class PerfettoTracingSession
 #if !defined(OS_ANDROID)
     // TODO(crbug.com/941318): Re-enable startup tracing for Android once all
     // Perfetto-related deadlocks are resolved.
-    if (!TracingControllerImpl::GetInstance()->IsTracing() &&
-        tracing::TracingUsesPerfettoBackend()) {
+    if (!TracingControllerImpl::GetInstance()->IsTracing()) {
       tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing(
           /*privacy_filtering_enabled=*/true);
     }
@@ -196,8 +195,7 @@ class LegacyTracingSession
 #if !defined(OS_ANDROID)
     // TODO(crbug.com/941318): Re-enable startup tracing for Android once all
     // Perfetto-related deadlocks are resolved.
-    if (!TracingControllerImpl::GetInstance()->IsTracing() &&
-        tracing::TracingUsesPerfettoBackend()) {
+    if (!TracingControllerImpl::GetInstance()->IsTracing()) {
       tracing::TraceEventDataSource::GetInstance()->SetupStartupTracing(
           /*privacy_filtering_enabled=*/false);
     }

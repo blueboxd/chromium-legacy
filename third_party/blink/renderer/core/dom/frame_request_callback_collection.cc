@@ -83,6 +83,8 @@ void FrameRequestCallbackCollection::CancelCallbackInternal(
 void FrameRequestCallbackCollection::ExecuteFrameCallbacks(
     double high_res_now_ms,
     double high_res_now_ms_legacy) {
+  TRACE_EVENT0("blink",
+               "FrameRequestCallbackCollection::ExecuteFrameCallbacks");
   ExecuteCallbacksInternal(frame_callbacks_, "FireAnimationFrame",
                            "requestAnimationFrame", high_res_now_ms,
                            high_res_now_ms_legacy);

@@ -19,10 +19,6 @@ const base::Feature kChromeColors{"ChromeColors",
 const base::Feature kChromeColorsCustomColorPicker{
     "ChromeColorsCustomColorPicker", base::FEATURE_DISABLED_BY_DEFAULT};
 
-// If enabled, does not fade in most visited tiles on initial page load.
-const base::Feature kDisableInitialMostVisitedFadeIn{
-    "DisableInitialMostVisitedFadeIn", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // If enabled, the NTP shortcut layout will be replaced with a grid layout that
 // enables better animations.
 const base::Feature kGridLayoutForNtpShortcuts{

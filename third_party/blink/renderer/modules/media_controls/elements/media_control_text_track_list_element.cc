@@ -58,7 +58,7 @@ MediaControlTextTrackListElement::MediaControlTextTrackListElement(
   setAttribute(html_names::kRoleAttr, "menu");
   setAttribute(html_names::kAriaLabelAttr,
                WTF::AtomicString(GetLocale().QueryString(
-                   WebLocalizedString::kOverflowMenuCaptionsSubmenuTitle)));
+                   IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS_SUBMENU_TITLE)));
   SetShadowPseudoId(AtomicString("-internal-media-controls-text-track-list"));
 }
 
@@ -178,7 +178,7 @@ Element* MediaControlTextTrackListElement::CreateTextTrackHeaderItem() {
   header_item->ParserAppendChild(
       Text::Create(GetDocument(),
                    GetLocale().QueryString(
-                       WebLocalizedString::kOverflowMenuCaptionsSubmenuTitle)));
+                       IDS_MEDIA_OVERFLOW_MENU_CLOSED_CAPTIONS_SUBMENU_TITLE)));
   header_item->setAttribute(html_names::kRoleAttr, "button");
   header_item->setAttribute(
       html_names::kAriaLabelAttr,

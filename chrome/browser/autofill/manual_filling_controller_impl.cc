@@ -14,7 +14,6 @@
 #include "chrome/browser/password_manager/chrome_password_manager_client.h"
 #include "chrome/browser/password_manager/password_accessory_controller.h"
 #include "chrome/browser/password_manager/password_accessory_metrics_util.h"
-#include "chrome/browser/password_manager/touch_to_fill_controller.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/autofill/core/common/autofill_features.h"
 #include "components/autofill/core/common/autofill_util.h"
@@ -76,14 +75,12 @@ void ManualFillingControllerImpl::CreateForWebContentsForTesting(
     base::WeakPtr<PasswordAccessoryController> pwd_controller,
     base::WeakPtr<AddressAccessoryController> address_controller,
     base::WeakPtr<CreditCardAccessoryController> cc_controller,
-    base::WeakPtr<TouchToFillController> touch_to_fill_controller,
     std::unique_ptr<ManualFillingViewInterface> view) {
   DCHECK(web_contents) << "Need valid WebContents to attach controller to!";
   DCHECK(!FromWebContents(web_contents)) << "Controller already attached!";
   DCHECK(pwd_controller);
   DCHECK(address_controller);
   DCHECK(cc_controller);
-  DCHECK(touch_to_fill_controller);
   DCHECK(view);
 
   web_contents->SetUserData(
@@ -92,7 +89,7 @@ void ManualFillingControllerImpl::CreateForWebContentsForTesting(
       base::WrapUnique(new ManualFillingControllerImpl(
           web_contents, favicon_service, std::move(pwd_controller),
           std::move(address_controller), std::move(cc_controller),
-          std::move(touch_to_fill_controller), std::move(view))));
+          std::move(view))));
 
   FromWebContents(web_contents)->Initialize();
 }
@@ -235,11 +232,6 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
         CreditCardAccessoryController::GetOrCreate(web_contents)->AsWeakPtr();
     DCHECK(cc_controller_);
   }
-
-  touch_to_fill_controller_ =
-      ChromePasswordManagerClient::FromWebContents(web_contents_)
-          ->GetOrCreateTouchToFillController()
-          ->AsWeakPtr();
 }
 
 ManualFillingControllerImpl::ManualFillingControllerImpl(
@@ -248,14 +240,12 @@ ManualFillingControllerImpl::ManualFillingControllerImpl(
     base::WeakPtr<PasswordAccessoryController> pwd_controller,
     base::WeakPtr<AddressAccessoryController> address_controller,
     base::WeakPtr<CreditCardAccessoryController> cc_controller,
-    base::WeakPtr<TouchToFillController> touch_to_fill_controller,
     std::unique_ptr<ManualFillingViewInterface> view)
     : web_contents_(web_contents),
       favicon_service_(favicon_service),
       pwd_controller_for_testing_(std::move(pwd_controller)),
       address_controller_(std::move(address_controller)),
       cc_controller_(std::move(cc_controller)),
-      touch_to_fill_controller_(std::move(touch_to_fill_controller)),
       view_(std::move(view)) {}
 
 bool ManualFillingControllerImpl::ShouldShowAccessory() const {
@@ -325,7 +315,6 @@ AccessoryController* ManualFillingControllerImpl::GetControllerForTab(
     case AccessoryTabType::CREDIT_CARDS:
       return cc_controller_.get();
     case AccessoryTabType::TOUCH_TO_FILL:
-      return touch_to_fill_controller_.get();
     case AccessoryTabType::ALL:
     case AccessoryTabType::COUNT:
       break;  // Intentional failure.

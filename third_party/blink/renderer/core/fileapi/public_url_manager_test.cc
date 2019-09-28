@@ -32,12 +32,13 @@ class TestURLRegistrable : public URLRegistrable {
 
   URLRegistry& Registry() const override { return *registry_; }
 
-  mojo::PendingRemote<mojom::blink::Blob> AsMojoBlob() override {
+  bool IsMojoBlob() override { return bool{blob_}; }
+
+  void CloneMojoBlob(
+      mojo::PendingReceiver<mojom::blink::Blob> receiver) override {
     if (!blob_)
-      return mojo::NullRemote();
-    mojo::PendingRemote<mojom::blink::Blob> result;
-    blob_->Clone(result.InitWithNewPipeAndPassReceiver());
-    return result;
+      return;
+    blob_->Clone(std::move(receiver));
   }
 
  private:

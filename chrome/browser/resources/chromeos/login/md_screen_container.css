@@ -123,6 +123,15 @@ html:not([full-screen-dialog]) #oobe.tpm-error-message #inner-container {
   width: 100%;
 }
 
+#oobe.account-picker {
+  max-height: unset;
+  max-width: unset;
+  padding-bottom: unset;
+  padding-inline-end: unset;
+  padding-inline-start: unset;
+  padding-top: unset;
+}
+
 #outer-container.fullscreen,
 #outer-container.fullscreen #oobe,
 #inner-container,

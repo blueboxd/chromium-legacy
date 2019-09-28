@@ -10,8 +10,7 @@
 #include "base/bind.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/self_owned_receiver.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "native_client/src/public/chrome_main.h"
 
 namespace {
@@ -37,25 +36,24 @@ class NaClExitControlImpl : public nacl::mojom::NaClExitControl {
   }
 };
 
-void CreateExitControl(
-    mojo::PendingReceiver<nacl::mojom::NaClExitControl> receiver) {
-  mojo::MakeSelfOwnedReceiver(std::make_unique<NaClExitControlImpl>(),
-                              std::move(receiver));
+void CreateExitControl(nacl::mojom::NaClExitControlRequest request) {
+  mojo::MakeStrongBinding(std::make_unique<NaClExitControlImpl>(),
+                          std::move(request));
 }
 
 }  // namespace
 
 NaClTrustedListener::NaClTrustedListener(
-    mojo::PendingRemote<nacl::mojom::NaClRendererHost> renderer_host,
+    nacl::mojom::NaClRendererHostPtr renderer_host,
     base::SingleThreadTaskRunner* io_task_runner)
     : renderer_host_(std::move(renderer_host)) {
-  mojo::PendingRemote<nacl::mojom::NaClExitControl> exit_control;
+  nacl::mojom::NaClExitControlPtr exit_control;
   // The exit control binding must run on the IO thread. The main thread used
   // by NaClListener is busy in NaClChromeMainAppStart(), so it can't be used
   // for servicing messages.
   io_task_runner->PostTask(
-      FROM_HERE, base::BindOnce(&CreateExitControl,
-                                exit_control.InitWithNewPipeAndPassReceiver()));
+      FROM_HERE,
+      base::BindOnce(&CreateExitControl, mojo::MakeRequest(&exit_control)));
   renderer_host_->ProvideExitControl(std::move(exit_control));
 }
 

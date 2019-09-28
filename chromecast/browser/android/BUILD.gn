@@ -69,6 +69,10 @@ android_resources("cast_shell_android_stub_resources") {
 
 android_library("cast_audio_manager_java") {
   java_src_dir = "//chromecast/browser/android/apk/src"
+
+  alternative_android_sdk_dep =
+      "//third_party/android_sdk:public_framework_system_java"
+
   java_files = [
     "$java_src_dir/org/chromium/chromecast/shell/CastAudioManager.java",
     "$java_src_dir/org/chromium/chromecast/shell/CastAudioFocusRequest.java",

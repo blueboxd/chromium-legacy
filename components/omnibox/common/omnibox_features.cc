@@ -122,11 +122,6 @@ const base::Feature kOmniboxTabSwitchSuggestionsDedicatedRow{
     "OmniboxTabSwitchSuggestionsDedicatedRow",
     base::FEATURE_DISABLED_BY_DEFAULT};
 
-// Feature that enables wrapping the Omnibox position between top and bottom.
-// The feature is enabled by default, but remains as a kill-switch.
-const base::Feature kOmniboxWrapPopupPosition{"OmniboxWrapPopupPosition",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Feature used to reverse the sense of the tab switch button. Selecting the
 // suggestion will switch to the tab, while the button will navigate
 // locally.

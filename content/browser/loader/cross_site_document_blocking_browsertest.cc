@@ -198,7 +198,7 @@ class RequestInterceptor {
 
   ~RequestInterceptor() {
     WaitForCleanUpOnInterceptorThread(
-        network::ResourceResponseHead(), "",
+        network::mojom::URLResponseHead::New(), "",
         network::URLLoaderCompletionStatus(net::ERR_NOT_IMPLEMENTED));
   }
 
@@ -216,8 +216,8 @@ class RequestInterceptor {
     }
 
     // Wait until IO cleanup completes.
-    WaitForCleanUpOnInterceptorThread(test_client_.response_head(), body_,
-                                      test_client_.completion_status());
+    WaitForCleanUpOnInterceptorThread(test_client_.response_head().Clone(),
+                                      body_, test_client_.completion_status());
 
     // Mark the request as completed (for DCHECK purposes).
     request_completed_ = true;
@@ -229,7 +229,7 @@ class RequestInterceptor {
     return test_client_.completion_status();
   }
 
-  const network::ResourceResponseHead& response_head() const {
+  const network::mojom::URLResponseHeadPtr& response_head() const {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     DCHECK(request_completed_);
     return test_client_.response_head();
@@ -251,8 +251,8 @@ class RequestInterceptor {
       EXPECT_EQ(0, completion_status().decoded_body_length);
 
       // Verify that other response parts have been sanitized.
-      EXPECT_EQ(0u, response_head().content_length);
-      const std::string& headers = response_head().headers->raw_headers();
+      EXPECT_EQ(0u, response_head()->content_length);
+      const std::string& headers = response_head()->headers->raw_headers();
       EXPECT_THAT(headers, Not(HasSubstr("Content-Length")));
       EXPECT_THAT(headers, Not(HasSubstr("Content-Type")));
 
@@ -345,7 +345,7 @@ class RequestInterceptor {
   }
 
   void WaitForCleanUpOnInterceptorThread(
-      network::ResourceResponseHead response_head,
+      network::mojom::URLResponseHeadPtr response_head,
       std::string response_body,
       network::URLLoaderCompletionStatus status) {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -358,8 +358,8 @@ class RequestInterceptor {
       interceptor_task_runner_->PostTaskAndReply(
           FROM_HERE,
           base::BindOnce(&RequestInterceptor::CleanUpOnInterceptorThread,
-                         base::Unretained(this), response_head, response_body,
-                         status),
+                         base::Unretained(this), std::move(response_head),
+                         response_body, status),
           run_loop.QuitClosure());
       run_loop.Run();
     }
@@ -367,16 +367,17 @@ class RequestInterceptor {
     cleanup_done_ = true;
   }
 
-  void CleanUpOnInterceptorThread(network::ResourceResponseHead response_head,
-                                  std::string response_body,
-                                  network::URLLoaderCompletionStatus status) {
+  void CleanUpOnInterceptorThread(
+      network::mojom::URLResponseHeadPtr response_head,
+      std::string response_body,
+      network::URLLoaderCompletionStatus status) {
     if (!request_intercepted_)
       return;
 
     // Tell the |original_client_| that the request has completed (and that it
     // can release its URLLoaderClient.
     if (status.error_code == net::OK) {
-      original_client_->OnReceiveResponse(response_head);
+      original_client_->OnReceiveResponse(std::move(response_head));
 
       mojo::DataPipe empty_data_pipe(response_body.size() + 1);
       original_client_->OnStartLoadingResponseBody(
@@ -859,7 +860,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockHeaders) {
 
   // Verify that most response headers have been removed by CORB.
   const std::string& headers =
-      interceptor.response_head().headers->raw_headers();
+      interceptor.response_head()->headers->raw_headers();
   EXPECT_THAT(headers, HasSubstr("Access-Control-Allow-Origin: https://other"));
   EXPECT_THAT(headers, Not(HasSubstr("Cache-Control")));
   EXPECT_THAT(headers, Not(HasSubstr("Content-Language")));
@@ -878,7 +879,7 @@ IN_PROC_BROWSER_TEST_P(CrossSiteDocumentBlockingTest, BlockHeaders) {
   EXPECT_EQ(0, interceptor.completion_status().decoded_body_length);
 
   // Verify that other response parts have been sanitized.
-  EXPECT_EQ(0u, interceptor.response_head().content_length);
+  EXPECT_EQ(0u, interceptor.response_head()->content_length);
 }
 
 // TODO(lukasza): https://crbug.com/154571: Enable this test on Android once

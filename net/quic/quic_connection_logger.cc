@@ -149,6 +149,7 @@ base::Value NetLogQuicRstStreamFrameParams(
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetIntKey("stream_id", frame->stream_id);
   dict.SetIntKey("quic_rst_stream_error", frame->error_code);
+  dict.SetKey("offset", NetLogNumberValue(frame->byte_offset));
   return dict;
 }
 
@@ -245,12 +246,18 @@ base::Value NetLogQuicCertificateVerifiedParams(
   return dict;
 }
 
-base::Value NetLogQuicCryptoFrameParams(const quic::QuicCryptoFrame* frame) {
+base::Value NetLogQuicCryptoFrameParams(const quic::QuicCryptoFrame* frame,
+                                        bool has_buffer) {
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetStringKey("encryption_level",
                     quic::QuicUtils::EncryptionLevelToString(frame->level));
   dict.SetIntKey("data_length", frame->data_length);
   dict.SetKey("offset", NetLogNumberValue(frame->offset));
+  if (has_buffer) {
+    dict.SetKey("bytes", NetLogBinaryValue(
+                             reinterpret_cast<const void*>(frame->data_buffer),
+                             frame->data_length));
+  }
   return dict;
 }
 
@@ -259,6 +266,22 @@ base::Value NetLogQuicStopSendingFrameParams(
   base::Value dict(base::Value::Type::DICTIONARY);
   dict.SetIntKey("stream_id", frame->stream_id);
   dict.SetIntKey("application_error_code", frame->application_error_code);
+  return dict;
+}
+
+base::Value NetLogQuicStreamsBlockedFrameParams(
+    const quic::QuicStreamsBlockedFrame& frame) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_count", frame.stream_count);
+  dict.SetBoolKey("is_unidirectional", frame.unidirectional);
+  return dict;
+}
+
+base::Value NetLogQuicMaxStreamsFrameParams(
+    const quic::QuicMaxStreamsFrame& frame) {
+  base::Value dict(base::Value::Type::DICTIONARY);
+  dict.SetIntKey("stream_count", frame.stream_count);
+  dict.SetBoolKey("is_unidirectional", frame.unidirectional);
   return dict;
 }
 
@@ -470,8 +493,17 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
     case quic::NEW_CONNECTION_ID_FRAME:
       break;
     case quic::MAX_STREAMS_FRAME:
+      net_log_.AddEvent(
+          NetLogEventType::QUIC_SESSION_MAX_STREAMS_FRAME_SENT, [&] {
+            return NetLogQuicMaxStreamsFrameParams(frame.max_streams_frame);
+          });
       break;
     case quic::STREAMS_BLOCKED_FRAME:
+      net_log_.AddEvent(
+          NetLogEventType::QUIC_SESSION_STREAMS_BLOCKED_FRAME_SENT, [&] {
+            return NetLogQuicStreamsBlockedFrameParams(
+                frame.streams_blocked_frame);
+          });
       break;
     case quic::PATH_RESPONSE_FRAME:
       break;
@@ -487,7 +519,8 @@ void QuicConnectionLogger::OnFrameAddedToPacket(const quic::QuicFrame& frame) {
       break;
     case quic::CRYPTO_FRAME:
       net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CRYPTO_FRAME_SENT, [&] {
-        return NetLogQuicCryptoFrameParams(frame.crypto_frame);
+        return NetLogQuicCryptoFrameParams(frame.crypto_frame,
+                                           /*has_buffer = */ false);
       });
       break;
     case quic::NEW_TOKEN_FRAME:
@@ -652,8 +685,9 @@ void QuicConnectionLogger::OnStreamFrame(const quic::QuicStreamFrame& frame) {
 void QuicConnectionLogger::OnCryptoFrame(const quic::QuicCryptoFrame& frame) {
   if (!net_log_.IsCapturing())
     return;
-  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CRYPTO_FRAME_RECEIVED,
-                    [&] { return NetLogQuicCryptoFrameParams(&frame); });
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_CRYPTO_FRAME_RECEIVED, [&] {
+    return NetLogQuicCryptoFrameParams(&frame, /*has_buffer = */ true);
+  });
 }
 
 void QuicConnectionLogger::OnStopSendingFrame(
@@ -662,6 +696,23 @@ void QuicConnectionLogger::OnStopSendingFrame(
     return;
   net_log_.AddEvent(NetLogEventType::QUIC_SESSION_STOP_SENDING_FRAME_RECEIVED,
                     [&] { return NetLogQuicStopSendingFrameParams(&frame); });
+}
+
+void QuicConnectionLogger::OnStreamsBlockedFrame(
+    const quic::QuicStreamsBlockedFrame& frame) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(
+      NetLogEventType::QUIC_SESSION_STREAMS_BLOCKED_FRAME_RECEIVED,
+      [&] { return NetLogQuicStreamsBlockedFrameParams(frame); });
+}
+
+void QuicConnectionLogger::OnMaxStreamsFrame(
+    const quic::QuicMaxStreamsFrame& frame) {
+  if (!net_log_.IsCapturing())
+    return;
+  net_log_.AddEvent(NetLogEventType::QUIC_SESSION_MAX_STREAMS_FRAME_RECEIVED,
+                    [&] { return NetLogQuicMaxStreamsFrameParams(frame); });
 }
 
 void QuicConnectionLogger::OnIncomingAck(

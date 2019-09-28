@@ -10,15 +10,34 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/strings/stringize_macros.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "remoting/client/notification/json_fetcher.h"
+#include "remoting/client/notification/gstatic_json_fetcher.h"
 #include "remoting/client/notification/notification_message.h"
 #include "remoting/client/notification/version_range.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace remoting {
 
 namespace {
+
+#if defined(OS_IOS)
+constexpr char kCurrentPlatform[] = "IOS";
+#elif defined(OS_ANDROID)
+constexpr char kCurrentPlatform[] = "ANDROID";
+#else
+constexpr char kCurrentPlatform[] = "UNKNOWN";
+#endif
+
+constexpr char kCurrentVersion[] = STRINGIZE(VERSION);
+
+#if defined(NDEBUG)
+constexpr bool kShouldIgnoreDevMessages = true;
+#else
+constexpr bool kShouldIgnoreDevMessages = false;
+#endif
 
 constexpr char kDefaultLocale[] = "en-US";
 constexpr char kNotificationRootPath[] = "notification/";
@@ -80,6 +99,11 @@ bool FindKeyAndGet(const base::Value& dict,
 bool FindKeyAndGet(const base::Value& dict, const std::string& key, int* out) {
   return FindKeyAndGet(dict, key, out, &base::Value::is_int,
                        &base::Value::GetInt, "int");
+}
+
+bool FindKeyAndGet(const base::Value& dict, const std::string& key, bool* out) {
+  return FindKeyAndGet(dict, key, out, &base::Value::is_bool,
+                       &base::Value::GetBool, "bool");
 }
 
 bool ShouldShowNotificationForUser(const std::string& user_email,
@@ -160,16 +184,28 @@ class MessageAndLinkTextResults
 
 }  // namespace
 
+NotificationClient::NotificationClient()
+    : NotificationClient(std::make_unique<GstaticJsonFetcher>(),
+                         kCurrentPlatform,
+                         kCurrentVersion,
+                         l10n_util::GetApplicationLocale(""),
+                         kShouldIgnoreDevMessages) {}
+
 NotificationClient::~NotificationClient() = default;
 
 NotificationClient::NotificationClient(std::unique_ptr<JsonFetcher> fetcher,
                                        const std::string& current_platform,
                                        const std::string& current_version,
-                                       const std::string& locale)
+                                       const std::string& locale,
+                                       bool should_ignore_dev_messages)
     : fetcher_(std::move(fetcher)),
       current_platform_(current_platform),
       current_version_(current_version),
-      locale_(locale) {}
+      locale_(locale),
+      should_ignore_dev_messages_(should_ignore_dev_messages) {
+  VLOG(1) << "Platform: " << current_platform_
+          << ", version: " << current_version_ << ", locale: " << locale_;
+}
 
 void NotificationClient::GetNotification(const std::string& user_email,
                                          NotificationCallback callback) {
@@ -219,6 +255,7 @@ base::Optional<NotificationMessage> NotificationClient::ParseAndMatchRule(
   std::string appearance_string;
   std::string target_platform;
   std::string version_spec_string;
+  std::string message_id;
   std::string message_text_filename;
   std::string link_text_filename;
   std::string link_url;
@@ -226,11 +263,19 @@ base::Optional<NotificationMessage> NotificationClient::ParseAndMatchRule(
   if (!FindKeyAndGet(rule, "appearance", &appearance_string) ||
       !FindKeyAndGet(rule, "target_platform", &target_platform) ||
       !FindKeyAndGet(rule, "version", &version_spec_string) ||
+      !FindKeyAndGet(rule, "message_id", &message_id) ||
       !FindKeyAndGet(rule, "message_text", &message_text_filename) ||
       !FindKeyAndGet(rule, "link_text", &link_text_filename) ||
       !FindKeyAndGet(rule, "link_url", &link_url) ||
       !FindKeyAndGet(rule, "percent", &percent)) {
     return base::nullopt;
+  }
+
+  if (should_ignore_dev_messages_) {
+    bool is_dev_mode;
+    if (FindKeyAndGet(rule, "dev_mode", &is_dev_mode) && is_dev_mode) {
+      return base::nullopt;
+    }
   }
 
   if (target_platform != current_platform_) {
@@ -265,6 +310,7 @@ base::Optional<NotificationMessage> NotificationClient::ParseAndMatchRule(
     LOG(ERROR) << "Unknown appearance: " << appearance_string;
     return base::nullopt;
   }
+  message->message_id = message_id;
   message->link_url = link_url;
   *out_message_text_filename = message_text_filename;
   *out_link_text_filename = link_text_filename;

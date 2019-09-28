@@ -15,10 +15,13 @@ source_set("notification") {
     "version_range.h",
   ]
 
+  configs += [ "//remoting/build/config:version" ]
+
   deps = [
     "//base",
     "//net",
     "//remoting/base",
+    "//ui/base",
   ]
 }
 

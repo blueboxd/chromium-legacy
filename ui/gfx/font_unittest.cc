@@ -161,5 +161,20 @@ TEST_F(FontTest, DeriveKeepsOriginalSizeIfHeightOk) {
 }
 #endif  // defined(OS_WIN)
 
+TEST_F(FontTest, WeightConversion) {
+  struct WeightMatchExpectation {
+    int weight;
+    Font::Weight enum_value;
+  } expectations[] = {
+      {-10, Font::Weight::INVALID}, {-1, Font::Weight::INVALID},
+      {0, Font::Weight::THIN},      {1, Font::Weight::THIN},
+      {100, Font::Weight::THIN},    {350, Font::Weight::NORMAL},
+      {400, Font::Weight::NORMAL},  {899, Font::Weight::BLACK},
+      {900, Font::Weight::BLACK},   {901, Font::Weight::INVALID}};
+  for (const auto& expectation : expectations) {
+    EXPECT_EQ(FontWeightFromInt(expectation.weight), expectation.enum_value);
+  }
+}
+
 }  // namespace
 }  // namespace gfx

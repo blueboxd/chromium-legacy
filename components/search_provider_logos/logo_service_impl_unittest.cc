@@ -461,18 +461,18 @@ void LogoServiceImplTest::SetServerResponseWhenFingerprint(
   GURL url_with_fp = AppendFingerprintParamToDoodleURL(
       AppendPreliminaryParamsToDoodleURL(false, DoodleURL()), fingerprint);
 
-  network::ResourceResponseHead head;
+  auto head = network::mojom::URLResponseHead::New();
   std::string headers(base::StringPrintf(
       "HTTP/1.1 %d %s\nContent-type: text/html\n\n",
       static_cast<int>(response_code), GetHttpReasonPhrase(response_code)));
-  head.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+  head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
       net::HttpUtil::AssembleRawHeaders(headers));
-  head.mime_type = "text/html";
+  head->mime_type = "text/html";
   network::URLLoaderCompletionStatus status;
   status.error_code = error_code;
   status.decoded_body_length = response_when_fingerprint.size();
 
-  test_url_loader_factory_.AddResponse(url_with_fp, head,
+  test_url_loader_factory_.AddResponse(url_with_fp, std::move(head),
                                        response_when_fingerprint, status);
 }
 

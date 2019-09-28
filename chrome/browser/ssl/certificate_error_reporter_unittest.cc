@@ -125,7 +125,7 @@ TEST_F(ErrorReporterTest, ErroredRequestCallsCallback) {
   const GURL report_uri("http://foo.com/bar");
 
   test_url_loader_factory_.AddResponse(
-      report_uri, network::ResourceResponseHead(), std::string(),
+      report_uri, network::mojom::URLResponseHead::New(), std::string(),
       network::URLLoaderCompletionStatus(net::ERR_CONNECTION_FAILED));
 
   CertificateErrorReporter reporter(test_shared_loader_factory_, report_uri);

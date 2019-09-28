@@ -33,6 +33,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // PlatformWindowDelegateBase:
   void OnClosed() override;
 
+  // DesktopWindowTreeHostPlatform:
+  void Init(const Widget::InitParams& params) override;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(DesktopWindowTreeHostLinuxTest, HitTest);
 
@@ -45,6 +48,9 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
       const Widget::InitParams& params,
       ui::PlatformWindowInitProperties* properties) override;
 
+  // Called back by compositor_observer_ if the latter is set.
+  virtual void OnCompleteSwapWithNewSize(const gfx::Size& size);
+
   void AddNonClientEventFilter();
   void RemoveNonClientEventFilter();
 
@@ -55,6 +61,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   // initialized. This value will be passed down to PlatformWindow during
   // initialization of the host.
   base::Optional<int> pending_x_visual_id_;
+
+  std::unique_ptr<CompositorObserver> compositor_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DesktopWindowTreeHostLinux);
 };

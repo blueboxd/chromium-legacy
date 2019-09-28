@@ -11,6 +11,8 @@ if (!is_ios) {
       "file_stream.h",
       "glyph_usage.cc",
       "glyph_usage.h",
+      "serial_utils.cc",
+      "serial_utils.h",
       "subset_font.cc",
       "subset_font.h",
     ]
@@ -28,6 +30,7 @@ if (!is_ios) {
     sources = [
       "file_stream_unittest.cc",
       "glyph_usage_unittest.cc",
+      "serial_utils_unittest.cc",
       "subset_font_unittest.cc",
     ]
 

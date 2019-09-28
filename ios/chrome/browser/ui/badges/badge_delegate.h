@@ -5,10 +5,13 @@
 #ifndef IOS_CHROME_BROWSER_UI_BADGES_BADGE_DELEGATE_H_
 #define IOS_CHROME_BROWSER_UI_BADGES_BADGE_DELEGATE_H_
 
-// Protocol to communicate Badge actions to the coordinator.
+// Protocol to communicate Badge actions to the mediator.
 @protocol BadgeDelegate
-// Shows the badge overflow menu.
-- (void)showOverflowMenu;
+// Action when a Passwords badge is tapped.
+- (void)passwordsBadgeButtonTapped:(id)sender;
+
+// Action when the overflow badge is tapped.
+- (void)overflowBadgeButtonTapped:(id)sender;
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_BADGES_BADGE_DELEGATE_H_

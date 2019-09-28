@@ -350,6 +350,18 @@ void WebFrameWidgetImpl::RecordEndOfFrameMetrics(
       .RecordEndOfFrameMetrics(frame_begin_time, base::TimeTicks::Now());
 }
 
+std::unique_ptr<cc::BeginMainFrameMetrics>
+WebFrameWidgetImpl::GetBeginMainFrameMetrics() {
+  if (!LocalRootImpl())
+    return nullptr;
+
+  return LocalRootImpl()
+      ->GetFrame()
+      ->View()
+      ->EnsureUkmAggregator()
+      .GetBeginMainFrameMetrics();
+}
+
 void WebFrameWidgetImpl::UpdateLifecycle(LifecycleUpdate requested_update,
                                          LifecycleUpdateReason reason) {
   TRACE_EVENT0("blink", "WebFrameWidgetImpl::updateAllLifecyclePhases");

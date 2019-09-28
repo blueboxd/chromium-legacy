@@ -1163,6 +1163,9 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kPasswordLeakDetectionEnabled,
     password_manager::prefs::kPasswordLeakDetectionEnabled,
     base::Value::Type::BOOLEAN },
+  { key::kTotalMemoryLimitMb,
+    prefs::kTotalMemoryLimitMb,
+    base::Value::Type::INTEGER }
 };
 // clang-format on
 

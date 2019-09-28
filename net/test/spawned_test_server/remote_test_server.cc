@@ -150,10 +150,9 @@ bool RemoteTestServer::BlockUntilStarted() {
   }
 
   if (ocsp_proxy_) {
-    const base::Value* ocsp_port_value = server_data().FindKey("ocsp_port");
-    if (ocsp_port_value && ocsp_port_value->is_int()) {
-      ocsp_proxy_->Start(
-          IPEndPoint(config_.address(), ocsp_port_value->GetInt()));
+    base::Optional<int> ocsp_port_value = server_data().FindIntKey("ocsp_port");
+    if (ocsp_port_value) {
+      ocsp_proxy_->Start(IPEndPoint(config_.address(), *ocsp_port_value));
     } else {
       LOG(WARNING) << "testserver.py didn't return ocsp_port.";
     }

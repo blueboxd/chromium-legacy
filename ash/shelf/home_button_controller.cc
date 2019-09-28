@@ -20,6 +20,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/timer/timer.h"
 #include "chromeos/constants/chromeos_features.h"
 #include "components/account_id/account_id.h"
 #include "ui/display/screen.h"
@@ -28,6 +29,8 @@
 
 namespace ash {
 namespace {
+
+constexpr int kVoiceInteractionAnimationDelayMs = 200;
 
 // Returns true if the button should appear activatable.
 bool CanActivate() {
@@ -46,11 +49,11 @@ HomeButtonController::HomeButtonController(HomeButton* button)
   shell->tablet_mode_controller()->AddObserver(this);
   AssistantState::Get()->AddObserver(this);
 
-  // Initialize the Assistant overlay and sync the flags if active user session
-  // has already started. This could happen when an external monitor is plugged
-  // in.
+  // Initialize voice interaction overlay and sync the flags if active user
+  // session has already started. This could happen when an external monitor
+  // is plugged in.
   if (shell->session_controller()->IsActiveUserSessionStarted())
-    InitializeAssistantOverlay();
+    InitializeVoiceInteractionOverlay();
 }
 
 HomeButtonController::~HomeButtonController() {
@@ -71,8 +74,9 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
   switch (event->type()) {
     case ui::ET_GESTURE_TAP:
     case ui::ET_GESTURE_TAP_CANCEL:
-      if (IsAssistantAvailable()) {
+      if (IsVoiceInteractionAvailable()) {
         assistant_overlay_->EndAnimation();
+        assistant_animation_delay_timer_->Stop();
       }
 
       if (CanActivate())
@@ -81,13 +85,23 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
       // After animating the ripple, let the button handle the event.
       return false;
     case ui::ET_GESTURE_TAP_DOWN:
+      if (IsVoiceInteractionAvailable()) {
+        assistant_animation_delay_timer_->Start(
+            FROM_HERE,
+            base::TimeDelta::FromMilliseconds(
+                kVoiceInteractionAnimationDelayMs),
+            base::BindOnce(
+                &HomeButtonController::StartVoiceInteractionAnimation,
+                base::Unretained(this)));
+      }
+
       if (CanActivate())
         button_->AnimateInkDrop(views::InkDropState::ACTION_PENDING, event);
 
       return false;
     case ui::ET_GESTURE_LONG_PRESS:
-      // Only consume the long press event if the Assistant is available.
-      if (!IsAssistantAvailable())
+      // Only consume the long press event if voice interaction is available.
+      if (!IsVoiceInteractionAvailable())
         return false;
 
       base::RecordAction(base::UserMetricsAction(
@@ -100,8 +114,8 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
           AssistantEntryPoint::kLongPressLauncher);
       return true;
     case ui::ET_GESTURE_LONG_TAP:
-      // Only consume the long tap event if the Assistant is available.
-      if (!IsAssistantAvailable())
+      // Only consume the long tap event if voice interaction is available.
+      if (!IsVoiceInteractionAvailable())
         return false;
 
       // This event happens after the user long presses and lifts the finger.
@@ -116,7 +130,7 @@ bool HomeButtonController::MaybeHandleGestureEvent(ui::GestureEvent* event) {
   }
 }
 
-bool HomeButtonController::IsAssistantAvailable() {
+bool HomeButtonController::IsVoiceInteractionAvailable() {
   AssistantStateBase* state = AssistantState::Get();
   bool settings_enabled = state->settings_enabled().value_or(false);
   bool feature_allowed =
@@ -125,12 +139,11 @@ bool HomeButtonController::IsAssistantAvailable() {
   return assistant_overlay_ && feature_allowed && settings_enabled;
 }
 
-bool HomeButtonController::IsAssistantVisible() {
-  return Shell::Get()
-             ->assistant_controller()
-             ->ui_controller()
-             ->model()
-             ->visibility() == AssistantVisibility::kVisible;
+bool HomeButtonController::IsVoiceInteractionRunning() {
+  // TODO(b/140823590): Update the method name/description and use Assistant
+  // visibility state instead.
+  return AssistantState::Get()->assistant_state() ==
+         mojom::AssistantState::VISIBLE;
 }
 
 void HomeButtonController::OnAppListVisibilityChanged(bool shown,
@@ -145,12 +158,12 @@ void HomeButtonController::OnAppListVisibilityChanged(bool shown,
 
 void HomeButtonController::OnActiveUserSessionChanged(
     const AccountId& account_id) {
-  button_->OnAssistantAvailabilityChanged();
-  // Initialize the Assistant overlay when primary user session becomes
+  button_->OnVoiceInteractionAvailabilityChanged();
+  // Initialize voice interaction overlay when primary user session becomes
   // active.
   if (Shell::Get()->session_controller()->IsUserPrimary() &&
       !assistant_overlay_) {
-    InitializeAssistantOverlay();
+    InitializeVoiceInteractionOverlay();
   }
 }
 
@@ -160,14 +173,30 @@ void HomeButtonController::OnTabletModeStarted() {
 
 void HomeButtonController::OnAssistantStatusChanged(
     mojom::AssistantState state) {
-  button_->OnAssistantAvailabilityChanged();
+  button_->OnVoiceInteractionAvailabilityChanged();
+
+  if (!assistant_overlay_)
+    return;
+
+  switch (state) {
+    case mojom::AssistantState::READY:
+      UMA_HISTOGRAM_TIMES(
+          "VoiceInteraction.OpenDuration",
+          base::TimeTicks::Now() - voice_interaction_start_timestamp_);
+      break;
+    case mojom::AssistantState::NOT_READY:
+      break;
+    case mojom::AssistantState::VISIBLE:
+      voice_interaction_start_timestamp_ = base::TimeTicks::Now();
+      break;
+  }
 }
 
 void HomeButtonController::OnAssistantSettingsEnabled(bool enabled) {
-  button_->OnAssistantAvailabilityChanged();
+  button_->OnVoiceInteractionAvailabilityChanged();
 }
 
-void HomeButtonController::StartAssistantAnimation() {
+void HomeButtonController::StartVoiceInteractionAnimation() {
   assistant_overlay_->StartAnimation(false);
 }
 
@@ -188,10 +217,11 @@ void HomeButtonController::OnAppListDismissed() {
       ->UpdateShelfVisibility();
 }
 
-void HomeButtonController::InitializeAssistantOverlay() {
+void HomeButtonController::InitializeVoiceInteractionOverlay() {
   assistant_overlay_ = new AssistantOverlay(button_);
   button_->AddChildView(assistant_overlay_);
   assistant_overlay_->SetVisible(false);
+  assistant_animation_delay_timer_ = std::make_unique<base::OneShotTimer>();
 }
 
 }  // namespace ash

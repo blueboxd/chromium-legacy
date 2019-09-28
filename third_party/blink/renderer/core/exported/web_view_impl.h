@@ -69,6 +69,7 @@
 
 namespace cc {
 class Layer;
+struct BeginMainFrameMetrics;
 class ScopedDeferMainFrameUpdate;
 }
 
@@ -455,6 +456,7 @@ class CORE_EXPORT WebViewImpl final : public WebView,
   void EndCommitCompositorFrame();
   void RecordStartOfFrameMetrics();
   void RecordEndOfFrameMetrics(base::TimeTicks frame_begin_time);
+  std::unique_ptr<cc::BeginMainFrameMetrics> GetBeginMainFrameMetrics();
   void UpdateLifecycle(WebWidget::LifecycleUpdate requested_update,
                        WebWidget::LifecycleUpdateReason reason);
   void ThemeChanged();

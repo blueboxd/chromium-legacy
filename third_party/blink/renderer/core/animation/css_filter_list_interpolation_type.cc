@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "third_party/blink/renderer/core/animation/filter_interpolation_functions.h"
+#include "third_party/blink/renderer/core/animation/interpolable_filter.h"
 #include "third_party/blink/renderer/core/animation/list_interpolation_functions.h"
 #include "third_party/blink/renderer/core/css/css_identifier_value.h"
 #include "third_party/blink/renderer/core/css/css_property_names.h"
@@ -52,28 +52,32 @@ void SetFilterList(const CSSProperty& property,
 class UnderlyingFilterListChecker
     : public CSSInterpolationType::CSSConversionChecker {
  public:
-  UnderlyingFilterListChecker(
-      scoped_refptr<const NonInterpolableList> non_interpolable_list)
-      : non_interpolable_list_(std::move(non_interpolable_list)) {}
+  UnderlyingFilterListChecker(const InterpolableList* interpolable_list) {
+    wtf_size_t length = interpolable_list->length();
+    types_.ReserveInitialCapacity(length);
+    for (wtf_size_t i = 0; i < length; i++) {
+      types_.push_back(
+          To<InterpolableFilter>(interpolable_list->Get(i))->GetType());
+    }
+  }
 
   bool IsValid(const StyleResolverState&,
                const InterpolationValue& underlying) const final {
-    const NonInterpolableList& underlying_non_interpolable_list =
-        ToNonInterpolableList(*underlying.non_interpolable_value);
-    if (non_interpolable_list_->length() !=
-        underlying_non_interpolable_list.length())
+    const InterpolableList& underlying_list =
+        ToInterpolableList(*underlying.interpolable_value);
+    if (underlying_list.length() != types_.size())
       return false;
-    for (wtf_size_t i = 0; i < non_interpolable_list_->length(); i++) {
-      if (!filter_interpolation_functions::FiltersAreCompatible(
-              *non_interpolable_list_->Get(i),
-              *underlying_non_interpolable_list.Get(i)))
+    for (wtf_size_t i = 0; i < types_.size(); i++) {
+      FilterOperation::OperationType other_type =
+          To<InterpolableFilter>(underlying_list.Get(i))->GetType();
+      if (types_[i] != other_type)
         return false;
     }
     return true;
   }
 
  private:
-  scoped_refptr<const NonInterpolableList> non_interpolable_list_;
+  Vector<FilterOperation::OperationType> types_;
 };
 
 class InheritedFilterListChecker
@@ -101,21 +105,15 @@ InterpolationValue ConvertFilterList(const FilterOperations& filter_operations,
                                      double zoom) {
   wtf_size_t length = filter_operations.size();
   auto interpolable_list = std::make_unique<InterpolableList>(length);
-  Vector<scoped_refptr<const NonInterpolableValue>> non_interpolable_values(
-      length);
   for (wtf_size_t i = 0; i < length; i++) {
-    InterpolationValue filter_result =
-        filter_interpolation_functions::MaybeConvertFilter(
-            *filter_operations.Operations()[i], zoom);
-    if (!filter_result)
+    std::unique_ptr<InterpolableFilter> result =
+        InterpolableFilter::MaybeCreate(*filter_operations.Operations()[i],
+                                        zoom);
+    if (!result)
       return nullptr;
-    interpolable_list->Set(i, std::move(filter_result.interpolable_value));
-    non_interpolable_values[i] =
-        std::move(filter_result.non_interpolable_value);
+    interpolable_list->Set(i, std::move(result));
   }
-  return InterpolationValue(
-      std::move(interpolable_list),
-      NonInterpolableList::Create(std::move(non_interpolable_values)));
+  return InterpolationValue(std::move(interpolable_list));
 }
 
 }  // namespace
@@ -123,13 +121,11 @@ InterpolationValue ConvertFilterList(const FilterOperations& filter_operations,
 InterpolationValue CSSFilterListInterpolationType::MaybeConvertNeutral(
     const InterpolationValue& underlying,
     ConversionCheckers& conversion_checkers) const {
-  // const_cast for taking refs.
-  NonInterpolableList& non_interpolable_list = const_cast<NonInterpolableList&>(
-      ToNonInterpolableList(*underlying.non_interpolable_value));
+  const InterpolableList* interpolable_list =
+      ToInterpolableList(underlying.interpolable_value.get());
   conversion_checkers.push_back(
-      std::make_unique<UnderlyingFilterListChecker>(&non_interpolable_list));
-  return InterpolationValue(underlying.interpolable_value->CloneAndZero(),
-                            &non_interpolable_list);
+      std::make_unique<UnderlyingFilterListChecker>(interpolable_list));
+  return InterpolationValue(underlying.interpolable_value->CloneAndZero());
 }
 
 InterpolationValue CSSFilterListInterpolationType::MaybeConvertInitial(
@@ -156,8 +152,7 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
     ConversionCheckers&) const {
   auto* identifier_value = DynamicTo<CSSIdentifierValue>(value);
   if (identifier_value && identifier_value->GetValueID() == CSSValueID::kNone)
-    return InterpolationValue(std::make_unique<InterpolableList>(0),
-                              NonInterpolableList::Create());
+    return InterpolationValue(std::make_unique<InterpolableList>(0));
 
   if (!value.IsBaseValueList())
     return nullptr;
@@ -165,19 +160,14 @@ InterpolationValue CSSFilterListInterpolationType::MaybeConvertValue(
   const auto& list = To<CSSValueList>(value);
   wtf_size_t length = list.length();
   auto interpolable_list = std::make_unique<InterpolableList>(length);
-  Vector<scoped_refptr<const NonInterpolableValue>> non_interpolable_values(
-      length);
   for (wtf_size_t i = 0; i < length; i++) {
-    InterpolationValue item_result =
-        filter_interpolation_functions::MaybeConvertCSSFilter(list.Item(i));
-    if (!item_result)
+    std::unique_ptr<InterpolableFilter> result =
+        InterpolableFilter::MaybeConvertCSSValue(list.Item(i));
+    if (!result)
       return nullptr;
-    interpolable_list->Set(i, std::move(item_result.interpolable_value));
-    non_interpolable_values[i] = std::move(item_result.non_interpolable_value);
+    interpolable_list->Set(i, std::move(result));
   }
-  return InterpolationValue(
-      std::move(interpolable_list),
-      NonInterpolableList::Create(std::move(non_interpolable_values)));
+  return InterpolationValue(std::move(interpolable_list));
 }
 
 InterpolationValue
@@ -190,38 +180,35 @@ CSSFilterListInterpolationType::MaybeConvertStandardPropertyUnderlyingValue(
 PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(
     InterpolationValue&& start,
     InterpolationValue&& end) const {
-  const NonInterpolableList& start_non_interpolable_list =
-      ToNonInterpolableList(*start.non_interpolable_value);
-  const NonInterpolableList& end_non_interpolable_list =
-      ToNonInterpolableList(*end.non_interpolable_value);
-  wtf_size_t start_length = start_non_interpolable_list.length();
-  wtf_size_t end_length = end_non_interpolable_list.length();
+  InterpolableList& start_interpolable_list =
+      ToInterpolableList(*start.interpolable_value);
+  InterpolableList& end_interpolable_list =
+      ToInterpolableList(*end.interpolable_value);
+  wtf_size_t start_length = start_interpolable_list.length();
+  wtf_size_t end_length = end_interpolable_list.length();
 
   for (wtf_size_t i = 0; i < start_length && i < end_length; i++) {
-    if (!filter_interpolation_functions::FiltersAreCompatible(
-            *start_non_interpolable_list.Get(i),
-            *end_non_interpolable_list.Get(i)))
+    if (To<InterpolableFilter>(start_interpolable_list.Get(i))->GetType() !=
+        To<InterpolableFilter>(end_interpolable_list.Get(i))->GetType())
       return nullptr;
   }
 
   if (start_length == end_length) {
     return PairwiseInterpolationValue(std::move(start.interpolable_value),
-                                      std::move(end.interpolable_value),
-                                      std::move(start.non_interpolable_value));
+                                      std::move(end.interpolable_value));
   }
 
   // Extend the shorter InterpolableList with neutral values that are compatible
   // with corresponding filters in the longer list.
   InterpolationValue& shorter = start_length < end_length ? start : end;
-  InterpolationValue& longer = start_length < end_length ? end : start;
-  wtf_size_t shorter_length =
-      ToNonInterpolableList(*shorter.non_interpolable_value).length();
-  wtf_size_t longer_length =
-      ToNonInterpolableList(*longer.non_interpolable_value).length();
-  InterpolableList& shorter_interpolable_list =
-      ToInterpolableList(*shorter.interpolable_value);
-  const NonInterpolableList& longer_non_interpolable_list =
-      ToNonInterpolableList(*longer.non_interpolable_value);
+  wtf_size_t shorter_length = std::min(start_length, end_length);
+  wtf_size_t longer_length = std::max(start_length, end_length);
+  InterpolableList& shorter_interpolable_list = start_length < end_length
+                                                    ? start_interpolable_list
+                                                    : end_interpolable_list;
+  const InterpolableList& longer_interpolable_list =
+      start_length < end_length ? end_interpolable_list
+                                : start_interpolable_list;
   auto extended_interpolable_list =
       std::make_unique<InterpolableList>(longer_length);
   for (wtf_size_t i = 0; i < longer_length; i++) {
@@ -230,14 +217,14 @@ PairwiseInterpolationValue CSSFilterListInterpolationType::MaybeMergeSingles(
           i, std::move(shorter_interpolable_list.GetMutable(i)));
     else
       extended_interpolable_list->Set(
-          i, filter_interpolation_functions::CreateNoneValue(
-                 *longer_non_interpolable_list.Get(i)));
+          i, InterpolableFilter::CreateInitialValue(
+                 To<InterpolableFilter>(longer_interpolable_list.Get(i))
+                     ->GetType()));
   }
   shorter.interpolable_value = std::move(extended_interpolable_list);
 
   return PairwiseInterpolationValue(std::move(start.interpolable_value),
-                                    std::move(end.interpolable_value),
-                                    std::move(longer.non_interpolable_value));
+                                    std::move(end.interpolable_value));
 }
 
 void CSSFilterListInterpolationType::Composite(
@@ -245,44 +232,40 @@ void CSSFilterListInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  const NonInterpolableList& underlying_non_interpolable_list =
-      ToNonInterpolableList(
-          *underlying_value_owner.Value().non_interpolable_value);
-  const NonInterpolableList& non_interpolable_list =
-      ToNonInterpolableList(*value.non_interpolable_value);
-  wtf_size_t underlying_length = underlying_non_interpolable_list.length();
-  wtf_size_t length = non_interpolable_list.length();
+  // TODO(crbug.com/1005828): The below behavior is not correct for addition of
+  // filter values. Additive composition is defined as list concatenation in the
+  // spec: https://drafts.fxtf.org/filter-effects-1/#addition
+  InterpolableList& underlying_list =
+      ToInterpolableList(*underlying_value_owner.Value().interpolable_value);
+  const InterpolableList& interpolable_list =
+      ToInterpolableList(*value.interpolable_value);
+  wtf_size_t underlying_length = underlying_list.length();
+  wtf_size_t length = interpolable_list.length();
 
   for (wtf_size_t i = 0; i < underlying_length && i < length; i++) {
-    if (!filter_interpolation_functions::FiltersAreCompatible(
-            *underlying_non_interpolable_list.Get(i),
-            *non_interpolable_list.Get(i))) {
+    if (To<InterpolableFilter>(interpolable_list.Get(i))->GetType() !=
+        To<InterpolableFilter>(underlying_list.Get(i))->GetType()) {
       underlying_value_owner.Set(*this, value);
       return;
     }
   }
 
-  InterpolableList& underlying_interpolable_list = ToInterpolableList(
-      *underlying_value_owner.MutableValue().interpolable_value);
-  const InterpolableList& interpolable_list =
-      ToInterpolableList(*value.interpolable_value);
-  DCHECK_EQ(underlying_length, underlying_interpolable_list.length());
-  DCHECK_EQ(length, interpolable_list.length());
-
-  for (wtf_size_t i = 0; i < length && i < underlying_length; i++)
-    underlying_interpolable_list.GetMutable(i)->ScaleAndAdd(
-        underlying_fraction, *interpolable_list.Get(i));
+  for (wtf_size_t i = 0; i < length && i < underlying_length; i++) {
+    underlying_list.GetMutable(i)->ScaleAndAdd(underlying_fraction,
+                                               *interpolable_list.Get(i));
+  }
 
   if (length <= underlying_length)
     return;
 
   auto extended_interpolable_list = std::make_unique<InterpolableList>(length);
   for (wtf_size_t i = 0; i < length; i++) {
-    if (i < underlying_length)
-      extended_interpolable_list->Set(
-          i, std::move(underlying_interpolable_list.GetMutable(i)));
-    else
+    if (i < underlying_length) {
+      extended_interpolable_list->Set(i,
+                                      std::move(underlying_list.GetMutable(i)));
+    } else {
       extended_interpolable_list->Set(i, interpolable_list.Get(i)->Clone());
+    }
   }
   underlying_value_owner.MutableValue().interpolable_value =
       std::move(extended_interpolable_list);
@@ -296,17 +279,14 @@ void CSSFilterListInterpolationType::ApplyStandardPropertyValue(
     StyleResolverState& state) const {
   const InterpolableList& interpolable_list =
       ToInterpolableList(interpolable_value);
-  const NonInterpolableList& non_interpolable_list =
-      ToNonInterpolableList(*non_interpolable_value);
   wtf_size_t length = interpolable_list.length();
-  DCHECK_EQ(length, non_interpolable_list.length());
 
   FilterOperations filter_operations;
   filter_operations.Operations().ReserveCapacity(length);
   for (wtf_size_t i = 0; i < length; i++) {
     filter_operations.Operations().push_back(
-        filter_interpolation_functions::CreateFilter(
-            *interpolable_list.Get(i), *non_interpolable_list.Get(i), state));
+        To<InterpolableFilter>(interpolable_list.Get(i))
+            ->CreateFilterOperation(state));
   }
   SetFilterList(CssProperty(), *state.Style(), std::move(filter_operations));
 }

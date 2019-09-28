@@ -150,11 +150,11 @@ i like that.")
 * **If the report doesn't have enough information**, ask the reporter for more
   information, add the **Needs-Feedback** label and wait for 24 hours for a
   response.
-	* The [security bug template](https://bugs.chromium.org/p/chromium/issues/entry?template=Security+Bug)
-    asks reporters to attach files directly, not in zip or other archives, and
-    attach the source of any online demos they've created. If they've not done
-    so, please make sure all files needed to reproduce the issue are downloaded
-    and attached.
+* The [security bug template](https://bugs.chromium.org/p/chromium/issues/entry?template=Security+Bug)
+  asks reporters to **attach files directly**, not in zip or other archives, and
+  not hosted at an external resource (e.g. Google Cloud Storage). If the report
+  mentions an online demo hosted somewhere, make sure the reporters attach the
+  the source code for the demo as well.
 * **If the bug is a security bug, but is only applicable to Chrome OS**:
 	* The Chrome OS Security team now has their own sheriffing rotation. To get
     bugs into their triage queue, just set OS to the single value of "Chrome".

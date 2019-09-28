@@ -18,22 +18,17 @@
       "backgroundColor": "#FFFFFF"
     },
     {
-      "name": "LayoutBlockFlow (positioned) DIV",
+      "name": "LayoutNGBlockFlow (positioned) DIV",
       "position": [8, 8],
       "contentsOpaque": true,
       "drawsContent": false
     },
     {
-      "name": "Child Transform Layer",
-      "drawsContent": false,
-      "transform": 2
-    },
-    {
-      "name": "LayoutBlockFlow (positioned) DIV",
+      "name": "LayoutNGBlockFlow (positioned) DIV",
       "bounds": [200, 200],
       "contentsOpaque": true,
       "backgroundColor": "#00008B",
-      "transform": 3
+      "transform": 2
     }
   ],
   "transforms": [
@@ -52,21 +47,9 @@
       "transform": [
         [1, 0, 0, 0],
         [0, 1, 0, 0],
-        [0, 0, 1, -0.001],
-        [0, 0, 0, 1]
-      ],
-      "origin": [0, 0]
-    },
-    {
-      "id": 3,
-      "parent": 2,
-      "transform": [
-        [1, 0, 0, 0],
-        [0, 1, 0, 0],
         [0, 0, 1, 0],
         [0, 74, 200, 1]
-      ],
-      "flattenInheritedTransform": false
+      ]
     }
   ]
 }

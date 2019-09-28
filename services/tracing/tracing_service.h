@@ -17,7 +17,7 @@
 #include "services/service_manager/public/cpp/service_binding.h"
 #include "services/service_manager/public/mojom/service.mojom.h"
 #include "services/tracing/agent_registry.h"
-#include "services/tracing/coordinator.h"
+#include "services/tracing/perfetto/perfetto_tracing_coordinator.h"
 
 namespace tracing {
 
@@ -45,7 +45,7 @@ class TracingService : public service_manager::Service {
       const service_manager::BindSourceInfo&>
       registry_;
   std::unique_ptr<tracing::AgentRegistry> tracing_agent_registry_;
-  std::unique_ptr<Coordinator> tracing_coordinator_;
+  std::unique_ptr<PerfettoTracingCoordinator> tracing_coordinator_;
 
   std::unique_ptr<ServiceListener> service_listener_;
 

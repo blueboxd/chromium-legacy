@@ -29,7 +29,6 @@ class SequencedTaskRunner;
 
 namespace policy {
 
-class ExternalPolicyDataFetcherBackend;
 class ResourceCache;
 class SchemaMap;
 
@@ -153,12 +152,6 @@ class POLICY_EXPORT ComponentCloudPolicyService
   SchemaRegistry* schema_registry_;
   CloudPolicyCore* core_;
   scoped_refptr<base::SequencedTaskRunner> backend_task_runner_;
-
-  // The |external_policy_data_fetcher_backend_| handles network I/O for the
-  // |backend_| because the system SharedURLLoaderFactory cannot be referenced
-  // from background threads. It is owned by the thread |this| runs on.
-  std::unique_ptr<ExternalPolicyDataFetcherBackend>
-      external_policy_data_fetcher_backend_;
 
   // The |backend_| handles all download scheduling, validation and caching of
   // policies. It is instantiated on the thread |this| runs on but after that,

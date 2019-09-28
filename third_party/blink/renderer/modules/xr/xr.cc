@@ -230,15 +230,28 @@ const char* XR::CheckInlineSessionRequestAllowed(
 
 XR::PendingSupportsSessionQuery::PendingSupportsSessionQuery(
     ScriptPromiseResolver* resolver,
-    XRSession::SessionMode session_mode)
-    : resolver_(resolver), mode_(session_mode) {}
+    XRSession::SessionMode session_mode,
+    bool throw_on_unsupported)
+    : resolver_(resolver),
+      mode_(session_mode),
+      throw_on_unsupported_(throw_on_unsupported) {}
 
 void XR::PendingSupportsSessionQuery::Trace(blink::Visitor* visitor) {
   visitor->Trace(resolver_);
 }
 
-void XR::PendingSupportsSessionQuery::Resolve() {
-  resolver_->Resolve();
+void XR::PendingSupportsSessionQuery::Resolve(bool supported,
+                                              ExceptionState* exception_state) {
+  if (throw_on_unsupported_) {
+    if (supported) {
+      resolver_->Resolve();
+    } else {
+      RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
+                             kSessionNotSupported, exception_state);
+    }
+  } else {
+    resolver_->Resolve(supported);
+  }
 }
 
 void XR::PendingSupportsSessionQuery::RejectWithDOMException(
@@ -485,6 +498,19 @@ void XR::ExitPresent() {
 ScriptPromise XR::supportsSession(ScriptState* script_state,
                                   const String& mode,
                                   ExceptionState& exception_state) {
+  return InternalIsSessionSupported(script_state, mode, exception_state, true);
+}
+
+ScriptPromise XR::isSessionSupported(ScriptState* script_state,
+                                     const String& mode,
+                                     ExceptionState& exception_state) {
+  return InternalIsSessionSupported(script_state, mode, exception_state, false);
+}
+
+ScriptPromise XR::InternalIsSessionSupported(ScriptState* script_state,
+                                             const String& mode,
+                                             ExceptionState& exception_state,
+                                             bool throw_on_unsupported) {
   LocalFrame* frame = GetFrame();
   Document* doc = frame ? frame->GetDocument() : nullptr;
   if (!doc) {
@@ -499,7 +525,8 @@ ScriptPromise XR::supportsSession(ScriptState* script_state,
 
   XRSession::SessionMode session_mode = stringToSessionMode(mode);
   PendingSupportsSessionQuery* query =
-      MakeGarbageCollected<PendingSupportsSessionQuery>(resolver, session_mode);
+      MakeGarbageCollected<PendingSupportsSessionQuery>(resolver, session_mode,
+                                                        throw_on_unsupported);
 
   if (session_mode == XRSession::kModeImmersiveAR &&
       !RuntimeEnabledFeatures::WebXRARModuleEnabled(doc)) {
@@ -519,13 +546,12 @@ ScriptPromise XR::supportsSession(ScriptState* script_state,
 
   if (session_mode == XRSession::kModeInline) {
     // `inline` sessions are always supported if not blocked by feature policy.
-    query->Resolve();
+    query->Resolve(true);
   } else {
     if (!service_) {
       // If we don't have a service at the time we reach this call it indicates
       // that there's no WebXR hardware. Reject as not supported.
-      query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
-                                    kSessionNotSupported, &exception_state);
+      query->Resolve(false, &exception_state);
       return promise;
     }
 
@@ -750,13 +776,7 @@ void XR::OnSupportsSessionReturned(PendingSupportsSessionQuery* query,
   // promise, so remove it from our outstanding list.
   DCHECK(outstanding_support_queries_.Contains(query));
   outstanding_support_queries_.erase(query);
-
-  if (supports_session) {
-    query->Resolve();
-  } else {
-    query->RejectWithDOMException(DOMExceptionCode::kNotSupportedError,
-                                  kSessionNotSupported, nullptr);
-  }
+  query->Resolve(supports_session);
 }
 
 void XR::OnRequestSessionReturned(

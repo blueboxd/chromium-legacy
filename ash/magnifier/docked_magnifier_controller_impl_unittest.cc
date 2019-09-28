@@ -20,7 +20,12 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/ash_test_helper.h"
+#include "ash/wm/desks/desks_bar_view.h"
+#include "ash/wm/desks/new_desk_button.h"
 #include "ash/wm/overview/overview_controller.h"
+#include "ash/wm/overview/overview_grid.h"
+#include "ash/wm/overview/overview_item.h"
+#include "ash/wm/overview/overview_test_util.h"
 #include "ash/wm/splitview/split_view_controller.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
@@ -362,6 +367,38 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasOverviewMode) {
   EXPECT_TRUE(WindowState::Get(window.get())->IsMaximized());
 }
 
+TEST_P(DockedMagnifierTest, OverviewTabbing) {
+  auto window = CreateTestWindow();
+  controller()->SetEnabled(true);
+
+  auto* overview_controller = Shell::Get()->overview_controller();
+  overview_controller->StartOverview();
+  EXPECT_TRUE(overview_controller->InOverviewSession());
+
+  auto* root_window = Shell::GetPrimaryRootWindow();
+  const auto* desk_bar_view = GetOverviewSession()
+                                  ->GetGridWithRootWindow(root_window)
+                                  ->desks_bar_view();
+
+  // Tab once. The viewport should be centered on the center of the new desk
+  // button.
+  SendKey(ui::VKEY_TAB);
+  TestMagnifierLayerTransform(
+      desk_bar_view->new_desk_button()->GetBoundsInScreen().CenterPoint(),
+      root_window);
+
+  // Tab one more time. The viewport should be centered on the beginning of the
+  // overview item's title.
+  SendKey(ui::VKEY_TAB);
+  OverviewItem* item = GetOverviewItemForWindow(window.get());
+  ASSERT_TRUE(item);
+  const auto label_bounds_in_screen =
+      item->caption_container_view()->title_label()->GetBoundsInScreen();
+  const gfx::Point expected_point_of_interest(
+      label_bounds_in_screen.x(), label_bounds_in_screen.CenterPoint().y());
+  TestMagnifierLayerTransform(expected_point_of_interest, root_window);
+}
+
 // Test that we exist split view and over view modes when a single window is
 // snapped and the other snap region is hosting overview mode.
 TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
@@ -374,7 +411,8 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   WindowState::Get(window.get())->Maximize();
 
   auto* split_view_controller = Shell::Get()->split_view_controller();
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kNoSnap);
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kNoSnap);
   EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
 
   // Simulate going into split view, by enabling overview mode, and snapping
@@ -383,7 +421,8 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   overview_controller->StartOverview();
   EXPECT_TRUE(overview_controller->InOverviewSession());
   split_view_controller->SnapWindow(window.get(), SplitViewController::LEFT);
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kLeftSnapped);
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kLeftSnapped);
   EXPECT_EQ(split_view_controller->left_window(), window.get());
   EXPECT_TRUE(overview_controller->InOverviewSession());
 
@@ -393,7 +432,8 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasSingleSplitView) {
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
   EXPECT_FALSE(overview_controller->InOverviewSession());
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kNoSnap);
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kNoSnap);
   EXPECT_EQ(split_view_controller->InSplitViewMode(), false);
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
@@ -425,7 +465,8 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   split_view_controller->SnapWindow(window1.get(), SplitViewController::LEFT);
   split_view_controller->SnapWindow(window2.get(), SplitViewController::RIGHT);
   EXPECT_EQ(split_view_controller->InSplitViewMode(), true);
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kBothSnapped);
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kBothSnapped);
 
   // Snapping both windows should exit overview mode.
   EXPECT_FALSE(overview_controller->InOverviewSession());
@@ -436,7 +477,8 @@ TEST_P(DockedMagnifierTest, DisplaysWorkAreasDoubleSplitView) {
   controller()->SetEnabled(true);
   EXPECT_TRUE(controller()->GetEnabled());
   EXPECT_EQ(split_view_controller->InSplitViewMode(), true);
-  EXPECT_EQ(split_view_controller->state(), SplitViewState::kBothSnapped);
+  EXPECT_EQ(split_view_controller->state(),
+            SplitViewController::State::kBothSnapped);
   const display::Display& display = display_manager()->GetDisplayAt(0);
   const int magnifier_height = GetMagnifierHeight(display.bounds().height());
   gfx::Rect work_area = display.bounds();

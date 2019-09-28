@@ -268,13 +268,12 @@ class UserCloudPolicyManagerChromeOSTest
       GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
 
       network::URLLoaderCompletionStatus ok_completion_status(net::OK);
-      network::ResourceResponseHead ok_response =
-          network::CreateResourceResponseHead(net::HTTP_OK);
+      auto ok_response = network::CreateURLResponseHead(net::HTTP_OK);
       // Issue the access token.
       EXPECT_TRUE(
           test_system_url_loader_factory_.SimulateResponseForPendingRequest(
-              gaia_urls->oauth2_token_url(), ok_completion_status, ok_response,
-              kOAuth2AccessTokenData));
+              gaia_urls->oauth2_token_url(), ok_completion_status,
+              std::move(ok_response), kOAuth2AccessTokenData));
     } else {
       // Since the refresh token is available, IdentityManager was used
       // to request the access token and not UserCloudPolicyTokenForwarder.
@@ -570,7 +569,7 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, BlockingFetchOAuthError) {
       test_system_url_loader_factory()->SimulateResponseForPendingRequest(
           GaiaUrls::GetInstance()->oauth2_token_url(),
           network::URLLoaderCompletionStatus(net::OK),
-          network::CreateResourceResponseHead(net::HTTP_BAD_REQUEST),
+          network::CreateURLResponseHead(net::HTTP_BAD_REQUEST),
           "Error=BadAuthentication"));
 
   // Server check failed, so profile should not be initialized.
@@ -919,12 +918,11 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, Reregistration) {
   // Simulate OAuth token fetch.
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   network::URLLoaderCompletionStatus ok_completion_status(net::OK);
-  network::ResourceResponseHead ok_response =
-      network::CreateResourceResponseHead(net::HTTP_OK);
+  auto ok_response = network::CreateURLResponseHead(net::HTTP_OK);
   EXPECT_TRUE(
       test_system_url_loader_factory()->SimulateResponseForPendingRequest(
-          gaia_urls->oauth2_token_url(), ok_completion_status, ok_response,
-          kOAuth2AccessTokenData));
+          gaia_urls->oauth2_token_url(), ok_completion_status,
+          std::move(ok_response), kOAuth2AccessTokenData));
 
   // Validate that re-registration sends the correct parameters.
   EXPECT_TRUE(register_request.register_request().reregister());
@@ -1009,12 +1007,11 @@ TEST_P(UserCloudPolicyManagerChromeOSTest, ReregistrationFails) {
   // Simulate OAuth token fetch.
   GaiaUrls* gaia_urls = GaiaUrls::GetInstance();
   network::URLLoaderCompletionStatus ok_completion_status(net::OK);
-  network::ResourceResponseHead ok_response =
-      network::CreateResourceResponseHead(net::HTTP_OK);
+  auto ok_response = network::CreateURLResponseHead(net::HTTP_OK);
   EXPECT_TRUE(
       test_system_url_loader_factory()->SimulateResponseForPendingRequest(
-          gaia_urls->oauth2_token_url(), ok_completion_status, ok_response,
-          kOAuth2AccessTokenData));
+          gaia_urls->oauth2_token_url(), ok_completion_status,
+          std::move(ok_response), kOAuth2AccessTokenData));
 
   // Validate re-registration state.
   ASSERT_TRUE(reregister_job);

@@ -116,6 +116,9 @@ class NET_EXPORT CertPathBuilder {
     // Returns true if there was a valid path.
     bool HasValidPath() const;
 
+    // Returns true if any of the attempted paths contain |error_id|.
+    bool AnyPathContainsError(CertErrorId error_id) const;
+
     // Returns the CertPathBuilderResultPath for the best valid path, or nullptr
     // if there was none.
     const CertPathBuilderResultPath* GetBestValidPath() const;

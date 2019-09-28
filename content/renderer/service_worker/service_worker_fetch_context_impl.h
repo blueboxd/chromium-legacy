@@ -50,7 +50,8 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
       mojo::PendingReceiver<blink::mojom::RendererPreferenceWatcher>
           preference_watcher_receiver,
       mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
-          pending_subresource_loader_updater);
+          pending_subresource_loader_updater,
+      int32_t service_worker_route_id);
 
   // blink::WebWorkerFetchContext implementation:
   void SetTerminateSyncLoadEvent(base::WaitableEvent*) override;
@@ -123,6 +124,8 @@ class CONTENT_EXPORT ServiceWorkerFetchContextImpl final
   base::WaitableEvent* terminate_sync_load_event_ = nullptr;
 
   blink::AcceptLanguagesWatcher* accept_languages_watcher_ = nullptr;
+
+  int32_t service_worker_route_id_;
 };
 
 }  // namespace content

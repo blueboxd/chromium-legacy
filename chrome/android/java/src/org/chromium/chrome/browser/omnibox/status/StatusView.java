@@ -32,8 +32,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.omnibox.SearchEngineLogoUtils;
 import org.chromium.chrome.browser.toolbar.ToolbarCommonPropertiesModel;
 import org.chromium.chrome.browser.ui.widget.CompositeTouchDelegate;
-import org.chromium.chrome.browser.util.AccessibilityUtil;
 import org.chromium.ui.UiUtils;
+import org.chromium.ui.widget.Toast;
 
 /**
  * StatusView is a location bar's view displaying status (icons and/or text).
@@ -252,7 +252,7 @@ public class StatusView extends LinearLayout {
             public boolean onLongClick(View view) {
                 if (mAccessibilityToast == 0) return false;
                 Context context = getContext();
-                return AccessibilityUtil.showAccessibilityToast(
+                return Toast.showAnchoredToast(
                         context, view, context.getResources().getString(mAccessibilityToast));
             }
         };

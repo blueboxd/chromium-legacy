@@ -205,6 +205,10 @@ SK_API void SkDebugf_FileLine(const char* file,
 #define SK_USE_LEGACY_DISTANCE_FIELDS
 #endif
 
+#ifndef SK_SUPPORT_LEGACY_COLORFILTER_NO_SHADER
+#define SK_SUPPORT_LEGACY_COLORFILTER_NO_SHADER
+#endif
+
 // For now, Chrome should only attempt to reduce opList splitting when recording
 // DDLs
 #ifndef SK_DISABLE_REDUCE_OPLIST_SPLITTING

@@ -16,8 +16,6 @@
 #include "build/build_config.h"
 #include "chromecast/base/task_runner_impl.h"
 #include "chromecast/common/mojom/multiroom.mojom.h"
-#include "chromecast/media/cma/backend/cma_backend.h"
-#include "chromecast/media/cma/base/decoder_buffer_adapter.h"
 #include "media/audio/audio_io.h"
 #include "media/base/audio_parameters.h"
 #include "media/base/audio_timestamp_helper.h"
@@ -27,13 +25,7 @@
 namespace chromecast {
 namespace media {
 
-enum AudioOutputState {
-  kClosed = 0,
-  kOpened = 1,
-  kStarted = 2,
-  kPendingClose = 3,
-};
-
+class CmaAudioOutputStream;
 class CastAudioManager;
 
 // Chromecast implementation of AudioOutputStream.
@@ -128,14 +120,18 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   void Flush() override;
 
  private:
-  class CmaWrapper;
+  enum class AudioOutputState {
+    kClosed,
+    kOpened,
+    kStarted,
+    kPendingClose,
+  };
+
   class MixerServiceWrapper;
 
   void FinishClose();
   void OnGetMultiroomInfo(const std::string& application_session_id,
                           chromecast::mojom::MultiroomInfoPtr multiroom_info);
-  void InitializeCmaBackend(const std::string& application_session_id,
-                            chromecast::mojom::MultiroomInfoPtr multiroom_info);
 
   double volume_;
   AudioOutputState audio_thread_state_;
@@ -149,7 +145,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   const std::string group_id_;
   const bool use_mixer_service_;
   mojo::Remote<chromecast::mojom::MultiroomManager> multiroom_manager_;
-  std::unique_ptr<CmaWrapper> cma_wrapper_;
+  std::unique_ptr<CmaAudioOutputStream> cma_wrapper_;
   std::unique_ptr<MixerServiceWrapper> mixer_service_wrapper_;
 
   // Hold bindings to Start and SetVolume if they were called before Open
@@ -159,6 +155,7 @@ class CastAudioOutputStream : public ::media::AudioOutputStream {
   base::OnceCallback<void()> pending_volume_;
 
   THREAD_CHECKER(audio_thread_checker_);
+  base::WeakPtr<CastAudioOutputStream> audio_weak_this_;
   base::WeakPtrFactory<CastAudioOutputStream> audio_weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CastAudioOutputStream);

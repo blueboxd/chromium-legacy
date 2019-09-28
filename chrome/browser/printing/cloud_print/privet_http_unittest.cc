@@ -323,7 +323,7 @@ class PrivetHTTPTest : public TestWithParam<const char*> {
                           net::HttpStatusCode http_status = net::HTTP_OK) {
     return test_url_loader_factory_.SimulateResponseForPendingRequest(
         request_url, network::URLLoaderCompletionStatus(net::OK),
-        network::CreateResourceResponseHead(http_status), content);
+        network::CreateURLResponseHead(http_status), content);
   }
 
   std::string GetUploadDataAsNormalizedJSON(const GURL& url) {

@@ -781,7 +781,6 @@ void ChromePasswordManagerClientAndroidTest::CreateManualFillingController(
   ManualFillingControllerImpl::CreateForWebContentsForTesting(
       web_contents, favicon_service_.get(), mock_pwd_controller_.AsWeakPtr(),
       mock_address_controller_.AsWeakPtr(), mock_cc_controller_.AsWeakPtr(),
-      GetClient()->GetOrCreateTouchToFillController()->AsWeakPtr(),
       std::make_unique<NiceMock<MockManualFillingView>>());
 }
 

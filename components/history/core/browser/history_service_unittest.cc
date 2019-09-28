@@ -556,7 +556,6 @@ TEST_F(HistoryServiceTest, MostVisitedURLs) {
   EXPECT_EQ(url2, most_visited_urls_[1].url);
   EXPECT_EQ(url0, most_visited_urls_[2].url);
   EXPECT_EQ(url3, most_visited_urls_[3].url);
-  EXPECT_EQ(2U, most_visited_urls_[3].redirects.size());
 }
 
 namespace {

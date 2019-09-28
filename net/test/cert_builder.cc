@@ -291,6 +291,36 @@ void CertBuilder::SetSubjectAltName(const std::string& dns_name) {
   SetExtension(SubjectAltNameOid(), FinishCBB(cbb.get()));
 }
 
+void CertBuilder::SetCertificatePolicies(
+    const std::vector<std::string>& policy_oids) {
+  // From RFC 5280:
+  //    certificatePolicies ::= SEQUENCE SIZE (1..MAX) OF PolicyInformation
+  //
+  //    PolicyInformation ::= SEQUENCE {
+  //         policyIdentifier   CertPolicyId,
+  //         policyQualifiers   SEQUENCE SIZE (1..MAX) OF
+  //                                 PolicyQualifierInfo OPTIONAL }
+  //
+  //    CertPolicyId ::= OBJECT IDENTIFIER
+  bssl::ScopedCBB cbb;
+  CBB certificate_policies;
+  ASSERT_TRUE(CBB_init(cbb.get(), 64));
+  ASSERT_TRUE(
+      CBB_add_asn1(cbb.get(), &certificate_policies, CBS_ASN1_SEQUENCE));
+  for (const auto& oid : policy_oids) {
+    CBB policy_information, policy_identifier;
+    ASSERT_TRUE(CBB_add_asn1(&certificate_policies, &policy_information,
+                             CBS_ASN1_SEQUENCE));
+    ASSERT_TRUE(
+        CBB_add_asn1(&policy_information, &policy_identifier, CBS_ASN1_OBJECT));
+    ASSERT_TRUE(
+        CBB_add_asn1_oid_from_text(&policy_identifier, oid.data(), oid.size()));
+    ASSERT_TRUE(CBB_flush(&certificate_policies));
+  }
+
+  SetExtension(CertificatePoliciesOid(), FinishCBB(cbb.get()));
+}
+
 void CertBuilder::SetValidity(base::Time not_before, base::Time not_after) {
   // From RFC 5280:
   //   Validity ::= SEQUENCE {

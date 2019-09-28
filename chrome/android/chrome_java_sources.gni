@@ -1708,7 +1708,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/ui/tablet/emptybackground/EmptyBackgroundViewWrapper.java",
   "java/src/org/chromium/chrome/browser/ui/tablet/emptybackground/incognitotoggle/IncognitoToggleButton.java",
   "java/src/org/chromium/chrome/browser/ui/tablet/emptybackground/incognitotoggle/IncognitoToggleButtonTablet.java",
-  "java/src/org/chromium/chrome/browser/util/AccessibilityUtil.java",
   "java/src/org/chromium/chrome/browser/util/ChromeIntentUtil.java",
   "java/src/org/chromium/chrome/browser/util/ColorUtils.java",
   "java/src/org/chromium/chrome/browser/util/FeatureUtilities.java",

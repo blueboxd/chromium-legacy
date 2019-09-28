@@ -9,6 +9,7 @@ import android.content.Context;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.NativeMethods;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.background_task_scheduler.NativeBackgroundTask;
@@ -108,7 +109,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
             return;
         }
 
-        nativeStartPrefetchTask();
+        PrefetchBackgroundTaskJni.get().startPrefetchTask(PrefetchBackgroundTask.this);
     }
 
     private boolean isBrowserRunningInReducedMode() {
@@ -127,7 +128,7 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         // TaskFinishedCallback, so we need to save the reschedule result.
         if (mNativeTask == 0) return mCachedRescheduleResult;
 
-        return nativeOnStopTask(mNativeTask);
+        return PrefetchBackgroundTaskJni.get().onStopTask(mNativeTask, PrefetchBackgroundTask.this);
     }
 
     @Override
@@ -187,13 +188,15 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
     @VisibleForTesting
     void setTaskReschedulingForTesting(int rescheduleType) {
         if (mNativeTask == 0) return;
-        nativeSetTaskReschedulingForTesting(mNativeTask, rescheduleType);
+        PrefetchBackgroundTaskJni.get().setTaskReschedulingForTesting(
+                mNativeTask, PrefetchBackgroundTask.this, rescheduleType);
     }
 
     @VisibleForTesting
     void signalTaskFinishedForTesting() {
         if (mNativeTask == 0) return;
-        nativeSignalTaskFinishedForTesting(mNativeTask);
+        PrefetchBackgroundTaskJni.get().signalTaskFinishedForTesting(
+                mNativeTask, PrefetchBackgroundTask.this);
     }
 
     @Override
@@ -205,11 +208,13 @@ public class PrefetchBackgroundTask extends NativeBackgroundTask {
         return FeatureUtilities.isServiceManagerForBackgroundPrefetchEnabled();
     }
 
-    @VisibleForTesting
-    native boolean nativeStartPrefetchTask();
-    @VisibleForTesting
-    native boolean nativeOnStopTask(long nativePrefetchBackgroundTaskAndroid);
-    native void nativeSetTaskReschedulingForTesting(
-            long nativePrefetchBackgroundTaskAndroid, int rescheduleType);
-    native void nativeSignalTaskFinishedForTesting(long nativePrefetchBackgroundTaskAndroid);
+    @NativeMethods
+    interface Natives {
+        boolean startPrefetchTask(PrefetchBackgroundTask caller);
+        boolean onStopTask(long nativePrefetchBackgroundTaskAndroid, PrefetchBackgroundTask caller);
+        void setTaskReschedulingForTesting(long nativePrefetchBackgroundTaskAndroid,
+                PrefetchBackgroundTask caller, int rescheduleType);
+        void signalTaskFinishedForTesting(
+                long nativePrefetchBackgroundTaskAndroid, PrefetchBackgroundTask caller);
+    }
 }

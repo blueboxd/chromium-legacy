@@ -46,14 +46,13 @@ namespace {
 constexpr char kServiceWorkerSubresourceLoaderScope[] =
     "ServiceWorkerSubresourceLoader";
 
-network::ResourceResponseHead RewriteServiceWorkerTime(
+network::mojom::URLResponseHeadPtr RewriteServiceWorkerTime(
     base::TimeTicks service_worker_start_time,
     base::TimeTicks service_worker_ready_time,
-    const network::ResourceResponseHead& response_head) {
-  network::ResourceResponseHead new_head = response_head;
-  new_head.service_worker_start_time = service_worker_start_time;
-  new_head.service_worker_ready_time = service_worker_ready_time;
-  return new_head;
+    network::mojom::URLResponseHeadPtr response_head) {
+  response_head->service_worker_start_time = service_worker_start_time;
+  response_head->service_worker_ready_time = service_worker_ready_time;
+  return response_head;
 }
 
 // A wrapper URLLoaderClient that invokes the given RewriteHeaderCallback
@@ -61,8 +60,8 @@ network::ResourceResponseHead RewriteServiceWorkerTime(
 class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
  public:
   using RewriteHeaderCallback =
-      base::RepeatingCallback<network::ResourceResponseHead(
-          const network::ResourceResponseHead&)>;
+      base::RepeatingCallback<network::mojom::URLResponseHeadPtr(
+          network::mojom::URLResponseHeadPtr)>;
 
   HeaderRewritingURLLoaderClient(
       network::mojom::URLLoaderClientPtr url_loader_client,
@@ -77,7 +76,7 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
       network::mojom::URLResponseHeadPtr response_head) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveResponse(
-        rewrite_header_callback_.Run(response_head));
+        rewrite_header_callback_.Run(std::move(response_head)));
   }
 
   void OnReceiveRedirect(
@@ -85,7 +84,7 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
       network::mojom::URLResponseHeadPtr response_head) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveRedirect(
-        redirect_info, rewrite_header_callback_.Run(response_head));
+        redirect_info, rewrite_header_callback_.Run(std::move(response_head)));
   }
 
   void OnUploadProgress(int64_t current_position,
@@ -179,9 +178,9 @@ ServiceWorkerSubresourceLoader::ServiceWorkerSubresourceLoader(
       task_runner_(std::move(task_runner)),
       response_source_(network::mojom::FetchResponseSource::kUnspecified) {
   DCHECK(controller_connector_);
-  response_head_.request_start = base::TimeTicks::Now();
-  response_head_.load_timing.request_start = base::TimeTicks::Now();
-  response_head_.load_timing.request_start_time = base::Time::Now();
+  response_head_->request_start = base::TimeTicks::Now();
+  response_head_->load_timing.request_start = base::TimeTicks::Now();
+  response_head_->load_timing.request_start_time = base::Time::Now();
   // base::Unretained() is safe since |url_loader_binding_| is owned by |this|.
   url_loader_binding_.set_connection_error_handler(
       base::BindOnce(&ServiceWorkerSubresourceLoader::OnConnectionError,
@@ -216,7 +215,7 @@ void ServiceWorkerSubresourceLoader::StartRequest(
   // time to set workerStart, since it will either started soon or the fetch
   // event will be dispatched soon.
   // https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-workerstart
-  response_head_.service_worker_start_time = base::TimeTicks::Now();
+  response_head_->service_worker_start_time = base::TimeTicks::Now();
   DispatchFetchEvent();
 }
 
@@ -229,8 +228,8 @@ void ServiceWorkerSubresourceLoader::DispatchFetchEvent() {
       controller_connector_->GetControllerServiceWorker(
           blink::mojom::ControllerServiceWorkerPurpose::FETCH_SUB_RESOURCE);
 
-  response_head_.load_timing.send_start = base::TimeTicks::Now();
-  response_head_.load_timing.send_end = base::TimeTicks::Now();
+  response_head_->load_timing.send_start = base::TimeTicks::Now();
+  response_head_->load_timing.send_end = base::TimeTicks::Now();
 
   TRACE_EVENT1("ServiceWorker",
                "ServiceWorkerSubresourceLoader::DispatchFetchEvent",
@@ -394,10 +393,10 @@ void ServiceWorkerSubresourceLoader::OnFallback(
     //  Add "Service Worker Fallback Required" which DevTools knows means to not
     //  show the response in the Network tab as it's just an internal
     //  implementation mechanism.
-    response_head_.headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+    response_head_->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
         "HTTP/1.1 400 Service Worker Fallback Required");
-    response_head_.was_fetched_via_service_worker = true;
-    response_head_.was_fallback_required_by_service_worker = true;
+    response_head_->was_fetched_via_service_worker = true;
+    response_head_->was_fallback_required_by_service_worker = true;
     CommitResponseHeaders();
     CommitEmptyResponseAndComplete();
     return;
@@ -413,8 +412,8 @@ void ServiceWorkerSubresourceLoader::OnFallback(
   auto client_impl = std::make_unique<HeaderRewritingURLLoaderClient>(
       std::move(url_loader_client_),
       base::BindRepeating(&RewriteServiceWorkerTime,
-                          response_head_.service_worker_start_time,
-                          response_head_.service_worker_ready_time));
+                          response_head_->service_worker_start_time,
+                          response_head_->service_worker_ready_time));
   mojo::MakeStrongBinding(std::move(client_impl), mojo::MakeRequest(&client));
 
   fallback_factory_->CreateLoaderAndStart(
@@ -436,7 +435,7 @@ void ServiceWorkerSubresourceLoader::UpdateResponseTiming(
   // |service_worker_ready_time| becomes web-exposed
   // PerformanceResourceTiming#fetchStart, which is the time just before
   // dispatching the fetch event, so set it to |dispatch_event_time|.
-  response_head_.service_worker_ready_time = timing->dispatch_event_time;
+  response_head_->service_worker_ready_time = timing->dispatch_event_time;
   fetch_event_timing_ = std::move(timing);
 }
 
@@ -450,27 +449,28 @@ void ServiceWorkerSubresourceLoader::StartResponse(
     return;
   }
 
-  ServiceWorkerLoaderHelpers::SaveResponseInfo(*response, &response_head_);
+  ServiceWorkerLoaderHelpers::SaveResponseInfo(*response, response_head_.get());
   ServiceWorkerLoaderHelpers::SaveResponseHeaders(
       response->status_code, response->status_text, response->headers,
-      &response_head_);
-  response_head_.response_start = base::TimeTicks::Now();
-  response_head_.load_timing.receive_headers_start = base::TimeTicks::Now();
-  response_head_.load_timing.receive_headers_end =
-      response_head_.load_timing.receive_headers_start;
+      response_head_.get());
+  response_head_->response_start = base::TimeTicks::Now();
+  response_head_->load_timing.receive_headers_start = base::TimeTicks::Now();
+  response_head_->load_timing.receive_headers_end =
+      response_head_->load_timing.receive_headers_start;
   response_source_ = response->response_source;
 
   // Handle a redirect response. ComputeRedirectInfo returns non-null redirect
   // info if the given response is a redirect.
   redirect_info_ = ServiceWorkerLoaderHelpers::ComputeRedirectInfo(
-      resource_request_, response_head_);
+      resource_request_, *response_head_);
   if (redirect_info_) {
     if (redirect_limit_-- == 0) {
       CommitCompleted(net::ERR_TOO_MANY_REDIRECTS);
       return;
     }
-    response_head_.encoded_data_length = 0;
-    url_loader_client_->OnReceiveRedirect(*redirect_info_, response_head_);
+    response_head_->encoded_data_length = 0;
+    url_loader_client_->OnReceiveRedirect(*redirect_info_,
+                                          response_head_.Clone());
     TransitionToStatus(Status::kSentRedirect);
     return;
   }
@@ -529,7 +529,7 @@ void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
   TransitionToStatus(Status::kSentHeader);
   DCHECK(url_loader_client_.is_bound());
   // TODO(kinuko): Fill the ssl_info.
-  url_loader_client_->OnReceiveResponse(response_head_);
+  url_loader_client_->OnReceiveResponse(response_head_.Clone());
 }
 
 void ServiceWorkerSubresourceLoader::CommitResponseBody(
@@ -560,7 +560,7 @@ void ServiceWorkerSubresourceLoader::CommitCompleted(int error_code) {
       TRACE_EVENT_FLAG_FLOW_IN, "error_code", net::ErrorToString(error_code));
 
   if (error_code == net::OK) {
-    bool handled = !response_head_.was_fallback_required_by_service_worker;
+    bool handled = !response_head_->was_fallback_required_by_service_worker;
     RecordTimingMetrics(handled);
   }
 
@@ -600,15 +600,15 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
   UMA_HISTOGRAM_TIMES(
       "ServiceWorker.LoadTiming.Subresource."
       "ForwardServiceWorkerToWorkerReady",
-      response_head_.service_worker_ready_time -
-          response_head_.service_worker_start_time);
+      response_head_->service_worker_ready_time -
+          response_head_->service_worker_start_time);
 
   // Time spent by fetch handlers.
   UMA_HISTOGRAM_TIMES(
       "ServiceWorker.LoadTiming.Subresource."
       "WorkerReadyToFetchHandlerEnd",
       fetch_event_timing_->respond_with_settled_time -
-          response_head_.service_worker_ready_time);
+          response_head_->service_worker_ready_time);
 
   if (handled) {
     // Mojo message delay. If the controller service worker lives in the same
@@ -618,21 +618,21 @@ void ServiceWorkerSubresourceLoader::RecordTimingMetrics(bool handled) {
     UMA_HISTOGRAM_TIMES(
         "ServiceWorker.LoadTiming.Subresource."
         "FetchHandlerEndToResponseReceived",
-        response_head_.load_timing.receive_headers_end -
+        response_head_->load_timing.receive_headers_end -
             fetch_event_timing_->respond_with_settled_time);
 
     // Time spent reading response body.
     UMA_HISTOGRAM_MEDIUM_TIMES(
         "ServiceWorker.LoadTiming.Subresource."
         "ResponseReceivedToCompleted2",
-        completion_time - response_head_.load_timing.receive_headers_end);
+        completion_time - response_head_->load_timing.receive_headers_end);
     // Same as above, breakdown by response source.
     base::UmaHistogramMediumTimes(
         base::StrCat({"ServiceWorker.LoadTiming.Subresource."
                       "ResponseReceivedToCompleted2",
                       ServiceWorkerUtils::FetchResponseSourceToSuffix(
                           response_source_)}),
-        completion_time - response_head_.load_timing.receive_headers_end);
+        completion_time - response_head_->load_timing.receive_headers_end);
   } else {
     // Mojo message delay (network fallback case). See above for the detail.
     UMA_HISTOGRAM_TIMES(
@@ -734,7 +734,7 @@ void ServiceWorkerSubresourceLoader::OnBlobSideDataReadingComplete(
   DCHECK(data_pipe.is_valid());
 
   base::TimeDelta delay =
-      base::TimeTicks::Now() - response_head_.response_start;
+      base::TimeTicks::Now() - response_head_->response_start;
   UMA_HISTOGRAM_TIMES(
       "ServiceWorker.SubresourceNotifyStartLoadingResponseBodyDelay", delay);
 

@@ -1310,103 +1310,11 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, TabAcceptKeyword) {
 
 #if !defined(OS_MACOSX)
 // Mac intentionally does not support this behavior.
-IN_PROC_BROWSER_TEST_F(OmniboxViewTest, TabTraverseResultsTest) {
-  OmniboxView* omnibox_view = nullptr;
-  ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
-  OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
-  ASSERT_TRUE(popup_model);
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndDisableFeature(omnibox::kOmniboxWrapPopupPosition);
-
-  // Input something to trigger results.
-  const ui::KeyboardCode kKeys[] = {
-    ui::VKEY_B, ui::VKEY_A, ui::VKEY_R, ui::VKEY_UNKNOWN
-  };
-  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kKeys));
-  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
-  ASSERT_TRUE(popup_model->IsOpen());
-
-  size_t old_selected_line = popup_model->selected_line();
-  EXPECT_EQ(0U, old_selected_line);
-
-  // Move down the results.
-  for (size_t size = popup_model->result().size();
-       popup_model->selected_line() < size - 1;
-       old_selected_line = popup_model->selected_line()) {
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
-    ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
-    ASSERT_EQ(base::string16(), omnibox_view->model()->keyword());
-    ASSERT_LT(old_selected_line, popup_model->selected_line());
-  }
-
-  // Don't move past the end.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
-  ASSERT_EQ(old_selected_line, popup_model->selected_line());
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  // Move back up the results.
-  for (; popup_model->selected_line() > 0U;
-       old_selected_line = popup_model->selected_line()) {
-    ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN));
-    ASSERT_GT(old_selected_line, popup_model->selected_line());
-  }
-
-  // Don't move past the beginning.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN));
-  ASSERT_EQ(0U, popup_model->selected_line());
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  const TestHistoryEntry kHistoryFoo = {
-    "http://foo/", "Page foo", 1, 1, false
-  };
-
-  // Add a history entry so "foo" gets multiple matches.
-  ASSERT_NO_FATAL_FAILURE(AddHistoryEntry(
-      kHistoryFoo, base::Time::Now() - base::TimeDelta::FromHours(1)));
-
-  // Load results.
-  ASSERT_NO_FATAL_FAILURE(omnibox_view->SelectAll(false));
-  ASSERT_NO_FATAL_FAILURE(SendKeySequence(kSearchKeywordKeys));
-  ASSERT_NO_FATAL_FAILURE(WaitForAutocompleteControllerDone());
-
-  // Trigger keyword mode by tab.
-  base::string16 text = ASCIIToUTF16(kSearchKeyword);
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
-  ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
-  ASSERT_EQ(text, omnibox_view->model()->keyword());
-  ASSERT_TRUE(omnibox_view->GetText().empty());
-  ASSERT_EQ(0U, omnibox_view->model()->popup_model()->selected_line());
-
-  // The location bar should still have focus.
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  // Pressing tab again should move to the next result and clear keyword
-  // mode.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, 0));
-  ASSERT_FALSE(omnibox_view->model()->is_keyword_hint());
-  ASSERT_NE(text, omnibox_view->model()->keyword());
-  ASSERT_EQ(1U, omnibox_view->model()->popup_model()->selected_line());
-
-  // The location bar should still have focus.
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-
-  // Moving back up should not show keyword mode.
-  ASSERT_NO_FATAL_FAILURE(SendKey(ui::VKEY_TAB, ui::EF_SHIFT_DOWN));
-  ASSERT_TRUE(omnibox_view->model()->is_keyword_hint());
-  ASSERT_EQ(text, omnibox_view->model()->keyword());
-
-  ASSERT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
-}
-
 IN_PROC_BROWSER_TEST_F(OmniboxViewTest, WrappingTabTraverseResultsTest) {
   OmniboxView* omnibox_view = nullptr;
   ASSERT_NO_FATAL_FAILURE(GetOmniboxView(&omnibox_view));
   OmniboxPopupModel* popup_model = omnibox_view->model()->popup_model();
   ASSERT_TRUE(popup_model);
-
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(omnibox::kOmniboxWrapPopupPosition);
 
   // Input something to trigger results.
   const ui::KeyboardCode kKeys[] = {ui::VKEY_B, ui::VKEY_A, ui::VKEY_R,

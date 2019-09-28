@@ -116,6 +116,7 @@
 #include "third_party/blink/renderer/core/html/custom/v0_custom_element_registration_context.h"
 #include "third_party/blink/renderer/core/html/forms/html_form_controls_collection.h"
 #include "third_party/blink/renderer/core/html/forms/html_options_collection.h"
+#include "third_party/blink/renderer/core/html/html_body_element.h"
 #include "third_party/blink/renderer/core/html/html_collection.h"
 #include "third_party/blink/renderer/core/html/html_document.h"
 #include "third_party/blink/renderer/core/html/html_element.h"
@@ -2656,10 +2657,11 @@ void Element::RemovedFrom(ContainerNode& insertion_point) {
     if (ElementAnimations* element_animations = data->GetElementAnimations())
       element_animations->CssAnimations().Cancel();
 
-    if (data->IntersectionObserverData()) {
+    if (was_in_document && data->IntersectionObserverData()) {
       data->IntersectionObserverData()->ComputeIntersectionsForTarget(
           IntersectionObservation::kExplicitRootObserversNeedUpdate |
-          IntersectionObservation::kImplicitRootObserversNeedUpdate);
+          IntersectionObservation::kImplicitRootObserversNeedUpdate |
+          IntersectionObservation::kIgnoreDelay);
       GetDocument().EnsureIntersectionObserverController().RemoveTrackedElement(
           *this);
     }
@@ -4429,6 +4431,7 @@ void Element::setOuterHTML(const StringOrTrustedHTML& string_or_html,
   }
 }
 
+// Step 4 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
 Node* Element::InsertAdjacent(const String& where,
                               Node* new_child,
                               ExceptionState& exception_state) {
@@ -4537,13 +4540,13 @@ ScriptPromise Element::updateRendering(ScriptState* script_state) {
 }
 
 // Step 1 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
-static Element* ContextElementForInsertion(const String& where,
-                                           Element* element,
-                                           ExceptionState& exception_state) {
+static Node* ContextNodeForInsertion(const String& where,
+                                     Element* element,
+                                     ExceptionState& exception_state) {
   if (DeprecatedEqualIgnoringCase(where, "beforeBegin") ||
       DeprecatedEqualIgnoringCase(where, "afterEnd")) {
-    Element* parent = element->parentElement();
-    if (!parent) {
+    Node* parent = element->parentNode();
+    if (!parent || IsA<Document>(parent)) {
       exception_state.ThrowDOMException(
           DOMExceptionCode::kNoModificationAllowedError,
           "The element has no parent.");
@@ -4578,11 +4581,22 @@ void Element::insertAdjacentText(const String& where,
 void Element::insertAdjacentHTML(const String& where,
                                  const String& markup,
                                  ExceptionState& exception_state) {
-  Element* context_element =
-      ContextElementForInsertion(where, this, exception_state);
-  if (!context_element)
+  Node* context_node = ContextNodeForInsertion(where, this, exception_state);
+  if (!context_node)
     return;
 
+  // Step 2 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
+  Element* context_element;
+  if (!IsA<Element>(context_node) ||
+      (context_node->GetDocument().IsHTMLDocument() &&
+       IsA<HTMLHtmlElement>(context_node))) {
+    context_element =
+        MakeGarbageCollected<HTMLBodyElement>(context_node->GetDocument());
+  } else {
+    context_element = To<Element>(context_node);
+  }
+
+  // Step 3 of http://domparsing.spec.whatwg.org/#insertadjacenthtml()
   DocumentFragment* fragment = CreateFragmentForInnerOuterHTML(
       markup, context_element, kAllowScriptingContent, "insertAdjacentHTML",
       exception_state);

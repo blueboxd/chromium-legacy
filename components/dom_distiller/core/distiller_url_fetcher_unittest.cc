@@ -38,7 +38,7 @@ class DistillerURLFetcherTest : public testing::Test {
         std::string(kTestPageAResponse, sizeof(kTestPageAResponse)));
     test_url_loader_factory_.AddResponse(
         GURL(kTestPageB),
-        network::CreateResourceResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
+        network::CreateURLResponseHead(net::HTTP_INTERNAL_SERVER_ERROR),
         std::string(kTestPageBResponse, sizeof(kTestPageBResponse)),
         network::URLLoaderCompletionStatus(net::OK));
   }

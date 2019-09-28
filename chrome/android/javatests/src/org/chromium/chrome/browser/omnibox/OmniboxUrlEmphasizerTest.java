@@ -234,8 +234,8 @@ public class OmniboxUrlEmphasizerTest {
     @Feature({"Browser", "Main"})
     public void testVeryShortHTTPWarningUrl() throws Throwable {
         Spannable url = new SpannableStringBuilder("m.w.co/p");
-        OmniboxUrlEmphasizer.emphasizeUrl(url, mResources, mProfile,
-                ConnectionSecurityLevel.HTTP_SHOW_WARNING, false, true, false);
+        OmniboxUrlEmphasizer.emphasizeUrl(
+                url, mResources, mProfile, ConnectionSecurityLevel.WARNING, false, true, false);
         EmphasizedUrlSpanHelper[] spans = getSpansForEmphasizedUrl(url);
 
         Assert.assertEquals("Unexpected number of spans:", 2, spans.length);

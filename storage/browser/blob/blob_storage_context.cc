@@ -29,6 +29,7 @@
 #include "storage/browser/blob/blob_data_builder.h"
 #include "storage/browser/blob/blob_data_item.h"
 #include "storage/browser/blob/blob_data_snapshot.h"
+#include "storage/browser/blob/blob_impl.h"
 #include "storage/browser/blob/shareable_blob_data_item.h"
 #include "third_party/blink/public/common/blob/blob_utils.h"
 #include "url/gurl.h"
@@ -66,13 +67,9 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromUUID(
   return CreateHandle(uuid, entry);
 }
 
-std::unique_ptr<BlobDataHandle> BlobStorageContext::GetBlobDataFromPublicURL(
-    const GURL& url) {
-  std::string uuid;
-  BlobEntry* entry = registry_.GetEntryFromURL(url, &uuid);
-  if (!entry)
-    return nullptr;
-  return CreateHandle(uuid, entry);
+mojo::PendingRemote<blink::mojom::Blob>
+BlobStorageContext::GetBlobFromPublicURL(const GURL& url) {
+  return registry_.GetBlobFromURL(url);
 }
 
 void BlobStorageContext::GetBlobDataFromBlobRemote(
@@ -142,19 +139,14 @@ std::unique_ptr<BlobDataHandle> BlobStorageContext::AddBrokenBlob(
   return CreateHandle(uuid, entry);
 }
 
-bool BlobStorageContext::RegisterPublicBlobURL(const GURL& blob_url,
-                                               const std::string& uuid) {
-  if (!registry_.CreateUrlMapping(blob_url, uuid))
-    return false;
-  IncrementBlobRefCount(uuid);
-  return true;
+bool BlobStorageContext::RegisterPublicBlobURL(
+    const GURL& blob_url,
+    mojo::PendingRemote<blink::mojom::Blob> blob) {
+  return registry_.CreateUrlMapping(blob_url, std::move(blob));
 }
 
 void BlobStorageContext::RevokePublicBlobURL(const GURL& blob_url) {
-  std::string uuid;
-  if (!registry_.DeleteURLMapping(blob_url, &uuid))
-    return;
-  DecrementBlobRefCount(uuid);
+  registry_.DeleteURLMapping(blob_url);
 }
 
 std::unique_ptr<BlobDataHandle> BlobStorageContext::AddFutureBlob(

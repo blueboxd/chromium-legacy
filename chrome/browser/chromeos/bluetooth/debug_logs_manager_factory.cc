@@ -8,9 +8,14 @@
 #include "chrome/browser/chromeos/bluetooth/debug_logs_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/identity_manager_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
+
+namespace chromeos {
+
+namespace bluetooth {
 
 namespace {
 
@@ -51,7 +56,9 @@ DebugLogsManagerFactory* DebugLogsManagerFactory::GetInstance() {
 DebugLogsManagerFactory::DebugLogsManagerFactory()
     : BrowserContextKeyedServiceFactory(
           "DebugLogsManagerFactory",
-          BrowserContextDependencyManager::GetInstance()) {}
+          BrowserContextDependencyManager::GetInstance()) {
+  DependsOn(IdentityManagerFactory::GetInstance());
+}
 
 DebugLogsManagerFactory::~DebugLogsManagerFactory() = default;
 
@@ -69,3 +76,7 @@ KeyedService* DebugLogsManagerFactory::BuildServiceInstanceFor(
 bool DebugLogsManagerFactory::ServiceIsCreatedWithBrowserContext() const {
   return true;
 }
+
+}  // namespace bluetooth
+
+}  // namespace chromeos

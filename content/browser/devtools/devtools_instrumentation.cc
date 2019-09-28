@@ -51,6 +51,22 @@ void DispatchToAgents(int frame_tree_node_id,
     DispatchToAgents(ftn, method, std::forward<Args>(args)...);
 }
 
+template <typename Handler, typename... MethodArgs, typename... Args>
+void DispatchToWorkerAgents(int32_t worker_process_id,
+                            int32_t worker_route_id,
+                            void (Handler::*method)(MethodArgs...),
+                            Args&&... args) {
+  ServiceWorkerDevToolsAgentHost* service_worker_host =
+      ServiceWorkerDevToolsManager::GetInstance()
+          ->GetDevToolsAgentHostForWorker(worker_process_id, worker_route_id);
+  if (!service_worker_host)
+    return;
+  for (auto* h : Handler::ForAgentHost(service_worker_host))
+    (h->*method)(std::forward<Args>(args)...);
+
+  // TODO(crbug.com/1004979): Look for shared worker hosts here as well.
+}
+
 FrameTreeNode* GetFtnForNetworkRequest(int process_id, int routing_id) {
   // Navigation requests start in the browser, before process_id is assigned, so
   // the id is set to 0. In these situations, the routing_id is the frame tree
@@ -451,11 +467,22 @@ void OnRequestWillBeSentExtraInfo(
     const net::CookieStatusList& request_cookie_list,
     const std::vector<network::mojom::HttpRawHeaderPairPtr>& request_headers) {
   FrameTreeNode* ftn = GetFtnForNetworkRequest(process_id, routing_id);
-  if (!ftn)
+  if (ftn) {
+    DispatchToAgents(ftn,
+                     &protocol::NetworkHandler::OnRequestWillBeSentExtraInfo,
+                     devtools_request_id, request_cookie_list, request_headers);
     return;
+  }
 
-  DispatchToAgents(ftn, &protocol::NetworkHandler::OnRequestWillBeSentExtraInfo,
-                   devtools_request_id, request_cookie_list, request_headers);
+  // In the case of service worker network requests, there is no
+  // FrameTreeNode to use so instead we use the "routing_id" created with the
+  // worker and sent to the renderer process to send as the render_frame_id in
+  // the renderer's network::ResourceRequest which gets plubmed to here as
+  // routing_id.
+  DispatchToWorkerAgents(
+      process_id, routing_id,
+      &protocol::NetworkHandler::OnRequestWillBeSentExtraInfo,
+      devtools_request_id, request_cookie_list, request_headers);
 }
 
 void OnResponseReceivedExtraInfo(
@@ -466,12 +493,19 @@ void OnResponseReceivedExtraInfo(
     const std::vector<network::mojom::HttpRawHeaderPairPtr>& response_headers,
     const base::Optional<std::string>& response_headers_text) {
   FrameTreeNode* ftn = GetFtnForNetworkRequest(process_id, routing_id);
-  if (!ftn)
+  if (ftn) {
+    DispatchToAgents(ftn,
+                     &protocol::NetworkHandler::OnResponseReceivedExtraInfo,
+                     devtools_request_id, response_cookie_list,
+                     response_headers, response_headers_text);
     return;
+  }
 
-  DispatchToAgents(ftn, &protocol::NetworkHandler::OnResponseReceivedExtraInfo,
-                   devtools_request_id, response_cookie_list, response_headers,
-                   response_headers_text);
+  // See comment on DispatchToWorkerAgents in OnRequestWillBeSentExtraInfo.
+  DispatchToWorkerAgents(process_id, routing_id,
+                         &protocol::NetworkHandler::OnResponseReceivedExtraInfo,
+                         devtools_request_id, response_cookie_list,
+                         response_headers, response_headers_text);
 }
 
 }  // namespace devtools_instrumentation

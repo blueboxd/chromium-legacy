@@ -152,9 +152,9 @@ const aura::Window* GetToplevelWindow(const aura::Window* window) {
 
 std::unique_ptr<ui::LayerTreeOwner> RecreateLayers(ui::LayerOwner* root) {
   DCHECK(root->OwnsLayer());
-  return RecreateLayersWithClosure(root, base::Bind([](ui::LayerOwner* owner) {
-                                     return owner->RecreateLayer();
-                                   }));
+  return RecreateLayersWithClosure(
+      root, base::BindRepeating(
+                [](ui::LayerOwner* owner) { return owner->RecreateLayer(); }));
 }
 
 std::unique_ptr<ui::LayerTreeOwner> RecreateLayersWithClosure(

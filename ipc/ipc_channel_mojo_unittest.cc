@@ -255,7 +255,8 @@ TEST_F(IPCChannelMojoTest, SendFailWithPendingMessages) {
 class ListenerThatBindsATestStructPasser : public IPC::Listener,
                                            public IPC::mojom::TestStructPasser {
  public:
-  ListenerThatBindsATestStructPasser() : binding_(this) {}
+  ListenerThatBindsATestStructPasser() = default;
+  ~ListenerThatBindsATestStructPasser() override = default;
 
   bool OnMessageReceived(const IPC::Message& message) override { return true; }
 
@@ -267,15 +268,16 @@ class ListenerThatBindsATestStructPasser : public IPC::Listener,
       const std::string& interface_name,
       mojo::ScopedInterfaceEndpointHandle handle) override {
     CHECK_EQ(interface_name, IPC::mojom::TestStructPasser::Name_);
-    binding_.Bind(
-        IPC::mojom::TestStructPasserAssociatedRequest(std::move(handle)));
+    receiver_.Bind(
+        mojo::PendingAssociatedReceiver<IPC::mojom::TestStructPasser>(
+            std::move(handle)));
   }
 
  private:
   // IPC::mojom::TestStructPasser:
   void Pass(IPC::mojom::TestStructPtr) override { NOTREACHED(); }
 
-  mojo::AssociatedBinding<IPC::mojom::TestStructPasser> binding_;
+  mojo::AssociatedReceiver<IPC::mojom::TestStructPasser> receiver_{this};
 };
 
 class ListenerThatExpectsNoError : public IPC::Listener {
@@ -314,9 +316,9 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT(
   Connect(&listener);
   wait_to_connect_loop.Run();
 
-  IPC::mojom::TestStructPasserAssociatedPtr passer;
+  mojo::AssociatedRemote<IPC::mojom::TestStructPasser> passer;
   channel()->GetAssociatedInterfaceSupport()->GetRemoteAssociatedInterface(
-      &passer);
+      passer.BindNewEndpointAndPassReceiver());
 
   // This avoids hitting DCHECKs in the serialization code meant to stop us from
   // making such "mistakes" as the one we're about to make below.
@@ -1006,7 +1008,8 @@ class ListenerWithIndirectProxyAssociatedInterface
     DCHECK(!driver_binding_.is_bound());
     DCHECK_EQ(interface_name, IPC::mojom::IndirectTestDriver::Name_);
     driver_binding_.Bind(
-        IPC::mojom::IndirectTestDriverAssociatedRequest(std::move(handle)));
+        mojo::PendingAssociatedReceiver<IPC::mojom::IndirectTestDriver>(
+            std::move(handle)));
   }
 
   void set_ping_handler(const base::RepeatingClosure& handler) {
@@ -1065,7 +1068,7 @@ DEFINE_IPC_CHANNEL_MOJO_TEST_CLIENT_WITH_CUSTOM_FIXTURE(
   // message we send will still be dispatched properly even though the remote
   // endpoint may not have been bound yet by the time the message is initially
   // processed on the IO thread.
-  IPC::mojom::IndirectTestDriverAssociatedPtr driver;
+  mojo::AssociatedRemote<IPC::mojom::IndirectTestDriver> driver;
   mojo::AssociatedRemote<IPC::mojom::PingReceiver> ping_receiver;
   proxy()->GetRemoteAssociatedInterface(&driver);
   driver->GetPingReceiver(ping_receiver.BindNewEndpointAndPassReceiver());
@@ -1425,7 +1428,7 @@ TEST_F(IPCChannelProxyMojoTest, AssociatedRequestClose) {
   CreateProxy(&listener);
   RunProxy();
 
-  IPC::mojom::AssociatedInterfaceVendorAssociatedPtr vendor;
+  mojo::AssociatedRemote<IPC::mojom::AssociatedInterfaceVendor> vendor;
   proxy()->GetRemoteAssociatedInterface(&vendor);
   mojo::AssociatedRemote<IPC::mojom::SimpleTestDriver> tester;
   vendor->GetTestInterface(tester.BindNewEndpointAndPassReceiver());

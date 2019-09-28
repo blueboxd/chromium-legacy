@@ -2,6 +2,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from datetime import date
 import json
 import logging
 import os
@@ -427,8 +428,30 @@ class PixelIntegrationTest(
                           SKIA_GOLD_INSTANCE, image_name))
         logging.error(
             'Approved images for %s in Gold: %s', image_name, gold_images)
-      if not parsed_options.no_skia_gold_failure:
-        raise Exception('goldctl command failed')
+      if self._ShouldReportGoldFailure(page):
+        raise Exception('goldctl command failed, see above for details')
+
+  def _ShouldReportGoldFailure(self, page):
+    """Determines if a Gold failure should actually be surfaced.
+
+    Args:
+      page: The GPU PixelTestPage object for the test.
+
+    Returns:
+      True if the failure should be surfaced, i.e. the test should fail,
+      otherwise False.
+    """
+    parsed_options = self.GetParsedCommandLineOptions()
+    # Don't surface if we're explicitly told not to.
+    if parsed_options.no_skia_gold_failure:
+      return False
+    # Don't surface if the test was recently added and we're still within its
+    # grace period. However, fail if we're on a trybot so that as many images
+    # can be triaged as possible before a new test is committed.
+    if (page.grace_period_end and date.today() <= page.grace_period_end and
+        not parsed_options.review_patch_issue):
+      return False
+    return True
 
   def _ValidateScreenshotSamplesWithSkiaGold(self, tab, page, screenshot,
                                              device_pixel_ratio,

@@ -157,6 +157,8 @@ void AppShimHost::ProfileSelectedFromMenu(const base::FilePath& profile_path) {
 }
 
 base::FilePath AppShimHost::GetProfilePath() const {
+  // This should only be used by single-profile-app paths.
+  DCHECK(!profile_path_.empty());
   return profile_path_;
 }
 

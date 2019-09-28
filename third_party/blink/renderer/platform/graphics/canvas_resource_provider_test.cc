@@ -32,7 +32,7 @@ class MockCanvasResourceDispatcherClient
  public:
   MockCanvasResourceDispatcherClient() = default;
 
-  MOCK_METHOD0(BeginFrame, void());
+  MOCK_METHOD0(BeginFrame, bool());
 };
 
 class MockWebGraphisContext3DProviderWrapper

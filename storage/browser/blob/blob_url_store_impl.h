@@ -37,11 +37,6 @@ class COMPONENT_EXPORT(STORAGE_BROWSER) BlobURLStoreImpl
       mojo::PendingReceiver<blink::mojom::BlobURLToken> token) override;
 
  private:
-  void RegisterWithUUID(mojo::Remote<blink::mojom::Blob> blob,
-                        const GURL& url,
-                        RegisterCallback callback,
-                        const std::string& uuid);
-
   base::WeakPtr<BlobStorageContext> context_;
   BlobRegistryImpl::Delegate* delegate_;
 

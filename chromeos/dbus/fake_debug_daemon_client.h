@@ -91,6 +91,9 @@ class COMPONENT_EXPORT(CHROMEOS_DBUS) FakeDebugDaemonClient
   void SetRlzPingSent(SetRlzPingSentCallback callback) override;
   void SetSchedulerConfiguration(const std::string& config_name,
                                  VoidDBusMethodCallback callback) override;
+  void SetSchedulerConfigurationV2(const std::string& config_name,
+                                   bool lock_policy,
+                                   VoidDBusMethodCallback callback) override;
   void SetU2fFlags(const std::set<std::string>& flags,
                    VoidDBusMethodCallback callback) override;
   void GetU2fFlags(DBusMethodCallback<std::set<std::string>> callback) override;

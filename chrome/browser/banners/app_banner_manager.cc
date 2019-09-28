@@ -47,16 +47,6 @@ InstallableParams ParamsToGetManifest() {
 
 namespace banners {
 
-AppBannerManager::Observer::Observer() = default;
-AppBannerManager::Observer::~Observer() = default;
-
-void AppBannerManager::Observer::ObserveAppBannerManager(
-    AppBannerManager* manager) {
-  scoped_observer_.RemoveAll();
-  if (manager)
-    scoped_observer_.Add(manager);
-}
-
 // static
 base::Time AppBannerManager::GetCurrentTime() {
   return base::Time::Now() +
@@ -216,7 +206,7 @@ void AppBannerManager::MigrateObserverListForTesting(
     content::WebContents* web_contents) {
   AppBannerManager* existing_manager = FromWebContents(web_contents);
   for (Observer& observer : existing_manager->observer_list_)
-    observer.ObserveAppBannerManager(this);
+    observer.OnAppBannerManagerChanged(this);
   DCHECK(existing_manager->observer_list_.begin() ==
          existing_manager->observer_list_.end())
       << "Old observer list must be empty after transfer to test instance.";
@@ -248,11 +238,7 @@ AppBannerManager::AppBannerManager(content::WebContents* web_contents)
   AppBannerSettingsHelper::UpdateFromFieldTrial();
 }
 
-AppBannerManager::~AppBannerManager() {
-  for (Observer& observer : observer_list_)
-    observer.ObserveAppBannerManager(nullptr);
-  CHECK(!observer_list_.might_have_observers());
-}
+AppBannerManager::~AppBannerManager() = default;
 
 bool AppBannerManager::CheckIfShouldShowBanner() {
   if (ShouldBypassEngagementChecks())

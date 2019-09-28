@@ -842,8 +842,7 @@ static void DuplicateMedium(CLIPFORMAT source_clipformat,
 
 DataObjectImpl::StoredDataInfo::StoredDataInfo(const FORMATETC& format_etc,
                                                STGMEDIUM* medium)
-    : format_etc(format_etc), medium(medium), owns_medium(true) {
-}
+    : format_etc(format_etc), medium(medium), owns_medium(true) {}
 
 DataObjectImpl::StoredDataInfo::~StoredDataInfo() {
   if (owns_medium) {
@@ -920,43 +919,41 @@ HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
       // If medium is NULL, delay-rendering will be used.
       if (content->medium) {
         DuplicateMedium(content->format_etc.cfFormat, content->medium, medium);
-      } else {
-        // Fail all GetData() attempts for DownloadURL data if the drag and drop
-        // operation is still in progress.
-        if (in_drag_loop_)
-          return DV_E_FORMATETC;
-
-        bool wait_for_data = false;
-
-        // In async mode, we do not want to start waiting for the data before
-        // the async operation is started. This is because we want to postpone
-        // until Shell kicks off a background thread to do the work so that
-        // we do not block the UI thread.
-        if (!in_async_mode_ || async_operation_started_)
-          wait_for_data = true;
-
-        if (!wait_for_data)
-          return DV_E_FORMATETC;
-
-        // Notify the observer we start waiting for the data. This gives
-        // an observer a chance to end the drag and drop.
-        if (observer_)
-          observer_->OnWaitForData();
-
-        // Now we can start the download.
-        if (content->downloader.get()) {
-          content->downloader->Start(this);
-          if (!content->downloader->Wait()) {
-            is_aborting_ = true;
-            return DV_E_FORMATETC;
-          }
-        }
-
-        // The stored data should have been updated with the final version.
-        // So we just need to call this function again to retrieve it.
-        return GetData(format_etc, medium);
+        return S_OK;
       }
-      return S_OK;
+      // Fail all GetData() attempts for DownloadURL data if the drag and drop
+      // operation is still in progress.
+      if (in_drag_loop_)
+        return DV_E_FORMATETC;
+
+      bool wait_for_data = false;
+
+      // In async mode, we do not want to start waiting for the data before
+      // the async operation is started. This is because we want to postpone
+      // until Shell kicks off a background thread to do the work so that
+      // we do not block the UI thread.
+      if (!in_async_mode_ || async_operation_started_)
+        wait_for_data = true;
+
+      if (!wait_for_data)
+        return DV_E_FORMATETC;
+
+      // Notify the observer we start waiting for the data. This gives
+      // an observer a chance to end the drag and drop.
+      if (observer_)
+        observer_->OnWaitForData();
+
+      // Now we can start the download.
+      if (content->downloader.get()) {
+        content->downloader->Start(this);
+        if (!content->downloader->Wait()) {
+          is_aborting_ = true;
+          return DV_E_FORMATETC;
+        }
+      }
+      // The stored data should have been updated with the final version.
+      // So we just need to call this function again to retrieve it.
+      return GetData(format_etc, medium);
     }
   }
 

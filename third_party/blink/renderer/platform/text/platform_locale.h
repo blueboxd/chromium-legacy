@@ -29,7 +29,6 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "third_party/blink/public/platform/web_localized_string.h"
 #include "third_party/blink/renderer/platform/language.h"
 #include "third_party/blink/renderer/platform/text/date_components.h"
 #include "third_party/blink/renderer/platform/wtf/allocator/allocator.h"

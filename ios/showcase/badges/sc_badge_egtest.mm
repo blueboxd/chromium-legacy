@@ -6,6 +6,7 @@
 
 #import "ios/chrome/browser/ui/badges/badge_constants.h"
 #import "ios/chrome/test/earl_grey/chrome_matchers.h"
+#import "ios/showcase/badges/sc_badge_coordinator.h"
 #import "ios/showcase/test/showcase_eg_utils.h"
 #import "ios/showcase/test/showcase_test_case.h"
 
@@ -46,6 +47,34 @@ using ::showcase_utils::Close;
       selectElementWithMatcher:
           grey_allOf(grey_accessibilityID(
                          kBadgeButtonSavePasswordAccessibilityIdentifier),
+                     grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+}
+
+// Tests that the overflow badge presents and that the popup menu is presented
+// when it is tapped.
+- (void)testOverflowbadge {
+  // Tap on button to show the overflow badge.
+  [[EarlGrey selectElementWithMatcher:grey_accessibilityID(
+                                          kSCDisplayedBadgeToggleButton)]
+      performAction:grey_tap()];
+
+  // Assert that overflow badge is shown and tap on it.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_allOf(grey_accessibilityID(
+                                kBadgeButtonOverflowAccessibilityIdentifier),
+                            grey_sufficientlyVisible(), nil)]
+      assertWithMatcher:grey_sufficientlyVisible()];
+  [[EarlGrey
+      selectElementWithMatcher:grey_accessibilityID(
+                                   kBadgeButtonOverflowAccessibilityIdentifier)]
+      performAction:grey_tap()];
+
+  // Assert that the badge overflow popup menu is being presented.
+  [[EarlGrey
+      selectElementWithMatcher:
+          grey_allOf(grey_accessibilityID(
+                         kBadgePopupMenuTableViewAccessibilityIdentifier),
                      grey_sufficientlyVisible(), nil)]
       assertWithMatcher:grey_sufficientlyVisible()];
 }

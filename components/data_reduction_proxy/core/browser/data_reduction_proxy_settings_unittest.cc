@@ -179,14 +179,13 @@ TEST(DataReductionProxySettingsStandaloneTest, TestEndToEndSecureProxyCheck) {
     drp_test_context->SetDataReductionProxyEnabled(true);
     drp_test_context->RunUntilIdle();
 
-    network::ResourceResponseHead resource_response_head;
+    auto url_response_head = network::mojom::URLResponseHead::New();
     std::string headers(test_case.response_headers);
-    resource_response_head.headers =
-        base::MakeRefCounted<net::HttpResponseHeaders>(
-            net::HttpUtil::AssembleRawHeaders(headers));
+    url_response_head->headers = base::MakeRefCounted<net::HttpResponseHeaders>(
+        net::HttpUtil::AssembleRawHeaders(headers));
     test_url_loader_factory.SimulateResponseWithoutRemovingFromPendingList(
-        test_url_loader_factory.GetPendingRequest(0), resource_response_head,
-        test_case.response_body,
+        test_url_loader_factory.GetPendingRequest(0),
+        std::move(url_response_head), test_case.response_body,
         network::URLLoaderCompletionStatus(test_case.net_error_code));
 
     if (test_case.expected_restricted) {

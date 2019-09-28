@@ -893,6 +893,13 @@ TEST_F('PrintPreviewCustomMarginsTest', 'SetControlsWithTextbox', function() {
 });
 
 TEST_F(
+    'PrintPreviewCustomMarginsTest', 'SetControlsWithTextboxMetric',
+    function() {
+      this.runMochaTest(
+          custom_margins_test.TestNames.SetControlsWithTextboxMetric);
+    });
+
+TEST_F(
     'PrintPreviewCustomMarginsTest', 'RestoreStickyMarginsAfterDefault',
     function() {
       this.runMochaTest(

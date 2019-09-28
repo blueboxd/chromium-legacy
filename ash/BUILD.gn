@@ -1217,6 +1217,7 @@ component("ash") {
     "wm/splitview/split_view_drag_indicators.h",
     "wm/splitview/split_view_highlight_view.cc",
     "wm/splitview/split_view_highlight_view.h",
+    "wm/splitview/split_view_observer.h",
     "wm/splitview/split_view_test_api.cc",
     "wm/splitview/split_view_utils.cc",
     "wm/splitview/split_view_utils.h",

@@ -108,7 +108,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       mojo::PendingReceiver<blink::mojom::SubresourceLoaderUpdater>
           subresource_loader_updater,
       const GURL& script_url_to_skip_throttling,
-      scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner);
+      scoped_refptr<base::SingleThreadTaskRunner> initiator_thread_task_runner,
+      int32_t service_worker_route_id);
   // Called on the initiator thread.
   ~ServiceWorkerContextClient() override;
 
@@ -275,6 +276,8 @@ class CONTENT_EXPORT ServiceWorkerContextClient
       network_service_connection_error_handler_holder_;
 
   std::unique_ptr<blink::WebEmbeddedWorker> worker_;
+
+  int32_t service_worker_route_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceWorkerContextClient);
 };

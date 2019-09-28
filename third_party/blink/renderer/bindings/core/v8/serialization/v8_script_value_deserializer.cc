@@ -509,7 +509,8 @@ ScriptWrappable* V8ScriptValueDeserializer::ReadDOMObject(
           !ReadUint32(&canvas_id) || !ReadUint32(&client_id) ||
           !ReadUint32(&sink_id))
         return nullptr;
-      OffscreenCanvas* canvas = OffscreenCanvas::Create(width, height);
+      OffscreenCanvas* canvas = OffscreenCanvas::Create(
+          ExecutionContext::From(GetScriptState()), width, height);
       canvas->SetPlaceholderCanvasId(canvas_id);
       canvas->SetFrameSinkId(client_id, sink_id);
       return canvas;

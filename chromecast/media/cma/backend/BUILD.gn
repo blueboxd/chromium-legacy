@@ -24,7 +24,6 @@ cast_source_set("backend") {
     "cma_backend_factory.h",
     "cma_backend_factory_impl.cc",
     "cma_backend_factory_impl.h",
-    "extra_audio_stream.h",
     "media_pipeline_backend_manager.cc",
     "media_pipeline_backend_manager.h",
     "media_pipeline_backend_wrapper.cc",

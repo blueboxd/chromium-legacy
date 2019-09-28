@@ -43,8 +43,6 @@
 
 namespace blink {
 
-using blink::WebLocalizedString;
-
 // http://www.whatwg.org/specs/web-apps/current-work/multipage/states-of-the-type-attribute.html#valid-e-mail-address
 static const char kLocalPartCharacters[] =
     "abcdefghijklmnopqrstuvwxyz0123456789!#$%&'*+/=?^_`{|}~.-";

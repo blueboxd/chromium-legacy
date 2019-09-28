@@ -267,22 +267,6 @@ std::unique_ptr<AvatarMenu> ExtensionAppShimHandler::Delegate::CreateAvatarMenu(
       &profile_manager->GetProfileAttributesStorage(), observer, nullptr);
 }
 
-base::FilePath ExtensionAppShimHandler::Delegate::GetFullProfilePath(
-    const base::FilePath& relative_profile_path) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  return profile_manager->user_data_dir().Append(relative_profile_path);
-}
-
-bool ExtensionAppShimHandler::Delegate::ProfileExistsForPath(
-    const base::FilePath& full_path) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  // Check for the profile name in the profile info cache to ensure that we
-  // never access any directory that isn't a known profile.
-  ProfileAttributesEntry* entry;
-  return profile_manager->GetProfileAttributesStorage().
-      GetProfileAttributesWithPath(full_path, &entry);
-}
-
 Profile* ExtensionAppShimHandler::Delegate::ProfileForPath(
     const base::FilePath& full_path) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
@@ -333,10 +317,11 @@ bool ExtensionAppShimHandler::Delegate::AllowShimToConnect(
 
 std::unique_ptr<AppShimHost> ExtensionAppShimHandler::Delegate::CreateHost(
     AppShimHost::Client* client,
-    Profile* profile,
-    const extensions::Extension* extension) {
-  return std::make_unique<AppShimHost>(
-      client, extension->id(), profile->GetPath(), UsesRemoteViews(extension));
+    const base::FilePath& profile_path,
+    const std::string& app_id,
+    bool use_remote_cocoa) {
+  return std::make_unique<AppShimHost>(client, app_id, profile_path,
+                                       use_remote_cocoa);
 }
 
 void ExtensionAppShimHandler::Delegate::EnableExtension(
@@ -489,7 +474,22 @@ void ExtensionAppShimHandler::OnShimLaunchRequested(
     bool recreate_shims,
     apps::ShimLaunchedCallback launched_callback,
     apps::ShimTerminatedCallback terminated_callback) {
-  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
+  // A shim can only be launched through an active profile, so find a profile
+  // through which to do the launch. For multi-profile apps, select one
+  // arbitrarily. For non-multi-profile apps, select the specified profile.
+  Profile* profile = nullptr;
+  {
+    auto found_app = apps_.find(host->GetAppId());
+    DCHECK(found_app != apps_.end());
+    AppState* app_state = found_app->second.get();
+    if (app_state->IsMultiProfile()) {
+      DCHECK(!app_state->profiles.empty());
+      profile = app_state->profiles.begin()->first;
+    } else {
+      profile = delegate_->ProfileForPath(host->GetProfilePath());
+    }
+  }
+
   const Extension* extension =
       delegate_->MaybeGetAppExtension(profile, host->GetAppId());
   if (!profile || !extension) {
@@ -508,19 +508,9 @@ void ExtensionAppShimHandler::OnShimProcessConnected(
   const std::string& app_id = bootstrap->GetAppId();
   DCHECK(crx_file::id_util::IdIsValid(app_id));
 
-  const base::FilePath& relative_profile_path = bootstrap->GetProfilePath();
-  DCHECK(!relative_profile_path.empty());
-  base::FilePath profile_path =
-      delegate_->GetFullProfilePath(relative_profile_path);
-
-  if (!delegate_->ProfileExistsForPath(profile_path)) {
-    // User may have deleted the profile this shim was originally created for.
-    // TODO(jackhou): Add some UI for this case and remove the LOG.
-    LOG(ERROR) << "Requested directory is not a known profile '"
-               << profile_path.value() << "'.";
-    bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND);
-    return;
-  }
+  // TODO(https://crbug.com/982024): If no profile path is specified by the
+  // bootstrap, then load an appropriate profile.
+  base::FilePath profile_path = bootstrap->GetProfilePath();
 
   if (delegate_->IsProfileLockedForPath(profile_path)) {
     LOG(WARNING) << "Requested profile is locked.  Showing User Manager.";
@@ -529,19 +519,11 @@ void ExtensionAppShimHandler::OnShimProcessConnected(
     return;
   }
 
-  Profile* profile = delegate_->ProfileForPath(profile_path);
-  if (profile) {
-    OnProfileLoaded(std::move(bootstrap), profile);
-  } else {
-    // If the profile is not loaded, this must have been a launch by the shim.
-    // Load the profile asynchronously, the host will be registered in
-    // OnProfileLoaded.
-    DCHECK_EQ(APP_SHIM_LAUNCH_NORMAL, bootstrap->GetLaunchType());
-    delegate_->LoadProfileAsync(
-        profile_path,
-        base::BindOnce(&ExtensionAppShimHandler::OnProfileLoaded,
-                       weak_factory_.GetWeakPtr(), std::move(bootstrap)));
-  }
+  LoadProfileAndApp(
+      profile_path, app_id,
+      base::BindOnce(
+          &ExtensionAppShimHandler::OnShimProcessConnectedAndAppLoaded,
+          weak_factory_.GetWeakPtr(), std::move(bootstrap)));
 }
 
 // static
@@ -577,11 +559,35 @@ void ExtensionAppShimHandler::CloseShimForApp(Profile* profile,
     apps_.erase(found_app);
 }
 
+void ExtensionAppShimHandler::LoadProfileAndApp(
+    const base::FilePath& profile_path,
+    const std::string& app_id,
+    LoadProfileAppCallback callback) {
+  Profile* profile = delegate_->ProfileForPath(profile_path);
+  if (profile) {
+    OnProfileLoaded(profile_path, app_id, std::move(callback), profile);
+  } else {
+    delegate_->LoadProfileAsync(
+        profile_path, base::BindOnce(&ExtensionAppShimHandler::OnProfileLoaded,
+                                     weak_factory_.GetWeakPtr(), profile_path,
+                                     app_id, std::move(callback)));
+  }
+}
+
 void ExtensionAppShimHandler::OnProfileLoaded(
-    std::unique_ptr<AppShimHostBootstrap> bootstrap,
+    const base::FilePath& profile_path,
+    const std::string& app_id,
+    LoadProfileAppCallback callback,
     Profile* profile) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  const std::string& app_id = bootstrap->GetAppId();
+  if (!profile) {
+    // User may have deleted the profile this shim was originally created for.
+    // TODO(jackhou): Add some UI for this case and remove the LOG.
+    LOG(ERROR) << "Requested directory is not a known profile '"
+               << profile_path.value() << "'.";
+    std::move(callback).Run(profile, nullptr);
+    return;
+  }
 
   // TODO(jeremya): Handle the case that launching the app fails. Probably we
   // need to watch for 'app successfully launched' or at least 'background page
@@ -589,44 +595,51 @@ void ExtensionAppShimHandler::OnProfileLoaded(
   // life within a certain window.
   const Extension* extension = delegate_->MaybeGetAppExtension(profile, app_id);
   if (extension) {
-    OnExtensionEnabled(std::move(bootstrap));
+    std::move(callback).Run(profile, extension);
   } else {
     delegate_->EnableExtension(
         profile, app_id,
-        base::BindOnce(&ExtensionAppShimHandler::OnExtensionEnabled,
-                       weak_factory_.GetWeakPtr(), std::move(bootstrap)));
+        base::BindOnce(&ExtensionAppShimHandler::OnAppEnabled,
+                       weak_factory_.GetWeakPtr(), profile_path, app_id,
+                       std::move(callback)));
   }
 }
 
-void ExtensionAppShimHandler::OnExtensionEnabled(
-    std::unique_ptr<AppShimHostBootstrap> bootstrap) {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  AppShimLaunchType launch_type = bootstrap->GetLaunchType();
-  std::vector<base::FilePath> files = bootstrap->GetLaunchFiles();
-
+void ExtensionAppShimHandler::OnAppEnabled(const base::FilePath& profile_path,
+                                           const std::string& app_id,
+                                           LoadProfileAppCallback callback) {
   // If the profile doesn't exist, it may have been deleted during the enable
   // prompt.
-  base::FilePath profile_path =
-      delegate_->GetFullProfilePath(bootstrap->GetProfilePath());
   Profile* profile = delegate_->ProfileForPath(profile_path);
+  const Extension* extension =
+      profile ? delegate_->MaybeGetAppExtension(profile, app_id) : nullptr;
+  std::move(callback).Run(profile, extension);
+}
+
+void ExtensionAppShimHandler::OnShimProcessConnectedAndAppLoaded(
+    std::unique_ptr<AppShimHostBootstrap> bootstrap,
+    Profile* profile,
+    const extensions::Extension* extension) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  // Early-out if the profile or extension failed to load.
   if (!profile) {
     bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_PROFILE_NOT_FOUND);
     return;
   }
-
-  // If !extension, the extension doesn't exist, or was not re-enabled.
-  const Extension* extension =
-      delegate_->MaybeGetAppExtension(profile, bootstrap->GetAppId());
   if (!extension) {
     bootstrap->OnFailedToConnectToHost(APP_SHIM_LAUNCH_APP_NOT_FOUND);
     return;
   }
+  AppShimLaunchType launch_type = bootstrap->GetLaunchType();
+  std::vector<base::FilePath> files = bootstrap->GetLaunchFiles();
 
   ProfileState* profile_state =
       delegate_->AllowShimToConnect(profile, extension)
           ? GetOrCreateProfileState(profile, extension)
           : nullptr;
   if (profile_state) {
+    DCHECK_EQ(profile_state->app_state->IsMultiProfile(),
+              bootstrap->IsMultiProfile());
     AppShimHost* host = profile_state->GetHost();
     if (host->HasBootstrapConnected()) {
       // If another app shim process has already connected to this (profile,
@@ -667,8 +680,22 @@ bool ExtensionAppShimHandler::IsAcceptablyCodeSigned(pid_t pid) const {
 }
 
 void ExtensionAppShimHandler::OnShimProcessDisconnected(AppShimHost* host) {
-  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
   const std::string app_id = host->GetAppId();
+
+  auto found_app = apps_.find(app_id);
+  DCHECK(found_app != apps_.end());
+  AppState* app_state = found_app->second.get();
+  DCHECK(app_state);
+
+  // For multi-profile apps, just delete the AppState, which will take down
+  // |host| and all profiles' state.
+  if (app_state->IsMultiProfile()) {
+    DCHECK_EQ(host, app_state->multi_profile_host.get());
+    apps_.erase(found_app);
+    return;
+  }
+
+  Profile* profile = delegate_->ProfileForPath(host->GetProfilePath());
 
   // For non-RemoteCocoa apps, close all of the windows only if the the shim
   // process has successfully connected (if it never connected, then let the
@@ -676,25 +703,19 @@ void ExtensionAppShimHandler::OnShimProcessDisconnected(AppShimHost* host) {
   bool close_windows =
       !host->UsesRemoteViews() && host->HasBootstrapConnected();
 
-  // Find the AppState or ProfileState that owns |host| and delete it. Note
-  // that that will destroy |host| as well.
-  auto found_app = apps_.find(app_id);
-  DCHECK(found_app != apps_.end());
-  AppState* app_state = found_app->second.get();
-  if (app_state->IsMultiProfile()) {
-    DCHECK_EQ(host, app_state->multi_profile_host.get());
-    apps_.erase(found_app);
-  } else {
-    auto found_profile = app_state->profiles.find(profile);
-    DCHECK(found_profile != app_state->profiles.end());
-    ProfileState* profile_state = found_profile->second.get();
-    DCHECK_EQ(host, profile_state->single_profile_host.get());
-    app_state->profiles.erase(found_profile);
-    if (app_state->profiles.empty())
-      apps_.erase(found_app);
-  }
+  // Erase the ProfileState, which will delete |host|.
+  auto found_profile = app_state->profiles.find(profile);
+  DCHECK(found_profile != app_state->profiles.end());
+  ProfileState* profile_state = found_profile->second.get();
+  DCHECK_EQ(host, profile_state->single_profile_host.get());
+  app_state->profiles.erase(found_profile);
   host = nullptr;
 
+  // Erase |app_state| if this was the last profile.
+  if (app_state->profiles.empty())
+    apps_.erase(found_app);
+
+  // Close app windows if we decided to do so above.
   if (close_windows) {
     AppWindowList windows = delegate_->GetWindows(profile, app_id);
     for (auto it = windows.begin(); it != windows.end(); ++it) {
@@ -708,6 +729,7 @@ void ExtensionAppShimHandler::OnShimFocus(
     AppShimHost* host,
     AppShimFocusType focus_type,
     const std::vector<base::FilePath>& files) {
+  // This path is only for legacy apps (which are perforce single-profile).
   if (host->UsesRemoteViews())
     return;
 
@@ -735,13 +757,36 @@ void ExtensionAppShimHandler::OnShimFocus(
 void ExtensionAppShimHandler::OnShimSelectedProfile(
     AppShimHost* host,
     const base::FilePath& profile_path) {
-  // TODO(https://crbug.com/982024): Handle the case where the profile exists
-  // but is not loaded yet.
-  Profile* profile = delegate_->ProfileForPath(profile_path);
-  const Extension* extension =
-      delegate_->MaybeGetAppExtension(profile, host->GetAppId());
-  std::vector<base::FilePath> files;
-  delegate_->LaunchApp(profile, extension, files);
+  LoadProfileAndApp(
+      profile_path, host->GetAppId(),
+      base::BindOnce(
+          &ExtensionAppShimHandler::OnShimSelectedProfileAndAppLoaded,
+          weak_factory_.GetWeakPtr()));
+}
+
+void ExtensionAppShimHandler::OnShimSelectedProfileAndAppLoaded(
+    Profile* profile,
+    const extensions::Extension* extension) {
+  if (!extension)
+    return;
+
+  auto found_app = apps_.find(extension->id());
+  if (found_app == apps_.end())
+    return;
+  AppState* app_state = found_app->second.get();
+  auto found_profile = app_state->profiles.find(profile);
+  if (found_profile != app_state->profiles.end()) {
+    // If this profile is currently open for the app, focus its windows.
+    ProfileState* profile_state = found_profile->second.get();
+    for (auto* browser : profile_state->browsers) {
+      if (auto* window = browser->window())
+        window->Show();
+    }
+  } else {
+    // Otherwise, launch the app for this profile (which will open a new
+    // window).
+    delegate_->LaunchApp(profile, extension, std::vector<base::FilePath>());
+  }
 }
 
 void ExtensionAppShimHandler::set_delegate(Delegate* delegate) {
@@ -847,6 +892,7 @@ void ExtensionAppShimHandler::OnBrowserSetLastActive(Browser* browser) {
   if (!avatar_menu_)
     return;
   avatar_menu_->ActiveBrowserChanged(browser);
+  avatar_menu_->RebuildMenu();
   for (auto& iter_app : apps_) {
     AppState* app_state = iter_app.second.get();
     if (app_state->IsMultiProfile())
@@ -903,27 +949,32 @@ ExtensionAppShimHandler::GetOrCreateProfileState(
   const bool is_multi_profile =
       base::FeatureList::IsEnabled(features::kAppShimMultiProfile) &&
       extension->from_bookmark();
+  const base::FilePath profile_path =
+      is_multi_profile ? base::FilePath() : profile->GetPath();
+  const std::string app_id = extension->id();
+  const bool use_remote_cocoa = UsesRemoteViews(extension);
 
   auto found_app = apps_.find(extension->id());
   if (found_app == apps_.end()) {
     std::unique_ptr<AppShimHost> multi_profile_host;
-    // TODO(https://crbug.com/982024): Pass nullptr instead of |profile| to
-    // CreateHost.
-    if (is_multi_profile)
-      multi_profile_host = delegate_->CreateHost(this, profile, extension);
+    if (is_multi_profile) {
+      multi_profile_host =
+          delegate_->CreateHost(this, profile_path, app_id, use_remote_cocoa);
+    }
     auto new_app_state =
         std::make_unique<AppState>(std::move(multi_profile_host));
     found_app =
-        apps_.insert(std::make_pair(extension->id(), std::move(new_app_state)))
-            .first;
+        apps_.insert(std::make_pair(app_id, std::move(new_app_state))).first;
   }
   AppState* app_state = found_app->second.get();
 
   auto found_profile = app_state->profiles.find(profile);
   if (found_profile == app_state->profiles.end()) {
     std::unique_ptr<AppShimHost> single_profile_host;
-    if (!is_multi_profile)
-      single_profile_host = delegate_->CreateHost(this, profile, extension);
+    if (!is_multi_profile) {
+      single_profile_host =
+          delegate_->CreateHost(this, profile_path, app_id, use_remote_cocoa);
+    }
     auto new_profile_state = std::make_unique<ProfileState>(
         app_state, std::move(single_profile_host));
     found_profile =

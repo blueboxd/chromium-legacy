@@ -7,8 +7,9 @@
 
 namespace device {
 
-FakeVRServiceClient::FakeVRServiceClient(mojom::VRServiceClientRequest request)
-    : m_binding_(this, std::move(request)) {}
+FakeVRServiceClient::FakeVRServiceClient(
+    mojo::PendingReceiver<mojom::VRServiceClient> receiver)
+    : receiver_(this, std::move(receiver)) {}
 
 FakeVRServiceClient::~FakeVRServiceClient() {}
 

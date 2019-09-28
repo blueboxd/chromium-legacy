@@ -4,8 +4,11 @@
 
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host_linux.h"
 
+#include "ui/aura/window.h"
+#include "ui/aura/window_delegate.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/events/event.h"
 #include "ui/platform_window/platform_window_handler/wm_move_resize_handler.h"
 #include "ui/platform_window/platform_window_init_properties.h"
 #include "ui/views/linux_ui/linux_ui.h"
@@ -96,6 +99,50 @@ void DesktopWindowTreeHostLinux::OnDisplayMetricsChanged(
     // this.
     OnHostResizedInPixels(GetBoundsInPixels().size());
   }
+}
+
+void DesktopWindowTreeHostLinux::DispatchEvent(ui::Event* event) {
+  // The input can be disabled and the widget marked as non-active in case of
+  // opened file-dialogs.
+  if (event->IsKeyEvent() && !native_widget_delegate()->AsWidget()->IsActive())
+    return;
+
+  // In Windows, the native events sent to chrome are separated into client
+  // and non-client versions of events, which we record on our LocatedEvent
+  // structures. On X11/Wayland, we emulate the concept of non-client. Before we
+  // pass this event to the cross platform event handling framework, we need to
+  // make sure it is appropriately marked as non-client if it's in the non
+  // client area, or otherwise, we can get into a state where the a window is
+  // set as the |mouse_pressed_handler_| in window_event_dispatcher.cc
+  // despite the mouse button being released.
+  //
+  // We can't do this later in the dispatch process because we share that
+  // with ash, and ash gets confused about event IS_NON_CLIENT-ness on
+  // events, since ash doesn't expect this bit to be set, because it's never
+  // been set before. (This works on ash on Windows because none of the mouse
+  // events on the ash desktop are clicking in what Windows considers to be a
+  // non client area.) Likewise, we won't want to do the following in any
+  // WindowTreeHost that hosts ash.
+  if (event->IsMouseEvent()) {
+    ui::MouseEvent* mouse_event = event->AsMouseEvent();
+    if (content_window() && content_window()->delegate()) {
+      int flags = mouse_event->flags();
+      gfx::Point location_in_dip = mouse_event->location();
+      GetRootTransform().TransformPointReverse(&location_in_dip);
+      int hit_test_code =
+          content_window()->delegate()->GetNonClientComponent(location_in_dip);
+      if (hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE)
+        flags |= ui::EF_IS_NON_CLIENT;
+      mouse_event->set_flags(flags);
+    }
+
+    // While we unset the urgency hint when we gain focus, we also must remove
+    // it on mouse clicks because we can call FlashFrame() on an active window.
+    if (mouse_event->IsAnyButton() || mouse_event->IsMouseWheelEvent())
+      FlashFrame(false);
+  }
+
+  WindowTreeHostPlatform::DispatchEvent(event);
 }
 
 void DesktopWindowTreeHostLinux::OnClosed() {

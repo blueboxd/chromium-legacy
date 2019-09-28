@@ -20,30 +20,15 @@
 
 namespace ui {
 
-class X11WindowManagerOzone;
-struct PlatformWindowInitProperties;
-
 // PlatformWindow implementation for X11 Ozone. PlatformEvents are ui::Events.
 class X11WindowOzone : public X11Window, public XEventDispatcher {
  public:
-  X11WindowOzone(PlatformWindowDelegate* delegate,
-                 X11WindowManagerOzone* window_manager);
+  explicit X11WindowOzone(PlatformWindowDelegate* delegate);
   ~X11WindowOzone() override;
 
-  gfx::AcceleratedWidget widget() const { return widget_; }
-
-  // Called by |window_manager_| once capture is set to another X11WindowOzone.
-  void OnLostCapture();
-
   // Overridden from PlatformWindow:
-  void Close() override;
   void PrepareForShutdown() override;
-  void SetCapture() override;
-  void ReleaseCapture() override;
-  bool HasCapture() const override;
   void SetCursor(PlatformCursor cursor) override;
-
-  void OnMouseEnter();
 
   // Overridden from ui::XEventDispatcher:
   void CheckCanDispatchNextPlatformEvent(XEvent* xev) override;
@@ -52,25 +37,11 @@ class X11WindowOzone : public X11Window, public XEventDispatcher {
   bool DispatchXEvent(XEvent* event) override;
 
  private:
-  // XWindow overrides:
-  void OnXWindowCreated() override;
-
   // X11Window overrides:
   void SetPlatformEventDispatcher() override;
 
   // PlatformEventDispatcher:
   bool CanDispatchEvent(const PlatformEvent& event) override;
-  uint32_t DispatchEvent(const PlatformEvent& event) override;
-
-  void Init(const PlatformWindowInitProperties& params);
-  void SetWidget(XID xwindow);
-  void RemoveFromWindowManager();
-
-  X11WindowManagerOzone* const window_manager_;
-
-  gfx::AcceleratedWidget widget_ = gfx::kNullAcceleratedWidget;
-
-  bool is_shutting_down_ = false;
 
   // Tells if this dispatcher can process next translated event based on a
   // previous check in ::CheckCanDispatchNextPlatformEvent based on a XID

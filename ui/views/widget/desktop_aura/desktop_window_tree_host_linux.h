@@ -31,6 +31,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostLinux
   void OnNativeWidgetCreated(const Widget::InitParams& params) override;
 
   // PlatformWindowDelegateBase:
+  void DispatchEvent(ui::Event* event) override;
   void OnClosed() override;
 
   // DesktopWindowTreeHostPlatform:

@@ -15,6 +15,8 @@
 
 namespace ui {
 
+class LocatedEvent;
+
 // Delegate interface used to communicate the X11PlatformWindow API client about
 // XEvents of interest.
 class X11_WINDOW_EXPORT XEventDelegate {
@@ -44,6 +46,14 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   void Initialize(PlatformWindowInitProperties properties);
 
   void SetXEventDelegate(XEventDelegate* delegate);
+
+  // X11WindowManager calls this.
+  // XWindow override:
+  void OnXWindowLostCapture() override;
+
+  void OnMouseEnter();
+
+  gfx::AcceleratedWidget GetWidget() const;
 
   // PlatformWindow:
   void Show(bool inactive) override;
@@ -83,9 +93,10 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
     return platform_window_delegate_;
   }
 
+  bool is_shutting_down() const { return is_shutting_down_; }
+
   // XWindow:
   void OnXWindowCreated() override;
-  void OnXWindowLostCapture() override;
 
  private:
   void ProcessXInput2Event(XEvent* xev);
@@ -123,6 +134,13 @@ class X11_WINDOW_EXPORT X11Window : public PlatformWindow,
   // the window size to the monitor size causes the WM to set the EWMH for
   // fullscreen.
   gfx::Size AdjustSizeForDisplay(const gfx::Size& requested_size_in_pixels);
+
+  // Converts the location of the |located_event| from the
+  // |current_window_bounds| to the |target_window_bounds|.
+  void ConvertEventLocationToTargetLocation(
+      const gfx::Rect& target_window_bounds,
+      const gfx::Rect& current_window_bounds,
+      ui::LocatedEvent* located_event);
 
   // Stores current state of this window.
   PlatformWindowState state_ = PlatformWindowState::kUnknown;

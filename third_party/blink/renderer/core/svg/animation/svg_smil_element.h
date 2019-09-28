@@ -140,11 +140,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
  protected:
   enum BeginOrEnd { kBegin, kEnd };
 
-  void IntervalIsDirty() {
-    interval_.begin = SMILTime();
-    interval_.end = SMILTime();
-  }
-
   void AddInstanceTime(BeginOrEnd, SMILTime, SMILTimeOrigin);
 
   void SetInactive() { active_state_ = kInactive; }

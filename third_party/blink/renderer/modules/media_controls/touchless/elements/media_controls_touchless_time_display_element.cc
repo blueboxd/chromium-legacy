@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_time_display_element.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/core/html/media/html_media_element.h"
 #include "third_party/blink/renderer/modules/media_controls/media_controls_shared_helper.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/media_controls_touchless_impl.h"

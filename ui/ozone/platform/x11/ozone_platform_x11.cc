@@ -19,7 +19,6 @@
 #include "ui/ozone/platform/x11/x11_cursor_factory_ozone.h"
 #include "ui/ozone/platform/x11/x11_screen_ozone.h"
 #include "ui/ozone/platform/x11/x11_surface_factory.h"
-#include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
 #include "ui/ozone/platform/x11/x11_window_ozone.h"
 #include "ui/ozone/public/gpu_platform_support_host.h"
 #include "ui/ozone/public/input_controller.h"
@@ -84,7 +83,7 @@ class OzonePlatformX11 : public OzonePlatform {
       PlatformWindowDelegate* delegate,
       PlatformWindowInitProperties properties) override {
     std::unique_ptr<X11WindowOzone> window =
-        std::make_unique<X11WindowOzone>(delegate, window_manager_.get());
+        std::make_unique<X11WindowOzone>(delegate);
     window->Initialize(std::move(properties));
     window->SetTitle(base::ASCIIToUTF16("Ozone X11"));
     return std::move(window);
@@ -96,8 +95,7 @@ class OzonePlatformX11 : public OzonePlatform {
   }
 
   std::unique_ptr<PlatformScreen> CreateScreen() override {
-    DCHECK(window_manager_);
-    auto screen = std::make_unique<X11ScreenOzone>(window_manager_.get());
+    auto screen = std::make_unique<X11ScreenOzone>();
     screen->Init();
     return screen;
   }
@@ -122,7 +120,6 @@ class OzonePlatformX11 : public OzonePlatform {
   void InitializeUI(const InitParams& params) override {
     InitializeCommon(params);
     CreatePlatformEventSource();
-    window_manager_ = std::make_unique<X11WindowManagerOzone>();
     overlay_manager_ = std::make_unique<StubOverlayManager>();
     input_controller_ = CreateStubInputController();
     clipboard_ = std::make_unique<X11ClipboardOzone>();
@@ -175,7 +172,6 @@ class OzonePlatformX11 : public OzonePlatform {
   bool common_initialized_ = false;
 
   // Objects in the UI process.
-  std::unique_ptr<X11WindowManagerOzone> window_manager_;
   std::unique_ptr<OverlayManagerOzone> overlay_manager_;
   std::unique_ptr<InputController> input_controller_;
   std::unique_ptr<X11ClipboardOzone> clipboard_;

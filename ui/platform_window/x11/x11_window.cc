@@ -14,6 +14,11 @@
 #include "ui/events/platform/x11/x11_event_source.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/platform_window/platform_window_delegate_linux.h"
+#include "ui/platform_window/x11/x11_window_manager.h"
+
+#if defined(USE_OZONE)
+#include "ui/events/ozone/events_ozone.h"
+#endif
 
 namespace ui {
 
@@ -102,6 +107,22 @@ void X11Window::SetXEventDelegate(XEventDelegate* delegate) {
   x_event_delegate_ = delegate;
 }
 
+void X11Window::OnXWindowLostCapture() {
+  platform_window_delegate_->OnLostCapture();
+}
+
+void X11Window::OnMouseEnter() {
+  platform_window_delegate_->OnMouseEnter();
+}
+
+gfx::AcceleratedWidget X11Window::GetWidget() const {
+  // In spite of being defined in Xlib as `unsigned long`, XID (|window()|'s
+  // type) is fixed at 32-bits (CARD32) in X11 Protocol, therefore can't be
+  // larger than 32 bits values on the wire (see https://crbug.com/607014 for
+  // more details). So, It's safe to use static_cast here.
+  return static_cast<gfx::AcceleratedWidget>(window());
+}
+
 void X11Window::Show(bool inactive) {
   if (mapped_in_client())
     return;
@@ -116,6 +137,8 @@ void X11Window::Hide() {
 void X11Window::Close() {
   if (is_shutting_down_)
     return;
+
+  X11WindowManager::GetInstance()->RemoveWindow(this);
 
   is_shutting_down_ = true;
   XWindow::Close();
@@ -166,16 +189,21 @@ void X11Window::SetTitle(const base::string16& title) {
 }
 
 void X11Window::SetCapture() {
-  XWindow::GrabPointer();
+  if (HasCapture())
+    return;
+  X11WindowManager::GetInstance()->GrabEvents(this);
+  GrabPointer();
 }
 
 void X11Window::ReleaseCapture() {
-  XWindow::ReleasePointerGrab();
+  if (!HasCapture())
+    return;
+  ReleasePointerGrab();
+  X11WindowManager::GetInstance()->UngrabEvents(this);
 }
 
 bool X11Window::HasCapture() const {
-  NOTIMPLEMENTED_LOG_ONCE();
-  return false;
+  return X11WindowManager::GetInstance()->event_grabber() == this;
 }
 
 void X11Window::ToggleFullscreen() {
@@ -342,6 +370,7 @@ ZOrderLevel X11Window::GetZOrderLevel() const {
 }
 
 void X11Window::StackAbove(gfx::AcceleratedWidget widget) {
+  // Check comment in the GetWidget method about this this cast.
   XWindow::StackXWindowAbove(static_cast<::Window>(widget));
 }
 
@@ -367,16 +396,17 @@ uint32_t X11Window::DispatchEvent(const PlatformEvent& event) {
   ProcessEvent(event);
   return POST_DISPATCH_STOP_PROPAGATION;
 #else
-  NOTREACHED() << "Ozone must use own dispatcher as it has different type of "
-                  "PlatformEvent";
-  return false;
+  OnXWindowEvent(event);
+  return POST_DISPATCH_STOP_PROPAGATION;
 #endif
 }
 
 void X11Window::OnXWindowCreated() {
+  X11WindowManager::GetInstance()->AddWindow(this);
+
   // X11WindowOzone overrides this method and manages events by itself.
   SetPlatformEventDispatcher();
-  platform_window_delegate_->OnAcceleratedWidgetAvailable(window());
+  platform_window_delegate_->OnAcceleratedWidgetAvailable(GetWidget());
 }
 
 void X11Window::OnXWindowStateChanged() {
@@ -430,12 +460,40 @@ void X11Window::OnXWindowLostPointerGrab() {
   platform_window_delegate_->OnLostMouseGrab();
 }
 
-void X11Window::OnXWindowLostCapture() {
-  platform_window_delegate_->OnLostCapture();
-}
-
 void X11Window::OnXWindowEvent(ui::Event* event) {
-  platform_window_delegate_->DispatchEvent(event);
+  DCHECK_NE(window(), x11::None);
+
+  auto* window_manager = X11WindowManager::GetInstance();
+  DCHECK(window_manager);
+
+  // If another X11PlatformWindow has capture == set self as the event grabber,
+  // the |event| must be rerouted to that grabber. Otherwise, just send the
+  // event.
+  auto* event_grabber = window_manager->event_grabber();
+  if (!event_grabber || event_grabber == this) {
+    if (event->IsMouseEvent())
+      window_manager->MouseOnWindow(this);
+#if defined(USE_OZONE)
+    DispatchEventFromNativeUiEvent(
+        event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                              base::Unretained(platform_window_delegate())));
+#else
+    platform_window_delegate_->DispatchEvent(event);
+#endif
+    return;
+  }
+
+  DCHECK(event_grabber);
+
+  if (event->IsMouseEvent() ||
+      (event->IsTouchEvent() && event->type() == ui::ET_TOUCH_PRESSED)) {
+    // Another X11PlatformWindow has installed itself as capture. Translate the
+    // event's location and dispatch to the other.
+    ConvertEventLocationToTargetLocation(event_grabber->GetBounds(),
+                                         GetBounds(), event->AsLocatedEvent());
+  }
+
+  event_grabber->OnXWindowEvent(event);
 }
 
 void X11Window::OnXWindowSelectionEvent(XEvent* xev) {
@@ -496,6 +554,26 @@ gfx::Size X11Window::AdjustSizeForDisplay(
   size_in_pixels.SetToMax(gfx::Size(1, 1));
   return size_in_pixels;
 #endif
+}
+
+void X11Window::ConvertEventLocationToTargetLocation(
+    const gfx::Rect& target_window_bounds,
+    const gfx::Rect& current_window_bounds,
+    ui::LocatedEvent* located_event) {
+  // TODO(msisov): for ozone, we need to access PlatformScreen instead and get
+  // the displays.
+  auto* display = display::Screen::GetScreen();
+  DCHECK(display);
+  auto display_window_target =
+      display->GetDisplayMatching(target_window_bounds);
+  auto display_window_current =
+      display->GetDisplayMatching(current_window_bounds);
+  DCHECK_EQ(display_window_target.device_scale_factor(),
+            display_window_current.device_scale_factor());
+
+  ConvertEventLocationToTargetWindowLocation(target_window_bounds.origin(),
+                                             current_window_bounds.origin(),
+                                             located_event);
 }
 
 }  // namespace ui

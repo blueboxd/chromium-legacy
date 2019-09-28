@@ -6,7 +6,7 @@
 
 #include <memory>
 #include "base/optional.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/platform/platform.h"
 #include "third_party/blink/renderer/bindings/modules/v8/v8_media_session_action_handler.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -320,7 +320,7 @@ mojom::blink::MediaSessionService* MediaSession::GetService() {
   // See https://bit.ly/2S0zRAS for task types.
   auto task_runner =
       GetExecutionContext()->GetTaskRunner(TaskType::kMiscPlatformAPI);
-  frame->GetInterfaceProvider().GetInterface(
+  frame->GetBrowserInterfaceBroker().GetInterface(
       service_.BindNewPipeAndPassReceiver());
   if (service_.get()) {
     // Record the eTLD+1 of the frame using the API.

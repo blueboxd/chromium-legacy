@@ -220,7 +220,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "blink.mojom.InsecureInputService",
                   "blink.mojom.MediaDevicesDispatcherHost",
                   "blink.mojom.MediaStreamDispatcherHost",
-                  "blink.mojom.MediaSessionService",
                   "blink.mojom.NativeFileSystemManager",
                   "blink.mojom.NotificationService",
                   "blink.mojom.Portal",

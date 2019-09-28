@@ -71,7 +71,6 @@
 #include "content/browser/log_console_message.h"
 #include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_interface_proxy.h"
-#include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/media/webaudio/audio_context_manager_impl.h"
 #include "content/browser/native_file_system/native_file_system_manager_impl.h"
 #include "content/browser/navigation_subresource_loader_params.h"
@@ -4329,9 +4328,6 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
                      base::Unretained(geolocation_service_.get())));
     }
   }
-
-  registry_->AddInterface(
-      base::Bind(&MediaSessionServiceImpl::Create, base::Unretained(this)));
 
   registry_->AddInterface(base::BindRepeating(
       &RenderFrameHostImpl::CreateWebUsbService, base::Unretained(this)));

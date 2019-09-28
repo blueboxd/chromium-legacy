@@ -70,7 +70,6 @@ DEFINE_UI_CLASS_PROPERTY_TYPE(views::DesktopWindowTreeHostX11*)
 
 namespace views {
 
-DesktopWindowTreeHostX11* DesktopWindowTreeHostX11::g_current_capture = nullptr;
 std::list<XID>* DesktopWindowTreeHostX11::open_windows_ = nullptr;
 
 DEFINE_UI_CLASS_PROPERTY_KEY(aura::Window*, kViewsWindowForRootWindow, NULL)
@@ -241,10 +240,6 @@ bool DesktopWindowTreeHostX11::IsActive() const {
   return GetXWindow()->IsActive();
 }
 
-bool DesktopWindowTreeHostX11::HasCapture() const {
-  return g_current_capture == this;
-}
-
 void DesktopWindowTreeHostX11::SetVisibleOnAllWorkspaces(bool always_visible) {
   GetXWindow()->SetVisibleOnAllWorkspaces(always_visible);
 }
@@ -353,114 +348,11 @@ bool DesktopWindowTreeHostX11::ShouldCreateVisibilityController() const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// DesktopWindowTreeHostX11, aura::WindowTreeHost implementatio
-
-void DesktopWindowTreeHostX11::SetCapture() {
-  if (HasCapture())
-    return;
-
-  // Grabbing the mouse is asynchronous. However, we synchronously start
-  // forwarding all mouse events received by Chrome to the
-  // aura::WindowEventDispatcher which has capture. This makes capture
-  // synchronous for all intents and purposes if either:
-  // - |g_current_capture|'s X window has capture.
-  // OR
-  // - The topmost window underneath the mouse is managed by Chrome.
-  DesktopWindowTreeHostX11* old_capturer = g_current_capture;
-
-  // Update |g_current_capture| prior to calling OnHostLostWindowCapture() to
-  // avoid releasing pointer grab.
-  g_current_capture = this;
-  if (old_capturer)
-    old_capturer->OnHostLostWindowCapture();
-
-  GetXWindow()->GrabPointer();
-}
-
-void DesktopWindowTreeHostX11::ReleaseCapture() {
-  if (g_current_capture == this) {
-    // Release mouse grab asynchronously. A window managed by Chrome is likely
-    // the topmost window underneath the mouse so the capture release being
-    // asynchronous is likely inconsequential.
-    g_current_capture = nullptr;
-    GetXWindow()->ReleasePointerGrab();
-
-    OnHostLostWindowCapture();
-  }
-}
-
-////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, private:
 
 void DesktopWindowTreeHostX11::SetUseNativeFrame(bool use_native_frame) {
   GetXWindow()->SetUseNativeFrame(use_native_frame);
   ResetWindowRegion();
-}
-
-void DesktopWindowTreeHostX11::DispatchMouseEvent(ui::MouseEvent* event) {
-  // In Windows, the native events sent to chrome are separated into client
-  // and non-client versions of events, which we record on our LocatedEvent
-  // structures. On X11, we emulate the concept of non-client. Before we pass
-  // this event to the cross platform event handling framework, we need to
-  // make sure it is appropriately marked as non-client if it's in the non
-  // client area, or otherwise, we can get into a state where the a window is
-  // set as the |mouse_pressed_handler_| in window_event_dispatcher.cc
-  // despite the mouse button being released.
-  //
-  // We can't do this later in the dispatch process because we share that
-  // with ash, and ash gets confused about event IS_NON_CLIENT-ness on
-  // events, since ash doesn't expect this bit to be set, because it's never
-  // been set before. (This works on ash on Windows because none of the mouse
-  // events on the ash desktop are clicking in what Windows considers to be a
-  // non client area.) Likewise, we won't want to do the following in any
-  // WindowTreeHost that hosts ash.
-  if (content_window() && content_window()->delegate()) {
-    int flags = event->flags();
-    gfx::Point location_in_dip = event->location();
-    GetRootTransform().TransformPointReverse(&location_in_dip);
-    int hit_test_code =
-        content_window()->delegate()->GetNonClientComponent(location_in_dip);
-    if (hit_test_code != HTCLIENT && hit_test_code != HTNOWHERE)
-      flags |= ui::EF_IS_NON_CLIENT;
-    event->set_flags(flags);
-  }
-
-  // While we unset the urgency hint when we gain focus, we also must remove it
-  // on mouse clicks because we can call FlashFrame() on an active window.
-  if (event->IsAnyButton() || event->IsMouseWheelEvent())
-    FlashFrame(false);
-
-  if (!g_current_capture || g_current_capture == this) {
-    SendEventToSink(event);
-  } else {
-    // Another DesktopWindowTreeHostX11 has installed itself as
-    // capture. Translate the event's location and dispatch to the other.
-    DCHECK_EQ(ui::GetScaleFactorForNativeView(window()),
-              ui::GetScaleFactorForNativeView(g_current_capture->window()));
-    ConvertEventLocationToTargetWindowLocation(
-        g_current_capture->GetLocationOnScreenInPixels(),
-        GetLocationOnScreenInPixels(), event->AsLocatedEvent());
-    g_current_capture->SendEventToSink(event);
-  }
-}
-
-void DesktopWindowTreeHostX11::DispatchTouchEvent(ui::TouchEvent* event) {
-  if (g_current_capture && g_current_capture != this &&
-      event->type() == ui::ET_TOUCH_PRESSED) {
-    DCHECK_EQ(ui::GetScaleFactorForNativeView(window()),
-              ui::GetScaleFactorForNativeView(g_current_capture->window()));
-    ConvertEventLocationToTargetWindowLocation(
-        g_current_capture->GetLocationOnScreenInPixels(),
-        GetLocationOnScreenInPixels(), event->AsLocatedEvent());
-    g_current_capture->SendEventToSink(event);
-  } else {
-    SendEventToSink(event);
-  }
-}
-
-void DesktopWindowTreeHostX11::DispatchKeyEvent(ui::KeyEvent* event) {
-  if (native_widget_delegate()->AsWidget()->IsActive())
-    SendEventToSink(event);
 }
 
 void DesktopWindowTreeHostX11::ResetWindowRegion() {
@@ -533,17 +425,6 @@ DesktopWindowTreeHostX11::GetKeyboardLayoutMap() {
 void DesktopWindowTreeHostX11::OnBoundsChanged(const gfx::Rect& new_bounds) {
   ResetWindowRegion();
   WindowTreeHostPlatform::OnBoundsChanged(new_bounds);
-}
-
-void DesktopWindowTreeHostX11::DispatchEvent(ui::Event* event) {
-  if (event->IsKeyEvent())
-    DispatchKeyEvent(event->AsKeyEvent());
-  else if (event->IsMouseEvent())
-    DispatchMouseEvent(event->AsMouseEvent());
-  else if (event->IsTouchEvent())
-    DispatchTouchEvent(event->AsTouchEvent());
-  else
-    SendEventToSink(event);
 }
 
 void DesktopWindowTreeHostX11::OnClosed() {
@@ -626,7 +507,7 @@ void DesktopWindowTreeHostX11::OnXWindowRawKeyEvent(XEvent* xev) {
     case KeyPress:
       if (!ShouldDiscardKeyEvent(xev)) {
         ui::KeyEvent keydown_event(xev);
-        DispatchKeyEvent(&keydown_event);
+        DesktopWindowTreeHostLinux::DispatchEvent(&keydown_event);
       }
       break;
     case KeyRelease:
@@ -638,7 +519,7 @@ void DesktopWindowTreeHostX11::OnXWindowRawKeyEvent(XEvent* xev) {
 
       if (!ShouldDiscardKeyEvent(xev)) {
         ui::KeyEvent keyup_event(xev);
-        DispatchKeyEvent(&keyup_event);
+        DesktopWindowTreeHostLinux::DispatchEvent(&keyup_event);
       }
       break;
     default:

@@ -33,9 +33,6 @@ class ImageSkia;
 
 namespace ui {
 enum class DomCode;
-class KeyEvent;
-class MouseEvent;
-class TouchEvent;
 class X11Window;
 }  // namespace ui
 
@@ -97,7 +94,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   std::string GetWorkspace() const override;
   void SetShape(std::unique_ptr<Widget::ShapeRects> native_shape) override;
   bool IsActive() const override;
-  bool HasCapture() const override;
   void SetVisibleOnAllWorkspaces(bool always_visible) override;
   bool IsVisibleOnAllWorkspaces() const override;
   Widget::MoveLoopResult RunMoveLoop(
@@ -120,35 +116,17 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   bool ShouldUseDesktopNativeCursorManager() const override;
   bool ShouldCreateVisibilityController() const override;
 
-  // Overridden from aura::WindowTreeHost:
-  void SetCapture() override;
-  void ReleaseCapture() override;
-
  private:
   friend class DesktopWindowTreeHostX11HighDPITest;
 
   // Sets whether the window's borders are provided by the window manager.
   void SetUseNativeFrame(bool use_native_frame);
 
-  // Dispatches a mouse event, taking mouse capture into account. If a
-  // different host has capture, we translate the event to its coordinate space
-  // and dispatch it to that host instead.
-  void DispatchMouseEvent(ui::MouseEvent* event);
-
-  // Dispatches a touch event, taking capture into account. If a different host
-  // has capture, then touch-press events are translated to its coordinate space
-  // and dispatched to that host instead.
-  void DispatchTouchEvent(ui::TouchEvent* event);
-
-  // Dispatches a key event.
-  void DispatchKeyEvent(ui::KeyEvent* event);
-
   // Resets the window region for the current widget bounds if necessary.
   void ResetWindowRegion();
 
   // See comment for variable open_windows_.
   static std::list<XID>& open_windows();
-
 
   void DelayedChangeFrameType(Widget::FrameType new_type);
 
@@ -164,7 +142,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
   // underlying DWTHPlatform and WTHPlatform. Eventually, these will be removed
   // from here as we progress in https://crbug.com/990756.
   void OnBoundsChanged(const gfx::Rect& new_bounds) override;
-  void DispatchEvent(ui::Event* event) override;
   void OnClosed() override;
   void OnWindowStateChanged(ui::PlatformWindowState new_state) override;
   void OnAcceleratedWidgetAvailable(gfx::AcceleratedWidget widget) override;
@@ -193,10 +170,6 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11 : public DesktopWindowTreeHostLinux,
 
   base::ObserverList<DesktopWindowTreeHostObserverX11>::Unchecked
       observer_list_;
-
-  // The current DesktopWindowTreeHostX11 which has capture. Set synchronously
-  // when capture is requested via SetCapture().
-  static DesktopWindowTreeHostX11* g_current_capture;
 
   // A list of all (top-level) windows that have been created but not yet
   // destroyed.

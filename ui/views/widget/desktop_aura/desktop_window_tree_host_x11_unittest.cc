@@ -527,12 +527,6 @@ class DesktopWindowTreeHostX11HighDPITest
   ~DesktopWindowTreeHostX11HighDPITest() override = default;
 
   void PretendCapture(views::Widget* capture_widget) {
-    DesktopWindowTreeHostX11* capture_host = nullptr;
-    if (capture_widget) {
-      capture_host = static_cast<DesktopWindowTreeHostX11*>(
-          capture_widget->GetNativeWindow()->GetHost());
-    }
-    DesktopWindowTreeHostX11::g_current_capture = capture_host;
     if (capture_widget)
       capture_widget->GetNativeWindow()->SetCapture();
   }

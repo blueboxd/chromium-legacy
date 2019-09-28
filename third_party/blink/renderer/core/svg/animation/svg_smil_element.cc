@@ -115,7 +115,6 @@ bool ConditionEventListener::Matches(const EventListener& listener) const {
 void ConditionEventListener::Invoke(ExecutionContext*, Event* event) {
   if (!animation_)
     return;
-  animation_->IntervalIsDirty();
   animation_->AddInstanceTime(condition_->GetBeginOrEnd(),
                               animation_->Elapsed() + condition_->Offset(),
                               SMILTimeOrigin::kEvent);
@@ -225,7 +224,6 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       cached_min_(kInvalidCachedTime),
       cached_max_(kInvalidCachedTime),
       interval_has_changed_(false) {
-  ResolveFirstInterval();
 }
 
 SVGSMILElement::~SVGSMILElement() = default;

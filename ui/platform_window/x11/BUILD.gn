@@ -34,5 +34,7 @@ jumbo_component("x11") {
     "x11_window.cc",
     "x11_window.h",
     "x11_window_export.h",
+    "x11_window_manager.cc",
+    "x11_window_manager.h",
   ]
 }

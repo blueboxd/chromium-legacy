@@ -13,11 +13,11 @@
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/platform/x11/x11_event_source_default.h"
-#include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
 #include "ui/ozone/platform/x11/x11_window_ozone.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+#include "ui/platform_window/x11/x11_window_manager.h"
 
 using ::testing::_;
 
@@ -57,10 +57,9 @@ class X11ScreenOzoneTest : public testing::Test {
   void SetUp() override {
     XDisplay* display = gfx::GetXDisplay();
     event_source_ = std::make_unique<X11EventSourceDefault>(display);
-    window_manager_ = std::make_unique<X11WindowManagerOzone>();
     primary_display_ = std::make_unique<display::Display>(
         NextDisplayId(), kPrimaryDisplayBounds);
-    screen_ = std::make_unique<X11ScreenOzone>(window_manager_.get());
+    screen_ = std::make_unique<X11ScreenOzone>();
     UpdateDisplayListForTest({*primary_display_});
     screen_->AddObserver(&display_observer_);
   }
@@ -103,8 +102,7 @@ class X11ScreenOzoneTest : public testing::Test {
     EXPECT_CALL(*delegate, OnAcceleratedWidgetAvailable(_))
         .WillOnce(StoreWidget(widget));
     PlatformWindowInitProperties init_params(bounds);
-    auto window =
-        std::make_unique<X11WindowOzone>(delegate, window_manager_.get());
+    auto window = std::make_unique<X11WindowOzone>(delegate);
     window->Initialize(std::move(init_params));
     return window;
   }
@@ -112,7 +110,6 @@ class X11ScreenOzoneTest : public testing::Test {
   MockDisplayObserver display_observer_;
 
  private:
-  std::unique_ptr<X11WindowManagerOzone> window_manager_;
   std::unique_ptr<display::Display> primary_display_;
   std::unique_ptr<X11ScreenOzone> screen_;
   std::unique_ptr<X11EventSourceDefault> event_source_;

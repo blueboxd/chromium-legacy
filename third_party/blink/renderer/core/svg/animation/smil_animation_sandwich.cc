@@ -54,11 +54,6 @@ void SMILAnimationSandwich::Reset() {
 }
 
 void SMILAnimationSandwich::UpdateTiming(SMILTime elapsed) {
-  if (!std::is_sorted(sandwich_.begin(), sandwich_.end(),
-                      PriorityCompare(elapsed))) {
-    std::sort(sandwich_.begin(), sandwich_.end(), PriorityCompare(elapsed));
-  }
-
   for (const auto& animation : sandwich_) {
     DCHECK(animation->HasValidTarget());
 
@@ -94,6 +89,11 @@ SMILTime SMILAnimationSandwich::NextProgressTime(
 void SMILAnimationSandwich::UpdateSyncBases(SMILTime elapsed) {
   for (auto& animation : sandwich_)
     animation->UpdateSyncBases();
+
+  if (!std::is_sorted(sandwich_.begin(), sandwich_.end(),
+                      PriorityCompare(elapsed))) {
+    std::sort(sandwich_.begin(), sandwich_.end(), PriorityCompare(elapsed));
+  }
 }
 
 SVGSMILElement* SMILAnimationSandwich::ResultElement() const {

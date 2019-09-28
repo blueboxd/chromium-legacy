@@ -10,14 +10,16 @@
 #include "base/run_loop.h"
 #include "base/test/task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/events/devices/x11/touch_factory_x11.h"
 #include "ui/events/event.h"
 #include "ui/events/platform/x11/x11_event_source_default.h"
 #include "ui/events/test/events_test_utils_x11.h"
-#include "ui/ozone/platform/x11/x11_window_manager_ozone.h"
 #include "ui/ozone/test/mock_platform_window_delegate.h"
 #include "ui/platform_window/platform_window_delegate.h"
 #include "ui/platform_window/platform_window_init_properties.h"
+#include "ui/platform_window/x11/x11_window_manager.h"
 
 namespace ui {
 
@@ -35,6 +37,49 @@ ACTION_P(CloneEvent, event_ptr) {
   *event_ptr = Event::Clone(*arg0);
 }
 
+// TestScreen implementation. We need to set a screen instance, because
+// X11Window requires it. And as long as depending on views is a dependency
+// violation, keep own implementation here. Otherwise, we could just use
+// ScreenOzone, but it is impossible.
+// We are not really interested in sending back real displays. Thus, default one
+// is more than enough.
+class TestScreen : public display::Screen {
+ public:
+  TestScreen() : displays_({}) {}
+  ~TestScreen() override = default;
+
+  // display::Screen interface.
+  gfx::Point GetCursorScreenPoint() override { return {}; }
+  bool IsWindowUnderCursor(gfx::NativeWindow window) override { return false; }
+  gfx::NativeWindow GetWindowAtScreenPoint(const gfx::Point& point) override {
+    return gfx::NativeWindow();
+  }
+  int GetNumDisplays() const override { return GetAllDisplays().size(); }
+  const std::vector<display::Display>& GetAllDisplays() const override {
+    return displays_;
+  }
+  display::Display GetDisplayNearestWindow(
+      gfx::NativeWindow window) const override {
+    return {};
+  }
+  display::Display GetDisplayNearestPoint(
+      const gfx::Point& point) const override {
+    return {};
+  }
+  display::Display GetDisplayMatching(
+      const gfx::Rect& match_rect) const override {
+    return {};
+  }
+  display::Display GetPrimaryDisplay() const override { return {}; }
+  void AddObserver(display::DisplayObserver* observer) override {}
+  void RemoveObserver(display::DisplayObserver* observer) override {}
+
+ private:
+  std::vector<display::Display> displays_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestScreen);
+};  // namespace
+
 }  // namespace
 
 class X11WindowOzoneTest : public testing::Test {
@@ -48,7 +93,8 @@ class X11WindowOzoneTest : public testing::Test {
   void SetUp() override {
     XDisplay* display = gfx::GetXDisplay();
     event_source_ = std::make_unique<X11EventSourceDefault>(display);
-    window_manager_ = std::make_unique<X11WindowManagerOzone>();
+
+    display::Screen::SetScreenInstance(new TestScreen());
 
     TouchFactory::GetInstance()->SetPointerDeviceForTest({kPointerDeviceId});
   }
@@ -61,8 +107,7 @@ class X11WindowOzoneTest : public testing::Test {
     EXPECT_CALL(*delegate, OnAcceleratedWidgetAvailable(_))
         .WillOnce(StoreWidget(widget));
     PlatformWindowInitProperties init_params(bounds);
-    auto window =
-        std::make_unique<X11WindowOzone>(delegate, window_manager_.get());
+    auto window = std::make_unique<X11WindowOzone>(delegate);
     window->Initialize(std::move(init_params));
     return std::move(window);
   }
@@ -75,13 +120,14 @@ class X11WindowOzoneTest : public testing::Test {
     event_source_->ProcessXEvent(event);
   }
 
-  X11WindowManagerOzone* window_manager() const {
-    return window_manager_.get();
+  X11WindowManager* window_manager() const {
+    auto* window_manager = X11WindowManager::GetInstance();
+    DCHECK(window_manager);
+    return window_manager;
   }
 
  private:
   std::unique_ptr<base::test::TaskEnvironment> task_env_;
-  std::unique_ptr<X11WindowManagerOzone> window_manager_;
   std::unique_ptr<X11EventSourceDefault> event_source_;
 
   DISALLOW_COPY_AND_ASSIGN(X11WindowOzoneTest);

@@ -459,6 +459,14 @@ _CONFIG = [
         ],
     },
     {
+        'paths': ['third_party/blink/renderer/core/animation_frame',
+                  'third_party/blink/renderer/core/offscreencanvas',
+                  'third_party/blink/renderer/core/html/canvas'],
+        'allowed': [
+            'viz::BeginFrameArgs',
+        ],
+    },
+    {
         'paths': ['third_party/blink/renderer/core/clipboard'],
         'allowed': ['net::EscapeForHTML'],
     },

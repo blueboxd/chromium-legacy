@@ -8,7 +8,9 @@
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_buffer_copy_view.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_buffer.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_command_buffer_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_command_encoder_descriptor.h"
+#include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_descriptor.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_compute_pass_encoder.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_device.h"
 #include "third_party/blink/renderer/modules/webgpu/gpu_extent_3d.h"
@@ -199,9 +201,16 @@ GPURenderPassEncoder* GPUCommandEncoder::beginRenderPass(
       GetProcs().commandEncoderBeginRenderPass(GetHandle(), &dawn_desc));
 }
 
-GPUComputePassEncoder* GPUCommandEncoder::beginComputePass() {
+GPUComputePassEncoder* GPUCommandEncoder::beginComputePass(
+    const GPUComputePassDescriptor* descriptor) {
+  DawnComputePassDescriptor dawn_desc = {};
+  if (descriptor->hasLabel()) {
+    dawn_desc.label = descriptor->label().Utf8().data();
+  }
+
   return GPUComputePassEncoder::Create(
-      device_, GetProcs().commandEncoderBeginComputePass(GetHandle(), nullptr));
+      device_,
+      GetProcs().commandEncoderBeginComputePass(GetHandle(), &dawn_desc));
 }
 
 void GPUCommandEncoder::copyBufferToBuffer(GPUBuffer* src,
@@ -263,9 +272,15 @@ void GPUCommandEncoder::insertDebugMarker(String markerLabel) {
                                              markerLabel.Utf8().data());
 }
 
-GPUCommandBuffer* GPUCommandEncoder::finish() {
+GPUCommandBuffer* GPUCommandEncoder::finish(
+    const GPUCommandBufferDescriptor* descriptor) {
+  DawnCommandBufferDescriptor dawn_desc = {};
+  if (descriptor->hasLabel()) {
+    dawn_desc.label = descriptor->label().Utf8().data();
+  }
+
   return GPUCommandBuffer::Create(
-      device_, GetProcs().commandEncoderFinish(GetHandle(), nullptr));
+      device_, GetProcs().commandEncoderFinish(GetHandle(), &dawn_desc));
 }
 
 }  // namespace blink

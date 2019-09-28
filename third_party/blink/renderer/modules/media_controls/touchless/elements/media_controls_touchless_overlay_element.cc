@@ -4,6 +4,7 @@
 
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_overlay_element.h"
 
+#include "third_party/blink/public/strings/grit/blink_strings.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_play_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_seek_button_element.h"
 #include "third_party/blink/renderer/modules/media_controls/touchless/elements/media_controls_touchless_volume_button_element.h"

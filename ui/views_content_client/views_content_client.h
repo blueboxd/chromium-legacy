@@ -40,7 +40,8 @@ namespace ui {
 //   ui::ViewsContentClient params(argc, argv);
 // #endif
 //
-//   params.set_task(base::Bind(&InitMyApp));
+//   params.set_on_pre_main_message_loop_run_callback(
+//       base::BindOnce(&InitMyApp));
 //   return params.RunMain();
 // }
 class VIEWS_CONTENT_CLIENT_EXPORT ViewsContentClient {

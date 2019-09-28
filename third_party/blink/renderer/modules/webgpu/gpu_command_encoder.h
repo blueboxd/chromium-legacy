@@ -12,7 +12,9 @@ namespace blink {
 class GPUBuffer;
 class GPUBufferCopyView;
 class GPUCommandBuffer;
+class GPUCommandBufferDescriptor;
 class GPUCommandEncoderDescriptor;
+class GPUComputePassDescriptor;
 class GPUComputePassEncoder;
 class GPUExtent3D;
 class GPURenderPassDescriptor;
@@ -33,7 +35,8 @@ class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
   // gpu_command_encoder.idl
   GPURenderPassEncoder* beginRenderPass(
       const GPURenderPassDescriptor* descriptor);
-  GPUComputePassEncoder* beginComputePass();
+  GPUComputePassEncoder* beginComputePass(
+      const GPUComputePassDescriptor* descriptor);
   void copyBufferToBuffer(GPUBuffer* src,
                           uint64_t src_offset,
                           GPUBuffer* dst,
@@ -51,7 +54,7 @@ class GPUCommandEncoder : public DawnObject<DawnCommandEncoder> {
   void pushDebugGroup(String groupLabel);
   void popDebugGroup();
   void insertDebugMarker(String markerLabel);
-  GPUCommandBuffer* finish();
+  GPUCommandBuffer* finish(const GPUCommandBufferDescriptor* descriptor);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(GPUCommandEncoder);

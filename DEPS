@@ -167,11 +167,11 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling Skia
   # and whatever else without interference from each other.
-  'skia_revision': '2e856451654d02d20f1a59e7ee1016cbec033826',
+  'skia_revision': '7aeabcfa6a7370d5482d77e138ba2475ae5ac958',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling V8
   # and whatever else without interference from each other.
-  'v8_revision': '3651981a8c3762d5cb0de6e7203171b490ca675f',
+  'v8_revision': '656e25f970901daff67319c68a19b109bee5ad1a',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling swarming_client
   # and whatever else without interference from each other.
@@ -862,7 +862,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '28884d465c09d4e003d92156183028be726af720',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + 'd9d7419a45d6766ae607250101548ad8a13681f5',
       'condition': 'checkout_linux',
   },
 
@@ -887,7 +887,7 @@ deps = {
   },
 
   'src/third_party/depot_tools':
-    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '39058571f71ef66bb032ecc1fa143ea15e38cf05',
+    Var('chromium_git') + '/chromium/tools/depot_tools.git' + '@' + '0081c0ff173c3af29933cbc6965d4a2d83b09576',
 
   'src/third_party/devtools-node-modules':
     Var('chromium_git') + '/external/github.com/ChromeDevTools/devtools-node-modules' + '@' + Var('devtools_node_modules_revision'),
@@ -1521,7 +1521,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@78bfba29d18376736e891a73c1f7553dbfc3307e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@5efc9bd8e0097b2083e37979114bb92523dbe396',
     'condition': 'checkout_src_internal',
   },
 

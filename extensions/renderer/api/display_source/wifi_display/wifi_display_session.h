@@ -10,7 +10,7 @@
 
 #include "extensions/common/mojom/wifi_display_session_service.mojom.h"
 #include "extensions/renderer/api/display_source/display_source_session.h"
-#include "mojo/public/cpp/bindings/binding.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "third_party/wds/src/libwds/public/source.h"
 
 namespace base {
@@ -75,7 +75,7 @@ class WiFiDisplaySession : public DisplaySourceSession,
   std::unique_ptr<wds::Source> wfd_source_;
   std::unique_ptr<WiFiDisplayMediaManager> media_manager_;
   mojom::WiFiDisplaySessionServicePtr service_;
-  mojo::Binding<WiFiDisplaySessionServiceClient> binding_;
+  mojo::Receiver<WiFiDisplaySessionServiceClient> receiver_{this};
   std::string local_ip_address_;
   std::map<int, std::unique_ptr<base::RepeatingTimer>> timers_;
 

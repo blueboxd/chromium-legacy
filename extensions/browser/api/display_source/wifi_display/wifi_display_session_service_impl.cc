@@ -47,11 +47,11 @@ void WiFiDisplaySessionServiceImpl::BindToRequest(
 }
 
 void WiFiDisplaySessionServiceImpl::SetClient(
-    mojom::WiFiDisplaySessionServiceClientPtr client) {
+    mojo::PendingRemote<mojom::WiFiDisplaySessionServiceClient> client) {
   DCHECK(client);
   DCHECK(!client_);
-  client_ = std::move(client);
-  client_.set_connection_error_handler(
+  client_.Bind(std::move(client));
+  client_.set_disconnect_handler(
       base::Bind(&WiFiDisplaySessionServiceImpl::OnClientConnectionError,
                  weak_factory_.GetWeakPtr()));
 }

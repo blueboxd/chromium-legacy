@@ -9,6 +9,8 @@
 #include "extensions/browser/api/display_source/display_source_connection_delegate.h"
 #include "extensions/common/mojom/wifi_display_session_service.mojom.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 
 namespace content {
@@ -31,7 +33,8 @@ class WiFiDisplaySessionServiceImpl
 
  private:
   // WiFiDisplaySessionService overrides.
-  void SetClient(mojom::WiFiDisplaySessionServiceClientPtr client) override;
+  void SetClient(mojo::PendingRemote<mojom::WiFiDisplaySessionServiceClient>
+                     client) override;
   void Connect(int32_t sink_id,
                int32_t auth_method,
                const std::string& auth_data) override;
@@ -57,7 +60,7 @@ class WiFiDisplaySessionServiceImpl
   // Mojo error callback.
   void OnClientConnectionError();
 
-  mojom::WiFiDisplaySessionServiceClientPtr client_;
+  mojo::Remote<mojom::WiFiDisplaySessionServiceClient> client_;
   DisplaySourceConnectionDelegate* delegate_;
 
   api::display_source::SinkState sink_state_;

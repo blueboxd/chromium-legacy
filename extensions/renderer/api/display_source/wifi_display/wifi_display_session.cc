@@ -11,6 +11,7 @@
 #include "base/timer/timer.h"
 #include "content/public/renderer/render_frame.h"
 #include "extensions/renderer/api/display_source/wifi_display/wifi_display_media_manager.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/wds/src/libwds/public/logging.h"
 #include "third_party/wds/src/libwds/public/media_manager.h"
@@ -34,13 +35,8 @@ namespace extensions {
 
 using api::display_source::ErrorType;
 
-WiFiDisplaySession::WiFiDisplaySession(
-    const DisplaySourceSessionParams& params)
-  : binding_(this),
-    params_(params),
-    cseq_(0),
-    timer_id_(0),
-    weak_factory_(this) {
+WiFiDisplaySession::WiFiDisplaySession(const DisplaySourceSessionParams& params)
+    : params_(params), cseq_(0), timer_id_(0), weak_factory_(this) {
   DCHECK(params_.render_frame);
   wds::LogSystem::set_error_func(&LogWDSError);
   params.render_frame->GetRemoteInterfaces()->GetInterface(&service_);
@@ -48,12 +44,11 @@ WiFiDisplaySession::WiFiDisplaySession(
           &WiFiDisplaySession::OnIPCConnectionError,
           weak_factory_.GetWeakPtr()));
 
-  WiFiDisplaySessionServiceClientPtr client;
-  binding_.Bind(mojo::MakeRequest(&client));
+  mojo::Remote<WiFiDisplaySessionServiceClient> client;
+  receiver_.Bind(client.BindNewPipeAndPassReceiver());
   service_->SetClient(std::move(client));
-  binding_.set_connection_error_handler(base::Bind(
-          &WiFiDisplaySession::OnIPCConnectionError,
-          weak_factory_.GetWeakPtr()));
+  receiver_.set_disconnect_handler(base::Bind(
+      &WiFiDisplaySession::OnIPCConnectionError, weak_factory_.GetWeakPtr()));
 }
 
 WiFiDisplaySession::~WiFiDisplaySession() {

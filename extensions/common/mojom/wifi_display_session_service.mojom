@@ -11,7 +11,9 @@ struct WiFiDisplayMediaPacket {
 // WiFiDisplaySessionService class provides access to the network for
 // the render-hosted Wi-Fi Display session.
 interface WiFiDisplaySessionService {
-  SetClient(WiFiDisplaySessionServiceClient client);
+  // Sets the client whose methods are invoked in order to to notify the client
+  // and to transmit controlling messages.
+  SetClient(pending_remote<WiFiDisplaySessionServiceClient> client);
 
   // Requires connection to a sink using the given authentication information.
   // Note: 'auth_method' values must correspond to 'enum AuthenticationMethod'
@@ -21,7 +23,7 @@ interface WiFiDisplaySessionService {
   // Drops the established connection to the connected sink.
   Disconnect();
 
-  // Sends a controlling mesage to the connected sink.
+  // Sends a controlling message to the connected sink.
   SendMessage(string message);
 };
 

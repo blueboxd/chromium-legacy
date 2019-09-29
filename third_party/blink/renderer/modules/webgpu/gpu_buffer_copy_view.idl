@@ -6,7 +6,7 @@
 
 dictionary GPUBufferCopyView {
     required GPUBuffer buffer;
-    unsigned long long offset = 0;
+    GPUBufferSize offset = 0;
     required unsigned long rowPitch;
     required unsigned long imageHeight;
 };

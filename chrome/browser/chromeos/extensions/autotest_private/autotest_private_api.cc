@@ -83,6 +83,7 @@
 #include "components/arc/metrics/arc_metrics_constants.h"
 #include "components/user_manager/user_manager.h"
 #include "content/public/browser/histogram_fetcher.h"
+#include "extensions/browser/event_router.h"
 #include "extensions/browser/extension_function_registry.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
@@ -97,6 +98,8 @@
 #include "net/base/filename_util.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
+#include "ui/base/clipboard/clipboard.h"
+#include "ui/base/clipboard/scoped_clipboard_writer.h"
 #include "ui/base/ime/ime_bridge.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/display/display.h"
@@ -410,6 +413,21 @@ std::string GetPngDataAsString(scoped_refptr<base::RefCountedMemory> png_data) {
   return base64Png;
 }
 }  // namespace
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateInitializeEventsFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateInitializeEventsFunction::
+    ~AutotestPrivateInitializeEventsFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateInitializeEventsFunction::Run() {
+  // AutotestPrivateAPI is lazily initialized, but needs to be created before
+  // any of its events can be fired, so we get the instance here and return.
+  AutotestPrivateAPI::GetFactoryInstance()->Get(browser_context());
+  return RespondNow(NoArguments());
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutotestPrivateLogoutFunction
@@ -1168,6 +1186,42 @@ ExtensionFunction::ResponseAction AutotestPrivateCloseAppFunction::Run() {
   if (!controller)
     return RespondNow(Error("Controller not available"));
   controller->Close(ash::ShelfID(params->app_id));
+  return RespondNow(NoArguments());
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateGetClipboardTextDataFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateGetClipboardTextDataFunction::
+    ~AutotestPrivateGetClipboardTextDataFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateGetClipboardTextDataFunction::Run() {
+  base::string16 data;
+  ui::Clipboard::GetForCurrentThread()->ReadText(
+      ui::ClipboardBuffer::kCopyPaste, &data);
+  return RespondNow(
+      OneArgument(base::Value::ToUniquePtrValue(base::Value(data))));
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// AutotestPrivateSetClipboardTextDataFunction
+///////////////////////////////////////////////////////////////////////////////
+
+AutotestPrivateSetClipboardTextDataFunction::
+    ~AutotestPrivateSetClipboardTextDataFunction() = default;
+
+ExtensionFunction::ResponseAction
+AutotestPrivateSetClipboardTextDataFunction::Run() {
+  std::unique_ptr<api::autotest_private::SetClipboardTextData::Params> params(
+      api::autotest_private::SetClipboardTextData::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  const base::string16 data = base::UTF8ToUTF16(params->data);
+  ui::ScopedClipboardWriter clipboard_writer(ui::ClipboardBuffer::kCopyPaste);
+  clipboard_writer.WriteText(data);
+
   return RespondNow(NoArguments());
 }
 
@@ -2614,11 +2668,28 @@ template <>
 KeyedService*
 BrowserContextKeyedAPIFactory<AutotestPrivateAPI>::BuildServiceInstanceFor(
     content::BrowserContext* context) const {
-  return new AutotestPrivateAPI();
+  return new AutotestPrivateAPI(context);
 }
 
-AutotestPrivateAPI::AutotestPrivateAPI() : test_mode_(false) {}
+AutotestPrivateAPI::AutotestPrivateAPI(content::BrowserContext* context)
+    : clipboard_observer_(this), browser_context_(context), test_mode_(false) {
+  clipboard_observer_.Add(ui::ClipboardMonitor::GetInstance());
+}
 
 AutotestPrivateAPI::~AutotestPrivateAPI() = default;
+
+void AutotestPrivateAPI::OnClipboardDataChanged() {
+  EventRouter* event_router = EventRouter::Get(browser_context_);
+  if (!event_router)
+    return;
+
+  std::unique_ptr<base::ListValue> event_args =
+      std::make_unique<base::ListValue>();
+  std::unique_ptr<Event> event(
+      new Event(events::AUTOTESTPRIVATE_ON_CLIPBOARD_DATA_CHANGED,
+                api::autotest_private::OnClipboardDataChanged::kEventName,
+                std::move(event_args)));
+  event_router->BroadcastEvent(std::move(event));
+}
 
 }  // namespace extensions

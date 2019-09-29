@@ -218,7 +218,7 @@ vars = {
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling freetype
   # and whatever else without interference from each other.
-  'freetype_revision': '432efa25b3476a6884426c0a30f6d6a624310e5d',
+  'freetype_revision': 'c37a501458e2b5389ac977ed2523eed3e2d9bd61',
   # Three lines of non-changing comments so that
   # the commit queue can handle CLs rolling HarfBuzz
   # and whatever else without interference from each other.
@@ -862,7 +862,7 @@ deps = {
 
   # Build tools for Chrome OS. Note: This depends on third_party/pyelftools.
   'src/third_party/chromite': {
-      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '94f3bad65fb7f4833cdc82be769ae3e04ad79003',
+      'url': Var('chromium_git') + '/chromiumos/chromite.git' + '@' + '28884d465c09d4e003d92156183028be726af720',
       'condition': 'checkout_linux',
   },
 
@@ -1269,7 +1269,7 @@ deps = {
   },
 
   'src/third_party/perfetto':
-    Var('android_git') + '/platform/external/perfetto.git' + '@' + '8dccfcd7c2913b622d0cd8245e13203a0671010a',
+    Var('android_git') + '/platform/external/perfetto.git' + '@' + '6a28e95a8e403120ced88f347d0c7ffe24b7b8f7',
 
   'src/third_party/perl': {
       'url': Var('chromium_git') + '/chromium/deps/perl.git' + '@' + '6f3e5028eb65d0b4c5fdd792106ac4c84eee1eb3',
@@ -1521,7 +1521,7 @@ deps = {
     Var('chromium_git') + '/v8/v8.git' + '@' +  Var('v8_revision'),
 
   'src-internal': {
-    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@88dd6432827da20a2dd51b47dd333feb7beeff8e',
+    'url': 'https://chrome-internal.googlesource.com/chrome/src-internal.git@78bfba29d18376736e891a73c1f7553dbfc3307e',
     'condition': 'checkout_src_internal',
   },
 

@@ -8,10 +8,10 @@ typedef unsigned long GPUColorWriteFlags;
 [
     RuntimeEnabled=WebGPU
 ] interface GPUColorWrite {
-    const unsigned long NONE = 0;
-    const unsigned long RED = 1;
-    const unsigned long GREEN = 2;
-    const unsigned long BLUE = 4;
-    const unsigned long ALPHA = 8;
-    const unsigned long ALL = 15;
+    const GPUColorWriteFlags NONE = 0;
+    const GPUColorWriteFlags RED = 1;
+    const GPUColorWriteFlags GREEN = 2;
+    const GPUColorWriteFlags BLUE = 4;
+    const GPUColorWriteFlags ALPHA = 8;
+    const GPUColorWriteFlags ALL = 15;
 };

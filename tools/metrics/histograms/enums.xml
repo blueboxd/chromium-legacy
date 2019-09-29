@@ -19235,6 +19235,7 @@ Called by update_net_error_codes.py.-->
       label="ACCESSIBILITY_PRIVATE_FIND_SCROLLABLE_BOUNDS_FOR_POINT"/>
   <int value="441" label="LOGIN_STATE_ON_SESSION_STATE_CHANGED"/>
   <int value="442" label="PRINTING_METRICS_ON_PRINT_JOB_FINISHED"/>
+  <int value="443" label="AUTOTESTPRIVATE_ON_CLIPBOARD_DATA_CHANGED"/>
 </enum>
 
 <enum name="ExtensionFileWriteResult">
@@ -20689,6 +20690,9 @@ Called by update_net_error_codes.py.-->
   <int value="1385" label="USERSPRIVATE_ISWHITELISTEDUSER"/>
   <int value="1386" label="PRINTINGMETRICS_GETPRINTJOBS"/>
   <int value="1387" label="AUTOTESTPRIVATE_WAITFORASSISTANTQUERYSTATUS"/>
+  <int value="1388" label="AUTOTESTPRIVATE_GETCLIPBOARDTEXTDATA"/>
+  <int value="1389" label="AUTOTESTPRIVATE_SETCLIPBOARDTEXTDATA"/>
+  <int value="1390" label="AUTOTESTPRIVATE_INITIALIZEEVENTS"/>
 </enum>
 
 <enum name="ExtensionIconState">

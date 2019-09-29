@@ -10,7 +10,7 @@
     // GPUProgrammablePassEncoder methods
     void setBindGroup(unsigned long index,
                       GPUBindGroup bindGroup,
-                      optional sequence<unsigned long long> dynamicOffsets = []);
+                      optional sequence<GPUBufferSize> dynamicOffsets = []);
     void pushDebugGroup(DOMString groupLabel);
     void popDebugGroup();
     void insertDebugMarker(DOMString markerLabel);
@@ -24,10 +24,10 @@
                      float minDepth, float maxDepth);
     void setScissorRect(unsigned long x, unsigned long y,
                         unsigned long width, unsigned long height);
-    void setIndexBuffer(GPUBuffer buffer, optional unsigned long long offset = 0);
+    void setIndexBuffer(GPUBuffer buffer, optional GPUBufferSize offset = 0);
     [RaisesException] void setVertexBuffers(unsigned long startSlot,
                                             sequence<GPUBuffer> buffers,
-                                            sequence<unsigned long long> offsets);
+                                            sequence<GPUBufferSize> offsets);
     void draw(unsigned long vertexCount, unsigned long instanceCount,
               unsigned long firstVertex,
               unsigned long firstInstance);
@@ -36,9 +36,9 @@
                      long baseVertex,
                      unsigned long firstInstance);
     void drawIndirect(GPUBuffer indirectBuffer,
-                      unsigned long long indirectOffset);
+                      GPUBufferSize indirectOffset);
     void drawIndexedIndirect(GPUBuffer indirectBuffer,
-                             unsigned long long indirectOffset);
+                             GPUBufferSize indirectOffset);
 
     void executeBundles(sequence<GPURenderBundle> bundles);
     void endPass();

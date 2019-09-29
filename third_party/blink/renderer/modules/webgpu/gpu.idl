@@ -4,6 +4,8 @@
 
 // https://gpuweb.github.io/gpuweb/
 
+typedef unsigned long long GPUBufferSize;
+
 [
     RuntimeEnabled=WebGPU
 ] interface GPU {

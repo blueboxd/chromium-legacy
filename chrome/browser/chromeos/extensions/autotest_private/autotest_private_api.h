@@ -12,6 +12,7 @@
 #include "ash/public/cpp/assistant/assistant_state.h"
 #include "ash/public/cpp/window_state_type.h"
 #include "base/compiler_specific.h"
+#include "base/scoped_observer.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/printing/cups_printers_manager.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
@@ -19,6 +20,8 @@
 #include "chromeos/services/machine_learning/public/mojom/model.mojom.h"
 #include "extensions/browser/browser_context_keyed_api_factory.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "ui/base/clipboard/clipboard_monitor.h"
+#include "ui/base/clipboard/clipboard_observer.h"
 #include "ui/snapshot/screenshot_grabber.h"
 
 namespace crostini {
@@ -28,6 +31,16 @@ enum class CrostiniResult;
 namespace extensions {
 
 class AssistantInteractionHelper;
+
+class AutotestPrivateInitializeEventsFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.initializeEvents",
+                             AUTOTESTPRIVATE_INITIALIZEEVENTS)
+
+ private:
+  ~AutotestPrivateInitializeEventsFunction() override;
+  ResponseAction Run() override;
+};
 
 class AutotestPrivateLogoutFunction : public ExtensionFunction {
  public:
@@ -318,6 +331,26 @@ class AutotestPrivateCloseAppFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class AutotestPrivateGetClipboardTextDataFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.getClipboardTextData",
+                             AUTOTESTPRIVATE_GETCLIPBOARDTEXTDATA)
+
+ private:
+  ~AutotestPrivateGetClipboardTextDataFunction() override;
+  ResponseAction Run() override;
+};
+
+class AutotestPrivateSetClipboardTextDataFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("autotestPrivate.setClipboardTextData",
+                             AUTOTESTPRIVATE_SETCLIPBOARDTEXTDATA)
+
+ private:
+  ~AutotestPrivateSetClipboardTextDataFunction() override;
+  ResponseAction Run() override;
+};
+
 class AutotestPrivateSetCrostiniEnabledFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("autotestPrivate.setCrostiniEnabled",
@@ -578,7 +611,8 @@ class AutotestPrivateSetCrostiniAppScaledFunction : public ExtensionFunction {
 };
 
 // The profile-keyed service that manages the autotestPrivate extension API.
-class AutotestPrivateAPI : public BrowserContextKeyedAPI {
+class AutotestPrivateAPI : public BrowserContextKeyedAPI,
+                           public ui::ClipboardObserver {
  public:
   static BrowserContextKeyedAPIFactory<AutotestPrivateAPI>*
   GetFactoryInstance();
@@ -590,7 +624,7 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI {
  private:
   friend class BrowserContextKeyedAPIFactory<AutotestPrivateAPI>;
 
-  AutotestPrivateAPI();
+  explicit AutotestPrivateAPI(content::BrowserContext* context);
   ~AutotestPrivateAPI() override;
 
   // BrowserContextKeyedAPI implementation.
@@ -598,6 +632,13 @@ class AutotestPrivateAPI : public BrowserContextKeyedAPI {
   static const bool kServiceIsNULLWhileTesting = true;
   static const bool kServiceRedirectedInIncognito = true;
 
+  // ui::ClipboardObserver
+  void OnClipboardDataChanged() override;
+
+  ScopedObserver<ui::ClipboardMonitor, ui::ClipboardObserver>
+      clipboard_observer_;
+
+  content::BrowserContext* const browser_context_;
   bool test_mode_;  // true for AutotestPrivateApiTest.AutotestPrivate test.
 };
 

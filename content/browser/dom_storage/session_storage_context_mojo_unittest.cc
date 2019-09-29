@@ -1125,7 +1125,8 @@ TEST_F(SessionStorageContextMojoTest, PurgeInactiveWrappers) {
   EXPECT_EQ(0ul, data.size());
 }
 
-TEST_F(SessionStorageContextMojoTest, ClearDiskState) {
+// TODO(https://crbug.com/1008697): Flakes when verifying no data found.
+TEST_F(SessionStorageContextMojoTest, DISABLED_ClearDiskState) {
   SetBackingMode(SessionStorageContextMojo::BackingMode::kClearDiskStateOnOpen);
   std::string namespace_id1 = base::GenerateGUID();
   url::Origin origin1 = url::Origin::Create(GURL("http://foobar.com"));

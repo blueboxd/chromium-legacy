@@ -10,7 +10,7 @@
     // GPUProgrammablePassEncoder methods
     void setBindGroup(unsigned long index,
                       GPUBindGroup bindGroup,
-                      optional sequence<unsigned long long> dynamicOffsets = []);
+                      optional sequence<GPUBufferSize> dynamicOffsets = []);
     void pushDebugGroup(DOMString groupLabel);
     void popDebugGroup();
     void insertDebugMarker(DOMString markerLabel);
@@ -21,7 +21,7 @@
                   optional unsigned long y = 1,
                   optional unsigned long z = 1);
     void dispatchIndirect(GPUBuffer indirectBuffer,
-                          unsigned long long indirectOffset);
+                          GPUBufferSize indirectOffset);
 
     void endPass();
 };

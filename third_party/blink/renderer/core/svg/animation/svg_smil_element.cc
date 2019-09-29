@@ -1056,29 +1056,31 @@ bool SVGSMILElement::IsContributing(SMILTime elapsed) const {
          GetActiveState() == kFrozen;
 }
 
-// The first part of the processing of the animation,
-// this checks if there are any further calculations needed
-// to continue and makes sure the intervals are correct.
-bool SVGSMILElement::NeedsToProgress(SMILTime elapsed) {
+bool SVGSMILElement::CurrentIntervalIsActive(SMILTime elapsed) {
   // Check we're connected to something and that our conditions have been
   // "connected".
   DCHECK(time_container_);
   DCHECK(conditions_connected_);
-  // Check that we have some form of start or are prepared to find it.
+  // If |is_waiting_for_first_interval_| is true, |interval_| can either be the
+  // actual interval that has been resolved, or unresolved if there are no
+  // begin times yet.
   DCHECK(is_waiting_for_first_interval_ || interval_.IsResolved());
 
-  // Check if we need updating, otherwise just return.
+  // No interval has been resolved yet, we're waiting for an event of some
+  // sort.
   if (!interval_.IsResolved()) {
     DCHECK_EQ(GetActiveState(), kInactive);
     return false;
   }
 
+  // We have a current interval, but it has not started yet.
   if (interval_.BeginsAfter(elapsed)) {
     DCHECK_NE(GetActiveState(), kActive);
     return false;
   }
 
   if (is_waiting_for_first_interval_) {
+    // The current internal must be the first, and has started, so clear the flag and (re)resolve.
     is_waiting_for_first_interval_ = false;
     if (ResolveFirstInterval())
       time_container_->NotifyIntervalsChanged();

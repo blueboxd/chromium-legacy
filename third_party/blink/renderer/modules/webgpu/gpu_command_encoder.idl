@@ -11,9 +11,11 @@
     GPUComputePassEncoder beginComputePass(optional GPUComputePassDescriptor descriptor);
 
     void copyBufferToBuffer(
-        GPUBuffer src, unsigned long long srcOffset,
-        GPUBuffer dst, unsigned long long dstOffset,
-        unsigned long long size);
+        GPUBuffer src,
+        GPUBufferSize srcOffset,
+        GPUBuffer dst,
+        GPUBufferSize dstOffset,
+        GPUBufferSize size);
 
     void copyBufferToTexture(
         GPUBufferCopyView source,

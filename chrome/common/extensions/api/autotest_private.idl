@@ -303,7 +303,12 @@ namespace autotestPrivate {
 
   callback VoidCallback = void ();
 
+  callback DOMStringCallback = void (DOMString data);
+
   interface Functions {
+    // Must be called to allow autotestPrivateAPI events to be fired.
+    static void initializeEvents();
+
     // Logout of a user session.
     static void logout();
 
@@ -420,6 +425,14 @@ namespace autotestPrivate {
     // |name|: Histogram name, e.g. "Accessibility.CrosAutoclick".
     // |callback|: Invoked with details.
     static void getHistogram(DOMString name, HistogramCallback callback);
+
+    // Get text from ui::Clipboard.
+    // |callback|: Called with result.
+    static void getClipboardTextData(DOMStringCallback callback);
+
+    // Set text in ui::Clipbaord.
+    // |callback|: Called when operation is complete.
+    static void setClipboardTextData(DOMString data, VoidCallback callback);
 
     // Run the crostini installer GUI to install the default crostini
     // vm / container and create sshfs mount.  The installer launches the
@@ -598,5 +611,10 @@ namespace autotestPrivate {
     // |callback|: called when the operation has completed.
     static void setArcAppWindowFocus(DOMString packageName,
                                      VoidCallback callback);
+  };
+
+  interface Events {
+    // Fired when the data in ui::Clipboard is changed.
+    static void onClipboardDataChanged();
   };
 };

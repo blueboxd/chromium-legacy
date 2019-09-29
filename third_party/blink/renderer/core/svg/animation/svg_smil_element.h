@@ -85,7 +85,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
   SMILTime BeginTimeForPrioritization(SMILTime presentation_time) const;
   SMILTime SimpleDuration() const;
 
-  bool NeedsToProgress(SMILTime elapsed);
+  bool CurrentIntervalIsActive(SMILTime elapsed);
   // Check if the current interval is still current, and if not compute the
   // next interval.
   void CheckAndUpdateInterval(SMILTime elapsed);

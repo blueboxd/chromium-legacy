@@ -5,6 +5,6 @@
 // https://gpuweb.github.io/gpuweb/
 
 dictionary GPUBufferDescriptor {
-    required unsigned long long size;
+    required GPUBufferSize size;
     required GPUBufferUsageFlags usage;
 };

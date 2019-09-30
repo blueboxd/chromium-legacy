@@ -99,8 +99,7 @@ void BadgeManager::UpdateBadge(const GURL& scope,
   delegate_->OnBadgeUpdated(scope);
 }
 
-void BadgeManager::SetBadge(const GURL& /*scope*/,
-                            blink::mojom::BadgeValuePtr mojo_value) {
+void BadgeManager::SetBadge(blink::mojom::BadgeValuePtr mojo_value) {
   if (mojo_value->is_number() && mojo_value->get_number() == 0) {
     mojo::ReportBadMessage(
         "|value| should not be zero when it is |number| (ClearBadge should be "
@@ -120,7 +119,7 @@ void BadgeManager::SetBadge(const GURL& /*scope*/,
   UpdateBadge(app_scope.value(), base::make_optional(value));
 }
 
-void BadgeManager::ClearBadge(const GURL& /*scope*/) {
+void BadgeManager::ClearBadge() {
   const base::Optional<GURL> app_scope =
       GetAppScopeForContext(receivers_.current_context());
   if (!app_scope)

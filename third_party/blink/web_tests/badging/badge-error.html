@@ -12,36 +12,21 @@
 <script>
 
 // Negative value not allowed.
-badge_test(() => { ExperimentalBadge.set(-1); }, undefined, undefined,
-           'TypeError');
+badge_test(() => { ExperimentalBadge.set(-1); }, undefined, 'TypeError');
 
 // Value too large (2^53).
-badge_test(() => { ExperimentalBadge.set(9007199254740992); }, undefined,
-           undefined, 'TypeError');
+badge_test(() => { ExperimentalBadge.set(9007199254740992); },
+  undefined,
+  'TypeError');
 
 // Illegal numeric values.
-badge_test(() => { ExperimentalBadge.set(Infinity); }, undefined, undefined,
-           'TypeError');
-badge_test(() => { ExperimentalBadge.set(-Infinity); }, undefined, undefined,
-           'TypeError');
-badge_test(() => { ExperimentalBadge.set(NaN); }, undefined, undefined,
-           'TypeError');
+badge_test(() => { ExperimentalBadge.set(Infinity); }, undefined, 'TypeError');
+badge_test(() => { ExperimentalBadge.set(-Infinity); }, undefined, 'TypeError');
+badge_test(() => { ExperimentalBadge.set(NaN); }, undefined, 'TypeError');
 
 // Other values that can't convert to a long.
-badge_test(() => { ExperimentalBadge.set("Foo"); }, undefined, undefined,
-           'TypeError');
-badge_test(() => { ExperimentalBadge.set({}); }, undefined, undefined,
-           'TypeError');
-
-// Wrong origin.
-badge_test(() => {
-  ExperimentalBadge.set(1, {scope: 'https://wrongorigin.com/scope'});
-}, undefined, undefined, 'SecurityError');
-
-// Invalid URL.
-badge_test(() => {
-  ExperimentalBadge.set(1, {scope: 'https://example.com:99999'});
-}, undefined, undefined, 'TypeError');
+badge_test(() => { ExperimentalBadge.set("Foo"); }, undefined, 'TypeError');
+badge_test(() => { ExperimentalBadge.set({}); }, undefined, 'TypeError');
 
 </script>
 </body>

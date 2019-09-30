@@ -80,6 +80,7 @@ APIArgumentIME.prototype.onKeyEvent = function(context, engine, keyData,
                           keyData.code + ':' +
                           keyData.ctrlKey + ':' +
                           keyData.altKey + ':' +
+                          keyData.altgrKey + ':' +
                           keyData.shiftKey + ':' +
                           keyData.capsLock);
   this.nextRequestID_++;

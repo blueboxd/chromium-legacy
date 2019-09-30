@@ -123,9 +123,6 @@ public class Tab {
     /** Gives {@link Tab} a way to interact with the Android window. */
     private WindowAndroid mWindowAndroid;
 
-    /** Whether or not this {@link Tab} is initialized and should be interacted with. */
-    private boolean mIsInitialized;
-
     /** The current native page (e.g. chrome-native://newtab), or {@code null} if there is none. */
     private NativePage mNativePage;
 
@@ -1015,6 +1012,7 @@ public class Tab {
         // activity.
         maybeShowNativePage(getUrl(), true);
 
+        assert mNativeTabAndroid != 0;
         TabJni.get().attachDetachedTab(mNativeTabAndroid, Tab.this);
 
         if (getWebContents() != null) {
@@ -1126,16 +1124,11 @@ public class Tab {
     }
 
     /**
-     * Builds the native counterpart to this class.  Meant to be overridden by subclasses to build
-     * subclass native counterparts instead.  Subclasses should not call this via super and instead
-     * rely on the native class to create the JNI association.
-     *
-     * TODO(dfalcantara): Make this function harder to access.
+     * Builds the native counterpart to this class.
      */
-    public void initializeNative() {
+    private void initializeNative() {
         if (mNativeTabAndroid == 0) TabJni.get().init(Tab.this);
         assert mNativeTabAndroid != 0;
-        mIsInitialized = true;
     }
 
     /**
@@ -1250,7 +1243,6 @@ public class Tab {
      * this method is called.  Once this call is made this {@link Tab} should no longer be used.
      */
     public void destroy() {
-        mIsInitialized = false;
         // Update the title before destroying the tab. http://b/5783092
         updateTitle();
 
@@ -1270,9 +1262,10 @@ public class Tab {
         // InfoBarContainer. The native tab should be destroyed before the infobar container as
         // destroying the native tab cleanups up any remaining infobars. The infobar container
         // expects all infobars to be cleaned up before its own destruction.
-        assert mNativeTabAndroid != 0;
-        TabJni.get().destroy(mNativeTabAndroid, Tab.this);
-        assert mNativeTabAndroid == 0;
+        if (mNativeTabAndroid != 0) {
+            TabJni.get().destroy(mNativeTabAndroid, Tab.this);
+            assert mNativeTabAndroid == 0;
+        }
     }
 
     /**
@@ -1280,7 +1273,7 @@ public class Tab {
      *         {@link #initializeNative()} being called or after {@link #destroy()}.
      */
     public boolean isInitialized() {
-        return mIsInitialized;
+        return mNativeTabAndroid != 0;
     }
 
     /**
@@ -1659,6 +1652,7 @@ public class Tab {
         webContents.setSize(originalWidth, originalHeight);
 
         if (!bounds.isEmpty()) {
+            assert mNativeTabAndroid != 0;
             TabJni.get().onPhysicalBackingSizeChanged(
                     mNativeTabAndroid, Tab.this, webContents, bounds.right, bounds.bottom);
         }
@@ -1690,6 +1684,7 @@ public class Tab {
 
     @CalledByNative
     private void setNativePtr(long nativePtr) {
+        assert nativePtr != 0;
         assert mNativeTabAndroid == 0;
         mNativeTabAndroid = nativePtr;
     }
@@ -1738,6 +1733,7 @@ public class Tab {
      */
     public void createHistoricalTab() {
         if (!isFrozen()) {
+            assert mNativeTabAndroid != 0;
             TabJni.get().createHistoricalTab(mNativeTabAndroid, Tab.this);
         } else if (mFrozenContentsState != null) {
             mFrozenContentsState.createHistoricalTab();
@@ -1885,6 +1881,7 @@ public class Tab {
      * @return Whether input events from the renderer are ignored on the browser side.
      */
     public boolean areRendererInputEventsIgnored() {
+        assert mNativeTabAndroid != 0;
         return TabJni.get().areRendererInputEventsIgnored(mNativeTabAndroid, Tab.this);
     }
 

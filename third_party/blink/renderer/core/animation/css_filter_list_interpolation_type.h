@@ -26,6 +26,9 @@ class CSSFilterListInterpolationType : public CSSInterpolationType {
   void ApplyStandardPropertyValue(const InterpolableValue&,
                                   const NonInterpolableValue*,
                                   StyleResolverState&) const final;
+  InterpolationValue MakeAdditive(
+      InterpolationValue value,
+      const InterpolationValue& underlying) const final;
 
  private:
   InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,

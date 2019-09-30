@@ -213,7 +213,8 @@ InterpolationValue CSSRotateInterpolationType::MaybeConvertValue(
 }
 
 InterpolationValue CSSRotateInterpolationType::MakeAdditive(
-    InterpolationValue value) const {
+    InterpolationValue value,
+    const InterpolationValue& underlying) const {
   value.non_interpolable_value = CSSRotateNonInterpolableValue::CreateAdditive(
       ToCSSRotateNonInterpolableValue(*value.non_interpolable_value));
   return value;

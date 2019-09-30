@@ -79,7 +79,7 @@ void Badge::SetBadge(WTF::String scope,
   if (!scope_url)
     return;
 
-  badge_service_->SetBadge(*scope_url, std::move(value));
+  badge_service_->SetBadge(std::move(value));
 }
 
 void Badge::ClearBadge(WTF::String scope, ExceptionState& exception_state) {
@@ -87,7 +87,7 @@ void Badge::ClearBadge(WTF::String scope, ExceptionState& exception_state) {
   if (!scope_url)
     return;
 
-  badge_service_->ClearBadge(*scope_url);
+  badge_service_->ClearBadge();
 }
 
 void Badge::Trace(blink::Visitor* visitor) {

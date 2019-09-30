@@ -126,6 +126,7 @@ void GetExtensionKeyboardEventFromKeyEvent(
   }
   ext_event->key_code = static_cast<int>(event.key_code());
   ext_event->alt_key = event.IsAltDown();
+  ext_event->altgr_key = event.IsAltGrDown();
   ext_event->ctrl_key = event.IsControlDown();
   ext_event->shift_key = event.IsShiftDown();
   ext_event->caps_lock = event.IsCapsLockOn();
@@ -138,8 +139,7 @@ void GetExtensionKeyboardEventFromKeyEvent(
 
 }  // namespace
 
-InputMethodEngineBase::KeyboardEvent::KeyboardEvent()
-    : alt_key(false), ctrl_key(false), shift_key(false), caps_lock(false) {}
+InputMethodEngineBase::KeyboardEvent::KeyboardEvent() = default;
 
 InputMethodEngineBase::KeyboardEvent::KeyboardEvent(
     const KeyboardEvent& other) = default;
@@ -330,6 +330,7 @@ bool InputMethodEngineBase::SendKeyEvents(
 
     int flags = ui::EF_NONE;
     flags |= event.alt_key ? ui::EF_ALT_DOWN : ui::EF_NONE;
+    flags |= event.altgr_key ? ui::EF_ALTGR_DOWN : ui::EF_NONE;
     flags |= event.ctrl_key ? ui::EF_CONTROL_DOWN : ui::EF_NONE;
     flags |= event.shift_key ? ui::EF_SHIFT_DOWN : ui::EF_NONE;
     flags |= event.caps_lock ? ui::EF_CAPS_LOCK_ON : ui::EF_NONE;

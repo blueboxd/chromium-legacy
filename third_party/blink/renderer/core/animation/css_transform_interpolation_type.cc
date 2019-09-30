@@ -251,7 +251,8 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertValue(
 }
 
 InterpolationValue CSSTransformInterpolationType::MakeAdditive(
-    InterpolationValue value) const {
+    InterpolationValue value,
+    const InterpolationValue& underlying) const {
   value.non_interpolable_value =
       CSSTransformNonInterpolableValue::CreateAdditive(
           ToCSSTransformNonInterpolableValue(*value.non_interpolable_value));

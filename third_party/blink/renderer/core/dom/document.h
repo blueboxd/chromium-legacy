@@ -501,8 +501,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void EvaluateMediaQueryList();
 
   FormController& GetFormController();
-  DocumentState* FormElementsState() const;
-  void SetStateForNewFormElements(const Vector<String>&);
+  DocumentState* GetDocumentState() const;
+  void SetStateForNewControls(const Vector<String>&);
 
   LocalFrameView* View() const;                    // can be null
   LocalFrame* GetFrame() const { return frame_; }  // can be null

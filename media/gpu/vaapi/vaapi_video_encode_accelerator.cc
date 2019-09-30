@@ -505,7 +505,7 @@ void VaapiVideoEncodeAccelerator::ReturnBitstreamBuffer(
   uint8_t* target_data = static_cast<uint8_t*>(buffer->shm->memory());
   size_t data_size = 0;
 
-  if (!vaapi_wrapper_->DownloadAndDestroyVABuffer(
+  if (!vaapi_wrapper_->DownloadFromVABuffer(
           encode_job->coded_buffer_id(), encode_job->input_surface()->id(),
           target_data, buffer->shm->size(), &data_size)) {
     NOTIFY_ERROR(kPlatformFailureError, "Failed downloading coded buffer");
@@ -519,6 +519,8 @@ void VaapiVideoEncodeAccelerator::ReturnBitstreamBuffer(
   child_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&Client::BitstreamBufferReady, client_,
                                 buffer->id, encode_job->Metadata(data_size)));
+
+  vaapi_wrapper_->DestroyVABuffer(encode_job->coded_buffer_id());
 }
 
 void VaapiVideoEncodeAccelerator::Encode(scoped_refptr<VideoFrame> frame,
@@ -617,6 +619,7 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
     // If this is a flush (null) frame, don't create/submit a new encode job for
     // it, but forward a null job to the submitted_encode_jobs_ queue.
     scoped_refptr<VaapiEncodeJob> job;
+    TRACE_EVENT0("media,gpu", "VAVEA::FromCreateEncodeJobToReturn");
     if (input_frame) {
       job = CreateEncodeJob(input_frame->frame, input_frame->force_keyframe);
       if (!job)
@@ -630,8 +633,10 @@ void VaapiVideoEncodeAccelerator::EncodePendingInputs() {
         NOTIFY_ERROR(kPlatformFailureError, "Failed preparing an encode job.");
         return;
       }
-
-      TRACE_EVENT0("media,gpu", "VAVEA: Execute");
+    }
+    TRACE_EVENT0("media,gpu", "VAVEA::FromExecuteToReturn");
+    if (job) {
+      TRACE_EVENT0("media,gpu", "VAVEA::Execute");
       job->Execute();
     }
 

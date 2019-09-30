@@ -685,6 +685,8 @@
 
     <!-- History Navigation UI Item -->
     <dimen name="navigation_bubble_size">44dp</dimen>
+    <dimen name="navigation_bubble_radius">22dp</dimen>
+    <dimen name="navigation_bubble_shadow_padding">1dp</dimen>
     <dimen name="navigation_bubble_arrow_size">32dp</dimen>
     <dimen name="navigation_bubble_start_padding">2dp</dimen>
     <dimen name="navigation_bubble_top_padding">4dp</dimen>

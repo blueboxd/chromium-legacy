@@ -351,13 +351,8 @@ class MEDIA_GPU_EXPORT VaapiWrapper
                             size_t target_size,
                             size_t* coded_data_size);
 
-  // See DownloadFromVABuffer() for details. After downloading, it deletes
-  // the VA buffer with |buffer_id|.
-  bool DownloadAndDestroyVABuffer(VABufferID buffer_id,
-                                  VASurfaceID sync_surface_id,
-                                  uint8_t* target_ptr,
-                                  size_t target_size,
-                                  size_t* coded_data_size);
+  // Deletes the VA buffer identified by |buffer_id|.
+  void DestroyVABuffer(VABufferID buffer_id);
 
   // Destroy all previously-allocated (and not yet destroyed) buffers.
   void DestroyVABuffers();
@@ -410,6 +405,10 @@ class MEDIA_GPU_EXPORT VaapiWrapper
   // if vaapi driver refuses to accept parameter or slice buffers submitted
   // by client, or if execution fails in hardware.
   bool Execute(VASurfaceID va_surface_id);
+  bool Execute_Locked(VASurfaceID va_surface_id)
+      EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
+
+  void DestroyPendingBuffers_Locked() EXCLUSIVE_LOCKS_REQUIRED(va_lock_);
 
   // Attempt to set render mode to "render to texture.". Failure is non-fatal.
   void TryToSetVADisplayAttributeToLocalGPU();

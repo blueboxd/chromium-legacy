@@ -20,12 +20,8 @@ union BadgeValue {
 // Interface for handling badge messages from frames and subframes.
 interface BadgeService {
   // Asks the browser process to set a badge.
-  // |scope| specifies which badges to set. Note: This must be on the same
-  // origin as the caller.
-  SetBadge(url.mojom.Url scope, BadgeValue value);
+  SetBadge(BadgeValue value);
 
   // Asks the browser to clear a badge.
-  // |scope| specifies the badges to clear. Note: This must be on the same
-  // origin as the caller.
-  ClearBadge(url.mojom.Url scope);
+  ClearBadge();
 };

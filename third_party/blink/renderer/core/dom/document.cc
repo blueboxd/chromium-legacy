@@ -2266,21 +2266,21 @@ FormController& Document::GetFormController() {
     form_controller_ = MakeGarbageCollected<FormController>(*this);
     HistoryItem* history_item = Loader() ? Loader()->GetHistoryItem() : nullptr;
     if (history_item)
-      history_item->SetDocumentState(form_controller_->FormElementsState());
+      history_item->SetDocumentState(form_controller_->ControlStates());
   }
   return *form_controller_;
 }
 
-DocumentState* Document::FormElementsState() const {
+DocumentState* Document::GetDocumentState() const {
   if (!form_controller_)
     return nullptr;
-  return form_controller_->FormElementsState();
+  return form_controller_->ControlStates();
 }
 
-void Document::SetStateForNewFormElements(const Vector<String>& state_vector) {
+void Document::SetStateForNewControls(const Vector<String>& state_vector) {
   if (!state_vector.size() && !form_controller_)
     return;
-  GetFormController().SetStateForNewFormElements(state_vector);
+  GetFormController().SetStateForNewControls(state_vector);
 }
 
 LocalFrameView* Document::View() const {
@@ -4352,7 +4352,7 @@ void Document::SetParsingState(ParsingState parsing_state) {
     element_data_cache_ = MakeGarbageCollected<ElementDataCache>();
   if (previous_state != kFinishedParsing &&
       parsing_state_ == kFinishedParsing) {
-    if (form_controller_ && form_controller_->HasFormStates())
+    if (form_controller_ && form_controller_->HasControlStates())
       form_controller_->ScheduleRestore();
   }
 }

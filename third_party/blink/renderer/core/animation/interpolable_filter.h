@@ -51,7 +51,7 @@ class CORE_EXPORT InterpolableFilter final : public InterpolableValue {
   }
   void Scale(double scale) final { NOTREACHED(); }
   void ScaleAndAdd(double scale, const InterpolableValue& other) final {
-    value_->ScaleAndAdd(scale, *To<InterpolableFilter>(other).value_);
+    NOTREACHED();
   }
   void AssertCanInterpolateWith(const InterpolableValue& other) const final;
 

@@ -39,6 +39,7 @@ class HTMLFormElement;
 class ListedElement;
 class SavedFormState;
 
+// FormControlState represents state of a single form control.
 class FormControlState {
   DISALLOW_NEW();
 
@@ -83,17 +84,15 @@ class CORE_EXPORT DocumentState final : public GarbageCollected<DocumentState> {
   DocumentState(Document& document);
   void Trace(Visitor*);
 
-  // TODO(tkent): Rename this to ControlList or something. The current
-  // name is confusing because it doesn't contain <form> elements.
-  using FormElementList = HeapVector<Member<ListedElement>, 64>;
+  using ControlList = HeapVector<Member<ListedElement>, 64>;
   void InvalidateControlList();
-  const FormElementList& ControlList();
+  const ControlList& GetControlList();
   Vector<String> ToStateVector();
 
  private:
   Member<Document> document_;
-  FormElementList form_controls_;
-  bool form_controls_dirty_ = true;
+  ControlList control_list_;
+  bool is_control_list_dirty_ = true;
 };
 
 class CORE_EXPORT FormController final
@@ -104,13 +103,13 @@ class CORE_EXPORT FormController final
   void Trace(Visitor*);
 
   void InvalidateStatefulFormControlList();
-  // This should be callled only by Document::formElementsState().
-  DocumentState* FormElementsState() const;
-  // This should be callled only by Document::setStateForNewFormElements().
-  void SetStateForNewFormElements(const Vector<String>&);
+  // This should be called only by Document::FormElementsState().
+  DocumentState* ControlStates() const;
+  // This should be called only by Document::SetStateForNewFormElements().
+  void SetStateForNewControls(const Vector<String>&);
   // Returns true if saved state is set to this object and there are entries
   // which are not consumed yet.
-  bool HasFormStates() const;
+  bool HasControlStates() const;
   void WillDeleteForm(HTMLFormElement*);
   void RestoreControlStateFor(ListedElement&);
   void RestoreControlStateIn(HTMLFormElement&);
@@ -123,9 +122,11 @@ class CORE_EXPORT FormController final
       const Vector<String>& state_vector);
 
  private:
-  FormControlState TakeStateForFormElement(const ListedElement&);
-  static void FormStatesFromStateVector(const Vector<String>&,
-                                        SavedFormStateMap&);
+  FormControlState TakeStateForControl(const ListedElement&);
+  static void ControlStatesFromStateVector(const Vector<String>&,
+                                           SavedFormStateMap&);
+  // A helper for RestoreControlStateFor() and RestoreControlStateIn().
+  void RestoreControlStateInternal(ListedElement& control);
   void RestoreAllControlsInDocumentOrder();
 
   Member<Document> document_;

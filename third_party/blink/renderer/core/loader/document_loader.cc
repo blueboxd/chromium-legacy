@@ -468,7 +468,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
       same_document_navigation_source == kSameDocumentNavigationHistoryApi
           ? HistoryNavigationType::kHistoryApi
           : HistoryNavigationType::kFragment);
-  history_item_->SetDocumentState(frame_->GetDocument()->FormElementsState());
+  history_item_->SetDocumentState(frame_->GetDocument()->GetDocumentState());
   if (same_document_navigation_source == kSameDocumentNavigationHistoryApi) {
     history_item_->SetStateObject(std::move(data));
     history_item_->SetScrollRestorationType(scroll_restoration_type);
@@ -1338,7 +1338,7 @@ void DocumentLoader::DidInstallNewDocument(Document* document) {
     document->BindContentSecurityPolicy();
 
   if (history_item_ && IsBackForwardLoadType(load_type_))
-    document->SetStateForNewFormElements(history_item_->GetDocumentState());
+    document->SetStateForNewControls(history_item_->GetDocumentState());
 
   DCHECK(document->GetFrame());
   // TODO(dgozman): modify frame's client hints directly once we commit

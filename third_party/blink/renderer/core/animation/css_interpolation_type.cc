@@ -141,7 +141,7 @@ InterpolationValue CSSInterpolationType::MaybeConvertSingle(
       keyframe, environment, underlying, conversion_checkers);
   if (result && keyframe.Composite() !=
                     EffectModel::CompositeOperation::kCompositeReplace) {
-    return MakeAdditive(std::move(result));
+    return MakeAdditive(std::move(result), underlying);
   }
   return result;
 }

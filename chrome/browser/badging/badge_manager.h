@@ -75,11 +75,8 @@ class BadgeManager : public KeyedService, public blink::mojom::BadgeService {
   // blink::mojom::BadgeService:
   // Note: These are private to stop them being called outside of mojo as they
   // require a mojo binding context.
-  // TODO(crbug.com/1006665): Remove scope from the mojo interface in SetBadge
-  // and ClearBadge.
-  void SetBadge(const GURL& /*scope*/,
-                blink::mojom::BadgeValuePtr value) override;
-  void ClearBadge(const GURL& /*scope*/) override;
+  void SetBadge(blink::mojom::BadgeValuePtr value) override;
+  void ClearBadge() override;
 
   // Finds the scope URL of the most specific badge for |scope|. Returns
   // GURL::EmptyGURL() if no match is found.

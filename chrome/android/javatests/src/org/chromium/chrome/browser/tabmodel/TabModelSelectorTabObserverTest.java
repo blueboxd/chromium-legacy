@@ -135,14 +135,9 @@ public class TabModelSelectorTabObserverTest {
     }
 
     private Tab createTestTab(boolean incognito) {
-        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
-            Tab testTab = new TabBuilder()
-                                  .setIncognito(incognito)
-                                  .setWindow(mTestRule.getWindowAndroid())
-                                  .build();
-            testTab.initializeNative();
-            return testTab;
-        });
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                new TabBuilder().setIncognito(incognito).setWindow(
+                        mTestRule.getWindowAndroid())::build);
     }
 
     private static void addTab(TabModel tabModel, Tab tab) {

@@ -112,10 +112,11 @@ void ImeObserver::OnKeyEvent(
   }
   key_data_value.key = event.key;
   key_data_value.code = event.code;
-  key_data_value.alt_key.reset(new bool(event.alt_key));
-  key_data_value.ctrl_key.reset(new bool(event.ctrl_key));
-  key_data_value.shift_key.reset(new bool(event.shift_key));
-  key_data_value.caps_lock.reset(new bool(event.caps_lock));
+  key_data_value.alt_key = std::make_unique<bool>(event.alt_key);
+  key_data_value.altgr_key = std::make_unique<bool>(event.altgr_key);
+  key_data_value.ctrl_key = std::make_unique<bool>(event.ctrl_key);
+  key_data_value.shift_key = std::make_unique<bool>(event.shift_key);
+  key_data_value.caps_lock = std::make_unique<bool>(event.caps_lock);
 
   std::unique_ptr<base::ListValue> args(
       input_ime::OnKeyEvent::Create(component_id, key_data_value, request_id));
@@ -402,8 +403,9 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
       SendKeyEvents::Params::Create(*args_));
   EXTENSION_FUNCTION_VALIDATE(parent_params);
   const SendKeyEvents::Params::Parameters& params = parent_params->parameters;
-  std::vector<InputMethodEngineBase::KeyboardEvent> key_data_out;
 
+  std::vector<InputMethodEngineBase::KeyboardEvent> key_data_out;
+  key_data_out.reserve(params.key_data.size());
   for (const auto& key_event : params.key_data) {
     key_data_out.emplace_back();
     InputMethodEngineBase::KeyboardEvent& event = key_data_out.back();
@@ -412,6 +414,7 @@ ExtensionFunction::ResponseAction InputImeSendKeyEventsFunction::Run() {
     event.code = key_event.code;
     event.key_code = key_event.key_code.get() ? *(key_event.key_code) : 0;
     event.alt_key = key_event.alt_key ? *(key_event.alt_key) : false;
+    event.altgr_key = key_event.altgr_key ? *(key_event.altgr_key) : false;
     event.ctrl_key = key_event.ctrl_key ? *(key_event.ctrl_key) : false;
     event.shift_key = key_event.shift_key ? *(key_event.shift_key) : false;
     event.caps_lock = key_event.caps_lock ? *(key_event.caps_lock) : false;

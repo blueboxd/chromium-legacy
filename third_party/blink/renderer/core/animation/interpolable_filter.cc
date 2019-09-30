@@ -210,8 +210,9 @@ FilterOperation* InterpolableFilter::CreateFilterOperation(
 
 void InterpolableFilter::AssertCanInterpolateWith(
     const InterpolableValue& other) const {
-  DCHECK(other.IsFilter());
-  DCHECK_EQ(type_, To<InterpolableFilter>(other).type_);
+  const InterpolableFilter& other_filter = To<InterpolableFilter>(other);
+  value_->AssertCanInterpolateWith(*other_filter.value_);
+  DCHECK_EQ(type_, other_filter.type_);
 }
 
 void InterpolableFilter::Interpolate(const InterpolableValue& to,

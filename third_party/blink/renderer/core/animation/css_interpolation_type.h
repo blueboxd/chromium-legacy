@@ -63,7 +63,9 @@ class CORE_EXPORT CSSInterpolationType : public InterpolationType {
                                         const InterpolationValue& underlying,
                                         ConversionCheckers&) const final;
 
-  virtual InterpolationValue MakeAdditive(InterpolationValue value) const {
+  virtual InterpolationValue MakeAdditive(
+      InterpolationValue value,
+      const InterpolationValue& underlying) const {
     return value;
   }
 

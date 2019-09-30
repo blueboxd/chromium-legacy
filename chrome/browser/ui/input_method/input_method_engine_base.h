@@ -41,10 +41,11 @@ class InputMethodEngineBase : virtual public ui::IMEEngineHandlerInterface {
     std::string code;
     int key_code;  // only used by on-screen keyboards.
     std::string extension_id;
-    bool alt_key;
-    bool ctrl_key;
-    bool shift_key;
-    bool caps_lock;
+    bool alt_key = false;
+    bool altgr_key = false;
+    bool ctrl_key = false;
+    bool shift_key = false;
+    bool caps_lock = false;
   };
 
   enum SegmentStyle {

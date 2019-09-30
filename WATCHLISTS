@@ -776,6 +776,10 @@
                   'chrome/browser/resources/chromeos/login/|'\
                   'ui/login/',
     },
+    'chromeos_media_app': {
+      'filepath': 'chromeos/components/media_app_ui/|'\
+                  'chromeos/resources/media_app_resources.grdp',
+    },
     'chromeos_net': {
       'filepath': 'ash/system/network/|'\
                   'chromeos/network/|'\
@@ -2235,6 +2239,7 @@
                        'alemate+watch@chromium.org',
                        'rsorokin+watch@chromium.org',
                        'tbarzic+watch@chromium.org'],
+    'chromeos_media_app': ['cros-essential-apps-dev+watch@chromium.org'],
     'chromeos_net': ['azeemarshad+watch-network@chromium.org',
                      'benchan+watch-network@chromium.org',
                      'ejcaruso+watch-network@chromium.org',

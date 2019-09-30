@@ -9,6 +9,11 @@
 namespace network {
 namespace features {
 
+// When kCapReferrerToOriginOnCrossOrigin is enabled, HTTP referrers on cross-
+// origin requests are restricted to contain at most the source origin.
+const base::Feature kCapReferrerToOriginOnCrossOrigin{
+    "CapReferrerToOriginOnCrossOrigin", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables Expect CT reporting, which sends reports for opted-in sites
 // that don't serve sufficient Certificate Transparency information.
 const base::Feature kExpectCTReporting{"ExpectCTReporting",

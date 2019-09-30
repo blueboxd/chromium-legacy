@@ -15,6 +15,8 @@
 #include "content/public/renderer/render_thread_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver_set.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/renderer/chromeos_delayed_callback_group.h"
@@ -44,7 +46,8 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
                            public base::RefCountedThreadSafe<ChromeOSListener> {
    public:
     static scoped_refptr<ChromeOSListener> Create(
-        chrome::mojom::ChromeOSListenerRequest chromeos_listener_request);
+        mojo::PendingReceiver<chrome::mojom::ChromeOSListener>
+            chromeos_listener_receiver);
 
     // Is the merge session still running?
     bool IsMergeSessionRunning() const;
@@ -63,13 +66,13 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
     ChromeOSListener();
     ~ChromeOSListener() override;
 
-    void BindOnIOThread(
-        chrome::mojom::ChromeOSListenerRequest chromeos_listener_request);
+    void BindOnIOThread(mojo::PendingReceiver<chrome::mojom::ChromeOSListener>
+                            chromeos_listener_receiver);
 
     scoped_refptr<DelayedCallbackGroup> session_merged_callbacks_;
     bool merge_session_running_ GUARDED_BY(lock_);
     mutable base::Lock lock_;
-    mojo::Binding<chrome::mojom::ChromeOSListener> binding_;
+    mojo::Receiver<chrome::mojom::ChromeOSListener> receiver_{this};
 
     DISALLOW_COPY_AND_ASSIGN(ChromeOSListener);
   };
@@ -106,9 +109,10 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
       blink::AssociatedInterfaceRegistry* associated_interfaces) override;
 
   // chrome::mojom::RendererConfiguration:
-  void SetInitialConfiguration(bool is_incognito_process,
-                               chrome::mojom::ChromeOSListenerRequest
-                                   chromeos_listener_request) override;
+  void SetInitialConfiguration(
+      bool is_incognito_process,
+      mojo::PendingReceiver<chrome::mojom::ChromeOSListener>
+          chromeos_listener_receiver) override;
   void SetConfiguration(chrome::mojom::DynamicParamsPtr params) override;
   void SetContentSettingRules(
       const RendererContentSettingRules& rules) override;

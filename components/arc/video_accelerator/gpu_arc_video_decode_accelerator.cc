@@ -486,8 +486,17 @@ void GpuArcVideoDecodeAccelerator::ImportBufferForPicture(
     }
     gmb_handle.native_pixmap_handle = std::move(protected_native_pixmap);
   } else {
+    std::vector<base::ScopedFD> handle_fds =
+        DuplicateFD(std::move(handle_fd), planes.size());
+    if (handle_fds.empty()) {
+      VLOGF(1) << "Failed to duplicate fd";
+      client_->NotifyError(
+          mojom::VideoDecodeAccelerator::Result::INVALID_ARGUMENT);
+      return;
+    }
+
     auto handle = CreateGpuMemoryBufferHandle(pixel_format, coded_size_,
-                                              std::move(handle_fd), planes);
+                                              std::move(handle_fds), planes);
     if (!handle) {
       VLOGF(1) << "Failed to create GpuMemoryBufferHandle";
       client_->NotifyError(

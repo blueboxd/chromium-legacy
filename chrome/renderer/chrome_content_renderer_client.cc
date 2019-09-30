@@ -747,7 +747,7 @@ bool ChromeContentRendererClient::DeferMediaLoad(
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 
-chrome::mojom::PluginInfoHostAssociatedPtr&
+mojo::AssociatedRemote<chrome::mojom::PluginInfoHost>&
 ChromeContentRendererClient::GetPluginInfoHost() {
   struct PluginInfoHostHolder {
     PluginInfoHostHolder() {
@@ -755,7 +755,7 @@ ChromeContentRendererClient::GetPluginInfoHost() {
           &plugin_info_host);
     }
     ~PluginInfoHostHolder() {}
-    chrome::mojom::PluginInfoHostAssociatedPtr plugin_info_host;
+    mojo::AssociatedRemote<chrome::mojom::PluginInfoHost> plugin_info_host;
   };
   static base::NoDestructor<PluginInfoHostHolder> holder;
   return holder->plugin_info_host;
@@ -989,9 +989,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
         placeholder->AllowLoading();
-        chrome::mojom::PluginHostAssociatedPtr plugin_host;
+        mojo::AssociatedRemote<chrome::mojom::PluginHost> plugin_host;
         render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
-            &plugin_host);
+            plugin_host.BindNewEndpointAndPassReceiver());
         plugin_host->BlockedOutdatedPlugin(placeholder->BindPluginRenderer(),
                                            identifier);
         break;
@@ -1007,9 +1007,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_NOT_AUTHORIZED, group_name));
         placeholder->AllowLoading();
-        chrome::mojom::PluginAuthHostAssociatedPtr plugin_auth_host;
+        mojo::AssociatedRemote<chrome::mojom::PluginAuthHost> plugin_auth_host;
         render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
-            &plugin_auth_host);
+            plugin_auth_host.BindNewEndpointAndPassReceiver());
         plugin_auth_host->BlockedUnauthorizedPlugin(group_name, identifier);
         observer->DidBlockContentType(content_type, group_name);
         break;
@@ -1046,9 +1046,9 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
             IDR_BLOCKED_PLUGIN_HTML,
             l10n_util::GetStringFUTF16(IDS_PLUGIN_OUTDATED, group_name));
         placeholder->AllowLoading();
-        chrome::mojom::PluginHostAssociatedPtr plugin_host;
+        mojo::AssociatedRemote<chrome::mojom::PluginHost> plugin_host;
         render_frame->GetRemoteAssociatedInterfaces()->GetInterface(
-            &plugin_host);
+            plugin_host.BindNewEndpointAndPassReceiver());
         plugin_host->BlockedComponentUpdatedPlugin(
             placeholder->BindPluginRenderer(), identifier);
         break;

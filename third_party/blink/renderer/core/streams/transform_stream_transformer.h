@@ -14,6 +14,7 @@
 namespace blink {
 
 class ExceptionState;
+class ScriptState;
 class TransformStreamDefaultControllerInterface;
 class Visitor;
 

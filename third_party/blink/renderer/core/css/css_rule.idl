@@ -46,10 +46,6 @@
     // https://drafts.csswg.org/css-conditional/#extentions-to-cssrule-interface
     const unsigned short SUPPORTS_RULE = 12;
 
-    // CSS Fonts Level 4
-    // https://drafts.csswg.org/css-fonts-4/#font-feature-values
-    [RuntimeEnabled=CSSFontFeatureValues] const unsigned short FONT_FEATURE_VALUES_RULE = 14;
-
     // CSS Device Adaptation
     // https://drafts.csswg.org/css-device-adapt/#css-rule-interface
     [RuntimeEnabled=CSSViewport] const unsigned short VIEWPORT_RULE = 15;

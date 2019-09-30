@@ -40,7 +40,6 @@ import org.robolectric.annotation.Implements;
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.PathUtils;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
 import org.chromium.chrome.browser.firstrun.FirstRunStatus;
@@ -133,12 +132,10 @@ public class ChromeBackupAgentTest {
     /**
      * Test method for {@link ChromeBackupAgent#onBackup} testing first backup
      *
-     * @throws ProcessInitException
      */
     @Test
     @SuppressWarnings("unchecked")
-    public void testOnBackup_firstBackup() throws FileNotFoundException, IOException,
-                                                  ClassNotFoundException, ProcessInitException {
+    public void testOnBackup_firstBackup() throws IOException, ClassNotFoundException {
         // Mock the backup data.
         BackupDataOutput backupData = mock(BackupDataOutput.class);
 
@@ -414,13 +411,9 @@ public class ChromeBackupAgentTest {
      * Test method for {@link ChromeBackupAgent#onRestore}.
      *
      * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws ProcessInitException
-     * @throws InterruptedException
      */
     @Test
-    public void testOnRestore_normal()
-            throws IOException, ClassNotFoundException, ProcessInitException, InterruptedException {
+    public void testOnRestore_normal() throws IOException {
         // Create a state file.
         File stateFile = File.createTempFile("Test", "");
         ParcelFileDescriptor newState =
@@ -455,12 +448,9 @@ public class ChromeBackupAgentTest {
      * device
      *
      * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws ProcessInitException
      */
     @Test
-    public void testOnRestore_badUser()
-            throws IOException, ClassNotFoundException, ProcessInitException {
+    public void testOnRestore_badUser() throws IOException {
         // Create a state file.
         File stateFile = File.createTempFile("Test", "");
         ParcelFileDescriptor newState =
@@ -492,12 +482,9 @@ public class ChromeBackupAgentTest {
      * Test method for {@link ChromeBackupAgent#onRestore} for browser startup failure
      *
      * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws ProcessInitException
      */
     @Test
-    public void testOnRestore_browserStartupFails()
-            throws IOException, ClassNotFoundException, ProcessInitException {
+    public void testOnRestore_browserStartupFails() throws IOException {
         // Create a state file.
         File stateFile = File.createTempFile("Test", "");
         ParcelFileDescriptor newState =
@@ -525,12 +512,9 @@ public class ChromeBackupAgentTest {
      * Test method for {@link ChromeBackupAgent#onRestore} for browser startup failure
      *
      * @throws IOException
-     * @throws ClassNotFoundException
-     * @throws ProcessInitException
      */
     @Test
-    public void testOnRestore_afterFirstRun()
-            throws IOException, ClassNotFoundException, ProcessInitException {
+    public void testOnRestore_afterFirstRun() throws IOException {
         // Create a state file.
         File stateFile = File.createTempFile("Test", "");
         ParcelFileDescriptor newState =

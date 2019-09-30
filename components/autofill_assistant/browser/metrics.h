@@ -117,6 +117,25 @@ class Metrics {
     kMaxValue = NOT_REQUIRED
   };
 
+  // The different ways in which DFM can be installed.
+  //
+  // GENERATED_JAVA_ENUM_PACKAGE: (
+  // org.chromium.chrome.browser.autofill_assistant.metrics)
+  // GENERATED_JAVA_CLASS_NAME_OVERRIDE: FeatureModuleInstallation
+  //
+  // This enum is used in histograms, do not remove/renumber entries. Only add
+  // at the end and update kMaxValue. Also remember to update the
+  // AutofillAssistantFeatureModuleInstallation enum listing in
+  // tools/metrics/histograms/enums.xml.
+  enum class FeatureModuleInstallation {
+    DFM_BACKGROUND_INSTALLATION_REQUESTED = 0,
+    DFM_FOREGROUND_INSTALLATION_SUCCEEDED = 1,
+    DFM_FOREGROUND_INSTALLATION_FAILED = 2,
+    DFM_ALREADY_INSTALLED = 3,
+
+    kMaxValue = DFM_ALREADY_INSTALLED
+  };
+
   static void RecordDropOut(DropOutReason reason);
   static void RecordPaymentRequestPrefilledSuccess(bool initially_complete,
                                                    bool success);

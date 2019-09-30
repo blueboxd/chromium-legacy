@@ -44,7 +44,10 @@ class CORE_EXPORT InspectorEmulationAgent final
   protocol::Response setTouchEmulationEnabled(
       bool enabled,
       protocol::Maybe<int> max_touch_points) override;
-  protocol::Response setEmulatedMedia(const String&) override;
+  protocol::Response setEmulatedMedia(
+      protocol::Maybe<String> media,
+      protocol::Maybe<protocol::Array<protocol::Emulation::MediaFeature>>
+          features) override;
   protocol::Response setCPUThrottlingRate(double) override;
   protocol::Response setFocusEmulationEnabled(bool) override;
   protocol::Response setVirtualTimePolicy(
@@ -122,6 +125,7 @@ class CORE_EXPORT InspectorEmulationAgent final
   InspectorAgentState::Boolean touch_event_emulation_enabled_;
   InspectorAgentState::Integer max_touch_points_;
   InspectorAgentState::String emulated_media_;
+  InspectorAgentState::StringMap emulated_media_features_;
   InspectorAgentState::String navigator_platform_override_;
   InspectorAgentState::String user_agent_override_;
   InspectorAgentState::String accept_language_override_;

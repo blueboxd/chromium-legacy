@@ -12,11 +12,9 @@ import android.view.WindowManager;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.StrictModeContext;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.BrowserStartupController.StartupCallback;
 import org.chromium.content_shell.ShellManager;
@@ -56,9 +54,6 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
     protected void initializeBrowserProcess() {
         try (StrictModeContext ignored = StrictModeContext.allowDiskReads()) {
             LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Cannot load content_browsertests.", e);
-            System.exit(-1);
         }
 
         ContentUriUtils.setFileProviderUtil(new FileProviderHelper());
@@ -79,25 +74,20 @@ public abstract class ContentShellBrowserTestActivity extends NativeBrowserTestA
                     // to be called.
                     runTests();
                 });
-        try {
-            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                    .startBrowserProcessesAsync(false, false, new StartupCallback() {
-                        @Override
-                        public void onSuccess() {
-                            // The C++ test harness is running thanks to runTests() above, but it
-                            // waits for Java initialization to complete. This tells C++ that it may
-                            // continue now to finish running the tests.
-                            NativeBrowserTest.javaStartupTasksComplete();
-                        }
-                        @Override
-                        public void onFailure() {
-                            throw new RuntimeException("Failed to startBrowserProcessesAsync()");
-                        }
-                    });
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to load native library.", e);
-            System.exit(-1);
-        }
+        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                .startBrowserProcessesAsync(false, false, new StartupCallback() {
+                    @Override
+                    public void onSuccess() {
+                        // The C++ test harness is running thanks to runTests() above, but it
+                        // waits for Java initialization to complete. This tells C++ that it may
+                        // continue now to finish running the tests.
+                        NativeBrowserTest.javaStartupTasksComplete();
+                    }
+                    @Override
+                    public void onFailure() {
+                        throw new RuntimeException("Failed to startBrowserProcessesAsync()");
+                    }
+                });
     }
 
     protected abstract int getTestActivityViewId();

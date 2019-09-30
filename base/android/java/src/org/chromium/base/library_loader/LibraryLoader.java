@@ -168,7 +168,7 @@ public class LibraryLoader {
      *
      * @param processType the process the shared library is loaded in.
      */
-    public void ensureInitialized(@LibraryProcessType int processType) throws ProcessInitException {
+    public void ensureInitialized(@LibraryProcessType int processType) {
         synchronized (mLock) {
             if (mInitialized) return;
 
@@ -222,10 +222,8 @@ public class LibraryLoader {
      * May be called on any thread, but should only be called once. Note the thread
      * this is called on will be the thread that runs the native code's static initializers.
      * See the comment in doInBackground() for more considerations on this.
-     *
-     * @throws ProcessInitException if the native library failed to load.
      */
-    public void loadNow() throws ProcessInitException {
+    public void loadNow() {
         loadNowOverrideApplicationContext(ContextUtils.getApplicationContext());
     }
 
@@ -235,9 +233,8 @@ public class LibraryLoader {
      * context.
      *
      * @param appContext The overriding app context to be used to load libraries.
-     * @throws ProcessInitException if the native library failed to load with this context.
      */
-    public void loadNowOverrideApplicationContext(Context appContext) throws ProcessInitException {
+    public void loadNowOverrideApplicationContext(Context appContext) {
         synchronized (mLock) {
             if (mLoaded && appContext != ContextUtils.getApplicationContext()) {
                 throw new IllegalStateException("Attempt to load again from alternate context.");
@@ -246,7 +243,7 @@ public class LibraryLoader {
         }
     }
 
-    public void loadNowInZygote(ApplicationInfo appInfo) throws ProcessInitException {
+    public void loadNowInZygote(ApplicationInfo appInfo) {
         synchronized (mLock) {
             assert !mLoaded;
             loadAlreadyLocked(appInfo, true /* inZygote */);
@@ -261,7 +258,7 @@ public class LibraryLoader {
      *
      * @param processType the process the shared library is loaded in.
      */
-    public void initialize(@LibraryProcessType int processType) throws ProcessInitException {
+    public void initialize(@LibraryProcessType int processType) {
         synchronized (mLock) {
             initializeAlreadyLocked(processType);
         }
@@ -383,8 +380,7 @@ public class LibraryLoader {
     // Invoke either Linker.loadLibrary(...), System.loadLibrary(...) or System.load(...),
     // triggering JNI_OnLoad in native code.
     @GuardedBy("mLock")
-    private void loadAlreadyLocked(ApplicationInfo appInfo, boolean inZygote)
-            throws ProcessInitException {
+    private void loadAlreadyLocked(ApplicationInfo appInfo, boolean inZygote) {
         try (TraceEvent te = TraceEvent.scoped("LibraryLoader.loadAlreadyLocked")) {
             if (mLoaded) return;
             assert !mInitialized;
@@ -478,8 +474,7 @@ public class LibraryLoader {
 
     // Invoke base::android::LibraryLoaded in library_loader_hooks.cc
     @GuardedBy("mLock")
-    private void initializeAlreadyLocked(@LibraryProcessType int processType)
-            throws ProcessInitException {
+    private void initializeAlreadyLocked(@LibraryProcessType int processType) {
         if (mInitialized) {
             if (mLibraryProcessType != processType) {
                 throw new ProcessInitException(

@@ -243,10 +243,6 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   const HeapVector<Member<StyleRuleFontFace>>& FontFaceRules() const {
     return font_face_rules_;
   }
-  const HeapVector<Member<StyleRuleFontFeatureValues>>& FontFeatureValuesRules()
-      const {
-    return font_feature_values_rules_;
-  }
   const HeapVector<Member<StyleRuleKeyframes>>& KeyframesRules() const {
     return keyframes_rules_;
   }
@@ -302,7 +298,6 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   void AddPageRule(StyleRulePage*);
   void AddViewportRule(StyleRuleViewport*);
   void AddFontFaceRule(StyleRuleFontFace*);
-  void AddFontFeatureValuesRule(StyleRuleFontFeatureValues*);
   void AddKeyframesRule(StyleRuleKeyframes*);
   void AddPropertyRule(StyleRuleProperty*);
 
@@ -346,7 +341,6 @@ class CORE_EXPORT RuleSet final : public GarbageCollected<RuleSet> {
   RuleFeatureSet features_;
   HeapVector<Member<StyleRulePage>> page_rules_;
   HeapVector<Member<StyleRuleFontFace>> font_face_rules_;
-  HeapVector<Member<StyleRuleFontFeatureValues>> font_feature_values_rules_;
   HeapVector<Member<StyleRuleKeyframes>> keyframes_rules_;
   HeapVector<Member<StyleRuleProperty>> property_rules_;
   HeapVector<MinimalRuleData> deep_combinator_or_shadow_pseudo_rules_;

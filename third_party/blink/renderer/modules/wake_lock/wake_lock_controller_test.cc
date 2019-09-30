@@ -276,13 +276,13 @@ TEST(WakeLockControllerTest, LossOfDocumentActivity) {
   // First, acquire a handful of locks of different types.
   auto* screen_resolver1 =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
-  ScriptPromise screen_promise1 = screen_resolver1->Promise();
+  screen_resolver1->Promise();
   auto* screen_resolver2 =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
-  ScriptPromise screen_promise2 = screen_resolver2->Promise();
+  screen_resolver2->Promise();
   auto* system_resolver1 =
       MakeGarbageCollected<ScriptPromiseResolver>(context.GetScriptState());
-  ScriptPromise system_promise1 = system_resolver1->Promise();
+  system_resolver1->Promise();
   controller.RequestWakeLock(WakeLockType::kScreen, screen_resolver1,
                              /*signal=*/nullptr);
   controller.RequestWakeLock(WakeLockType::kScreen, screen_resolver2,

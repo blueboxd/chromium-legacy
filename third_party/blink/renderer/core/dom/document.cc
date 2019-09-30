@@ -4537,6 +4537,21 @@ void Document::SetURL(const KURL& url) {
   if (new_url == url_)
     return;
 
+  // Count non-targetText occurrences of :~: in the url fragment to make sure
+  // the delimiter is web-compatible. This can be removed once the feature
+  // ships.
+  wtf_size_t delim_pos = new_url.FragmentIdentifier().Find(":~:");
+  if (delim_pos != kNotFound) {
+    const wtf_size_t one_past_delim = delim_pos + 3;
+    if (new_url.FragmentIdentifier().Find(kTextFragmentIdentifierPrefix,
+                                          one_past_delim) != one_past_delim) {
+      // We can't use count here because the DocumentLoader hasn't yet been
+      // created. It'll be use counted with other delimiters in
+      // FragmentAnchor::TryCreate.
+      use_count_fragment_directive_ = true;
+    }
+  }
+
   // If text fragment identifiers are enabled, we strip the fragment directive
   // from the URL fragment.
   // E.g. "#id:~:targetText=a" --> "#id"

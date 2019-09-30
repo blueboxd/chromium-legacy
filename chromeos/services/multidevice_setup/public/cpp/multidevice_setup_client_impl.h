@@ -16,7 +16,6 @@
 #include "chromeos/components/multidevice/remote_device_ref.h"
 #include "chromeos/services/multidevice_setup/public/cpp/multidevice_setup_client.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
-#include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
@@ -89,14 +88,16 @@ class MultiDeviceSetupClientImpl : public MultiDeviceSetupClient,
 
   mojo::PendingRemote<mojom::HostStatusObserver>
   GenerateHostStatusObserverRemote();
-  mojom::FeatureStateObserverPtr GenerateFeatureStatesObserverInterfacePtr();
+  mojo::PendingRemote<mojom::FeatureStateObserver>
+  GenerateFeatureStatesObserverRemote();
 
   void FlushForTesting();
 
   mojom::MultiDeviceSetupPtr multidevice_setup_ptr_;
   mojo::Receiver<mojom::HostStatusObserver> host_status_observer_receiver_{
       this};
-  mojo::Binding<mojom::FeatureStateObserver> feature_state_observer_binding_;
+  mojo::Receiver<mojom::FeatureStateObserver> feature_state_observer_receiver_{
+      this};
   std::unique_ptr<multidevice::RemoteDeviceCache> remote_device_cache_;
 
   HostStatusWithDevice host_status_with_device_;

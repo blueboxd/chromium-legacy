@@ -78,8 +78,8 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   std::unique_ptr<ResourceRequest> preflight_request =
       std::make_unique<ResourceRequest>();
 
-  // Algorithm step 1 through 4 of the CORS-preflight fetch,
-  // https://fetch.spec.whatwg.org/#cors-preflight-fetch-0.
+  // Algorithm step 1 through 5 of the CORS-preflight fetch,
+  // https://fetch.spec.whatwg.org/#cors-preflight-fetch.
   preflight_request->url = request.url;
   preflight_request->method = "OPTIONS";
   preflight_request->priority = request.priority;
@@ -92,6 +92,9 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   preflight_request->load_flags = RetrieveCacheFlags(request.load_flags);
   preflight_request->fetch_window_id = request.fetch_window_id;
   preflight_request->render_frame_id = request.render_frame_id;
+
+  preflight_request->headers.SetHeader(network::kAcceptHeader,
+                                       kDefaultAcceptHeader);
 
   preflight_request->headers.SetHeader(
       header_names::kAccessControlRequestMethod, request.method);
@@ -117,9 +120,6 @@ std::unique_ptr<ResourceRequest> CreatePreflightRequest(
   // Additional headers that the algorithm in the spec does not require, but
   // it's better that CORS preflight requests have them.
   preflight_request->headers.SetHeader("Sec-Fetch-Mode", "cors");
-  // See also https://github.com/whatwg/fetch/issues/922 for kAcceptHeader.
-  preflight_request->headers.SetHeader(network::kAcceptHeader,
-                                       kDefaultAcceptHeader);
 
   return preflight_request;
 }

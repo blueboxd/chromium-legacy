@@ -51,7 +51,6 @@ core_idl_files =
                     "clipboard/data_transfer_item_list.idl",
                     "css/css_condition_rule.idl",
                     "css/css_font_face_rule.idl",
-                    "css/css_font_feature_values_rule.idl",
                     "css/css_grouping_rule.idl",
                     "css/css_import_rule.idl",
                     "css/css_keyframe_rule.idl",

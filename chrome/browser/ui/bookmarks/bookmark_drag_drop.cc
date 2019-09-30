@@ -9,6 +9,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/undo/bookmark_undo_service_factory.h"
 #include "components/bookmarks/browser/bookmark_client.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -42,6 +43,7 @@ int DropBookmarks(Profile* profile,
                   const BookmarkNode* parent_node,
                   size_t index,
                   bool copy) {
+  DCHECK(profile);
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);
 #if !defined(OS_ANDROID)
   bookmarks::ScopedGroupBookmarkActions group_drops(model);
@@ -66,6 +68,7 @@ int DropBookmarks(Profile* profile,
     }
     return ui::DragDropTypes::DRAG_NONE;
   }
+  RecordBookmarksAdded(profile);
   // Dropping a folder from different profile. Always accept.
   bookmarks::CloneBookmarkNode(model, data.elements, parent_node, index, true);
   return ui::DragDropTypes::DRAG_COPY;

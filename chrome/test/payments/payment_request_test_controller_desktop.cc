@@ -10,6 +10,7 @@
 #include "components/payments/content/payment_request_web_contents_manager.h"
 #include "components/payments/core/payment_prefs.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 
 namespace payments {
 
@@ -107,7 +108,7 @@ void PaymentRequestTestController::UpdateDelegateFactory() {
   SetPaymentRequestFactoryForTesting(base::BindRepeating(
       [](PaymentRequest::ObserverForTest* observer_for_test, bool is_incognito,
          bool valid_ssl, PrefService* prefs,
-         payments::mojom::PaymentRequestRequest request,
+         mojo::PendingReceiver<payments::mojom::PaymentRequest> receiver,
          content::RenderFrameHost* render_frame_host) {
         content::WebContents* web_contents =
             content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -120,7 +121,7 @@ void PaymentRequestTestController::UpdateDelegateFactory() {
                 web_contents);
         manager->CreatePaymentRequest(web_contents->GetMainFrame(),
                                       web_contents, std::move(delegate),
-                                      std::move(request), observer_for_test);
+                                      std::move(receiver), observer_for_test);
       },
       observer_converter_.get(), is_incognito_, valid_ssl_, prefs_.get()));
 }

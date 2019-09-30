@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.browserservices;
 import android.net.Uri;
 import android.support.test.filters.SmallTest;
 
+import androidx.browser.customtabs.CustomTabsService;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
@@ -28,6 +30,7 @@ import org.chromium.chrome.browser.preferences.privacy.BrowsingDataBridge;
 import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.test.mock.MockWebContents;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 
 import java.util.HashSet;
@@ -35,8 +38,6 @@ import java.util.Set;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-
-import androidx.browser.customtabs.CustomTabsService;
 
 /** Tests for OriginVerifier. */
 @RunWith(ChromeJUnit4ClassRunner.class)
@@ -91,10 +92,10 @@ public class OriginVerifierTest {
         mHttpsOrigin = new Origin("https://www.example.com");
         mHttpOrigin = new Origin("http://www.android.com");
 
-        mHandleAllUrlsVerifier =
-                new OriginVerifier(PACKAGE_NAME, CustomTabsService.RELATION_HANDLE_ALL_URLS);
-        mUseAsOriginVerifier =
-                new OriginVerifier(PACKAGE_NAME, CustomTabsService.RELATION_USE_AS_ORIGIN);
+        mHandleAllUrlsVerifier = new OriginVerifier(
+                PACKAGE_NAME, CustomTabsService.RELATION_HANDLE_ALL_URLS, new MockWebContents());
+        mUseAsOriginVerifier = new OriginVerifier(
+                PACKAGE_NAME, CustomTabsService.RELATION_USE_AS_ORIGIN, /* webContents= */ null);
         mVerificationResultSemaphore = new Semaphore(0);
     }
 

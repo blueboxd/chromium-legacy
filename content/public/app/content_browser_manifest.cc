@@ -247,7 +247,6 @@ const service_manager::Manifest& GetContentBrowserManifest() {
                   "mojom.ProcessInternalsHandler",
                   "network.mojom.RestrictedCookieManager",
                   "blink.mojom.WebSocketConnector",
-                  "payments.mojom.PaymentRequest",
                   "resource_coordinator.mojom.DocumentCoordinationUnit",
                   "shape_detection.mojom.BarcodeDetectionProvider",
                   "shape_detection.mojom.FaceDetectionProvider",

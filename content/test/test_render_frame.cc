@@ -11,6 +11,7 @@
 #include "base/bind_helpers.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
@@ -150,7 +151,8 @@ class MockFrameHost : public mojom::FrameHost {
                             base::UnguessableToken());
   }
 
-  void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override {}
+  void IssueKeepAliveHandle(
+      mojo::PendingReceiver<mojom::KeepAliveHandle> receiver) override {}
 
   void DidCommitSameDocumentNavigation(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params> params)

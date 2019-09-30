@@ -1198,14 +1198,6 @@ bool ChildProcessSecurityPolicyImpl::CanDeleteFileSystemFile(
                                          DELETE_FILE_GRANT);
 }
 
-bool ChildProcessSecurityPolicyImpl::CanAccessDataForWebSocket(
-    int child_id,
-    const GURL& url) {
-  DCHECK(url.SchemeIsWSOrWSS());
-  GURL url_to_check = net::ChangeWebSocketSchemeToHttpScheme(url);
-  return CanAccessDataForOrigin(child_id, url_to_check);
-}
-
 bool ChildProcessSecurityPolicyImpl::HasWebUIBindings(int child_id) {
   base::AutoLock lock(lock_);
 

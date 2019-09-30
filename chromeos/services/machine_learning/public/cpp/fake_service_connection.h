@@ -30,12 +30,17 @@ class FakeServiceConnectionImpl : public ServiceConnection,
   FakeServiceConnectionImpl();
   ~FakeServiceConnectionImpl() override;
 
-  // It's safe to execute LoadModel for multi times, but all the requests will
-  // be bound to the same instance.
-  void LoadModel(
-      mojom::ModelSpecPtr spec,
+  // It's safe to execute LoadBuiltinModel and LoadFlatBufferModel for multi
+  // times, but all the requests will be bound to the same instance.
+  void LoadBuiltinModel(mojom::BuiltinModelSpecPtr spec,
+                        mojom::ModelRequest request,
+                        mojom::MachineLearningService::LoadBuiltinModelCallback
+                            callback) override;
+  void LoadFlatBufferModel(
+      mojom::FlatBufferModelSpecPtr spec,
       mojom::ModelRequest request,
-      mojom::MachineLearningService::LoadModelCallback callback) override;
+      mojom::MachineLearningService::LoadFlatBufferModelCallback callback)
+      override;
 
   // mojom::Model:
   void CreateGraphExecutor(

@@ -435,8 +435,7 @@ gfx::ImageSkia AvatarToolbarButton::GetAvatarIcon(
       return gfx::CreateVectorIcon(kIncognitoIcon, icon_size, icon_color);
     case State::kGuestSession:
       if (base::FeatureList::IsEnabled(features::kAnimatedAvatarButton)) {
-        return gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size,
-                                     icon_color);
+        return profiles::GetGuestAvatar(icon_size);
       }
       return gfx::CreateVectorIcon(kUserMenuGuestIcon, icon_size, icon_color);
     case State::kGenericProfile:

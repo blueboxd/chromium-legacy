@@ -42,18 +42,18 @@ public class PasswordManagerDialogCoordinator {
 
     public void showDialog(String title, String details, int boldRangeStart, int boldRangeEnd,
             @DrawableRes int drawableId, String positiveButtonText, String negativeButtonText,
-            Callback<Integer> onClick, boolean primaryButtonFilled) {
+            Callback<Integer> onClick, boolean primaryButtonFilled,
+            @ModalDialogManager.ModalDialogType int type) {
         mMediator.setContents(title, details, boldRangeStart, boldRangeEnd, drawableId);
         mMediator.setButtons(positiveButtonText, negativeButtonText, onClick, primaryButtonFilled);
-        mMediator.showDialog();
+        mMediator.showDialog(type);
     }
 
     public void showDialog(String title, String details, @DrawableRes int drawableId,
             String positiveButtonText, String negativeButtonText, Callback<Integer> onClick,
-            boolean primaryButtonFilled) {
-        mMediator.setContents(title, details, 0, 0, drawableId);
-        mMediator.setButtons(positiveButtonText, negativeButtonText, onClick, primaryButtonFilled);
-        mMediator.showDialog();
+            boolean primaryButtonFilled, @ModalDialogManager.ModalDialogType int type) {
+        showDialog(title, details, 0, 0, drawableId, positiveButtonText, negativeButtonText,
+                onClick, primaryButtonFilled, type);
     }
 
     public void dismissDialog(@DialogDismissalCause int dismissalCause) {

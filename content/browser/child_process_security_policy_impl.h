@@ -234,10 +234,6 @@ class CONTENT_EXPORT ChildProcessSecurityPolicyImpl
   bool CanDeleteFileSystemFile(int child_id,
                                const storage::FileSystemURL& filesystem_url);
 
-  // True if cookie headers may be exposed to renderer |child_id| for |url| for
-  // display in DevTools. |url| should be a WebSocket URL.
-  bool CanAccessDataForWebSocket(int child_id, const GURL& url);
-
   // Returns true if the specified child_id has been granted ReadRawCookies.
   bool CanReadRawCookies(int child_id);
 

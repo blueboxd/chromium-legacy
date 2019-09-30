@@ -110,7 +110,11 @@ scoped_refptr<Image> CSSPaintValue::GetImage(
 
   // For Off-Thread PaintWorklet, we just collect the necessary inputs together
   // and defer the actual JavaScript call until much later (during cc Raster).
-  if (off_thread_paint_state_ != OffThreadPaintState::kMainThread) {
+  //
+  // Generating print-previews happens entirely on the main thread, so we have
+  // to fall-back to main in that case.
+  if (off_thread_paint_state_ != OffThreadPaintState::kMainThread &&
+      !document.Printing()) {
     // It is not necessary for a LayoutObject to always have RareData which
     // contains the ElementId. If this |layout_object| doesn't have an
     // ElementId, then create one for it.

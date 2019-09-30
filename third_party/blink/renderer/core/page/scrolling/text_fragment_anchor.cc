@@ -25,11 +25,6 @@ namespace blink {
 
 namespace {
 
-constexpr char kTextFragmentIdentifierPrefix[] = "targetText=";
-// Subtract 1 because base::size includes the \0 string terminator.
-constexpr size_t kTextFragmentIdentifierPrefixStringLength =
-    base::size(kTextFragmentIdentifierPrefix) - 1;
-
 bool ParseTargetTextIdentifier(const String& fragment,
                                Vector<TextFragmentSelector>* out_selectors) {
   DCHECK(out_selectors);
@@ -37,8 +32,9 @@ bool ParseTargetTextIdentifier(const String& fragment,
   size_t start_pos = 0;
   size_t end_pos = 0;
   while (end_pos != kNotFound) {
-    if (fragment.Find(kTextFragmentIdentifierPrefix, start_pos) != start_pos)
+    if (fragment.Find(kTextFragmentIdentifierPrefix, start_pos) != start_pos) {
       return false;
+    }
 
     start_pos += kTextFragmentIdentifierPrefixStringLength;
     end_pos = fragment.find('&', start_pos);
@@ -110,8 +106,11 @@ TextFragmentAnchor* TextFragmentAnchor::TryCreateFragmentDirective(
   Vector<TextFragmentSelector> selectors;
 
   if (!ParseTargetTextIdentifier(frame.GetDocument()->GetFragmentDirective(),
-                                 &selectors))
+                                 &selectors)) {
+    UseCounter::Count(frame.GetDocument(),
+                      WebFeature::kInvalidFragmentDirective);
     return nullptr;
+  }
 
   return MakeGarbageCollected<TextFragmentAnchor>(
       selectors, frame, TextFragmentFormat::FragmentDirective);

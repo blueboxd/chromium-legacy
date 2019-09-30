@@ -4,11 +4,17 @@
 
 #include "chromecast/browser/webview/webview_controller.h"
 
+#include "base/json/json_writer.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chromecast/base/version.h"
 #include "chromecast/browser/cast_web_contents_impl.h"
 #include "chromecast/browser/webview/proto/webview.pb.h"
 #include "chromecast/browser/webview/webview_layout_manager.h"
+#include "content/public/browser/browser_context.h"
+#include "content/public/browser/browsing_data_remover.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/web_preferences.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
 #include "ui/events/event.h"
@@ -59,6 +65,81 @@ void WebviewController::ProcessRequest(const webview::WebviewRequest& request) {
         cast_web_contents_->Stop(request.stop_page().error_code());
       } else {
         client_->OnError("stop_page() not supplied");
+      }
+      break;
+
+    case webview::WebviewRequest::kEvaluateJavascript:
+      if (request.has_evaluate_javascript()) {
+        HandleEvaluateJavascript(request.evaluate_javascript());
+      } else {
+        client_->OnError("evaluate_javascript() not supplied");
+      }
+      break;
+
+    case webview::WebviewRequest::kAddJavascriptChannels:
+      if (request.has_add_javascript_channels()) {
+        HandleAddJavascriptChannels(request.add_javascript_channels());
+      } else {
+        client_->OnError("add_javascript_channels() not supplied");
+      }
+      break;
+
+    case webview::WebviewRequest::kRemoveJavascriptChannels:
+      if (request.has_remove_javascript_channels()) {
+        HandleRemoveJavascriptChannels(request.remove_javascript_channels());
+      } else {
+        client_->OnError("remove_javascript_channels() not supplied");
+      }
+      break;
+
+    case webview::WebviewRequest::kGetCurrentUrl:
+      HandleGetCurrentUrl();
+      break;
+
+    case webview::WebviewRequest::kCanGoBack:
+      HandleCanGoBack();
+      break;
+
+    case webview::WebviewRequest::kCanGoForward:
+      HandleCanGoForward();
+      break;
+
+    case webview::WebviewRequest::kGoBack:
+      contents_->GetController().GoBack();
+      break;
+
+    case webview::WebviewRequest::kGoForward:
+      contents_->GetController().GoForward();
+      break;
+
+    case webview::WebviewRequest::kReload:
+      // TODO(dnicoara): Are the default parameters correct?
+      contents_->GetController().Reload(content::ReloadType::NORMAL,
+                                        /*check_for_repost=*/true);
+      break;
+
+    case webview::WebviewRequest::kClearCache:
+      HandleClearCache();
+      break;
+
+    case webview::WebviewRequest::kUpdateSettings:
+      if (request.has_update_settings()) {
+        HandleUpdateSettings(request.update_settings());
+      } else {
+        client_->OnError("update_settings() not supplied");
+      }
+      break;
+
+    case webview::WebviewRequest::kGetTitle:
+      HandleGetTitle();
+      break;
+
+    case webview::WebviewRequest::kSetAutoMediaPlaybackPolicy:
+      if (request.has_set_auto_media_playback_policy()) {
+        HandleSetAutoMediaPlaybackPolicy(
+            request.set_auto_media_playback_policy());
+      } else {
+        client_->OnError("set_auto_media_playback_policy() not supplied");
       }
       break;
 
@@ -132,6 +213,115 @@ void WebviewController::ProcessInputEvent(const webview::InputEvent& ev) {
     default:
       break;
   }
+}
+
+void WebviewController::JavascriptCallback(base::Value result) {
+  std::string json;
+  base::JSONWriter::Write(result, &json);
+  std::unique_ptr<webview::WebviewResponse> response =
+      std::make_unique<webview::WebviewResponse>();
+  response->mutable_evaluate_javascript()->set_json(json);
+  client_->EnqueueSend(std::move(response));
+}
+
+void WebviewController::HandleEvaluateJavascript(
+    const webview::EvaluateJavascriptRequest& request) {
+  contents_->GetMainFrame()->ExecuteJavaScript(
+      base::UTF8ToUTF16(request.javascript_blob()),
+      base::BindOnce(&WebviewController::JavascriptCallback,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void WebviewController::HandleAddJavascriptChannels(
+    const webview::AddJavascriptChannelsRequest& request) {
+  // TODO(dnicoara): Handle this.
+  client_->OnError("Unimplemented add_javascript_channels()");
+}
+
+void WebviewController::HandleRemoveJavascriptChannels(
+    const webview::RemoveJavascriptChannelsRequest& request) {
+  // TODO(dnicoara): Handle this.
+  client_->OnError("Unimplemented remove_javascript_channels()");
+}
+
+void WebviewController::HandleGetCurrentUrl() {
+  std::unique_ptr<webview::WebviewResponse> response =
+      std::make_unique<webview::WebviewResponse>();
+
+  response->mutable_get_current_url()->set_url(contents_->GetURL().spec());
+  client_->EnqueueSend(std::move(response));
+}
+
+void WebviewController::HandleCanGoBack() {
+  std::unique_ptr<webview::WebviewResponse> response =
+      std::make_unique<webview::WebviewResponse>();
+
+  response->mutable_can_go_back()->set_can_go_back(
+      contents_->GetController().CanGoBack());
+  client_->EnqueueSend(std::move(response));
+}
+
+void WebviewController::HandleCanGoForward() {
+  std::unique_ptr<webview::WebviewResponse> response =
+      std::make_unique<webview::WebviewResponse>();
+
+  response->mutable_can_go_forward()->set_can_go_forward(
+      contents_->GetController().CanGoForward());
+  client_->EnqueueSend(std::move(response));
+}
+
+void WebviewController::HandleClearCache() {
+  // TODO(dnicoara): See if there is a generic way to inform the renderer to
+  // clear cache.
+  // Android has a specific renderer message for this:
+  // https://cs.chromium.org/chromium/src/android_webview/common/render_view_messages.h?rcl=65107121555167a3db39de5633c3297f7e861315&l=44
+
+  // Remove disk cache.
+  content::BrowsingDataRemover* remover =
+      content::BrowserContext::GetBrowsingDataRemover(
+          contents_->GetBrowserContext());
+  remover->Remove(base::Time(), base::Time::Max(),
+                  content::BrowsingDataRemover::DATA_TYPE_CACHE,
+                  content::BrowsingDataRemover::ORIGIN_TYPE_UNPROTECTED_WEB |
+                      content::BrowsingDataRemover::ORIGIN_TYPE_PROTECTED_WEB);
+}
+
+void WebviewController::HandleGetTitle() {
+  std::unique_ptr<webview::WebviewResponse> response =
+      std::make_unique<webview::WebviewResponse>();
+
+  response->mutable_get_title()->set_title(
+      base::UTF16ToUTF8(contents_->GetTitle()));
+  client_->EnqueueSend(std::move(response));
+}
+
+void WebviewController::HandleUpdateSettings(
+    const webview::UpdateSettingsRequest& request) {
+  content::WebPreferences prefs =
+      contents_->GetRenderViewHost()->GetWebkitPreferences();
+  prefs.javascript_enabled = request.javascript_enabled();
+  contents_->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
+
+  // TODO(dnicoara): Add support for |has_navigation_delegate|.
+
+  // Given that cast_shell enables devtools unconditionally there isn't
+  // anything that needs to be done for |request.debugging_enabled()|. Though,
+  // as a note, remote debugging is always on.
+
+  if (request.has_user_agent() &&
+      request.user_agent().type_case() == webview::UserAgent::kValue) {
+    contents_->SetUserAgentOverride(request.user_agent().value(), true);
+  }
+}
+
+void WebviewController::HandleSetAutoMediaPlaybackPolicy(
+    const webview::SetAutoMediaPlaybackPolicyRequest& request) {
+  content::WebPreferences prefs =
+      contents_->GetRenderViewHost()->GetWebkitPreferences();
+  prefs.autoplay_policy = request.require_user_gesture()
+                              ? content::AutoplayPolicy::kUserGestureRequired
+                              : content::AutoplayPolicy::kNoUserGestureRequired;
+  contents_->GetRenderViewHost()->UpdateWebkitPreferences(prefs);
 }
 
 webview::AsyncPageEvent_State WebviewController::current_state() {

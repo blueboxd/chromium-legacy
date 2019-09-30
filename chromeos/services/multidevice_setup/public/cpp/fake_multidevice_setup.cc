@@ -89,10 +89,8 @@ void FakeMultiDeviceSetup::NotifyHostStatusChanged(
 void FakeMultiDeviceSetup::NotifyFeatureStateChanged(
     const base::flat_map<mojom::Feature, mojom::FeatureState>&
         feature_states_map) {
-  feature_state_observers_.ForAllPtrs(
-      [&feature_states_map](mojom::FeatureStateObserver* observer) {
-        observer->OnFeatureStatesChanged(feature_states_map);
-      });
+  for (auto& observer : feature_state_observers_)
+    observer->OnFeatureStatesChanged(feature_states_map);
 }
 
 void FakeMultiDeviceSetup::SetAccountStatusChangeDelegate(
@@ -106,8 +104,8 @@ void FakeMultiDeviceSetup::AddHostStatusObserver(
 }
 
 void FakeMultiDeviceSetup::AddFeatureStateObserver(
-    mojom::FeatureStateObserverPtr observer) {
-  feature_state_observers_.AddPtr(std::move(observer));
+    mojo::PendingRemote<mojom::FeatureStateObserver> observer) {
+  feature_state_observers_.Add(std::move(observer));
 }
 
 void FakeMultiDeviceSetup::GetEligibleHostDevices(

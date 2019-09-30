@@ -81,9 +81,6 @@ void ScopedStyleResolver::AddFontFaceRules(const RuleSet& rule_set) {
   }
   if (font_face_rules.size() && document.GetStyleResolver())
     document.GetStyleResolver()->InvalidateMatchedPropertiesCache();
-
-  for (const auto& rule : rule_set.FontFeatureValuesRules())
-    document.GetStyleEngine().AddDefaultFontDisplay(rule);
 }
 
 void ScopedStyleResolver::AppendActiveStyleSheets(

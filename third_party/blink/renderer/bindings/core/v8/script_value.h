@@ -73,12 +73,12 @@ class CORE_EXPORT ScriptValue final {
 
   // TODO(rikaf): Forbid passing empty v8::Local<v8::Value> to ScriptValue's
   // ctor.
-
   ScriptValue(v8::Isolate* isolate, v8::Local<v8::Value> value)
       : isolate_(isolate),
         value_(value.IsEmpty()
-                   ? WorldSafeV8Reference<v8::Value>()
-                   : WorldSafeV8Reference<v8::Value>(isolate, value)) {
+                   ? MakeGarbageCollected<WorldSafeV8ReferenceWrapper>()
+                   : MakeGarbageCollected<WorldSafeV8ReferenceWrapper>(isolate,
+                                                                       value)) {
     DCHECK(isolate_);
   }
 
@@ -86,30 +86,17 @@ class CORE_EXPORT ScriptValue final {
   ScriptValue(v8::Isolate* isolate, v8::MaybeLocal<T> value)
       : isolate_(isolate),
         value_(value.IsEmpty()
-                   ? WorldSafeV8Reference<v8::Value>()
-                   : WorldSafeV8Reference<v8::Value>(isolate,
-                                                     value.ToLocalChecked())) {
+                   ? MakeGarbageCollected<WorldSafeV8ReferenceWrapper>()
+                   : MakeGarbageCollected<WorldSafeV8ReferenceWrapper>(
+                         isolate,
+                         value.ToLocalChecked())) {
     DCHECK(isolate_);
   }
 
-  ScriptValue(v8::Isolate* isolate, WorldSafeV8Reference<v8::Value> value)
-      : isolate_(isolate), value_(value) {
-    DCHECK(isolate_);
-  }
+  ScriptValue(const ScriptValue& value) = default;
 
-  ScriptValue(const ScriptValue& value) {
-    // TODO(crbug.com/v8/9773): Deal with null value at the side of v8.
-    if (value.IsEmpty()) {
-      isolate_ = nullptr;
-      value_.Reset();
-    } else {
-      isolate_ = value.isolate_;
-      value_ = value.value_;
-      DCHECK(isolate_);
-    }
-  }
-
-  // Use this GetIsolate() to do DCHECK inside ScriptValue.
+  // TODO(riakf): Use this GetIsolate() only when doing DCHECK inside
+  // ScriptValue.
   v8::Isolate* GetIsolate() const {
     DCHECK(isolate_);
     return isolate_;
@@ -118,7 +105,11 @@ class CORE_EXPORT ScriptValue final {
   ScriptValue& operator=(const ScriptValue& value) = default;
 
   bool operator==(const ScriptValue& value) const {
-    return value_ == value.value_;
+    if (IsEmpty())
+      return value.IsEmpty();
+    if (value.IsEmpty())
+      return false;
+    return *value_ == *value.value_;
   }
 
   bool operator!=(const ScriptValue& value) const { return !operator==(value); }
@@ -155,11 +146,11 @@ class CORE_EXPORT ScriptValue final {
     return !value.IsEmpty() && value->IsObject();
   }
 
-  bool IsEmpty() const { return value_.IsEmpty(); }
+  bool IsEmpty() const { return !value_ || value_->IsEmpty(); }
 
   void Clear() {
     isolate_ = nullptr;
-    value_.Reset();
+    value_.Clear();
   }
 
   v8::Local<v8::Value> V8Value() const;
@@ -168,10 +159,6 @@ class CORE_EXPORT ScriptValue final {
   // this "clones" the v8 value and returns it.
   v8::Local<v8::Value> V8ValueFor(ScriptState*) const;
 
-  const WorldSafeV8Reference<v8::Value>& ToWorldSafeV8Reference() const {
-    return value_;
-  }
-
   bool ToString(String&) const;
 
   static ScriptValue CreateNull(v8::Isolate*);
@@ -179,8 +166,41 @@ class CORE_EXPORT ScriptValue final {
   void Trace(Visitor* visitor) { visitor->Trace(value_); }
 
  private:
+  // WorldSafeV8ReferenceWrapper wraps a WorldSafeV8Reference so that it can be
+  // used on both the stack and heaps. WorldSafeV8Reference cannot be used on
+  // the stack because the conservative scanning does not know how to trace
+  // TraceWrapperV8Reference.
+  class CORE_EXPORT WorldSafeV8ReferenceWrapper
+      : public GarbageCollected<WorldSafeV8ReferenceWrapper> {
+   public:
+    WorldSafeV8ReferenceWrapper() = default;
+    WorldSafeV8ReferenceWrapper(v8::Isolate* isolate,
+                                v8::Local<v8::Value> value)
+        : value_(isolate, value) {}
+
+    virtual ~WorldSafeV8ReferenceWrapper() = default;
+    void Trace(blink::Visitor* visitor) { visitor->Trace(value_); }
+
+    v8::Local<v8::Value> Get(ScriptState* script_state) const {
+      return value_.Get(script_state);
+    }
+
+    v8::Local<v8::Value> GetAcrossWorld(ScriptState* script_state) const {
+      return value_.GetAcrossWorld(script_state);
+    }
+
+    bool IsEmpty() const { return value_.IsEmpty(); }
+
+    bool operator==(const WorldSafeV8ReferenceWrapper& other) const {
+      return value_ == other.value_;
+    }
+
+   private:
+    WorldSafeV8Reference<v8::Value> value_;
+  };
+
   v8::Isolate* isolate_ = nullptr;
-  WorldSafeV8Reference<v8::Value> value_;
+  Member<WorldSafeV8ReferenceWrapper> value_;
 };
 
 template <>

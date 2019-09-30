@@ -250,9 +250,11 @@ InterpolationValue CSSTransformInterpolationType::MaybeConvertValue(
   return ConvertTransform(std::move(transform));
 }
 
-InterpolationValue CSSTransformInterpolationType::MakeAdditive(
+InterpolationValue
+CSSTransformInterpolationType::PreInterpolationCompositeIfNeeded(
     InterpolationValue value,
-    const InterpolationValue& underlying) const {
+    const InterpolationValue& underlying,
+    EffectModel::CompositeOperation) const {
   value.non_interpolable_value =
       CSSTransformNonInterpolableValue::CreateAdditive(
           ToCSSTransformNonInterpolableValue(*value.non_interpolable_value));

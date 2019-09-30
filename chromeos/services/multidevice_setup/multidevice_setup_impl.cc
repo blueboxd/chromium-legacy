@@ -167,8 +167,8 @@ void MultiDeviceSetupImpl::AddHostStatusObserver(
 }
 
 void MultiDeviceSetupImpl::AddFeatureStateObserver(
-    mojom::FeatureStateObserverPtr observer) {
-  feature_state_observers_.AddPtr(std::move(observer));
+    mojo::PendingRemote<mojom::FeatureStateObserver> observer) {
+  feature_state_observers_.Add(std::move(observer));
 }
 
 void MultiDeviceSetupImpl::GetEligibleHostDevices(
@@ -331,10 +331,8 @@ void MultiDeviceSetupImpl::OnHostStatusChange(
 
 void MultiDeviceSetupImpl::OnFeatureStatesChange(
     const FeatureStateManager::FeatureStatesMap& feature_states_map) {
-  feature_state_observers_.ForAllPtrs(
-      [&feature_states_map](mojom::FeatureStateObserver* observer) {
-        observer->OnFeatureStatesChanged(feature_states_map);
-      });
+  for (auto& observer : feature_state_observers_)
+    observer->OnFeatureStatesChanged(feature_states_map);
 }
 
 bool MultiDeviceSetupImpl::AttemptSetHost(const std::string& host_device_id) {

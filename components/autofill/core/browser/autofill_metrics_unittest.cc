@@ -7463,7 +7463,8 @@ TEST_F(AutofillMetricsTest, UserHappinessFormInteraction_AddressForm) {
 }
 
 // Verify that we correctly log metrics tracking the duration of form fill.
-TEST_F(AutofillMetricsTest, FormFillDuration) {
+// TODO(crbug.com/1009364) Test is flake on many builders.
+TEST_F(AutofillMetricsTest, DISABLED_FormFillDuration) {
   // Load a fillable form.
   FormData form;
   form.name = ASCIIToUTF16("TestForm");

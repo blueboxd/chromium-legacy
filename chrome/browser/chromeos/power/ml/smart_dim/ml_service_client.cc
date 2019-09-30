@@ -18,14 +18,14 @@
 #include "chromeos/services/machine_learning/public/mojom/tensor.mojom.h"
 #include "mojo/public/cpp/bindings/map.h"
 
+using ::chromeos::machine_learning::mojom::BuiltinModelId;
+using ::chromeos::machine_learning::mojom::BuiltinModelSpec;
+using ::chromeos::machine_learning::mojom::BuiltinModelSpecPtr;
 using ::chromeos::machine_learning::mojom::CreateGraphExecutorResult;
 using ::chromeos::machine_learning::mojom::ExecuteResult;
 using ::chromeos::machine_learning::mojom::FloatList;
 using ::chromeos::machine_learning::mojom::Int64List;
 using ::chromeos::machine_learning::mojom::LoadModelResult;
-using ::chromeos::machine_learning::mojom::ModelId;
-using ::chromeos::machine_learning::mojom::ModelSpec;
-using ::chromeos::machine_learning::mojom::ModelSpecPtr;
 using ::chromeos::machine_learning::mojom::Tensor;
 using ::chromeos::machine_learning::mojom::TensorPtr;
 using ::chromeos::machine_learning::mojom::ValueList;
@@ -131,14 +131,15 @@ void MlServiceClientImpl::ExecuteCallback(
 void MlServiceClientImpl::InitMlServiceHandlesIfNeeded() {
   if (!model_) {
     // Load the model.
-    ModelSpecPtr spec =
-        ModelSpec::New(base::FeatureList::IsEnabled(features::kSmartDimModelV3)
-                           ? ModelId::SMART_DIM_20190521
-                           : ModelId::SMART_DIM_20181115);
-    chromeos::machine_learning::ServiceConnection::GetInstance()->LoadModel(
-        std::move(spec), mojo::MakeRequest(&model_),
-        base::BindOnce(&MlServiceClientImpl::LoadModelCallback,
-                       weak_factory_.GetWeakPtr()));
+    BuiltinModelSpecPtr spec = BuiltinModelSpec::New(
+        base::FeatureList::IsEnabled(features::kSmartDimModelV3)
+            ? BuiltinModelId::SMART_DIM_20190521
+            : BuiltinModelId::SMART_DIM_20181115);
+    chromeos::machine_learning::ServiceConnection::GetInstance()
+        ->LoadBuiltinModel(
+            std::move(spec), mojo::MakeRequest(&model_),
+            base::BindOnce(&MlServiceClientImpl::LoadModelCallback,
+                           weak_factory_.GetWeakPtr()));
   }
 
   if (!executor_) {

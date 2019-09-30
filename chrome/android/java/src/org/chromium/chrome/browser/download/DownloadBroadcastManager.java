@@ -31,11 +31,8 @@ import com.google.ipc.invalidation.util.Preconditions;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.download.DownloadNotificationUmaHelper.UmaDownloadResumption;
 import org.chromium.chrome.browser.download.items.OfflineContentAggregatorNotificationBridgeUiFactory;
@@ -211,13 +208,8 @@ public class DownloadBroadcastManager extends Service {
             }
         };
 
-        try {
-            ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
-            ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to load native library.", e);
-            ChromeApplication.reportStartupErrorAndExit(e);
-        }
+        ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
+        ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
     }
 
     @VisibleForTesting
@@ -345,7 +337,7 @@ public class DownloadBroadcastManager extends Service {
             // On Q+, content URI is being used and there is no download ID.
             openDownloadWithId(context, intent, DownloadItem.INVALID_DOWNLOAD_ID, contentId);
         } else {
-            long ids[] =
+            long[] ids =
                     intent.getLongArrayExtra(DownloadManager.EXTRA_NOTIFICATION_CLICK_DOWNLOAD_IDS);
             if (ids == null || ids.length == 0) {
                 DownloadManagerService.openDownloadsPage(context, DownloadOpenSource.NOTIFICATION);

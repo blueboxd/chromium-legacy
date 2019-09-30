@@ -200,6 +200,9 @@ class AssociatedReceiver {
   // stimulus.
   void FlushForTesting() { binding_.FlushForTesting(); }
 
+  // Returns the interface implementation that was previously specified.
+  Interface* impl() { return binding_.impl(); }
+
   // Allows test code to swap the interface implementation.
   ImplPointerType SwapImplForTesting(ImplPointerType new_impl) {
     return binding_.SwapImplForTesting(new_impl);

@@ -306,6 +306,23 @@ void InterpolableLength::Scale(double scale) {
       expression_, NumberNode(scale), CSSMathOperator::kMultiply));
 }
 
+void InterpolableLength::Add(const InterpolableValue& other) {
+  const InterpolableLength& other_length = To<InterpolableLength>(other);
+  if (IsLengthArray() && other_length.IsLengthArray()) {
+    for (wtf_size_t i = 0; i < length_array_.values.size(); ++i) {
+      length_array_.values[i] =
+          length_array_.values[i] + other_length.length_array_.values[i];
+    }
+    length_array_.type_flags |= other_length.length_array_.type_flags;
+    return;
+  }
+
+  CSSMathExpressionNode* result =
+      CSSMathExpressionBinaryOperation::CreateSimplified(
+          &AsExpression(), &other_length.AsExpression(), CSSMathOperator::kAdd);
+  SetExpression(*result);
+}
+
 void InterpolableLength::ScaleAndAdd(double scale,
                                      const InterpolableValue& other) {
   const InterpolableLength& other_length = To<InterpolableLength>(other);

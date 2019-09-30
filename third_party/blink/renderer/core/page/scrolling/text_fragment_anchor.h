@@ -31,6 +31,11 @@ constexpr char kFragmentDirectiveNewPrefix[] = ":~:";
 constexpr size_t kFragmentDirectiveNewPrefixStringLength =
     base::size(kFragmentDirectiveNewPrefix) - 1;
 
+constexpr char kTextFragmentIdentifierPrefix[] = "targetText=";
+// Subtract 1 because base::size includes the \0 string terminator.
+constexpr size_t kTextFragmentIdentifierPrefixStringLength =
+    base::size(kTextFragmentIdentifierPrefix) - 1;
+
 enum class TextFragmentFormat { PlainFragment, FragmentDirective };
 
 class CORE_EXPORT TextFragmentAnchor final : public FragmentAnchor,

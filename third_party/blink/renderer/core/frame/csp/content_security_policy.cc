@@ -947,8 +947,8 @@ static void GatherSecurityPolicyViolationEventData(
             StripURLForUseInReport(delegate->GetSecurityOrigin(), blocked_url,
                                    redirect_status, effective_type));
         break;
-      case ContentSecurityPolicy::kTrustedTypesViolation:
-        init->setBlockedURI("trusted-types");
+      case ContentSecurityPolicy::kTrustedTypesSinkViolation:
+        init->setBlockedURI("trusted-types-sink");
         break;
       case ContentSecurityPolicy::kTrustedTypesPolicyViolation:
         init->setBlockedURI("trusted-types-policy");

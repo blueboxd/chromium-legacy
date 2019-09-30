@@ -688,7 +688,12 @@ TEST_F(GCMDriverFunctionalTest, UnregisterExplicitly) {
   EXPECT_EQ(GCMClient::SUCCESS, unregistration_result());
 }
 
+// TODO(crbug.com/1009185): Test is failing on ASan build.
+#if defined(ADDRESS_SANITIZER)
+TEST_F(GCMDriverFunctionalTest, DISABLED_UnregisterRemovesEncryptionInfo) {
+#else
 TEST_F(GCMDriverFunctionalTest, UnregisterRemovesEncryptionInfo) {
+#endif
   std::vector<std::string> sender_ids;
   sender_ids.push_back("sender1");
   Register(kTestAppID1, sender_ids, GCMDriverTest::WAIT);

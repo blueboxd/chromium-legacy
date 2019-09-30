@@ -57,37 +57,36 @@ static void MakeAsyncCopyRequest(
       std::move(copy_request));
 }
 
-void GrabWindowSnapshotAndScaleAsync(
-    gfx::NativeWindow window,
-    const gfx::Rect& source_rect,
-    const gfx::Size& target_size,
-    const GrabWindowSnapshotAsyncCallback& callback) {
+void GrabWindowSnapshotAndScaleAsync(gfx::NativeWindow window,
+                                     const gfx::Rect& source_rect,
+                                     const gfx::Size& target_size,
+                                     GrabWindowSnapshotAsyncCallback callback) {
   MakeAsyncCopyRequest(
       window, source_rect,
       CreateCopyRequest(window, source_rect,
                         base::BindOnce(&SnapshotAsync::ScaleCopyOutputResult,
-                                       callback, target_size)));
+                                       std::move(callback), target_size)));
 }
 
 void GrabWindowSnapshotAsync(gfx::NativeWindow window,
                              const gfx::Rect& source_rect,
-                             const GrabWindowSnapshotAsyncCallback& callback) {
+                             GrabWindowSnapshotAsyncCallback callback) {
   MakeAsyncCopyRequest(
       window, source_rect,
       CreateCopyRequest(
           window, source_rect,
           base::BindOnce(&SnapshotAsync::RunCallbackWithCopyOutputResult,
-                         callback)));
+                         std::move(callback))));
 }
 
 void GrabViewSnapshotAsync(gfx::NativeView view,
                            const gfx::Rect& source_rect,
-                           const GrabWindowSnapshotAsyncCallback& callback) {
+                           GrabWindowSnapshotAsyncCallback callback) {
   std::unique_ptr<viz::CopyOutputRequest> copy_request =
       view->MaybeRequestCopyOfView(CreateCopyRequest(
           view, source_rect,
           base::BindOnce(&SnapshotAsync::RunCallbackWithCopyOutputResult,
-                         callback)));
+                         std::move(callback))));
   if (!copy_request)
     return;
 

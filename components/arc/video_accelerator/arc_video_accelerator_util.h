@@ -11,6 +11,7 @@
 #include "base/files/scoped_file.h"
 #include "base/optional.h"
 #include "components/arc/video_accelerator/video_frame_plane.h"
+#include "media/base/color_plane_layout.h"
 #include "media/base/video_types.h"
 #include "mojo/public/cpp/system/handle.h"
 #include "ui/gfx/geometry/size.h"
@@ -25,14 +26,23 @@ base::ScopedFD UnwrapFdFromMojoHandle(mojo::ScopedHandle handle);
 // Return the file size of |fd| in bytes.
 bool GetFileSize(const int fd, size_t* size);
 
+// Return a list of duplicated |fd|. The size of list is |num_fds|. Return an
+// empty list if duplicatation fails.
+std::vector<base::ScopedFD> DuplicateFD(base::ScopedFD fd, size_t num_fds);
+
 // Return GpuMemoryBufferHandle iff |planes| are valid for a video frame located
-// on |fd| and of |pixel_format| and |coded_size|. Otherwise returns
-// base::nullopt.
+// on |scoped_fds| and of |pixel_format| and |coded_size|. Otherwise
+// returns base::nullopt.
 base::Optional<gfx::GpuMemoryBufferHandle> CreateGpuMemoryBufferHandle(
     media::VideoPixelFormat pixel_format,
     const gfx::Size& coded_size,
-    base::ScopedFD fd,
+    std::vector<base::ScopedFD> scoped_fds,
     const std::vector<VideoFramePlane>& planes);
+base::Optional<gfx::GpuMemoryBufferHandle> CreateGpuMemoryBufferHandle(
+    media::VideoPixelFormat pixel_format,
+    const gfx::Size& coded_size,
+    std::vector<base::ScopedFD> scoped_fds,
+    const std::vector<media::ColorPlaneLayout>& planes);
 
 // Create a temp file and write |data| into the file.
 base::ScopedFD CreateTempFileForTesting(const std::string& data);

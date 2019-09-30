@@ -40,7 +40,8 @@ class CORE_EXPORT PendingImportMap final
                                         const String& import_map_text,
                                         const KURL& base_url);
 
-  PendingImportMap(ScriptElementBase&,
+  PendingImportMap(ScriptState* script_state,
+                   ScriptElementBase&,
                    ImportMap*,
                    ScriptValue error_to_rethrow,
                    const Document& original_context_document);

@@ -25,7 +25,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisableIf;
@@ -161,12 +160,8 @@ public class PreferencesTest {
     @Policies.Add({ @Policies.Item(key = "DefaultSearchProviderEnabled", string = "false") })
     public void testSearchEnginePreference_DisabledIfNoDefaultSearchEngine() throws Exception {
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            try {
-                ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                        .handleSynchronousStartup();
-            } catch (ProcessInitException e) {
-                Assert.fail("Unable to initialize process: " + e);
-            }
+            ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
+                    .handleSynchronousStartup();
         });
 
         ensureTemplateUrlServiceLoaded();
@@ -366,13 +361,8 @@ public class PreferencesTest {
     @SmallTest
     @Policies.Add({ @Policies.Item(key = "PasswordManagerEnabled", string = "false") })
     public void testSavePasswordsPreferences_ManagedAndDisabled() throws ExecutionException {
-        TestThreadUtils.runOnUiThreadBlocking(() -> {
-            try {
-                ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
-            } catch (ProcessInitException e) {
-                Assert.fail("Unable to initialize process: " + e);
-            }
-        });
+        TestThreadUtils.runOnUiThreadBlocking(
+                () -> { ChromeBrowserInitializer.getInstance().handleSynchronousStartup(); });
 
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override

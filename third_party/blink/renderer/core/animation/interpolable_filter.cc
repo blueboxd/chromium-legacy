@@ -208,6 +208,25 @@ FilterOperation* InterpolableFilter::CreateFilterOperation(
   }
 }
 
+void InterpolableFilter::Add(const InterpolableValue& other) {
+  value_->Add(*To<InterpolableFilter>(other).value_);
+  // The following types have an initial value of 1, so addition for them is
+  // one-based: result = value_ + other.value_ - 1
+  switch (type_) {
+    case FilterOperation::BRIGHTNESS:
+    case FilterOperation::CONTRAST:
+    case FilterOperation::GRAYSCALE:
+    case FilterOperation::INVERT:
+    case FilterOperation::OPACITY:
+    case FilterOperation::SATURATE:
+    case FilterOperation::SEPIA:
+      value_->Add(*std::make_unique<InterpolableNumber>(-1));
+      break;
+    default:
+      break;
+  }
+}
+
 void InterpolableFilter::AssertCanInterpolateWith(
     const InterpolableValue& other) const {
   const InterpolableFilter& other_filter = To<InterpolableFilter>(other);

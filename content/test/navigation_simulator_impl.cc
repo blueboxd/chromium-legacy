@@ -1128,14 +1128,14 @@ bool NavigationSimulatorImpl::SimulateRendererInitiatedStart() {
         navigation_client_remote;
     navigation_client_receiver_ =
         navigation_client_remote.InitWithNewEndpointAndPassReceiver();
-    render_frame_host_->frame_host_binding_for_testing()
+    render_frame_host_->frame_host_receiver_for_testing()
         .impl()
         ->BeginNavigation(std::move(common_params), std::move(begin_params),
                           mojo::NullRemote(),
                           std::move(navigation_client_remote),
                           mojo::NullRemote());
   } else {
-    render_frame_host_->frame_host_binding_for_testing()
+    render_frame_host_->frame_host_receiver_for_testing()
         .impl()
         ->BeginNavigation(std::move(common_params), std::move(begin_params),
                           mojo::NullRemote(), mojo::NullAssociatedRemote(),

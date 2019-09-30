@@ -59,8 +59,6 @@ BLINK_COMMON_EXPORT extern const base::Feature
     kServiceWorkerIsolateInForeground;
 BLINK_COMMON_EXPORT extern const base::Feature
     kServiceWorkerImportedScriptUpdateCheck;
-BLINK_COMMON_EXPORT extern const base::Feature
-    kServiceWorkerAggressiveCodeCache;
 BLINK_COMMON_EXPORT extern const base::Feature kServiceWorkerUpdateDelay;
 BLINK_COMMON_EXPORT extern const base::Feature kStopInBackground;
 BLINK_COMMON_EXPORT extern const base::Feature

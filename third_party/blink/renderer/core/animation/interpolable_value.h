@@ -44,7 +44,13 @@ class CORE_EXPORT InterpolableValue {
   // TODO(alancutter): Remove Equals().
   virtual bool Equals(const InterpolableValue&) const = 0;
   virtual void Scale(double scale) = 0;
-  virtual void ScaleAndAdd(double scale, const InterpolableValue& other) = 0;
+  virtual void Add(const InterpolableValue& other) = 0;
+  // The default implementation should be sufficient for most types, but
+  // subclasses can override this to be more efficient if they chose.
+  virtual void ScaleAndAdd(double scale, const InterpolableValue& other) {
+    Scale(scale);
+    Add(other);
+  }
   virtual void AssertCanInterpolateWith(
       const InterpolableValue& other) const = 0;
 
@@ -81,7 +87,7 @@ class CORE_EXPORT InterpolableNumber final : public InterpolableValue {
   bool IsNumber() const final { return true; }
   bool Equals(const InterpolableValue& other) const final;
   void Scale(double scale) final;
-  void ScaleAndAdd(double scale, const InterpolableValue& other) final;
+  void Add(const InterpolableValue& other) final;
   void AssertCanInterpolateWith(const InterpolableValue& other) const final;
 
  private:
@@ -130,6 +136,8 @@ class CORE_EXPORT InterpolableList : public InterpolableValue {
   bool IsList() const final { return true; }
   bool Equals(const InterpolableValue& other) const final;
   void Scale(double scale) final;
+  void Add(const InterpolableValue& other) final;
+  // We override this to avoid two passes on the list from the base version.
   void ScaleAndAdd(double scale, const InterpolableValue& other) final;
   void AssertCanInterpolateWith(const InterpolableValue& other) const final;
 

@@ -25,6 +25,9 @@ class CONTENT_EXPORT BrowserAccessibilityManagerAuraLinux
   ~BrowserAccessibilityManagerAuraLinux() override;
 
   static ui::AXTreeUpdate GetEmptyDocument();
+  static BrowserAccessibility* FindCommonAncestor(
+      BrowserAccessibility* object1,
+      BrowserAccessibility* object2);
 
   // Implementation of BrowserAccessibilityManager methods.
   void FireFocusEvent(BrowserAccessibility* node) override;

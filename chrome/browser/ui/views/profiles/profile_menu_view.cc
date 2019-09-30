@@ -433,7 +433,7 @@ void ProfileMenuView::BuildIdentity() {
 }
 
 void ProfileMenuView::BuildGuestIdentity() {
-  SetIdentityInfo(ImageForMenu(kUserAccountAvatarIcon), GetIdentityBadge(),
+  SetIdentityInfo(profiles::GetGuestAvatar(), GetIdentityBadge(),
                   l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME));
 }
 
@@ -618,7 +618,7 @@ void ProfileMenuView::BuildProfileFeatureButtons() {
                           base::Unretained(this)));
 
   AddProfileFeatureButton(
-      ColoredImageForMenu(kUserAccountAvatarIcon, gfx::kGoogleGrey500),
+      profiles::GetGuestAvatar(),
       l10n_util::GetStringUTF16(IDS_GUEST_PROFILE_NAME),
       base::BindRepeating(&ProfileMenuView::OnGuestProfileButtonClicked,
                           base::Unretained(this)));

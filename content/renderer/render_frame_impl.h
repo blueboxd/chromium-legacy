@@ -67,6 +67,7 @@
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -889,13 +890,13 @@ class CONTENT_EXPORT RenderFrameImpl
 
   // Binds to the FrameHost in the browser.
   void BindFrame(const service_manager::BindSourceInfo& browser_info,
-                 mojom::FrameRequest request);
+                 mojo::PendingReceiver<mojom::Frame> receiver);
 
   // Virtual so that a TestRenderFrame can mock out the interface.
   virtual mojom::FrameHost* GetFrameHost();
 
   void BindFrameBindingsControl(
-      mojom::FrameBindingsControlAssociatedRequest request);
+      mojo::PendingAssociatedReceiver<mojom::FrameBindingsControl> receiver);
   void BindFrameNavigationControl(
       mojo::PendingAssociatedReceiver<mojom::FrameNavigationControl> receiver);
   // Only used when PerNavigationMojoInterface is enabled.
@@ -1665,9 +1666,9 @@ class CONTENT_EXPORT RenderFrameImpl
 
   mojo::AssociatedBinding<blink::mojom::AutoplayConfigurationClient>
       autoplay_configuration_binding_;
-  mojo::Binding<mojom::Frame> frame_binding_;
-  mojo::AssociatedBinding<mojom::FrameBindingsControl>
-      frame_bindings_control_binding_;
+  mojo::Receiver<mojom::Frame> frame_receiver_{this};
+  mojo::AssociatedReceiver<mojom::FrameBindingsControl>
+      frame_bindings_control_receiver_{this};
   mojo::AssociatedReceiver<mojom::FrameNavigationControl>
       frame_navigation_control_receiver_;
   mojo::AssociatedBinding<mojom::FullscreenVideoElementHandler>

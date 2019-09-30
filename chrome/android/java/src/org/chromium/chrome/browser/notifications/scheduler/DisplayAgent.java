@@ -13,12 +13,9 @@ import android.graphics.drawable.Icon;
 import android.os.Build;
 
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
@@ -165,13 +162,8 @@ public class DisplayAgent {
             };
 
             // Try to load native.
-            try {
-                ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
-                ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
-            } catch (ProcessInitException e) {
-                Log.e(TAG, "Unable to load native library.", e);
-                ChromeApplication.reportStartupErrorAndExit(e);
-            }
+            ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
+            ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
         }
     }
 

@@ -21,14 +21,12 @@ import android.support.v4.app.Fragment;
 import android.support.v7.preference.Preference;
 import android.support.v7.preference.PreferenceFragmentCompat;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.ChromeFeatureList;
@@ -90,17 +88,7 @@ public class Preferences extends ChromeBaseAppCompatActivity
         // from Android notifications, when Android is restoring Preferences after Chrome was
         // killed, or for tests. This should happen before super.onCreate() because it might
         // recreate a fragment, and a fragment might depend on the native library.
-        try {
-            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Failed to start browser process.", e);
-            // This can only ever happen, if at all, when the activity is started from an Android
-            // notification (or in tests). As such we don't want to show an error messsage to the
-            // user. The application is completely broken at this point, so close it down
-            // completely (not just the activity).
-            System.exit(-1);
-            return;
-        }
+        ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
 
         super.onCreate(savedInstanceState);
 

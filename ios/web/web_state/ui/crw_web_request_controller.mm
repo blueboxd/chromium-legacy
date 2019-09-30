@@ -144,6 +144,9 @@ enum class BackForwardNavigationType {
   [_delegate webRequestControllerStopLoading:self];
   web::NavigationItemImpl* item =
       self.navigationManagerImpl->GetLastCommittedItemImpl();
+  if (!item) {
+    return;
+  }
   auto navigationContext = web::NavigationContextImpl::CreateNavigationContext(
       self.webState, URL,
       /*has_user_gesture=*/true, item->GetTransitionType(),

@@ -15,7 +15,6 @@ import org.chromium.base.Log;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.Linker;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
@@ -41,11 +40,7 @@ public class ChromiumLinkerTestActivity extends Activity {
 
         // Load the library in the browser process, this will also run the test
         // runner in this process.
-        try {
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
-        } catch (ProcessInitException e) {
-            Log.i(TAG, "Cannot load chromium_linker_test:" +  e);
-        }
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
 
         // Now, start a new renderer process by creating a new view.
         // This will run the test runner in the renderer process.
@@ -53,30 +48,25 @@ public class ChromiumLinkerTestActivity extends Activity {
         LayoutInflater inflater =
                 (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         View view = inflater.inflate(R.layout.test_activity, null);
-        mShellManager = (ShellManager) view.findViewById(R.id.shell_container);
+        mShellManager = view.findViewById(R.id.shell_container);
         mWindowAndroid = new ActivityWindowAndroid(this, false);
         mShellManager.setWindow(mWindowAndroid);
 
         mShellManager.setStartupUrl("about:blank");
 
-        try {
-            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                    .startBrowserProcessesAsync(
-                            true, false, new BrowserStartupController.StartupCallback() {
-                                @Override
-                                public void onSuccess() {
-                                    finishInitialization(savedInstanceState);
-                                }
+        BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                .startBrowserProcessesAsync(
+                        true, false, new BrowserStartupController.StartupCallback() {
+                            @Override
+                            public void onSuccess() {
+                                finishInitialization(savedInstanceState);
+                            }
 
-                                @Override
-                                public void onFailure() {
-                                    initializationFailed();
-                                }
-                            });
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to load native library.", e);
-            finish();
-        }
+                            @Override
+                            public void onFailure() {
+                                initializationFailed();
+                            }
+                        });
 
         // TODO(digit): Ensure that after the content view is initialized,
         // the program finishes().

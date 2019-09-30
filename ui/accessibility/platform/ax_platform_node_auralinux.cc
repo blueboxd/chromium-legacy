@@ -191,21 +191,6 @@ AtkObject* FindAtkObjectToplevelParentDocument(AtkObject* atk_object) {
   return toplevel_document;
 }
 
-bool EmitsAtkTextEvents(AtkObject* atk_object) {
-  // If this node is not a static text node, it supports the full AtkText
-  // interface.
-  AtkRole role = atk_object_get_role(atk_object);
-  if (role != ATK_ROLE_TEXT)
-    return true;
-
-  // If this node is not a static text leaf node, it supports the full AtkText
-  // interface.
-  if (atk_object_get_n_accessible_children(atk_object))
-    return true;
-
-  return false;
-}
-
 bool IsFrameAncestorOfAtkObject(AtkObject* frame, AtkObject* atk_object) {
   AtkObject* current_frame = FindAtkObjectParentFrame(atk_object);
   while (current_frame) {
@@ -352,10 +337,6 @@ AtkObject* GetActiveDescendantOfCurrentFocused() {
     return descendant->GetNativeViewAccessible();
 
   return nullptr;
-}
-bool SelectionOffsetsIndicateSelection(const std::pair<int, int>& offsets) {
-  return offsets.first >= 0 && offsets.second >= 0 &&
-         offsets.first != offsets.second;
 }
 
 void PrependTextAttributeToSet(const AtkTextAttribute attribute,
@@ -2286,7 +2267,7 @@ void AXPlatformNodeAuraLinux::StaticInitialize() {
   AtkUtilAuraLinux::GetInstance()->InitializeAsync();
 }
 
-AtkRole AXPlatformNodeAuraLinux::GetAtkRole() {
+AtkRole AXPlatformNodeAuraLinux::GetAtkRole() const {
   switch (GetData().role) {
     case ax::mojom::Role::kAlert:
       return ATK_ROLE_ALERT;
@@ -3224,35 +3205,139 @@ bool AXPlatformNodeAuraLinux::SelectionAndFocusAreTheSame() {
   return false;
 }
 
-void AXPlatformNodeAuraLinux::OnTextSelectionChanged() {
-  AtkObject* atk_object = GetOrCreateAtkObject();
-  if (!EmitsAtkTextEvents(atk_object)) {
-    if (auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent()))
-      parent->OnTextSelectionChanged();
+bool AXPlatformNodeAuraLinux::EmitsAtkTextEvents() const {
+  // If this node is not a static text node, it supports the full AtkText
+  // interface.
+  if (GetAtkRole() != ATK_ROLE_TEXT)
+    return true;
+
+  // If this node has children it is not a static text leaf node and supports
+  // the full AtkText interface.
+  if (GetChildCount())
+    return true;
+
+  return false;
+}
+
+void AXPlatformNodeAuraLinux::GetFullSelection(int32_t* anchor_node_id,
+                                               int* anchor_offset,
+                                               int32_t* focus_node_id,
+                                               int* focus_offset) {
+  DCHECK(anchor_node_id);
+  DCHECK(anchor_offset);
+  DCHECK(focus_node_id);
+  DCHECK(focus_offset);
+
+  if (IsPlainTextField() &&
+      GetIntAttribute(ax::mojom::IntAttribute::kTextSelStart, anchor_offset) &&
+      GetIntAttribute(ax::mojom::IntAttribute::kTextSelEnd, focus_offset)) {
+    int32_t node_id = GetData().id != -1 ? GetData().id : GetUniqueId();
+    *anchor_node_id = *focus_node_id = node_id;
     return;
   }
 
-  DCHECK(ATK_IS_TEXT(atk_object));
+  ui::AXTree::Selection selection = GetDelegate()->GetUnignoredSelection();
+  *anchor_node_id = selection.anchor_object_id;
+  *anchor_offset = selection.anchor_offset;
+  *focus_node_id = selection.focus_object_id;
+  *focus_offset = selection.focus_offset;
+}
 
-  std::pair<int, int> new_selection;
-  GetSelectionOffsets(&new_selection.first, &new_selection.second);
-  std::pair<int, int> old_selection = text_selection_;
-  text_selection_ = new_selection;
+AXPlatformNodeAuraLinux& AXPlatformNodeAuraLinux::FindEditableRootOrDocument() {
+  if (GetAtkRole() == ATK_ROLE_DOCUMENT_WEB)
+    return *this;
+  if (GetData().GetBoolAttribute(ax::mojom::BoolAttribute::kEditableRoot))
+    return *this;
+  if (auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent()))
+    return parent->FindEditableRootOrDocument();
+  return *this;
+}
+
+AXPlatformNodeAuraLinux* AXPlatformNodeAuraLinux::FindCommonAncestor(
+    AXPlatformNodeAuraLinux* other) {
+  if (this == other || other->IsDescendantOf(this))
+    return this;
+  if (auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent()))
+    return parent->FindCommonAncestor(other);
+  return nullptr;
+}
+
+void AXPlatformNodeAuraLinux::UpdateSelectionInformation(int32_t anchor_node_id,
+                                                         int anchor_offset,
+                                                         int32_t focus_node_id,
+                                                         int focus_offset) {
+  had_nonzero_width_selection =
+      focus_node_id != anchor_node_id || focus_offset != anchor_offset;
+  current_caret_ = std::make_pair(focus_node_id, focus_offset);
+}
+
+void AXPlatformNodeAuraLinux::EmitSelectionChangedSignal(bool had_selection) {
+  if (!EmitsAtkTextEvents()) {
+    if (auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent()))
+      parent->EmitSelectionChangedSignal(had_selection);
+    return;
+  }
+
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  DCHECK(ATK_IS_TEXT(atk_object));
+  std::pair<int, int> selection;
+  GetSelectionOffsets(&selection.first, &selection.second);
 
   // ATK does not consider a collapsed selection a selection, so
   // when the collapsed selection changes (caret movement), we should
   // avoid sending text-selection-changed events.
-  bool has_selection = SelectionOffsetsIndicateSelection(new_selection);
-  bool had_selection = SelectionOffsetsIndicateSelection(old_selection);
-  if (has_selection != had_selection ||
-      (has_selection && new_selection != old_selection)) {
+  if (HasSelection() || had_selection)
     g_signal_emit_by_name(atk_object, "text-selection-changed");
+}
+
+void AXPlatformNodeAuraLinux::EmitCaretChangedSignal() {
+  if (!EmitsAtkTextEvents()) {
+    if (auto* parent = AtkObjectToAXPlatformNodeAuraLinux(GetParent()))
+      parent->EmitCaretChangedSignal();
+    return;
   }
 
-  if (HasCaret() && new_selection.second != old_selection.second) {
-    g_signal_emit_by_name(atk_object, "text-caret-moved",
-                          UTF16ToUnicodeOffsetInText(new_selection.second));
+  DCHECK(HasCaret());
+  std::pair<int, int> selection;
+  GetSelectionOffsets(&selection.first, &selection.second);
+
+  AtkObject* atk_object = GetOrCreateAtkObject();
+  DCHECK(ATK_IS_TEXT(atk_object));
+  g_signal_emit_by_name(atk_object, "text-caret-moved",
+                        UTF16ToUnicodeOffsetInText(selection.second));
+}
+
+void AXPlatformNodeAuraLinux::OnTextSelectionChanged() {
+  int32_t anchor_node_id, focus_node_id;
+  int anchor_offset, focus_offset;
+  GetFullSelection(&anchor_node_id, &anchor_offset, &focus_node_id,
+                   &focus_offset);
+
+  auto* anchor_node = static_cast<AXPlatformNodeAuraLinux*>(
+      GetDelegate()->GetFromNodeID(anchor_node_id));
+  auto* focus_node = static_cast<AXPlatformNodeAuraLinux*>(
+      GetDelegate()->GetFromNodeID(focus_node_id));
+  if (!anchor_node || !focus_node)
+    return;
+
+  AXPlatformNodeAuraLinux& editable_root = FindEditableRootOrDocument();
+  AXPlatformNodeAuraLinux* common_ancestor =
+      focus_node->FindCommonAncestor(anchor_node);
+  if (common_ancestor) {
+    common_ancestor->EmitSelectionChangedSignal(
+        editable_root.HadNonZeroWidthSelection());
   }
+
+  // It's possible for the selection to change and for the caret to stay in
+  // place. This might happen if the selection is totally reset with a
+  // different anchor node, but the same focus node. We should avoid sending a
+  // caret changed signal in that case.
+  std::pair<int32_t, int> prev_caret = editable_root.GetCurrentCaret();
+  if (prev_caret.first != focus_node_id || prev_caret.second != focus_offset)
+    focus_node->EmitCaretChangedSignal();
+
+  editable_root.UpdateSelectionInformation(anchor_node_id, anchor_offset,
+                                           focus_node_id, focus_offset);
 }
 
 bool AXPlatformNodeAuraLinux::SupportsSelectionWithAtkSelection() {
@@ -3485,7 +3570,7 @@ void AXPlatformNodeAuraLinux::UpdateHypertext() {
   AtkObject* atk_object = GetOrCreateAtkObject();
   DCHECK(ATK_IS_TEXT(atk_object));
 
-  if (!EmitsAtkTextEvents(atk_object))
+  if (!EmitsAtkTextEvents())
     return;
 
   if (old_len > 0) {
@@ -3902,7 +3987,6 @@ bool AXPlatformNodeAuraLinux::SetCaretOffset(int offset) {
   if (!SetHypertextSelection(offset, offset))
     return false;
 
-  OnTextSelectionChanged();
   return true;
 }
 
@@ -3932,14 +4016,14 @@ bool AXPlatformNodeAuraLinux::SetTextSelectionForAtkText(int start_offset,
   if (!SetHypertextSelection(start_offset, end_offset))
     return false;
 
-  OnTextSelectionChanged();
   return true;
 }
 
 bool AXPlatformNodeAuraLinux::HasSelection() {
   std::pair<int, int> selection;
   GetSelectionOffsets(&selection.first, &selection.second);
-  return SelectionOffsetsIndicateSelection(selection);
+  return selection.first >= 0 && selection.second >= 0 &&
+         selection.first != selection.second;
 }
 
 void AXPlatformNodeAuraLinux::GetSelectionExtents(int* start_offset,
@@ -4169,7 +4253,7 @@ void AXPlatformNodeAuraLinux::ActivateFindInPageResult(int start_offset,
   AtkObject* atk_object = GetOrCreateAtkObject();
   DCHECK(ATK_IS_TEXT(atk_object));
 
-  if (!EmitsAtkTextEvents(atk_object)) {
+  if (!EmitsAtkTextEvents()) {
     ActivateFindInPageInParent(start_offset, end_offset);
     return;
   }

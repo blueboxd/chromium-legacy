@@ -13,6 +13,7 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 
 using content::BrowserThread;
 
@@ -50,7 +51,8 @@ void FieldTrialSynchronizer::NotifyAllRenderers(
     IPC::ChannelProxy* channel = host->GetChannel();
     // channel might be null in tests.
     if (host->IsInitializedAndNotDead() && channel) {
-      chrome::mojom::RendererConfigurationAssociatedPtr renderer_configuration;
+      mojo::AssociatedRemote<chrome::mojom::RendererConfiguration>
+          renderer_configuration;
       channel->GetRemoteAssociatedInterface(&renderer_configuration);
       renderer_configuration->SetFieldTrialGroup(field_trial_name, group_name);
     }

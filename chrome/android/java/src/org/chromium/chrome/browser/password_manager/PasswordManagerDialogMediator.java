@@ -123,11 +123,11 @@ class PasswordManagerDialogMediator implements View.OnLayoutChangeListener {
         mModel.set(ILLUSTRATION_VISIBLE, hasSufficientSpaceForIllustration(newHeight));
     }
 
-    void showDialog() {
+    void showDialog(@ModalDialogManager.ModalDialogType int type) {
         mModel.set(ILLUSTRATION_VISIBLE,
                 hasSufficientSpaceForIllustration(mAndroidContentView.getHeight()));
         mDialogModel = mModalDialogBuilder.build();
-        mDialogManager.showDialog(mDialogModel, ModalDialogManager.ModalDialogType.TAB);
+        mDialogManager.showDialog(mDialogModel, type);
     }
 
     void dismissDialog(int dismissalClause) {

@@ -351,6 +351,26 @@ IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
+                       CheckIgnoresInvalidManifest) {
+  const char* manifest_template = R"(
+    {
+      "name": "Test app name",
+      "start_url": ".",
+      "scope": "/",
+      "display": "standalone",
+      "icons": $1,
+      $2
+    }
+  )";
+  OverrideManifest(manifest_template, {kInstallableIconList, ""});
+  AppId app_id = InstallWebApp();
+  OverrideManifest(manifest_template, {kInstallableIconList,
+                                       "invalid manifest syntax !@#$%^*&()"});
+  EXPECT_EQ(GetResultAfterPageLoad(GetAppURL(), &app_id),
+            ManifestUpdateResult::kAppDataInvalid);
+}
+
+IN_PROC_BROWSER_TEST_F(ManifestUpdateManagerBrowserTest,
                        CheckFindsThemeColorChange) {
   const char* manifest_template = R"(
     {

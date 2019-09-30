@@ -15,7 +15,6 @@ enum CSSAtRuleID {
   kCSSAtRuleInvalid,
   kCSSAtRuleCharset,
   kCSSAtRuleFontFace,
-  kCSSAtRuleFontFeatureValues,
   kCSSAtRuleImport,
   kCSSAtRuleKeyframes,
   kCSSAtRuleMedia,

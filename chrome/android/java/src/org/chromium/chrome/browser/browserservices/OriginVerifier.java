@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.UrlConstants;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
+import org.chromium.content_public.browser.WebContents;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
@@ -76,6 +77,8 @@ public class OriginVerifier {
     @Nullable private OriginVerificationListener mListener;
     private Origin mOrigin;
     private long mVerificationStartTime;
+    @Nullable
+    private WebContents mWebContents;
 
     /**
      * A collection of Relationships (stored as Strings, with the signature set to an empty String)
@@ -89,8 +92,9 @@ public class OriginVerifier {
         @Inject
         public Factory() {}
 
-        public OriginVerifier create(String packageName, @Relation int relation) {
-            return new OriginVerifier(packageName, relation);
+        public OriginVerifier create(
+                String packageName, @Relation int relation, @Nullable WebContents webContents) {
+            return new OriginVerifier(packageName, relation, webContents);
         }
     }
 
@@ -205,11 +209,15 @@ public class OriginVerifier {
      * Use {@link OriginVerifier#start}
      * @param packageName The package for the Android application for verification.
      * @param relation Digital Asset Links {@link Relation} to use during verification.
+     * @param webContents The web contents of the tab used for reporting errors to DevTools. Can be
+     *         null if unavailable.
      */
-    public OriginVerifier(String packageName, @Relation int relation) {
+    public OriginVerifier(
+            String packageName, @Relation int relation, @Nullable WebContents webContents) {
         mPackageName = packageName;
         mSignatureFingerprint = getCertificateSHA256FingerprintForPackage(mPackageName);
         mRelation = relation;
+        mWebContents = webContents;
     }
 
     /**
@@ -257,8 +265,9 @@ public class OriginVerifier {
             // Early return for testing without native.
             return;
         }
-        mNativeOriginVerifier = OriginVerifierJni.get().init(
-                OriginVerifier.this, Profile.getLastUsedProfile().getOriginalProfile());
+        if (mWebContents != null && mWebContents.isDestroyed()) mWebContents = null;
+        mNativeOriginVerifier = OriginVerifierJni.get().init(OriginVerifier.this, mWebContents,
+                Profile.getLastUsedProfile().getOriginalProfile());
         assert mNativeOriginVerifier != 0;
         String relationship = null;
         switch (mRelation) {
@@ -451,7 +460,7 @@ public class OriginVerifier {
 
     @NativeMethods
     interface Natives {
-        long init(OriginVerifier caller, Profile profile);
+        long init(OriginVerifier caller, @Nullable WebContents webContents, Profile profile);
         boolean verifyOrigin(long nativeOriginVerifier, OriginVerifier caller, String packageName,
                 String signatureFingerprint, String origin, String relationship);
         void destroy(long nativeOriginVerifier, OriginVerifier caller);

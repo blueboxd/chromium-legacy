@@ -6,7 +6,6 @@
 
 #include "base/strings/sys_string_conversions.h"
 #include "components/prefs/pref_service.h"
-#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
 #import "ios/chrome/browser/ui/authentication/signin_earl_grey_ui.h"
@@ -43,19 +42,11 @@ using chrome_test_util::ButtonWithAccessibilityLabelId;
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
   [ChromeEarlGreyUI tapSettingsMenuButton:PrimarySignInButton()];
 
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // Cancel the sign-in operation.
-    [[EarlGrey selectElementWithMatcher:
-                   grey_buttonTitle([l10n_util::GetNSString(
-                       IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
-                       uppercaseString])] performAction:grey_tap()];
-  } else {
-    // Cancel the add account operation.
-    [[EarlGrey
-        selectElementWithMatcher:grey_allOf(grey_buttonTitle(@"Cancel"),
-                                            grey_sufficientlyVisible(), nil)]
-        performAction:grey_tap()];
-  }
+  // Cancel the sign-in operation.
+  [[EarlGrey selectElementWithMatcher:
+                 grey_buttonTitle([l10n_util::GetNSString(
+                     IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_SKIP_BUTTON)
+                     uppercaseString])] performAction:grey_tap()];
   [SigninEarlGreyUI
       checkSigninPromoVisibleWithMode:SigninPromoViewModeColdState];
 }

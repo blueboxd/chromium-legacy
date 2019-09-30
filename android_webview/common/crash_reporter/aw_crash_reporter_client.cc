@@ -105,7 +105,7 @@ class AwCrashReporterClient : public crash_reporter::CrashReporterClient {
   }
 
   bool JavaExceptionFilter(
-      const base::android::ScopedJavaLocalRef<jthrowable>& java_exception) {
+      const base::android::JavaRef<jthrowable>& java_exception) {
     return Java_AwCrashReporterClient_stackTraceContainsWebViewCode(
         AttachCurrentThread(), java_exception);
   }
@@ -194,6 +194,13 @@ void EnableCrashReporter(const std::string& process_type) {
   AwCrashReporterClient* client = g_crash_reporter_client.Pointer();
   crash_reporter::SetCrashReporterClient(client);
   crash_reporter::InitializeCrashpad(process_type.empty(), process_type);
+  if (process_type.empty()) {
+    base::android::InitJavaExceptionReporter();
+  } else {
+    base::android::InitJavaExceptionReporterForChildProcess();
+  }
+  base::android::SetJavaExceptionFilter(base::BindRepeating(
+      &AwCrashReporterClient::JavaExceptionFilter, base::Unretained(client)));
   g_enabled = true;
 }
 

@@ -5,9 +5,9 @@
 package org.chromium.base.library_loader;
 
 /**
- * The exception that is thrown when the intialization of a process was failed.
+ * The exception that is thrown when the initialization of a process has failed.
  */
-public class ProcessInitException extends Exception {
+public class ProcessInitException extends RuntimeException {
     private int mErrorCode = LoaderErrors.LOADER_ERROR_NORMAL_COMPLETION;
 
     /**

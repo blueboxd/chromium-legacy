@@ -117,6 +117,7 @@
 #include "content/common/accessibility_messages.h"
 #include "content/common/associated_interfaces.mojom.h"
 #include "content/common/content_security_policy/content_security_policy.h"
+#include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/input/input_handler.mojom.h"
@@ -146,6 +147,7 @@
 #include "content/public/browser/site_isolation_policy.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/webvr_service_provider.h"
+#include "content/public/common/bind_interface_helpers.h"
 #include "content/public/common/bindings_policy.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
@@ -170,6 +172,8 @@
 #include "media/mojo/services/media_interface_provider.h"
 #include "media/mojo/services/media_metrics_provider.h"
 #include "media/mojo/services/video_decode_perf_history.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
@@ -848,7 +852,6 @@ RenderFrameHostImpl::RenderFrameHostImpl(
       has_selection_(false),
       is_audible_(false),
       last_navigation_previews_state_(PREVIEWS_UNSPECIFIED),
-      frame_host_associated_binding_(this),
       waiting_for_init_(renderer_initiated_creation),
       has_focused_editable_element_(false),
       push_messaging_manager_(
@@ -4195,7 +4198,7 @@ void RenderFrameHostImpl::AdoptPortal(
 }
 
 void RenderFrameHostImpl::IssueKeepAliveHandle(
-    mojom::KeepAliveHandleRequest request) {
+    mojo::PendingReceiver<mojom::KeepAliveHandle> receiver) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (GetProcess()->IsKeepAliveRefCountDisabled())
     return;
@@ -4209,7 +4212,7 @@ void RenderFrameHostImpl::IssueKeepAliveHandle(
         std::make_unique<KeepAliveHandleFactory>(GetProcess());
     keep_alive_handle_factory_->SetTimeout(keep_alive_timeout_);
   }
-  keep_alive_handle_factory_->Create(std::move(request));
+  keep_alive_handle_factory_->Create(std::move(receiver));
 }
 
 // TODO(ahemery): Move checks to mojo bad message reporting.
@@ -5497,12 +5500,13 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
   associated_registry_ = std::make_unique<blink::AssociatedInterfaceRegistry>();
   registry_ = std::make_unique<service_manager::BinderRegistry>();
 
-  auto make_binding = [](RenderFrameHostImpl* impl,
-                         mojom::FrameHostAssociatedRequest request) {
-    impl->frame_host_associated_binding_.Bind(std::move(request));
-  };
+  auto bind_frame_host_receiver =
+      [](RenderFrameHostImpl* impl,
+         mojo::PendingAssociatedReceiver<mojom::FrameHost> receiver) {
+        impl->frame_host_associated_receiver_.Bind(std::move(receiver));
+      };
   associated_registry_->AddInterface(
-      base::BindRepeating(make_binding, base::Unretained(this)));
+      base::BindRepeating(bind_frame_host_receiver, base::Unretained(this)));
 
   associated_registry_->AddInterface(base::BindRepeating(
       [](RenderFrameHostImpl* self,
@@ -5512,9 +5516,10 @@ void RenderFrameHostImpl::SetUpMojoIfNeeded() {
       base::Unretained(this)));
 
   RegisterMojoInterfaces();
-  mojom::FrameFactoryPtr frame_factory;
+  mojo::PendingRemote<mojom::FrameFactory> frame_factory;
   BindInterface(GetProcess(), &frame_factory);
-  frame_factory->CreateFrame(routing_id_, MakeRequest(&frame_));
+  mojo::Remote<mojom::FrameFactory>(std::move(frame_factory))
+      ->CreateFrame(routing_id_, frame_.BindNewPipeAndPassReceiver());
 
   service_manager::mojom::InterfaceProviderPtr remote_interfaces;
   frame_->GetInterfaceProvider(mojo::MakeRequest(&remote_interfaces));
@@ -5530,7 +5535,7 @@ void RenderFrameHostImpl::InvalidateMojoConnection() {
 
   frame_.reset();
   frame_bindings_control_.reset();
-  frame_host_associated_binding_.Close();
+  frame_host_associated_receiver_.reset();
   navigation_control_.reset();
   frame_input_handler_.reset();
 

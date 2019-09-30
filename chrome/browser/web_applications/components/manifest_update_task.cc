@@ -78,7 +78,13 @@ void ManifestUpdateTask::WebContentsDestroyed() {
 void ManifestUpdateTask::OnDidGetInstallableData(const InstallableData& data) {
   DCHECK_EQ(stage_, Stage::kPendingInstallableData);
 
-  if (!IsUpdateNeededForInstallableData(data)) {
+  if (!data.errors.empty()) {
+    DestroySelf(ManifestUpdateResult::kAppDataInvalid);
+    return;
+  }
+
+  DCHECK(data.manifest);
+  if (!IsUpdateNeededForManifest(*data.manifest)) {
     DestroySelf(ManifestUpdateResult::kAppUpToDate);
     return;
   }
@@ -90,17 +96,12 @@ void ManifestUpdateTask::OnDidGetInstallableData(const InstallableData& data) {
                           AsWeakPtr(), *data.manifest));
 }
 
-bool ManifestUpdateTask::IsUpdateNeededForInstallableData(
-    const InstallableData& data) {
-  if (!data.errors.empty())
+bool ManifestUpdateTask::IsUpdateNeededForManifest(
+    const blink::Manifest& manifest) const {
+  if (app_id_ != GenerateAppIdFromURL(manifest.start_url))
     return false;
 
-  DCHECK(data.manifest);
-
-  if (app_id_ != GenerateAppIdFromURL(data.manifest->start_url))
-    return false;
-
-  if (data.manifest->theme_color != registrar_.GetAppThemeColor(app_id_))
+  if (manifest.theme_color != registrar_.GetAppThemeColor(app_id_))
     return true;
 
   // TODO(crbug.com/926083): Check more manifest fields.

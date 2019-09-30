@@ -239,6 +239,7 @@ source_set("unit_tests") {
       "surface_unittest.cc",
       "text_input_unittest.cc",
       "touch_unittest.cc",
+      "xdg_shell_surface_unittest.cc",
     ]
 
     deps += [

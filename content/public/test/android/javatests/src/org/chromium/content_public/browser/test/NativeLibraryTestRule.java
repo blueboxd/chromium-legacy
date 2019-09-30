@@ -12,7 +12,6 @@ import org.junit.runners.model.Statement;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
 import org.chromium.ui.resources.ResourceExtractor;
@@ -49,24 +48,16 @@ public class NativeLibraryTestRule implements TestRule {
 
     private void nativeInitialization(boolean initBrowserProcess) {
         if (initBrowserProcess) {
-            try {
-                // Extract compressed resource paks.
-                ResourceExtractor resourceExtractor = ResourceExtractor.get();
-                resourceExtractor.setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
-                resourceExtractor.startExtractingResources("en");
-                resourceExtractor.waitForCompletion();
+            // Extract compressed resource paks.
+            ResourceExtractor resourceExtractor = ResourceExtractor.get();
+            resourceExtractor.setResultTraits(UiThreadTaskTraits.BOOTSTRAP);
+            resourceExtractor.startExtractingResources("en");
+            resourceExtractor.waitForCompletion();
 
-                BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
-                        .startBrowserProcessesSync(false);
-            } catch (ProcessInitException e) {
-                throw new Error(e);
-            }
+            BrowserStartupController.get(LibraryProcessType.PROCESS_BROWSER)
+                    .startBrowserProcessesSync(false);
         } else {
-            try {
-                LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
-            } catch (ProcessInitException e) {
-                throw new Error(e);
-            }
+            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         }
     }
 

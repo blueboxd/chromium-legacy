@@ -99,7 +99,7 @@ class SendTabToSelfBridgeTest : public testing::Test {
         sync_pb::SyncEnums_DeviceType_TYPE_LINUX, "scoped_is",
         clock()->Now() - base::TimeDelta::FromDays(1),
         /*send_tab_to_self_receiving_enabled=*/true);
-    AddTestDevice(local_device_.get());
+    AddTestDevice(local_device_.get(), /*local=*/true);
   }
 
   // Initialized the bridge based on the current local device and store. Can
@@ -179,8 +179,11 @@ class SendTabToSelfBridgeTest : public testing::Test {
         .WillByDefault(Return(cache_guid));
   }
 
-  void AddTestDevice(const syncer::DeviceInfo* device) {
+  void AddTestDevice(const syncer::DeviceInfo* device, bool local = false) {
     device_info_tracker_.Add(device);
+    if (local) {
+      device_info_tracker_.SetLocalCacheGuid(device->guid());
+    }
   }
 
   syncer::MockModelTypeChangeProcessor* processor() { return &mock_processor_; }

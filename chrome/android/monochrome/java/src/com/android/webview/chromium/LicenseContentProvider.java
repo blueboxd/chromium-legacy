@@ -14,7 +14,6 @@ import android.os.Bundle;
 import android.os.ParcelFileDescriptor;
 
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.components.aboutui.CreditUtilsJni;
 
@@ -48,11 +47,7 @@ public class LicenseContentProvider
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                try {
-                    ChromeBrowserInitializer.getInstance(getContext()).handleSynchronousStartup();
-                } catch (ProcessInitException e) {
-                    throw new RuntimeException(e);
-                }
+                ChromeBrowserInitializer.getInstance(getContext()).handleSynchronousStartup();
             }
         });
         CreditUtilsJni.get().writeCreditsHtml(output.detachFd());

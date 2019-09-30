@@ -12,13 +12,27 @@ namespace machine_learning {
 
 // Encapsulates a connection to the Chrome OS ML Service daemon via its Mojo
 // interface.
-// Usage:
+// Usage for Built-in models:
 //   chromeos::machine_learning::mojom::ModelPtr model;
-//   chromeos::machine_learning::mojom::ModelSpec spec = ...;
+//   chromeos::machine_learning::mojom::BuiltinModelSpecPtr spec =
+//       chromeos::machine_learning::mojom::BuiltinModelSpec::New();
+//   spec->id = ...;
 //   chromeos::machine_learning::ServiceConnection::GetInstance()
-//       ->LoadModel(spec, mojom::MakeRequest(&model),
-//                   base::BindOnce(&MyCallBack));
+//       ->LoadBuiltinModel(std::move(spec), mojom::MakeRequest(&model),
+//                          base::BindOnce(&MyCallBack));
 //   // Use |model| or wait for |MyCallBack|.
+// Usage for Flatbuffer models:
+//   chromeos::machine_learning::mojom::ModelPtr model;
+//   chromeos::machine_learning::mojom::FlatBufferModelSpecPtr spec =
+//       chromeos::machine_learning::mojom::FlatBufferModelSpec::New();
+//   spec->model_string = ...;
+//   spec->inputs = ...;
+//   spec->outputs = ...;
+//   spec->metrics_model_name = ...;
+//   chromeos::machine_learning::ServiceConnection::GetInstance()
+//       ->LoadFlatBufferModel(std::move(spec), mojom::MakeRequest(&model),
+//                             base::BindOnce(&MyCallBack));
+//
 // Sequencing: Must be used on a single sequence (may be created on another).
 class ServiceConnection {
  public:
@@ -28,13 +42,23 @@ class ServiceConnection {
   static void UseFakeServiceConnectionForTesting(
       ServiceConnection* fake_service_connection);
 
-  // Instruct ML daemon to load the model specified in |spec|, binding a Model
-  // implementation to |request|.
-  // Bootstraps the initial Mojo connection to the daemon if necessary.
-  virtual void LoadModel(
-      mojom::ModelSpecPtr spec,
+  // Instruct ML daemon to load the builtin model specified in |spec|, binding a
+  // Model implementation to |request|. Bootstraps the initial Mojo connection
+  // to the daemon if necessary.
+  virtual void LoadBuiltinModel(
+      mojom::BuiltinModelSpecPtr spec,
       mojom::ModelRequest request,
-      mojom::MachineLearningService::LoadModelCallback result_callback) = 0;
+      mojom::MachineLearningService::LoadBuiltinModelCallback
+          result_callback) = 0;
+
+  // Instruct ML daemon to load the flatbuffer model specified in |spec|,
+  // binding a Model implementation to |request|. Bootstraps the initial Mojo
+  // connection to the daemon if necessary.
+  virtual void LoadFlatBufferModel(
+      mojom::FlatBufferModelSpecPtr spec,
+      mojom::ModelRequest request,
+      mojom::MachineLearningService::LoadFlatBufferModelCallback
+          result_callback) = 0;
 
  protected:
   ServiceConnection() = default;

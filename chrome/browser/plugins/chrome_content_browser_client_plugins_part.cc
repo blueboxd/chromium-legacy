@@ -17,7 +17,8 @@
 #include "content/public/browser/browser_task_traits.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/buildflags/buildflags.h"
-#include "mojo/public/cpp/bindings/strong_associated_binding.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "mojo/public/cpp/bindings/self_owned_associated_receiver.h"
 #include "ppapi/host/ppapi_host.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -35,7 +36,7 @@ namespace plugins {
 namespace {
 void BindPluginInfoHost(
     int render_process_id,
-    chrome::mojom::PluginInfoHostAssociatedRequest request) {
+    mojo::PendingAssociatedReceiver<chrome::mojom::PluginInfoHost> receiver) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::RenderProcessHost* host =
       content::RenderProcessHost::FromID(render_process_id);
@@ -43,9 +44,9 @@ void BindPluginInfoHost(
     return;
 
   Profile* profile = Profile::FromBrowserContext(host->GetBrowserContext());
-  mojo::MakeStrongAssociatedBinding(
+  mojo::MakeSelfOwnedAssociatedReceiver(
       std::make_unique<PluginInfoHostImpl>(render_process_id, profile),
-      std::move(request));
+      std::move(receiver));
 }
 }  // namespace
 

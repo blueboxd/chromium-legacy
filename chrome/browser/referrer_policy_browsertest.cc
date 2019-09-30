@@ -7,7 +7,9 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/app/chrome_command_ids.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/net/system_network_context_manager.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu.h"
 #include "chrome/browser/renderer_context_menu/render_view_context_menu_browsertest_util.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,9 +25,11 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_features.h"
 #include "content/public/test/browser_test_utils.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/platform/web_input_event.h"
 
 class ReferrerPolicyTest : public InProcessBrowserTest {
@@ -208,6 +212,18 @@ class ReferrerPolicyTest : public InProcessBrowserTest {
   }
 
   net::EmbeddedTestServer https_server_;
+};
+
+class ReferrerPolicyCapReferrerToOriginOnCrossOriginTest
+    : public ReferrerPolicyTest {
+ public:
+  ReferrerPolicyCapReferrerToOriginOnCrossOriginTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        network::features::kCapReferrerToOriginOnCrossOrigin);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 class ReferrerPolicyWithReduceReferrerGranularityFlagTest
@@ -667,4 +683,100 @@ IN_PROC_BROWSER_TEST_F(ReferrerPolicyWithReduceReferrerGranularityFlagTest,
                   WindowOpenDisposition::CURRENT_TAB,
                   blink::WebMouseEvent::Button::kLeft,
                   EXPECT_ORIGIN_AS_REFERRER, expected_referrer_policy);
+}
+
+// Test that capping referrer granularity at origin on cross-origin requests
+// correctly defers to a more restrictive referrer policy on a
+// cross-origin navigation.
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
+                       HonorsMoreRestrictivePolicyOnNavigation) {
+  RunReferrerTest(network::mojom::ReferrerPolicy::kSameOrigin, START_ON_HTTPS,
+                  REGULAR_LINK, NO_REDIRECT /*direct navigation x-origin*/,
+                  WindowOpenDisposition::CURRENT_TAB,
+                  blink::WebMouseEvent::Button::kLeft, EXPECT_EMPTY_REFERRER);
+}
+
+// Test that capping referrer granularity at origin on cross-origin requests
+// correctly overrides a less restrictive referrer policy on a
+// cross-origin navigation.
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
+                       CorrectlyOverridesOnNavigation) {
+  RunReferrerTest(network::mojom::ReferrerPolicy::kAlways, START_ON_HTTPS,
+                  REGULAR_LINK, NO_REDIRECT /*direct navigation x-origin*/,
+                  WindowOpenDisposition::CURRENT_TAB,
+                  blink::WebMouseEvent::Button::kLeft,
+                  EXPECT_ORIGIN_AS_REFERRER);
+}
+
+// Test that capping referrer granularity at origin on cross-origin requests
+// correctly defers to a more restrictive referrer policy on a
+// cross-origin redirect.
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
+                       HonorsMoreRestrictivePolicyOnRedirect) {
+  RunReferrerTest(network::mojom::ReferrerPolicy::kStrictOrigin, START_ON_HTTPS,
+                  REGULAR_LINK, SERVER_REDIRECT_FROM_HTTPS_TO_HTTP,
+                  WindowOpenDisposition::CURRENT_TAB,
+                  blink::WebMouseEvent::Button::kLeft, EXPECT_EMPTY_REFERRER);
+}
+
+// Test that capping referrer granularity at origin on cross-origin requests
+// correctly overrides a less restrictive referrer policy on a
+// cross-origin redirect.
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
+                       CorrectlyOverridesOnRedirect) {
+  RunReferrerTest(
+      network::mojom::ReferrerPolicy::kAlways, START_ON_HTTP, REGULAR_LINK,
+      SERVER_REDIRECT_FROM_HTTP_TO_HTTPS, WindowOpenDisposition::CURRENT_TAB,
+      blink::WebMouseEvent::Button::kLeft, EXPECT_ORIGIN_AS_REFERRER);
+}
+
+// Test that capping referrer granularity at origin on cross-origin requests
+// correctly respects a less restrictive referrer policy on a
+// same-origin navigation.
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
+                       DeclinesToOverrideOnSameOriginNavigation) {
+  RunReferrerTest(network::mojom::ReferrerPolicy::kAlways, START_ON_HTTP,
+                  REGULAR_LINK, NO_REDIRECT /*direct navigation same-origin*/,
+                  WindowOpenDisposition::CURRENT_TAB,
+                  blink::WebMouseEvent::Button::kLeft, EXPECT_FULL_REFERRER);
+}
+
+// Test that capping referrer granularity at origin on cross-origin requests
+// correctly respects a less restrictive referrer policy on a
+// same-origin redirect.
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
+                       DeclinesToOverrideOnSameOriginRedirect) {
+  RunReferrerTest(network::mojom::ReferrerPolicy::kAlways, START_ON_HTTP,
+                  REGULAR_LINK, SERVER_REDIRECT_FROM_HTTP_TO_HTTP,
+                  WindowOpenDisposition::CURRENT_TAB,
+                  blink::WebMouseEvent::Button::kLeft, EXPECT_FULL_REFERRER);
+}
+
+// Test that, when capping referrer granularity at origin on cross-origin
+// requests, the referrer remains truncated if we're redirected back
+// to the initiating origin.
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
+                       OverrideMaintainedOnRedirectBackToOriginalOrigin) {
+  RunReferrerTest(
+      network::mojom::ReferrerPolicy::kAlways, START_ON_HTTPS, REGULAR_LINK,
+      SERVER_REDIRECT_FROM_HTTP_TO_HTTPS, WindowOpenDisposition::CURRENT_TAB,
+      blink::WebMouseEvent::Button::kLeft, EXPECT_ORIGIN_AS_REFERRER);
+}
+
+// Test that, when the cross-origin referrer cap is on but we also have the
+// "no referrers at all" pref set, we send no referrer at all on cross-origin
+// requests.
+IN_PROC_BROWSER_TEST_F(ReferrerPolicyCapReferrerToOriginOnCrossOriginTest,
+                       RespectsNoReferrerPref) {
+  browser()->profile()->GetPrefs()->SetBoolean(prefs::kEnableReferrers, false);
+  content::BrowserContext::GetDefaultStoragePartition(browser()->profile())
+      ->FlushNetworkInterfaceForTesting();
+  RunReferrerTest(network::mojom::ReferrerPolicy::kAlways, START_ON_HTTPS,
+                  REGULAR_LINK, NO_REDIRECT, WindowOpenDisposition::CURRENT_TAB,
+                  blink::WebMouseEvent::Button::kLeft, EXPECT_EMPTY_REFERRER,
+                  // when the pref is set, the renderer sets the referrer policy
+                  // to the default on outgoing requests at the same time
+                  // it removes referrers
+                  content::Referrer::NetReferrerPolicyToBlinkReferrerPolicy(
+                      content::Referrer::GetDefaultReferrerPolicy()));
 }

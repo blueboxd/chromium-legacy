@@ -86,7 +86,7 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
       std::make_unique<VapidKeyManager>(sync_prefs.get());
   std::unique_ptr<SharingDeviceRegistration> sharing_device_registration =
       std::make_unique<SharingDeviceRegistration>(
-          sync_prefs.get(), instance_id_service->driver(),
+          profile->GetPrefs(), sync_prefs.get(), instance_id_service->driver(),
           vapid_key_manager.get(), local_device_info_provider);
   std::unique_ptr<SharingFCMSender> fcm_sender =
       std::make_unique<SharingFCMSender>(gcm_driver, local_device_info_provider,
@@ -97,7 +97,7 @@ KeyedService* SharingServiceFactory::BuildServiceInstanceFor(
                                           sync_prefs.get());
 
   return new SharingService(
-      std::move(sync_prefs), std::move(vapid_key_manager),
+      profile->GetPrefs(), std::move(sync_prefs), std::move(vapid_key_manager),
       std::move(sharing_device_registration), std::move(fcm_sender),
       std::move(fcm_handler), gcm_driver, device_info_tracker,
       local_device_info_provider, sync_service, notification_display_service);

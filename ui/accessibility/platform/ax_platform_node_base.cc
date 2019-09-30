@@ -1776,6 +1776,10 @@ ui::TextAttributeList AXPlatformNodeBase::ComputeTextAttributes() const {
     // We assume that there are 96 pixels per inch on a standard display.
     // TODO(nektar): Figure out the current value of pixels per inch.
     float points = font_size * 72.0 / 96.0;
+
+    // Round to the nearest 0.5 points.
+    points = std::round(points * 2.0) / 2.0;
+
     attributes.push_back(
         std::make_pair("font-size", base::NumberToString(points) + "pt"));
   }

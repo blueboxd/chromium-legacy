@@ -26,6 +26,7 @@ enum ManifestUpdateResult {
   kWebContentsDestroyed,
   kAppUninstalled,
   kAppUpToDate,
+  kAppDataInvalid,
   kAppUpdateFailed,
   kAppUpdated,
 };
@@ -67,7 +68,7 @@ class ManifestUpdateTask final
   };
 
   void OnDidGetInstallableData(const InstallableData& data);
-  bool IsUpdateNeededForInstallableData(const InstallableData& data);
+  bool IsUpdateNeededForManifest(const blink::Manifest& manifest) const;
   void OnAllAppWindowsClosed(blink::Manifest manifest);
   void OnInstallationComplete(const AppId& app_id, InstallResultCode code);
   void DestroySelf(ManifestUpdateResult result);

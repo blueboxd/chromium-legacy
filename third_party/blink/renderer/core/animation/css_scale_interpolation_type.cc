@@ -193,9 +193,10 @@ InterpolationValue CSSScaleInterpolationType::MaybeConvertValue(
   }
 }
 
-InterpolationValue CSSScaleInterpolationType::MakeAdditive(
+InterpolationValue CSSScaleInterpolationType::PreInterpolationCompositeIfNeeded(
     InterpolationValue value,
-    const InterpolationValue& underlying) const {
+    const InterpolationValue& underlying,
+    EffectModel::CompositeOperation) const {
   value.non_interpolable_value = CSSScaleNonInterpolableValue::CreateAdditive(
       ToCSSScaleNonInterpolableValue(*value.non_interpolable_value));
   return value;

@@ -46,7 +46,6 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.CachedMetrics;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
@@ -152,8 +151,6 @@ public class WebViewChromiumAwInit {
             try (ScopedSysTraceEvent e =
                             ScopedSysTraceEvent.scoped("WebViewChromiumAwInit.LibraryLoader")) {
                 LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBVIEW);
-            } catch (ProcessInitException e) {
-                throw new RuntimeException("Error initializing WebView library", e);
             }
 
             PathService.override(PathService.DIR_MODULE, "/system/lib/");

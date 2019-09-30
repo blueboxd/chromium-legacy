@@ -280,7 +280,7 @@ void RemoteFontFaceSource::BeginLoadIfNeeded() {
     return;
   DCHECK(GetResource());
 
-  SetDisplay(face_->GetFontFace()->GetFontDisplayWithFallback());
+  SetDisplay(face_->GetFontFace()->GetFontDisplay());
 
   FontResource* font = ToFontResource(GetResource());
   if (font->StillNeedsLoad()) {

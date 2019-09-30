@@ -32,10 +32,8 @@
 
 namespace blink {
 
-class CSSIdentifierValue;
 class CSSRule;
 class CSSStyleSheet;
-class CSSValueList;
 
 class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
  public:
@@ -52,7 +50,6 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
     kNamespace,
     kSupports,
     kViewport,
-    kFontFeatureValues,
   };
 
   RuleType GetType() const { return static_cast<RuleType>(type_); }
@@ -69,9 +66,6 @@ class CORE_EXPORT StyleRuleBase : public GarbageCollected<StyleRuleBase> {
   bool IsSupportsRule() const { return GetType() == kSupports; }
   bool IsViewportRule() const { return GetType() == kViewport; }
   bool IsImportRule() const { return GetType() == kImport; }
-  bool IsFontFeatureValuesRule() const {
-    return GetType() == kFontFeatureValues;
-  }
 
   StyleRuleBase* Copy() const;
 
@@ -324,29 +318,6 @@ class StyleRuleCharset : public StyleRuleBase {
  private:
 };
 
-class CORE_EXPORT StyleRuleFontFeatureValues : public StyleRuleBase {
- public:
-  StyleRuleFontFeatureValues(const CSSValueList* font_family,
-                             const CSSIdentifierValue* font_display);
-  StyleRuleFontFeatureValues(const StyleRuleFontFeatureValues&) = default;
-
-  StyleRuleFontFeatureValues* Copy() const {
-    return MakeGarbageCollected<StyleRuleFontFeatureValues>(*this);
-  }
-
-  const CSSValueList& FontFamily() const {
-    DCHECK(font_family_);
-    return *font_family_;
-  }
-  const CSSIdentifierValue* FontDisplay() const { return font_display_; }
-
-  void TraceAfterDispatch(blink::Visitor*);
-
- private:
-  Member<const CSSValueList> font_family_;
-  Member<const CSSIdentifierValue> font_display_;
-};
-
 template <>
 struct DowncastTraits<StyleRule> {
   static bool AllowFrom(const StyleRuleBase& rule) {
@@ -398,13 +369,6 @@ template <>
 struct DowncastTraits<StyleRuleCharset> {
   static bool AllowFrom(const StyleRuleBase& rule) {
     return rule.IsCharsetRule();
-  }
-};
-
-template <>
-struct DowncastTraits<StyleRuleFontFeatureValues> {
-  static bool AllowFrom(const StyleRuleBase& rule) {
-    return rule.IsFontFeatureValuesRule();
   }
 };
 

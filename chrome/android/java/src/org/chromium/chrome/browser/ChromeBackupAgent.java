@@ -19,7 +19,6 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.firstrun.FirstRunSignInProcessor;
@@ -160,12 +159,7 @@ public class ChromeBackupAgent extends BackupAgent {
             Log.e(TAG, "Backup agent started from child process");
             return false;
         }
-        try {
-            ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
-        } catch (ProcessInitException e) {
-            Log.w(TAG, "Browser launch failed on backup or restore: " + e);
-            return false;
-        }
+        ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
         return true;
     }
 

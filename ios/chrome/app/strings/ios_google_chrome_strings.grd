@@ -222,9 +222,6 @@ locale.  The strings in this file are specific to iOS.
       <message name="IDS_IOS_OPTIONS_IMPORT_DATA_TITLE_SIGNIN" desc="The title of the Import Data settings screen when signing in. [30em]">
         Sign in to Chrome
       </message>
-      <message name="IDS_IOS_OPTIONS_PRIVACY_FOOTER" desc="Footer for the clear browsing data dialog [Length: 300em] [iOS only]">
-        Google Chrome may use web services to improve your browsing experience. You may optionally disable these services. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
-      </message>
       <message name="IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY" desc="The text of the identity section for iOS.">
         Chrome verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate.
       </message>
@@ -281,9 +278,6 @@ locale.  The strings in this file are specific to iOS.
       </message>
       <message name="IDS_IOS_UPGRADE_AVAILABLE" desc="Text to inform the user of the presence of a new version of the application">
         Chrome just got better! A new version is available.
-      </message>
-      <message name="IDS_IOS_SIGNIN_PROMO_SETTINGS" desc="Text to inform the user that they can sign in to get personal settings">
-        Sign in to Chrome to get your bookmarks, passwords, and more on all your devices.
       </message>
     </messages>
   </release>

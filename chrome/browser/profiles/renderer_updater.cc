@@ -17,6 +17,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_process_host.h"
 #include "extensions/buildflags/buildflags.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/network/public/cpp/features.h"
 
 #if defined(OS_CHROMEOS)
@@ -125,16 +126,17 @@ void RendererUpdater::InitializeRenderer(
       Profile::FromBrowserContext(render_process_host->GetBrowserContext());
   bool is_incognito_process = profile->IsOffTheRecord();
 
-  chrome::mojom::ChromeOSListenerRequest chromeos_listener_request;
+  mojo::PendingReceiver<chrome::mojom::ChromeOSListener>
+      chromeos_listener_receiver;
 #if defined(OS_CHROMEOS)
   if (merge_session_running_) {
-    chrome::mojom::ChromeOSListenerPtr chromeos_listener;
-    chromeos_listener_request = MakeRequest(&chromeos_listener);
+    mojo::Remote<chrome::mojom::ChromeOSListener> chromeos_listener;
+    chromeos_listener_receiver = chromeos_listener.BindNewPipeAndPassReceiver();
     chromeos_listeners_.push_back(std::move(chromeos_listener));
   }
 #endif  // defined(OS_CHROMEOS)
   renderer_configuration->SetInitialConfiguration(
-      is_incognito_process, std::move(chromeos_listener_request));
+      is_incognito_process, std::move(chromeos_listener_receiver));
 
   UpdateRenderer(&renderer_configuration);
 
@@ -152,9 +154,9 @@ void RendererUpdater::InitializeRenderer(
   renderer_configuration->SetContentSettingRules(rules);
 }
 
-std::vector<chrome::mojom::RendererConfigurationAssociatedPtr>
+std::vector<mojo::AssociatedRemote<chrome::mojom::RendererConfiguration>>
 RendererUpdater::GetRendererConfigurations() {
-  std::vector<chrome::mojom::RendererConfigurationAssociatedPtr> rv;
+  std::vector<mojo::AssociatedRemote<chrome::mojom::RendererConfiguration>> rv;
   for (content::RenderProcessHost::iterator it(
            content::RenderProcessHost::AllHostsIterator());
        !it.IsAtEnd(); it.Advance()) {
@@ -171,14 +173,15 @@ RendererUpdater::GetRendererConfigurations() {
   return rv;
 }
 
-chrome::mojom::RendererConfigurationAssociatedPtr
+mojo::AssociatedRemote<chrome::mojom::RendererConfiguration>
 RendererUpdater::GetRendererConfiguration(
     content::RenderProcessHost* render_process_host) {
   IPC::ChannelProxy* channel = render_process_host->GetChannel();
   if (!channel)
-    return nullptr;
+    return mojo::AssociatedRemote<chrome::mojom::RendererConfiguration>();
 
-  chrome::mojom::RendererConfigurationAssociatedPtr renderer_configuration;
+  mojo::AssociatedRemote<chrome::mojom::RendererConfiguration>
+      renderer_configuration;
   channel->GetRemoteAssociatedInterface(&renderer_configuration);
   return renderer_configuration;
 }
@@ -222,7 +225,8 @@ void RendererUpdater::UpdateAllRenderers() {
 }
 
 void RendererUpdater::UpdateRenderer(
-    chrome::mojom::RendererConfigurationAssociatedPtr* renderer_configuration) {
+    mojo::AssociatedRemote<chrome::mojom::RendererConfiguration>*
+        renderer_configuration) {
   (*renderer_configuration)
       ->SetConfiguration(chrome::mojom::DynamicParams::New(
           force_google_safesearch_.GetValue(),

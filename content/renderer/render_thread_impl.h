@@ -425,7 +425,7 @@ class CONTENT_EXPORT RenderThreadImpl
   void RegisterPendingFrameCreate(
       const service_manager::BindSourceInfo& source_info,
       int routing_id,
-      mojom::FrameRequest frame);
+      mojo::PendingReceiver<mojom::Frame> frame);
 
   mojom::RendererHost* GetRendererHost();
 
@@ -657,12 +657,14 @@ class CONTENT_EXPORT RenderThreadImpl
    public:
     PendingFrameCreate(const service_manager::BindSourceInfo& source_info,
                        int routing_id,
-                       mojom::FrameRequest frame_request);
+                       mojo::PendingReceiver<mojom::Frame> frame_receiver);
 
     const service_manager::BindSourceInfo& browser_info() const {
       return browser_info_;
     }
-    mojom::FrameRequest TakeFrameRequest() { return std::move(frame_request_); }
+    mojo::PendingReceiver<mojom::Frame> TakeFrameReceiver() {
+      return std::move(frame_receiver_);
+    }
 
    private:
     friend class base::RefCounted<PendingFrameCreate>;
@@ -674,7 +676,7 @@ class CONTENT_EXPORT RenderThreadImpl
 
     service_manager::BindSourceInfo browser_info_;
     int routing_id_;
-    mojom::FrameRequest frame_request_;
+    mojo::PendingReceiver<mojom::Frame> frame_receiver_;
   };
 
   using PendingFrameCreateMap =

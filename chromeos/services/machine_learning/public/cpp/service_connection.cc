@@ -26,10 +26,16 @@ class ServiceConnectionImpl : public ServiceConnection {
   ServiceConnectionImpl();
   ~ServiceConnectionImpl() override = default;
 
-  void LoadModel(mojom::ModelSpecPtr spec,
-                 mojom::ModelRequest request,
-                 mojom::MachineLearningService::LoadModelCallback
-                     result_callback) override;
+  void LoadBuiltinModel(mojom::BuiltinModelSpecPtr spec,
+                        mojom::ModelRequest request,
+                        mojom::MachineLearningService::LoadBuiltinModelCallback
+                            result_callback) override;
+
+  void LoadFlatBufferModel(
+      mojom::FlatBufferModelSpecPtr spec,
+      mojom::ModelRequest request,
+      mojom::MachineLearningService::LoadFlatBufferModelCallback
+          result_callback) override;
 
  private:
   // Binds the top level interface |machine_learning_service_| to an
@@ -51,14 +57,25 @@ class ServiceConnectionImpl : public ServiceConnection {
   DISALLOW_COPY_AND_ASSIGN(ServiceConnectionImpl);
 };
 
-void ServiceConnectionImpl::LoadModel(
-    mojom::ModelSpecPtr spec,
+void ServiceConnectionImpl::LoadBuiltinModel(
+    mojom::BuiltinModelSpecPtr spec,
     mojom::ModelRequest request,
-    mojom::MachineLearningService::LoadModelCallback result_callback) {
+    mojom::MachineLearningService::LoadBuiltinModelCallback result_callback) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   BindMachineLearningServiceIfNeeded();
-  machine_learning_service_->LoadModel(std::move(spec), std::move(request),
-                                       std::move(result_callback));
+  machine_learning_service_->LoadBuiltinModel(
+      std::move(spec), std::move(request), std::move(result_callback));
+}
+
+void ServiceConnectionImpl::LoadFlatBufferModel(
+    mojom::FlatBufferModelSpecPtr spec,
+    mojom::ModelRequest request,
+    mojom::MachineLearningService::LoadFlatBufferModelCallback
+        result_callback) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  BindMachineLearningServiceIfNeeded();
+  machine_learning_service_->LoadFlatBufferModel(
+      std::move(spec), std::move(request), std::move(result_callback));
 }
 
 void ServiceConnectionImpl::BindMachineLearningServiceIfNeeded() {

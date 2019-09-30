@@ -140,7 +140,8 @@ TEST_F(SingleSampleMetricsFactoryImplTest, DefaultSingleSampleMetricWithValue) {
                 base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
-TEST_F(SingleSampleMetricsFactoryImplTest, MultithreadedMetrics) {
+// TODO(crbug.com/1009360). Flaky timeouts.
+TEST_F(SingleSampleMetricsFactoryImplTest, DISABLED_MultithreadedMetrics) {
   base::HistogramTester tester;
   std::unique_ptr<base::SingleSampleMetric> metric =
       factory_->CreateCustomCountsMetric(kMetricName, kMin, kMax, kBucketCount);

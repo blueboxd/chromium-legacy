@@ -32,6 +32,9 @@ DawnBindingType AsDawnEnum<DawnBindingType>(const WTF::String& webgpu_enum) {
   if (webgpu_enum == "sampled-texture") {
     return DAWN_BINDING_TYPE_SAMPLED_TEXTURE;
   }
+  if (webgpu_enum == "storage-texture") {
+    return DAWN_BINDING_TYPE_STORAGE_TEXTURE;
+  }
   NOTREACHED();
   return DAWN_BINDING_TYPE_FORCE32;
 }

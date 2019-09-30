@@ -460,11 +460,9 @@ void MessageCenterImpl::EnterQuietModeWithExpire(
       observer.OnQuietModeChanged(true);
 
     quiet_mode_timer_ = std::make_unique<base::OneShotTimer>();
-    quiet_mode_timer_->Start(
-        FROM_HERE,
-        expires_in,
-        base::Bind(
-            &MessageCenterImpl::SetQuietMode, base::Unretained(this), false));
+    quiet_mode_timer_->Start(FROM_HERE, expires_in,
+                             base::BindOnce(&MessageCenterImpl::SetQuietMode,
+                                            base::Unretained(this), false));
   }
 }
 

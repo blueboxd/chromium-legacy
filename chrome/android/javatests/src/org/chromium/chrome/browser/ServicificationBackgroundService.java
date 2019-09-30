@@ -11,7 +11,6 @@ import com.google.android.gms.gcm.TaskParams;
 import org.junit.Assert;
 
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
@@ -55,12 +54,8 @@ public class ServicificationBackgroundService extends ChromeBackgroundService {
             }
         };
 
-        try {
-            ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
-            ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
-        } catch (ProcessInitException e) {
-            ChromeApplication.reportStartupErrorAndExit(e);
-        }
+        ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
+        ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
     }
 
     // Posts an assertion task to the UI thread. Since this is only called after the call

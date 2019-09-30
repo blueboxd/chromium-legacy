@@ -15,6 +15,8 @@
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "components/sync/protocol/device_info_specifics.pb.h"
 
+class PrefService;
+
 namespace instance_id {
 class InstanceIDDriver;
 }
@@ -35,6 +37,7 @@ class SharingDeviceRegistration {
       base::OnceCallback<void(SharingDeviceRegistrationResult)>;
 
   SharingDeviceRegistration(
+      PrefService* pref_service,
       SharingSyncPreference* prefs,
       instance_id::InstanceIDDriver* instance_id_driver,
       VapidKeyManager* vapid_key_manager,
@@ -52,6 +55,9 @@ class SharingDeviceRegistration {
   void SetEnabledFeaturesForTesting(
       std::set<sync_pb::SharingSpecificFields_EnabledFeatures>
           enabled_feautres);
+
+  // Returns if device can handle receiving of shared clipboard contents.
+  bool IsSharedClipboardSupported() const;
 
  private:
   FRIEND_TEST_ALL_PREFIXES(SharingDeviceRegistrationTest,
@@ -95,9 +101,7 @@ class SharingDeviceRegistration {
   // Returns if device can handle receiving phone numbers for calling.
   bool IsClickToCallSupported() const;
 
-  // Returns if device can handle receiving of shared clipboard contents.
-  bool IsSharedClipboardSupported() const;
-
+  PrefService* pref_service_;
   SharingSyncPreference* sharing_sync_preference_;
   instance_id::InstanceIDDriver* instance_id_driver_;
   VapidKeyManager* vapid_key_manager_;

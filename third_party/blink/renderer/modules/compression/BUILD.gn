@@ -1,0 +1,10 @@
+import("//third_party/blink/renderer/modules/modules.gni")
+
+blink_modules_sources("compression") {
+  sources = [
+    "decompression_stream.cc",
+    "decompression_stream.h",
+    "inflate_transformer.cc",
+    "inflate_transformer.h",
+  ]
+}

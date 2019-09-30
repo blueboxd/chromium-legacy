@@ -90,9 +90,9 @@ void ScreenshotGrabber::TakeScreenshot(gfx::NativeWindow window,
 #endif
   ui::GrabWindowSnapshotAsyncPNG(
       window, rect,
-      base::Bind(&ScreenshotGrabber::GrabWindowSnapshotAsyncCallback,
-                 factory_.GetWeakPtr(), window_identifier, is_partial,
-                 base::Passed(&callback)));
+      base::BindOnce(&ScreenshotGrabber::GrabWindowSnapshotAsyncCallback,
+                     factory_.GetWeakPtr(), window_identifier, is_partial,
+                     std::move(callback)));
 }
 
 bool ScreenshotGrabber::CanTakeScreenshot() {

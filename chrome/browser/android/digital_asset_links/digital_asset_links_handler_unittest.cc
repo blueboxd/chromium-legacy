@@ -121,7 +121,8 @@ class DigitalAssetLinksHandlerTest : public ::testing::Test {
 }  // namespace
 
 TEST_F(DigitalAssetLinksHandlerTest, CorrectAssetLinksUrl) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -133,7 +134,8 @@ TEST_F(DigitalAssetLinksHandlerTest, CorrectAssetLinksUrl) {
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, PositiveResponse) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -145,7 +147,8 @@ TEST_F(DigitalAssetLinksHandlerTest, PositiveResponse) {
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, PackageMismatch) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -157,7 +160,8 @@ TEST_F(DigitalAssetLinksHandlerTest, PackageMismatch) {
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, SignatureMismatch) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -169,7 +173,8 @@ TEST_F(DigitalAssetLinksHandlerTest, SignatureMismatch) {
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, RelationshipMismatch) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -182,7 +187,8 @@ TEST_F(DigitalAssetLinksHandlerTest, RelationshipMismatch) {
 
 TEST_F(DigitalAssetLinksHandlerTest, StatementIsolation) {
   // Ensure we don't merge separate statements together.
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -194,7 +200,8 @@ TEST_F(DigitalAssetLinksHandlerTest, StatementIsolation) {
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, BadAssetLinks_Empty) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -206,7 +213,8 @@ TEST_F(DigitalAssetLinksHandlerTest, BadAssetLinks_Empty) {
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, BadAssetLinks_NotList) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -218,7 +226,8 @@ TEST_F(DigitalAssetLinksHandlerTest, BadAssetLinks_NotList) {
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, BadAssetLinks_StatementNotDict) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -230,7 +239,8 @@ TEST_F(DigitalAssetLinksHandlerTest, BadAssetLinks_StatementNotDict) {
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, BadAssetLinks_MissingFields) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -242,7 +252,8 @@ TEST_F(DigitalAssetLinksHandlerTest, BadAssetLinks_MissingFields) {
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, BadRequest) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -254,7 +265,8 @@ TEST_F(DigitalAssetLinksHandlerTest, BadRequest) {
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, NetworkError) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),
@@ -266,7 +278,8 @@ TEST_F(DigitalAssetLinksHandlerTest, NetworkError) {
 }
 
 TEST_F(DigitalAssetLinksHandlerTest, NetworkDisconnected) {
-  DigitalAssetLinksHandler handler(GetSharedURLLoaderFactory());
+  DigitalAssetLinksHandler handler(/* web_contents= */ nullptr,
+                                   GetSharedURLLoaderFactory());
   handler.CheckDigitalAssetLinkRelationship(
       base::BindOnce(&DigitalAssetLinksHandlerTest::OnRelationshipCheckComplete,
                      base::Unretained(this)),

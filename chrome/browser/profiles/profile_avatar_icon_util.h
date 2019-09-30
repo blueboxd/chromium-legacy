@@ -13,6 +13,7 @@
 
 #include "build/build_config.h"
 #include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/image/image_skia.h"
 
 namespace base {
 class FilePath;
@@ -54,6 +55,9 @@ enum AvatarShape {
   SHAPE_CIRCLE,  // Only available for desktop platforms
   SHAPE_SQUARE,
 };
+
+// Returns the default guest avatar.
+gfx::ImageSkia GetGuestAvatar(int size = 256);
 
 // Returns a version of |image| of a specific size. Note that no checks are
 // done on the width/height so make sure they're reasonable values; in the

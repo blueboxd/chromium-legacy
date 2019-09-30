@@ -17,7 +17,6 @@ import com.google.ipc.invalidation.ticl.android2.channel.AndroidGcmController;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -222,18 +221,8 @@ public class ChromeGcmListenerService extends GcmListenerService {
      */
     static void dispatchMessageToDriver(Context applicationContext, GCMMessage message) {
         ThreadUtils.assertOnUiThread();
-
-        try {
-            ChromeBrowserInitializer.getInstance(applicationContext).handleSynchronousStartup();
-            GCMDriver.dispatchMessage(message);
-
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "ProcessInitException while starting the browser process");
-
-            // Since the library failed to initialize nothing in the application can work, so kill
-            // the whole application as opposed to just this service.
-            System.exit(-1);
-        }
+        ChromeBrowserInitializer.getInstance(applicationContext).handleSynchronousStartup();
+        GCMDriver.dispatchMessage(message);
     }
 
     private static boolean isNativeLoaded() {

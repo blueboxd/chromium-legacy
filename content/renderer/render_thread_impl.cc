@@ -63,6 +63,7 @@
 #include "content/child/thread_safe_sender.h"
 #include "content/common/buildflags.h"
 #include "content/common/content_constants_internal.h"
+#include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/view_messages.h"
@@ -122,8 +123,9 @@
 #include "media/media_buildflags.h"
 #include "media/video/gpu_video_accelerator_factories.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/self_owned_receiver.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "net/base/net_errors.h"
 #include "net/base/port_util.h"
@@ -312,8 +314,9 @@ class FrameFactoryImpl : public mojom::FrameFactory {
 
  private:
   // mojom::FrameFactory:
-  void CreateFrame(int32_t frame_routing_id,
-                   mojom::FrameRequest frame_request) override {
+  void CreateFrame(
+      int32_t frame_routing_id,
+      mojo::PendingReceiver<mojom::Frame> frame_receiver) override {
     // TODO(morrita): This is for investigating http://crbug.com/415059 and
     // should be removed once it is fixed.
     CHECK_LT(routing_id_highmark_, frame_routing_id);
@@ -326,11 +329,11 @@ class FrameFactoryImpl : public mojom::FrameFactory {
     // we want.
     if (!frame) {
       RenderThreadImpl::current()->RegisterPendingFrameCreate(
-          source_info_, frame_routing_id, std::move(frame_request));
+          source_info_, frame_routing_id, std::move(frame_receiver));
       return;
     }
 
-    frame->BindFrame(source_info_, std::move(frame_request));
+    frame->BindFrame(source_info_, std::move(frame_receiver));
   }
 
  private:
@@ -338,10 +341,10 @@ class FrameFactoryImpl : public mojom::FrameFactory {
   int32_t routing_id_highmark_;
 };
 
-void CreateFrameFactory(mojom::FrameFactoryRequest request,
+void CreateFrameFactory(mojo::PendingReceiver<mojom::FrameFactory> receiver,
                         const service_manager::BindSourceInfo& source_info) {
-  mojo::MakeStrongBinding(std::make_unique<FrameFactoryImpl>(source_info),
-                          std::move(request));
+  mojo::MakeSelfOwnedReceiver(std::make_unique<FrameFactoryImpl>(source_info),
+                              std::move(receiver));
 }
 
 scoped_refptr<viz::ContextProviderCommandBuffer> CreateOffscreenContext(
@@ -1076,7 +1079,7 @@ void RenderThreadImpl::AddRoute(int32_t routing_id, IPC::Listener* listener) {
       frame->GetTaskRunner(blink::TaskType::kInternalNavigationAssociated));
 
   scoped_refptr<PendingFrameCreate> create(it->second);
-  frame->BindFrame(it->second->browser_info(), it->second->TakeFrameRequest());
+  frame->BindFrame(it->second->browser_info(), it->second->TakeFrameReceiver());
   pending_frame_creates_.erase(it);
 }
 
@@ -1088,11 +1091,12 @@ void RenderThreadImpl::RemoveRoute(int32_t routing_id) {
 void RenderThreadImpl::RegisterPendingFrameCreate(
     const service_manager::BindSourceInfo& browser_info,
     int routing_id,
-    mojom::FrameRequest frame_request) {
+    mojo::PendingReceiver<mojom::Frame> frame_receiver) {
   std::pair<PendingFrameCreateMap::iterator, bool> result =
       pending_frame_creates_.insert(std::make_pair(
-          routing_id, base::MakeRefCounted<PendingFrameCreate>(
-                          browser_info, routing_id, std::move(frame_request))));
+          routing_id,
+          base::MakeRefCounted<PendingFrameCreate>(browser_info, routing_id,
+                                                   std::move(frame_receiver))));
   CHECK(result.second) << "Inserting a duplicate item.";
 }
 
@@ -2367,10 +2371,10 @@ void RenderThreadImpl::ReleaseFreeMemory() {
 RenderThreadImpl::PendingFrameCreate::PendingFrameCreate(
     const service_manager::BindSourceInfo& browser_info,
     int routing_id,
-    mojom::FrameRequest frame_request)
+    mojo::PendingReceiver<mojom::Frame> frame_receiver)
     : browser_info_(browser_info),
       routing_id_(routing_id),
-      frame_request_(std::move(frame_request)) {}
+      frame_receiver_(std::move(frame_receiver)) {}
 
 RenderThreadImpl::PendingFrameCreate::~PendingFrameCreate() {
 }

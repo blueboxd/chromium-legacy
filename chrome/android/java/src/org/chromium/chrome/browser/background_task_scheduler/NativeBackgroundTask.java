@@ -173,9 +173,8 @@ public abstract class NativeBackgroundTask implements BackgroundTask {
                     ChromeBrowserInitializer.getInstance(context).handlePostNativeStartup(
                             true /* isAsync */, parts);
                 } catch (ProcessInitException e) {
-                    Log.e(TAG, "ProcessInitException while starting the browser process.");
+                    Log.e(TAG, "Background Launch Error", e);
                     rescheduleRunnable.run();
-                    return;
                 }
             }
         });

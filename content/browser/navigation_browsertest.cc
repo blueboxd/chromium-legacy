@@ -858,11 +858,11 @@ IN_PROC_BROWSER_TEST_P(NavigationDisableWebSecurityTest,
   if (IsPerNavigationMojoInterfaceEnabled()) {
     auto navigation_client_receiver =
         navigation_client.InitWithNewEndpointAndPassReceiver();
-    rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
+    rfh->frame_host_receiver_for_testing().impl()->BeginNavigation(
         std::move(common_params), std::move(begin_params), mojo::NullRemote(),
         std::move(navigation_client), mojo::NullRemote());
   } else {
-    rfh->frame_host_binding_for_testing().impl()->BeginNavigation(
+    rfh->frame_host_receiver_for_testing().impl()->BeginNavigation(
         std::move(common_params), std::move(begin_params), mojo::NullRemote(),
         mojo::NullAssociatedRemote(), mojo::NullRemote());
   }

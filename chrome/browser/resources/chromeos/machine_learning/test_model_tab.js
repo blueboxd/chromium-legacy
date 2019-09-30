@@ -23,7 +23,7 @@ cr.define('machine_learning_internals', function() {
        */
       const testModelGraphExecutor =
           await machine_learning_internals.BrowserProxy.getInstance()
-              .prepareModel(ModelId.TEST_MODEL);
+              .prepareModel(BuiltinModelId.TEST_MODEL);
       $('test-model-status').textContent = 'Model loaded successfully!';
 
       $('test-status').textContent = '';

@@ -17,7 +17,6 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessConnection;
 import org.chromium.base.process_launcher.FileDescriptorInfo;
 import org.chromium.content.browser.ChildProcessLauncherHelperImpl;
@@ -58,12 +57,7 @@ public class ChildProcessLauncherTestHelperService extends Service {
     @Override
     public void onCreate() {
         CommandLine.init(null);
-        try {
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
-        } catch (ProcessInitException ex) {
-            throw new RuntimeException(ex);
-        }
-
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
         mHandlerThread.start();
     }
 

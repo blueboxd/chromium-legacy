@@ -58,6 +58,21 @@ class WebviewController : public CastWebContents::Delegate,
   webview::AsyncPageEvent_State current_state();
 
   void ProcessInputEvent(const webview::InputEvent& ev);
+  void JavascriptCallback(base::Value result);
+  void HandleEvaluateJavascript(
+      const webview::EvaluateJavascriptRequest& request);
+  void HandleAddJavascriptChannels(
+      const webview::AddJavascriptChannelsRequest& request);
+  void HandleRemoveJavascriptChannels(
+      const webview::RemoveJavascriptChannelsRequest& request);
+  void HandleGetCurrentUrl();
+  void HandleCanGoBack();
+  void HandleCanGoForward();
+  void HandleClearCache();
+  void HandleGetTitle();
+  void HandleUpdateSettings(const webview::UpdateSettingsRequest& request);
+  void HandleSetAutoMediaPlaybackPolicy(
+      const webview::SetAutoMediaPlaybackPolicyRequest& request);
 
   bool Check(bool condition, const char* error);
 
@@ -73,6 +88,8 @@ class WebviewController : public CastWebContents::Delegate,
   std::unique_ptr<content::WebContents> contents_;
   std::unique_ptr<CastWebContents> cast_web_contents_;
   bool stopped_ = false;
+
+  base::WeakPtrFactory<WebviewController> weak_ptr_factory_{this};
 
   DISALLOW_COPY_AND_ASSIGN(WebviewController);
 };

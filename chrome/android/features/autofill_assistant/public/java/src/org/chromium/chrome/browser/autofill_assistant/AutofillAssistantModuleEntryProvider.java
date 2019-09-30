@@ -11,6 +11,7 @@ import org.chromium.base.Callback;
 import org.chromium.base.Log;
 import org.chromium.base.SysUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.autofill_assistant.metrics.FeatureModuleInstallation;
 import org.chromium.chrome.browser.modules.ModuleInstallUi;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.components.module_installer.ModuleInstaller;
@@ -45,6 +46,8 @@ public class AutofillAssistantModuleEntryProvider {
     void getModuleEntry(Tab tab, Callback<AutofillAssistantModuleEntry> callback) {
         AutofillAssistantModuleEntry entry = getModuleEntryIfInstalled();
         if (entry != null) {
+            AutofillAssistantMetrics.recordFeatureModuleInstallation(
+                    FeatureModuleInstallation.DFM_ALREADY_INSTALLED);
             callback.onResult(entry);
             return;
         }
@@ -79,6 +82,8 @@ public class AutofillAssistantModuleEntryProvider {
             return;
         }
         Log.v(TAG, "Deferred install triggered.");
+        AutofillAssistantMetrics.recordFeatureModuleInstallation(
+                FeatureModuleInstallation.DFM_BACKGROUND_INSTALLATION_REQUESTED);
         AutofillAssistantModule.installDeferred();
     }
 
@@ -91,6 +96,8 @@ public class AutofillAssistantModuleEntryProvider {
                         if (retry) {
                             loadDynamicModuleWithUi(tab, callback);
                         } else {
+                            AutofillAssistantMetrics.recordFeatureModuleInstallation(
+                                    FeatureModuleInstallation.DFM_FOREGROUND_INSTALLATION_FAILED);
                             callback.onResult(null);
                         }
                     }
@@ -100,6 +107,8 @@ public class AutofillAssistantModuleEntryProvider {
         ModuleInstaller.getInstance().install("autofill_assistant", (success) -> {
             if (success) {
                 // Don't show success UI from DFM, transition to autobot UI directly.
+                AutofillAssistantMetrics.recordFeatureModuleInstallation(
+                        FeatureModuleInstallation.DFM_FOREGROUND_INSTALLATION_SUCCEEDED);
                 callback.onResult(AutofillAssistantModule.getImpl());
                 return;
             }

@@ -20,7 +20,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -53,7 +52,7 @@ public class TrustedWebActivityPermissionsTest {
     private TrustedWebActivityPermissionManager mPermissionManager;
 
     @Before
-    public void setUp() throws InterruptedException, ProcessInitException, TimeoutException {
+    public void setUp() throws InterruptedException, TimeoutException {
         // Native needs to be initialized to start the test server.
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
 

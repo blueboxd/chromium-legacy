@@ -20,7 +20,6 @@ import org.chromium.base.annotations.MainDex;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.content_public.browser.UiThreadTaskTraits;
@@ -55,20 +54,17 @@ public class DecoderService extends Service {
         if (!CommandLine.isInitialized()) {
             CommandLine.init(null);
         }
-        try {
-            // The decoder service relies on PathUtils.
-            PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
-                PathUtils.setPrivateDataDirectorySuffix(
-                        ChromeApplication.PRIVATE_DATA_DIRECTORY_SUFFIX);
-            });
 
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
-            DecoderServiceJni.get().initializePhotoPickerSandbox();
+        // The decoder service relies on PathUtils.
+        PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
+            PathUtils.setPrivateDataDirectorySuffix(
+                    ChromeApplication.PRIVATE_DATA_DIRECTORY_SUFFIX);
+        });
 
-            mNativeLibraryAndSandboxInitialized = true;
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to initialize the native library and sandbox", e);
-        }
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
+        DecoderServiceJni.get().initializePhotoPickerSandbox();
+
+        mNativeLibraryAndSandboxInitialized = true;
 
         super.onCreate();
     }

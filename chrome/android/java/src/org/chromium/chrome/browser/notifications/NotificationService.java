@@ -18,7 +18,6 @@ import android.os.StrictMode;
 import android.os.SystemClock;
 import android.util.Log;
 
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.webapps.WebappRegistry;
@@ -102,33 +101,27 @@ public class NotificationService extends IntentService {
      * @param intent The intent containing the notification's information.
      */
     static void dispatchIntentOnUIThread(Context context, Intent intent) {
+        ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
+
+        // Warm up the WebappRegistry, as we need to check if this notification should launch a
+        // standalone web app. This no-ops if the registry is already initialized and warmed,
+        // but triggers a strict mode violation otherwise (i.e. the browser isn't running).
+        // Temporarily disable strict mode to work around the violation.
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         try {
-            ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
-
-            // Warm up the WebappRegistry, as we need to check if this notification should launch a
-            // standalone web app. This no-ops if the registry is already initialized and warmed,
-            // but triggers a strict mode violation otherwise (i.e. the browser isn't running).
-            // Temporarily disable strict mode to work around the violation.
-            StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-            try {
-                WebappRegistry.getInstance();
-                WebappRegistry.warmUpSharedPrefs();
-            } finally {
-                StrictMode.setThreadPolicy(oldPolicy);
-            }
-
-            // Now that the browser process is initialized, we pass forward the call to the
-            // NotificationPlatformBridge which will take care of delivering the appropriate events.
-            if (!NotificationPlatformBridge.dispatchNotificationEvent(intent)) {
-                Log.w(TAG, "Unable to dispatch the notification event to Chrome.");
-            }
-
-            // TODO(peter): Verify that the lifetime of the NotificationService is sufficient
-            // when a notification event could be dispatched successfully.
-
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to start the browser process.", e);
-            System.exit(-1);
+            WebappRegistry.getInstance();
+            WebappRegistry.warmUpSharedPrefs();
+        } finally {
+            StrictMode.setThreadPolicy(oldPolicy);
         }
+
+        // Now that the browser process is initialized, we pass forward the call to the
+        // NotificationPlatformBridge which will take care of delivering the appropriate events.
+        if (!NotificationPlatformBridge.dispatchNotificationEvent(intent)) {
+            Log.w(TAG, "Unable to dispatch the notification event to Chrome.");
+        }
+
+        // TODO(peter): Verify that the lifetime of the NotificationService is sufficient
+        // when a notification event could be dispatched successfully.
     }
 }

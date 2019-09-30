@@ -19,7 +19,6 @@ import com.google.android.libraries.feed.hostimpl.storage.testing.InMemoryConten
 import com.google.android.libraries.feed.hostimpl.storage.testing.InMemoryJournalStorage;
 
 import org.junit.After;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -29,7 +28,6 @@ import org.mockito.MockitoAnnotations;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.test.util.CallbackHelper;
@@ -107,11 +105,7 @@ public class FeedAppLifecycleTest {
         DeferredStartupHandler.setInstanceForTests(mTestDeferredStartupHandler);
 
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            try {
-                ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
-            } catch (ProcessInitException e) {
-                Assert.fail("Native initialization failed");
-            }
+            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
             Profile profile = Profile.getLastUsedProfile().getOriginalProfile();
             mLifecycleBridge = new FeedLifecycleBridge(profile);
             mAppLifecycle =

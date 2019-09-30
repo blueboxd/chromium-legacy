@@ -488,7 +488,7 @@ CoreAccountId OAuth2TokenServiceDelegateAndroid::MapAccountNameToAccountId(
 
 // Called from Java when fetching of an OAuth2 token is finished. The
 // |authToken| param is only valid when |result| is true.
-void JNI_OAuth2TokenService_OAuth2TokenFetched(
+void JNI_OAuth2TokenService_OnOAuth2TokenFetched(
     JNIEnv* env,
     const JavaParamRef<jstring>& authToken,
     jboolean isTransientError,

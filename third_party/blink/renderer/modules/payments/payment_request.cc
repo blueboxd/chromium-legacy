@@ -11,8 +11,7 @@
 #include "base/location.h"
 #include "base/stl_util.h"
 #include "build/build_config.h"
-#include "mojo/public/cpp/bindings/interface_request.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
+#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/mojom/devtools/console_message.mojom-blink.h"
 #include "third_party/blink/public/mojom/feature_policy/feature_policy.mojom-blink.h"
 #include "third_party/blink/public/mojom/web_feature/web_feature.mojom-blink.h"
@@ -1163,9 +1162,9 @@ PaymentRequest::PaymentRequest(
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       execution_context->GetTaskRunner(TaskType::kUserInteraction);
 
-  GetFrame()->GetInterfaceProvider().GetInterface(
-      mojo::MakeRequest(&payment_provider_, task_runner));
-  payment_provider_.set_connection_error_handler(
+  GetFrame()->GetBrowserInterfaceBroker().GetInterface(
+      payment_provider_.BindNewPipeAndPassReceiver(task_runner));
+  payment_provider_.set_disconnect_handler(
       WTF::Bind(&PaymentRequest::OnConnectionError, WrapWeakPersistent(this)));
 
   UseCounter::Count(execution_context, WebFeature::kPaymentRequestInitialized);

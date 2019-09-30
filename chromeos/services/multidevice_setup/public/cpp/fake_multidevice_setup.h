@@ -12,7 +12,6 @@
 #include "chromeos/services/multidevice_setup/multidevice_setup_base.h"
 #include "chromeos/services/multidevice_setup/public/mojom/multidevice_setup.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
-#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
@@ -94,7 +93,7 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
   void AddHostStatusObserver(
       mojo::PendingRemote<mojom::HostStatusObserver> observer) override;
   void AddFeatureStateObserver(
-      mojom::FeatureStateObserverPtr observer) override;
+      mojo::PendingRemote<mojom::FeatureStateObserver> observer) override;
   void GetEligibleHostDevices(GetEligibleHostDevicesCallback callback) override;
   void SetHostDevice(const std::string& host_device_id,
                      const std::string& auth_token,
@@ -119,7 +118,7 @@ class FakeMultiDeviceSetup : public MultiDeviceSetupBase {
 
   mojo::Remote<mojom::AccountStatusChangeDelegate> delegate_;
   mojo::RemoteSet<mojom::HostStatusObserver> host_status_observers_;
-  mojo::InterfacePtrSet<mojom::FeatureStateObserver> feature_state_observers_;
+  mojo::RemoteSet<mojom::FeatureStateObserver> feature_state_observers_;
 
   std::vector<GetEligibleHostDevicesCallback> get_eligible_hosts_args_;
   std::vector<std::tuple<std::string, std::string, SetHostDeviceCallback>>

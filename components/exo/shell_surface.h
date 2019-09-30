@@ -10,6 +10,7 @@
 #include "base/containers/circular_deque.h"
 #include "base/macros.h"
 #include "components/exo/shell_surface_base.h"
+#include "ui/base/ui_base_types.h"
 
 namespace ui {
 class CompositorLock;
@@ -80,6 +81,14 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
 
   // Start an interactive move of surface.
   void StartMove();
+
+  // Before widget initialization, this method will be called. Depending on the
+  // implementation, it may return true to force the surface to launch in a
+  // maximized state.
+  virtual bool ShouldAutoMaximize();
+
+  // Return the initial show state for this surface.
+  ui::WindowShowState initial_show_state() { return initial_show_state_; }
 
   // Overridden from SurfaceDelegate:
   void OnSetParent(Surface* parent, const gfx::Point& position) override;
@@ -163,7 +172,7 @@ class ShellSurface : public ShellSurfaceBase, public ash::WindowStateObserver {
   gfx::Vector2d pending_origin_offset_accumulator_;
   int resize_component_ = HTCAPTION;  // HT constant (see ui/base/hit_test.h)
   int pending_resize_component_ = HTCAPTION;
-  ui::WindowShowState initial_show_state_ = ui::SHOW_STATE_NORMAL;
+  ui::WindowShowState initial_show_state_ = ui::SHOW_STATE_DEFAULT;
   bool ignore_window_bounds_changes_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(ShellSurface);

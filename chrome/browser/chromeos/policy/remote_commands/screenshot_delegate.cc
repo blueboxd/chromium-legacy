@@ -41,11 +41,11 @@ bool ScreenshotDelegate::IsScreenshotAllowed() {
 void ScreenshotDelegate::TakeSnapshot(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
-    const ui::GrabWindowSnapshotAsyncPNGCallback& callback) {
+    ui::GrabWindowSnapshotAsyncPNGCallback callback) {
   ui::GrabWindowSnapshotAsyncPNG(
       window, source_rect,
-      base::Bind(&ScreenshotDelegate::StoreScreenshot,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&ScreenshotDelegate::StoreScreenshot,
+                     weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 std::unique_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
@@ -86,9 +86,9 @@ std::unique_ptr<UploadJob> ScreenshotDelegate::CreateUploadJob(
 }
 
 void ScreenshotDelegate::StoreScreenshot(
-    const ui::GrabWindowSnapshotAsyncPNGCallback& callback,
+    ui::GrabWindowSnapshotAsyncPNGCallback callback,
     scoped_refptr<base::RefCountedMemory> png_data) {
-  callback.Run(png_data);
+  std::move(callback).Run(png_data);
 }
 
 }  // namespace policy

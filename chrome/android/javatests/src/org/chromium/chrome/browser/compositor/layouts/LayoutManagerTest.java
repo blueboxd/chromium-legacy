@@ -24,7 +24,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.Restriction;
@@ -507,12 +506,8 @@ public class LayoutManagerTest implements MockTabModelDelegate {
     public void setUp() throws Exception {
         // Load the browser process.
         TestThreadUtils.runOnUiThreadBlocking(() -> {
-            try {
-                ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
-                        .handleSynchronousStartup();
-            } catch (ProcessInitException e) {
-                Assert.fail("Failed to load browser");
-            }
+            ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
+                    .handleSynchronousStartup();
         });
     }
 

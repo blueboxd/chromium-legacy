@@ -1399,34 +1399,52 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextCaretMoved) {
                    &caret_position_from_event);
 
   atk_text_set_caret_offset(atk_text, 4);
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   ASSERT_EQ(atk_text_get_caret_offset(atk_text), 4);
   ASSERT_EQ(caret_position_from_event, 4);
 
   // Setting the same position should not trigger another event.
   caret_position_from_event = -1;
   atk_text_set_caret_offset(atk_text, 4);
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   ASSERT_EQ(atk_text_get_caret_offset(atk_text), 4);
   ASSERT_EQ(caret_position_from_event, -1);
 
   int character_count = atk_text_get_character_count(atk_text);
   atk_text_set_caret_offset(atk_text, -1);
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   ASSERT_EQ(atk_text_get_caret_offset(atk_text), character_count);
   ASSERT_EQ(caret_position_from_event, character_count);
+
   atk_text_set_caret_offset(atk_text, 0);  // Reset position.
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
 
   caret_position_from_event = -1;
   atk_text_set_caret_offset(atk_text, -1000);
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   ASSERT_EQ(atk_text_get_caret_offset(atk_text), character_count);
   ASSERT_EQ(caret_position_from_event, character_count);
+
   atk_text_set_caret_offset(atk_text, 0);  // Reset position.
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
 
   caret_position_from_event = -1;
   atk_text_set_caret_offset(atk_text, 1000);
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   ASSERT_EQ(atk_text_get_caret_offset(atk_text), character_count);
   ASSERT_EQ(caret_position_from_event, character_count);
 
   caret_position_from_event = -1;
   atk_text_set_caret_offset(atk_text, character_count - 1);
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   ASSERT_EQ(atk_text_get_caret_offset(atk_text), character_count - 1);
   ASSERT_EQ(caret_position_from_event, character_count - 1);
 
@@ -2096,6 +2114,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldSetSelection) {
   int selection_start, selection_end;
 
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 1));
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   EXPECT_TRUE(saw_selection_change);
   g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
   EXPECT_EQ(selection_start, 0);
@@ -2103,25 +2123,22 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldSetSelection) {
 
   // Reset position.
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 0));
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
 
   saw_selection_change = false;
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 1, 0));
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   EXPECT_TRUE(saw_selection_change);
-  g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
-  EXPECT_EQ(selection_start, 0);
-  EXPECT_EQ(selection_end, 1);
-
-  // Setting the selection to the same location should not trigger
-  // another event.
-  saw_selection_change = false;
-  EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 1, 0));
-  EXPECT_FALSE(saw_selection_change);
   g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
   EXPECT_EQ(selection_start, 0);
   EXPECT_EQ(selection_end, 1);
 
   saw_selection_change = false;
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 2, 4));
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   EXPECT_TRUE(saw_selection_change);
   g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
   EXPECT_EQ(selection_start, 2);
@@ -2136,11 +2153,12 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldSetSelection) {
 
   saw_selection_change = false;
   EXPECT_FALSE(atk_text_set_selection(atk_text, 0, 0, 50));
-  EXPECT_FALSE(saw_selection_change);
 
   saw_selection_change = false;
   int n_characters = atk_text_get_character_count(atk_text);
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, -1));
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   EXPECT_TRUE(saw_selection_change);
   g_free(atk_text_get_selection(atk_text, 0, &selection_start, &selection_end));
   EXPECT_EQ(selection_start, 0);
@@ -2148,6 +2166,8 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldSetSelection) {
 
   saw_selection_change = false;
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 1));
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   EXPECT_EQ(1, atk_text_get_n_selections(atk_text));
   EXPECT_TRUE(atk_text_remove_selection(atk_text, 0));
   EXPECT_TRUE(saw_selection_change);
@@ -2155,9 +2175,13 @@ TEST_F(AXPlatformNodeAuraLinuxTest, TestAtkTextTextFieldSetSelection) {
 
   // Reset position.
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 0));
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
 
   saw_selection_change = false;
   EXPECT_TRUE(atk_text_set_selection(atk_text, 0, 0, 1));
+  GetRootPlatformNode()->NotifyAccessibilityEvent(
+      ax::mojom::Event::kTextSelectionChanged);
   EXPECT_EQ(1, atk_text_get_n_selections(atk_text));
   EXPECT_FALSE(atk_text_remove_selection(atk_text, 1));
   EXPECT_TRUE(saw_selection_change);

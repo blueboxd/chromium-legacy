@@ -1619,6 +1619,9 @@ class CORE_EXPORT Document : public ContainerNode,
   bool NeedsLayoutTreeRebuild() const;
 
   String GetFragmentDirective() const { return fragment_directive_; }
+  bool UseCountFragmentDirective() const {
+    return use_count_fragment_directive_;
+  }
 
  protected:
   void ClearXMLVersion() { xml_version_ = String(); }
@@ -2130,6 +2133,9 @@ class CORE_EXPORT Document : public ContainerNode,
   bool toggle_during_parsing_ = false;
 
   String fragment_directive_;
+
+  bool use_count_fragment_directive_ = false;
+
   HeapHashMap<WeakMember<Element>, Member<ExplicitlySetAttrElementsMap>>
       element_explicitly_set_attr_elements_map_;
 };

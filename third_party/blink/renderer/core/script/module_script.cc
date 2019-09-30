@@ -50,23 +50,29 @@ void ModuleScript::SetParseErrorAndClearRecord(ScriptValue error) {
   DCHECK(!error.IsEmpty());
 
   record_.Clear();
-  parse_error_ = error.ToWorldSafeV8Reference();
+  parse_error_.Set(settings_object_->GetScriptState()->GetIsolate(),
+                   error.V8Value());
 }
 
 ScriptValue ModuleScript::CreateParseError() const {
-  v8::Isolate* isolate = settings_object_->GetScriptState()->GetIsolate();
-  ScriptValue error(isolate, parse_error_);
+  ScriptState* script_state = settings_object_->GetScriptState();
+  ScriptState::Scope scope(script_state);
+  ScriptValue error(script_state->GetIsolate(), parse_error_.Get(script_state));
   DCHECK(!error.IsEmpty());
   return error;
 }
 
 void ModuleScript::SetErrorToRethrow(ScriptValue error) {
-  error_to_rethrow_ = error.ToWorldSafeV8Reference();
+  ScriptState* script_state = settings_object_->GetScriptState();
+  ScriptState::Scope scope(script_state);
+  error_to_rethrow_.Set(script_state->GetIsolate(), error.V8Value());
 }
 
 ScriptValue ModuleScript::CreateErrorToRethrow() const {
-  v8::Isolate* isolate = settings_object_->GetScriptState()->GetIsolate();
-  ScriptValue error(isolate, error_to_rethrow_);
+  ScriptState* script_state = settings_object_->GetScriptState();
+  ScriptState::Scope scope(script_state);
+  ScriptValue error(script_state->GetIsolate(),
+                    error_to_rethrow_.Get(script_state));
   DCHECK(!error.IsEmpty());
   return error;
 }

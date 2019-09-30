@@ -9,6 +9,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 
 /** JNI call glue between the native password manager CredentialLeak class and Java objects. */
 public class CredentialLeakDialogBridge {
@@ -37,7 +38,7 @@ public class CredentialLeakDialogBridge {
         boolean primaryButtonFilled = negativeButton != null;
         mCredentialLeakDialog.showDialog(credentialLeakTitle, credentialLeakDetails, boldRangeStart,
                 boldRangeEnd, R.drawable.password_check_warning, positiveButton, negativeButton,
-                this::onClick, primaryButtonFilled);
+                this::onClick, primaryButtonFilled, ModalDialogManager.ModalDialogType.APP);
     }
 
     @CalledByNative

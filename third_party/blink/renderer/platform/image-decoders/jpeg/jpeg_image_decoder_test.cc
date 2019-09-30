@@ -42,7 +42,6 @@
 #include "third_party/blink/renderer/platform/image-decoders/image_decoder_test_helpers.h"
 #include "third_party/blink/renderer/platform/testing/histogram_tester.h"
 #include "third_party/blink/renderer/platform/wtf/shared_buffer.h"
-#include "third_party/blink/renderer/platform/wtf/typed_arrays/array_buffer.h"
 
 namespace blink {
 
@@ -122,12 +121,13 @@ void ReadYUV(size_t max_decoded_bytes,
   row_bytes[1] = decoder->DecodedYUVWidthBytes(1);
   row_bytes[2] = decoder->DecodedYUVWidthBytes(2);
 
-  scoped_refptr<ArrayBuffer> buffer(ArrayBuffer::Create(
-      row_bytes[0] * y_size.Height() + row_bytes[1] * u_size.Height() +
-          row_bytes[2] * v_size.Height(),
-      1));
+  size_t planes_data_size = row_bytes[0] * y_size.Height() +
+                            row_bytes[1] * u_size.Height() +
+                            row_bytes[2] * v_size.Height();
+  std::unique_ptr<char[]> planes_data(new char[planes_data_size]);
+
   void* planes[3];
-  planes[0] = buffer->Data();
+  planes[0] = reinterpret_cast<void*>(planes_data.get());
   planes[1] = ((char*)planes[0]) + row_bytes[0] * y_size.Height();
   planes[2] = ((char*)planes[1]) + row_bytes[1] * u_size.Height();
 

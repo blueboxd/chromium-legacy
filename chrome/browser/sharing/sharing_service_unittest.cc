@@ -132,11 +132,13 @@ class MockSharingFCMHandler : public SharingFCMHandler {
 class FakeSharingDeviceRegistration : public SharingDeviceRegistration {
  public:
   FakeSharingDeviceRegistration(
+      PrefService* pref_service,
       SharingSyncPreference* prefs,
       instance_id::InstanceIDDriver* instance_id_driver,
       VapidKeyManager* vapid_key_manager,
       syncer::LocalDeviceInfoProvider* device_info_tracker)
-      : SharingDeviceRegistration(prefs,
+      : SharingDeviceRegistration(pref_service,
+                                  prefs,
                                   instance_id_driver,
                                   vapid_key_manager,
                                   device_info_tracker) {}
@@ -211,8 +213,8 @@ class SharingServiceTest : public testing::Test {
   SharingServiceTest() {
     sync_prefs_ = new SharingSyncPreference(&prefs_);
     sharing_device_registration_ = new FakeSharingDeviceRegistration(
-        sync_prefs_, &mock_instance_id_driver_, vapid_key_manager_,
-        &fake_local_device_info_provider_);
+        /* pref_service= */ nullptr, sync_prefs_, &mock_instance_id_driver_,
+        vapid_key_manager_, &fake_local_device_info_provider_);
     vapid_key_manager_ = new VapidKeyManager(sync_prefs_);
     fcm_sender_ = new SharingFCMSender(&fake_gcm_driver_,
                                        &fake_local_device_info_provider_,
@@ -253,7 +255,8 @@ class SharingServiceTest : public testing::Test {
   SharingService* GetSharingService() {
     if (!sharing_service_) {
       sharing_service_ = std::make_unique<SharingService>(
-          base::WrapUnique(sync_prefs_), base::WrapUnique(vapid_key_manager_),
+          /* pref_service= */ nullptr, base::WrapUnique(sync_prefs_),
+          base::WrapUnique(vapid_key_manager_),
           base::WrapUnique(sharing_device_registration_),
           base::WrapUnique(fcm_sender_), base::WrapUnique(fcm_handler_),
           &fake_gcm_driver_, &device_info_tracker_,

@@ -13,7 +13,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.Callback;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.chrome.browser.ChromeSwitches;
@@ -35,10 +34,10 @@ import java.util.concurrent.TimeoutException;
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE})
 public class LocaleManagerTest {
     @Before
-    public void setUp() throws ExecutionException, ProcessInitException {
+    public void setUp() throws ExecutionException {
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
-            public Void call() throws ProcessInitException {
+            public Void call() {
                 ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
                         .handleSynchronousStartup();
                 return null;

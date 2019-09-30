@@ -93,7 +93,8 @@ public class TrustedWebActivityVerifierTest {
     public void setUp() {
         MockitoAnnotations.initMocks(this);
         when(mCustomTabsConnection.getClientPackageNameForSession(any())).thenReturn(PACKAGE_NAME);
-        when(mOriginVerifierFactory.create(any(), anyInt())).thenReturn(mOriginVerifier.mock);
+        when(mOriginVerifierFactory.create(any(), anyInt(), any()))
+                .thenReturn(mOriginVerifier.mock);
         when(mTabProvider.getTab()).thenReturn(mTab);
         when(mIntentDataProvider.getTrustedWebActivityAdditionalOrigins()).thenReturn(
                 Arrays.asList("https://www.origin2.com/"));

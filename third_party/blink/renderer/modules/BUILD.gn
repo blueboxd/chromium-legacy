@@ -103,6 +103,7 @@ target("jumbo_" + modules_target_type, "modules") {
     "//third_party/blink/renderer/modules/credentialmanager",
     "//third_party/blink/renderer/modules/crypto",
     "//third_party/blink/renderer/modules/csspaint",
+    "//third_party/blink/renderer/modules/compression",
     "//third_party/blink/renderer/modules/device_orientation",
     "//third_party/blink/renderer/modules/document_metadata",
     "//third_party/blink/renderer/modules/donottrack",

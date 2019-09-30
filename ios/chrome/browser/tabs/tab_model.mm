@@ -243,10 +243,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
 
   // Used to observe owned Tabs' WebStates.
   std::unique_ptr<web::WebStateObserver> _webStateObserver;
-
-  // Legacy ivars for backwards compatibility with some tests
-  std::unique_ptr<WebStateListDelegate> _legacyWebStateListDelegate;
-  std::unique_ptr<WebStateList> _legacyOwnedWebStateList;
 }
 
 // Session window for the contents of the tab model.
@@ -374,17 +370,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
     TabModelList::RegisterTabModelWithChromeBrowserState(_browserState, self);
   }
   return self;
-}
-
-- (instancetype)initWithSessionService:(SessionServiceIOS*)service
-                          browserState:(ios::ChromeBrowserState*)browserState {
-  _legacyWebStateListDelegate = std::make_unique<BrowserWebStateListDelegate>();
-  _legacyOwnedWebStateList =
-      std::make_unique<WebStateList>(_legacyWebStateListDelegate.get());
-
-  return [self initWithSessionService:service
-                         browserState:browserState
-                         webStateList:_legacyOwnedWebStateList.get()];
 }
 
 - (web::WebState*)insertWebStateWithURL:(const GURL&)URL
@@ -518,10 +503,6 @@ void RecordMainFrameNavigationMetric(web::WebState* web_state) {
   _clearPoliciesTaskTracker.TryCancelAll();
   _tabUsageRecorder.reset();
   _webStateObserver.reset();
-}
-
-- (void)browserStateDestroyed {
-  [self disconnect];
 }
 
 #pragma mark - SessionWindowRestoring(public)

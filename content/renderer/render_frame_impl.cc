@@ -53,6 +53,7 @@
 #include "content/common/content_security_policy/content_security_policy.h"
 #include "content/common/content_security_policy_header.h"
 #include "content/common/edit_command.h"
+#include "content/common/frame.mojom.h"
 #include "content/common/frame_messages.h"
 #include "content/common/frame_owner_properties.h"
 #include "content/common/frame_replication_state.h"
@@ -146,7 +147,11 @@
 #include "content/renderer/web_ui_extension_data.h"
 #include "content/renderer/worker/dedicated_worker_host_factory_client.h"
 #include "crypto/sha2.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "net/base/data_url.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
@@ -1146,10 +1151,10 @@ class RenderFrameImpl::FrameURLLoaderFactory
     // This should not be called if the frame is detached.
     DCHECK(frame_);
 
-    mojom::KeepAliveHandlePtr keep_alive_handle;
+    mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle;
     if (request.GetKeepalive()) {
       frame_->GetFrameHost()->IssueKeepAliveHandle(
-          mojo::MakeRequest(&keep_alive_handle));
+          keep_alive_handle.InitWithNewPipeAndPassReceiver());
     }
     return std::make_unique<WebURLLoaderImpl>(
         RenderThreadImpl::current()->resource_dispatcher(),
@@ -1869,8 +1874,6 @@ RenderFrameImpl::RenderFrameImpl(CreateParams params)
       pepper_last_mouse_event_target_(nullptr),
 #endif
       autoplay_configuration_binding_(this),
-      frame_binding_(this),
-      frame_bindings_control_binding_(this),
       frame_navigation_control_receiver_(this),
       fullscreen_binding_(this),
       mhtml_file_writer_binding_(this),
@@ -2354,16 +2357,16 @@ void RenderFrameImpl::BindAutoplayConfiguration(
 
 void RenderFrameImpl::BindFrame(
     const service_manager::BindSourceInfo& browser_info,
-    mojom::FrameRequest request) {
+    mojo::PendingReceiver<mojom::Frame> receiver) {
   browser_info_ = browser_info;
-  frame_binding_.Bind(std::move(request),
-                      GetTaskRunner(blink::TaskType::kInternalIPC));
+  frame_receiver_.Bind(std::move(receiver),
+                       GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindFrameBindingsControl(
-    mojom::FrameBindingsControlAssociatedRequest request) {
-  frame_bindings_control_binding_.Bind(
-      std::move(request), GetTaskRunner(blink::TaskType::kInternalIPC));
+    mojo::PendingAssociatedReceiver<mojom::FrameBindingsControl> receiver) {
+  frame_bindings_control_receiver_.Bind(
+      std::move(receiver), GetTaskRunner(blink::TaskType::kInternalIPC));
 }
 
 void RenderFrameImpl::BindFrameNavigationControl(

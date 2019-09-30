@@ -6,6 +6,7 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
+#include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "base/task/post_task.h"
@@ -16,6 +17,7 @@
 #include "gpu/ipc/service/gpu_channel.h"
 #include "gpu/ipc/service/shared_image_stub.h"
 #include "media/base/format_utils.h"
+#include "media/base/video_frame.h"
 #include "media/gpu/linux/platform_video_frame_utils.h"
 #include "media/gpu/macros.h"
 #include "ui/gfx/gpu_memory_buffer.h"
@@ -141,14 +143,14 @@ void MailboxVideoFrameConverter::ConvertFrame(scoped_refptr<VideoFrame> frame) {
   DVLOGF(4);
 
   if (!frame || !frame->HasDmaBufs())
-    return OnError("Invalid frame.");
+    return OnError(FROM_HERE, "Invalid frame.");
 
   VideoFrame* origin_frame = unwrap_frame_cb_.Run(*frame);
   if (!origin_frame)
-    return OnError("Failed to get origin frame.");
+    return OnError(FROM_HERE, "Failed to get origin frame.");
 
   gpu::Mailbox mailbox;
-  const int origin_frame_id = origin_frame->unique_id();
+  const UniqueID origin_frame_id = origin_frame->unique_id();
   if (shared_images_.find(origin_frame_id) != shared_images_.end())
     mailbox = shared_images_[origin_frame_id]->mailbox();
 
@@ -170,7 +172,7 @@ void MailboxVideoFrameConverter::WrapMailboxAndVideoFrameAndOutput(
   DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
   DCHECK(!mailbox.IsZero());
 
-  const int origin_frame_id = origin_frame->unique_id();
+  const UniqueID origin_frame_id = origin_frame->unique_id();
   DCHECK(base::Contains(shared_images_, origin_frame_id));
 
   // While we were on |gpu_task_runner_|, AbortPendingFrames() might have been
@@ -270,15 +272,15 @@ MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
 
   // TODO(crbug.com/998279): consider eager initialization.
   if (!InitializeOnGPUThread()) {
-    OnError("InitializeOnGPUThread failed");
+    OnError(FROM_HERE, "InitializeOnGPUThread failed");
     return nullptr;
   }
 
   const auto buffer_format =
       VideoPixelFormatToGfxBufferFormat(video_frame->format());
   if (!buffer_format) {
-    OnError("Unsupported format: " +
-            VideoPixelFormatToString(video_frame->format()));
+    OnError(FROM_HERE, "Unsupported format: " +
+                           VideoPixelFormatToString(video_frame->format()));
     return nullptr;
   }
 
@@ -289,7 +291,7 @@ MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
   gpu::Mailbox mailbox = gpu::Mailbox::GenerateForSharedImage();
 
   if (!gpu_channel_) {
-    OnError("GpuChannel is gone!");
+    OnError(FROM_HERE, "GpuChannel is gone!");
     return nullptr;
   }
   gpu::SharedImageStub* shared_image_stub = gpu_channel_->shared_image_stub();
@@ -305,7 +307,7 @@ MailboxVideoFrameConverter::GenerateSharedImageOnGPUThread(
       gpu::kNullSurfaceHandle, video_frame->coded_size(),
       video_frame->ColorSpace(), shared_image_usage);
   if (!success) {
-    OnError("Failed to create shared image.");
+    OnError(FROM_HERE, "Failed to create shared image.");
     return nullptr;
   }
   // There's no need to UpdateSharedImage() after CreateSharedImage().
@@ -328,7 +330,7 @@ void MailboxVideoFrameConverter::RegisterSharedImage(
   origin_frame->AddDestructionObserver(base::BindOnce(
       [](scoped_refptr<base::SequencedTaskRunner> parent_task_runner,
          base::WeakPtr<MailboxVideoFrameConverter> parent_weak_ptr,
-         int origin_frame_id) {
+         UniqueID origin_frame_id) {
         if (parent_task_runner->RunsTasksInCurrentSequence()) {
           if (parent_weak_ptr)
             parent_weak_ptr->UnregisterSharedImage(origin_frame_id);
@@ -346,13 +348,13 @@ bool MailboxVideoFrameConverter::UpdateSharedImageOnGPUThread(
     const gpu::Mailbox& mailbox) {
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
   if (!gpu_channel_) {
-    OnError("GpuChannel is gone!");
+    OnError(FROM_HERE, "GpuChannel is gone!");
     return false;
   }
   gpu::SharedImageStub* shared_image_stub = gpu_channel_->shared_image_stub();
   DCHECK(shared_image_stub);
   if (!shared_image_stub->UpdateSharedImage(mailbox, gfx::GpuFenceHandle())) {
-    OnError("Could not update shared image");
+    OnError(FROM_HERE, "Could not update shared image");
     return false;
   }
   return true;
@@ -364,7 +366,7 @@ void MailboxVideoFrameConverter::WaitOnSyncTokenAndReleaseFrameOnGPUThread(
   DCHECK(gpu_task_runner_->BelongsToCurrentThread());
 
   if (!gpu_channel_)
-    return OnError("GpuChannel is gone!");
+    return OnError(FROM_HERE, "GpuChannel is gone!");
   gpu::SharedImageStub* shared_image_stub = gpu_channel_->shared_image_stub();
   DCHECK(shared_image_stub);
 
@@ -377,7 +379,8 @@ void MailboxVideoFrameConverter::WaitOnSyncTokenAndReleaseFrameOnGPUThread(
       std::vector<gpu::SyncToken>({sync_token})));
 }
 
-void MailboxVideoFrameConverter::UnregisterSharedImage(int origin_frame_id) {
+void MailboxVideoFrameConverter::UnregisterSharedImage(
+    UniqueID origin_frame_id) {
   DCHECK(parent_task_runner_->RunsTasksInCurrentSequence());
   DVLOGF(4);
 
@@ -400,8 +403,9 @@ bool MailboxVideoFrameConverter::HasPendingFrames() const {
   return !input_frame_queue_.empty();
 }
 
-void MailboxVideoFrameConverter::OnError(const std::string& msg) {
-  VLOGF(1) << msg;
+void MailboxVideoFrameConverter::OnError(const base::Location& location,
+                                         const std::string& msg) {
+  VLOGF(1) << "(" << location.ToString() << ") " << msg;
 
   parent_task_runner_->PostTask(
       FROM_HERE, base::BindOnce(&MailboxVideoFrameConverter::AbortPendingFrames,

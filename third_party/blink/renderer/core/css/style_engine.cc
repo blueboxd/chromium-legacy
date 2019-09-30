@@ -636,37 +636,11 @@ void StyleEngine::ClearFontCacheAndAddUserFonts() {
     resolver_->InvalidateMatchedPropertiesCache();
   }
 
-  default_font_display_map_.clear();
   // Rebuild the font cache with @font-face rules from user style sheets.
   for (unsigned i = 0; i < active_user_style_sheets_.size(); ++i) {
     DCHECK(active_user_style_sheets_[i].second);
     AddUserFontFaceRules(*active_user_style_sheets_[i].second);
-    for (const auto& rule :
-         active_user_style_sheets_[i].second->FontFeatureValuesRules()) {
-      AddDefaultFontDisplay(rule);
-    }
   }
-}
-
-void StyleEngine::AddDefaultFontDisplay(
-    const StyleRuleFontFeatureValues* rule) {
-  if (!rule->FontDisplay())
-    return;
-  for (const auto& family_value : rule->FontFamily()) {
-    if (auto* font_family_value =
-            DynamicTo<CSSFontFamilyValue>(family_value.Get())) {
-      default_font_display_map_.Set(AtomicString(font_family_value->Value()),
-                                    CSSValueToFontDisplay(rule->FontDisplay()));
-    }
-  }
-}
-
-FontDisplay StyleEngine::GetDefaultFontDisplay(
-    const AtomicString& family) const {
-  auto it = default_font_display_map_.find(family);
-  if (it == default_font_display_map_.end())
-    return kFontDisplayAuto;
-  return it->value;
 }
 
 void StyleEngine::UpdateGenericFontFamilySettings() {
@@ -1350,9 +1324,7 @@ enum RuleSetFlags {
   kFontFaceRules = 1 << 0,
   kKeyframesRules = 1 << 1,
   kFullRecalcRules = 1 << 2,
-  kFontFeatureValuesRules = 1 << 3,
-  kFontRules = kFontFaceRules | kFontFeatureValuesRules,
-  kPropertyRules = 1 << 4
+  kPropertyRules = 1 << 3,
 };
 
 unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
@@ -1365,8 +1337,6 @@ unsigned GetRuleSetFlags(const HeapHashSet<Member<RuleSet>> rule_sets) {
       flags |= kFontFaceRules;
     if (rule_set->NeedsFullRecalcForRuleSetInvalidation())
       flags |= kFullRecalcRules;
-    if (!rule_set->FontFeatureValuesRules().IsEmpty())
-      flags |= kFontFeatureValuesRules;
     if (!rule_set->PropertyRules().IsEmpty())
       flags |= kPropertyRules;
   }
@@ -1427,7 +1397,7 @@ void StyleEngine::ApplyUserRuleSetChanges(
   global_rule_set_->MarkDirty();
 
   unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
-  if (changed_rule_flags & kFontRules) {
+  if (changed_rule_flags & kFontFaceRules) {
     if (ScopedStyleResolver* scoped_resolver =
             GetDocument().GetScopedStyleResolver()) {
       // User style and document scope author style shares the font cache. If
@@ -1471,7 +1441,7 @@ void StyleEngine::ApplyRuleSetChanges(
   unsigned changed_rule_flags = GetRuleSetFlags(changed_rule_sets);
 
   bool rebuild_font_cache = change == kActiveSheetsChanged &&
-                            (changed_rule_flags & kFontRules) &&
+                            (changed_rule_flags & kFontFaceRules) &&
                             tree_scope.RootNode().IsDocumentNode();
   ScopedStyleResolver* scoped_resolver = tree_scope.GetScopedStyleResolver();
   if (scoped_resolver && scoped_resolver->NeedsAppendAllSheets()) {
@@ -1858,7 +1828,8 @@ bool StyleEngine::SupportsDarkColorScheme() {
 
 void StyleEngine::UpdateColorScheme() {
   auto* settings = GetDocument().GetSettings();
-  DCHECK(settings);
+  if (!settings)
+    return;
 
   ForcedColors old_forced_colors = forced_colors_;
   forced_colors_ = settings->GetForcedColors();

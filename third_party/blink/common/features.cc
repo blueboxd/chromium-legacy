@@ -198,9 +198,6 @@ const base::Feature kServiceWorkerIsolateInForeground{
 const base::Feature kServiceWorkerImportedScriptUpdateCheck{
     "ServiceWorkerImportedScriptUpdateCheck", base::FEATURE_ENABLED_BY_DEFAULT};
 
-const base::Feature kServiceWorkerAggressiveCodeCache{
-    "ServiceWorkerAggressiveCodeCache", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Experiment of the delay from navigation to starting an update of a service
 // worker's script.
 const base::Feature kServiceWorkerUpdateDelay{

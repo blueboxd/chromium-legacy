@@ -10,9 +10,7 @@ import org.junit.runner.Description;
 import org.junit.runners.model.Statement;
 
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
@@ -66,12 +64,8 @@ public class ReducedModeNativeTestRule implements TestRule {
             }
         };
         PostTask.postTask(UiThreadTaskTraits.DEFAULT, () -> {
-            try {
-                ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
-                ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
-            } catch (ProcessInitException e) {
-                ChromeApplication.reportStartupErrorAndExit(e);
-            }
+            ChromeBrowserInitializer.getInstance().handlePreNativeStartup(parts);
+            ChromeBrowserInitializer.getInstance().handlePostNativeStartup(true, parts);
         });
         waitForNativeLoaded();
     }

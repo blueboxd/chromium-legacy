@@ -3608,6 +3608,13 @@ Unknown properties are collapsed to zero. -->
   <int value="20" label="Installing the feature module failed"/>
 </enum>
 
+<enum name="AutofillAssistantFeatureModuleInstallation">
+  <int value="0" label="Background installation requested"/>
+  <int value="1" label="Foreground installation succeeded"/>
+  <int value="2" label="Foreground installation failed"/>
+  <int value="3" label="Already installed"/>
+</enum>
+
 <enum name="AutofillAssistantOnBoarding">
   <int value="0" label="Shown"/>
   <int value="1" label="Not shown (returning user)"/>
@@ -24758,6 +24765,11 @@ Called by update_net_error_codes.py.-->
   <int value="3036" label="XRIsSessionSupported"/>
   <int value="3037" label="ScrollbarUseScrollbarButtonReversedDirection"/>
   <int value="3038" label="CSSSelectorPseudoScrollbarButtonReversedDirection"/>
+  <int value="3039" label="FragmentHasTildeAmpersandTilde"/>
+  <int value="3040" label="FragmentHasColonTildeColon"/>
+  <int value="3041" label="FragmentHasTildeAtTilde"/>
+  <int value="3042" label="FragmentHasAmpersandDelimiterQuestion"/>
+  <int value="3043" label="InvalidFragmentDirective"/>
 </enum>
 
 <enum name="FeaturePolicyAllowlistType">
@@ -50463,6 +50475,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="13" label="Switch to another profile button"/>
   <int value="14" label="Cookies cleared on exit link"/>
   <int value="15" label="Add new profile button"/>
+  <int value="16" label="Sync settings(sync on) button"/>
 </enum>
 
 <enum name="ProfileNetUserCount">

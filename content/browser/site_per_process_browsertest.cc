@@ -7979,7 +7979,7 @@ class ShowCreatedWindowInterceptor
           test_callback)
       : render_frame_host_(render_frame_host),
         test_callback_(std::move(test_callback)) {
-    render_frame_host_->frame_host_binding_for_testing().SwapImplForTesting(
+    render_frame_host_->frame_host_receiver_for_testing().SwapImplForTesting(
         this);
   }
 

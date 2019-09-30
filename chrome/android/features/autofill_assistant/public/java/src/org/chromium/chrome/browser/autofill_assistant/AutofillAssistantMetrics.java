@@ -6,6 +6,7 @@ package org.chromium.chrome.browser.autofill_assistant;
 
 import org.chromium.base.metrics.CachedMetrics.EnumeratedHistogramSample;
 import org.chromium.chrome.browser.autofill_assistant.metrics.DropOutReason;
+import org.chromium.chrome.browser.autofill_assistant.metrics.FeatureModuleInstallation;
 import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
 
 /**
@@ -27,6 +28,10 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
             new EnumeratedHistogramSample(
                     "Android.AutofillAssistant.OnBoarding", OnBoarding.MAX_VALUE + 1);
 
+    private static final EnumeratedHistogramSample ENUMERATED_FEATURE_MODULE_INSTALLATION =
+            new EnumeratedHistogramSample("Android.AutofillAssistant.FeatureModuleInstallation",
+                    FeatureModuleInstallation.MAX_VALUE + 1);
+
     /**
      * Records the reason for a drop out.
      */
@@ -39,5 +44,13 @@ import org.chromium.chrome.browser.autofill_assistant.metrics.OnBoarding;
      */
     /* package */ static void recordOnBoarding(@OnBoarding int metric) {
         ENUMERATED_ON_BOARDING.record(metric);
+    }
+
+    /**
+     * Records the feature module installation action.
+     */
+    /* package */ static void recordFeatureModuleInstallation(
+            @FeatureModuleInstallation int metric) {
+        ENUMERATED_FEATURE_MODULE_INSTALLATION.record(metric);
     }
 }

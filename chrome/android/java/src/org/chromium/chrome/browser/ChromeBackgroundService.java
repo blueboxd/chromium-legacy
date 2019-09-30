@@ -12,7 +12,6 @@ import com.google.android.gms.gcm.TaskParams;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.background_sync.BackgroundSyncBackgroundTaskScheduler;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -92,14 +91,7 @@ public class ChromeBackgroundService extends GcmTaskService {
     @VisibleForTesting
     protected void launchBrowser(Context context, String tag) {
         Log.i(TAG, "Launching browser");
-        try {
-            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "ProcessInitException while starting the browser process");
-            // Since the library failed to initialize nothing in the application
-            // can work, so kill the whole application not just the activity.
-            System.exit(-1);
-        }
+        ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
     }
 
     @VisibleForTesting

@@ -376,11 +376,11 @@ bool VaapiJpegEncoder::Encode(const gfx::Size& input_size,
     return false;
   }
 
-  std::vector<uint8_t> jpeg_header;
-  size_t jpeg_header_size = exif_buffer_size > 0
-                                ? kJpegDefaultHeaderSize + exif_buffer_size
-                                : kJpegDefaultHeaderSize + kJFIFApp0Size;
-  jpeg_header.resize(jpeg_header_size);
+  size_t jpeg_header_size =
+      exif_buffer_size > 0
+          ? kJpegDefaultHeaderSize + kJFIFApp1HeaderSize + exif_buffer_size
+          : kJpegDefaultHeaderSize + kJFIFApp0Size;
+  std::vector<uint8_t> jpeg_header(jpeg_header_size);
   size_t length_in_bits =
       FillJpegHeader(input_size, exif_buffer, exif_buffer_size, quality,
                      jpeg_header.data(), exif_offset);

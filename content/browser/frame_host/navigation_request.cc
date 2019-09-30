@@ -1424,6 +1424,12 @@ void NavigationRequest::OnRequestRedirected(
   common_params_->referrer = Referrer::SanitizeForRequest(
       common_params_->url, *common_params_->referrer);
 
+  // On redirects, the initial referrer is no longer correct, so it must
+  // be updated.  (A parallel process updates the outgoing referrer in the
+  // network stack.)
+  commit_params_->redirect_infos.back().new_referrer =
+      common_params_->referrer->url.spec();
+
   // Check Content Security Policy before the NavigationThrottles run. This
   // gives CSP a chance to modify requests that NavigationThrottles would
   // otherwise block.
@@ -3123,6 +3129,8 @@ void NavigationRequest::UpdateStateFollowingRedirect(
     sanitized_referrer_ =
         Referrer::SanitizeForRequest(common_params_->url, *sanitized_referrer_);
   }
+
+  common_params_->referrer = sanitized_referrer_.Clone();
 
   was_redirected_ = true;
   redirect_chain_.push_back(common_params_->url);

@@ -119,7 +119,7 @@ void MultiDeviceSetupInitializer::AddHostStatusObserver(
 }
 
 void MultiDeviceSetupInitializer::AddFeatureStateObserver(
-    mojom::FeatureStateObserverPtr observer) {
+    mojo::PendingRemote<mojom::FeatureStateObserver> observer) {
   if (multidevice_setup_impl_) {
     multidevice_setup_impl_->AddFeatureStateObserver(std::move(observer));
     return;

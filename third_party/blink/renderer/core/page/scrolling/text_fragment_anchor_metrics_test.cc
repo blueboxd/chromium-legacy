@@ -288,6 +288,47 @@ TEST_F(TextFragmentAnchorMetricsTest, TapToDismiss) {
       GetDocument().IsUseCounted(WebFeature::kTextFragmentAnchorTapToDismiss));
 }
 
+// Test counting cases where the fragment directive fails to parse.
+TEST_F(TextFragmentAnchorMetricsTest, InvalidFragmentDirective) {
+  const int kUncounted = 0;
+  const int kCounted = 1;
+
+  Vector<std::pair<String, int>> test_cases = {
+      {"", kUncounted},
+      {"#element", kUncounted},
+      {"#doesntExist", kUncounted},
+      {"#:~:element", kCounted},
+      {"#element:~:", kCounted},
+      {"#foo:~:bar", kCounted},
+      {"#:~:utargetText=foo", kCounted},
+      {"#:~:targetText=foo", kUncounted},
+      {"#:~:targetText=foo&invalid", kCounted},
+      {"#foo:~:targetText=foo", kUncounted}};
+
+  for (auto test_case : test_cases) {
+    String url = "https://example.com/test.html" + test_case.first;
+    SimRequest request(url, "text/html");
+    LoadURL(url);
+    request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <p id="element">This is a test page</p>
+    )HTML");
+    Compositor().BeginFrame();
+
+    RunAsyncMatchingTasks();
+
+    bool is_use_counted =
+        GetDocument().IsUseCounted(WebFeature::kInvalidFragmentDirective);
+    if (test_case.second == kCounted) {
+      EXPECT_TRUE(is_use_counted)
+          << "Expected invalid directive in case: " << test_case.first;
+    } else {
+      EXPECT_FALSE(is_use_counted)
+          << "Expected valid directive in case: " << test_case.first;
+    }
+  }
+}
+
 class TextFragmentRelatedMetricTest : public TextFragmentAnchorMetricsTest,
                                       public testing::WithParamInterface<bool> {
  public:
@@ -453,6 +494,167 @@ TEST_P(TextFragmentRelatedMetricTest, DoubleHashUseCounter) {
       EXPECT_FALSE(is_use_counted)
           << "Expected not to count double-hash but did in case: "
           << test_case.first;
+    }
+  }
+}
+
+// Test counting occurrences of ~&~ in the URL fragment. Used for potentially
+// using ~&~ as a delimiter. Can be removed once the feature ships.
+TEST_P(TextFragmentRelatedMetricTest, TildeAmpersandTildeUseCounter) {
+  const int kUncounted = 0;
+  const int kCounted = 1;
+
+  Vector<std::pair<String, int>> test_cases = {
+      {"", kUncounted},
+      {"#element", kUncounted},
+      {"#doesntExist", kUncounted},
+      {"#~&~element", kCounted},
+      {"#element~&~", kCounted},
+      {"#foo~&~bar", kCounted},
+      {"#foo~&~targetText=foo", kCounted}};
+
+  for (auto test_case : test_cases) {
+    String url = "https://example.com/test.html" + test_case.first;
+    SimRequest request(url, "text/html");
+    LoadURL(url);
+    request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <p id="element">This is a test page</p>
+    )HTML");
+    Compositor().BeginFrame();
+
+    RunAsyncMatchingTasks();
+
+    bool is_use_counted =
+        GetDocument().IsUseCounted(WebFeature::kFragmentHasTildeAmpersandTilde);
+    if (test_case.second == kCounted) {
+      EXPECT_TRUE(is_use_counted)
+          << "Expected to count ~&~ but didn't in case: " << test_case.first;
+    } else {
+      EXPECT_FALSE(is_use_counted)
+          << "Expected not to count ~&~ but did in case: " << test_case.first;
+    }
+  }
+}
+
+// Test counting occurrences of ~@~ in the URL fragment. Used for potentially
+// using ~@~ as a delimiter. Can be removed once the feature ships.
+TEST_P(TextFragmentRelatedMetricTest, TildeAtTildeUseCounter) {
+  const int kUncounted = 0;
+  const int kCounted = 1;
+
+  Vector<std::pair<String, int>> test_cases = {
+      {"", kUncounted},
+      {"#element", kUncounted},
+      {"#doesntExist", kUncounted},
+      {"#~@~element", kCounted},
+      {"#element~@~", kCounted},
+      {"#foo~@~bar", kCounted},
+      {"#foo~@~targetText=foo", kCounted}};
+
+  for (auto test_case : test_cases) {
+    String url = "https://example.com/test.html" + test_case.first;
+    SimRequest request(url, "text/html");
+    LoadURL(url);
+    request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <p id="element">This is a test page</p>
+    )HTML");
+    Compositor().BeginFrame();
+
+    RunAsyncMatchingTasks();
+
+    bool is_use_counted =
+        GetDocument().IsUseCounted(WebFeature::kFragmentHasTildeAtTilde);
+    if (test_case.second == kCounted) {
+      EXPECT_TRUE(is_use_counted)
+          << "Expected to count ~@~ but didn't in case: " << test_case.first;
+    } else {
+      EXPECT_FALSE(is_use_counted)
+          << "Expected not to count ~@~ but did in case: " << test_case.first;
+    }
+  }
+}
+
+// Test counting occurrences of &delimiter? in the URL fragment. Used for
+// potentially using &delimiter? as a delimiter. Can be removed once the
+// feature ships.
+TEST_P(TextFragmentRelatedMetricTest, AmpersandDelimiterQuestionUseCounter) {
+  const int kUncounted = 0;
+  const int kCounted = 1;
+
+  Vector<std::pair<String, int>> test_cases = {
+      {"", kUncounted},
+      {"#element", kUncounted},
+      {"#doesntExist", kUncounted},
+      {"#&delimiter?element", kCounted},
+      {"#element&delimiter?", kCounted},
+      {"#foo&delimiter?bar", kCounted},
+      {"#foo&delimiter?targetText=foo", kCounted}};
+
+  for (auto test_case : test_cases) {
+    String url = "https://example.com/test.html" + test_case.first;
+    SimRequest request(url, "text/html");
+    LoadURL(url);
+    request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <p id="element">This is a test page</p>
+    )HTML");
+    Compositor().BeginFrame();
+
+    RunAsyncMatchingTasks();
+
+    bool is_use_counted = GetDocument().IsUseCounted(
+        WebFeature::kFragmentHasAmpersandDelimiterQuestion);
+    if (test_case.second == kCounted) {
+      EXPECT_TRUE(is_use_counted)
+          << "Expected to count &delimiter? but didn't in case: "
+          << test_case.first;
+    } else {
+      EXPECT_FALSE(is_use_counted)
+          << "Expected not to count &delimiter? but did in case: "
+          << test_case.first;
+    }
+  }
+}
+
+// Test counting occurrences of non-targetText :~: in the URL fragment. Used to
+// ensure :~: is web-compatible; can be removed once the feature ships.
+TEST_P(TextFragmentRelatedMetricTest, NewDelimiterUseCounter) {
+  const int kUncounted = 0;
+  const int kCounted = 1;
+
+  Vector<std::pair<String, int>> test_cases = {
+      {"", kUncounted},
+      {"#element", kUncounted},
+      {"#doesntExist", kUncounted},
+      {"#:~:element", kCounted},
+      {"#element:~:", kCounted},
+      {"#foo:~:bar", kCounted},
+      {"#:~:utargetText=foo", kCounted},
+      {"#:~:targetText=foo", kUncounted},
+      {"#foo:~:targetText=foo", kUncounted}};
+
+  for (auto test_case : test_cases) {
+    String url = "https://example.com/test.html" + test_case.first;
+    SimRequest request(url, "text/html");
+    LoadURL(url);
+    request.Complete(R"HTML(
+      <!DOCTYPE html>
+      <p id="element">This is a test page</p>
+    )HTML");
+    Compositor().BeginFrame();
+
+    RunAsyncMatchingTasks();
+
+    bool is_use_counted =
+        GetDocument().IsUseCounted(WebFeature::kFragmentHasColonTildeColon);
+    if (test_case.second == kCounted) {
+      EXPECT_TRUE(is_use_counted)
+          << "Expected to count :~: but didn't in case: " << test_case.first;
+    } else {
+      EXPECT_FALSE(is_use_counted)
+          << "Expected not to count :~: but did in case: " << test_case.first;
     }
   }
 }

@@ -275,15 +275,6 @@ class MODULES_EXPORT ServiceWorkerGlobalScope final
 
   mojom::blink::ServiceWorkerHost* GetServiceWorkerHost();
 
-  // Called when a task is going to be scheduled on the service worker.
-  // The service worker shouldn't request to be terminated until the task is
-  // finished. Returns an id for the task. The caller must call DidEndTask()
-  // with the returned id to notify that the task is finished.
-  int WillStartTask();
-  // Called when a task is finished. |task_id| must be a return value of
-  // WillStartTask().
-  void DidEndTask(int task_id);
-
   DEFINE_ATTRIBUTE_EVENT_LISTENER(install, kInstall)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(activate, kActivate)
   DEFINE_ATTRIBUTE_EVENT_LISTENER(fetch, kFetch)

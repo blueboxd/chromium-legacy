@@ -34,6 +34,8 @@ _TEST_RUNNER_PATH = os.path.join(
     os.path.dirname(__file__), os.pardir, os.pardir,
     'build', 'android', 'test_runner.py')
 
+# TODO(crbug.com/928093): remove this file as it is covered by
+# webview_cts_gcs_path.json.
 _EXPECTED_FAILURES_FILE = os.path.join(
     os.path.dirname(__file__), 'cts_config', 'expected_failure_on_bot.json')
 

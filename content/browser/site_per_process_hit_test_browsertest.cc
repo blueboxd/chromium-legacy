@@ -5682,6 +5682,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   scoped_refptr<ShowWidgetMessageFilter> filter = new ShowWidgetMessageFilter();
   c_node->current_frame_host()->GetProcess()->AddFilter(filter.get());
 
+  WaitForHitTestData(c_node->current_frame_host());
+
   // Target left-click event to child frame.
   blink::WebMouseEvent click_event(
       blink::WebInputEvent::kMouseDown, blink::WebInputEvent::kNoModifiers,

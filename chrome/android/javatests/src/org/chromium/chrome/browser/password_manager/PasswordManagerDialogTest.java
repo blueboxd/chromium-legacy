@@ -39,6 +39,7 @@ import org.chromium.chrome.test.ChromeActivityTestRule;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.content_public.browser.test.util.TestThreadUtils;
 import org.chromium.ui.modaldialog.DialogDismissalCause;
+import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
 
 /** Test for the password manager illustration modal dialog. */
@@ -75,7 +76,8 @@ public class PasswordManagerDialogTest {
         mModel = mMediator.getModelForTesting();
         TestThreadUtils.runOnUiThreadBlocking(() -> {
             mCoordinator.showDialog(TITLE, DETAILS, R.drawable.data_reduction_illustration,
-                    OK_BUTTON, CANCEL_BUTTON, mOnClick, false);
+                    OK_BUTTON, CANCEL_BUTTON, mOnClick, false,
+                    ModalDialogManager.ModalDialogType.TAB);
         });
     }
 

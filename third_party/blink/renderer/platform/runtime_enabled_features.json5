@@ -304,6 +304,10 @@
       status: "test",
     },
     {
+      name: "CompressionStreams",
+      status: "experimental",
+    },
+    {
       name: "ComputedAccessibilityInfo",
       status: "experimental",
     },
@@ -392,9 +396,6 @@
     {
       name: "CSSFocusVisible",
       status: "experimental",
-    },
-    {
-      name: "CSSFontFeatureValues"
     },
     {
       name: "CSSFontSizeAdjust",

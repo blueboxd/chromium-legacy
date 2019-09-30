@@ -27,7 +27,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.annotation.Implementation;
 import org.robolectric.annotation.Implements;
 
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordHistogramJni;
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -222,7 +221,7 @@ public class GeolocationHeaderUnitTest {
     }
 
     @Test
-    public void testGetGeoHeaderOldLocationHighAccuracy() throws ProcessInitException {
+    public void testGetGeoHeaderOldLocationHighAccuracy() {
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LocationSource.HIGH_ACCURACY);
         // Visible networks should be included
@@ -231,7 +230,7 @@ public class GeolocationHeaderUnitTest {
     }
 
     @Test
-    public void testGetGeoHeaderOldLocationBatterySaving() throws ProcessInitException {
+    public void testGetGeoHeaderOldLocationBatterySaving() {
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LocationSource.BATTERY_SAVING);
         checkOldLocation(
@@ -239,21 +238,21 @@ public class GeolocationHeaderUnitTest {
     }
 
     @Test
-    public void testGetGeoHeaderOldLocationGpsOnly() throws ProcessInitException {
+    public void testGetGeoHeaderOldLocationGpsOnly() {
         GeolocationHeader.setLocationSourceForTesting(GeolocationHeader.LocationSource.GPS_ONLY);
         // In GPS only mode, networks should never be included.
         checkOldLocation("X-Geo: w " + ENCODED_PROTO_LOCATION);
     }
 
     @Test
-    public void testGetGeoHeaderOldLocationLocationOff() throws ProcessInitException {
+    public void testGetGeoHeaderOldLocationLocationOff() {
         GeolocationHeader.setLocationSourceForTesting(GeolocationHeader.LocationSource.MASTER_OFF);
         // If the master switch is off, networks should never be included (old location might).
         checkOldLocation("X-Geo: w " + ENCODED_PROTO_LOCATION);
     }
 
     @Test
-    public void testGetGeoHeaderOldLocationAppPermissionDenied() throws ProcessInitException {
+    public void testGetGeoHeaderOldLocationAppPermissionDenied() {
         GeolocationHeader.setLocationSourceForTesting(
                 GeolocationHeader.LocationSource.HIGH_ACCURACY);
         GeolocationHeader.setAppPermissionGrantedForTesting(false);

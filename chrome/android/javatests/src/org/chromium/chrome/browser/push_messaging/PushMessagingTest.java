@@ -20,7 +20,6 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -321,12 +320,8 @@ public class PushMessagingTest implements PushMessagingServiceObserver.Listener 
             extras.putString("subtype", appId);
 
             GCMMessage message = new GCMMessage(senderId, extras);
-            try {
-                ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
-                GCMDriver.dispatchMessage(message);
-            } catch (ProcessInitException e) {
-                Assert.fail("Chrome browser failed to initialize.");
-            }
+            ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
+            GCMDriver.dispatchMessage(message);
         });
         mMessageHandledHelper.waitForCallback(mMessageHandledHelper.getCallCount());
     }

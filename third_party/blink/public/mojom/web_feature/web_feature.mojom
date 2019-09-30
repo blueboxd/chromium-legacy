@@ -2421,6 +2421,11 @@ enum WebFeature {
   kXRIsSessionSupported = 3036,
   kScrollbarUseScrollbarButtonReversedDirection = 3037,
   kCSSSelectorPseudoScrollbarButtonReversedDirection = 3038,
+  kFragmentHasTildeAmpersandTilde = 3039,
+  kFragmentHasColonTildeColon = 3040,
+  kFragmentHasTildeAtTilde = 3041,
+  kFragmentHasAmpersandDelimiterQuestion = 3042,
+  kInvalidFragmentDirective = 3043,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -50,26 +50,48 @@ NetworkServiceNetworkDelegate::NetworkServiceNetworkDelegate(
 
 NetworkServiceNetworkDelegate::~NetworkServiceNetworkDelegate() = default;
 
+void NetworkServiceNetworkDelegate::MaybeTruncateReferrer(
+    net::URLRequest* const request,
+    const GURL& effective_url) {
+  if (!enable_referrers_) {
+    request->SetReferrer(std::string());
+    return;
+  }
+
+  if (base::FeatureList::IsEnabled(
+          features::kCapReferrerToOriginOnCrossOrigin)) {
+    url::Origin destination_origin = url::Origin::Create(effective_url);
+    url::Origin source_origin = url::Origin::Create(GURL(request->referrer()));
+    if (!destination_origin.IsSameOriginWith(source_origin))
+      request->SetReferrer(source_origin.GetURL().spec());
+  }
+}
+
 int NetworkServiceNetworkDelegate::OnBeforeURLRequest(
     net::URLRequest* request,
     net::CompletionOnceCallback callback,
     GURL* new_url) {
-  if (!enable_referrers_)
-    request->SetReferrer(std::string());
-  NetworkService* network_service = network_context_->network_service();
-  if (network_service)
-    network_service->OnBeforeURLRequest();
+  DCHECK(request);
 
-  auto* loader = URLLoader::ForRequest(*request);
-  if (!loader)
-    return net::OK;
+  auto* const loader = URLLoader::ForRequest(*request);
   const GURL* effective_url = nullptr;
-  if (loader->new_redirect_url()) {
+  if (loader && loader->new_redirect_url()) {
+    DCHECK(new_url);
     *new_url = loader->new_redirect_url().value();
     effective_url = new_url;
   } else {
     effective_url = &request->url();
   }
+
+  MaybeTruncateReferrer(request, *effective_url);
+
+  NetworkService* network_service = network_context_->network_service();
+  if (network_service)
+    network_service->OnBeforeURLRequest();
+
+  if (!loader)
+    return net::OK;
+
   if (network_service) {
     loader->SetAllowReportingRawHeaders(network_service->HasRawHeadersAccess(
         loader->GetProcessId(), *effective_url));

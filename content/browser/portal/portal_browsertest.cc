@@ -166,12 +166,12 @@ class PortalCreatedObserver : public mojom::FrameHostInterceptorForTesting {
  public:
   explicit PortalCreatedObserver(RenderFrameHostImpl* render_frame_host_impl)
       : render_frame_host_impl_(render_frame_host_impl) {
-    old_impl_ = render_frame_host_impl_->frame_host_binding_for_testing()
+    old_impl_ = render_frame_host_impl_->frame_host_receiver_for_testing()
                     .SwapImplForTesting(this);
   }
 
   ~PortalCreatedObserver() override {
-    render_frame_host_impl_->frame_host_binding_for_testing()
+    render_frame_host_impl_->frame_host_receiver_for_testing()
         .SwapImplForTesting(old_impl_);
   }
 

@@ -20,11 +20,11 @@ MachineLearningInternalsPageHandler::MachineLearningInternalsPageHandler(
 MachineLearningInternalsPageHandler::~MachineLearningInternalsPageHandler() =
     default;
 
-void MachineLearningInternalsPageHandler::LoadModel(
-    mojom::ModelSpecPtr spec,
+void MachineLearningInternalsPageHandler::LoadBuiltinModel(
+    mojom::BuiltinModelSpecPtr spec,
     mojom::ModelRequest request,
-    LoadModelCallback callback) {
-  ServiceConnection::GetInstance()->LoadModel(
+    LoadBuiltinModelCallback callback) {
+  ServiceConnection::GetInstance()->LoadBuiltinModel(
       std::move(spec), std::move(request), std::move(callback));
 }
 

@@ -13,7 +13,6 @@ import com.google.protobuf.InvalidProtocolBufferException;
 import org.junit.Assert;
 
 import org.chromium.base.Log;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.components.gcm_driver.GCMDriver;
@@ -286,12 +285,8 @@ public class TestOfflinePageService {
             extras.putString("subtype", prefetchSubtype); // is this necessary?
 
             GCMMessage message = new GCMMessage(senderId, extras);
-            try {
-                ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
-                GCMDriver.dispatchMessage(message);
-            } catch (ProcessInitException e) {
-                Assert.fail(e.getMessage());
-            }
+            ChromeBrowserInitializer.getInstance(context).handleSynchronousStartup();
+            GCMDriver.dispatchMessage(message);
         });
         return operationName;
     }

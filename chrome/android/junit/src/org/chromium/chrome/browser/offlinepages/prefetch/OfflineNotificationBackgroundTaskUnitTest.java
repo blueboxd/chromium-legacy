@@ -9,7 +9,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.ArgumentMatchers.anyLong;
@@ -42,7 +41,6 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
 import org.chromium.base.Callback;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.chrome.browser.DeviceConditions;
 import org.chromium.chrome.browser.ShadowDeviceConditions;
@@ -120,19 +118,15 @@ public class OfflineNotificationBackgroundTaskUnitTest {
         MockitoAnnotations.initMocks(this);
         // Set up the context.
         doNothing().when(mChromeBrowserInitializer).handlePreNativeStartup(any(BrowserParts.class));
-        try {
-            doAnswer(new Answer<Void>() {
-                @Override
-                public Void answer(InvocationOnMock invocation) {
-                    mBrowserParts.getValue().finishNativeInitialization();
-                    return null;
-                }
-            })
-                    .when(mChromeBrowserInitializer)
-                    .handlePostNativeStartup(eq(true), mBrowserParts.capture());
-        } catch (ProcessInitException ex) {
-            fail("Unexpected exception while initializing mock of ChromeBrowserInitializer.");
-        }
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                mBrowserParts.getValue().finishNativeInitialization();
+                return null;
+            }
+        })
+                .when(mChromeBrowserInitializer)
+                .handlePostNativeStartup(eq(true), mBrowserParts.capture());
 
         doAnswer((invocation) -> {
             Object callback = invocation.getArguments()[1];

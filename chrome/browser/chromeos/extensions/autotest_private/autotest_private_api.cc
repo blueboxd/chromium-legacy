@@ -1658,13 +1658,15 @@ AutotestPrivateBootstrapMachineLearningServiceFunction::Run() {
   DVLOG(1) << "AutotestPrivateBootstrapMachineLearningServiceFunction";
 
   // Load a model. This will first bootstrap the Mojo connection to ML Service.
-  chromeos::machine_learning::ServiceConnection::GetInstance()->LoadModel(
-      chromeos::machine_learning::mojom::ModelSpec::New(
-          chromeos::machine_learning::mojom::ModelId::TEST_MODEL),
-      mojo::MakeRequest(&model_),
-      base::BindOnce(
-          &AutotestPrivateBootstrapMachineLearningServiceFunction::ModelLoaded,
-          this));
+  chromeos::machine_learning::ServiceConnection::GetInstance()
+      ->LoadBuiltinModel(
+          chromeos::machine_learning::mojom::BuiltinModelSpec::New(
+              chromeos::machine_learning::mojom::BuiltinModelId::TEST_MODEL),
+          mojo::MakeRequest(&model_),
+          base::BindOnce(
+              &AutotestPrivateBootstrapMachineLearningServiceFunction::
+                  ModelLoaded,
+              this));
   model_.set_connection_error_handler(base::BindOnce(
       &AutotestPrivateBootstrapMachineLearningServiceFunction::ConnectionError,
       this));

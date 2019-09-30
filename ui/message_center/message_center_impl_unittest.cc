@@ -166,7 +166,7 @@ class MessageCenterImplTest : public testing::Test {
   }
 
   base::RunLoop* run_loop() const { return run_loop_.get(); }
-  base::Closure closure() const { return closure_; }
+  base::RepeatingClosure closure() const { return closure_; }
 
  protected:
   std::unique_ptr<Notification> CreateSimpleNotification(
@@ -217,7 +217,7 @@ class MessageCenterImplTest : public testing::Test {
   MessageCenter* message_center_;
   std::unique_ptr<base::MessageLoop> loop_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  base::Closure closure_;
+  base::RepeatingClosure closure_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageCenterImplTest);
 };
@@ -316,7 +316,7 @@ namespace internal {
 class MockPopupTimersController : public PopupTimersController {
  public:
   MockPopupTimersController(MessageCenter* message_center,
-                            base::Closure quit_closure)
+                            base::RepeatingClosure quit_closure)
       : PopupTimersController(message_center),
         timer_finished_(0),
         quit_closure_(quit_closure) {}
@@ -334,7 +334,7 @@ class MockPopupTimersController : public PopupTimersController {
  private:
   int timer_finished_;
   std::string last_id_;
-  base::Closure quit_closure_;
+  base::RepeatingClosure quit_closure_;
 };
 
 TEST_F(MessageCenterImplTest, PopupTimersEmptyController) {

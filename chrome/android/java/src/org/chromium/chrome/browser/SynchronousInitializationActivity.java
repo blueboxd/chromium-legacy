@@ -8,8 +8,6 @@ import android.os.Bundle;
 
 import androidx.annotation.CallSuper;
 
-import org.chromium.base.Log;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.browser.bookmarks.BookmarkActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 
@@ -27,12 +25,6 @@ public abstract class SynchronousInitializationActivity extends ChromeBaseAppCom
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Ensure that native library is loaded.
-        try {
-            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Failed to start browser process.", e);
-            ChromeApplication.reportStartupErrorAndExit(e);
-        }
+        ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
     }
 }

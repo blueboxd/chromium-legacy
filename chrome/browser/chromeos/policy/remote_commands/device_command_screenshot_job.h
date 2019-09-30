@@ -78,7 +78,7 @@ class DeviceCommandScreenshotJob : public RemoteCommandJob,
     virtual void TakeSnapshot(
         gfx::NativeWindow window,
         const gfx::Rect& source_rect,
-        const ui::GrabWindowSnapshotAsyncPNGCallback& callback) = 0;
+        ui::GrabWindowSnapshotAsyncPNGCallback callback) = 0;
 
     // Creates a new fully configured instance of an UploadJob. This method
     // may be called any number of times.

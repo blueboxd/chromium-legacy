@@ -144,7 +144,7 @@ class CORE_EXPORT ContentSecurityPolicy final
     kInlineViolation,
     kEvalViolation,
     kURLViolation,
-    kTrustedTypesViolation,
+    kTrustedTypesSinkViolation,
     kTrustedTypesPolicyViolation
   };
 

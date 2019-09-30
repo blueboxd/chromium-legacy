@@ -29,7 +29,6 @@ import org.chromium.base.Promise;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
@@ -250,15 +249,7 @@ public class NotificationPlatformBridge {
         // activity, and it loads the library, but there are some native calls even before that
         // activity is started: from RecordUserAction.record and (indirectly) from
         // UrlFormatter.formatUrlForSecurityDisplay.
-        try {
-            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Failed to start browser process.", e);
-            // The library failed to initialize and nothing in the application can work, so kill
-            // the whole application.
-            System.exit(-1);
-            return;
-        }
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
 
         // Use the application context because it lives longer. When using the given context, it
         // may be stopped before the preferences intent is handled.

@@ -31,6 +31,7 @@
 #include "content/public/renderer/render_thread.h"
 #include "gin/object_template_builder.h"
 #include "ipc/ipc_sync_channel.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "third_party/blink/public/common/page/page_zoom.h"
@@ -68,8 +69,7 @@ ChromePluginPlaceholder::ChromePluginPlaceholder(
     : plugins::LoadablePluginPlaceholder(render_frame, params, html_data),
       status_(chrome::mojom::PluginStatus::kAllowed),
       title_(title),
-      context_menu_request_id_(0),
-      plugin_renderer_binding_(this) {
+      context_menu_request_id_(0) {
   RenderThread::Get()->AddObserver(this);
 }
 
@@ -79,10 +79,9 @@ ChromePluginPlaceholder::~ChromePluginPlaceholder() {
     render_frame()->CancelContextMenu(context_menu_request_id_);
 }
 
-chrome::mojom::PluginRendererPtr ChromePluginPlaceholder::BindPluginRenderer() {
-  chrome::mojom::PluginRendererPtr plugin_renderer;
-  plugin_renderer_binding_.Bind(mojo::MakeRequest(&plugin_renderer));
-  return plugin_renderer;
+mojo::PendingRemote<chrome::mojom::PluginRenderer>
+ChromePluginPlaceholder::BindPluginRenderer() {
+  return plugin_renderer_receiver_.BindNewPipeAndPassRemote();
 }
 
 // TODO(bauerb): Move this method to NonLoadablePluginPlaceholder?
@@ -188,8 +187,9 @@ bool ChromePluginPlaceholder::OnMessageReceived(const IPC::Message& message) {
 }
 
 void ChromePluginPlaceholder::ShowPermissionBubbleCallback() {
-  chrome::mojom::PluginHostAssociatedPtr plugin_host;
-  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(&plugin_host);
+  mojo::AssociatedRemote<chrome::mojom::PluginHost> plugin_host;
+  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+      plugin_host.BindNewEndpointAndPassReceiver());
   plugin_host->ShowFlashPermissionBubble();
 }
 

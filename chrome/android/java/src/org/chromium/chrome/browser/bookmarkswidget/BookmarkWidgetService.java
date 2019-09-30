@@ -25,7 +25,6 @@ import com.google.android.apps.chrome.appwidget.bookmarks.BookmarkThumbnailWidge
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.R;
@@ -307,14 +306,7 @@ public class BookmarkWidgetService extends RemoteViewsService {
         public void onCreate() {
             // Required to be applied here redundantly to prevent crashes in the cases where the
             // package data is deleted or the Chrome application forced to stop.
-            try {
-                ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
-            } catch (ProcessInitException e) {
-                Log.e(TAG, "Failed to start browser process.", e);
-                // Since the library failed to initialize nothing in the application
-                // can work, so kill the whole application not just the activity
-                System.exit(-1);
-            }
+            ChromeBrowserInitializer.getInstance(mContext).handleSynchronousStartup();
             if (isWidgetNewlyCreated()) {
                 RecordUserAction.record("BookmarkNavigatorWidgetAdded");
             }

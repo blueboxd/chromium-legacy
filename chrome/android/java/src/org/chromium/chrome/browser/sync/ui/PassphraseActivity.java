@@ -12,11 +12,8 @@ import android.support.v4.app.DialogFragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.chrome.browser.sync.SyncController;
@@ -41,13 +38,7 @@ public class PassphraseActivity extends AppCompatActivity
         // may be started explicitly from Android notifications.
         // During a normal user flow the ChromeTabbedActivity would start the Chrome browser
         // process and this wouldn't be necessary.
-        try {
-            ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Failed to start browser process.", e);
-            ChromeApplication.reportStartupErrorAndExit(e);
-            return;
-        }
+        ChromeBrowserInitializer.getInstance(this).handleSynchronousStartup();
         assert ProfileSyncService.get() != null;
         getSupportFragmentManager().addOnBackStackChangedListener(this);
     }

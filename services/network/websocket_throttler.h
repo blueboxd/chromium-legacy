@@ -47,9 +47,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocketPerProcessThrottler final {
   ~WebSocketPerProcessThrottler();
 
   // Returns if there are too many pending connections.
-  bool HasTooManyPendingConnections() const {
-    return num_pending_connections_ >= kMaxPendingWebSocketConnections;
-  }
+  bool HasTooManyPendingConnections() const { return false; }
 
   // Returns the delay which should be used to throttle opening websocket
   // connections.

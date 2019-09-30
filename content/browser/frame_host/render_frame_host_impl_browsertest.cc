@@ -1600,10 +1600,10 @@ IN_PROC_BROWSER_TEST_F(
   service_manager::mojom::InterfaceProviderRequest
       interface_provider_request_with_pending_request =
           mojo::MakeRequest(&interface_provider_with_pending_request);
-  mojom::FrameHostTestInterfacePtr test_interface;
+  mojo::Remote<mojom::FrameHostTestInterface> test_interface;
   interface_provider_with_pending_request->GetInterface(
       mojom::FrameHostTestInterface::Name_,
-      mojo::MakeRequest(&test_interface).PassMessagePipe());
+      test_interface.BindNewPipeAndPassReceiver().PassPipe());
 
   // Replace the |interface_provider_request| argument in the next
   // DidCommitProvisionalLoad message coming from the renderer with the
@@ -1677,12 +1677,12 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
     ASSERT_TRUE(injector.original_request_of_last_commit().is_pending());
   }
 
-  // Prepare an interface request for FrameHostTestInterface.
-  mojom::FrameHostTestInterfacePtr test_interface;
-  auto test_interface_request = mojo::MakeRequest(&test_interface);
+  // Prepare an interface receiver for FrameHostTestInterface.
+  mojo::Remote<mojom::FrameHostTestInterface> test_interface;
+  auto test_interface_receiver = test_interface.BindNewPipeAndPassReceiver();
 
   // Set up |dispatched_interface_request_callback| that would be invoked if the
-  // interface request for FrameHostTestInterface was ever dispatched to the
+  // interface receiver for FrameHostTestInterface was ever dispatched to the
   // RenderFrameHostImpl.
   base::MockCallback<base::RepeatingClosure>
       dispatched_interface_request_callback;
@@ -1702,9 +1702,8 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   base::MockCallback<base::RepeatingClosure> navigation_finished_callback;
   DidFinishNavigationObserver navigation_finish_observer(
       main_rfh, base::BindLambdaForTesting([&]() {
-        interface_provider->GetInterface(
-            mojom::FrameHostTestInterface::Name_,
-            test_interface_request.PassMessagePipe());
+        interface_provider->GetInterface(mojom::FrameHostTestInterface::Name_,
+                                         test_interface_receiver.PassPipe());
         std::move(navigation_finished_callback).Run();
       }));
 
@@ -1712,10 +1711,13 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // document, but whose client end is actually controlled by this test, should
   // still be alive and well.
   ASSERT_TRUE(test_interface.is_bound());
-  ASSERT_FALSE(test_interface.encountered_error());
+  ASSERT_TRUE(test_interface.is_connected());
+
+  base::RunLoop run_loop;
+  test_interface.set_disconnect_handler(run_loop.QuitWhenIdleClosure());
 
   // Expect that the GetInterface message will never be dispatched, but the
-  // DidFinishNavigation callback wll be invoked.
+  // DidFinishNavigation callback will be invoked.
   EXPECT_CALL(dispatched_interface_request_callback, Run()).Times(0);
   EXPECT_CALL(navigation_finished_callback, Run());
 
@@ -1725,11 +1727,9 @@ IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
   // Wait for a connection error on the |test_interface| as a signal, after
   // which it can be safely assumed that no GetInterface message will ever be
   // dispatched from that old InterfaceConnection.
-  base::RunLoop run_loop;
-  test_interface.set_connection_error_handler(run_loop.QuitWhenIdleClosure());
   run_loop.Run();
 
-  EXPECT_TRUE(test_interface.encountered_error());
+  EXPECT_FALSE(test_interface.is_connected());
 }
 
 // Test the edge case where the `window` global object asssociated with the

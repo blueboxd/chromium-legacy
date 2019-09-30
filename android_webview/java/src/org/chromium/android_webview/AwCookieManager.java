@@ -14,7 +14,6 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 
 /**
  * AwCookieManager manages cookies according to RFC2109 spec.
@@ -30,11 +29,7 @@ public final class AwCookieManager {
     }
 
     public AwCookieManager(long nativeCookieManager) {
-        try {
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBVIEW);
-        } catch (ProcessInitException e) {
-            throw new RuntimeException("Error initializing WebView library", e);
-        }
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBVIEW);
         mNativeCookieManager = nativeCookieManager;
     }
 
@@ -106,8 +101,8 @@ public final class AwCookieManager {
      * @return The cookies in the format of NAME=VALUE [; NAME=VALUE]
      */
     public String getCookie(final String url) {
-        String cookie = AwCookieManagerJni.get().getCookie(
-                mNativeCookieManager, AwCookieManager.this, url.toString());
+        String cookie =
+                AwCookieManagerJni.get().getCookie(mNativeCookieManager, AwCookieManager.this, url);
         // Return null if the string is empty to match legacy behavior
         return cookie == null || cookie.trim().isEmpty() ? null : cookie;
     }

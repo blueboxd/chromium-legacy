@@ -31,6 +31,7 @@ class MockSharingService : public SharingService {
   explicit MockSharingService(
       NotificationDisplayService* notification_display_service)
       : SharingService(
+            /* pref_service= */ nullptr,
             /* sync_prefs= */ nullptr,
             /* vapid_key_manager= */ nullptr,
             /* sharing_device_registration= */ nullptr,

@@ -6,41 +6,26 @@
 
 #include "base/logging.h"
 #import "base/mac/foundation_util.h"
-#include "components/google/core/common/google_util.h"
 #include "components/handoff/pref_names_ios.h"
-#include "components/metrics/metrics_pref_names.h"
 #include "components/payments/core/payment_prefs.h"
 #import "components/prefs/ios/pref_observer_bridge.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
-#include "components/ukm/ios/features.h"
-#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/chrome_browser_state.h"
 #include "ios/chrome/browser/browsing_data/browsing_data_features.h"
-#include "ios/chrome/browser/chrome_url_constants.h"
-#include "ios/chrome/browser/pref_names.h"
-#include "ios/chrome/browser/system_flags.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
-#import "ios/chrome/browser/ui/settings/cells/settings_cells_constants.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_cell.h"
 #import "ios/chrome/browser/ui/settings/cells/settings_switch_item.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_local_commands.h"
 #import "ios/chrome/browser/ui/settings/clear_browsing_data/clear_browsing_data_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/dataplan_usage_table_view_controller.h"
-#import "ios/chrome/browser/ui/settings/google_services/accounts_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/handoff_table_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
-#import "ios/chrome/browser/ui/settings/utils/pref_backed_boolean.h"
-#import "ios/chrome/browser/ui/settings/utils/settings_utils.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_detail_icon_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_detail_text_item.h"
 #import "ios/chrome/browser/ui/table_view/cells/table_view_link_header_footer_item.h"
-#import "ios/chrome/browser/ui/table_view/cells/table_view_text_header_footer_item.h"
 #include "ios/chrome/browser/ui/ui_feature_flags.h"
-#include "ios/chrome/browser/ui/util/ui_util.h"
 #include "ios/chrome/grit/ios_chromium_strings.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -63,9 +48,6 @@ typedef NS_ENUM(NSInteger, SectionIdentifier) {
 typedef NS_ENUM(NSInteger, ItemType) {
   ItemTypeOtherDevicesHandoff = kItemTypeEnumZero,
   ItemTypeWebServicesPaymentSwitch,
-  ItemTypeWebServicesSendUsageData,
-  ItemTypeWebServicesShowSuggestions,
-  ItemTypeWebServicesFooter,
   ItemTypeClearBrowsingDataClear,
   // Footer to suggest the user to open Sync and Google services settings.
   ItemTypeClearBrowsingDataFooter,
@@ -77,13 +59,9 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
 
 }  // namespace
 
-@interface PrivacyTableViewController () <BooleanObserver,
-                                          ClearBrowsingDataLocalCommands,
+@interface PrivacyTableViewController () <ClearBrowsingDataLocalCommands,
                                           PrefObserverDelegate> {
   ios::ChromeBrowserState* _browserState;  // weak
-  PrefBackedBoolean* _suggestionsEnabled;
-  // The item related to the switch for the show suggestions setting.
-  SettingsSwitchItem* _showSuggestionsItem;
 
   // Pref observer to track changes to prefs.
   std::unique_ptr<PrefObserverBridge> _prefObserverBridge;
@@ -93,8 +71,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
 
   // Updatable Items
   TableViewDetailIconItem* _handoffDetailItem;
-  TableViewDetailIconItem* _sendUsageDetailItem;
-  SettingsSwitchItem* _sendUsageToggleSwitchItem;
 }
 
 @end
@@ -114,14 +90,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
     _browserState = browserState;
     self.title =
         l10n_util::GetNSString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY);
-    if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
-      // When unified consent flag is enabled, the suggestion setting is
-      // available in the "Google Services and sync" settings.
-      _suggestionsEnabled = [[PrefBackedBoolean alloc]
-          initWithPrefService:_browserState->GetPrefs()
-                     prefName:prefs::kSearchSuggestEnabled];
-      [_suggestionsEnabled setObserver:self];
-    }
 
     PrefService* prefService = _browserState->GetPrefs();
 
@@ -133,14 +101,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
     // screen.
     _prefObserverBridge->ObserveChangesForPreference(
         prefs::kIosHandoffToOtherDevices, &_prefChangeRegistrar);
-    if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
-      _prefObserverBridge->ObserveChangesForPreference(
-          metrics::prefs::kMetricsReportingEnabled,
-          &_prefChangeRegistrarApplicationContext);
-      _prefObserverBridge->ObserveChangesForPreference(
-          prefs::kMetricsReportingWifiOnly,
-          &_prefChangeRegistrarApplicationContext);
-    }
   }
   return self;
 }
@@ -167,34 +127,13 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
       toSectionWithIdentifier:SectionIdentifierWebServices];
   [model addItem:[self canMakePaymentItem]
       toSectionWithIdentifier:SectionIdentifierWebServices];
-  if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    // When unified consent flag is enabled, the show suggestions feature and
-    // metrics reporting feature are available in the "Google Services and sync"
-    // settings.
-    if (base::FeatureList::IsEnabled(kUmaCellular)) {
-      [model addItem:[self sendUsageToggleSwitchItem]
-          toSectionWithIdentifier:SectionIdentifierWebServices];
-    } else {
-      [model addItem:[self sendUsageDetailItem]
-          toSectionWithIdentifier:SectionIdentifierWebServices];
-    }
-    _showSuggestionsItem = [self showSuggestionsSwitchItem];
-    [model addItem:_showSuggestionsItem
-        toSectionWithIdentifier:SectionIdentifierWebServices];
-
-    [model setFooter:[self showSuggestionsFooterItem]
-        forSectionWithIdentifier:SectionIdentifierWebServices];
-  }
-
 
   // Clear Browsing Section
   [model addSectionWithIdentifier:SectionIdentifierClearBrowsingData];
   [model addItem:[self clearBrowsingDetailItem]
       toSectionWithIdentifier:SectionIdentifierClearBrowsingData];
-  if (unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    [model setFooter:[self showClearBrowsingDataFooterItem]
-        forSectionWithIdentifier:SectionIdentifierClearBrowsingData];
-  }
+  [model setFooter:[self showClearBrowsingDataFooterItem]
+      forSectionWithIdentifier:SectionIdentifierClearBrowsingData];
 }
 
 #pragma mark - Model Objects
@@ -210,29 +149,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
                     detailText:detailText];
 
   return _handoffDetailItem;
-}
-
-- (SettingsSwitchItem*)showSuggestionsSwitchItem {
-  SettingsSwitchItem* showSuggestionsSwitchItem = [[SettingsSwitchItem alloc]
-      initWithType:ItemTypeWebServicesShowSuggestions];
-  showSuggestionsSwitchItem.text =
-      l10n_util::GetNSString(IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS);
-  showSuggestionsSwitchItem.on = [_suggestionsEnabled value];
-
-  return showSuggestionsSwitchItem;
-}
-
-- (TableViewHeaderFooterItem*)showSuggestionsFooterItem {
-  TableViewLinkHeaderFooterItem* showSuggestionsFooterItem =
-      [[TableViewLinkHeaderFooterItem alloc]
-          initWithType:ItemTypeWebServicesFooter];
-  showSuggestionsFooterItem.text =
-      l10n_util::GetNSString(IDS_IOS_OPTIONS_PRIVACY_FOOTER);
-  showSuggestionsFooterItem.linkURL = google_util::AppendGoogleLocaleParam(
-      GURL(kPrivacyLearnMoreURL),
-      GetApplicationContext()->GetApplicationLocale());
-
-  return showSuggestionsFooterItem;
 }
 
 // Creates TableViewHeaderFooterItem instance to show a link to open the Sync
@@ -273,31 +189,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
                                         isEnabled);
 }
 
-- (TableViewItem*)sendUsageDetailItem {
-  NSString* detailText = [DataplanUsageTableViewController
-      currentLabelForPreference:GetApplicationContext()->GetLocalState()
-                       basePref:metrics::prefs::kMetricsReportingEnabled
-                       wifiPref:prefs::kMetricsReportingWifiOnly];
-  _sendUsageDetailItem =
-      [self detailItemWithType:ItemTypeWebServicesSendUsageData
-                       titleId:IDS_IOS_OPTIONS_SEND_USAGE_DATA
-                    detailText:detailText];
-
-  return _sendUsageDetailItem;
-}
-
-- (SettingsSwitchItem*)sendUsageToggleSwitchItem {
-  _sendUsageToggleSwitchItem = [[SettingsSwitchItem alloc]
-      initWithType:ItemTypeWebServicesSendUsageData];
-  _sendUsageToggleSwitchItem.text =
-      l10n_util::GetNSString(IDS_IOS_OPTIONS_SEND_USAGE_DATA);
-  _sendUsageToggleSwitchItem.on =
-      GetApplicationContext()->GetLocalState()->GetBoolean(
-          metrics::prefs::kMetricsReportingEnabled);
-
-  return _sendUsageToggleSwitchItem;
-}
-
 - (TableViewDetailIconItem*)detailItemWithType:(NSInteger)type
                                        titleId:(NSInteger)titleId
                                     detailText:(NSString*)detailText {
@@ -320,24 +211,11 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
 
   NSInteger itemType = [self.tableViewModel itemTypeForIndexPath:indexPath];
 
-  if (itemType == ItemTypeWebServicesShowSuggestions) {
-    SettingsSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
-    [switchCell.switchView addTarget:self
-                              action:@selector(showSuggestionsToggled:)
-                    forControlEvents:UIControlEventValueChanged];
-  } else if (itemType == ItemTypeWebServicesPaymentSwitch) {
+  if (itemType == ItemTypeWebServicesPaymentSwitch) {
     SettingsSwitchCell* switchCell =
         base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
     [switchCell.switchView addTarget:self
                               action:@selector(canMakePaymentSwitchChanged:)
-                    forControlEvents:UIControlEventValueChanged];
-  } else if (itemType == ItemTypeWebServicesSendUsageData &&
-             base::FeatureList::IsEnabled(kUmaCellular)) {
-    SettingsSwitchCell* switchCell =
-        base::mac::ObjCCastStrict<SettingsSwitchCell>(cell);
-    [switchCell.switchView addTarget:self
-                              action:@selector(sendUsageDataToggled:)
                     forControlEvents:UIControlEventValueChanged];
   }
   return cell;
@@ -370,16 +248,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
       controller = [[HandoffTableViewController alloc]
           initWithBrowserState:_browserState];
       break;
-    case ItemTypeWebServicesSendUsageData:
-      if (!base::FeatureList::IsEnabled(kUmaCellular)) {
-        controller = [[DataplanUsageTableViewController alloc]
-            initWithPrefs:GetApplicationContext()->GetLocalState()
-                 basePref:metrics::prefs::kMetricsReportingEnabled
-                 wifiPref:prefs::kMetricsReportingWifiOnly
-                    title:l10n_util::GetNSString(
-                              IDS_IOS_OPTIONS_SEND_USAGE_DATA)];
-      }
-      break;
     case ItemTypeClearBrowsingDataClear:
       if (IsNewClearBrowsingDataUIEnabled()) {
         ClearBrowsingDataTableViewController* clearBrowsingDataViewController =
@@ -393,7 +261,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
       }
       break;
     case ItemTypeWebServicesPaymentSwitch:
-    case ItemTypeWebServicesShowSuggestions:
     default:
       break;
   }
@@ -404,18 +271,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
   }
 
   [tableView deselectRowAtIndexPath:indexPath animated:YES];
-}
-
-#pragma mark - BooleanObserver
-
-- (void)booleanDidChange:(id<ObservableBoolean>)observableBoolean {
-  DCHECK_EQ(observableBoolean, _suggestionsEnabled);
-
-  // Update the item.
-  _showSuggestionsItem.on = [_suggestionsEnabled value];
-
-  // Update the cell.
-  [self reconfigureCellsForItems:@[ _showSuggestionsItem ]];
 }
 
 #pragma mark - ClearBrowsingDataLocalCommands
@@ -435,24 +290,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
 
 #pragma mark - Actions
 
-- (void)showSuggestionsToggled:(UISwitch*)sender {
-  NSIndexPath* switchPath = [self.tableViewModel
-      indexPathForItemType:ItemTypeWebServicesShowSuggestions
-         sectionIdentifier:SectionIdentifierWebServices];
-
-  SettingsSwitchItem* switchItem =
-      base::mac::ObjCCastStrict<SettingsSwitchItem>(
-          [self.tableViewModel itemAtIndexPath:switchPath]);
-  SettingsSwitchCell* switchCell =
-      base::mac::ObjCCastStrict<SettingsSwitchCell>(
-          [self.tableView cellForRowAtIndexPath:switchPath]);
-
-  DCHECK_EQ(switchCell.switchView, sender);
-  BOOL isOn = switchCell.switchView.isOn;
-  switchItem.on = isOn;
-  [_suggestionsEnabled setValue:isOn];
-}
-
 - (void)canMakePaymentSwitchChanged:(UISwitch*)sender {
   NSIndexPath* switchPath =
       [self.tableViewModel indexPathForItemType:ItemTypeWebServicesPaymentSwitch
@@ -470,20 +307,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
   [self setCanMakePaymentEnabled:sender.isOn];
 }
 
-- (void)sendUsageDataToggled:(UISwitch*)sender {
-  NSIndexPath* switchPath =
-      [self.tableViewModel indexPathForItem:_sendUsageToggleSwitchItem];
-  SettingsSwitchCell* switchCell =
-      base::mac::ObjCCastStrict<SettingsSwitchCell>(
-          [self.tableView cellForRowAtIndexPath:switchPath]);
-
-  DCHECK_EQ(switchCell.switchView, sender);
-  _sendUsageToggleSwitchItem.on = sender.isOn;
-
-  GetApplicationContext()->GetLocalState()->SetBoolean(
-      metrics::prefs::kMetricsReportingEnabled, sender.isOn);
-}
-
 #pragma mark - PrefObserverDelegate
 
 - (void)onPreferenceChanged:(const std::string&)preferenceName {
@@ -495,28 +318,6 @@ GURL kGoogleServicesSettingsURL("settings://open_google_services");
     _handoffDetailItem.detailText = detailText;
     [self reconfigureCellsForItems:@[ _handoffDetailItem ]];
     return;
-  }
-
-  if (preferenceName == metrics::prefs::kMetricsReportingEnabled ||
-      preferenceName == prefs::kMetricsReportingWifiOnly) {
-    DCHECK(!unified_consent::IsUnifiedConsentFeatureEnabled());
-    if (base::FeatureList::IsEnabled(kUmaCellular)) {
-      bool isOn = GetApplicationContext()->GetLocalState()->GetBoolean(
-          metrics::prefs::kMetricsReportingEnabled);
-      _sendUsageToggleSwitchItem.on = isOn;
-      [self reconfigureCellsForItems:@[ _sendUsageToggleSwitchItem ]];
-      return;
-    } else {
-      NSString* detailText = [DataplanUsageTableViewController
-          currentLabelForPreference:GetApplicationContext()->GetLocalState()
-                           basePref:metrics::prefs::kMetricsReportingEnabled
-                           wifiPref:prefs::kMetricsReportingWifiOnly];
-
-      _sendUsageDetailItem.detailText = detailText;
-
-      [self reconfigureCellsForItems:@[ _sendUsageDetailItem ]];
-      return;
-    }
   }
 }
 

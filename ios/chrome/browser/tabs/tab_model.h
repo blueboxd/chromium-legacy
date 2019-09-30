@@ -82,10 +82,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
                           webStateList:(WebStateList*)webStateList
     NS_DESIGNATED_INITIALIZER;
 
-// Temporary backwards compatibility init which creates a webStateList.
-- (instancetype)initWithSessionService:(SessionServiceIOS*)service
-                          browserState:(ios::ChromeBrowserState*)browserState;
-
 - (instancetype)init NS_UNAVAILABLE;
 
 // Add/modify tabs.
@@ -140,9 +136,6 @@ NSUInteger const kTabPositionAutomatically = NSNotFound;
 // deallocated soon. Calling any other methods or accessing any properties on
 // the tab model after this is called is unsafe.
 - (void)disconnect;
-
-// Legacy method name for -disconnect, will be deleted very soon.
-- (void)browserStateDestroyed;
 
 @end
 

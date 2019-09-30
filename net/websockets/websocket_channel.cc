@@ -594,7 +594,9 @@ ChannelState WebSocketChannel::ReadFrames() {
     DCHECK(!event_interface_->HasPendingDataFrames());
     // We've been waiting for the client to consume the frames before
     // responding to the closing handshake initiated by the server.
-    ignore_result(RespondToClosingHandshake());
+    if (RespondToClosingHandshake() == CHANNEL_DELETED) {
+      return CHANNEL_DELETED;
+    }
   }
 
   // TODO(crbug.com/999235): Remove this CHECK.

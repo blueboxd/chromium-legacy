@@ -33,6 +33,7 @@
 #include "chrome/browser/ui/accelerator_utils.h"
 #include "chrome/browser/ui/autofill/payments/manage_migration_ui_controller.h"
 #include "chrome/browser/ui/autofill/payments/save_card_bubble_controller_impl.h"
+#include "chrome/browser/ui/bookmarks/bookmark_stats.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser.h"
@@ -840,6 +841,9 @@ void BookmarkCurrentTabIgnoringExtensionOverrides(Browser* browser) {
     // weird situations where the bubble is deleted as soon as it is shown.
     browser->window()->ShowBookmarkBubble(url, was_bookmarked_by_user);
   }
+
+  if (!was_bookmarked_by_user && is_bookmarked_by_user)
+    RecordBookmarksAdded(browser->profile());
 }
 
 void BookmarkCurrentTabAllowingExtensionOverrides(Browser* browser) {
@@ -873,6 +877,10 @@ bool CanBookmarkCurrentTab(const Browser* browser) {
 
 void BookmarkAllTabs(Browser* browser) {
   base::RecordAction(UserMetricsAction("BookmarkAllTabs"));
+  RecordBookmarkAllTabsWithTabsCount(browser->profile(),
+                                     browser->tab_strip_model()->count());
+  // We record the profile that invoked this option.
+  RecordBookmarksAdded(browser->profile());
   chrome::ShowBookmarkAllTabsDialog(browser);
 }
 

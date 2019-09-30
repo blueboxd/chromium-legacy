@@ -14,8 +14,6 @@
 #include "components/strings/grit/components_strings.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/pref_service_syncable.h"
-#include "components/ukm/ios/features.h"
-#include "components/unified_consent/feature.h"
 #include "ios/chrome/browser/application_context.h"
 #include "ios/chrome/browser/browser_state/test_chrome_browser_state.h"
 #include "ios/chrome/browser/pref_names.h"
@@ -95,9 +93,7 @@ TEST_F(PrivacyTableViewControllerTest, TestModel) {
   EXPECT_EQ(2, NumberOfSections());
 
   // Sections[0].
-  const int kExpectedNumberOfItermsInSection0 =
-      unified_consent::IsUnifiedConsentFeatureEnabled() ? 2 : 4;
-  EXPECT_EQ(kExpectedNumberOfItermsInSection0, NumberOfItemsInSection(0));
+  EXPECT_EQ(2, NumberOfItemsInSection(0));
   NSString* handoffSubtitle = chrome_browser_state_->GetPrefs()->GetBoolean(
                                   prefs::kIosHandoffToOtherDevices)
                                   ? l10n_util::GetNSString(IDS_IOS_SETTING_ON)
@@ -108,19 +104,6 @@ TEST_F(PrivacyTableViewControllerTest, TestModel) {
   CheckSwitchCellStateAndText(
       NO, l10n_util::GetNSString(IDS_SETTINGS_CAN_MAKE_PAYMENT_TOGGLE_LABEL), 0,
       1);
-
-  if (!unified_consent::IsUnifiedConsentFeatureEnabled()) {
-    if (base::FeatureList::IsEnabled(kUmaCellular)) {
-      CheckSwitchCellStateAndTextWithId(NO, IDS_IOS_OPTIONS_SEND_USAGE_DATA, 0,
-                                        2);
-    } else {
-      CheckDetailItemTextWithIds(IDS_IOS_OPTIONS_SEND_USAGE_DATA,
-                                 IDS_IOS_OPTIONS_DATA_USAGE_NEVER, 0, 2);
-    }
-    CheckSwitchCellStateAndTextWithId(
-        YES, IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS, 0, 3);
-    CheckSectionFooterWithId(IDS_IOS_OPTIONS_PRIVACY_FOOTER, 0);
-  }
 
   // Sections[1].
   EXPECT_EQ(1, NumberOfItemsInSection(1));

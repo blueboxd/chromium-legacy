@@ -31,7 +31,7 @@ void SetJavaException(const char* exception);
 // Sets a filter that determines whether a java exception should cause a crash
 // report. |java_exception_filter| should return true if a crash report should
 // be generated.
-void SetJavaExceptionFilter(
+BASE_EXPORT void SetJavaExceptionFilter(
     base::RepeatingCallback<bool(const JavaRef<jthrowable>&)>
         java_exception_filter);
 

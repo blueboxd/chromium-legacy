@@ -11,6 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "content/common/content_export.h"
 #include "content/common/frame.mojom.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "mojo/public/cpp/system/data_pipe.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
@@ -60,7 +61,7 @@ class CONTENT_EXPORT WebURLLoaderImpl : public blink::WebURLLoader {
       std::unique_ptr<blink::scheduler::WebResourceLoadingTaskRunnerHandle>
           task_runner_handle,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      mojom::KeepAliveHandlePtr keep_alive_handle);
+      mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle);
   ~WebURLLoaderImpl() override;
 
   static void PopulateURLResponse(const blink::WebURL& url,

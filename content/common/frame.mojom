@@ -271,7 +271,7 @@ interface FrameBindingsControl {
 // Implemented by a service that provides implementations of the Frame
 // interface. (e.g. renderer processes).
 interface FrameFactory {
-  CreateFrame(int32 frame_routing_id, Frame& frame);
+  CreateFrame(int32 frame_routing_id, pending_receiver<Frame> frame);
 };
 
 struct CreateNewWindowParams {
@@ -385,7 +385,7 @@ interface FrameHost {
           mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Creates and returns a KeepAliveHandle.
-  IssueKeepAliveHandle(KeepAliveHandle& keep_alive_handle);
+  IssueKeepAliveHandle(pending_receiver<KeepAliveHandle> keep_alive_handle);
 
   // Sent by the renderer when a navigation commits in the frame.
 

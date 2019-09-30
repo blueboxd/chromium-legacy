@@ -18,6 +18,7 @@
 #include "content/public/browser/web_contents_binding_set.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 
 class InfoBarService;
 
@@ -47,10 +48,11 @@ class PluginObserver : public content::WebContentsObserver,
   explicit PluginObserver(content::WebContents* web_contents);
 
   // chrome::mojom::PluginHost methods.
-  void BlockedOutdatedPlugin(chrome::mojom::PluginRendererPtr plugin_renderer,
-                             const std::string& identifier) override;
+  void BlockedOutdatedPlugin(
+      mojo::PendingRemote<chrome::mojom::PluginRenderer> plugin_renderer,
+      const std::string& identifier) override;
   void BlockedComponentUpdatedPlugin(
-      chrome::mojom::PluginRendererPtr plugin_renderer,
+      mojo::PendingRemote<chrome::mojom::PluginRenderer> plugin_renderer,
       const std::string& identifier) override;
   void ShowFlashPermissionBubble() override;
   void CouldNotLoadPlugin(const base::FilePath& plugin_path) override;

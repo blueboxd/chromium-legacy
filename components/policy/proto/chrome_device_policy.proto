@@ -380,6 +380,14 @@ message AndroidKioskAppInfoProto {
   optional string display_name = 4;
 }
 
+// Parameters for Web App-based device local accounts.
+message WebKioskAppInfoProto {
+  // Install url (must be present).
+  // In case it is the only field provided, title and icon will be deduced
+  // during first app launch.
+  optional string url = 1;
+}
+
 // Describes a single device-local account.
 message DeviceLocalAccountInfoProto {
   // Deprecated: Account identifier for a public session device-local account.
@@ -407,6 +415,8 @@ message DeviceLocalAccountInfoProto {
     ACCOUNT_TYPE_KIOSK_ANDROID_APP = 2;
     // SAML public session account
     ACCOUNT_TYPE_SAML_PUBLIC_SESSION = 3;
+    // Web App.
+    ACCOUNT_TYPE_WEB_KIOSK_APP = 4;
   }
 
   // The account type.
@@ -417,6 +427,9 @@ message DeviceLocalAccountInfoProto {
 
   // Kiosk App parameters, relevant if |type| is ACCOUNT_TYPE_KIOSK_ANDROID_APP
   optional AndroidKioskAppInfoProto android_kiosk_app = 5;
+
+  // Web Kiosk App parameters, relevant if |type| is ACCOUNT_TYPE_WEB_KIOSK_APP
+  optional WebKioskAppInfoProto web_kiosk_app = 6;
 }
 
 message DeviceLocalAccountsProto {

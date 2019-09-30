@@ -57,6 +57,7 @@
 #include "content/public/common/previews_state.h"
 #include "content/public/common/transferrable_url_loader.mojom.h"
 #include "media/mojo/mojom/interface_factory.mojom.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_associated_remote.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
@@ -885,8 +886,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
       mojo::PendingReceiver<blink::mojom::BrowserInterfaceBroker>);
 
   // Exposed so that tests can swap out the implementation and intercept calls.
-  mojo::AssociatedBinding<mojom::FrameHost>& frame_host_binding_for_testing() {
-    return frame_host_associated_binding_;
+  mojo::AssociatedReceiver<mojom::FrameHost>&
+  frame_host_receiver_for_testing() {
+    return frame_host_associated_receiver_;
   }
 
   mojo::Binding<service_manager::mojom::InterfaceProvider>&
@@ -1407,7 +1409,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
       CreatePortalCallback callback) override;
   void AdoptPortal(const base::UnguessableToken& portal_token,
                    AdoptPortalCallback callback) override;
-  void IssueKeepAliveHandle(mojom::KeepAliveHandleRequest request) override;
+  void IssueKeepAliveHandle(
+      mojo::PendingReceiver<mojom::KeepAliveHandle> receiver) override;
   void DidCommitProvisionalLoad(
       std::unique_ptr<FrameHostMsg_DidCommitProvisionalLoad_Params>
           validated_params,
@@ -2166,9 +2169,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   bool has_committed_any_navigation_ = false;
   bool render_process_has_died_ = false;
 
-  mojo::AssociatedBinding<mojom::FrameHost> frame_host_associated_binding_;
-  mojom::FramePtr frame_;
-  mojom::FrameBindingsControlAssociatedPtr frame_bindings_control_;
+  mojo::AssociatedReceiver<mojom::FrameHost> frame_host_associated_receiver_{
+      this};
+  mojo::Remote<mojom::Frame> frame_;
+  mojo::AssociatedRemote<mojom::FrameBindingsControl> frame_bindings_control_;
   mojo::AssociatedRemote<mojom::FrameNavigationControl> navigation_control_;
 
   // If this is true then this object was created in response to a renderer

@@ -1259,23 +1259,6 @@ ServiceWorkerGlobalScope::GetServiceWorkerHost() {
   return service_worker_host_.get();
 }
 
-int ServiceWorkerGlobalScope::WillStartTask() {
-  DCHECK(IsContextThread());
-  DCHECK(timeout_timer_);
-  return timeout_timer_->StartEvent(base::DoNothing());
-}
-
-void ServiceWorkerGlobalScope::DidEndTask(int task_id) {
-  DCHECK(IsContextThread());
-  DCHECK(timeout_timer_);
-  // Check if the task is still alive, since the timeout timer might have
-  // already timed it out (which calls the abort callback passed to StartEvent()
-  // but that does nothing, since we just check HasEvent() here instead of
-  // maintaining our own set of started events).
-  if (timeout_timer_->HasEvent(task_id))
-    timeout_timer_->EndEvent(task_id);
-}
-
 void ServiceWorkerGlobalScope::OnIdleTimeout() {
   DCHECK(IsContextThread());
   // RequestedTermination() returns true if ServiceWorkerTimeoutTimer agrees

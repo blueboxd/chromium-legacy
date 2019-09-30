@@ -30,6 +30,9 @@ class PanelItem extends HTMLElement {
     /** @private {number} */
     this.panelType_ = this.panelTypeDefault;
 
+    /** @private @type {?function(Event)} */
+    this.onclick = this.onClicked_.bind(this);
+
     /** @public {?DisplayPanel} */
     this.parent = null;
 
@@ -204,7 +207,7 @@ class PanelItem extends HTMLElement {
         this.setAttribute('indicator', 'progress');
         secondaryButton = document.createElement('xf-button');
         secondaryButton.id = 'secondary-action';
-        secondaryButton.onclick = this.onclick;
+        secondaryButton.onclick = assert(this.onclick);
         secondaryButton.dataset.category = 'cancel';
         secondaryButton.setAttribute('aria-label', '$i18n{CANCEL_LABEL}');
         buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
@@ -223,7 +226,7 @@ class PanelItem extends HTMLElement {
         this.setAttribute('status', 'success');
         primaryButton = document.createElement('xf-button');
         primaryButton.id = 'primary-action';
-        primaryButton.onclick = this.onclick;
+        primaryButton.onclick = assert(this.onclick);
         primaryButton.dataset.category = 'dismiss';
         buttonSpacer.insertAdjacentElement('afterend', primaryButton);
         break;
@@ -232,7 +235,7 @@ class PanelItem extends HTMLElement {
         this.setAttribute('status', 'failure');
         secondaryButton = document.createElement('xf-button');
         secondaryButton.id = 'secondary-action';
-        secondaryButton.onclick = this.onclick;
+        secondaryButton.onclick = assert(this.onclick);
         secondaryButton.dataset.category = 'dismiss';
         buttonSpacer.insertAdjacentElement('afterend', secondaryButton);
         break;

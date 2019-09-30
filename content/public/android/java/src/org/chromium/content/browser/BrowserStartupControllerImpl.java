@@ -190,7 +190,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
 
     @Override
     public void startBrowserProcessesAsync(boolean startGpuProcess, boolean startServiceManagerOnly,
-            final StartupCallback callback) throws ProcessInitException {
+            final StartupCallback callback) {
         assert ThreadUtils.runningOnUiThread() : "Tried to start the browser on the wrong thread.";
         ServicificationStartupUma.getInstance().record(ServicificationStartupUma.getStartupMode(
                 mFullBrowserStartupDone, mServiceManagerStarted, startServiceManagerOnly));
@@ -243,7 +243,7 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     }
 
     @Override
-    public void startBrowserProcessesSync(boolean singleProcess) throws ProcessInitException {
+    public void startBrowserProcessesSync(boolean singleProcess) {
         ServicificationStartupUma.getInstance().record(
                 ServicificationStartupUma.getStartupMode(mFullBrowserStartupDone,
                         mServiceManagerStarted, false /* startServiceManagerOnly */));
@@ -428,8 +428,8 @@ public class BrowserStartupControllerImpl implements BrowserStartupController {
     }
 
     @VisibleForTesting
-    void prepareToStartBrowserProcess(final boolean singleProcess,
-            final Runnable completionCallback) throws ProcessInitException {
+    void prepareToStartBrowserProcess(
+            final boolean singleProcess, final Runnable completionCallback) {
         Log.i(TAG, "Initializing chromium process, singleProcess=%b", singleProcess);
 
         // This strictmode exception is to cover the case where the browser process is being started

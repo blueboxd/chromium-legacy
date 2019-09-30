@@ -275,11 +275,6 @@ void RuleSet::AddFontFaceRule(StyleRuleFontFace* rule) {
   font_face_rules_.push_back(rule);
 }
 
-void RuleSet::AddFontFeatureValuesRule(StyleRuleFontFeatureValues* rule) {
-  EnsurePendingRules();
-  font_feature_values_rules_.push_back(rule);
-}
-
 void RuleSet::AddKeyframesRule(StyleRuleKeyframes* rule) {
   EnsurePendingRules();  // So that keyframes_rules_.ShrinkToFit() gets called.
   keyframes_rules_.push_back(rule);
@@ -324,9 +319,6 @@ void RuleSet::AddChildRules(const HeapVector<Member<StyleRuleBase>>& rules,
         AddChildRules(media_rule->ChildRules(), medium, add_rule_flags);
     } else if (auto* font_face_rule = DynamicTo<StyleRuleFontFace>(rule)) {
       AddFontFaceRule(font_face_rule);
-    } else if (auto* font_feature_values_rule =
-                   DynamicTo<StyleRuleFontFeatureValues>(rule)) {
-      AddFontFeatureValuesRule(font_feature_values_rule);
     } else if (auto* keyframes_rule = DynamicTo<StyleRuleKeyframes>(rule)) {
       AddKeyframesRule(keyframes_rule);
     } else if (auto* property_rule = DynamicTo<StyleRuleProperty>(rule)) {
@@ -405,7 +397,6 @@ void RuleSet::CompactRules() {
   shadow_host_rules_.ShrinkToFit();
   page_rules_.ShrinkToFit();
   font_face_rules_.ShrinkToFit();
-  font_feature_values_rules_.ShrinkToFit();
   keyframes_rules_.ShrinkToFit();
   property_rules_.ShrinkToFit();
   deep_combinator_or_shadow_pseudo_rules_.ShrinkToFit();
@@ -442,7 +433,6 @@ void RuleSet::Trace(blink::Visitor* visitor) {
   visitor->Trace(shadow_host_rules_);
   visitor->Trace(page_rules_);
   visitor->Trace(font_face_rules_);
-  visitor->Trace(font_feature_values_rules_);
   visitor->Trace(keyframes_rules_);
   visitor->Trace(property_rules_);
   visitor->Trace(deep_combinator_or_shadow_pseudo_rules_);

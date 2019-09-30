@@ -4,7 +4,6 @@
 
 package org.chromium.content_public.browser;
 
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupControllerImpl;
 
 /**
@@ -22,7 +21,7 @@ public interface BrowserStartupController {
     /**
      * This provides the interface to the callbacks for successful or failed startup
      */
-    public interface StartupCallback {
+    interface StartupCallback {
         void onSuccess();
         void onFailure();
     }
@@ -35,7 +34,7 @@ public interface BrowserStartupController {
      *                           LibraryProcessType.PROCESS_WEBVIEW.
      * @return BrowserStartupController instance.
      */
-    public static BrowserStartupController get(int libraryProcessType) {
+    static BrowserStartupController get(int libraryProcessType) {
         return BrowserStartupControllerImpl.get(libraryProcessType);
     }
 
@@ -51,7 +50,7 @@ public interface BrowserStartupController {
      * @param callback the callback to be called when browser startup is complete.
      */
     void startBrowserProcessesAsync(boolean startGpuProcess, boolean startServiceManagerOnly,
-            final StartupCallback callback) throws ProcessInitException;
+            final StartupCallback callback);
 
     /**
      * Start the browser process synchronously. If the browser is already being started
@@ -62,9 +61,8 @@ public interface BrowserStartupController {
      *
      * @param singleProcess true iff the browser should run single-process, ie. keep renderers in
      *                      the browser process
-     * @throws ProcessInitException
      */
-    void startBrowserProcessesSync(boolean singleProcess) throws ProcessInitException;
+    void startBrowserProcessesSync(boolean singleProcess);
 
     /**
      * @return Whether the browser process has been started in "Full Browser" mode successfully. See

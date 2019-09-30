@@ -48,8 +48,7 @@ MultiDeviceSetupClientImpl::Factory::BuildInstance(
 
 MultiDeviceSetupClientImpl::MultiDeviceSetupClientImpl(
     service_manager::Connector* connector)
-    : feature_state_observer_binding_(this),
-      remote_device_cache_(
+    : remote_device_cache_(
           multidevice::RemoteDeviceCache::Factory::Get()->BuildInstance()),
       host_status_with_device_(GenerateDefaultHostStatusWithDevice()),
       feature_states_map_(GenerateDefaultFeatureStatesMap()) {
@@ -57,7 +56,7 @@ MultiDeviceSetupClientImpl::MultiDeviceSetupClientImpl(
   multidevice_setup_ptr_->AddHostStatusObserver(
       GenerateHostStatusObserverRemote());
   multidevice_setup_ptr_->AddFeatureStateObserver(
-      GenerateFeatureStatesObserverInterfacePtr());
+      GenerateFeatureStatesObserverRemote());
   multidevice_setup_ptr_->GetHostStatus(
       base::BindOnce(&MultiDeviceSetupClientImpl::OnHostStatusChanged,
                      base::Unretained(this)));
@@ -160,11 +159,9 @@ MultiDeviceSetupClientImpl::GenerateHostStatusObserverRemote() {
   return host_status_observer_receiver_.BindNewPipeAndPassRemote();
 }
 
-mojom::FeatureStateObserverPtr
-MultiDeviceSetupClientImpl::GenerateFeatureStatesObserverInterfacePtr() {
-  mojom::FeatureStateObserverPtr interface_ptr;
-  feature_state_observer_binding_.Bind(mojo::MakeRequest(&interface_ptr));
-  return interface_ptr;
+mojo::PendingRemote<mojom::FeatureStateObserver>
+MultiDeviceSetupClientImpl::GenerateFeatureStatesObserverRemote() {
+  return feature_state_observer_receiver_.BindNewPipeAndPassRemote();
 }
 
 void MultiDeviceSetupClientImpl::FlushForTesting() {

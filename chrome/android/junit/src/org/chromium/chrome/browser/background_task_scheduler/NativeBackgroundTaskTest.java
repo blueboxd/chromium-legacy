@@ -67,11 +67,10 @@ public class NativeBackgroundTaskTest {
 
         @Override
         public void startBrowserProcessesAsync(boolean startGpuProcess,
-                boolean startServiceManagerOnly, final StartupCallback callback)
-                throws ProcessInitException {}
+                boolean startServiceManagerOnly, final StartupCallback callback) {}
 
         @Override
-        public void startBrowserProcessesSync(boolean singleProcess) throws ProcessInitException {}
+        public void startBrowserProcessesSync(boolean singleProcess) {}
 
         @Override
         public boolean isFullBrowserStarted() {
@@ -238,53 +237,45 @@ public class NativeBackgroundTaskTest {
 
     private void setUpChromeBrowserInitializer(InitializerSetup setup) {
         doNothing().when(mChromeBrowserInitializer).handlePreNativeStartup(any(BrowserParts.class));
-        try {
-            switch (setup) {
-                case SUCCESS:
-                    doAnswer(new Answer<Void>() {
-                        @Override
-                        public Void answer(InvocationOnMock invocation) {
-                            mBrowserParts.getValue().finishNativeInitialization();
-                            return null;
-                        }
-                    })
-                            .when(mChromeBrowserInitializer)
-                            .handlePostNativeStartup(eq(true), mBrowserParts.capture());
-                    break;
-                case FAILURE:
-                    doAnswer(new Answer<Void>() {
-                        @Override
-                        public Void answer(InvocationOnMock invocation) {
-                            mBrowserParts.getValue().onStartupFailure();
-                            return null;
-                        }
-                    })
-                            .when(mChromeBrowserInitializer)
-                            .handlePostNativeStartup(eq(true), mBrowserParts.capture());
-                    break;
-                case EXCEPTION:
-                    doThrow(new ProcessInitException(
-                                    LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED))
-                            .when(mChromeBrowserInitializer)
-                            .handlePostNativeStartup(eq(true), any(BrowserParts.class));
-                    break;
-                default:
-                    assert false;
-            }
-        } catch (ProcessInitException e) {
-            // Exception ignored, as try-catch is required by language.
+        switch (setup) {
+            case SUCCESS:
+                doAnswer(new Answer<Void>() {
+                    @Override
+                    public Void answer(InvocationOnMock invocation) {
+                        mBrowserParts.getValue().finishNativeInitialization();
+                        return null;
+                    }
+                })
+                        .when(mChromeBrowserInitializer)
+                        .handlePostNativeStartup(eq(true), mBrowserParts.capture());
+                break;
+            case FAILURE:
+                doAnswer(new Answer<Void>() {
+                    @Override
+                    public Void answer(InvocationOnMock invocation) {
+                        mBrowserParts.getValue().onStartupFailure();
+                        return null;
+                    }
+                })
+                        .when(mChromeBrowserInitializer)
+                        .handlePostNativeStartup(eq(true), mBrowserParts.capture());
+                break;
+            case EXCEPTION:
+                doThrow(new ProcessInitException(
+                                LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED))
+                        .when(mChromeBrowserInitializer)
+                        .handlePostNativeStartup(eq(true), any(BrowserParts.class));
+                break;
+            default:
+                assert false;
         }
     }
 
     private void verifyStartupCalls(int expectedPreNativeCalls, int expectedPostNativeCalls) {
-        try {
-            verify(mChromeBrowserInitializer, times(expectedPreNativeCalls))
-                    .handlePreNativeStartup(any(BrowserParts.class));
-            verify(mChromeBrowserInitializer, times(expectedPostNativeCalls))
-                    .handlePostNativeStartup(eq(true), any(BrowserParts.class));
-        } catch (ProcessInitException e) {
-            // Exception ignored, as try-catch is required by language.
-        }
+        verify(mChromeBrowserInitializer, times(expectedPreNativeCalls))
+                .handlePreNativeStartup(any(BrowserParts.class));
+        verify(mChromeBrowserInitializer, times(expectedPostNativeCalls))
+                .handlePostNativeStartup(eq(true), any(BrowserParts.class));
     }
 
     private static boolean waitOnLatch(CountDownLatch latch) {

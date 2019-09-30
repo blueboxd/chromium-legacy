@@ -40,7 +40,6 @@
 #include "third_party/blink/renderer/core/css/active_style_sheets.h"
 #include "third_party/blink/renderer/core/css/css_global_rule_set.h"
 #include "third_party/blink/renderer/core/css/document_style_sheet_collection.h"
-#include "third_party/blink/renderer/core/css/font_display.h"
 #include "third_party/blink/renderer/core/css/invalidation/pending_invalidations.h"
 #include "third_party/blink/renderer/core/css/invalidation/style_invalidator.h"
 #include "third_party/blink/renderer/core/css/layout_tree_rebuild_root.h"
@@ -342,8 +341,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
       const AtomicString& animation_name);
 
   DocumentStyleEnvironmentVariables& EnsureEnvironmentVariables();
-  void AddDefaultFontDisplay(const StyleRuleFontFeatureValues*);
-  FontDisplay GetDefaultFontDisplay(const AtomicString& family) const;
 
   scoped_refptr<StyleInitialData> MaybeCreateAndGetInitialData();
 
@@ -552,10 +549,6 @@ class CORE_EXPORT StyleEngine final : public GarbageCollected<StyleEngine>,
   scoped_refptr<DocumentStyleEnvironmentVariables> environment_variables_;
 
   scoped_refptr<StyleInitialData> initial_data_;
-
-  // Default font-display collected from @font-feature-values rules. The key is
-  // font-family.
-  HashMap<AtomicString, FontDisplay> default_font_display_map_;
 
   // Color schemes explicitly supported by the author through the viewport meta
   // tag. E.g. <meta name="color-scheme" content="light dark">. A dark color-

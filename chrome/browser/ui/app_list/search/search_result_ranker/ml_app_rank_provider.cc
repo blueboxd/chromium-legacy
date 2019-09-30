@@ -24,14 +24,14 @@
 #include "mojo/public/cpp/bindings/map.h"
 #include "ui/base/resource/resource_bundle.h"
 
+using ::chromeos::machine_learning::mojom::BuiltinModelId;
+using ::chromeos::machine_learning::mojom::BuiltinModelSpec;
+using ::chromeos::machine_learning::mojom::BuiltinModelSpecPtr;
 using ::chromeos::machine_learning::mojom::CreateGraphExecutorResult;
 using ::chromeos::machine_learning::mojom::ExecuteResult;
 using ::chromeos::machine_learning::mojom::FloatList;
 using ::chromeos::machine_learning::mojom::Int64List;
 using ::chromeos::machine_learning::mojom::LoadModelResult;
-using ::chromeos::machine_learning::mojom::ModelId;
-using ::chromeos::machine_learning::mojom::ModelSpec;
-using ::chromeos::machine_learning::mojom::ModelSpecPtr;
 using ::chromeos::machine_learning::mojom::Tensor;
 using ::chromeos::machine_learning::mojom::TensorPtr;
 using ::chromeos::machine_learning::mojom::ValueList;
@@ -309,10 +309,11 @@ void MlAppRankProvider::BindGraphExecutorIfNeeded() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(creation_sequence_checker_);
   if (!model_) {
     // Load the model.
-    ModelSpecPtr spec = ModelSpec::New(ModelId::TOP_CAT_20190722);
-    chromeos::machine_learning::ServiceConnection::GetInstance()->LoadModel(
-        std::move(spec), model_.BindNewPipeAndPassReceiver(),
-        base::BindOnce(&LoadModelCallback));
+    BuiltinModelSpecPtr spec =
+        BuiltinModelSpec::New(BuiltinModelId::TOP_CAT_20190722);
+    chromeos::machine_learning::ServiceConnection::GetInstance()
+        ->LoadBuiltinModel(std::move(spec), model_.BindNewPipeAndPassReceiver(),
+                           base::BindOnce(&LoadModelCallback));
   }
 
   if (!executor_) {

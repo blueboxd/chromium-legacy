@@ -1081,12 +1081,6 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_OPTIONS_REPORT_AN_ISSUE" desc="Title for the option on Settings page to report an issue. [Length: 20em] [iOS only]">
         Report an Issue
       </message>
-      <message name="IDS_IOS_OPTIONS_SEARCH_URL_SUGGESTIONS" desc="Title for the option to turn on/off search and URL suggestions. [Length: 18em] [iOS only]">
-        Search and Site Suggestions
-      </message>
-      <message name="IDS_IOS_OPTIONS_SEND_USAGE_DATA" desc="Title for opening the setting for if/when to send usage data and crash reports. [Length: 20em] [iOS only]">
-        Send Usage Data
-      </message>
       <message name="IDS_IOS_OPTIONS_WEB_SERVICES_LABEL" desc="Title for group of web services items in Privacy settings table, including Show Suggestions, Preload Webpages, and Send Usage Data. [Length: 10em] [iOS only]">
         Web Services
       </message>
@@ -1599,9 +1593,6 @@ Handoff must also be enabled in the General section of Settings, and your device
       </message>
       <message name="IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SUBTITLE" desc="The subtitle for the setting item to Sign in to Chrome [iOS only]">
         Get your bookmarks, history, passwords, and other settings on all your devices
-      </message>
-      <message name="IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNCING" desc="The subtitle for the setting item of the signed in user [iOS only]">
-        Syncing to <ph name="EMAIL">$1<ex>john.doe@gmail.com</ex></ph>
       </message>
       <message name="IDS_IOS_SIGN_IN_TO_CHROME_SETTING_SYNC_OFF" desc="The subtitle for the setting item of the signed in user when sync is off [iOS only]">
         Sync is off

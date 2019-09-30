@@ -38,6 +38,18 @@ struct ArcKioskAppBasicInfo {
   std::string display_name_;
 };
 
+// TODO(apotapchuk): Might be expanded to include title and icon_url.
+struct WebKioskAppBasicInfo {
+  WebKioskAppBasicInfo(const std::string& url);
+  WebKioskAppBasicInfo();
+  ~WebKioskAppBasicInfo();
+
+  const std::string& url() const { return url_; }
+
+ private:
+  std::string url_;
+};
+
 // This must match DeviceLocalAccountInfoProto.AccountType in
 // chrome_device_policy.proto.
 struct DeviceLocalAccount {
@@ -51,6 +63,8 @@ struct DeviceLocalAccount {
     TYPE_ARC_KIOSK_APP,
     // SAML public session account
     TYPE_SAML_PUBLIC_SESSION,
+    // An account that serves as a container for a single full-screen web app.
+    TYPE_WEB_KIOSK_APP,
     // Sentinel, must be last.
     TYPE_COUNT
   };
@@ -60,6 +74,8 @@ struct DeviceLocalAccount {
                      const std::string& kiosk_app_id,
                      const std::string& kiosk_app_update_url);
   DeviceLocalAccount(const ArcKioskAppBasicInfo& arc_kiosk_app_info,
+                     const std::string& account_id);
+  DeviceLocalAccount(const WebKioskAppBasicInfo& app_info,
                      const std::string& account_id);
   DeviceLocalAccount(const DeviceLocalAccount& other);
   ~DeviceLocalAccount();
@@ -88,6 +104,7 @@ struct DeviceLocalAccount {
   std::string kiosk_app_update_url;
 
   ArcKioskAppBasicInfo arc_kiosk_app_info;
+  WebKioskAppBasicInfo web_kiosk_app_info;
 };
 
 std::string GenerateDeviceLocalAccountUserId(const std::string& account_id,

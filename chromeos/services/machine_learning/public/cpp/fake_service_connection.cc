@@ -14,10 +14,18 @@ FakeServiceConnectionImpl::FakeServiceConnectionImpl()
 
 FakeServiceConnectionImpl::~FakeServiceConnectionImpl() {}
 
-void FakeServiceConnectionImpl::LoadModel(
-    mojom::ModelSpecPtr spec,
+void FakeServiceConnectionImpl::LoadBuiltinModel(
+    mojom::BuiltinModelSpecPtr spec,
     mojom::ModelRequest request,
-    mojom::MachineLearningService::LoadModelCallback callback) {
+    mojom::MachineLearningService::LoadBuiltinModelCallback callback) {
+  model_bindings_.AddBinding(this, std::move(request));
+  std::move(callback).Run(mojom::LoadModelResult::OK);
+}
+
+void FakeServiceConnectionImpl::LoadFlatBufferModel(
+    mojom::FlatBufferModelSpecPtr spec,
+    mojom::ModelRequest request,
+    mojom::MachineLearningService::LoadFlatBufferModelCallback callback) {
   model_bindings_.AddBinding(this, std::move(request));
   std::move(callback).Run(mojom::LoadModelResult::OK);
 }

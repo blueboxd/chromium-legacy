@@ -68,6 +68,7 @@ constexpr size_t kJpegDefaultHeaderSize =
     (kNumDcCodeWordsHuffVal * 2) + (kNumAcRunSizeBits * 2) +
     (kNumAcCodeWordsHuffVal * 2);
 constexpr size_t kJFIFApp0Size = 16;
+constexpr size_t kJFIFApp1HeaderSize = 4;
 
 const size_t kJpegMaxHuffmanTableNumBaseline = 2;
 const size_t kJpegMaxComponents = 4;

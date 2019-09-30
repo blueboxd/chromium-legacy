@@ -6,17 +6,14 @@ package org.chromium.weblayer_private;
 
 import android.content.Context;
 import android.os.IBinder;
-import android.util.AndroidRuntimeException;
 import android.webkit.ValueCallback;
 
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
-import org.chromium.base.Log;
 import org.chromium.base.PathUtils;
 import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content_public.browser.BrowserStartupController;
 import org.chromium.content_public.browser.ChildProcessCreationParams;
 import org.chromium.content_public.browser.DeviceUtils;
@@ -66,45 +63,29 @@ public final class WebLayerImpl extends IWebLayer.Stub {
 
         DeviceUtils.addDeviceSpecificUserAgentSwitch();
 
-        try {
-            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBLAYER);
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "ContentView initialization failed.", e);
-            throw new AndroidRuntimeException(e);
-        }
+        LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_WEBLAYER);
 
-        try {
-            final ValueCallback<Boolean> loadedCallback =
-                    (ValueCallback<Boolean>) ObjectWrapper.unwrap(
-                            loadedCallbackWrapper, ValueCallback.class);
-            BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
-                    .startBrowserProcessesAsync(/* startGpu */ false,
-                            /* startServiceManagerOnly */ false,
-                            new BrowserStartupController.StartupCallback() {
-                                @Override
-                                public void onSuccess() {
-                                    loadedCallback.onReceiveValue(true);
-                                }
-                                @Override
-                                public void onFailure() {
-                                    loadedCallback.onReceiveValue(false);
-                                }
-                            });
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to load native library.", e);
-            throw new AndroidRuntimeException(e);
-        }
+        final ValueCallback<Boolean> loadedCallback = (ValueCallback<Boolean>) ObjectWrapper.unwrap(
+                loadedCallbackWrapper, ValueCallback.class);
+        BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
+                .startBrowserProcessesAsync(/* startGpu */ false,
+                        /* startServiceManagerOnly */ false,
+                        new BrowserStartupController.StartupCallback() {
+                            @Override
+                            public void onSuccess() {
+                                loadedCallback.onReceiveValue(true);
+                            }
+                            @Override
+                            public void onFailure() {
+                                loadedCallback.onReceiveValue(false);
+                            }
+                        });
     }
 
     @Override
     public void loadSync() {
-        try {
-            BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
-                    .startBrowserProcessesSync(
-                            /* singleProcess*/ false);
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to load native library.", e);
-            throw new AndroidRuntimeException(e);
-        }
+        BrowserStartupController.get(LibraryProcessType.PROCESS_WEBLAYER)
+                .startBrowserProcessesSync(
+                        /* singleProcess*/ false);
     }
 }

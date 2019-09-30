@@ -10,11 +10,8 @@ import android.content.Context;
 import android.content.Intent;
 
 import org.chromium.base.ApplicationStatus;
-import org.chromium.base.Log;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.init.BrowserParts;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.init.EmptyBrowserParts;
@@ -79,12 +76,7 @@ public class AccountsChangedReceiver extends BroadcastReceiver {
                 SigninHelper.markAccountsChangedPref();
             }
         };
-        try {
-            ChromeBrowserInitializer.getInstance(context).handlePreNativeStartup(parts);
-            ChromeBrowserInitializer.getInstance(context).handlePostNativeStartup(true, parts);
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Unable to load native library.", e);
-            ChromeApplication.reportStartupErrorAndExit(e);
-        }
+        ChromeBrowserInitializer.getInstance(context).handlePreNativeStartup(parts);
+        ChromeBrowserInitializer.getInstance(context).handlePostNativeStartup(true, parts);
     }
 }

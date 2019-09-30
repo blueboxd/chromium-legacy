@@ -5,19 +5,19 @@
 #ifndef MEDIA_GPU_LINUX_MAILBOX_VIDEO_FRAME_CONVERTER_H_
 #define MEDIA_GPU_LINUX_MAILBOX_VIDEO_FRAME_CONVERTER_H_
 
-#include <map>
-
 #include "base/callback_forward.h"
 #include "base/containers/queue.h"
-#include "base/memory/ref_counted.h"
+#include "base/containers/small_map.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/single_thread_task_runner.h"
 #include "gpu/command_buffer/common/mailbox.h"
-#include "media/base/video_decoder.h"
-#include "media/base/video_frame.h"
 #include "media/gpu/media_gpu_export.h"
 #include "media/gpu/video_frame_converter.h"
+
+namespace base {
+class Location;
+class SingleThreadTaskRunner;
+}  // namespace base
 
 namespace gpu {
 class GpuChannel;
@@ -25,6 +25,8 @@ class CommandBufferStub;
 }  // namespace gpu
 
 namespace media {
+
+class VideoFrame;
 
 // This class is used for converting DMA-buf backed VideoFrames to mailbox-based
 // VideoFrames. See ConvertFrame() for more details.
@@ -59,6 +61,9 @@ class MEDIA_GPU_EXPORT MailboxVideoFrameConverter : public VideoFrameConverter {
   bool HasPendingFrames() const override;
 
  private:
+  // Use VideoFrame::unique_id() as internal VideoFrame indexing.
+  using UniqueID = decltype(std::declval<VideoFrame>().unique_id());
+
   // A self-cleaning SharedImage, with move-only semantics.
   class ScopedSharedImage;
 
@@ -100,7 +105,7 @@ class MEDIA_GPU_EXPORT MailboxVideoFrameConverter : public VideoFrameConverter {
       VideoFrame* origin_frame,
       std::unique_ptr<ScopedSharedImage> scoped_shared_image);
   // Unregisters the |origin_frame_id| and associated SharedImage.
-  void UnregisterSharedImage(int origin_frame_id);
+  void UnregisterSharedImage(UniqueID origin_frame_id);
 
   // Updates the SharedImage associated to |mailbox|. Returns true if the update
   // could be carried out, false otherwise.
@@ -113,7 +118,7 @@ class MEDIA_GPU_EXPORT MailboxVideoFrameConverter : public VideoFrameConverter {
       const gpu::SyncToken& sync_token);
 
   // Invoked when any error occurs. |msg| is the error message.
-  void OnError(const std::string& msg);
+  void OnError(const base::Location& location, const std::string& msg);
 
   // In DmabufVideoFramePool, we recycle the unused frames. To do that, each
   // time a frame is requested from the pool it is wrapped inside another frame.
@@ -134,14 +139,14 @@ class MEDIA_GPU_EXPORT MailboxVideoFrameConverter : public VideoFrameConverter {
 
   // Mapping from the unique id of the frame to its corresponding SharedImage.
   // Accessed only on |parent_task_runner_|.
-  // TODO(crbug.com/998279): use base::small_map.
-  // TODO(crbug.com/998279): use VideoFrame::unique_id() return type.
-  std::map<int, std::unique_ptr<ScopedSharedImage>> shared_images_;
+  base::small_map<std::map<UniqueID, std::unique_ptr<ScopedSharedImage>>>
+      shared_images_;
 
   // The queue of input frames and the unique_id of their origin frame.
   // Accessed only on |parent_task_runner_|.
   // TODO(crbug.com/998279): remove this member entirely.
-  base::queue<std::pair<scoped_refptr<VideoFrame>, int>> input_frame_queue_;
+  base::queue<std::pair<scoped_refptr<VideoFrame>, UniqueID>>
+      input_frame_queue_;
 
   // The weak pointer of this, bound to |parent_task_runner_|.
   // Used at the VideoFrame destruction callback.

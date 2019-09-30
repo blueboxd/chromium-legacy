@@ -1784,7 +1784,8 @@ bool RenderViewImpl::CanHandleGestureEvent() {
 bool RenderViewImpl::AllowPopupsDuringPageUnload() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
-  return command_line.HasSwitch(switches::kAllowPopupsDuringPageUnload);
+  return command_line.HasSwitch(switches::kAllowPopupsDuringPageUnload) ||
+         base::FeatureList::IsEnabled(features::kAllowPopupsDuringPageUnload);
 }
 
 bool RenderViewImpl::CanUpdateLayout() {

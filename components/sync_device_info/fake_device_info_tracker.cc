@@ -34,7 +34,11 @@ bool FakeDeviceInfoTracker::IsSyncing() const {
 
 std::unique_ptr<DeviceInfo> FakeDeviceInfoTracker::GetDeviceInfo(
     const std::string& client_id) const {
-  NOTREACHED();
+  for (const DeviceInfo* device : devices_) {
+    if (device->guid() == client_id) {
+      return CloneDeviceInfo(*device);
+    }
+  }
   return nullptr;
 }
 
@@ -66,12 +70,7 @@ void FakeDeviceInfoTracker::ForcePulseForTest() {
 
 bool FakeDeviceInfoTracker::IsRecentLocalCacheGuid(
     const std::string& cache_guid) const {
-  for (const DeviceInfo* device : devices_) {
-    if (device->guid() == cache_guid) {
-      return true;
-    }
-  }
-  return false;
+  return local_device_cache_guid_ == cache_guid;
 }
 
 void FakeDeviceInfoTracker::Add(const DeviceInfo* device) {
@@ -84,6 +83,12 @@ void FakeDeviceInfoTracker::OverrideActiveDeviceCount(int count) {
   active_device_count_ = count;
   for (auto& observer : observers_)
     observer.OnDeviceInfoChange();
+}
+
+void FakeDeviceInfoTracker::SetLocalCacheGuid(const std::string& cache_guid) {
+  // ensure that this cache guid is present in the tracker.
+  DCHECK(GetDeviceInfo(cache_guid));
+  local_device_cache_guid_ = cache_guid;
 }
 
 }  // namespace syncer

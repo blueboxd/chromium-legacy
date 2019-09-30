@@ -38,6 +38,7 @@ InspectorEmulationAgent::InspectorEmulationAgent(
       touch_event_emulation_enabled_(&agent_state_, /*default_value=*/false),
       max_touch_points_(&agent_state_, /*default_value=*/1),
       emulated_media_(&agent_state_, /*default_value=*/WTF::String()),
+      emulated_media_features_(&agent_state_, /*default_value=*/WTF::String()),
       navigator_platform_override_(&agent_state_,
                                    /*default_value=*/WTF::String()),
       user_agent_override_(&agent_state_, /*default_value=*/WTF::String()),
@@ -89,7 +90,16 @@ void InspectorEmulationAgent::Restore() {
     GetWebViewImpl()->GetDevToolsEmulator()->SetDocumentCookieDisabled(true);
   setTouchEmulationEnabled(touch_event_emulation_enabled_.Get(),
                            max_touch_points_.Get());
-  setEmulatedMedia(emulated_media_.Get());
+  auto features =
+      std::make_unique<protocol::Array<protocol::Emulation::MediaFeature>>();
+  for (auto const& name : emulated_media_features_.Keys()) {
+    auto const& value = emulated_media_features_.Get(name);
+    features->push_back(std::move(protocol::Emulation::MediaFeature::create()
+                                      .setName(name)
+                                      .setValue(value)
+                                      .build()));
+  }
+  setEmulatedMedia(emulated_media_.Get(), std::move(features));
   auto rgba = ParseRGBA(default_background_color_override_rgba_.Get());
   if (rgba)
     setDefaultBackgroundColorOverride(std::move(rgba));
@@ -145,7 +155,12 @@ Response InspectorEmulationAgent::disable() {
   setScrollbarsHidden(false);
   setDocumentCookieDisabled(false);
   setTouchEmulationEnabled(false, Maybe<int>());
-  setEmulatedMedia(String());
+  // Clear emulated media features. Note that the current approach
+  // doesn't work well in cases where two clients have the same set of
+  // features overridden to the same value by two different clients
+  // (e.g. if we allowed two different front-ends with the same
+  // settings to attach to the same page). TODO: support this use case.
+  setEmulatedMedia(String(), {});
   setCPUThrottlingRate(1);
   setFocusEmulationEnabled(false);
   setDefaultBackgroundColorOverride(Maybe<protocol::DOM::RGBA>());
@@ -220,12 +235,35 @@ Response InspectorEmulationAgent::setTouchEmulationEnabled(
   return response;
 }
 
-Response InspectorEmulationAgent::setEmulatedMedia(const String& media) {
+Response InspectorEmulationAgent::setEmulatedMedia(
+    Maybe<String> media,
+    Maybe<protocol::Array<protocol::Emulation::MediaFeature>> features) {
   Response response = AssertPage();
   if (!response.isSuccess())
     return response;
-  emulated_media_.Set(media);
-  GetWebViewImpl()->GetPage()->GetSettings().SetMediaTypeOverride(media);
+  if (media.isJust()) {
+    auto mediaValue = media.takeJust();
+    emulated_media_.Set(mediaValue);
+    GetWebViewImpl()->GetPage()->GetSettings().SetMediaTypeOverride(mediaValue);
+  } else {
+    emulated_media_.Set("");
+    GetWebViewImpl()->GetPage()->GetSettings().SetMediaTypeOverride("");
+  }
+  for (const WTF::String& feature : emulated_media_features_.Keys()) {
+    GetWebViewImpl()->GetPage()->SetMediaFeatureOverride(AtomicString(feature),
+                                                         "");
+  }
+  emulated_media_features_.Clear();
+  if (features.isJust()) {
+    auto featuresValue = features.takeJust();
+    for (auto const& mediaFeature : *featuresValue.get()) {
+      auto const& name = mediaFeature->getName();
+      auto const& value = mediaFeature->getValue();
+      emulated_media_features_.Set(name, value);
+      GetWebViewImpl()->GetPage()->SetMediaFeatureOverride(AtomicString(name),
+                                                           value);
+    }
+  }
   return response;
 }
 

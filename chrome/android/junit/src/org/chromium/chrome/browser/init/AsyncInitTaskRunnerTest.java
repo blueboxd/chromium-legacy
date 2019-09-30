@@ -32,7 +32,6 @@ import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.components.variations.firstrun.VariationsSeedFetcher;
 
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -50,7 +49,7 @@ public class AsyncInitTaskRunnerTest {
 
     private VariationsSeedFetcher mVariationsSeedFetcher;
 
-    public AsyncInitTaskRunnerTest() throws ProcessInitException {
+    public AsyncInitTaskRunnerTest() {
         mLoader = spy(LibraryLoader.getInstance());
         doNothing().when(mLoader).ensureInitialized(anyInt());
         LibraryLoader.setLibraryLoaderForTesting(mLoader);
@@ -84,8 +83,7 @@ public class AsyncInitTaskRunnerTest {
     }
 
     @Test
-    public void libraryLoaderOnlyTest()
-            throws InterruptedException, ProcessInitException, ExecutionException {
+    public void libraryLoaderOnlyTest() throws InterruptedException {
         mRunner.startBackgroundTasks(false, false);
 
         Robolectric.flushBackgroundThreadScheduler();
@@ -97,7 +95,7 @@ public class AsyncInitTaskRunnerTest {
     }
 
     @Test
-    public void libraryLoaderFailTest() throws InterruptedException, ProcessInitException {
+    public void libraryLoaderFailTest() throws InterruptedException {
         doThrow(new ProcessInitException(LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED))
                 .when(mLoader)
                 .ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
@@ -111,7 +109,7 @@ public class AsyncInitTaskRunnerTest {
     }
 
     @Test
-    public void fetchVariationsTest() throws InterruptedException, ProcessInitException {
+    public void fetchVariationsTest() throws InterruptedException {
         mRunner.startBackgroundTasks(false, true);
 
         Robolectric.flushBackgroundThreadScheduler();

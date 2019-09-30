@@ -497,7 +497,7 @@ void PaymentRequestBrowserTestBase::WaitForOnPersonalDataChanged() {
 }
 
 void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
-    payments::mojom::PaymentRequestRequest request,
+    mojo::PendingReceiver<payments::mojom::PaymentRequest> receiver,
     content::RenderFrameHost* render_frame_host) {
   content::WebContents* web_contents =
       content::WebContents::FromRenderFrameHost(render_frame_host);
@@ -509,7 +509,7 @@ void PaymentRequestBrowserTestBase::CreatePaymentRequestForTest(
   delegate_ = delegate.get();
   PaymentRequestWebContentsManager::GetOrCreateForWebContents(web_contents)
       ->CreatePaymentRequest(web_contents->GetMainFrame(), web_contents,
-                             std::move(delegate), std::move(request), this);
+                             std::move(delegate), std::move(receiver), this);
 }
 
 void PaymentRequestBrowserTestBase::ClickOnDialogViewAndWait(

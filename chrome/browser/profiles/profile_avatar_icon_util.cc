@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "build/build_config.h"
 #include "cc/paint/paint_flags.h"
+#include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/grit/generated_resources.h"
@@ -30,10 +31,12 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/canvas_image_source.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia_operations.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/skia_util.h"
 #include "url/url_canon.h"
 
@@ -328,6 +331,11 @@ constexpr size_t kPlaceholderAvatarIndex = 26;
 #else
 constexpr size_t kPlaceholderAvatarIndex = 0;
 #endif
+
+gfx::ImageSkia GetGuestAvatar(int size) {
+  return gfx::CreateVectorIcon(kUserAccountAvatarIcon, size,
+                               gfx::kGoogleGrey500);
+}
 
 gfx::Image GetSizedAvatarIcon(const gfx::Image& image,
                               bool is_rectangle,

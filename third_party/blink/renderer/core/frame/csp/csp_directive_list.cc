@@ -337,7 +337,7 @@ bool CSPDirectiveList::AllowTrustedTypeAssignmentFailure(
                       ContentSecurityPolicy::DirectiveType::kTrustedTypes),
                   ContentSecurityPolicy::DirectiveType::kTrustedTypes, message,
                   KURL(), RedirectStatus::kFollowedRedirect,
-                  ContentSecurityPolicy::kTrustedTypesViolation, sample);
+                  ContentSecurityPolicy::kTrustedTypesSinkViolation, sample);
   return IsReportOnly();
 }
 

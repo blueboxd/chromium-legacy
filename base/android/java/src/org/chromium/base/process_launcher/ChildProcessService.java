@@ -221,15 +221,7 @@ public class ChildProcessService {
                         android.os.Debug.waitForDebugger();
                     }
 
-                    boolean nativeLibraryLoaded = false;
-                    try {
-                        nativeLibraryLoaded = mDelegate.loadNativeLibrary(getApplicationContext());
-                    } catch (Exception e) {
-                        Log.e(TAG, "Failed to load native library.", e);
-                    }
-                    if (!nativeLibraryLoaded) {
-                        System.exit(-1);
-                    }
+                    mDelegate.loadNativeLibrary(getApplicationContext());
 
                     synchronized (mLibraryInitializedLock) {
                         mLibraryInitialized = true;

@@ -65,7 +65,7 @@ class InterpolableShadow : public InterpolableValue {
     return false;
   }
   void Scale(double scale) final;
-  void ScaleAndAdd(double scale, const InterpolableValue& other) final;
+  void Add(const InterpolableValue& other) final;
   void AssertCanInterpolateWith(const InterpolableValue& other) const final;
 
  private:

@@ -9,6 +9,7 @@
 #include "base/memory/scoped_refptr.h"
 #include "components/payments/mojom/payment_request_data.mojom-blink.h"
 #include "mojo/public/cpp/bindings/receiver.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "third_party/blink/public/mojom/payments/payment_request.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/active_script_wrappable.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_promise.h"
@@ -165,7 +166,7 @@ class MODULES_EXPORT PaymentRequest final
   Member<ScriptPromiseResolver> abort_resolver_;
   Member<ScriptPromiseResolver> can_make_payment_resolver_;
   Member<ScriptPromiseResolver> has_enrolled_instrument_resolver_;
-  payments::mojom::blink::PaymentRequestPtr payment_provider_;
+  mojo::Remote<payments::mojom::blink::PaymentRequest> payment_provider_;
   mojo::Receiver<payments::mojom::blink::PaymentRequestClient> client_receiver_{
       this};
   TaskRunnerTimer<PaymentRequest> complete_timer_;

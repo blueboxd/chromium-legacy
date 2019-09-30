@@ -16,9 +16,9 @@ namespace payments {
 
 namespace {
 
-using PaymentRequestFactoryCallback =
-    base::RepeatingCallback<void(mojom::PaymentRequestRequest request,
-                                 content::RenderFrameHost* render_frame_host)>;
+using PaymentRequestFactoryCallback = base::RepeatingCallback<void(
+    mojo::PendingReceiver<mojom::PaymentRequest> receiver,
+    content::RenderFrameHost* render_frame_host)>;
 
 PaymentRequestFactoryCallback& GetTestingFactoryCallback() {
   static base::NoDestructor<PaymentRequestFactoryCallback> callback;
@@ -27,10 +27,11 @@ PaymentRequestFactoryCallback& GetTestingFactoryCallback() {
 
 }  // namespace
 
-void CreatePaymentRequest(mojom::PaymentRequestRequest request,
-                          content::RenderFrameHost* render_frame_host) {
+void CreatePaymentRequest(
+    content::RenderFrameHost* render_frame_host,
+    mojo::PendingReceiver<mojom::PaymentRequest> receiver) {
   if (GetTestingFactoryCallback()) {
-    return GetTestingFactoryCallback().Run(std::move(request),
+    return GetTestingFactoryCallback().Run(std::move(receiver),
                                            render_frame_host);
   }
 
@@ -42,7 +43,7 @@ void CreatePaymentRequest(mojom::PaymentRequestRequest request,
       ->CreatePaymentRequest(
           render_frame_host, web_contents,
           std::make_unique<ChromePaymentRequestDelegate>(web_contents),
-          std::move(request),
+          std::move(receiver),
           /*observer_for_testing=*/nullptr);
 }
 

@@ -182,8 +182,14 @@ void GpuArcVideoEncodeAccelerator::EncodeDmabuf(
     return;
   }
 
+  std::vector<base::ScopedFD> fds = DuplicateFD(std::move(fd), planes.size());
+  if (fds.empty()) {
+    DLOG(ERROR) << "Failed to duplicate fd";
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
   auto gmb_handle =
-      CreateGpuMemoryBufferHandle(format, coded_size_, std::move(fd), planes);
+      CreateGpuMemoryBufferHandle(format, coded_size_, std::move(fds), planes);
   if (!gmb_handle) {
     DLOG(ERROR) << "Failed to create GpuMemoryBufferHandle";
     client_->NotifyError(Error::kInvalidArgumentError);
@@ -232,8 +238,17 @@ void GpuArcVideoEncodeAccelerator::EncodeSharedMemory(
     return;
   }
 
-  auto gmb_handle = CreateGpuMemoryBufferHandle(
-      format, coded_size_, base::ScopedFD(HANDLE_EINTR(dup(fd.get()))), planes);
+  base::ScopedFD dup_fd(HANDLE_EINTR(dup(fd.get())));
+  std::vector<base::ScopedFD> fds =
+      DuplicateFD(std::move(dup_fd), planes.size());
+  if (fds.empty()) {
+    DLOG(ERROR) << "Failed to duplicate fd";
+    client_->NotifyError(Error::kInvalidArgumentError);
+    return;
+  }
+
+  auto gmb_handle =
+      CreateGpuMemoryBufferHandle(format, coded_size_, std::move(fds), planes);
   if (!gmb_handle) {
     DLOG(ERROR) << "Failed to create GpuMemoryBufferHandle";
     client_->NotifyError(Error::kInvalidArgumentError);

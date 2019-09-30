@@ -13,7 +13,6 @@ import org.junit.runner.RunWith;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MetricsUtils;
@@ -33,7 +32,6 @@ public class RestoreHistogramTest {
      * Test that the fundamental method for writing the histogram
      * {@link ChromeBackupAgent#recordRestoreHistogram()} works correctly
      *
-     * @throws ProcessInitException
      * @Note This can't be tested in the ChromeBackupAgent Junit test, since the histograms are
      *       written in the C++ code, and because all the functions are static there is no easy way
      *       of mocking them in Mockito (one can disable them, but that would spoil the point of the
@@ -41,7 +39,7 @@ public class RestoreHistogramTest {
      */
     @Test
     @SmallTest
-    public void testHistogramWriter() throws ProcessInitException {
+    public void testHistogramWriter() {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         MetricsUtils.HistogramDelta noRestoreDelta =
                 new MetricsUtils.HistogramDelta(ChromeBackupAgent.HISTOGRAM_ANDROID_RESTORE_RESULT,
@@ -78,12 +76,11 @@ public class RestoreHistogramTest {
      * Test that the histogram is written during Chrome first run.
      *
      * @throws InterruptedException
-     * @throws ProcessInitException
      */
     @Test
     @DisabledTest(message = "Test is flaky. crbug.com/875372")
     @SmallTest
-    public void testWritingHistogramAtStartup() throws InterruptedException, ProcessInitException {
+    public void testWritingHistogramAtStartup() throws InterruptedException {
         LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_BROWSER);
         MetricsUtils.HistogramDelta noRestoreDelta =
                 new MetricsUtils.HistogramDelta(ChromeBackupAgent.HISTOGRAM_ANDROID_RESTORE_RESULT,

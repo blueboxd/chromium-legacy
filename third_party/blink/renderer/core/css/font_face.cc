@@ -780,13 +780,8 @@ bool FontFace::HasPendingActivity() const {
   return status_ == kLoading && GetExecutionContext();
 }
 
-FontDisplay FontFace::GetFontDisplayWithFallback() const {
-  if (display_)
-    return CSSValueToFontDisplay(display_.Get());
-  ExecutionContext* context = GetExecutionContext();
-  if (!context || !context->IsDocument())
-    return kFontDisplayAuto;
-  return To<Document>(context)->GetStyleEngine().GetDefaultFontDisplay(family_);
+FontDisplay FontFace::GetFontDisplay() const {
+  return CSSValueToFontDisplay(display_.Get());
 }
 
 }  // namespace blink

@@ -16,7 +16,6 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseJUnit4ClassRunner;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
@@ -38,7 +37,7 @@ public class LocaleManagerReferralTest {
     private String mYandexReferralId = "";
 
     @Before
-    public void setUp() throws ExecutionException, ProcessInitException {
+    public void setUp() throws ExecutionException {
         mDefaultLocale = Locale.getDefault();
         Locale.setDefault(new Locale("ru", "RU"));
 
@@ -51,7 +50,7 @@ public class LocaleManagerReferralTest {
 
         TestThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
-            public Void call() throws ProcessInitException {
+            public Void call() {
                 ChromeBrowserInitializer.getInstance(InstrumentationRegistry.getTargetContext())
                         .handleSynchronousStartup();
                 return null;

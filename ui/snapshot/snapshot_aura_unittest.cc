@@ -152,7 +152,7 @@ class SnapshotAuraTest : public testing::TestWithParam<bool> {
     scoped_refptr<SnapshotHolder> holder(new SnapshotHolder);
     ui::GrabWindowSnapshotAsync(
         root_window(), source_rect,
-        base::Bind(&SnapshotHolder::SnapshotCallback, holder));
+        base::BindOnce(&SnapshotHolder::SnapshotCallback, holder));
 
     holder->WaitForSnapshot();
     DCHECK(holder->completed());

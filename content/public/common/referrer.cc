@@ -10,6 +10,7 @@
 #include "content/public/common/content_features.h"
 #include "net/base/features.h"
 #include "services/network/loader_util.h"
+#include "services/network/public/cpp/features.h"
 #include "third_party/blink/public/mojom/referrer.mojom.h"
 
 namespace content {
@@ -97,9 +98,13 @@ blink::mojom::ReferrerPtr Referrer::SanitizeForRequest(
       break;
   }
 
-  if (base::FeatureList::IsEnabled(net::features::kCapRefererHeaderLength) &&
-      base::saturated_cast<int>(sanitized_referrer->url.spec().length()) >
-          net::features::kMaxRefererHeaderLength.Get()) {
+  if ((base::FeatureList::IsEnabled(net::features::kCapRefererHeaderLength) &&
+       base::saturated_cast<int>(sanitized_referrer->url.spec().length()) >
+           net::features::kMaxRefererHeaderLength.Get()) ||
+      (base::FeatureList::IsEnabled(
+           network::features::kCapReferrerToOriginOnCrossOrigin) &&
+       !url::Origin::Create(sanitized_referrer->url)
+            .IsSameOriginWith(url::Origin::Create(request)))) {
     sanitized_referrer->url = sanitized_referrer->url.GetOrigin();
   }
 

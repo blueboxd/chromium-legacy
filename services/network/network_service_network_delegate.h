@@ -92,6 +92,12 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkServiceNetworkDelegate
 
   void ForwardProxyErrors(int net_error);
 
+  // Truncates the given request's referrer if required by
+  // related configuration (for instance, the enable_referrers_
+  // attribute or pertinent features/flags)
+  void MaybeTruncateReferrer(net::URLRequest* request,
+                             const GURL& effective_url);
+
   bool enable_referrers_;
   bool validate_referrer_policy_on_initial_request_;
   mojom::ProxyErrorClientPtr proxy_error_client_;

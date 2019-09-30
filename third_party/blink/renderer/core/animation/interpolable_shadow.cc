@@ -166,14 +166,13 @@ void InterpolableShadow::Scale(double scale) {
   color_->Scale(scale);
 }
 
-void InterpolableShadow::ScaleAndAdd(double scale,
-                                     const InterpolableValue& other) {
+void InterpolableShadow::Add(const InterpolableValue& other) {
   const InterpolableShadow& other_shadow = To<InterpolableShadow>(other);
-  x_->ScaleAndAdd(scale, *other_shadow.x_);
-  y_->ScaleAndAdd(scale, *other_shadow.y_);
-  blur_->ScaleAndAdd(scale, *other_shadow.blur_);
-  spread_->ScaleAndAdd(scale, *other_shadow.spread_);
-  color_->ScaleAndAdd(scale, *other_shadow.color_);
+  x_->Add(*other_shadow.x_);
+  y_->Add(*other_shadow.y_);
+  blur_->Add(*other_shadow.blur_);
+  spread_->Add(*other_shadow.spread_);
+  color_->Add(*other_shadow.color_);
 }
 
 void InterpolableShadow::AssertCanInterpolateWith(

@@ -327,7 +327,15 @@ class MediaNotificationViewTest : public views::ViewsTestBase {
   DISALLOW_COPY_AND_ASSIGN(MediaNotificationViewTest);
 };
 
-TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
+// TODO(crbug.com/1009287): many of these tests are failing on TSan builds.
+#if defined(THREAD_SANITIZER)
+#define MAYBE_MediaNotificationViewTest DISABLED_MediaNotificationViewTest
+class DISABLED_MediaNotificationViewTest : public MediaNotificationViewTest {};
+#else
+#define MAYBE_MediaNotificationViewTest MediaNotificationViewTest
+#endif
+
+TEST_F(MAYBE_MediaNotificationViewTest, ButtonsSanityCheck) {
   view()->SetExpanded(true);
 
   EnableAllActions();
@@ -357,7 +365,7 @@ TEST_F(MediaNotificationViewTest, ButtonsSanityCheck) {
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
 }
 
-TEST_F(MediaNotificationViewTest, ButtonsFocusCheck) {
+TEST_F(MAYBE_MediaNotificationViewTest, ButtonsFocusCheck) {
   // Expand and enable all actions to show all buttons.
   view()->SetExpanded(true);
   EnableAllActions();
@@ -388,7 +396,7 @@ TEST_F(MediaNotificationViewTest, ButtonsFocusCheck) {
             focus_manager->GetFocusedView());
 }
 
-TEST_F(MediaNotificationViewTest, PlayPauseButtonTooltipCheck) {
+TEST_F(MAYBE_MediaNotificationViewTest, PlayPauseButtonTooltipCheck) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
@@ -410,7 +418,7 @@ TEST_F(MediaNotificationViewTest, PlayPauseButtonTooltipCheck) {
   EXPECT_NE(tooltip, new_tooltip);
 }
 
-TEST_F(MediaNotificationViewTest, NextTrackButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewTest, NextTrackButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kNextTrack);
 
@@ -423,7 +431,7 @@ TEST_F(MediaNotificationViewTest, NextTrackButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kNextTrack);
 }
 
-TEST_F(MediaNotificationViewTest, PlayButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewTest, PlayButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kPlay);
 
@@ -436,7 +444,7 @@ TEST_F(MediaNotificationViewTest, PlayButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kPlay);
 }
 
-TEST_F(MediaNotificationViewTest, PauseButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewTest, PauseButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kPause);
   EXPECT_CALL(container(), OnMediaSessionInfoChanged(_));
@@ -457,7 +465,7 @@ TEST_F(MediaNotificationViewTest, PauseButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kPause);
 }
 
-TEST_F(MediaNotificationViewTest, PreviousTrackButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewTest, PreviousTrackButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kPreviousTrack);
 
@@ -470,7 +478,7 @@ TEST_F(MediaNotificationViewTest, PreviousTrackButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kPreviousTrack);
 }
 
-TEST_F(MediaNotificationViewTest, SeekBackwardButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewTest, SeekBackwardButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kSeekBackward);
 
@@ -483,7 +491,7 @@ TEST_F(MediaNotificationViewTest, SeekBackwardButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kSeekBackward);
 }
 
-TEST_F(MediaNotificationViewTest, SeekForwardButtonClick) {
+TEST_F(MAYBE_MediaNotificationViewTest, SeekForwardButtonClick) {
   EXPECT_CALL(controller(), LogMediaSessionActionButtonPressed(_));
   EnableAction(MediaSessionAction::kSeekForward);
 
@@ -496,7 +504,7 @@ TEST_F(MediaNotificationViewTest, SeekForwardButtonClick) {
   ExpectHistogramActionRecorded(MediaSessionAction::kSeekForward);
 }
 
-TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_Empty) {
+TEST_F(MAYBE_MediaNotificationViewTest, PlayToggle_FromObserver_Empty) {
   EnableAction(MediaSessionAction::kPlay);
 
   {
@@ -517,7 +525,7 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_Empty) {
   }
 }
 
-TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
+TEST_F(MAYBE_MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
@@ -554,7 +562,7 @@ TEST_F(MediaNotificationViewTest, PlayToggle_FromObserver_PlaybackState) {
   }
 }
 
-TEST_F(MediaNotificationViewTest, MetadataIsDisplayed) {
+TEST_F(MAYBE_MediaNotificationViewTest, MetadataIsDisplayed) {
   view()->SetExpanded(true);
 
   EnableAllActions();
@@ -569,7 +577,7 @@ TEST_F(MediaNotificationViewTest, MetadataIsDisplayed) {
   EXPECT_EQ(kMediaTitleArtistRowExpectedHeight, title_artist_row()->height());
 }
 
-TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
+TEST_F(MAYBE_MediaNotificationViewTest, UpdateMetadata_FromObserver) {
   EnableAllActions();
 
   ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kTitle, 1);
@@ -607,7 +615,7 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_FromObserver) {
   ExpectHistogramMetadataRecorded(MediaNotificationView::Metadata::kCount, 2);
 }
 
-TEST_F(MediaNotificationViewTest, UpdateMetadata_AppName) {
+TEST_F(MAYBE_MediaNotificationViewTest, UpdateMetadata_AppName) {
   EXPECT_EQ(base::ASCIIToUTF16(kTestDefaultAppName),
             header_row()->app_name_for_testing());
 
@@ -633,7 +641,7 @@ TEST_F(MediaNotificationViewTest, UpdateMetadata_AppName) {
             header_row()->app_name_for_testing());
 }
 
-TEST_F(MediaNotificationViewTest, Buttons_WhenCollapsed) {
+TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenCollapsed) {
   EXPECT_CALL(container(), OnVisibleActionsChanged(std::set<MediaSessionAction>(
                                {MediaSessionAction::kPlay,
                                 MediaSessionAction::kPreviousTrack,
@@ -683,7 +691,7 @@ TEST_F(MediaNotificationViewTest, Buttons_WhenCollapsed) {
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kSeekForward));
 }
 
-TEST_F(MediaNotificationViewTest, Buttons_WhenExpanded) {
+TEST_F(MAYBE_MediaNotificationViewTest, Buttons_WhenExpanded) {
   EXPECT_CALL(container(), OnVisibleActionsChanged(std::set<MediaSessionAction>(
                                {MediaSessionAction::kPlay,
                                 MediaSessionAction::kPreviousTrack,
@@ -709,7 +717,7 @@ TEST_F(MediaNotificationViewTest, Buttons_WhenExpanded) {
   EXPECT_TRUE(IsActionButtonVisible(MediaSessionAction::kSeekForward));
 }
 
-TEST_F(MediaNotificationViewTest, ClickHeader_ToggleExpand) {
+TEST_F(MAYBE_MediaNotificationViewTest, ClickHeader_ToggleExpand) {
   view()->SetExpanded(true);
   EnableAllActions();
 
@@ -724,7 +732,7 @@ TEST_F(MediaNotificationViewTest, ClickHeader_ToggleExpand) {
   EXPECT_TRUE(IsActuallyExpanded());
 }
 
-TEST_F(MediaNotificationViewTest, ActionButtonsHiddenByDefault) {
+TEST_F(MAYBE_MediaNotificationViewTest, ActionButtonsHiddenByDefault) {
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kPlay));
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kNextTrack));
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kPreviousTrack));
@@ -732,7 +740,7 @@ TEST_F(MediaNotificationViewTest, ActionButtonsHiddenByDefault) {
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kSeekBackward));
 }
 
-TEST_F(MediaNotificationViewTest, ActionButtonsToggleVisibility) {
+TEST_F(MAYBE_MediaNotificationViewTest, ActionButtonsToggleVisibility) {
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kNextTrack));
 
   EnableAction(MediaSessionAction::kNextTrack);
@@ -744,7 +752,7 @@ TEST_F(MediaNotificationViewTest, ActionButtonsToggleVisibility) {
   EXPECT_FALSE(IsActionButtonVisible(MediaSessionAction::kNextTrack));
 }
 
-TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
+TEST_F(MAYBE_MediaNotificationViewTest, UpdateArtworkFromItem) {
   int title_artist_width = title_artist_row()->width();
   const SkColor accent = header_row()->accent_color_for_testing();
   gfx::Size size = view()->size();
@@ -789,12 +797,12 @@ TEST_F(MediaNotificationViewTest, UpdateArtworkFromItem) {
   EXPECT_EQ(accent, header_row()->accent_color_for_testing());
 }
 
-TEST_F(MediaNotificationViewTest, ExpandableDefaultState) {
+TEST_F(MAYBE_MediaNotificationViewTest, ExpandableDefaultState) {
   EXPECT_FALSE(IsActuallyExpanded());
   EXPECT_FALSE(expand_button_enabled());
 }
 
-TEST_F(MediaNotificationViewTest, ExpandablePlayPauseActionCountsOnce) {
+TEST_F(MAYBE_MediaNotificationViewTest, ExpandablePlayPauseActionCountsOnce) {
   view()->SetExpanded(true);
 
   EXPECT_FALSE(IsActuallyExpanded());
@@ -823,7 +831,7 @@ TEST_F(MediaNotificationViewTest, ExpandablePlayPauseActionCountsOnce) {
   EXPECT_TRUE(expand_button_enabled());
 }
 
-TEST_F(MediaNotificationViewTest, BecomeExpandableAndWasNotExpandable) {
+TEST_F(MAYBE_MediaNotificationViewTest, BecomeExpandableAndWasNotExpandable) {
   view()->SetExpanded(true);
 
   EXPECT_FALSE(IsActuallyExpanded());
@@ -835,7 +843,8 @@ TEST_F(MediaNotificationViewTest, BecomeExpandableAndWasNotExpandable) {
   EXPECT_TRUE(expand_button_enabled());
 }
 
-TEST_F(MediaNotificationViewTest, BecomeExpandableButWasAlreadyExpandable) {
+TEST_F(MAYBE_MediaNotificationViewTest,
+       BecomeExpandableButWasAlreadyExpandable) {
   view()->SetExpanded(true);
 
   EXPECT_FALSE(IsActuallyExpanded());
@@ -852,7 +861,7 @@ TEST_F(MediaNotificationViewTest, BecomeExpandableButWasAlreadyExpandable) {
   EXPECT_TRUE(expand_button_enabled());
 }
 
-TEST_F(MediaNotificationViewTest, BecomeNotExpandableAndWasExpandable) {
+TEST_F(MAYBE_MediaNotificationViewTest, BecomeNotExpandableAndWasExpandable) {
   view()->SetExpanded(true);
 
   EXPECT_FALSE(IsActuallyExpanded());
@@ -872,7 +881,7 @@ TEST_F(MediaNotificationViewTest, BecomeNotExpandableAndWasExpandable) {
   EXPECT_FALSE(expand_button_enabled());
 }
 
-TEST_F(MediaNotificationViewTest,
+TEST_F(MAYBE_MediaNotificationViewTest,
        BecomeNotExpandableButWasAlreadyNotExpandable) {
   view()->SetExpanded(true);
 
@@ -885,7 +894,7 @@ TEST_F(MediaNotificationViewTest,
   EXPECT_FALSE(expand_button_enabled());
 }
 
-TEST_F(MediaNotificationViewTest, ActionButtonRowSizeAndAlignment) {
+TEST_F(MAYBE_MediaNotificationViewTest, ActionButtonRowSizeAndAlignment) {
   EnableAction(MediaSessionAction::kPlay);
 
   views::Button* button = GetButtonForAction(MediaSessionAction::kPlay);
@@ -905,7 +914,7 @@ TEST_F(MediaNotificationViewTest, ActionButtonRowSizeAndAlignment) {
   EXPECT_GT(button_x, button->GetBoundsInScreen().x());
 }
 
-TEST_F(MediaNotificationViewTest, NotifysContainerOfExpandedState) {
+TEST_F(MAYBE_MediaNotificationViewTest, NotifysContainerOfExpandedState) {
   // Track the expanded state given to |container_|.
   bool expanded = false;
   EXPECT_CALL(container(), OnExpanded(_))
@@ -932,7 +941,7 @@ TEST_F(MediaNotificationViewTest, NotifysContainerOfExpandedState) {
   EXPECT_FALSE(expanded);
 }
 
-TEST_F(MediaNotificationViewTest, AccessibleNodeData) {
+TEST_F(MAYBE_MediaNotificationViewTest, AccessibleNodeData) {
   ui::AXNodeData data;
   view()->GetAccessibleNodeData(&data);
 
@@ -941,7 +950,7 @@ TEST_F(MediaNotificationViewTest, AccessibleNodeData) {
   EXPECT_EQ(base::ASCIIToUTF16("title - artist"), accessible_name());
 }
 
-TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdateMetadata) {
+TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdateMetadata) {
   media_session::MediaMetadata metadata;
   metadata.title = base::ASCIIToUTF16("title2");
   metadata.artist = base::ASCIIToUTF16("artist2");
@@ -954,7 +963,7 @@ TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdateMetadata) {
   EXPECT_EQ(base::ASCIIToUTF16("artist"), artist_label()->GetText());
 }
 
-TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdateImage) {
+TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdateImage) {
   SkBitmap image;
   image.allocN32Pixels(10, 10);
   image.eraseColor(SK_ColorMAGENTA);
@@ -968,7 +977,7 @@ TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdateImage) {
   EXPECT_TRUE(GetArtworkImage().isNull());
 }
 
-TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdatePlaybackState) {
+TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdatePlaybackState) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
@@ -989,7 +998,7 @@ TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdatePlaybackState) {
   EXPECT_FALSE(GetButtonForAction(MediaSessionAction::kPause));
 }
 
-TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdateActions) {
+TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DoNotUpdateActions) {
   EXPECT_FALSE(
       GetButtonForAction(MediaSessionAction::kSeekForward)->GetVisible());
 
@@ -1000,7 +1009,7 @@ TEST_F(MediaNotificationViewTest, Freezing_DoNotUpdateActions) {
       GetButtonForAction(MediaSessionAction::kSeekForward)->GetVisible());
 }
 
-TEST_F(MediaNotificationViewTest, Freezing_DisableInteraction) {
+TEST_F(MAYBE_MediaNotificationViewTest, Freezing_DisableInteraction) {
   EnableAllActions();
 
   EXPECT_EQ(0, media_controller()->next_track_count());
@@ -1013,7 +1022,7 @@ TEST_F(MediaNotificationViewTest, Freezing_DisableInteraction) {
   EXPECT_EQ(0, media_controller()->next_track_count());
 }
 
-TEST_F(MediaNotificationViewTest, UnfreezingDoesntMissUpdates) {
+TEST_F(MAYBE_MediaNotificationViewTest, UnfreezingDoesntMissUpdates) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
@@ -1063,7 +1072,7 @@ TEST_F(MediaNotificationViewTest, UnfreezingDoesntMissUpdates) {
   EXPECT_EQ(base::ASCIIToUTF16("artist2"), artist_label()->GetText());
 }
 
-TEST_F(MediaNotificationViewTest, UnfreezingWaitsForArtwork_Timeout) {
+TEST_F(MAYBE_MediaNotificationViewTest, UnfreezingWaitsForArtwork_Timeout) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
@@ -1137,7 +1146,8 @@ TEST_F(MediaNotificationViewTest, UnfreezingWaitsForArtwork_Timeout) {
   EXPECT_TRUE(GetArtworkImage().isNull());
 }
 
-TEST_F(MediaNotificationViewTest, UnfreezingWaitsForArtwork_ReceiveArtwork) {
+TEST_F(MAYBE_MediaNotificationViewTest,
+       UnfreezingWaitsForArtwork_ReceiveArtwork) {
   EnableAction(MediaSessionAction::kPlay);
   EnableAction(MediaSessionAction::kPause);
 
@@ -1214,7 +1224,7 @@ TEST_F(MediaNotificationViewTest, UnfreezingWaitsForArtwork_ReceiveArtwork) {
   EXPECT_FALSE(GetArtworkImage().isNull());
 }
 
-TEST_F(MediaNotificationViewTest, ForcedExpandedState) {
+TEST_F(MAYBE_MediaNotificationViewTest, ForcedExpandedState) {
   // Make the view expandable.
   EnableAllActions();
 

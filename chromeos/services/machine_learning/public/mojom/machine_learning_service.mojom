@@ -29,6 +29,12 @@ enum LoadModelResult {
 
 // Top-level interface between Chromium and the ML Service daemon.
 interface MachineLearningService {
-  // The ModelId inside ModelSpec is used to specify the model to be loaded.
-  LoadModel(ModelSpec spec, Model& request) => (LoadModelResult result);
+  // The BuiltinModelId inside BuiltinModelSpec is used to specify the model to
+  // be loaded.
+  LoadBuiltinModel(BuiltinModelSpec spec, Model& request)
+      => (LoadModelResult result);
+  // The FlatbufferModelSpec contains both of the flatbuffer content and the
+  // metadata.
+  LoadFlatBufferModel(FlatBufferModelSpec spec, Model& request)
+      => (LoadModelResult result);
 };

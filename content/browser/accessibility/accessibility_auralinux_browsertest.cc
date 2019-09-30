@@ -824,6 +824,90 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   g_object_unref(div);
 }
 
+IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
+                       TestTextSelectionAcrossElements) {
+  LoadInitialAccessibilityTreeFromHtml(std::string(
+      R"HTML(<!DOCTYPE html>
+          <html>
+          <body>
+            <div id="parent" contenteditable="true">
+              <div id="child1">Child 1</div>
+              <div id="child2">Child 2</div>
+            </div>
+          </body>
+          </html>)HTML"));
+
+  AtkObject* document = GetRendererAccessible();
+  EXPECT_EQ(1, atk_object_get_n_accessible_children(document));
+
+  AtkText* parent = ATK_TEXT(atk_object_ref_accessible_child(document, 0));
+  EXPECT_EQ(2, atk_object_get_n_accessible_children(ATK_OBJECT(parent)));
+  AtkText* child1 =
+      ATK_TEXT(atk_object_ref_accessible_child(ATK_OBJECT(parent), 0));
+  AtkText* child2 =
+      ATK_TEXT(atk_object_ref_accessible_child(ATK_OBJECT(parent), 1));
+  EXPECT_NE(nullptr, child1);
+  EXPECT_NE(nullptr, child2);
+
+  auto callback = G_CALLBACK(+[](AtkText*, bool* flag) { *flag = true; });
+  bool saw_selection_change_in_parent = false;
+  g_signal_connect(parent, "text-selection-changed", callback,
+                   &saw_selection_change_in_parent);
+  bool saw_selection_change_in_child1 = false;
+  g_signal_connect(child1, "text-selection-changed", callback,
+                   &saw_selection_change_in_child1);
+  bool saw_selection_change_in_child2 = false;
+  g_signal_connect(child2, "text-selection-changed", callback,
+                   &saw_selection_change_in_child2);
+
+  AccessibilityNotificationWaiter selection_waiter(
+      shell()->web_contents(), ui::kAXModeComplete,
+      ax::mojom::Event::kTextSelectionChanged);
+  ExecuteScript(
+      base::UTF8ToUTF16("let parent = document.getElementById('parent');"
+                        "let child1 = document.getElementById('child1');"
+                        "let child2 = document.getElementById('child2');"
+                        "let range = document.createRange();"
+                        "range.setStart(child1.firstChild, 3);"
+                        "range.setEnd(child1.firstChild, 5);"
+                        "parent.focus();"
+                        "document.getSelection().removeAllRanges();"
+                        "document.getSelection().addRange(range);"));
+  selection_waiter.WaitForNotification();
+
+  EXPECT_FALSE(saw_selection_change_in_parent);
+  EXPECT_TRUE(saw_selection_change_in_child1);
+  EXPECT_FALSE(saw_selection_change_in_child2);
+
+  saw_selection_change_in_parent = false;
+  saw_selection_change_in_child1 = false;
+  saw_selection_change_in_child2 = false;
+
+  EXPECT_TRUE(atk_text_remove_selection(parent, 0));
+  selection_waiter.WaitForNotification();
+
+  EXPECT_FALSE(saw_selection_change_in_parent);
+  EXPECT_TRUE(saw_selection_change_in_child1);
+  EXPECT_FALSE(saw_selection_change_in_child2);
+
+  saw_selection_change_in_parent = false;
+  saw_selection_change_in_child1 = false;
+  saw_selection_change_in_child2 = false;
+
+  ExecuteScript(
+      base::UTF8ToUTF16("let range2 = document.createRange();"
+                        "range2.setStart(child1.firstChild, 0);"
+                        "range2.setEnd(child2.firstChild, 3);"
+                        "parent.focus();"
+                        "document.getSelection().removeAllRanges();"
+                        "document.getSelection().addRange(range2);"));
+  selection_waiter.WaitForNotification();
+
+  EXPECT_TRUE(saw_selection_change_in_parent);
+  EXPECT_FALSE(saw_selection_change_in_child1);
+  EXPECT_FALSE(saw_selection_change_in_child2);
+}
+
 // TODO(crbug.com/981913): This flakes on linux.
 IN_PROC_BROWSER_TEST_F(
     AccessibilityAuraLinuxBrowserTest,
@@ -982,6 +1066,8 @@ IN_PROC_BROWSER_TEST_F(AccessibilityAuraLinuxBrowserTest,
   saw_caret_move_in_div = false;
 
   atk_text_set_caret_offset(anonymous_block, 3);
+  selection_waiter.WaitForNotification();
+
   EXPECT_FALSE(saw_caret_move_in_div);
   EXPECT_FALSE(saw_caret_move_in_text);
   EXPECT_FALSE(saw_caret_move_in_anonymous_block);

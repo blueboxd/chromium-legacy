@@ -38,8 +38,7 @@ public class BrowserStartupControllerTest {
         private boolean mServiceManagerStarted;
 
         @Override
-        void prepareToStartBrowserProcess(boolean singleProcess, Runnable completionCallback)
-                throws ProcessInitException {
+        void prepareToStartBrowserProcess(boolean singleProcess, Runnable completionCallback) {
             if (!mLibraryLoadSucceeds) {
                 throw new ProcessInitException(
                         LoaderErrors.LOADER_ERROR_NATIVE_LIBRARY_LOAD_FAILED);

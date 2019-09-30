@@ -29,6 +29,7 @@
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/child/child_thread_impl.h"
+#include "content/common/frame.mojom.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/navigation_policy.h"
@@ -40,6 +41,7 @@
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "content/renderer/loader/sync_load_response.h"
 #include "content/renderer/loader/web_url_request_util.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
 #include "net/base/data_url.h"
 #include "net/base/filename_util.h"
 #include "net/base/host_port_pair.h"
@@ -373,7 +375,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
       ResourceDispatcher* resource_dispatcher,
       std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle,
       scoped_refptr<network::SharedURLLoaderFactory> factory,
-      mojom::KeepAliveHandlePtr keep_alive_handle);
+      mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle);
 
   ResourceDispatcher* resource_dispatcher() { return resource_dispatcher_; }
   int request_id() const { return request_id_; }
@@ -438,7 +440,7 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
   ResourceDispatcher* resource_dispatcher_;
   std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  mojom::KeepAliveHandlePtr keep_alive_handle_;
+  mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle_;
   enum DeferState { NOT_DEFERRING, SHOULD_DEFER };
   DeferState defers_loading_;
   int request_id_;
@@ -557,14 +559,14 @@ WebURLLoaderImpl::Context::Context(
     ResourceDispatcher* resource_dispatcher,
     std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    mojom::KeepAliveHandlePtr keep_alive_handle_ptr)
+    mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle)
     : loader_(loader),
       report_raw_headers_(false),
       client_(nullptr),
       resource_dispatcher_(resource_dispatcher),
       task_runner_handle_(std::move(task_runner_handle)),
       task_runner_(task_runner_handle_->GetTaskRunner()),
-      keep_alive_handle_(std::move(keep_alive_handle_ptr)),
+      keep_alive_handle_(std::move(keep_alive_handle)),
       defers_loading_(NOT_DEFERRING),
       request_id_(-1),
       url_loader_factory_(std::move(url_loader_factory)) {
@@ -1012,13 +1014,13 @@ WebURLLoaderImpl::WebURLLoaderImpl(
     : WebURLLoaderImpl(resource_dispatcher,
                        std::move(task_runner_handle),
                        std::move(url_loader_factory),
-                       nullptr) {}
+                       mojo::NullRemote()) {}
 
 WebURLLoaderImpl::WebURLLoaderImpl(
     ResourceDispatcher* resource_dispatcher,
     std::unique_ptr<WebResourceLoadingTaskRunnerHandle> task_runner_handle,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    mojom::KeepAliveHandlePtr keep_alive_handle)
+    mojo::PendingRemote<mojom::KeepAliveHandle> keep_alive_handle)
     : context_(new Context(this,
                            resource_dispatcher,
                            std::move(task_runner_handle),

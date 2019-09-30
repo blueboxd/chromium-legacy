@@ -143,10 +143,9 @@ class MockScreenshotDelegate : public DeviceCommandScreenshotJob::Delegate {
   ~MockScreenshotDelegate() override;
 
   bool IsScreenshotAllowed() override;
-  void TakeSnapshot(
-      gfx::NativeWindow window,
-      const gfx::Rect& source_rect,
-      const ui::GrabWindowSnapshotAsyncPNGCallback& callback) override;
+  void TakeSnapshot(gfx::NativeWindow window,
+                    const gfx::Rect& source_rect,
+                    ui::GrabWindowSnapshotAsyncPNGCallback callback) override;
   std::unique_ptr<UploadJob> CreateUploadJob(const GURL&,
                                              UploadJob::Delegate*) override;
 
@@ -171,13 +170,13 @@ bool MockScreenshotDelegate::IsScreenshotAllowed() {
 void MockScreenshotDelegate::TakeSnapshot(
     gfx::NativeWindow window,
     const gfx::Rect& source_rect,
-    const ui::GrabWindowSnapshotAsyncPNGCallback& callback) {
+    ui::GrabWindowSnapshotAsyncPNGCallback callback) {
   const int width = source_rect.width();
   const int height = source_rect.height();
   scoped_refptr<base::RefCountedBytes> test_png =
       GenerateTestPNG(width, height);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, test_png));
+      FROM_HERE, base::BindOnce(std::move(callback), test_png));
 }
 
 std::unique_ptr<UploadJob> MockScreenshotDelegate::CreateUploadJob(

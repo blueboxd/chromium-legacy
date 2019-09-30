@@ -525,8 +525,6 @@ StyleRuleBase* CSSParserImpl::ConsumeAtRule(CSSParserTokenStream& stream,
       return ConsumeViewportRule(prelude, prelude_offset, stream);
     case kCSSAtRuleFontFace:
       return ConsumeFontFaceRule(prelude, prelude_offset, stream);
-    case kCSSAtRuleFontFeatureValues:
-      return ConsumeFontFeatureValuesRule(prelude, prelude_offset, stream);
     case kCSSAtRuleWebkitKeyframes:
       return ConsumeKeyframesRule(true, prelude, prelude_offset, stream);
     case kCSSAtRuleKeyframes:
@@ -754,44 +752,6 @@ StyleRuleFontFace* CSSParserImpl::ConsumeFontFaceRule(
   ConsumeDeclarationList(stream, StyleRule::kFontFace);
   return MakeGarbageCollected<StyleRuleFontFace>(
       CreateCSSPropertyValueSet(parsed_properties_, kCSSFontFaceRuleMode));
-}
-
-StyleRuleFontFeatureValues* CSSParserImpl::ConsumeFontFeatureValuesRule(
-    CSSParserTokenRange prelude,
-    const RangeOffset& prelude_offset,
-    CSSParserTokenStream& block) {
-  if (!RuntimeEnabledFeatures::CSSFontFeatureValuesEnabled())
-    return nullptr;
-
-  const CSSValueList* font_family =
-      css_parsing_utils::ConsumeFontFamily(prelude);
-  if (!font_family || !prelude.AtEnd())
-    return nullptr;
-
-  if (observer_) {
-    observer_->StartRuleHeader(StyleRule::kFontFeatureValues,
-                               prelude_offset.start);
-    observer_->EndRuleHeader(prelude_offset.end);
-    observer_->StartRuleBody(block.Offset());
-  }
-
-  const CSSIdentifierValue* font_display = nullptr;
-  ConsumeRuleList(
-      block, kFontFeatureRuleList, [&font_display](StyleRuleBase* rule) {
-        const CSSValue* value =
-            To<StyleRuleFontFace>(rule)->Properties().GetPropertyCSSValue(
-                CSSPropertyID::kFontDisplay);
-        if (value)
-          font_display = To<CSSIdentifierValue>(value);
-      });
-
-  if (observer_)
-    observer_->EndRuleBody(block.Offset());
-
-  if (!block.AtEnd())
-    return nullptr;
-  return MakeGarbageCollected<StyleRuleFontFeatureValues>(font_family,
-                                                          font_display);
 }
 
 StyleRuleKeyframes* CSSParserImpl::ConsumeKeyframesRule(

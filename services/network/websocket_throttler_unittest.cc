@@ -107,7 +107,7 @@ TEST(WebSocketPerProcessThrottlerTest, Failed) {
   EXPECT_EQ(base::TimeDelta(), throttler.CalculateDelay());
 }
 
-TEST(WebSocketPerProcessThrottlerTest, TooManyPendingConnections) {
+TEST(WebSocketPerProcessThrottlerTest, DISABLED_TooManyPendingConnections) {
   constexpr int limit = 255;
   WebSocketPerProcessThrottler throttler;
 
@@ -312,7 +312,7 @@ TEST_F(WebSocketThrottlerTest, InitialState) {
   EXPECT_EQ(0u, throttler.GetSizeForTesting());
 }
 
-TEST_F(WebSocketThrottlerTest, TooManyPendingConnections) {
+TEST_F(WebSocketThrottlerTest, DISABLED_TooManyPendingConnections) {
   constexpr int process1 = 1;
   constexpr int process2 = 2;
   constexpr int limit = 255;

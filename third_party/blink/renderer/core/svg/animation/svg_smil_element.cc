@@ -74,11 +74,15 @@ class ConditionEventListener final : public NativeEventListener {
                          SVGSMILElement::Condition* condition)
       : animation_(animation), condition_(condition) {}
 
-  bool Matches(const EventListener& other) const override;
-
   void DisconnectAnimation() { animation_ = nullptr; }
 
-  void Invoke(ExecutionContext*, Event*) override;
+  void Invoke(ExecutionContext*, Event*) override {
+    if (!animation_)
+      return;
+    animation_->AddInstanceTime(condition_->GetBeginOrEnd(),
+                                animation_->Elapsed() + condition_->Offset(),
+                                SMILTimeOrigin::kEvent);
+  }
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(animation_);
@@ -86,39 +90,10 @@ class ConditionEventListener final : public NativeEventListener {
     NativeEventListener::Trace(visitor);
   }
 
-  bool IsConditionEventListener() const override { return true; }
-
  private:
   Member<SVGSMILElement> animation_;
   Member<SVGSMILElement::Condition> condition_;
 };
-
-template <>
-struct DowncastTraits<ConditionEventListener> {
-  static bool AllowFrom(const EventListener& event_listener) {
-    const NativeEventListener* native_event_listener =
-        DynamicTo<NativeEventListener>(event_listener);
-    return native_event_listener &&
-           native_event_listener->IsConditionEventListener();
-  }
-};
-
-bool ConditionEventListener::Matches(const EventListener& listener) const {
-  if (const ConditionEventListener* condition_event_listener =
-          DynamicTo<ConditionEventListener>(listener)) {
-    return animation_ == condition_event_listener->animation_ &&
-           condition_ == condition_event_listener->condition_;
-  }
-  return false;
-}
-
-void ConditionEventListener::Invoke(ExecutionContext*, Event* event) {
-  if (!animation_)
-    return;
-  animation_->AddInstanceTime(condition_->GetBeginOrEnd(),
-                              animation_->Elapsed() + condition_->Offset(),
-                              SMILTimeOrigin::kEvent);
-}
 
 SVGSMILElement::Condition::Condition(Type type,
                                      BeginOrEnd begin_or_end,
@@ -170,6 +145,7 @@ void SVGSMILElement::Condition::ConnectEventBase(
     SVGSMILElement& timed_element) {
   DCHECK_EQ(type_, kEventBase);
   DCHECK(!base_element_);
+  DCHECK(!event_listener_);
   SVGElement* target;
   if (base_id_.IsEmpty()) {
     target = timed_element.targetElement();
@@ -181,7 +157,6 @@ void SVGSMILElement::Condition::ConnectEventBase(
   }
   if (!target)
     return;
-  DCHECK(!event_listener_);
   event_listener_ =
       MakeGarbageCollected<ConditionEventListener>(&timed_element, this);
   base_element_ = target;

@@ -422,7 +422,6 @@
 #include "components/navigation_interception/intercept_navigation_delegate.h"
 #include "content/public/browser/android/java_interfaces.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
-#include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 #include "third_party/blink/public/mojom/webauthn/authenticator.mojom.h"
 #include "ui/base/resource/resource_bundle_android.h"
 #include "ui/base/ui_base_paths.h"
@@ -438,7 +437,6 @@
 #include "chrome/browser/devtools/chrome_devtools_manager_delegate.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/media/unified_autoplay_config.h"
-#include "chrome/browser/payments/payment_request_factory.h"
 #include "chrome/browser/search/instant_service.h"
 #include "chrome/browser/search/instant_service_factory.h"
 #include "chrome/browser/serial/chrome_serial_delegate.h"
@@ -4399,14 +4397,7 @@ void ChromeContentBrowserClient::InitWebContextInterfaces() {
 
 #if defined(OS_ANDROID)
   frame_interfaces_parameterized_->AddInterface(
-      base::Bind(&ForwardToJavaFrameRegistry<payments::mojom::PaymentRequest>));
-  frame_interfaces_parameterized_->AddInterface(
       base::Bind(&ForwardToJavaFrameRegistry<blink::mojom::Authenticator>));
-#else
-  if (base::FeatureList::IsEnabled(features::kWebPayments)) {
-    frame_interfaces_parameterized_->AddInterface(
-        base::Bind(&payments::CreatePaymentRequest));
-  }
 #endif
 
 #if defined(OS_ANDROID)

@@ -99,9 +99,10 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
     }
 
     @Override
-    public boolean loadNativeLibrary(Context hostContext) {
+    public void loadNativeLibrary(Context hostContext) {
         if (LibraryLoader.getInstance().isLoadedByZygote()) {
-            return initializeLibrary();
+            initializeLibrary();
+            return;
         }
 
         JNIUtils.enableSelectiveJniRegistration();
@@ -118,51 +119,31 @@ public class ContentChildProcessServiceDelegate implements ChildProcessServiceDe
                 linker.disableSharedRelros();
             }
         }
-        boolean isLoaded = false;
         try {
             LibraryLoader.getInstance().loadNowOverrideApplicationContext(hostContext);
-            isLoaded = true;
         } catch (ProcessInitException e) {
             if (requestedSharedRelro) {
                 Log.w(TAG,
                         "Failed to load native library with shared RELRO, "
                                 + "retrying without");
-            } else {
-                Log.e(TAG, "Failed to load native library", e);
-            }
-        }
-        if (!isLoaded && requestedSharedRelro) {
-            linker.disableSharedRelros();
-            try {
+                linker.disableSharedRelros();
                 LibraryLoader.getInstance().loadNowOverrideApplicationContext(hostContext);
-                isLoaded = true;
-            } catch (ProcessInitException e) {
-                Log.e(TAG, "Failed to load native library on retry", e);
+            } else {
+                throw e;
             }
-        }
-        if (!isLoaded) {
-            return false;
         }
         LibraryLoader.getInstance().registerRendererProcessHistogram();
-
-        return initializeLibrary();
+        initializeLibrary();
     }
 
-    private boolean initializeLibrary() {
-        try {
-            LibraryLoader.getInstance().initialize(mLibraryProcessType);
-        } catch (ProcessInitException e) {
-            Log.w(TAG, "startup failed: %s", e);
-            return false;
-        }
+    private void initializeLibrary() {
+        LibraryLoader.getInstance().initialize(mLibraryProcessType);
 
         // Now that the library is loaded, get the FD map,
         // TODO(jcivelli): can this be done in onBeforeMain? We would have to mode onBeforeMain
         // so it's called before FDs are registered.
         ContentChildProcessServiceDelegateJni.get().retrieveFileDescriptorsIdsToKeys(
                 ContentChildProcessServiceDelegate.this);
-
-        return true;
     }
 
     @Override

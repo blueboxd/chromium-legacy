@@ -330,30 +330,6 @@ class CacheStorageDispatcherHost::CacheImpl
             mojo::GetBadMessageCallback()));
   }
 
-  void SetSideData(const GURL& url,
-                   base::Time response_time,
-                   base::span<const uint8_t> side_data,
-                   int64_t trace_id,
-                   SetSideDataCallback callback) override {
-    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-    TRACE_EVENT_WITH_FLOW1("CacheStorage",
-                           "CacheStorageDispatcherHost::CacheImpl::SetSideData",
-                           TRACE_ID_GLOBAL(trace_id),
-                           TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT,
-                           "url", url.spec());
-    content::CacheStorageCache* cache = cache_handle_.value();
-    if (!cache) {
-      std::move(callback).Run(blink::mojom::CacheStorageError::kErrorNotFound);
-      return;
-    }
-    scoped_refptr<net::IOBuffer> buffer =
-        base::MakeRefCounted<net::IOBuffer>(side_data.size());
-    if (!side_data.empty())
-      memcpy(buffer->data(), &side_data.front(), side_data.size());
-    cache->WriteSideData(std::move(callback), url, response_time, trace_id,
-                         std::move(buffer), side_data.size());
-  }
-
   CacheStorageCacheHandle cache_handle_;
   SEQUENCE_CHECKER(sequence_checker_);
   DISALLOW_COPY_AND_ASSIGN(CacheImpl);

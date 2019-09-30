@@ -135,21 +135,21 @@ public final class OAuth2TokenService
             String username, String scope, final long nativeCallback) {
         Account account = getAccountOrNullFromUsername(username);
         if (account == null) {
-            ThreadUtils.postOnUiThread(()
-                                               -> OAuth2TokenServiceJni.get().oAuth2TokenFetched(
-                                                       null, false, nativeCallback));
+            ThreadUtils.postOnUiThread(() -> {
+                OAuth2TokenServiceJni.get().onOAuth2TokenFetched(null, false, nativeCallback);
+            });
             return;
         }
         String oauth2Scope = OAUTH2_SCOPE_PREFIX + scope;
         getAccessToken(account, oauth2Scope, new GetAccessTokenCallback() {
             @Override
             public void onGetTokenSuccess(String token) {
-                OAuth2TokenServiceJni.get().oAuth2TokenFetched(token, false, nativeCallback);
+                OAuth2TokenServiceJni.get().onOAuth2TokenFetched(token, false, nativeCallback);
             }
 
             @Override
             public void onGetTokenFailure(boolean isTransientError) {
-                OAuth2TokenServiceJni.get().oAuth2TokenFetched(
+                OAuth2TokenServiceJni.get().onOAuth2TokenFetched(
                         null, isTransientError, nativeCallback);
             }
         });
@@ -398,7 +398,8 @@ public final class OAuth2TokenService
 
     @NativeMethods
     interface Natives {
-        void oAuth2TokenFetched(String authToken, boolean isTransientError, long nativeCallback);
+        void onOAuth2TokenFetched(
+                String authToken, boolean isTransientError, long nativeCallback);
         void updateAccountList(long nativeOAuth2TokenServiceDelegateAndroid,
                 OAuth2TokenService caller, String currentlySignedInAccount);
     }

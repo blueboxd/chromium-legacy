@@ -28,6 +28,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "media/media_buildflags.h"
+#include "mojo/public/cpp/bindings/associated_remote.h"
 #include "mojo/public/cpp/bindings/generic_pending_receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ppapi/buildflags/buildflags.h"
@@ -214,7 +215,8 @@ class ChromeContentRendererClient
   void BindReceiverOnMainThread(mojo::GenericPendingReceiver receiver) override;
 
 #if BUILDFLAG(ENABLE_PLUGINS)
-  static chrome::mojom::PluginInfoHostAssociatedPtr& GetPluginInfoHost();
+  static mojo::AssociatedRemote<chrome::mojom::PluginInfoHost>&
+  GetPluginInfoHost();
 
   static blink::WebPlugin* CreatePlugin(
       content::RenderFrame* render_frame,

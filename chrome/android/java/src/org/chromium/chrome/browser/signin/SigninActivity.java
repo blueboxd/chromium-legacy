@@ -12,10 +12,7 @@ import android.support.v4.app.FragmentManager;
 
 import androidx.annotation.IntDef;
 
-import org.chromium.base.Log;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.ChromeApplication;
 import org.chromium.chrome.browser.ChromeBaseAppCompatActivity;
 import org.chromium.chrome.browser.init.ChromeBrowserInitializer;
 import org.chromium.chrome.browser.preferences.ManagedPreferencesUtils;
@@ -109,12 +106,7 @@ public class SigninActivity extends ChromeBaseAppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         // Make sure the native is initialized before calling super.onCreate(), as it might recreate
         // SigninFragment that currently depends on native. See https://crbug.com/983730.
-        try {
-            ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
-        } catch (ProcessInitException e) {
-            Log.e(TAG, "Failed to start browser process.", e);
-            ChromeApplication.reportStartupErrorAndExit(e);
-        }
+        ChromeBrowserInitializer.getInstance().handleSynchronousStartup();
 
         super.onCreate(savedInstanceState);
         setContentView(R.layout.signin_activity);

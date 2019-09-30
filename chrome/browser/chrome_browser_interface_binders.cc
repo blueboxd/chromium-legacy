@@ -4,16 +4,19 @@
 
 #include "chrome/browser/chrome_browser_interface_binders.h"
 
+#include "base/feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/navigation_predictor/navigation_predictor.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/common/content_features.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "services/image_annotation/public/mojom/constants.mojom-forward.h"
 #include "services/image_annotation/public/mojom/image_annotation.mojom.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "third_party/blink/public/mojom/loader/navigation_predictor.mojom.h"
+#include "third_party/blink/public/mojom/payments/payment_request.mojom.h"
 
 #if defined(OS_ANDROID)
 #include "content/public/browser/web_contents.h"
@@ -28,6 +31,7 @@
 #endif
 #else
 #include "chrome/browser/badging/badge_manager.h"
+#include "chrome/browser/payments/payment_request_factory.h"
 #endif
 
 namespace chrome {
@@ -75,6 +79,10 @@ void PopulateChromeFrameBinders(
   map->Add<blink::mojom::MediaControlsMenuHost>(base::BindRepeating(
       &ForwardToJavaFrameRegistry<blink::mojom::MediaControlsMenuHost>));
 #endif
+  if (base::FeatureList::IsEnabled(features::kWebPayments)) {
+    map->Add<payments::mojom::PaymentRequest>(base::BindRepeating(
+        &ForwardToJavaFrameRegistry<payments::mojom::PaymentRequest>));
+  }
   map->Add<blink::mojom::ShareService>(base::BindRepeating(
       &ForwardToJavaWebContents<blink::mojom::ShareService>));
 #if defined(ENABLE_SPATIAL_NAVIGATION_HOST)
@@ -84,6 +92,10 @@ void PopulateChromeFrameBinders(
 #else
   map->Add<blink::mojom::BadgeService>(
       base::BindRepeating(&badging::BadgeManager::BindReceiver));
+  if (base::FeatureList::IsEnabled(features::kWebPayments)) {
+    map->Add<payments::mojom::PaymentRequest>(
+        base::BindRepeating(&payments::CreatePaymentRequest));
+  }
 #endif
 }
 

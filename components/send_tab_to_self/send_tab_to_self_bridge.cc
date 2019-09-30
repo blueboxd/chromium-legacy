@@ -712,6 +712,12 @@ bool SendTabToSelfBridge::ShouldUpdateTargetDeviceInfoList() const {
 }
 
 void SendTabToSelfBridge::SetTargetDeviceInfoList() {
+  // Verify that the current TrackedCacheGuid() is the local GUID without
+  // enforcing that tracked cache GUID is set.
+  DCHECK(device_info_tracker_->IsRecentLocalCacheGuid(
+             change_processor()->TrackedCacheGuid()) ||
+         change_processor()->TrackedCacheGuid().empty());
+
   std::vector<std::unique_ptr<syncer::DeviceInfo>> all_devices =
       device_info_tracker_->GetAllDeviceInfo();
   number_of_devices_ = all_devices.size();
@@ -734,10 +740,17 @@ void SendTabToSelfBridge::SetTargetDeviceInfoList() {
       break;
     }
 
-    // TODO(crbug.com/966413): Implement a better way to dedupe local devices in
-    // case the user has other devices with the same name.
+    // Don't include this device if it is the local device.
+    if (device_info_tracker_->IsRecentLocalCacheGuid(device->guid())) {
+      continue;
+    }
+
     // Don't include this device. Also compare the name as the device can have
     // different cache guids (e.g. after stopping and re-starting sync).
+    // TODO(crbug.com/991943): This shouldn't be required now that
+    // IsRecentLocalCacheGuid() is used above. However, issues have been
+    // observed on Android, as if IsRecentLocalCacheGuid() didn't get populated
+    // reliably.
     if (device->guid() == change_processor()->TrackedCacheGuid() ||
         device->client_name() == local_device_name_) {
       continue;

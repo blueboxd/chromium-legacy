@@ -21,7 +21,7 @@ import "chromeos/services/machine_learning/public/mojom/graph_executor.mojom";
 // numeric values should never be reused.
 // ModelIds prefixed with UNSUPPORTED_ are no longer supported. Attempts to load
 // them will produce an error.
-enum ModelId {
+enum BuiltinModelId {
   // Unknown ML model. It is marked as unsupported.
   UNSUPPORTED_UNKNOWN = 0,
   // Test ML model.
@@ -46,8 +46,30 @@ enum CreateGraphExecutorResult {
   kMax = MEMORY_ALLOCATION_ERROR,
 };
 
-struct ModelSpec {
-  ModelId id;
+// Model specification for builtin models.
+// Because ml-service can retrieve a builtin model's content and metadata, only
+// an |id| is needed to specify it.
+struct BuiltinModelSpec {
+  BuiltinModelId id;
+};
+
+// Model specification for downloaded models.
+// For a downloaded model, both of the model content and metadata must be
+// specified.
+struct FlatBufferModelSpec {
+  // The content of the model's tflite model file.
+  string model_string;
+  // A map from input nodes' names to their indices.
+  map<string, int32> inputs;
+  // A map from output nodes' names to their indices.
+  map<string, int32> outputs;
+  // Used in naming the UMA metric histograms of the model. An example of the
+  // names of the histograms is:
+  //
+  // MachineLearningService.|metrics_model_name|.ExecuteResult.CpuTimeMicrosec
+  //
+  // This variable must NOT be empty.
+  string metrics_model_name;
 };
 
 // The lifetime of the cached model is tied to the lifetime of the Model

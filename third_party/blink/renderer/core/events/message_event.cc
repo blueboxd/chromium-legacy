@@ -73,7 +73,8 @@ MessageEvent::MessageEvent(const AtomicString& type,
       data_type_(kDataTypeScriptValue),
       source_(nullptr) {
   if (initializer->hasData()) {
-    data_as_v8_value_ = initializer->data().ToWorldSafeV8Reference();
+    data_as_v8_value_.Set(initializer->data().GetIsolate(),
+                          initializer->data().V8Value());
   }
   if (initializer->hasOrigin())
     origin_ = initializer->origin();
@@ -194,7 +195,7 @@ void MessageEvent::initMessageEvent(const AtomicString& type,
   initEvent(type, bubbles, cancelable);
 
   data_type_ = kDataTypeScriptValue;
-  data_as_v8_value_ = data.ToWorldSafeV8Reference();
+  data_as_v8_value_.Set(data.GetIsolate(), data.V8Value());
   is_data_dirty_ = true;
   origin_ = origin;
   last_event_id_ = last_event_id;

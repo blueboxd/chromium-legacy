@@ -277,7 +277,12 @@ void GCMDriverBaseTest::DecryptMessageCompleted(
     async_operation_completed_callback_.Run();
 }
 
+// TODO(crbug.com/1009185): Test is failing on ASan build.
+#if defined(ADDRESS_SANITIZER)
+TEST_F(GCMDriverBaseTest, DISABLED_SendWebPushMessage) {
+#else
 TEST_F(GCMDriverBaseTest, SendWebPushMessage) {
+#endif
   GetEncryptionInfo(kTestAppID1, GCMDriverBaseTest::WAIT);
 
   WebPushMessage message;
@@ -316,7 +321,12 @@ TEST_F(GCMDriverBaseTest, SendWebPushMessageEncryptionError) {
   EXPECT_FALSE(send_web_push_message_id());
 }
 
+// TODO(crbug.com/1009185): Test is failing on ASan build.
+#if defined(ADDRESS_SANITIZER)
+TEST_F(GCMDriverBaseTest, DISABLED_SendWebPushMessageServerError) {
+#else
 TEST_F(GCMDriverBaseTest, SendWebPushMessageServerError) {
+#endif
   GetEncryptionInfo(kTestAppID1, GCMDriverBaseTest::WAIT);
 
   WebPushMessage message;

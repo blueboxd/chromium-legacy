@@ -66,6 +66,8 @@ class CORE_EXPORT InterpolableLength final : public InterpolableValue {
     return false;
   }
   void Scale(double scale) final;
+  void Add(const InterpolableValue& other) final;
+  // We override this to avoid two passes in the case of LengthArrays.
   void ScaleAndAdd(double scale, const InterpolableValue& other) final;
   void AssertCanInterpolateWith(const InterpolableValue& other) const final;
 

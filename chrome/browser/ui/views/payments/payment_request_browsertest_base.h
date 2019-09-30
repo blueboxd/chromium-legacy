@@ -25,6 +25,7 @@
 #include "components/sync/driver/test_sync_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -182,7 +183,7 @@ class PaymentRequestBrowserTestBase
   void WaitForOnPersonalDataChanged();
 
   void CreatePaymentRequestForTest(
-      payments::mojom::PaymentRequestRequest request,
+      mojo::PendingReceiver<payments::mojom::PaymentRequest> receiver,
       content::RenderFrameHost* render_frame_host);
 
   // Click on a view from within the dialog and waits for an observed event

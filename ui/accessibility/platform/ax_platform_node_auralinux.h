@@ -106,7 +106,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   void EnsureAtkObjectIsValid();
   void Destroy() override;
 
-  AtkRole GetAtkRole();
+  AtkRole GetAtkRole() const;
   void GetAtkState(AtkStateSet* state_set);
   AtkRelationSet* GetAtkRelations();
   void GetExtents(gint* x, gint* y, gint* width, gint* height,
@@ -197,6 +197,7 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   bool SetCaretOffset(int offset);
   bool SetTextSelectionForAtkText(int start_offset, int end_offset);
   bool HasSelection();
+
   void GetSelectionExtents(int* start_offset, int* end_offset);
   gchar* GetSelectionWithText(int* start_offset, int* end_offset);
 
@@ -289,6 +290,41 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // Find the first child which is a document containing web content.
   AtkObject* FindFirstWebContentDocument();
 
+  // If a selection that intersects this node get the full selection
+  // including start and end node ids.
+  void GetFullSelection(int32_t* anchor_node_id,
+                        int* anchor_offset,
+                        int32_t* focus_node_id,
+                        int* focus_offset);
+
+  // Returns true if this node's AtkObject is suitable for emitting AtkText
+  // signals. ATs don't expect static text objects to emit AtkText signals.
+  bool EmitsAtkTextEvents() const;
+
+  // Find the first ancestor which is an editable root or a document. This node
+  // will be one which contains a single selection.
+  AXPlatformNodeAuraLinux& FindEditableRootOrDocument();
+
+  // Find the first common ancestor between this node and a given node.
+  AXPlatformNodeAuraLinux* FindCommonAncestor(AXPlatformNodeAuraLinux* other);
+
+  // Update the selection information stored in this node. This should be
+  // called on the editable root, the root node of the accessibility tree, or
+  // the document (ie the node returned by FindEditableRootOrDocument()).
+  void UpdateSelectionInformation(int32_t anchor_node_id,
+                                  int anchor_offset,
+                                  int32_t focus_node_id,
+                                  int focus_offset);
+
+  // Emit a GObject signal indicating a selection change.
+  void EmitSelectionChangedSignal(bool had_selection);
+
+  // Emit a GObject signal indicating that the caret has moved.
+  void EmitCaretChangedSignal();
+
+  bool HadNonZeroWidthSelection() const { return had_nonzero_width_selection; }
+  std::pair<int32_t, int> GetCurrentCaret() const { return current_caret_; }
+
   // If the given argument can be found as a child of this node, return its
   // hypertext extents, otherwise return base::nullopt;
   base::Optional<std::pair<int, int>> GetHypertextExtentsOfChild(
@@ -312,10 +348,17 @@ class AX_EXPORT AXPlatformNodeAuraLinux : public AXPlatformNodeBase {
   // minimized the last time it's visibility changed.
   bool was_minimized_ = false;
 
-  // The previously observed text selection for this node. We store
-  // this in order to avoid sending duplicate text-selection-changed
-  // and text-caret-moved events.
-  std::pair<int, int> text_selection_ = std::make_pair(-1, -1);
+  // Information about the selection meant to be stored on the return value of
+  // FindEditableRootOrDocument().
+  //
+  // Whether or not we previously had a selection where the anchor and focus
+  // were not equal. This is what ATK consider a "selection."
+  bool had_nonzero_width_selection = false;
+
+  // Information about the current caret location (a node id and an offset).
+  // This is used to track when the caret actually moves during a selection
+  // change.
+  std::pair<int32_t, int> current_caret_ = {-1, -1};
 
   // A map which converts between an offset in the node's hypertext and the
   // ATK text attributes at that offset.

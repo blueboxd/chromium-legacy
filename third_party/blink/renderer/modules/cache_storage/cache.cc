@@ -7,12 +7,9 @@
 #include <memory>
 #include <utility>
 
-#include "base/feature_list.h"
 #include "base/optional.h"
 #include "services/network/public/mojom/fetch_api.mojom-blink.h"
 #include "third_party/blink/public/common/cache_storage/cache_storage_utils.h"
-#include "third_party/blink/public/common/features.h"
-#include "third_party/blink/public/common/service_worker/service_worker_utils.h"
 #include "third_party/blink/public/mojom/cache_storage/cache_storage.mojom-blink.h"
 #include "third_party/blink/renderer/bindings/core/v8/callback_promise_adapter.h"
 #include "third_party/blink/renderer/bindings/core/v8/idl_types.h"
@@ -48,7 +45,6 @@
 #include "third_party/blink/renderer/platform/network/http_parsers.h"
 #include "third_party/blink/renderer/platform/network/mime/mime_type_registry.h"
 #include "third_party/blink/renderer/platform/runtime_enabled_features.h"
-#include "third_party/blink/renderer/platform/scheduler/worker/worker_thread_scheduler.h"
 #include "third_party/blink/renderer/platform/wtf/text/string_builder.h"
 
 namespace blink {
@@ -76,38 +72,22 @@ bool HasJavascriptMimeType(const Response* response) {
   return MIMETypeRegistry::IsSupportedJavaScriptMIMEType(mime_type);
 }
 
-enum class CodeCacheGenerateTiming {
-  kDontGenerate,
-  kGenerateNow,
-  kGenerateWhenIdle,
-};
-
-CodeCacheGenerateTiming ShouldGenerateV8CodeCache(ScriptState* script_state,
-                                                  const Response* response) {
-  EagerCodeCacheStrategy strategy =
-      ServiceWorkerUtils::GetEagerCodeCacheStrategy();
-  if (strategy == EagerCodeCacheStrategy::kDontGenerate)
-    return CodeCacheGenerateTiming::kDontGenerate;
-
+bool ShouldGenerateV8CodeCache(ScriptState* script_state,
+                               const Response* response) {
   ExecutionContext* context = ExecutionContext::From(script_state);
   auto* global_scope = DynamicTo<ServiceWorkerGlobalScope>(context);
   if (!global_scope)
-    return CodeCacheGenerateTiming::kDontGenerate;
+    return false;
+
+  if (!global_scope->IsInstalling())
+    return false;
 
   if (!HasJavascriptMimeType(response))
-    return CodeCacheGenerateTiming::kDontGenerate;
+    return false;
 
   if (!response->InternalBodyBuffer())
-    return CodeCacheGenerateTiming::kDontGenerate;
-
-  if (global_scope->IsInstalling())
-    return CodeCacheGenerateTiming::kGenerateNow;
-
-  if (strategy == EagerCodeCacheStrategy::kOnIdleTask) {
-    return CodeCacheGenerateTiming::kGenerateWhenIdle;
-  }
-
-  return CodeCacheGenerateTiming::kDontGenerate;
+    return false;
+  return true;
 }
 
 }  // namespace
@@ -406,27 +386,19 @@ class Cache::CodeCacheHandleCallbackForPut final
 
  public:
   CodeCacheHandleCallbackForPut(ScriptState* script_state,
-                                Cache* cache,
                                 wtf_size_t index,
                                 BarrierCallbackForPut* barrier_callback,
                                 Request* request,
                                 Response* response,
-                                CodeCacheGenerateTiming timing,
                                 int64_t trace_id)
       : script_state_(script_state),
-        cache_(cache),
         index_(index),
         barrier_callback_(barrier_callback),
         mime_type_(response->InternalMIMEType()),
-        timing_(timing),
         trace_id_(trace_id) {
     fetch_api_request_ = request->CreateFetchAPIRequest();
     fetch_api_response_ = response->PopulateFetchAPIResponse();
     url_ = fetch_api_request_->url;
-    opaque_mode_ = fetch_api_response_->response_type ==
-                           network::mojom::FetchResponseType::kOpaque
-                       ? V8CodeCache::OpaqueMode::kOpaque
-                       : V8CodeCache::OpaqueMode::kNotOpaque;
   }
   ~CodeCacheHandleCallbackForPut() override = default;
 
@@ -437,7 +409,6 @@ class Cache::CodeCacheHandleCallbackForPut final
         TRACE_ID_GLOBAL(trace_id_),
         TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "url",
         CacheStorageTracedValue(url_.GetString()));
-    base::Time response_time = fetch_api_response_->response_time;
     mojom::blink::BatchOperationPtr batch_operation =
         mojom::blink::BatchOperation::New();
     batch_operation->operation_type = mojom::blink::OperationType::kPut;
@@ -450,33 +421,17 @@ class Cache::CodeCacheHandleCallbackForPut final
     batch_operation->response->blob = BlobDataHandle::Create(
         std::move(blob_data), array_buffer->ByteLength());
 
-    if (timing_ == CodeCacheGenerateTiming::kGenerateNow) {
-      scoped_refptr<CachedMetadata> cached_metadata =
-          GenerateFullCodeCache(array_buffer);
-      if (cached_metadata) {
-        base::span<const uint8_t> serialized_data =
-            cached_metadata->SerializedData();
-        auto side_data_blob_data = std::make_unique<BlobData>();
-        side_data_blob_data->AppendBytes(serialized_data.data(),
-                                         serialized_data.size());
+    scoped_refptr<CachedMetadata> cached_metadata =
+        GenerateFullCodeCache(array_buffer);
+    if (cached_metadata) {
+      base::span<const uint8_t> serialized_data =
+          cached_metadata->SerializedData();
+      auto side_data_blob_data = std::make_unique<BlobData>();
+      side_data_blob_data->AppendBytes(serialized_data.data(),
+                                       serialized_data.size());
 
-        batch_operation->response->side_data_blob = BlobDataHandle::Create(
-            std::move(side_data_blob_data), serialized_data.size());
-      }
-    } else {
-      // Schedule an idle task to generate code cache later.
-      ServiceWorkerGlobalScope* global_scope = GetServiceWorkerGlobalScope();
-      if (global_scope) {
-        auto* thread_scheduler =
-            global_scope->GetScheduler()->GetWorkerThreadScheduler();
-        DCHECK(thread_scheduler);
-        int task_id = global_scope->WillStartTask();
-        thread_scheduler->IdleTaskRunner()->PostIdleTask(
-            FROM_HERE, WTF::Bind(&Cache::CodeCacheHandleCallbackForPut::
-                                     GenerateCodeCacheOnIdleTask,
-                                 WrapPersistent(this), task_id,
-                                 WrapPersistent(array_buffer), response_time));
-      }
+      batch_operation->response->side_data_blob = BlobDataHandle::Create(
+          std::move(side_data_blob_data), serialized_data.size());
     }
 
     barrier_callback_->OnSuccess(index_, std::move(batch_operation));
@@ -490,7 +445,6 @@ class Cache::CodeCacheHandleCallbackForPut final
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(script_state_);
-    visitor->Trace(cache_);
     visitor->Trace(barrier_callback_);
     FetchDataLoader::Client::Trace(visitor);
   }
@@ -528,45 +482,12 @@ class Cache::CodeCacheHandleCallbackForPut final
         url_, text_decoder->Encoding(), opaque_mode_);
   }
 
-  void GenerateCodeCacheOnIdleTask(int task_id,
-                                   DOMArrayBuffer* array_buffer,
-                                   base::Time response_time,
-                                   base::TimeTicks) {
-    TRACE_EVENT_WITH_FLOW1(
-        "CacheStorage",
-        "Cache::CodeCacheHandleCallbackForPut::GenerateCodeCacheOnIdleTask",
-        TRACE_ID_GLOBAL(trace_id_),
-        TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT, "url",
-        CacheStorageTracedValue(url_.GetString()));
-
-    ServiceWorkerGlobalScope* global_scope = GetServiceWorkerGlobalScope();
-    if (!global_scope)
-      return;
-
-    scoped_refptr<CachedMetadata> cached_metadata =
-        GenerateFullCodeCache(array_buffer);
-    if (!cached_metadata) {
-      global_scope->DidEndTask(task_id);
-      return;
-    }
-    cache_->cache_remote_->SetSideData(
-        url_, response_time, cached_metadata->SerializedData(), trace_id_,
-        WTF::Bind(
-            [](ServiceWorkerGlobalScope* global_scope, int task_id,
-               mojom::blink::CacheStorageError error) {
-              global_scope->DidEndTask(task_id);
-            },
-            WrapPersistent(global_scope), task_id));
-  }
-
   const Member<ScriptState> script_state_;
-  const Member<Cache> cache_;
   const wtf_size_t index_;
   Member<BarrierCallbackForPut> barrier_callback_;
   const String mime_type_;
   KURL url_;
   V8CodeCache::OpaqueMode opaque_mode_;
-  CodeCacheGenerateTiming timing_;
   const int64_t trace_id_;
 
   mojom::blink::FetchAPIRequestPtr fetch_api_request_;
@@ -1014,16 +935,13 @@ ScriptPromise Cache::PutImpl(ScriptState* script_state,
 
     BodyStreamBuffer* buffer = responses[i]->InternalBodyBuffer();
 
-    CodeCacheGenerateTiming cache_generate_timing =
-        ShouldGenerateV8CodeCache(script_state, responses[i]);
-    if (cache_generate_timing != CodeCacheGenerateTiming::kDontGenerate) {
+    if (ShouldGenerateV8CodeCache(script_state, responses[i])) {
       FetchDataLoader* loader = FetchDataLoader::CreateLoaderAsArrayBuffer();
-      buffer->StartLoading(
-          loader,
-          MakeGarbageCollected<CodeCacheHandleCallbackForPut>(
-              script_state, this, i, barrier_callback, requests[i],
-              responses[i], cache_generate_timing, trace_id),
-          exception_state);
+      buffer->StartLoading(loader,
+                           MakeGarbageCollected<CodeCacheHandleCallbackForPut>(
+                               script_state, i, barrier_callback, requests[i],
+                               responses[i], trace_id),
+                           exception_state);
       if (exception_state.HadException()) {
         barrier_callback->OnError("Could not inspect response body state");
         return promise;

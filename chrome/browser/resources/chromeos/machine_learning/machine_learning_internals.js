@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-const ModelId = chromeos.machineLearning.mojom.ModelId;
+const BuiltinModelId = chromeos.machineLearning.mojom.BuiltinModelId;
 const LoadModelResult = chromeos.machineLearning.mojom.LoadModelResult;
 const CreateGraphExecutorResult =
     chromeos.machineLearning.mojom.CreateGraphExecutorResult;
@@ -18,18 +18,18 @@ cr.define('machine_learning_internals', function() {
        */
       this.pageHandler = chromeos.machineLearning.mojom.PageHandler.getRemote();
       /**
-       * @private {!Map<ModelId,
+       * @private {!Map<BuiltinModelId,
        *     !chromeos.machineLearning.mojom.GraphExecutorRemote>}
        */
       this.modelMap_ = new Map();
     }
 
     /**
-     * @param {!ModelId} modelId Model to load.
+     * @param {!BuiltinModelId} modelId Model to load.
      * @return
      * {!Promise<!chromeos.machineLearning.mojom.GraphExecutorRemote>} A
-     *     promise that resolves when loadModel and createGraphExecutor both
-     *     succeed.
+     *     promise that resolves when loadBuiltinModel and createGraphExecutor
+     *     both succeed.
      */
     async prepareModel(modelId) {
       if (this.modelMap_.has(modelId)) {
@@ -38,12 +38,12 @@ cr.define('machine_learning_internals', function() {
       const modelSpec = {id: modelId};
       /** @type {chromeos.machineLearning.mojom.ModelRemote} */
       const model = new chromeos.machineLearning.mojom.ModelRemote();
-      const {result: loadModelResult} = await this.pageHandler.loadModel(
+      const {result: loadModelResult} = await this.pageHandler.loadBuiltinModel(
           modelSpec, model.$.bindNewPipeAndPassReceiver());
       if (loadModelResult != LoadModelResult.OK) {
         const error = machine_learning_internals.utils.enumToString(
             loadModelResult, LoadModelResult);
-        throw new Error(`LoadModel failed! Error: ${error}.`);
+        throw new Error(`LoadBuiltinModel failed! Error: ${error}.`);
       }
       /** @type {chromeos.machineLearning.mojom.GraphExecutorRemote} */
       const graphExecutor =

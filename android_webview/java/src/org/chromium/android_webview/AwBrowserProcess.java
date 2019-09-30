@@ -28,7 +28,6 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.ScopedSysTraceEvent;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskRunner;
@@ -89,8 +88,6 @@ public final class AwBrowserProcess {
             // It's okay for the WebView to do this before initialization because we have
             // setup the JNI bindings by this point.
             LibraryLoader.getInstance().switchCommandLineForWebView();
-        } catch (ProcessInitException e) {
-            throw new RuntimeException("Cannot load WebView", e);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -143,8 +140,6 @@ public final class AwBrowserProcess {
                              "AwBrowserProcess.startBrowserProcessesSync")) {
                     BrowserStartupController.get(LibraryProcessType.PROCESS_WEBVIEW)
                             .startBrowserProcessesSync(!multiProcess);
-                } catch (ProcessInitException e) {
-                    throw new RuntimeException("Cannot initialize WebView", e);
                 }
             });
         }

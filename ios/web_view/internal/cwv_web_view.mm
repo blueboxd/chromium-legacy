@@ -592,6 +592,9 @@ static NSString* gUserAgentProduct = nil;
 #pragma mark - Private methods
 
 - (void)updateWebStateVisibility {
+  if (_webState == nullptr) {
+    return;
+  }
   if (self.superview) {
     _webState->WasShown();
   } else {

@@ -725,7 +725,7 @@ void TabSpecificContentSettings::MaybeSendRendererContentSettingsRules(
   RendererContentSettingRules rules;
   GetRendererContentSettingRules(map_, &rules);
 
-  chrome::mojom::RendererConfigurationAssociatedPtr rc_interface;
+  mojo::AssociatedRemote<chrome::mojom::RendererConfiguration> rc_interface;
   channel->GetRemoteAssociatedInterface(&rc_interface);
   rc_interface->SetContentSettingRules(rules);
 }

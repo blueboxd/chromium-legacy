@@ -18,7 +18,6 @@ import org.chromium.base.JNIUtils;
 import org.chromium.base.Log;
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.process_launcher.ChildProcessService;
 import org.chromium.base.process_launcher.ChildProcessServiceDelegate;
 
@@ -79,21 +78,15 @@ public class TestChildProcessService extends Service {
         }
 
         @Override
-        public boolean loadNativeLibrary(Context hostContext) {
+        public void loadNativeLibrary(Context hostContext) {
             // Store the command line before loading the library to avoid an assert in CommandLine.
             mCommandLine = CommandLine.getJavaSwitchesOrNull();
 
             // Non-main processes are launched for testing. Mark them as such so that the JNI
             // in the seconary dex won't be registered. See https://crbug.com/810720.
             JNIUtils.enableSelectiveJniRegistration();
-            boolean isLoaded = false;
-            try {
-                LibraryLoader.getInstance().loadNow();
-                LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
-                isLoaded = true;
-            } catch (ProcessInitException e) {
-                Log.e(TAG, "Failed to load native library.", e);
-            }
+            LibraryLoader.getInstance().loadNow();
+            LibraryLoader.getInstance().ensureInitialized(LibraryProcessType.PROCESS_CHILD);
 
             // Loading the library happen on the main thread and onConnectionSetup is called from
             // the client. Wait for onConnectionSetup so mIChildProcessTest is set.
@@ -109,12 +102,11 @@ public class TestChildProcessService extends Service {
 
             if (mIChildProcessTest != null) {
                 try {
-                    mIChildProcessTest.onLoadNativeLibrary(isLoaded);
+                    mIChildProcessTest.onLoadNativeLibrary(true);
                 } catch (RemoteException re) {
                     Log.e(TAG, "Failed to call IChildProcessTest.onLoadNativeLibrary.", re);
                 }
             }
-            return true;
         }
 
         @Override
@@ -145,7 +137,7 @@ public class TestChildProcessService extends Service {
             Looper.prepare();
             Looper.loop();
         }
-    };
+    }
 
     private ChildProcessService mService;
 

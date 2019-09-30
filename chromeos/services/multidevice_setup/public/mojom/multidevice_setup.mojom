@@ -146,8 +146,8 @@ interface MultiDeviceSetup {
   AddHostStatusObserver(pending_remote<HostStatusObserver> observer);
 
   // Adds an observer of feature state changes. To stop observing, disconnect
-  // the FeatureStateObserverPtr passed here.
-  AddFeatureStateObserver(FeatureStateObserver observer);
+  // the pending_remote<FeatureStateObserver> passed here.
+  AddFeatureStateObserver(pending_remote<FeatureStateObserver> observer);
 
   // Provides a list of all eligible host devices (i.e., those which can be
   // passed to SetHostDevice()).

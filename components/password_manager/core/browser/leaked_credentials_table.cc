@@ -13,7 +13,8 @@ namespace {
 
 constexpr char kLeakedCredentialsTableName[] = "leaked_credentials";
 
-// Represents all the columns of the leaked credentials table.
+// Represents columns of the leaked credentials table. Used with SQL
+// queries that use all the columns.
 enum class LeakedCredentialsTableColumn {
   kUrl,
   kUsername,
@@ -99,9 +100,8 @@ bool LeakedCredentialsTable::RemoveRow(const GURL& url,
   sql::Statement s(db_->GetCachedStatement(
       SQL_FROM_HERE,
       "DELETE FROM leaked_credentials WHERE url = ? AND username = ? "));
-  s.BindString(GetColumnNumber(LeakedCredentialsTableColumn::kUrl), url.spec());
-  s.BindString16(GetColumnNumber(LeakedCredentialsTableColumn::kUsername),
-                 username);
+  s.BindString(0, url.spec());
+  s.BindString16(1, username);
   return s.Run();
 }
 

@@ -235,8 +235,8 @@ void CSSFilterListInterpolationType::Composite(
     double underlying_fraction,
     const InterpolationValue& value,
     double interpolation_fraction) const {
-  // We do our actual compositing behavior in |MakeAdditive|; see the
-  // documentation on that method.
+  // We do our compositing behavior in |PreInterpolationCompositeIfNeeded|; see
+  // the documentation on that method.
   underlying_value_owner.Set(*this, value);
 }
 
@@ -258,36 +258,86 @@ void CSSFilterListInterpolationType::ApplyStandardPropertyValue(
   SetFilterList(CssProperty(), *state.Style(), std::move(filter_operations));
 }
 
-InterpolationValue CSSFilterListInterpolationType::MakeAdditive(
+InterpolationValue
+CSSFilterListInterpolationType::PreInterpolationCompositeIfNeeded(
     InterpolationValue value,
-    const InterpolationValue& underlying) const {
+    const InterpolationValue& underlying,
+    EffectModel::CompositeOperation composite) const {
   DCHECK(!value.non_interpolable_value);
   DCHECK(!underlying.non_interpolable_value);
 
   // By default, the interpolation stack attempts to optimize composition by
   // doing it after interpolation. This does not work in the case of filter
   // lists, as they have a composition behavior of concatenation. To work around
-  // that, we hackily perform our composition in MakeAdditive (which runs before
-  // interpolation), and then make Composite a simple replacement of the
-  // underlying value (which we have already incorporated here).
+  // that, we perform our composition in PreInterpolationCompositeIfNeeded
+  // (which runs before interpolation), and then make Composite a simple
+  // replacement with the resultant value.
 
   // The underlying value can be nullptr, most commonly if it contains a url().
+  // TODO(crbug.com/1009229): Properly handle url() in filter composite.
   if (!underlying.interpolable_value)
     return nullptr;
 
-  const InterpolableList& interpolable_list =
-      ToInterpolableList(*value.interpolable_value);
+  auto interpolable_list = std::unique_ptr<InterpolableList>(
+      ToInterpolableList(value.interpolable_value.release()));
   const InterpolableList& underlying_list =
       ToInterpolableList(*underlying.interpolable_value);
 
+  if (composite == EffectModel::CompositeOperation::kCompositeAdd) {
+    return PerformAdditiveComposition(std::move(interpolable_list),
+                                      underlying_list);
+  }
+  DCHECK_EQ(composite, EffectModel::CompositeOperation::kCompositeAccumulate);
+  return PerformAccumulativeComposition(std::move(interpolable_list),
+                                        underlying_list);
+}
+
+InterpolationValue CSSFilterListInterpolationType::PerformAdditiveComposition(
+    std::unique_ptr<InterpolableList> interpolable_list,
+    const InterpolableList& underlying_list) const {
+  // Per the spec, addition of filter lists is defined as concatenation.
+  // https://drafts.fxtf.org/filter-effects-1/#addition
   auto composited_list = std::make_unique<InterpolableList>(
-      underlying_list.length() + interpolable_list.length());
+      underlying_list.length() + interpolable_list->length());
   for (wtf_size_t i = 0; i < composited_list->length(); i++) {
     if (i < underlying_list.length()) {
       composited_list->Set(i, underlying_list.Get(i)->Clone());
     } else {
       composited_list->Set(
-          i, interpolable_list.Get(i - underlying_list.length())->Clone());
+          i, interpolable_list->Get(i - underlying_list.length())->Clone());
+    }
+  }
+  return InterpolationValue(std::move(composited_list));
+}
+
+InterpolationValue
+CSSFilterListInterpolationType::PerformAccumulativeComposition(
+    std::unique_ptr<InterpolableList> interpolable_list,
+    const InterpolableList& underlying_list) const {
+  // Per the spec, accumulation of filter lists operates on pairwise addition of
+  // the underlying components.
+  // https://drafts.fxtf.org/filter-effects-1/#accumulation
+  wtf_size_t length = interpolable_list->length();
+  wtf_size_t underlying_length = underlying_list.length();
+
+  // If any of the types don't match, fallback to replace behavior.
+  for (wtf_size_t i = 0; i < underlying_length && i < length; i++) {
+    if (To<InterpolableFilter>(underlying_list.Get(i))->GetType() !=
+        To<InterpolableFilter>(interpolable_list->Get(i))->GetType())
+      return InterpolationValue(std::move(interpolable_list));
+  }
+
+  // Otherwise, arithmetically combine the matching prefix of the lists then
+  // concatenate the remainder of the longer one.
+  wtf_size_t max_length = std::max(length, underlying_length);
+  auto composited_list = std::make_unique<InterpolableList>(max_length);
+  for (wtf_size_t i = 0; i < max_length; i++) {
+    if (i < underlying_length) {
+      composited_list->Set(i, underlying_list.Get(i)->Clone());
+      if (i < length)
+        composited_list->GetMutable(i)->Add(*interpolable_list->Get(i));
+    } else {
+      composited_list->Set(i, interpolable_list->Get(i)->Clone());
     }
   }
 

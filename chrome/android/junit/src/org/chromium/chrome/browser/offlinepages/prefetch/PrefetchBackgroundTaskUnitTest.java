@@ -32,7 +32,6 @@ import org.robolectric.RuntimeEnvironment;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
 
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.JniMocker;
 import org.chromium.chrome.browser.DeviceConditions;
@@ -111,19 +110,15 @@ public class PrefetchBackgroundTaskUnitTest {
         MockitoAnnotations.initMocks(this);
         mocker.mock(PrefetchBackgroundTaskJni.TEST_HOOKS, mPrefetchBackgroundTaskJniMock);
         doNothing().when(mChromeBrowserInitializer).handlePreNativeStartup(any(BrowserParts.class));
-        try {
-            doAnswer(new Answer<Void>() {
-                @Override
-                public Void answer(InvocationOnMock invocation) {
-                    mBrowserParts.getValue().finishNativeInitialization();
-                    return null;
-                }
-            })
-                    .when(mChromeBrowserInitializer)
-                    .handlePostNativeStartup(eq(true), mBrowserParts.capture());
-        } catch (ProcessInitException ex) {
-            fail("Unexpected exception while initializing mock of ChromeBrowserInitializer.");
-        }
+        doAnswer(new Answer<Void>() {
+            @Override
+            public Void answer(InvocationOnMock invocation) {
+                mBrowserParts.getValue().finishNativeInitialization();
+                return null;
+            }
+        })
+                .when(mChromeBrowserInitializer)
+                .handlePostNativeStartup(eq(true), mBrowserParts.capture());
 
         ChromeBrowserInitializer.setForTesting(mChromeBrowserInitializer);
 

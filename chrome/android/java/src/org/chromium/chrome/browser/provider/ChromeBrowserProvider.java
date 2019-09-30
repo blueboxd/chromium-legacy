@@ -34,7 +34,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.NativeMethods;
 import org.chromium.base.library_loader.LibraryProcessType;
-import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.task.PostTask;
 import org.chromium.chrome.browser.IntentHandler;
@@ -639,13 +638,7 @@ public class ChromeBrowserProvider extends ContentProvider {
         synchronized (mLoadNativeLock) {
             PostTask.runSynchronously(UiThreadTaskTraits.DEFAULT, () -> {
                 if (mNativeChromeBrowserProvider != 0) return;
-                try {
-                    ChromeBrowserInitializer.getInstance(getContext()).handleSynchronousStartup();
-                } catch (ProcessInitException e) {
-                    // Chrome browser runs in the background, so exit silently; but do exit,
-                    // since otherwise the next attempt to use Chrome will find a broken JNI.
-                    System.exit(-1);
-                }
+                ChromeBrowserInitializer.getInstance(getContext()).handleSynchronousStartup();
                 ensureNativeSideInitialized();
             });
         }
@@ -786,16 +779,13 @@ public class ChromeBrowserProvider extends ContentProvider {
          */
         @VisibleForTesting
         public boolean equalContents(BookmarkNode node) {
-            return node != null
-                    && mId == node.mId
-                    && !(mName == null ^ node.mName == null)
+            return node != null && mId == node.mId && (mName == null) == (node.mName == null)
                     && (mName == null || mName.equals(node.mName))
-                    && !(mUrl == null ^ node.mUrl == null)
-                    && (mUrl == null || mUrl.equals(node.mUrl))
-                    && mType == node.mType
+                    && (mUrl == null) == (node.mUrl == null)
+                    && (mUrl == null || mUrl.equals(node.mUrl)) && mType == node.mType
                     && byteArrayEqual(mFavicon, node.mFavicon)
                     && byteArrayEqual(mThumbnail, node.mThumbnail)
-                    && !(mParent == null ^ node.mParent == null)
+                    && (mParent == null) == (node.mParent == null)
                     && children().size() == node.children().size();
         }
 

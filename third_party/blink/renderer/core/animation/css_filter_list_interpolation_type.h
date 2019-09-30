@@ -26,9 +26,10 @@ class CSSFilterListInterpolationType : public CSSInterpolationType {
   void ApplyStandardPropertyValue(const InterpolableValue&,
                                   const NonInterpolableValue*,
                                   StyleResolverState&) const final;
-  InterpolationValue MakeAdditive(
+  InterpolationValue PreInterpolationCompositeIfNeeded(
       InterpolationValue value,
-      const InterpolationValue& underlying) const final;
+      const InterpolationValue& underlying,
+      EffectModel::CompositeOperation) const final;
 
  private:
   InterpolationValue MaybeConvertNeutral(const InterpolationValue& underlying,
@@ -40,6 +41,16 @@ class CSSFilterListInterpolationType : public CSSInterpolationType {
   InterpolationValue MaybeConvertValue(const CSSValue&,
                                        const StyleResolverState*,
                                        ConversionCheckers&) const final;
+
+  // Helper methods to perform either additive or accumulative composition, as
+  // defined in https://drafts.fxtf.org/filter-effects-1/#addition and
+  // https://drafts.fxtf.org/filter-effects-1/#accumulation
+  InterpolationValue PerformAdditiveComposition(
+      std::unique_ptr<InterpolableList> interpolable_list,
+      const InterpolableList& underlying_list) const;
+  InterpolationValue PerformAccumulativeComposition(
+      std::unique_ptr<InterpolableList> interpolable_list,
+      const InterpolableList& underlying_list) const;
 };
 
 }  // namespace blink

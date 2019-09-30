@@ -499,11 +499,7 @@ public abstract class AsyncInitializationActivity extends ChromeBaseAppCompatAct
     @Override
     public final void onCreateWithNative() {
         mLifecycleDispatcher.onCreateWithNative();
-        try {
-            ChromeBrowserInitializer.getInstance(this).handlePostNativeStartup(true, this);
-        } catch (ProcessInitException e) {
-            ChromeApplication.reportStartupErrorAndExit(e);
-        }
+        ChromeBrowserInitializer.getInstance(this).handlePostNativeStartup(true, this);
     }
 
     @CallSuper

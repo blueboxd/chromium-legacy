@@ -46,6 +46,9 @@ class CSSPaintValueTest : public RenderingTest,
       : ScopedCSSPaintAPIArgumentsForTest(GetParam() & kCSSPaintAPIArguments),
         ScopedOffMainThreadCSSPaintForTest(GetParam() &
                                            kOffMainThreadCSSPaint) {}
+
+  // TODO(xidachen): a mock_generator is used in many tests in this file, put
+  // that in a Setup method.
 };
 
 INSTANTIATE_TEST_SUITE_P(,
@@ -203,6 +206,52 @@ TEST_P(CSSPaintValueTest, DelayPaintUntilGeneratorReady) {
   }
 
   EXPECT_TRUE(
+      paint_value->GetImage(*target, GetDocument(), style, target_size));
+}
+
+TEST_P(CSSPaintValueTest, PrintingMustFallbackToMainThread) {
+  if (!RuntimeEnabledFeatures::OffMainThreadCSSPaintEnabled())
+    return;
+
+  NiceMock<MockCSSPaintImageGenerator>* mock_generator =
+      MakeGarbageCollected<NiceMock<MockCSSPaintImageGenerator>>();
+  base::AutoReset<MockCSSPaintImageGenerator*> scoped_override_generator(
+      &g_override_generator, mock_generator);
+  base::AutoReset<CSSPaintImageGenerator::CSSPaintImageGeneratorCreateFunction>
+      scoped_create_function(
+          CSSPaintImageGenerator::GetCreateFunctionForTesting(),
+          ProvideOverrideGenerator);
+
+  const FloatSize target_size(100, 100);
+
+  SetBodyInnerHTML(R"HTML(
+    <div id="target"></div>
+  )HTML");
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  const ComputedStyle& style = *target->Style();
+
+  auto* ident = MakeGarbageCollected<CSSCustomIdentValue>("testpainter");
+  CSSPaintValue* paint_value = MakeGarbageCollected<CSSPaintValue>(ident);
+
+  ON_CALL(*mock_generator, IsImageGeneratorReady()).WillByDefault(Return(true));
+  // This PW can be composited, so we should only fall back to main once, in
+  // the case where we are printing.
+  EXPECT_CALL(*mock_generator, Paint(_, _, _, _))
+      .Times(1)
+      .WillOnce(Return(PaintGeneratedImage::Create(nullptr, target_size)));
+
+  ASSERT_TRUE(
+      paint_value->GetImage(*target, GetDocument(), style, target_size));
+
+  // Start printing; our paint should run on the main thread (and thus call
+  // Paint).
+  GetDocument().SetPrinting(Document::kPrinting);
+  ASSERT_TRUE(
+      paint_value->GetImage(*target, GetDocument(), style, target_size));
+
+  // Stop printing; we should return to the compositor.
+  GetDocument().SetPrinting(Document::kNotPrinting);
+  ASSERT_TRUE(
       paint_value->GetImage(*target, GetDocument(), style, target_size));
 }
 

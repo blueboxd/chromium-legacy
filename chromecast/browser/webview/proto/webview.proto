@@ -22,8 +22,6 @@ message WebviewCreateRequest {
   // This identifies the surface that this webview will display into.
   // It should be unique and the same as whatever was set into
   // |aura_surface_set_client_surface_id| on the wayland surface.
-  // It is an error to attempt to create a webview if the surface
-  // does not yet exist.
   int32 webview_id = 1;
   // This is the cast window ID that will be assigned to the web contents
   // window.
@@ -101,6 +99,75 @@ message StopPageRequest {
   int32 error_code = 1;
 }
 
+message EvaluateJavascriptRequest {
+  string javascript_blob = 1;
+}
+
+message EvaluateJavascriptResponse {
+  string json = 1;
+}
+
+message AddJavascriptChannelsRequest {
+  repeated string channels = 1;
+}
+
+message RemoveJavascriptChannelsRequest {
+  repeated string channels = 1;
+}
+
+message GetCurrentUrlRequest {}
+
+message GetCurrentUrlResponse {
+  string url = 1;
+}
+
+message CanGoBackRequest {}
+
+message CanGoBackResponse {
+  bool can_go_back = 1;
+}
+
+message CanGoForwardRequest {}
+
+message CanGoForwardResponse {
+  bool can_go_forward = 1;
+}
+
+message GoBackRequest {}
+
+message GoForwardRequest {}
+
+message ReloadRequest {}
+
+message ClearCacheRequest {}
+
+message UserAgent {
+  oneof type {
+    bool is_null = 1;
+    string value = 2;
+  }
+}
+
+message UpdateSettingsRequest {
+  bool javascript_enabled = 1;
+  bool has_navigation_delegate = 2;
+  bool debugging_enabled = 3;
+  // A null value means the default user agent should be used.
+  // An absent value represents no change to this setting from the last time it
+  // was set.
+  UserAgent user_agent = 4;
+}
+
+message GetTitleRequest {}
+
+message GetTitleResponse {
+  string title = 1;
+}
+
+message SetAutoMediaPlaybackPolicyRequest {
+  bool require_user_gesture = 1;
+}
+
 message WebviewRequest {
   oneof type {
     // This must be the first message.
@@ -111,6 +178,32 @@ message WebviewRequest {
     NavigateRequest navigate = 3;
     // Expect page events to follow.
     StopPageRequest stop_page = 4;
+    // Expect async response.
+    EvaluateJavascriptRequest evaluate_javascript = 5;
+    // No response.
+    AddJavascriptChannelsRequest add_javascript_channels = 6;
+    // No response.
+    RemoveJavascriptChannelsRequest remove_javascript_channels = 7;
+    // Expect async response.
+    GetCurrentUrlRequest get_current_url = 8;
+    // Expect async response.
+    CanGoBackRequest can_go_back = 9;
+    // Expect async response.
+    CanGoForwardRequest can_go_forward = 10;
+    // No response.
+    GoBackRequest go_back = 11;
+    // No response.
+    GoForwardRequest go_forward = 12;
+    // No response.
+    ReloadRequest reload = 13;
+    // No response.
+    ClearCacheRequest clear_cache = 14;
+    // No response.
+    UpdateSettingsRequest update_settings = 15;
+    // Expect async response.
+    GetTitleRequest get_title = 16;
+    // No response.
+    SetAutoMediaPlaybackPolicyRequest set_auto_media_playback_policy = 17;
   }
 }
 
@@ -118,9 +211,15 @@ message WebviewResponse {
   oneof type {
     WebviewCreateResponse create_response = 1;
     AsyncPageEvent page_event = 2;
+    EvaluateJavascriptResponse evaluate_javascript = 3;
+    GetCurrentUrlResponse get_current_url = 4;
+    CanGoBackResponse can_go_back = 5;
+    CanGoForwardResponse can_go_forward = 6;
+    GetTitleResponse get_title = 7;
   }
 }
 
 service WebviewService {
+  // Creates a webview. See the comment at the top of the file.
   rpc CreateWebview(stream WebviewRequest) returns (stream WebviewResponse);
 }
